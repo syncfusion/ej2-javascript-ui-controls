@@ -235,6 +235,22 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
     public type: BorderType;
 }
 
+export class BubbleSize extends ChildProperty<BubbleSize> {
+    /**
+     * Specifies the minimum radius value of the cell in percentage.
+     * @default '0%'
+     */
+    @Property('0%')
+    public minimum: string;
+
+    /**
+     * Specifies the maximum radius value of the cell in percentage.
+     * @default '100%'
+     */
+
+    @Property('100%')
+    public maximum: string;
+}
 
 /**
  * categories for multi level labels

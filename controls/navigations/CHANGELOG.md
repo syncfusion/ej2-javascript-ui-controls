@@ -2,35 +2,13 @@
 
 ## [Unreleased]
 
-## 16.4.45 (2019-01-02)
-
-### Toolbar
-
-#### Bug Fixes
-
-- While resizing, Toolbar items are not moving from popup to toolbar in `extended` overflow mode issue is fixed.
+## 17.1.1-beta (2019-01-22)
 
 ### Menu
 
 #### Bug Fixes
 
-- Getting custom properties from menu items in `beforeItemRender` event issue fixed.
-
-### Sidebar
-
-#### Bug Fixes
-
-- Fixed the issue with rendering the Sidebar using `isOpen` property and type `Auto`.
-
-## 16.4.44 (2018-12-24)
-
-### Accordion
-
-#### Bug Fixes
-
-- Parent accordion collapsing issue is fixed when Tab renders within it.
-
-## 16.4.40-beta (2018-12-10)
+- Popup not opened properly when two menu rendered side by side issue fixed.
 
 ### Tab
 

@@ -136,9 +136,7 @@ export class EventWindow {
     public openEditor(data: Object, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
-        if (this.parent.calendarMode === 'Islamic') {
-            addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
-        } else if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
+        if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
         }
         switch (type) {
@@ -947,6 +945,7 @@ export class EventWindow {
 
     private renderRecurrenceEditor(): RecurrenceEditor {
         return new RecurrenceEditor({
+            calendarMode: this.parent.calendarMode,
             cssClass: this.parent.cssClass,
             dateFormat: this.parent.dateFormat,
             enableRtl: this.parent.enableRtl,

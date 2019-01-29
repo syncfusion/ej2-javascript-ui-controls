@@ -1,7 +1,8 @@
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth,
-    Resize, DragAndDrop, MonthAgenda, CalendarType
+    Resize, DragAndDrop, MonthAgenda
 } from '../../src/schedule/index';
+import { CalendarType } from '../../src/common/index';
 import { Ajax, L10n, loadCldr, setCulture, enableRtl } from '@syncfusion/ej2-base';
 import { sampleData } from '../../spec/schedule/base/datasource.spec';
 import { Calendar, Islamic } from '@syncfusion/ej2-calendars';

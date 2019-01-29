@@ -4,9 +4,18 @@ import { Title } from '../../src/heatmap/model/base';
 import { ILoadedEventArgs, ICellEventArgs } from '../../src/heatmap/model/interface'
 import { Adaptor } from '../../src/heatmap/index';
 import { MouseEvents } from '../base/event.spec';
+import { profile , inMB, getMemoryProfile } from '../../spec/common.spec';
 HeatMap.Inject(Adaptor);
 
 describe('Heatmap Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Heatmap series properties and its behavior', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
@@ -131,6 +140,48 @@ describe('Heatmap Control', () => {
             expect(tooltipElement).not.toBe(null);
             setTimeout(done, 1600);
         });
+        it('Check minimum size option for bubble(size) type heatmap', (done: Function) => {
+            heatmap.renderingMode = "SVG";
+            heatmap.cellSettings.tileType = "Bubble";
+            heatmap.cellSettings.bubbleType = "Size";
+            heatmap.cellSettings.bubbleSize.minimum = "50%";
+            heatmap.showTooltip = true;
+            heatmap.dataBind();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            expect(tempElement.getAttribute('r') == "45.25" || tempElement.getAttribute('r') == "45.5");
+            setTimeout(done, 1600);
+        });
+        it('Check maximum size option for bubble(size) type heatmap', (done: Function) => {
+            heatmap.renderingMode = "SVG";
+            heatmap.cellSettings.tileType = "Bubble";
+            heatmap.cellSettings.bubbleType = "Size";
+            heatmap.cellSettings.bubbleSize.maximum = "80%";
+            heatmap.showTooltip = true;
+            heatmap.dataBind();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            expect(tempElement.getAttribute('r') == "36.2" || tempElement.getAttribute('r') == "36.4");            setTimeout(done, 1600);
+        });
+        it('Check minimum size(minimum value) option for bubble(size) type heatmap', (done: Function) => {
+            heatmap.renderingMode = "SVG";
+            heatmap.cellSettings.tileType = "Bubble";
+            heatmap.cellSettings.bubbleType = "Size";
+            heatmap.cellSettings.bubbleSize.minimum = "0%";
+            heatmap.showTooltip = true;
+            heatmap.dataBind();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            expect(tempElement.getAttribute('r') == "45.25" || tempElement.getAttribute('r') == "45.5");
+            setTimeout(done, 1600);
+        });
+        it('Check maximum size(maximum value) option for bubble(size) type heatmap', (done: Function) => {
+            heatmap.renderingMode = "SVG";
+            heatmap.cellSettings.tileType = "Bubble";
+            heatmap.cellSettings.bubbleType = "Size";
+            heatmap.cellSettings.bubbleSize.maximum = "100%";
+            heatmap.showTooltip = true;
+            heatmap.dataBind();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            expect(tempElement.getAttribute('r') == "36.2" || tempElement.getAttribute('r') == "36.4");            setTimeout(done, 1600);
+        });
         it('Check bubble(sector) type heatmap', (done: Function) => {
             heatmap.renderingMode = "SVG";
             heatmap.cellSettings.tileType = "Bubble";
@@ -148,6 +199,19 @@ describe('Heatmap Control', () => {
         });
         it('Check bubble(sector) type heatmap in Canvas mode', (done: Function) => {
             heatmap.renderingMode = "Canvas";
+            heatmap.dataBind();
+            tempElement = document.getElementById('container');
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(tempElement, null, null, null, null, 0, 80));
+            heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(tempElement, null, null, null, null, 50, 80));
+            tempElement = document.getElementById('containerCelltooltipcontainer');
+            expect(tempElement.style.visibility).toBe("visible");
+            setTimeout(done, 1600);
+        });
+        it('Check bubble(size) type heatmap in Canvas mode', (done: Function) => {
+            heatmap.cellSettings.tileType = "Bubble";
+            heatmap.cellSettings.bubbleType = "Size";
+            heatmap.cellSettings.border.width = 1;
+            heatmap.cellSettings.border.color = 'red';
             heatmap.dataBind();
             tempElement = document.getElementById('container');
             heatmap.heatMapMouseMove(<PointerEvent>trigger.onTouchStart(tempElement, null, null, null, null, 0, 80));
@@ -317,4 +381,13 @@ describe('Heatmap Control', () => {
             done();
     });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

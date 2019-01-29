@@ -2,7 +2,7 @@
  * TextBox spec document
  */
 import { createElement, L10n, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { TextBox } from '../src/textbox/textbox';
+import { TextBox, ChangedEventArgs } from '../src/textbox/textbox';
 
 describe('TextBox ', () => {
     describe('Basics', () => {
@@ -266,6 +266,26 @@ describe('TextBox ', () => {
             inputObj.textboxWrapper.clearButton.classList.add('e-clear-icon-hide');
             inputObj.resetInputHandler(mouseEvent);
             expect(inputObj.element.value).toBe('');
+        });
+    });
+
+    describe('isInteracted event testing', () => {
+        let inputObj: any;
+        let originalTimeout: number;
+        beforeAll((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+            inputObj = new TextBox({change: onChange, showClearButton: true});
+            inputObj.appendTo(document.getElementById('textbox'));
+            function onChange(args: ChangedEventArgs) {
+                expect(args.isInteracted).toEqual(false);
+            }
+        })
+        afterAll((): void => {
+            inputObj.destroy();
+            document.body.innerHTML = '';
         });
     });
 })

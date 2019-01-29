@@ -8,6 +8,7 @@ import { ConnectorModel, } from '../../../src/diagram/objects/connector-model';
 import { Segments } from '../../../src/diagram/enum/enum';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { DataBinding } from '../../../src/diagram/index';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(DataBinding);
 
 
@@ -21,6 +22,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
 
@@ -42,13 +49,19 @@ describe('Diagram Control', () => {
             expect(diagram.nodes.length === 0 && diagram.connectors.length === 0).toBe(true);
             done();
         });
-    });
+      });
 
     describe('Data Binding', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let data: object[] = [{ 'Name': 'Director' },
@@ -99,13 +112,19 @@ describe('Diagram Control', () => {
             done();
 
         });
-    });
+       });
 
     describe('Data Binding using string function', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagrammo' });
             document.body.appendChild(ele);
             let data: object[] = [{ 'Name': 'Director' },
@@ -161,12 +180,18 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as NodeModel).annotations.length).toBe(1);
             done();
         });
-    });
+       });
 
     describe('Data Binding', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             const SERVICE_URI = 'https://mvc.syncfusion.com/Services/Northwnd.svc';
@@ -205,12 +230,18 @@ describe('Diagram Control', () => {
                 done();
             };
         });
-    });
+      });
 
     describe('Data Binding ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let data: object[] = [{ 'Name': 'Customer Support', 'fillColor': '#0f688d' },
@@ -263,12 +294,18 @@ describe('Diagram Control', () => {
             expect(diagram.nodes.length === 15 && diagram.connectors.length === 14).toBe(true);
             done();
         });
-    });
+     });
 
     describe('Data Binding', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let data: object[] = [{ 'Name': 'Director' },
@@ -304,13 +341,19 @@ describe('Diagram Control', () => {
             expect(diagram.nodes.length === 3 && diagram.connectors.length === 3).toBe(true);
             done();
         });
-    });
+        });
 
 
     describe('Data Binding', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let data: object[] = [
@@ -348,12 +391,18 @@ describe('Diagram Control', () => {
                 && (diagram.nodes[0] as Node).outEdges.length === 0).toBe(true);
             done();
         });
-    });
+       });
     describe('Data Binding', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let data: object[] = [{ 'Name': 'Director' },
@@ -403,12 +452,18 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as NodeModel).annotations.length).toBe(1);
             done();
         });
-    });
+      });
     describe('Data Binding with string function', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagramko' });
             document.body.appendChild(ele);
             let data: object[] = [{ 'Name': 'Director' },
@@ -464,5 +519,14 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as NodeModel).annotations.length).toBe(1);
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

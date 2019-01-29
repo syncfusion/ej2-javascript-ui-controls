@@ -4,12 +4,21 @@ import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Zoom, Bubble, Marker, Annotations } from '../../../src/maps/index';
 import { DataManager, UrlAdaptor } from '@syncfusion/ej2-data';
 import { World_Map } from '../data/data.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble, Annotations);
 
 /**
  * 
  */
 describe('Remote Data testing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Get data from server using Ajax', () => {
         let id: string = 'container';
         let map: Maps;
@@ -167,5 +176,14 @@ describe('Remote Data testing', () => {
             map.zoomSettings.enable = true;
             map.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

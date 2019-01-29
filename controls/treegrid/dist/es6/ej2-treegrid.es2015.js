@@ -413,7 +413,6 @@ function getPlainData(value) {
     delete value.childRecords;
     delete value.index;
     delete value.parentItem;
-    delete value.parentIndex;
     delete value.level;
     return value;
 }
@@ -439,10 +438,10 @@ class Render {
         let data = args.data;
         let parentData = data.parentItem;
         let index;
-        if (!isNullOrUndefined(data.parentIndex) &&
+        if (!isNullOrUndefined(data.parentItem) &&
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent)))) {
-            index = data.parentIndex;
+            index = data.parentItem.index;
             let collapsed$$1 = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                 parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
                 !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
@@ -511,7 +510,7 @@ class Render {
                     expand = data.expanded;
                 }
                 let collapsed$$1 = true;
-                if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
+                if (!isNullOrUndefined(data.parentItem) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
                     && data[this.parent.expandStateMapping])
                     && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
                     collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
@@ -568,7 +567,6 @@ class Sort$1 {
         this.taskIds = [];
         this.flatSortedData = [];
         this.storedIndex = -1;
-        this.rootIndex = -1;
         this.isSelfReference = !isNullOrUndefined(this.parent.parentIdMapping);
         this.addEventListener();
     }
@@ -605,7 +603,6 @@ class Sort$1 {
     createSortRecords(data) {
         let sortData = getObject('modifiedData', data);
         let parentRecords = getObject('parentRecords', data);
-        let parentIndex = getObject('parentIndex', data);
         let filteredResult = getObject('filteredResult', data);
         let dataLength = Object.keys(sortData).length;
         for (let i = 0, len = dataLength; i < len; i++) {
@@ -629,22 +626,15 @@ class Sort$1 {
                 currentSortData.parentItem = parentData;
                 currentSortData.parentUniqueID = parentData.uniqueID;
                 level = parentRecords.level + 1;
-                currentSortData.parentIndex = parentIndex;
             }
             currentSortData.level = level;
-            if (isNullOrUndefined(currentSortData.parentIndex)) {
-                this.rootIndex = currentSortData.index;
-            }
-            else {
-                currentSortData.rootIndex = this.rootIndex;
-            }
             if (isNullOrUndefined(currentSortData[this.parent.parentIdMapping]) ||
                 currentSortData.parentItem) {
                 this.flatSortedData.push(currentSortData);
             }
             if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
                 this.createSortRecords({ modifiedData: currentSortData[this.parent.childMapping], parentRecords: currentSortData,
-                    parentIndex: this.storedIndex, filteredResult: filteredResult });
+                    filteredResult: filteredResult });
             }
         }
         this.parent.notify('Sorting', { sortedData: this.flatSortedData, filteredData: filteredResult });
@@ -720,7 +710,6 @@ class DataManipulation {
         this.parentItems = [];
         this.taskIds = [];
         this.hierarchyData = [];
-        this.rootIndex = -1;
         this.storedIndex = -1;
         this.sortedData = [];
         this.isSortAction = false;
@@ -932,7 +921,6 @@ class DataManipulation {
                     result[r].level = rowDetails.record.level + 1;
                     result[r].index = Math.ceil(Math.random() * 1000);
                     result[r].parentItem = rowDetails.record;
-                    result[r].parentIndex = rowDetails.record.index;
                     if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
                         && !(haveChild && !haveChild[r])) {
                         result[r].hasChildRecords = true;
@@ -953,7 +941,7 @@ class DataManipulation {
     beginSorting() {
         this.isSortAction = true;
     }
-    createRecords(data, parentRecords, parentIndex) {
+    createRecords(data, parentRecords) {
         for (let i = 0, len = Object.keys(data).length; i < len; i++) {
             let currentData = data[i];
             let level = 0;
@@ -977,20 +965,13 @@ class DataManipulation {
                 currentData.parentItem = parentData;
                 currentData.parentUniqueID = parentData.uniqueID;
                 level = parentRecords.level + 1;
-                currentData.parentIndex = parentIndex;
             }
             currentData.level = level;
-            if (isNullOrUndefined(currentData.parentIndex)) {
-                this.rootIndex = currentData.index;
-            }
-            else {
-                currentData.rootIndex = this.rootIndex;
-            }
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
                 this.parent.flatData.push(currentData);
             }
             if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
-                this.createRecords(currentData[this.parent.childMapping], currentData, this.storedIndex);
+                this.createRecords(currentData[this.parent.childMapping], currentData);
             }
         }
         if (!Object.keys(data).length) {
@@ -1086,7 +1067,7 @@ class DataManipulation {
                 this.parent.notify('createSort', { modifiedData: modifiedData, parent: this.parent, srtQry: srtQry });
                 this.parent.notify('createSortRecords', {
                     modifiedData: modifiedData,
-                    parentRecords: null, parentIndex: null, filteredResult: results
+                    parentRecords: null, filteredResult: results
                 });
             }
             results = this.sortedData;
@@ -1439,9 +1420,9 @@ let TreeGrid = class TreeGrid extends Component {
         this.defaultLocale = {
             Above: 'Above',
             Below: 'Below',
-            AddRow: 'AddRow',
+            AddRow: 'Add Row',
             ExpandAll: 'Expand All',
-            CollapseAll: 'Collapse All',
+            CollapseAll: 'Collapse All'
         };
         if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
             this.childMapping = 'Children';
@@ -1816,7 +1797,6 @@ let TreeGrid = class TreeGrid extends Component {
         this.grid.printMode = getActualProperties(this.printMode);
         this.grid.locale = getActualProperties(this.locale);
         this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
-        this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
     }
     triggerEvents(args) {
@@ -1863,8 +1843,6 @@ let TreeGrid = class TreeGrid extends Component {
         this.grid.cellDeselected = this.triggerEvents.bind(this);
         this.grid.cellSelecting = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
-        this.grid.columnMenuOpen = this.triggerEvents.bind(this);
-        this.grid.columnMenuClick = this.triggerEvents.bind(this);
         this.grid.cellSelected = this.triggerEvents.bind(this);
         this.grid.headerCellInfo = this.triggerEvents.bind(this);
         this.grid.resizeStart = this.triggerEvents.bind(this);
@@ -2277,9 +2255,6 @@ let TreeGrid = class TreeGrid extends Component {
                     break;
                 case 'contextMenuItems':
                     this.grid.contextMenuItems = this.getContextMenu();
-                    break;
-                case 'columnMenuItems':
-                    this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
                     break;
                 case 'editSettings':
                     if (this.grid.isEdit && this.grid.editSettings.mode === 'Normal' && newProp[prop].mode &&
@@ -3165,9 +3140,6 @@ __decorate([
     Property()
 ], TreeGrid.prototype, "contextMenuItems", void 0);
 __decorate([
-    Property()
-], TreeGrid.prototype, "columnMenuItems", void 0);
-__decorate([
     Property(null)
 ], TreeGrid.prototype, "rowHeight", void 0);
 __decorate([
@@ -3260,12 +3232,6 @@ __decorate([
 __decorate([
     Event()
 ], TreeGrid.prototype, "cellSelecting", void 0);
-__decorate([
-    Event()
-], TreeGrid.prototype, "columnMenuOpen", void 0);
-__decorate([
-    Event()
-], TreeGrid.prototype, "columnMenuClick", void 0);
 __decorate([
     Event()
 ], TreeGrid.prototype, "cellSelected", void 0);
@@ -3477,7 +3443,6 @@ class Filter$1 {
         this.filteredResult = [];
         this.flatFilteredData = [];
         this.filteredParentRecs = [];
-        this.filterRootIndex = -1;
         this.addEventListener();
     }
     /**
@@ -3620,12 +3585,9 @@ class Filter$1 {
             if (isPrst) {
                 let parent = this.filteredResult.filter((e) => { return e.uniqueID === record[c].parentUniqueID; })[0];
                 setValue('filterLevel', parent.filterLevel + 1, record[c]);
-                record[c].filterRootIndex = this.filterRootIndex;
             }
             else {
                 setValue('filterLevel', 0, record[c]);
-                this.filterRootIndex = record[c].filterIndex = c;
-                record[c].filterIndex = this.filterRootIndex;
                 this.filteredParentRecs.push(record[c]);
             }
         }
@@ -3644,8 +3606,6 @@ class Filter$1 {
                     setValue('hasFilteredChildRecords', true, currentRecord);
                 }
                 setValue('filterLevel', null, currentRecord);
-                setValue('filterIndex', null, currentRecord);
-                setValue('filterRootIndex', null, currentRecord);
             }
         }
         this.parent.notify('updateResults', { result: flatData, count: flatData.length });
@@ -3983,6 +3943,20 @@ class Page$1 {
         };
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
     }
+    pageRoot(pagedResults, temp, result) {
+        let newResults = isNullOrUndefined(result) ? [] : result;
+        for (let t = 0; t < temp.length; t++) {
+            newResults.push(temp[t]);
+            let res = [];
+            if (temp[t].hasChildRecords) {
+                res = pagedResults.filter((e) => {
+                    return temp[t].uniqueID === e.parentUniqueID;
+                });
+                newResults = this.pageRoot(pagedResults, res, newResults);
+            }
+        }
+        return newResults;
+    }
     pageAction(pageingDetails) {
         let dm = new DataManager(pageingDetails.result);
         if (this.parent.pageSettings.pageSizeMode === 'Root') {
@@ -3998,21 +3972,8 @@ class Page$1 {
             let skip = size * (current - 1);
             query = query.skip(skip).take(size);
             temp = dm.executeLocal(query);
-            let child = [];
-            for (let r = 0; r < temp.length; r++) {
-                child = pageingDetails.result.filter((e) => {
-                    if (!isNullOrUndefined(temp[r].filterIndex)) {
-                        return e.filterRootIndex === temp[r].filterIndex;
-                    }
-                    else {
-                        return e.rootIndex === temp[r].index;
-                    }
-                });
-                for (let c = 0; c < child.length; c++) {
-                    temp.splice(r + c + 1, 0, child[c]);
-                }
-            }
-            pageingDetails.result = temp;
+            let newResults = this.pageRoot(pageingDetails.result, temp);
+            pageingDetails.result = newResults;
         }
         else {
             let dm = new DataManager(pageingDetails.result);
@@ -4182,7 +4143,6 @@ class Aggregate$1 {
                     let level = getObject('level', summaryParent);
                     setValue('level', level + 1, item);
                     let index = getObject('index', summaryParent);
-                    setValue('parentIndex', index, item);
                     setValue('isSummaryRow', true, item);
                     if (isSort) {
                         let childRecords = getObject('childRecords', parentRecord);
@@ -4660,7 +4620,6 @@ class Edit$1 {
             let level;
             let dataIndex;
             let idMapping;
-            let parentIndex;
             let parentUniqueID;
             let parentItem;
             let parentIdMapping;
@@ -4668,7 +4627,6 @@ class Edit$1 {
                 level = currentData[this.addRowIndex].level;
                 dataIndex = currentData[this.addRowIndex].index;
                 idMapping = currentData[this.addRowIndex][this.parent.idMapping];
-                parentIndex = currentData[this.addRowIndex].parentIndex;
                 parentIdMapping = currentData[this.addRowIndex][this.parent.parentIdMapping];
                 if (currentData[this.addRowIndex].parentItem) {
                     parentUniqueID = currentData[this.addRowIndex].parentItem.uniqueID;
@@ -4686,7 +4644,6 @@ class Edit$1 {
                 else if (this.parent.editSettings.newRowPosition === 'Child') {
                     position = 'after';
                     if (this.selectedIndex > -1) {
-                        value.parentIndex = dataIndex;
                         value.parentItem = extend({}, currentData[this.addRowIndex]);
                         value.parentUniqueID = value.parentItem.uniqueID;
                         delete value.parentItem.childRecords;
@@ -4696,14 +4653,13 @@ class Edit$1 {
                     value.level = level + 1;
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = idMapping;
-                        if (!isNullOrUndefined(value.parentIndex)) {
+                        if (!isNullOrUndefined(value.parentItem)) {
                             this.updateParentRow(key, value.parentItem, 'add', value);
                         }
                     }
                 }
                 if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                     if (this.selectedIndex > -1 && level) {
-                        value.parentIndex = parentIndex;
                         value.parentUniqueID = parentUniqueID;
                         value.parentItem = extend({}, parentItem);
                         delete value.parentItem.childRecords;
@@ -4712,7 +4668,7 @@ class Edit$1 {
                     value.level = level;
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = parentIdMapping;
-                        if (!isNullOrUndefined(value.parentIndex)) {
+                        if (!isNullOrUndefined(value.parentItem)) {
                             this.updateParentRow(key, value.parentItem, 'add', value);
                         }
                     }

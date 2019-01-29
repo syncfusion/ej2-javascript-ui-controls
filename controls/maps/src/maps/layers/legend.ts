@@ -486,7 +486,7 @@ export class Legend {
                             layerIndex = data[j]['layerIndex'];
                             dataIndex = data[j]['dataIndex'];
                             let shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
-                                layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                                layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
                                 if (value === 'highlight' && this.shapeElement !== targetElement) {
                                     this.setColor(
@@ -716,7 +716,7 @@ export class Legend {
                 layerIndex = data[j]['layerIndex'];
                 dataIndex = data[j]['dataIndex'];
                 let shapeEle: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' +
-                    layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                    layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                 if (targetElement === shapeEle) {
                     process = true;
                 }
@@ -1035,20 +1035,21 @@ export class Legend {
         let target: Element = <Element>e.target;
         let legend: LegendSettingsModel = <LegendSettingsModel>this.maps.legendSettings;
         let id: string = this.maps.element.id + '_Interactive_Legend';
-        let hoverId: string = legend.type === 'Layers' ? '_ShapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
+        let hoverId: string = legend.type === 'Layers' ? '_shapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
             '_BubbleIndex_';
         if (target.id.indexOf(hoverId) > 1) {
-            let layerIndex: number = parseFloat(target.id.split('_')[2]);
-            let dataIndex: number = parseFloat(target.id.split('_')[6]);
+            let layerIndex: number = parseFloat(target.id.split('_LayerIndex_')[1].split('_')[0]);
+            let dataIndex: number = parseFloat(target.id.split(/_dataIndex_/i)[1].split('_')[0]);
             let fill: string; let stroke: string; let strokeWidth: number;
             if (!(isNullOrUndefined(querySelector(id, this.maps.element.id)))) {
                 remove(querySelector(id, this.maps.element.id));
             }
             let layer: LayerSettings = (<LayerSettings>this.maps.layersCollection[layerIndex]);
+            let markerVisible: boolean = (legend.type === 'Layers' ? layer.visible :
+            legend.type === 'Markers' ? layer.markerSettings[parseFloat(target.id.split('_MarkerIndex_')[1].split('_')[0])].visible :
+                (this.maps.getBubbleVisible(<LayerSettings>this.maps.layersCollection[layerIndex])));
             if (legend.visible && this.legendRenderingCollections.length > 0
-                && legend.mode === 'Interactive' && (legend.type === 'Layers' ? layer.visible :
-                    legend.type === 'Markers' ? layer.markerSettings[parseFloat(target.id.split('_')[4])].visible :
-                        (this.maps.getBubbleVisible(<LayerSettings>this.maps.layersCollection[layerIndex])))
+                && legend.mode === 'Interactive' && markerVisible
             ) {
                 let svgRect: ClientRect = this.maps.svgObject.getBoundingClientRect();
                 for (let i: number = 0; i < this.legendCollection.length; i++) {

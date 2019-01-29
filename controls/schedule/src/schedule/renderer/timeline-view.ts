@@ -1,4 +1,4 @@
-import { isNullOrUndefined, createElement, prepend, extend, formatUnit, append } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, prepend, extend, formatUnit, append, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { VerticalView } from './vertical-view';
 import { TimelineEvent } from '../event-renderer/timeline-view';
@@ -91,6 +91,13 @@ export class TimelineViews extends VerticalView {
             className: cls.CURRENT_TIMELINE_CLASS,
             styles: (this.parent.enableRtl ? 'right' : 'left') + ':' + formatUnit(left) + '; height:' + formatUnit(height)
         }));
+        if (this.parent.virtualScrollModule) {
+            let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+            let element: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
+            setStyleAttribute(timeIndicator, {
+                transform: element.style.transform
+            });
+        }
         let currentTimeEle: HTMLElement = createElement('div', {
             innerHTML: this.parent.getTimeString(new Date()),
             className: cls.CURRENT_TIME_CLASS

@@ -5375,10 +5375,10 @@ let Component = class Component extends Base {
             this.setPersistData();
         }
         this.localObserver.destroy();
-        removeClass([this.element], ['e-control']);
         if (this.refreshing) {
             return;
         }
+        removeClass([this.element], ['e-control']);
         this.trigger('destroyed', { cancel: false });
         super.destroy();
         this.moduleLoader.clean();

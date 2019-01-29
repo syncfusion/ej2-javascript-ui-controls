@@ -1,9 +1,11 @@
 import { DiagramElement } from '../elements/diagram-element';
+import { ElementAction } from '../../enum/enum';
 import { Thickness } from '../appearance';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
 import { rotatePoint, getOffset } from '../../utility/base-util';
+import { alignElement } from '../../utility/diagram-util';
 
 /**
  * Container module is used to group related objects
@@ -124,6 +126,10 @@ export class Container extends DiagramElement {
                     if (child.horizontalAlignment === 'Stretch') {
                         child.offsetX = this.offsetX;
                         child.parentTransform = this.parentTransform + this.rotateAngle;
+                        if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
+                            child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
+                                -child.parentTransform : child.parentTransform;
+                        }
                         arrange = true;
                     }
                     if (child.verticalAlignment === 'Stretch') {
@@ -140,10 +146,14 @@ export class Container extends DiagramElement {
         this.actualSize = desiredSize;
         this.updateBounds();
         this.prevRotateAngle = this.rotateAngle;
+        if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
+            alignElement(this, this.offsetX, this.offsetY, this.flip);
+        }
         return desiredSize;
     }
 
     //protected methods
+
 
     /**
      * Stretches the child elements based on the size of the container

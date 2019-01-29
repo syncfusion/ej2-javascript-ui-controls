@@ -87,7 +87,7 @@ describe('Schedule - recurrence Freq- Daily', () => {
     });
 });
 
-describe('Schedule - recurrence Freq- Daily', () => {
+describe('Schedule - recurrence Freq- Daily (without EndDate)', () => {
     let startDate: Date = new Date('Tue May 06 2014 ');
     it('Default - Interval', () => {
         expect(JSON.stringify(generate(startDate,
@@ -243,6 +243,16 @@ describe('Schedule - recurrence Freq- Daily', () => {
 });
 describe('Schedule - recurrence Freq- Weekly', () => {
     let startDate: Date = new Date('Tue May 06 2014');
+    it('Default - Having WEEKLY property alone and all other properties are not provided', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=WEEKLY;COUNT=5', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Tue May 06 2014 ').getTime(), new Date('Tue May 13 2014 ').getTime(),
+                    new Date('Tue May 20 2014 ').getTime(), new Date('Tue May 27 2014 ').getTime(),
+                    new Date('Tue Jun 03 2014 ').getTime()]));
+    });
     it('Default - ByDay', () => {
         expect(
             JSON.stringify(generate(startDate,
@@ -364,18 +374,6 @@ describe('Schedule - recurrence Freq- Weekly', () => {
                 new Date('Tue Jul 01 2014 ').getTime(), new Date('Wed Jul 02 2014 ').getTime(),
                 new Date('Thu Jul 03 2014 ').getTime()]));
     });
-    it('Default - BYMONTHDAY', () => {
-        expect(
-            JSON.stringify(generate(new Date('Sun Jun 01 2014 '),
-                'FREQ=WEEKLY;BYDAY=FR;BYMONTHDAY=13;INTERVAL=1;UNTIL=20140729T000000Z', null, 0)))
-            .toBe(JSON.stringify([new Date('Fri Jun 13 2014 ').getTime()]));
-    });
-    it('Default - BYYEARDAY', () => {
-        expect(
-            JSON.stringify(generate(new Date('Sun Jun 01 2014'),
-                'FREQ=WEEKLY;BYDAY=TU;BYYEARDAY=168;INTERVAL=1;UNTIL=20140729T000000Z', null, 0)))
-            .toBe(JSON.stringify([new Date('Tue Jun 17 2014').getTime()]));
-    });
 });
 describe('Schedule - recurrence Freq- Weekly (without EndDate)', () => {
     let startDate: Date = new Date('Tue May 06 2014');
@@ -468,61 +466,45 @@ describe('Schedule - recurrence Freq- Weekly (without EndDate)', () => {
                 new Date('Fri Jul 10 2015 ').getTime(), new Date('Sat Jul 11 2015 ').getTime(),
                 new Date('Sun Jul 12 2015 ').getTime()]));
     });
-    it('Default - BYMONTHDAY', () => {
+    it('Default - WKST', () => {
         expect(
-            JSON.stringify(generate(new Date('Sun Jun 01 2014 '),
-                'FREQ=WEEKLY;BYDAY=FR;BYMONTHDAY=13;INTERVAL=1', null, 0)))
+            JSON.stringify(generate(startDate,
+                'FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=SU', null, 0)))
             .toBe(JSON.stringify([
-                new Date('Fri Jun 13 2014 ').getTime(), new Date('Fri Feb 13 2015 ').getTime(),
-                new Date('Fri Mar 13 2015 ').getTime(), new Date('Fri Nov 13 2015 ').getTime(),
-                new Date('Fri May 13 2016 ').getTime(), new Date('Fri Jan 13 2017 ').getTime(),
-                new Date('Fri Oct 13 2017 ').getTime(), new Date('Fri Apr 13 2018 ').getTime(),
-                new Date('Fri Jul 13 2018 ').getTime(), new Date('Fri Sep 13 2019 ').getTime(),
-                new Date('Fri Dec 13 2019 ').getTime(), new Date('Fri Mar 13 2020 ').getTime(),
-                new Date('Fri Nov 13 2020 ').getTime(), new Date('Fri Aug 13 2021 ').getTime(),
-                new Date('Fri May 13 2022 ').getTime(), new Date('Fri Jan 13 2023 ').getTime(),
-                new Date('Fri Oct 13 2023 ').getTime(), new Date('Fri Sep 13 2024 ').getTime(),
-                new Date('Fri Dec 13 2024 ').getTime(), new Date('Fri Jun 13 2025 ').getTime(),
-                new Date('Fri Feb 13 2026 ').getTime(), new Date('Fri Mar 13 2026 ').getTime(),
-                new Date('Fri Nov 13 2026 ').getTime(), new Date('Fri Aug 13 2027 ').getTime(),
-                new Date('Fri Oct 13 2028 ').getTime(), new Date('Fri Apr 13 2029 ').getTime(),
-                new Date('Fri Jul 13 2029 ').getTime(), new Date('Fri Sep 13 2030 ').getTime(),
-                new Date('Fri Dec 13 2030 ').getTime(), new Date('Fri Jun 13 2031 ').getTime(),
-                new Date('Fri Feb 13 2032 ').getTime(), new Date('Fri Aug 13 2032 ').getTime(),
-                new Date('Fri May 13 2033 ').getTime(), new Date('Fri Jan 13 2034 ').getTime(),
-                new Date('Fri Oct 13 2034 ').getTime(), new Date('Fri Apr 13 2035 ').getTime(),
-                new Date('Fri Jul 13 2035 ').getTime(), new Date('Fri Jun 13 2036 ').getTime(),
-                new Date('Fri Feb 13 2037 ').getTime(), new Date('Fri Mar 13 2037 ').getTime(),
-                new Date('Fri Nov 13 2037 ').getTime(), new Date('Fri Aug 13 2038 ').getTime(),
-                new Date('Fri May 13 2039 ').getTime()]));
+                new Date('Tue May 06 2014 ').getTime(), new Date('Sun May 18 2014 ').getTime(),
+                new Date('Tue May 20 2014 ').getTime(), new Date('Sun Jun 01 2014 ').getTime()]));
     });
-    it('Default - BYYEARDAY', () => {
+    it('Default - WKST', () => {
         expect(
-            JSON.stringify(generate(new Date('Sun Jun 01 2014 '),
-                'FREQ=WEEKLY;BYDAY=TU;BYYEARDAY=168;INTERVAL=1', null, 0)))
+            JSON.stringify(generate(new Date('Sun May 11 2014 '),
+                'FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=MO', null, 0)))
             .toBe(JSON.stringify([
-                new Date('Tue Jun 17 2014 ').getTime(), new Date('Tue Jun 16 2020 ').getTime(),
-                new Date('Tue Jun 17 2025 ').getTime(), new Date('Tue Jun 17 2031 ').getTime(),
-                new Date('Tue Jun 17 2042 ').getTime(), new Date('Tue Jun 16 2048 ').getTime(),
-                new Date('Tue Jun 17 2053 ').getTime(), new Date('Tue Jun 17 2059 ').getTime(),
-                new Date('Tue Jun 17 2070 ').getTime(), new Date('Tue Jun 16 2076 ').getTime(),
-                new Date('Tue Jun 17 2081 ').getTime(), new Date('Tue Jun 17 2087 ').getTime(),
-                new Date('Tue Jun 17 2098 ').getTime(), new Date('Tue Jun 17 2110 ').getTime(),
-                new Date('Tue Jun 16 2116 ').getTime(), new Date('Tue Jun 17 2121 ').getTime(),
-                new Date('Tue Jun 17 2127 ').getTime(), new Date('Tue Jun 17 2138 ').getTime(),
-                new Date('Tue Jun 16 2144 ').getTime(), new Date('Tue Jun 17 2149 ').getTime(),
-                new Date('Tue Jun 17 2155 ').getTime(), new Date('Tue Jun 17 2166 ').getTime(),
-                new Date('Tue Jun 16 2172 ').getTime(), new Date('Tue Jun 17 2177 ').getTime(),
-                new Date('Tue Jun 17 2183 ').getTime(), new Date('Tue Jun 17 2194 ').getTime(),
-                new Date('Tue Jun 17 2200 ').getTime(), new Date('Tue Jun 17 2206 ').getTime(),
-                new Date('Tue Jun 16 2212 ').getTime(), new Date('Tue Jun 17 2217 ').getTime(),
-                new Date('Tue Jun 17 2223 ').getTime(), new Date('Tue Jun 17 2234 ').getTime(),
-                new Date('Tue Jun 16 2240 ').getTime(), new Date('Tue Jun 17 2245 ').getTime(),
-                new Date('Tue Jun 17 2251 ').getTime(), new Date('Tue Jun 17 2262 ').getTime(),
-                new Date('Tue Jun 16 2268 ').getTime(), new Date('Tue Jun 17 2273 ').getTime(),
-                new Date('Tue Jun 17 2279 ').getTime(), new Date('Tue Jun 17 2290 ').getTime(),
-                new Date('Tue Jun 16 2296 ').getTime(), new Date('Tue Jun 17 2302 ').getTime(),
-                new Date('Tue Jun 16 2308 ').getTime()]));
+                new Date('Sun May 11 2014 ').getTime(), new Date('Tue May 20 2014 ').getTime(),
+                new Date('Sun May 25 2014 ').getTime(), new Date('Tue Jun 03 2014 ').getTime()]));
+    });
+    it('Default - WEEKLY Freq with WKST and BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;WKST=MO;BYSETPOS=1', null, 0)))
+            .toBe(JSON.stringify([
+                new Date('Tue May 06 2014 ').getTime(), new Date('Tue May 20 2014 ').getTime(),
+                new Date('Tue Jun 03 2014 ').getTime(), new Date('Tue Jun 17 2014 ').getTime()]));
+    });
+    it('Default - WEEKLY Freq without WKST and BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU,SU;BYSETPOS=1', null, 0)))
+            .toBe(JSON.stringify([
+                new Date('Tue May 06 2014 ').getTime(), new Date('Sun May 18 2014 ').getTime(),
+                new Date('Sun Jun 01 2014 ').getTime(), new Date('Sun Jun 15 2014 ').getTime()]));
+    });
+    it('Default - WEEKLY Freq with single BYDAY value and BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=WEEKLY;INTERVAL=2;COUNT=4;BYDAY=TU;BYSETPOS=1', null, 0)))
+            .toBe(JSON.stringify([
+                new Date('Tue May 06 2014 ').getTime(), new Date('Tue May 20 2014 ').getTime(),
+                new Date('Tue Jun 03 2014 ').getTime(), new Date('Tue Jun 17 2014').getTime()]));
     });
 });
 
@@ -543,9 +525,7 @@ describe('Schedule - recurrence Freq- MONTHLY', () => {
                 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z', null, 0)))
             .toBe(
             JSON.stringify([
-                new Date('Fri May 09 2014 ').getTime(), new Date('Sat May 10 2014 ').getTime(),
-                new Date('Fri Jun 13 2014 ').getTime(), new Date('Sat Jun 14 2014 ').getTime(),
-                new Date('Fri Jul 11 2014 ').getTime()]));
+                new Date('Sat Jun 07 2014 ').getTime(), new Date('Sat Jul 05 2014 ').getTime()]));
     });
     it('Default - ByDay Multiple Days Week startDay changed', () => {
         expect(
@@ -553,9 +533,7 @@ describe('Schedule - recurrence Freq- MONTHLY', () => {
                 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z', null, 5)))
             .toBe(
             JSON.stringify([
-                new Date('Fri May 09 2014 ').getTime(), new Date('Sat May 10 2014 ').getTime(),
-                new Date('Fri Jun 13 2014 ').getTime(), new Date('Sat Jun 14 2014 ').getTime(),
-                new Date('Fri Jul 11 2014 ').getTime()]));
+                new Date('Sat Jun 07 2014 ').getTime(), new Date('Sat Jul 05 2014 ').getTime()]));
     });
     it('Default - ByDay Multiple Days Week startDay changed with count 3', () => {
         expect(
@@ -563,8 +541,7 @@ describe('Schedule - recurrence Freq- MONTHLY', () => {
                 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z;COUNT=3', null, 5)))
             .toBe(
             JSON.stringify([
-                new Date('Fri May 09 2014 ').getTime(), new Date('Sat May 10 2014 ').getTime(),
-                new Date('Fri Jun 13 2014 ').getTime()]));
+                new Date('Sat Jun 07 2014 ').getTime(), new Date('Sat Jul 05 2014 ').getTime()]));
     });
     it('Default - BYMONTH', () => {
         expect(
@@ -583,7 +560,9 @@ describe('Schedule - recurrence Freq- MONTHLY', () => {
                 new Date('Sat Jul 19 2014 ').getTime(), new Date('Sun Jul 20 2014 ').getTime(),
                 new Date('Mon Jul 21 2014 ').getTime(), new Date('Tue Jul 22 2014 ').getTime(),
                 new Date('Wed Jul 23 2014 ').getTime(), new Date('Thu Jul 24 2014 ').getTime(),
-                new Date('Fri Jul 25 2014 ').getTime(), new Date('Sat Jul 26 2014 ').getTime()]));
+                new Date('Fri Jul 25 2014 ').getTime(), new Date('Sat Jul 26 2014 ').getTime(),
+                new Date('Sun Jul 27 2014 ').getTime(), new Date('Mon Jul 28 2014 ').getTime(),
+                new Date('Tue Jul 29 2014 ').getTime()]));
     });
     it('Default - BYMONTHDAY', () => {
         expect(
@@ -717,15 +696,22 @@ describe('Schedule - recurrence Freq- MONTHLY (without EndDate)', () => {
                 new Date('Fri May 09 2014 ').getTime(), new Date('Fri Jun 13 2014 ').getTime(),
                 new Date('Fri Jul 11 2014 ').getTime()]));
     });
+    it('Default - ByDay Single Day without BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=MONTHLY;BYDAY=FR;COUNT=3', null, 0)))
+            .toBe(
+            JSON.stringify([
+                new Date('Fri May 09 2014 ').getTime(), new Date('Fri May 16 2014 ').getTime(),
+                new Date('Fri May 23 2014 ').getTime()]));
+    });
     it('Default - ByDay Multiple Days', () => {
         expect(
             JSON.stringify(generate(startDate,
                 'FREQ=MONTHLY;BYDAY=FR,SA;BYSETPOS=2;INTERVAL=1;UNTIL=20140711T000000Z', null, 0)))
             .toBe(
             JSON.stringify([
-                new Date('Fri May 09 2014 ').getTime(), new Date('Sat May 10 2014 ').getTime(),
-                new Date('Fri Jun 13 2014 ').getTime(), new Date('Sat Jun 14 2014 ').getTime(),
-                new Date('Fri Jul 11 2014 ').getTime()]));
+                new Date('Sat Jun 07 2014 ').getTime(), new Date('Sat Jul 05 2014 ').getTime()]));
     });
     it('Default - BYMONTHDAY', () => {
         expect(
@@ -839,23 +825,60 @@ describe('Schedule - recurrence Freq- MONTHLY (without EndDate)', () => {
                 new Date('Fri Jun 17 2067 ').getTime(), new Date('Mon Jun 17 2069 ').getTime(),
                 new Date('Tue Jun 17 2070 ').getTime()]));
     });
+    it('Default - ByDay Single Day with numeric value', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=MONTHLY;COUNT=6;BYDAY=-2MO', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Mon May 19 2014 ').getTime(), new Date('Mon Jun 23 2014 ').getTime(),
+                    new Date('Mon Jul 21 2014 ').getTime(), new Date('Mon Aug 18 2014 ').getTime(),
+                    new Date('Mon Sep 22 2014 ').getTime(), new Date('Mon Oct 20 2014 ').getTime()]));
+    });
+    it('Default - ByDay Single Day with negative BySetPos', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=MONTHLY;INTERVAL=2;COUNT=5;BYDAY=SU;BYSETPOS=-2', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Sun May 18 2014 ').getTime(), new Date('Sun Jul 20 2014 ').getTime(),
+                    new Date('Sun Sep 21 2014 ').getTime(), new Date('Sun Nov 23 2014 ').getTime(),
+                    new Date('Sun Jan 18 2015 ').getTime()]));
+    });
+    it('Default - ByDay Multiple Same Days', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=MONTHLY;INTERVAL=2;COUNT=10;BYDAY=1SU,-1SU', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Sun May 25 2014 ').getTime(), new Date('Sun Jul 06 2014 ').getTime(),
+                    new Date('Sun Jul 27 2014 ').getTime(), new Date('Sun Sep 07 2014 ').getTime(),
+                    new Date('Sun Sep 28 2014 ').getTime(), new Date('Sun Nov 02 2014 ').getTime(),
+                    new Date('Sun Nov 30 2014 ').getTime(), new Date('Sun Jan 04 2015 ').getTime(),
+                    new Date('Sun Jan 25 2015 ').getTime(), new Date('Mar 01 2015 ').getTime()]));
+    });
+    it('Default - ByDay Multiple Days with BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=MONTHLY;COUNT=5;BYDAY=TU,WE;BYSETPOS=1', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Tue May 06 2014 ').getTime(), new Date('Tue Jun 03 2014 ').getTime(),
+                    new Date('Tue Jul 01 2014 ').getTime(), new Date('Tue Aug 05 2014 ').getTime(),
+                    new Date('Tue Sep 02 2014 ').getTime()]));
+    });
 });
 describe('Schedule - recurrence Freq- YEARLY', () => {
     let startDate: Date = new Date('Tue May 06 2014 ');
     it('Default - ByDay', () => {
         expect(
             JSON.stringify(generate(startDate,
-                'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1;INTERVAL=1;UNTIL=20140729T000000Z', null, 0)))
+                'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1;COUNT=5;INTERVAL=1;', null, 0)))
             .toBe(
             JSON.stringify([
-                new Date('Mon May 26 2014 ').getTime(), new Date('Tue May 27 2014 ').getTime(),
-                new Date('Wed May 28 2014 ').getTime(), new Date('Thu May 29 2014 ').getTime(),
-                new Date('Fri May 30 2014 ').getTime(), new Date('Mon Jun 23 2014 ').getTime(),
-                new Date('Tue Jun 24 2014 ').getTime(), new Date('Wed Jun 25 2014 ').getTime(),
-                new Date('Thu Jun 26 2014 ').getTime(), new Date('Fri Jun 27 2014 ').getTime(),
-                new Date('Mon Jul 21 2014 ').getTime(), new Date('Tue Jul 22 2014 ').getTime(),
-                new Date('Wed Jul 23 2014 ').getTime(), new Date('Thu Jul 24 2014 ').getTime(),
-                new Date('Fri Jul 25 2014 ').getTime()]));
+                new Date('Wed Dec 31 2014 ').getTime(), new Date('Thu Dec 31 2015 ').getTime(),
+                new Date('Fri Dec 30 2016 ').getTime(), new Date('Fri Dec 29 2017 ').getTime(),
+                new Date('Mon Dec 31 2018 ').getTime()]));
     });
     it('Default - ByDay', () => {
         expect(
@@ -872,7 +895,18 @@ describe('Schedule - recurrence Freq- YEARLY', () => {
                 new Date('Thu Jul 17 2014 ').getTime(), new Date('Fri Jul 18 2014 ').getTime(),
                 new Date('Mon Jul 21 2014 ').getTime(), new Date('Tue Jul 22 2014 ').getTime(),
                 new Date('Wed Jul 23 2014 ').getTime(), new Date('Thu Jul 24 2014 ').getTime(),
-                new Date('Fri Jul 25 2014 ').getTime()]));
+                new Date('Fri Jul 25 2014 ').getTime(), new Date('Mon Jul 28 2014 ').getTime(),
+                new Date('Tue Jul 29 2014 ').getTime()]));
+    });
+    it('Default - ByDay single value', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=YEARLY;BYDAY=MO;BYSETPOS=-1;COUNT=5;', null, 0)))
+            .toBe(
+            JSON.stringify([
+                new Date('Mon Dec 29 2014 ').getTime(), new Date('Mon Dec 28 2015 ').getTime(),
+                new Date('Mon Dec 26 2016 ').getTime(), new Date('Mon Dec 25 2017 ').getTime(),
+                new Date('Mon Dec 31 2018 ').getTime()]));
     });
     it('Default - BYMONTHDAY', () => {
         expect(
@@ -1013,65 +1047,46 @@ describe('Schedule - recurrence Freq- YEARLY', () => {
                 new Date('Sun Jan 04 2015 ').getTime()]));
     });
 });
-describe('Schedule - recurrence Freq- YEARLY- No End date', () => {
+describe('Schedule - recurrence Freq- YEARLY (without EndDate)', () => {
     let startDate: Date = new Date('Tue May 06 2014 ');
     it('Default - ByDay', () => {
         expect(
             JSON.stringify(generate(startDate,
-                'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1;BYMONTH=5,7;INTERVAL=1', null, 0)))
+                'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1;BYMONTH=5,7;INTERVAL=1;', null, 0)))
             .toBe(
             JSON.stringify([
-                new Date('Tue Jul 01 2014 ').getTime(), new Date('Wed Jul 02 2014 ').getTime(),
-                new Date('Thu Jul 03 2014 ').getTime(), new Date('Fri Jul 04 2014 ').getTime(),
-                new Date('Fri May 01 2015 ').getTime(), new Date('Wed Jul 01 2015 ').getTime(),
-                new Date('Thu Jul 02 2015 ').getTime(), new Date('Fri Jul 03 2015 ').getTime(),
-                new Date('Mon May 02 2016 ').getTime(), new Date('Tue May 03 2016 ').getTime(),
-                new Date('Wed May 04 2016 ').getTime(), new Date('Thu May 05 2016 ').getTime(),
-                new Date('Fri May 06 2016 ').getTime(), new Date('Fri Jul 01 2016 ').getTime(),
-                new Date('Mon May 01 2017 ').getTime(), new Date('Tue May 02 2017 ').getTime(),
-                new Date('Wed May 03 2017 ').getTime(), new Date('Thu May 04 2017 ').getTime(),
-                new Date('Fri May 05 2017 ').getTime(), new Date('Mon Jul 03 2017 ').getTime(),
-                new Date('Tue Jul 04 2017 ').getTime(), new Date('Wed Jul 05 2017 ').getTime(),
-                new Date('Thu Jul 06 2017 ').getTime(), new Date('Fri Jul 07 2017 ').getTime(),
-                new Date('Tue May 01 2018 ').getTime(), new Date('Wed May 02 2018 ').getTime(),
-                new Date('Thu May 03 2018 ').getTime(), new Date('Fri May 04 2018 ').getTime(),
-                new Date('Mon Jul 02 2018 ').getTime(), new Date('Tue Jul 03 2018 ').getTime(),
-                new Date('Wed Jul 04 2018 ').getTime(), new Date('Thu Jul 05 2018 ').getTime(),
-                new Date('Fri Jul 06 2018 ').getTime(), new Date('Wed May 01 2019 ').getTime(),
-                new Date('Thu May 02 2019 ').getTime(), new Date('Fri May 03 2019 ').getTime(),
-                new Date('Mon Jul 01 2019 ').getTime(), new Date('Tue Jul 02 2019 ').getTime(),
-                new Date('Wed Jul 03 2019 ').getTime(), new Date('Thu Jul 04 2019 ').getTime(),
-                new Date('Fri Jul 05 2019 ').getTime(), new Date('Fri May 01 2020 ').getTime(),
-                new Date('Wed Jul 01 2020 ').getTime()]));
+                new Date('Fri May 01 2015 ').getTime(), new Date('Mon May 02 2016 ').getTime(),
+                new Date('Mon May 01 2017 ').getTime(), new Date('Tue May 01 2018 ').getTime(),
+                new Date('Wed May 01 2019 ').getTime(), new Date('Fri May 01 2020 ').getTime(),
+                new Date('Mon May 03 2021 ').getTime(), new Date('Mon May 02 2022 ').getTime(),
+                new Date('Mon May 01 2023 ').getTime(), new Date('Wed May 01 2024 ').getTime(),
+                new Date('Thu May 01 2025 ').getTime(), new Date('Fri May 01 2026 ').getTime(),
+                new Date('Mon May 03 2027 ').getTime(), new Date('Mon May 01 2028 ').getTime(),
+                new Date('Tue May 01 2029 ').getTime(), new Date('Wed May 01 2030 ').getTime(),
+                new Date('Thu May 01 2031 ').getTime(), new Date('Mon May 03 2032 ').getTime(),
+                new Date('Mon May 02 2033 ').getTime(), new Date('Mon May 01 2034 ').getTime(),
+                new Date('Tue May 01 2035 ').getTime(), new Date('Thu May 01 2036 ').getTime(),
+                new Date('Fri May 01 2037 ').getTime(), new Date('Mon May 03 2038 ').getTime(),
+                new Date('Mon May 02 2039 ').getTime(), new Date('Tue May 01 2040 ').getTime(),
+                new Date('Wed May 01 2041 ').getTime(), new Date('Thu May 01 2042 ').getTime(),
+                new Date('Fri May 01 2043 ').getTime(), new Date('Mon May 02 2044 ').getTime(),
+                new Date('Mon May 01 2045 ').getTime(), new Date('Tue May 01 2046 ').getTime(),
+                new Date('Wed May 01 2047 ').getTime(), new Date('Fri May 01 2048 ').getTime(),
+                new Date('Mon May 03 2049 ').getTime(), new Date('Mon May 02 2050 ').getTime(),
+                new Date('Mon May 01 2051 ').getTime(), new Date('Wed May 01 2052 ').getTime(),
+                new Date('Thu May 01 2053 ').getTime(), new Date('Fri May 01 2054 ').getTime(),
+                new Date('Mon May 03 2055 ').getTime(), new Date('Mon May 01 2056 ').getTime(),
+                new Date('Tue May 01 2057 ').getTime()]));
     });
     it('Default - ByDay', () => {
         expect(
             JSON.stringify(generate(startDate,
-                'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=7;BYSETPOS=1;INTERVAL=1', null, 0)))
+                'FREQ=YEARLY;BYDAY=MO,TU,WE,TH,FR;BYMONTH=7;BYSETPOS=1;INTERVAL=1;COUNT=5', null, 0)))
             .toBe(
             JSON.stringify([
-                new Date('Tue Jul 01 2014 ').getTime(), new Date('Wed Jul 02 2014 ').getTime(),
-                new Date('Thu Jul 03 2014 ').getTime(), new Date('Fri Jul 04 2014 ').getTime(),
-                new Date('Wed Jul 01 2015 ').getTime(), new Date('Thu Jul 02 2015 ').getTime(),
-                new Date('Fri Jul 03 2015 ').getTime(), new Date('Fri Jul 01 2016 ').getTime(),
-                new Date('Mon Jul 03 2017 ').getTime(), new Date('Tue Jul 04 2017 ').getTime(),
-                new Date('Wed Jul 05 2017 ').getTime(), new Date('Thu Jul 06 2017 ').getTime(),
-                new Date('Fri Jul 07 2017 ').getTime(), new Date('Mon Jul 02 2018 ').getTime(),
-                new Date('Tue Jul 03 2018 ').getTime(), new Date('Wed Jul 04 2018 ').getTime(),
-                new Date('Thu Jul 05 2018 ').getTime(), new Date('Fri Jul 06 2018 ').getTime(),
-                new Date('Mon Jul 01 2019 ').getTime(), new Date('Tue Jul 02 2019 ').getTime(),
-                new Date('Wed Jul 03 2019 ').getTime(), new Date('Thu Jul 04 2019 ').getTime(),
-                new Date('Fri Jul 05 2019 ').getTime(), new Date('Wed Jul 01 2020 ').getTime(),
-                new Date('Thu Jul 02 2020 ').getTime(), new Date('Fri Jul 03 2020 ').getTime(),
-                new Date('Thu Jul 01 2021 ').getTime(), new Date('Fri Jul 02 2021 ').getTime(),
-                new Date('Fri Jul 01 2022 ').getTime(), new Date('Mon Jul 03 2023 ').getTime(),
-                new Date('Tue Jul 04 2023 ').getTime(), new Date('Wed Jul 05 2023 ').getTime(),
-                new Date('Thu Jul 06 2023 ').getTime(), new Date('Fri Jul 07 2023 ').getTime(),
-                new Date('Mon Jul 01 2024 ').getTime(), new Date('Tue Jul 02 2024 ').getTime(),
-                new Date('Wed Jul 03 2024 ').getTime(), new Date('Thu Jul 04 2024 ').getTime(),
-                new Date('Fri Jul 05 2024 ').getTime(), new Date('Tue Jul 01 2025 ').getTime(),
-                new Date('Wed Jul 02 2025 ').getTime(), new Date('Thu Jul 03 2025 ').getTime(),
-                new Date('Fri Jul 04 2025 ').getTime()]));
+                new Date('Tue Jul 01 2014 ').getTime(), new Date('Wed Jul 01 2015 ').getTime(),
+                new Date('Fri Jul 01 2016 ').getTime(), new Date('Mon Jul 03 2017').getTime(),
+                new Date('Mon Jul 02 2018 ').getTime()]));
     });
     it('Default - BYMONTHDAY', () => {
         expect(
@@ -1181,10 +1196,64 @@ describe('Schedule - recurrence Freq- YEARLY- No End date', () => {
                 new Date('Mon Dec 23 2024 ').getTime()]));
     });
 });
-describe('Schedule - recurrence Freq- YEARLY- No End date', () => {
-    let startDate: Date = new Date(1399314600000);
+describe('Schedule - recurrence Freq- YEARLY (Having functionalities)', () => {
+    let startDate: Date = new Date('Tue May 06 2014 ');
     it('Default - ByDay', () => {
         expect(JSON.stringify(generate(startDate, 'FREQ=YEARLY;BYWEEKNO=53;UNTIL=20140229T000000Z', null, 1)))
             .toBe(JSON.stringify([]));
+    });
+    it('Default - Having ByDay property alone', () => {
+        expect(
+            JSON.stringify(generate(startDate, 'FREQ=YEARLY;BYDAY=20MO;COUNT=5', null, 0)))
+            .toBe(
+                JSON.stringify([new Date('Mon May 19 2014 ').getTime(),
+                new Date('Mon May 18 2015 ').getTime(), new Date('Mon May 16 2016 ').getTime(),
+                new Date('Mon May 15 2017 ').getTime(), new Date('Mon May 14 2018 ').getTime(),
+                ]));
+    });
+    it('Default - Having FREQ property alone and all other properties are not set', () => {
+        expect(
+            JSON.stringify(generate(startDate, 'FREQ=YEARLY;COUNT=5', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Tue May 06 2014 ').getTime(), new Date('Wed May 06 2015 ').getTime(),
+                    new Date('Fri May 06 2016 ').getTime(), new Date('Sat May 06 2017 ').getTime(),
+                    new Date('Sun May 06 2018 ').getTime()]));
+    });
+    it('Default - Having FREQ property and BYMONTH property and all other properties are not set', () => {
+        expect(
+            JSON.stringify(generate(startDate, 'FREQ=YEARLY;BYMONTH=5;COUNT=5', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Tue May 06 2014 ').getTime(), new Date('Wed May 06 2015 ').getTime(),
+                    new Date('Fri May 06 2016 ').getTime(), new Date('Sat May 06 2017 ').getTime(),
+                    new Date('Sun May 06 2018 ').getTime()]));
+    });
+    it('Default - Having FREQ property and multiple BYDAY property with integer values', () => {
+        expect(
+            JSON.stringify(generate(startDate, 'FREQ=YEARLY;INTERVAL=2;COUNT=5;BYDAY=1SU,-1SU', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Sun Dec 28 2014 ').getTime(), new Date('Sun Jan 03 2016 ').getTime(),
+                    new Date('Sun Dec 25 2016 ').getTime(), new Date('Sun Jan 07 2018 ').getTime(),
+                    new Date('Sun Dec 30 2018 ').getTime()]));
+    });
+    it('Default - Having FREQ property and multiple BYDAY property with integer values and multiple BYMONTH values', () => {
+        expect(
+            JSON.stringify(generate(startDate, 'FREQ=YEARLY;BYMONTH=1,12;INTERVAL=2;COUNT=5;BYDAY=1SU,-1SU;', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Sun Dec 07 2014 ').getTime(), new Date('Sun Dec 28 2014 ').getTime(),
+                    new Date('Sun Jan 03 2016 ').getTime(), new Date('Sun Jan 31 2016 ').getTime(),
+                    new Date('Sun Dec 04 2016 ').getTime()]));
+    });
+    it('Default - Having FREQ property and multiple BYDAY property with integer values and BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate, 'FREQ=YEARLY;INTERVAL=2;COUNT=5;BYDAY=1SU,-1SU;BYSETPOS=1', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Sun Jan 03 2016 ').getTime(), new Date('Sun Jan 07 2018 ').getTime(),
+                    new Date('Sun Jan 05 2020 ').getTime(), new Date('Sun Jan 02 2022 ').getTime(),
+                    new Date('Sun Jan 07 2024 ').getTime()]));
     });
 });

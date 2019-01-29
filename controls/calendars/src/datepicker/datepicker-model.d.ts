@@ -1,5 +1,5 @@
 import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType, BlurEventArgs, FocusEventArgs } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar } from '../calendar/calendar';
-import {PopupObjectArgs,PreventableEventArgs} from "./datepicker";
+import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
 /**
@@ -33,8 +33,9 @@ export interface DatePickerModel extends CalendarModel{
     /**
      * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture.
      * @default null
+     * @aspType string
      */
-    format?: string;
+    format?: string | FormatObject;
 
     /**
      * Specifies the component to be disabled or not.

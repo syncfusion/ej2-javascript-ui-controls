@@ -94,10 +94,6 @@ export class Trendlines {
         let xxAvg: number = 0; let yyAvg: number = 0;
         let index: number = 0; let slope: number = 0; let intercept: number = 0;
         while (index < points.length) {
-        // To fix trendline not rendered issue while Nan Value is provided for y values.
-            if (isNaN(yValues[index])) {
-                yValues[index] = ((yValues[index - 1] + yValues[index + 1]) / 2);
-            }
             xAvg += xValues[index];
             yAvg += yValues[index];
             xyAvg += xValues[index] * yValues[index];

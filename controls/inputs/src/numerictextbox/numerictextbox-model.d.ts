@@ -1,5 +1,5 @@
 import { Component, EventHandler, Property, Event, Browser, L10n, EmitType } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { createElement, attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';import { Internationalization, NumberFormatOptions, getNumericObject } from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../input/input';
-import {ChangeEventArgs} from "./numerictextbox";
+import {ChangeEventArgs,NumericFocusEventArgs,NumericBlurEventArgs} from "./numerictextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -192,5 +192,17 @@ export interface NumericTextBoxModel extends ComponentModel{
      * @event
      */
     change?: EmitType<ChangeEventArgs>;
+
+    /**
+     * Triggers when the NumericTextBox got focus in.
+     * @event
+     */
+    focus?: EmitType<NumericFocusEventArgs>;
+
+    /**
+     * Triggers when the NumericTextBox got focus out.
+     * @event
+     */
+    blur?: EmitType<NumericBlurEventArgs>;
 
 }

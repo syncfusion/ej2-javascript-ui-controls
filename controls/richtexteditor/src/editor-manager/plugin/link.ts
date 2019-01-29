@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
@@ -37,9 +37,12 @@ export class LinkCommand {
     }
 
     private createLink(e: IHtmlItem): void {
-        if (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0 &&
-            (e.item.selectParent[0] as HTMLElement).tagName === 'A') {
-            let anchorEle: HTMLElement = e.item.selectParent[0] as HTMLElement;
+        let closestAnchor: Element = (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) &&
+            closest(e.item.selectParent[0], 'a');
+        closestAnchor = !isNullOrUndefined(closestAnchor) ? closestAnchor :
+            (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) as Element : null;
+        if (!isNullOrUndefined(closestAnchor) && (closestAnchor as HTMLElement).tagName === 'A') {
+            let anchorEle: HTMLElement = closestAnchor as HTMLElement;
             anchorEle.setAttribute('href', e.item.url);
             anchorEle.setAttribute('title', e.item.title);
             anchorEle.innerHTML = e.item.text;
@@ -49,7 +52,7 @@ export class LinkCommand {
             let anchor: HTMLElement = createElement('a', {
                 className: 'e-rte-anchor', attrs: {
                     href: e.item.url,
-                    title: e.item.title === '' ? e.item.url : e.item.title
+                    title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
                 }
             });
             if (!isNullOrUndefined(e.item.target)) {
@@ -94,16 +97,20 @@ export class LinkCommand {
         this.callBack(e);
     }
     private removeLink(e: IHtmlItem): void {
-        let parent: Node = e.item.selectParent[0].parentNode;
+        this.parent.domNode.setMarker(e.item.selection);
+        let closestAnchor: Node = closest(e.item.selectParent[0], 'a');
+        let selectParent: Node = closestAnchor ? closestAnchor : e.item.selectParent[0];
+        let parent: Node = selectParent.parentNode;
         let child: Node[] = [];
-        for (; e.item.selectParent[0].firstChild; null) {
-            child.push(parent.insertBefore(e.item.selectParent[0].firstChild, e.item.selectParent[0]));
+        for (; selectParent.firstChild; null) {
+            child.push(parent.insertBefore(selectParent.firstChild, selectParent));
         }
-        parent.removeChild(e.item.selectParent[0]);
+        parent.removeChild(selectParent);
         if (child && child.length === 1) {
             e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
             e.item.selection.endContainer = e.item.selection.startContainer;
         }
+        e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         e.item.selection.restore();
         this.callBack(e);
     }

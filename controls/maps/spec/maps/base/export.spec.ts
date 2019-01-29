@@ -8,11 +8,20 @@ import { IPrintEventArgs } from '../../../src/maps/model/interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { beforePrint } from '../../../src/maps/model/constants';
 import { Legend, Annotations } from '../../../src/maps/index';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Legend, Annotations, DataLabel);
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
 }
 describe('Map layer testing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe(' Map layer testing', () => {
         let mapObj: Maps;
         let mapElement: Element;
@@ -149,5 +158,14 @@ describe('Map layer testing', () => {
                     done();
                 }, 500);
             });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

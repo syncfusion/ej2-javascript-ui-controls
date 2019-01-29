@@ -426,3 +426,13 @@ export const BACK_ICON: string = 'e-field-list-back-icon';
 export const TITLE_MOBILE_HEADER: string = 'e-title-mobile-header';
 /** @hidden */
 export const TITLE_MOBILE_CONTENT: string = 'e-title-mobile-content';
+/** @hidden */
+export const ROW_CELL_CLASS: string = 'e-rowcell';
+/** @hidden */
+export const CELL_ACTIVE_BGCOLOR: string = 'e-active';
+/** @hidden */
+export const SPAN_CLICKED: string = 'e-spanclicked';
+/** @hidden */
+export const ROW_SELECT: string = 'e-rowselect';
+/** @hidden */
+export const GRID_HEADER: string = 'e-gridheader';

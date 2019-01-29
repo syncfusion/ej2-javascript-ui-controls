@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser } from '@syncfusion/ej2-base';import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { NumericTextBox } from '@syncfusion/ej2-inputs';import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';import { Button, RadioButton } from '@syncfusion/ej2-buttons';import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';import { EJ2Instance } from '../schedule/base/interface';import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate } from './date-generator';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser } from '@syncfusion/ej2-base';import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { NumericTextBox } from '@syncfusion/ej2-inputs';import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';import { Button, RadioButton } from '@syncfusion/ej2-buttons';import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';import { EJ2Instance } from '../schedule/base/interface';import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';import { CalendarUtil, CalendarType } from '../common/calendar-util';
 import {RepeatType,RecurrenceEditorChangeEventArgs} from "./recurrence-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -30,6 +30,12 @@ export interface RecurrenceEditorModel extends ComponentModel{
      * @default null
      */
     dateFormat?: string;
+
+    /**
+     * Sets the specific calendar type to be applied on recurrence editor.
+     * @default 'Gregorian'
+     */
+    calendarMode?: CalendarType;
 
     /**
      * Allows styling with custom class names.

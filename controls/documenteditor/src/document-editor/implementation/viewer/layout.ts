@@ -118,10 +118,6 @@ export class Layout {
         let block: BlockWidget = section.firstChild as BlockWidget;
         let nextBlock: BlockWidget;
         do {
-            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
-                && !block.tableFormat.allowAutoFit) {
-                block.calculateGrid();
-            }
             this.viewer.updateClientAreaForBlock(block, true);
             nextBlock = this.layoutBlock(block, index);
             index = 0;
@@ -234,10 +230,6 @@ export class Layout {
         this.linkFieldInHeaderFooter(widget);
         for (let i: number = 0; i < widget.childWidgets.length; i++) {
             let block: BlockWidget = widget.childWidgets[i] as BlockWidget;
-            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
-                && !block.tableFormat.allowAutoFit && !block.isGridUpdated) {
-                block.calculateGrid();
-            }
             viewer.updateClientAreaForBlock(block, true);
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
@@ -517,10 +509,10 @@ export class Layout {
         } else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 let currentLine: LineWidget = element.line;
-                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
+                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element));
                 this.moveToNextLine(currentLine);
                 // Recalculates tab width based on new client active area X position
-                element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element as TabElementBox);
+                element.width = this.getTabWidth(paragraph, this.viewer, index, line, element as TabElementBox);
                 this.addElementToLine(paragraph, element);
             } else {
                 //Splits the text and arrange line by line, till end of text.
@@ -1777,8 +1769,7 @@ export class Layout {
      */
     // tslint:disable-next-line:max-line-length
     private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox): number {
-        let elementWidth: number = element ? this.viewer.textHelper.getTextSize(element as TextElementBox, element.characterFormat) : 0;
-        let fPosition: number = 0;
+        let fposition: number = 0;
         let isCustomTab: boolean = false;
         let tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();
         //  Calculate hanging width
@@ -1794,43 +1785,39 @@ export class Layout {
         } else {
             if (tabs.length > 0) {
                 for (let i: number = 0; i < tabs.length; i++) {
-                    let tabStop: WTabStop = tabs[i];
                     let tabPosition: number = HelperMethods.convertPointToPixel(tabs[i].position);
-                    if ((position + elementWidth) < tabPosition) {
+                    if (tabs[i].tabJustification === 'Left' && position < tabPosition) {
+                        fposition = tabPosition;
                         isCustomTab = true;
-                        if (tabStop.tabJustification === 'Left') {
-                            fPosition = tabPosition;
-                            if (!isNullOrUndefined(element)) {
-                                element.tabLeader = tabs[i].tabLeader;
-                                element.tabText = '';
-                            }
-                            break;
-                        } else {
-                            let tabWidth: number = tabPosition - position;
-                            let width: number = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
-                            if (width < tabWidth) {
-                                defaultTabWidth = tabStop.tabJustification === 'Right' ? tabWidth - width : tabWidth - width / 2;
-                            } else if (tabStop.tabJustification === 'Center' && (width / 2) < tabWidth) {
-                                defaultTabWidth = tabWidth - width / 2;
-                            } else {
-                                defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
-                            }
-                            fPosition = position;
-                            if (!isNullOrUndefined(element)) {
-                                element.tabLeader = tabs[i].tabLeader;
-                                element.tabText = '';
-                            }
-                            break;
+                        if (!isNullOrUndefined(element)) {
+                            element.tabLeader = tabs[i].tabLeader;
+                            element.tabText = '';
                         }
+                        break;
+                    } else if (tabs[i].tabJustification === 'Right' && position < tabPosition) {
+                        let tabwidth: number = tabPosition - position;
+                        let width: number = this.getRightTabWidth(index + 1, lineWidget, paragraph);
+                        if (width < tabwidth) {
+                            defaultTabWidth = tabwidth - width;
+                        } else {
+                            defaultTabWidth = 0;
+                        }
+                        fposition = position;
+                        isCustomTab = true;
+                        if (!isNullOrUndefined(element)) {
+                            element.tabLeader = tabs[i].tabLeader;
+                            element.tabText = '';
+                        }
+                        break;
                     }
                 }
             }
             if (!isCustomTab) {
                 let diff: number = ((Math.round(position) * 100) % (Math.round(defaultTabWidth) * 100)) / 100;
                 let cnt: number = (Math.round(position) - diff) / Math.round(defaultTabWidth);
-                fPosition = (cnt + 1) * defaultTabWidth;
+                fposition = (cnt + 1) * defaultTabWidth;
             }
-            return (fPosition - position) > 0 ? fPosition - position : defaultTabWidth;
+            return (fposition - position) > 0 ? fposition - position : defaultTabWidth;
         }
     }
     /**
@@ -1842,8 +1829,8 @@ export class Layout {
     private getRightTabWidth(index: number, lineWidget: LineWidget, paragraph: ParagraphWidget): number {
         let width: number = 0;
         let isFieldCode: boolean = false;
-        let elementBox: ElementBox = lineWidget.children[index];
-        while (elementBox) {
+        while (index < lineWidget.children.length) {
+            let elementBox: ElementBox = lineWidget.children[index] as ElementBox;
             if ((elementBox instanceof FieldElementBox) || (elementBox instanceof BookmarkElementBox) || isFieldCode) {
                 if (elementBox instanceof FieldElementBox) {
                     if (elementBox.fieldType === 0) {
@@ -1861,7 +1848,7 @@ export class Layout {
             } else {
                 width = width + elementBox.width;
             }
-            elementBox = elementBox.nextNode;
+            index++;
         }
         return width;
     }
@@ -3692,7 +3679,6 @@ export class Layout {
         let currentTable: TableWidget = table.combineWidget(this.viewer) as TableWidget;
         let bodyWidget: BodyWidget = (currentTable.containerWidget as BodyWidget);
         if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
-            (block.bodyWidget as HeaderFooterWidget).isEmpty = false;
             bodyWidget.height -= currentTable.height;
             // tslint:disable-next-line:max-line-length
             (this.viewer as PageLayoutViewer).updateHCFClientAreaWithTop(table.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(table), bodyWidget.page);
@@ -3782,7 +3768,6 @@ export class Layout {
                     return;
                 }
                 if (bodyWidget instanceof HeaderFooterWidget) {
-                    bodyWidget.isEmpty = false;
                     // tslint:disable-next-line:max-line-length
                     (this.viewer as PageLayoutViewer).updateHCFClientAreaWithTop(bodyWidget.sectionFormat, bodyWidget.headerFooterType.indexOf('Header') !== -1, bodyWidget.page);
                     curretBlock.containerWidget.height -= curretBlock.height;
@@ -4086,27 +4071,21 @@ export class Layout {
         let value: number = 0;
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             if (row.childWidgets.length > 0) {
-                let cell: TableCellWidget = row.childWidgets[i] as TableCellWidget;
-                let cellFormat: WCellFormat = cell.cellFormat;
+                let cellFormat: WCellFormat = (row.childWidgets[i] as TableCellWidget).cellFormat;
                 if (cellFormat.containsMargins()) {
-                    let leftMargin: number = HelperMethods.convertPointToPixel(cellFormat.topMargin);
-                    let bottomMargin: number;
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
-                        value = leftMargin;
+                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) &&
+                        HelperMethods.convertPointToPixel(cellFormat.topMargin) > value) {
+                        value = HelperMethods.convertPointToPixel(cellFormat.topMargin);
                     } else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        // tslint:disable-next-line:no-conditional-assignment 
-                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
-                        value = bottomMargin;
+                        HelperMethods.convertPointToPixel(cellFormat.bottomMargin) > value) {
+                        value = HelperMethods.convertPointToPixel(cellFormat.bottomMargin);
                     }
                 } else {
-                    let tableFormat: WTableFormat = cell.ownerTable.tableFormat;
-                    let topMargin: number = HelperMethods.convertPointToPixel(tableFormat.topMargin);
-                    let bottomMargin: number;
-                    if (topOrBottom === 0 && topMargin > value) {
-                        value = topMargin;
-                        // tslint:disable-next-line:no-conditional-assignment 
-                    } else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
-                        value = bottomMargin;
+                    let tableFormat: WTableFormat = (row.childWidgets[i] as TableCellWidget).ownerTable.tableFormat;
+                    if (topOrBottom === 0 && HelperMethods.convertPointToPixel(tableFormat.topMargin) > value) {
+                        value = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    } else if (topOrBottom === 1 && HelperMethods.convertPointToPixel(tableFormat.bottomMargin) > value) {
+                        value = HelperMethods.convertPointToPixel(tableFormat.bottomMargin);
                     }
                 }
             }
@@ -4716,7 +4695,6 @@ export class Layout {
         let bodyWidget: BodyWidget = paragraph.containerWidget as BlockContainer;
         bodyWidget.height -= paragraph.height;
         if (this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) {
-            (paragraph.bodyWidget as HeaderFooterWidget).isEmpty = false;
             // tslint:disable-next-line:max-line-length
             (this.viewer as PageLayoutViewer).updateHCFClientAreaWithTop(paragraph.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(paragraph), bodyWidget.page);
         } else {

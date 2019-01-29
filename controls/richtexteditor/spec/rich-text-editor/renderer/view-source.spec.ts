@@ -193,7 +193,8 @@ describe('Toolbar - view html', () => {
         let controlId: string;
         beforeEach((done: Function) => {
             rteObj = renderRTE({
-                value: '<span id="rte">RTE</span>'
+                value: '<span id="rte">RTE</span>',
+                placeholder: 'Type something'
             });
             rteObj.toolbarSettings.items = ['Undo', 'Redo', '|',
                 'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
@@ -213,7 +214,7 @@ describe('Toolbar - view html', () => {
             done();
         });
 
-        it(' Test - Click the SourceCode item', () => {
+        it(' Test - Click the SourceCode item and click the Preview item', () => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
@@ -231,6 +232,10 @@ describe('Toolbar - view html', () => {
             item.click();
             tag = rteObj.element.querySelector('.e-rte-srctextarea');
             expect(tag.value === '<div id="rte">RTE</div>').toBe(true);
+            tag.value = '';
+            item = rteObj.element.querySelector('#' + controlId + '_toolbar_Preview');
+            item.click();
+            expect((rteObj as any).inputElement.innerHTML === '<p><br></p>').toBe(true);
         });
     });
 

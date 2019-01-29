@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.1.1-beta (2019-01-22)
+
+### Schedule
+
+#### New Features
+
+- Improvements done to support creation of recurring events based on the recurrence rule properties, that lies under the criteria of limited combination.
+- The recurring appointments of Scheduler can be now created and processed successfully based on the Islamic calendar dates.
+
 ## 16.4.47 (2019-01-16)
 
 ### Schedule

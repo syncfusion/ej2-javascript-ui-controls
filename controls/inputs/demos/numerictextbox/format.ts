@@ -9,7 +9,7 @@ let numeric: NumericTextBox = new NumericTextBox({
     format: '###.### Kms',
     value: 250,
     min: 0,
-    floatLabelType: "Auto"
+    floatLabelType: "Never"
 });
 numeric.appendTo('#numeric');
 
@@ -19,7 +19,7 @@ let percent: NumericTextBox = new NumericTextBox({
     min: 0,
     value: 25,
     max: 100,
-    floatLabelType: "Auto"
+    floatLabelType: "Never"
 });
 percent.appendTo('#percent');
 
@@ -28,6 +28,6 @@ let currency: NumericTextBox = new NumericTextBox({
     placeholder: 'Enter the amount',
     min: 0,
     value: 1025,
-    floatLabelType: "Auto"
+    floatLabelType: "Never"
 });
 currency.appendTo('#currency');

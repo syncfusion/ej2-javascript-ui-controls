@@ -16,9 +16,6 @@
                 <td> <button id="fabric" class="e-btn">Fabric</button> </td>
                 <td> <button id="bootstrap" class="e-btn">Bootstrap</button> </td>
                 <td> <button id="highcontrast" class="e-btn">High Contrast</button> </td>
-                <td> <button id="materialdark" class="e-btn">Material dark</button> </td>
-                <td> <button id="bootstrapdark" class="e-btn">Bootstrap Dark</button> </td>
-                <td> <button id="fabricdark" class="e-btn">Fabric Dark</button> </td>               
             </tr>
         </tbody>
     </table>
@@ -268,18 +265,6 @@ document.getElementById("bootstrap").onclick = function() {
 document.getElementById("highcontrast").onclick = function() {
     document.body.classList.add("darkBG");
     document.getElementById("theme").setAttribute("href","../theme-files/highcontrast.css");
-};
-document.getElementById("materialdark").onclick = function () {
-    document.body.classList.add("darkBG");
-    document.getElementById("theme").setAttribute("href", "../theme-files/material-dark.css");
-};
-document.getElementById("fabricdark").onclick = function () {
-    document.body.classList.add("darkBG");
-    document.getElementById("theme").setAttribute("href", "../theme-files/fabric-dark.css");
-};
-document.getElementById("bootstrapdark").onclick = function () {
-    document.body.classList.add("darkBG");
-    document.getElementById("theme").setAttribute("href", "../theme-files/bootstrap-dark.css");
 };
 </script>
 

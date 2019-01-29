@@ -192,7 +192,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
 
     /**
      * Sets the delimiter character for 'default' and 'delimiter' visibility modes.
-     * @default ,
+     * @default ','
      */
     delimiterChar?: string;
 

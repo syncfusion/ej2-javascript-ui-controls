@@ -9,6 +9,7 @@ import { Zoom, Bubble, Marker } from '../../../src/maps/index';
 import { getElementByID } from '../layers/colormapping.spec';
 import { randomcountriesData } from '../data/us-data.spec';
 import { Rect } from '../../../src/maps/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble);
 
 let MapData: Object = World_Map;
@@ -16,6 +17,14 @@ let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/
 let subDomains: string[] = ["t0", "t1", "t2", "t3"];
 let zoomMax: string = "21";
 describe('Zoom feature tesing for map control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Checking tool bar zooming', () => {
         let id: string = 'container';
         let map: Maps;
@@ -1161,7 +1170,7 @@ describe('Zoom feature tesing for map control', () => {
 
         it('Checking with Click event', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_ShapeIndex_26_dataIndex_undefined');
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_26_dataIndex_undefined');
                 let rect: ClientRect = element.getBoundingClientRect();
                 let event: Object = {
                     type: 'click',
@@ -1388,5 +1397,14 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

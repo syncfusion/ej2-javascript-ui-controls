@@ -7,6 +7,7 @@ import { ConnectorConstraints, DiagramConstraints } from '../../../src/diagram/e
 import { ConnectorBridging } from '../../../src/diagram/objects/connector-bridging';
 import { Connector } from '../../../src/diagram/index';
 import { getLineSegment } from '../../../src/diagram/utility/diagram-util';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(ConnectorBridging);
 /**
  * Bridging spec
@@ -21,6 +22,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
 
@@ -163,6 +170,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
 
@@ -227,6 +240,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
 
@@ -270,6 +289,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
 
@@ -313,6 +338,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
 
@@ -349,5 +380,14 @@ describe('Diagram Control', () => {
             expect((element1 as PathElement).data == 'M350 350 L350 360Q350 370 360 370 L395 370A 5 5 -168.6900675259798 , 1 1 405,370 L440 370Q450 370 450 380 L450 449.5').toBe(true);
             done();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

@@ -217,6 +217,26 @@ export interface AxisLabelBorderModel {
 }
 
 /**
+ * Interface for a class BubbleSize
+ */
+export interface BubbleSizeModel {
+
+    /**
+     * Specifies the minimum radius value of the cell in percentage.
+     * @default '0%'
+     */
+    minimum?: string;
+
+    /**
+     * Specifies the maximum radius value of the cell in percentage.
+     * @default '100%'
+     */
+
+    maximum?: string;
+
+}
+
+/**
  * Interface for a class MultiLevelCategories
  */
 export interface MultiLevelCategoriesModel {

@@ -247,7 +247,7 @@ export class LayerPanel {
                     fill = currentShapeData['property'][shapeSettings.colorValuePath];
                 }
             }
-            let shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_' + k;
+            let shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
             getShapeColor = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
             fill = Object.prototype.toString.call(getShapeColor) === '[object Object]' && !isNullOrUndefined(getShapeColor['fill'])
                 ? getShapeColor['fill'] : fill;
@@ -362,7 +362,7 @@ export class LayerPanel {
             }
         }
         let group: Element = (this.mapObject.renderer.createGroup({
-            id: this.mapObject.element.id + '_layerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
+            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
         }));
         if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
             renderData.map((currentShapeData: object[], i: number) => {

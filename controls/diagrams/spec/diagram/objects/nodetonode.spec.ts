@@ -4,6 +4,7 @@ import { NodeModel ,BasicShapeModel} from '../../../src/diagram/objects/node-mod
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Point } from '../../../src/diagram/primitives/point';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 /**
  * Node to node docking
  */
@@ -52,6 +53,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram63' });
             document.body.appendChild(ele);
 
@@ -196,12 +203,18 @@ describe('Diagram Control', () => {
             }
             done();
         });
-    });
+      });
 
     describe('Node to node docking', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram633' });
             document.body.appendChild(ele);
 
@@ -251,8 +264,7 @@ describe('Diagram Control', () => {
             done();
             diagram.nodes[0].rotateAngle = 0;
         });
-
-    });
+     });
 
 
     describe('Node to node docking - overlapped', () => {
@@ -260,6 +272,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram63' });
             document.body.appendChild(ele);
             let connectors: ConnectorModel[] = [];
@@ -361,6 +379,15 @@ describe('Diagram Control', () => {
             }
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
     });
 });

@@ -1,7 +1,7 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, compile, append, extend, debounce, detach } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
@@ -64,6 +64,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private placeHolderWrapper: HTMLElement;
     private scrollParentElements: HTMLElement[];
     private cloneValue: string;
+    private onFocusHandler: EventListenerOrEventListenerObject;
+    private onBlurHandler: EventListenerOrEventListenerObject;
+    private onResizeHandler: EventListenerOrEventListenerObject;
     private timeInterval: number;
     /**
      * @hidden
@@ -574,6 +577,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        this.onBlurHandler = this.blurHandler.bind(this);
+        this.onFocusHandler = this.focusHandler.bind(this);
+        this.onResizeHandler = this.resizeHandler.bind(this);
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -930,6 +936,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public destroy(): void {
         this.notify(events.destroy, {});
         this.destroyDependentModules();
+        if (!isNOU(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
         this.unWireEvents();
         if (this.originalElement.tagName === 'TEXTAREA') {
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
@@ -1042,8 +1052,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         this.countModule.refresh();
                     }
                     break;
-                case 'width':
-                    this.setWidth(newProp[prop]);
+                case 'width': this.setWidth(newProp[prop]);
+                    if (this.toolbarSettings.enable) {
+                        this.toolbarModule.refreshToolbarOverflow();
+                        this.resizeHandler();
+                    }
                     break;
                 case 'height':
                     this.setHeight(newProp[prop]);
@@ -1518,7 +1531,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private resizeHandler(): void {
-        let isExpand: boolean = (this.toolbarSettings.type === ToolbarType.Expand) ? true : false;
+        let isExpand: boolean = false;
+        if (this.toolbarSettings.enable && !this.inlineMode.enable) {
+            this.toolbarModule.refreshToolbarOverflow();
+            isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(classes.CLS_EXPAND_OPEN);
+        }
         this.setContentHeight('', isExpand);
     }
 
@@ -1603,6 +1620,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.trigger('blur', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
             if (!isNOU(this.timeInterval)) {
                 clearInterval(this.timeInterval);
+                this.timeInterval = null;
             }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         } else {
@@ -1664,8 +1682,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         element.style.overflow = 'hidden';
     }
     private wireEvents(): void {
-        this.element.addEventListener('focusin', this.focusHandler.bind(this), true);
-        this.element.addEventListener('focusout', this.blurHandler.bind(this), true);
+        this.element.addEventListener('focusin', this.onFocusHandler, true);
+        this.element.addEventListener('focusout', this.onBlurHandler, true);
         if (this.readonly && this.enabled) { return; }
         this.bindEvents();
     }
@@ -1683,7 +1701,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
         this.formatter.editorManager.observer.on(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown, this);
-        window.addEventListener('resize', this.resizeHandler.bind(this), true);
+        this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
@@ -1716,8 +1734,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private unWireEvents(): void {
-        this.element.removeEventListener('focusin', this.focusHandler.bind(this), false);
-        this.element.removeEventListener('focusout', this.blurHandler.bind(this), false);
+        this.element.removeEventListener('focusin', this.onFocusHandler, true);
+        this.element.removeEventListener('focusout', this.onBlurHandler, true);
         if (this.readonly && this.enabled) { return; }
         this.unbindEvents();
     }
@@ -1737,7 +1755,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.formatter) {
             this.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown);
         }
-        window.removeEventListener('resize', this.resizeHandler.bind(this), false);
+        this.element.ownerDocument.defaultView.removeEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);

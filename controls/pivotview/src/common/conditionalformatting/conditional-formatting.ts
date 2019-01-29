@@ -62,21 +62,7 @@ export class ConditionalFormatting {
         }));
         let buttonModel: ButtonPropsModel[] = [
             {
-                'click': () => {
-                    let format: ConditionalFormatSettingsModel = {
-                        conditions: 'LessThan',
-                        value1: 0,
-                        style: {
-                            backgroundColor: 'white',
-                            color: 'black',
-                            fontFamily: 'Arial',
-                            fontSize: '12px'
-                        }
-                    };
-                    this.refreshConditionValues();
-                    this.newFormat.push(format);
-                    this.addFormat();
-                },
+                click: this.addButtonClick.bind(this),
                 buttonModel: {
                     cssClass: this.parent.isAdaptive ? (cls.FORMAT_ROUND_BUTTON + ' ' + cls.FORMAT_CONDITION_BUTTON) :
                         cls.FORMAT_CONDITION_BUTTON,
@@ -85,22 +71,14 @@ export class ConditionalFormatting {
                 }
             },
             {
-                'click': () => {
-                    this.refreshConditionValues();
-                    this.parent.setProperties({ dataSource: { conditionalFormatSettings: this.newFormat } }, true);
-                    this.parent.renderPivotGrid();
-                    this.destroy();
-                },
+                click: this.applyButtonClick.bind(this),
                 buttonModel: {
                     cssClass: cls.FLAT_CLASS + ' ' + cls.FORMAT_APPLY_BUTTON,
                     content: this.parent.localeObj.getConstant('apply')
                 }
             },
             {
-                'click': () => {
-                    this.destroy();
-                    this.newFormat = [];
-                },
+                click: this.cancelButtonClick.bind(this),
                 buttonModel: {
                     cssClass: cls.FLAT_CLASS + ' ' + cls.FORMAT_CANCEL_BUTTON,
                     content: this.parent.localeObj.getConstant('cancel')
@@ -112,24 +90,51 @@ export class ConditionalFormatting {
                 animationSettings: { effect: 'Zoom' }, isModal: true, width: '100%', height: '100%',
                 showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,
-                beforeOpen: (args: BeforeOpenEventArgs) => {
-                    this.dialog.element.querySelector('.' + cls.DIALOG_HEADER).
-                        setAttribute('title', this.parent.localeObj.getConstant('conditionalFormating'));
-                },
+                beforeOpen: this.beforeOpen.bind(this),
                 cssClass: cls.FORMAT_DIALOG, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
             });
         } else {
             this.dialog = new Dialog({
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel,
-                beforeOpen: (args: BeforeOpenEventArgs) => {
-                    this.dialog.element.querySelector('.' + cls.DIALOG_HEADER).
-                        setAttribute('title', this.parent.localeObj.getConstant('conditionalFormating'));
-                },
+                beforeOpen: this.beforeOpen.bind(this),
                 cssClass: cls.FORMAT_DIALOG, isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
         }
         this.dialog.appendTo('#' + this.parentID + 'conditionalformatting');
+    }
+
+    private beforeOpen(args: BeforeOpenEventArgs): void {
+        this.dialog.element.querySelector('.' + cls.DIALOG_HEADER).
+            setAttribute('title', this.parent.localeObj.getConstant('conditionalFormating'));
+    }
+
+    private addButtonClick(): void {
+        let format: ConditionalFormatSettingsModel = {
+            conditions: 'LessThan',
+            value1: 0,
+            style: {
+                backgroundColor: 'white',
+                color: 'black',
+                fontFamily: 'Arial',
+                fontSize: '12px'
+            }
+        };
+        this.refreshConditionValues();
+        this.newFormat.push(format);
+        this.addFormat();
+    }
+
+    private applyButtonClick(): void {
+        this.refreshConditionValues();
+        this.parent.setProperties({ dataSource: { conditionalFormatSettings: this.newFormat } }, true);
+        this.parent.renderPivotGrid();
+        this.destroy();
+    }
+
+    private cancelButtonClick(): void {
+        this.destroy();
+        this.newFormat = [];
     }
 
     private refreshConditionValues(): void {
@@ -263,10 +268,7 @@ export class ConditionalFormatting {
             dataSource: fields, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             popupHeight: '200px', popupWidth: 'auto',
-            change: (args: DropDownArgs) => {
-                this.newFormat[i].measure = args.value.toString() === this.parent.localeObj.getConstant('AllValues') ?
-                    undefined : args.value.toString();
-            }
+            change: this.measureChange.bind(this, i)
         });
         this.fieldsDropDown[i].appendTo('#' + this.parentID + 'measureinput' + i);
         let conditions: { [key: string]: Object }[] = [
@@ -284,24 +286,7 @@ export class ConditionalFormatting {
             dataSource: conditions, fields: { value: 'value', text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             popupHeight: '200px', popupWidth: 'auto',
-            change: (args: DropDownArgs) => {
-                this.newFormat[i].conditions = args.value as Condition;
-                if (args.value === 'Between' || args.value === 'NotBetween') {
-                    (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.display = 'inline-block';
-                    (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.width =
-                        this.parent.isAdaptive ? '10%' : '10px';
-                    (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'inline-block';
-                    (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.width =
-                        this.parent.isAdaptive ? '35%' : '45px';
-                    (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLElement).style.width =
-                        this.parent.isAdaptive ? '35%' : '45px';
-                } else {
-                    (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.display = 'none';
-                    (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'none';
-                    (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLElement).style.width =
-                        this.parent.isAdaptive ? '100%' : '120px';
-                }
-            }
+            change: this.conditionChange.bind(this, i)
         });
         this.conditionsDropDown[i].appendTo('#' + this.parentID + 'conditioninput' + i);
         let fontNames: { [key: string]: Object }[] = [
@@ -315,10 +300,7 @@ export class ConditionalFormatting {
             dataSource: fontNames, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             popupWidth: '150px', popupHeight: '200px',
-            change: (args: DropDownArgs) => {
-                this.newFormat[i].style.fontFamily = args.value.toString();
-                (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontFamily = args.value as string;
-            }
+            change: this.fontNameChange.bind(this, i)
         });
         this.fontNameDropDown[i].appendTo('#' + this.parentID + 'fontnameinput' + i);
         let fontSize: { [key: string]: Object }[] = [
@@ -329,12 +311,43 @@ export class ConditionalFormatting {
         this.fontSizeDropDown[i] = new DropDownList({
             dataSource: fontSize, fields: { text: 'name' }, popupHeight: '200px',
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            change: (args: DropDownArgs) => {
-                this.newFormat[i].style.fontSize = args.value.toString();
-                (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontSize = args.value as string;
-            }
+            change: this.fontSizeChange.bind(this, i)
         });
         this.fontSizeDropDown[i].appendTo('#' + this.parentID + 'fontsizeinput' + i);
+    }
+
+    private conditionChange(i: number, args: DropDownArgs): void {
+        this.newFormat[i].conditions = args.value as Condition;
+        if (args.value === 'Between' || args.value === 'NotBetween') {
+            (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.display = 'inline-block';
+            (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.width =
+                this.parent.isAdaptive ? '10%' : '10px';
+            (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'inline-block';
+            (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.width =
+                this.parent.isAdaptive ? '35%' : '45px';
+            (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLElement).style.width =
+                this.parent.isAdaptive ? '35%' : '45px';
+        } else {
+            (document.querySelector('#' + this.parentID + 'valuespan' + i) as HTMLElement).style.display = 'none';
+            (document.querySelector('#' + this.parentID + 'conditionvalue2' + i) as HTMLElement).style.display = 'none';
+            (document.querySelector('#' + this.parentID + 'conditionvalue1' + i) as HTMLElement).style.width =
+                this.parent.isAdaptive ? '100%' : '120px';
+        }
+    }
+
+    private fontNameChange(i: number, args: DropDownArgs): void {
+        this.newFormat[i].style.fontFamily = args.value.toString();
+        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontFamily = args.value as string;
+    }
+
+    private fontSizeChange(i: number, args: DropDownArgs): void {
+        this.newFormat[i].style.fontSize = args.value.toString();
+        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontSize = args.value as string;
+    }
+
+    private measureChange(i: number, args: DropDownArgs): void {
+        this.newFormat[i].measure = args.value.toString() === this.parent.localeObj.getConstant('AllValues') ?
+            undefined : args.value.toString();
     }
 
     private renderColorPicker(i: number): void {
@@ -344,11 +357,7 @@ export class ConditionalFormatting {
         (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.color = color;
         this.fontColor[i] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
-            change: (args: ColorPickerEventArgs) => {
-                this.newFormat[i].style.color = args.currentValue.hex;
-                (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.color =
-                    args.currentValue.hex;
-            }
+            change: this.fontColorChange.bind(this, i)
         });
         this.fontColor[i].appendTo('#' + this.parentID + 'fontcolor' + i);
         addClass([this.fontColor[i].element.nextElementSibling.querySelector('.' + cls.SELECTED_COLOR)], cls.ICON);
@@ -359,11 +368,7 @@ export class ConditionalFormatting {
         (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.fontSize = format.style.fontSize;
         this.backgroundColor[i] = new ColorPicker({
             cssClass: cls.FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
-            change: (args: ColorPickerEventArgs) => {
-                this.newFormat[i].style.backgroundColor = args.currentValue.hex;
-                (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.backgroundColor =
-                    args.currentValue.hex;
-            }
+            change: this.backColorChange.bind(this, i)
         });
         this.backgroundColor[i].appendTo('#' + this.parentID + 'backgroundcolor' + i);
         addClass([this.backgroundColor[i].element.nextElementSibling.querySelector('.e-selected-color')], cls.ICON);
@@ -372,12 +377,31 @@ export class ConditionalFormatting {
             cssClass: cls.FLAT
         });
         toggleBtn.appendTo('#' + this.parentID + 'removeButton' + i);
-        toggleBtn.element.onclick = () => {
-            this.newFormat.splice(i, 1);
-            this.addFormat();
-        };
+        toggleBtn.element.onclick = this.toggleButtonClick.bind(this, i);
     }
 
+    private backColorChange(i: number, args: ColorPickerEventArgs): void {
+        this.newFormat[i].style.backgroundColor = args.currentValue.hex;
+        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.backgroundColor =
+            args.currentValue.hex;
+    }
+
+    private fontColorChange(i: number, args: ColorPickerEventArgs): void {
+        this.newFormat[i].style.color = args.currentValue.hex;
+        (document.querySelector('#' + this.parentID + 'valuepreview' + i) as HTMLElement).style.color =
+            args.currentValue.hex;
+    }
+
+    private toggleButtonClick(i: number): void {
+        this.newFormat.splice(i, 1);
+        this.addFormat();
+    }
+
+    /**
+     * To check is Hex or not.
+     * @returns boolean
+     * @hidden
+     */
     public isHex(h: string): boolean {
         let a: number = parseInt(h, 16);
         while (h.charAt(0) === '0') {
@@ -386,6 +410,11 @@ export class ConditionalFormatting {
         return (a.toString(16) === h.toLowerCase() || (a === 0 && h === ''));
     }
 
+    /**
+     * To convert hex to RGB.
+     * @returns { r: number, g: number, b: number } | null
+     * @hidden
+     */
     public hexToRgb(hex: string): { r: number, g: number, b: number } | null {
         let result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
@@ -395,6 +424,11 @@ export class ConditionalFormatting {
         } : null;
     }
 
+    /**
+     * To convert color to hex.
+     * @returns string
+     * @hidden
+     */
     public colourNameToHex(colour: string): string {
         let colours: { [key: string]: string } = {
             'aliceblue': '#f0f8ff', 'antiquewhite': '#faebd7', 'aqua': '#00ffff', 'aquamarine': '#7fffd4',
@@ -446,7 +480,6 @@ export class ConditionalFormatting {
     /**
      * To create Conditional Formatting dialog.
      * @returns void
-     * @hidden
      */
     public showConditionalFormattingDialog(): void {
         this.newFormat = [];

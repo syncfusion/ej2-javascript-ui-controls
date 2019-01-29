@@ -1,8 +1,5 @@
 import { ProgressButton } from '../../../src/progress-button/index';
 import { enableRipple } from '@syncfusion/ej2-base';
-import { createTable } from '../../common/common';
-
-createTable();
 
 new ProgressButton({ content: 'Progress', duration: 2000, enableProgress: true, cssClass: 'e-hide-spinner' }, '#progress');
 new ProgressButton({ content: 'Spin Left', duration: 2000 }, '#exp-left');
@@ -34,47 +31,26 @@ document.getElementById('material').onclick = (e: Event) => {
     enableRipple(true);
     document.getElementById('theme').setAttribute('href', '../../theme-files/material.css');
     document.body.style.backgroundColor = 'white';
-    refresh();
+    refresh()
 };
 document.getElementById('fabric').onclick = (e: Event) => {
     enableRipple(false);
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric.css');
     document.body.style.backgroundColor = 'white';
-    refresh();
+    refresh()
 };
 document.getElementById('bootstrap').onclick = (e: Event) => {
     enableRipple(false);
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap.css');
     document.body.style.backgroundColor = 'white';
-    refresh();
+    refresh()
 };
 document.getElementById('highcontrast').onclick = (e: Event) => {
     enableRipple(false);
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
     document.body.style.backgroundColor = 'black';
     document.body.style.color = 'white';
-    refresh();
-};
-document.getElementById('material-dark').onclick = (e: Event) => {
-    enableRipple(false);
-    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
-    document.body.style.backgroundColor = 'black';
-    document.body.style.color = 'white';
-    refresh();
-};
-document.getElementById('fabric-dark').onclick = (e: Event) => {
-    enableRipple(false);
-    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
-    document.body.style.backgroundColor = 'black';
-    document.body.style.color = 'white';
-    refresh();
-};
-document.getElementById('bootstrap-dark').onclick = (e: Event) => {
-    enableRipple(false);
-    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
-    document.body.style.backgroundColor = 'black';
-    document.body.style.color = 'white';
-    refresh();
+    refresh()
 };
 
 function refresh() {

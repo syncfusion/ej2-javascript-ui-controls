@@ -373,6 +373,13 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property(false)
     public enableSimpleMultiRowSelection: boolean;
+
+    /**
+     * If 'enableToggle' set to true, then the user can able to perform toggle for the selected row.
+     * @default true
+     */
+    @Property(true)
+    public enableToggle: boolean;
 }
 
 /**    
@@ -2414,8 +2421,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.notify(events.uiUpdate, { module: 'contextMenu', enable: this.contextMenuItems });
                 break;
             case 'showColumnChooser':
-                this.notify(events.uiUpdate, { module: 'columnChooser', enable: this.showColumnChooser });
-                break;
+                this.notify(events.uiUpdate, { module: 'columnChooser', enable: this.showColumnChooser }); break;
             case 'filterSettings':
                 this.updateStackedFilter();
                 this.notify(events.inBoundModelChanged, { module: 'filter', properties: newProp.filterSettings });
@@ -2464,7 +2470,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.selectRow(newProp.selectedRowIndex);
                 }
                 this.isSelectedRowIndexUpdating = false; break;
-    }
+
+        }
     }
 
     /**
@@ -2950,7 +2957,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getCellFromIndex(rowIndex: number, columnIndex: number): Element {
-        return this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
+        return this.getDataRows()[rowIndex] && this.getDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex];
     }
 
     /**
@@ -2960,7 +2967,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getMovableCellFromIndex(rowIndex: number, columnIndex: number): Element {
-        return this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - this.getFrozenColumns()];
+        return this.getMovableDataRows()[rowIndex] &&
+                this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - this.getFrozenColumns()];
     }
 
     /**
@@ -3654,6 +3662,32 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public reorderColumns(fromFName: string | string[], toFName: string): void {
         if (this.reorderModule) {
             this.reorderModule.reorderColumns(fromFName, toFName);
+        }
+    }
+
+    /** 
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByIndex multiple times, 
+     * then you won't get the same results every time. 
+     * @param  {number} fromIndex - Defines the origin field index. 
+     * @param  {number} toIndex - Defines the destination field index. 
+     * @return {void} 
+     */
+    public reorderColumnByIndex(fromIndex: number, toIndex: number): void {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        }
+    }
+
+    /** 
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByTargetIndex multiple times, 
+     * then you will get the same results every time. 
+     * @param  {string} fieldName - Defines the field name. 
+     * @param  {number} toIndex - Defines the destination field index. 
+     * @return {void} 
+     */
+    public reorderColumnByTargetIndex(fieldName: string | string[], toIndex: number): void {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
         }
     }
 

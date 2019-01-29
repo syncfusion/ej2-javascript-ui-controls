@@ -958,7 +958,7 @@ function getElement(id) {
  */
 function getShapeData(targetId, map) {
     let layerIndex = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
-    let shapeIndex = parseInt(targetId.split('_ShapeIndex_')[1].split('_')[0], 10);
+    let shapeIndex = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
     let layer = map.layers[layerIndex];
     let shapeData = layer.layerData[shapeIndex]['property'];
     let data;
@@ -1017,7 +1017,7 @@ function getTargetElement(layerIndex, name, enable, map) {
     let shapeData = map.layers[layerIndex].shapeData['features'];
     for (let i = 0; i < shapeData.length; i++) {
         if (shapeData[i]['properties'].name === name) {
-            targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_undefined';
+            targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_undefined';
             break;
         }
     }
@@ -1336,7 +1336,7 @@ function changeNavaigationLineWidth(element, index, scale, maps) {
         node = element.childNodes[m];
         if (node.tagName === 'path') {
             let currentStroke = (maps.layersCollection[index]
-                .navigationLineSettings[parseFloat(node.id.split('_')[2])].width);
+                .navigationLineSettings[parseFloat(node.id.split('_NavigationIndex_')[1].split('_')[0])].width);
             node.setAttribute('stroke-width', (currentStroke / scale).toString());
         }
     }
@@ -2508,7 +2508,7 @@ class Marker {
                 let offset = markerSettings.offset;
                 if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                     let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
-                        + markerIndex + '_DataIndex_' + dataIndex;
+                        + markerIndex + '_dataIndex_' + dataIndex;
                     let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
                     let animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
                     let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, currentLayer, animate$$1);
@@ -2623,7 +2623,7 @@ class Marker {
         let marker;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
-            let dataIndex = parseInt(id[1].split('_DataIndex_')[1].split('_')[0], 10);
+            let dataIndex = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
             marker = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker.dataSource[dataIndex];
@@ -3265,7 +3265,7 @@ class LayerPanel {
                     fill = currentShapeData['property'][shapeSettings.colorValuePath];
                 }
             }
-            let shapeID = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_' + k;
+            let shapeID = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
             getShapeColor$$1 = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
             fill = Object.prototype.toString.call(getShapeColor$$1) === '[object Object]' && !isNullOrUndefined(getShapeColor$$1['fill'])
                 ? getShapeColor$$1['fill'] : fill;
@@ -3373,7 +3373,7 @@ class LayerPanel {
             }
         }
         let group = (this.mapObject.renderer.createGroup({
-            id: this.mapObject.element.id + '_layerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
+            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
         }));
         if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
             renderData.map((currentShapeData, i) => {
@@ -4245,7 +4245,7 @@ let Maps = class Maps extends Component {
                 for (let i = 0; i < elements.childNodes.length; i++) {
                     let childElement = elements.childNodes[i];
                     if (childElement.tagName === 'g') {
-                        let layerIndex = parseFloat(childElement.id.split('_')[2]);
+                        let layerIndex = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                         for (let j = 0; j < childElement.childNodes.length; j++) {
                             let childNode = childElement.childNodes[j];
                             if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
@@ -4479,7 +4479,7 @@ let Maps = class Maps extends Component {
             cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY
         };
         this.trigger(click, eventArgs);
-        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+        if (targetEle.id.indexOf('shapeIndex') !== -1) {
             let layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
@@ -4518,7 +4518,7 @@ let Maps = class Maps extends Component {
             pageY = e.pageY;
             target = e.target;
         }
-        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+        if (targetEle.id.indexOf('shapeIndex') !== -1) {
             let layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
@@ -4551,7 +4551,7 @@ let Maps = class Maps extends Component {
         let target;
         target = (e.type === 'touchmove') ? e.target :
             target = e.target;
-        // if (target.id.indexOf('ShapeIndex') !== -1 && !this.highlightSettings.enable) {
+        // if (target.id.indexOf('shapeIndex') !== -1 && !this.highlightSettings.enable) {
         //     triggerShapeEvent(target.id, this.highlightSettings, this, shapeHighlight);
         // }
         if (this.markerModule) {
@@ -5607,7 +5607,7 @@ class NavigationLine {
         let navigationGroup;
         let d;
         let group = (this.maps.renderer.createGroup({
-            id: this.maps.element.id + '_layerIndex_' + layerIndex + '_line_Group'
+            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_line_Group'
         }));
         for (let i = 0; i < navigation.length; i++) {
             latitude = navigation[i]['properties']['latitude'];
@@ -5626,7 +5626,7 @@ class NavigationLine {
                 }
             }
             navigationGroup = (this.maps.renderer.createGroup({
-                id: this.maps.element.id + '_layerIndex_' + layerIndex + '_NavigationGroup' + i + ''
+                id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_NavigationGroup' + i + ''
             }));
             for (let j = 0; j < point['length'] - 1; j++) {
                 angle = (-1 > angle) ? -1 : angle;
@@ -6193,7 +6193,7 @@ class Legend {
                             layerIndex = data[j]['layerIndex'];
                             dataIndex = data[j]['dataIndex'];
                             let shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
-                                layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                                layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
                                 if (value === 'highlight' && this.shapeElement !== targetElement) {
                                     this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
@@ -6396,7 +6396,7 @@ class Legend {
                 layerIndex = data[j]['layerIndex'];
                 dataIndex = data[j]['dataIndex'];
                 let shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
-                    layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                    layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                 if (targetElement === shapeEle) {
                     process = true;
                 }
@@ -6695,11 +6695,11 @@ class Legend {
         let target = e.target;
         let legend = this.maps.legendSettings;
         let id = this.maps.element.id + '_Interactive_Legend';
-        let hoverId = legend.type === 'Layers' ? '_ShapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
+        let hoverId = legend.type === 'Layers' ? '_shapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
             '_BubbleIndex_';
         if (target.id.indexOf(hoverId) > 1) {
-            let layerIndex = parseFloat(target.id.split('_')[2]);
-            let dataIndex = parseFloat(target.id.split('_')[6]);
+            let layerIndex = parseFloat(target.id.split('_LayerIndex_')[1].split('_')[0]);
+            let dataIndex = parseFloat(target.id.split(/_dataIndex_/i)[1].split('_')[0]);
             let fill;
             let stroke;
             let strokeWidth;
@@ -6707,10 +6707,11 @@ class Legend {
                 remove(querySelector(id, this.maps.element.id));
             }
             let layer = this.maps.layersCollection[layerIndex];
+            let markerVisible = (legend.type === 'Layers' ? layer.visible :
+                legend.type === 'Markers' ? layer.markerSettings[parseFloat(target.id.split('_MarkerIndex_')[1].split('_')[0])].visible :
+                    (this.maps.getBubbleVisible(this.maps.layersCollection[layerIndex])));
             if (legend.visible && this.legendRenderingCollections.length > 0
-                && legend.mode === 'Interactive' && (legend.type === 'Layers' ? layer.visible :
-                legend.type === 'Markers' ? layer.markerSettings[parseFloat(target.id.split('_')[4])].visible :
-                    (this.maps.getBubbleVisible(this.maps.layersCollection[layerIndex])))) {
+                && legend.mode === 'Interactive' && markerVisible) {
                 let svgRect = this.maps.svgObject.getBoundingClientRect();
                 for (let i = 0; i < this.legendCollection.length; i++) {
                     let currentData = this.legendCollection[i];
@@ -6999,8 +7000,8 @@ class Highlight {
             let data;
             let shapeIn;
             let dataIndex;
-            if (targetEle.id.indexOf('ShapeIndex') > -1) {
-                shapeIn = parseInt(targetEle.id.split('_ShapeIndex_')[1].split('_')[0], 10);
+            if (targetEle.id.indexOf('shapeIndex') > -1) {
+                shapeIn = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
                     this.maps.layers[layerIndex].shapeData['features'][shapeIn]['properties'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
@@ -7015,7 +7016,7 @@ class Highlight {
             }
             else if (targetEle.id.indexOf('MarkerIndex') > -1) {
                 let marker = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_DataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[marker].dataSource[dataIndex];
                 this.highlightSettings = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings;
             }
@@ -7041,7 +7042,7 @@ class Highlight {
                     removeClass(element);
                     if (element.id.indexOf('NavigationIndex') > -1) {
                         let index = parseInt(element.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                        let layerIndex = parseInt(element.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                        let layerIndex = parseInt(element.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                         element.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                         element.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                     }
@@ -7052,7 +7053,7 @@ class Highlight {
             targetEle = getElementsByClassName('highlightMapStyle')[0];
             if (targetEle.id.indexOf('NavigationIndex') > -1) {
                 let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                layerIndex = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
@@ -7098,7 +7099,7 @@ class Highlight {
                 removeClass(elem);
                 if (elem.id.indexOf('NavigationIndex') > -1) {
                     let index = parseInt(elem.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex = parseInt(elem.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                    let layerIndex = parseInt(elem.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     elem.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     elem.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
@@ -7172,8 +7173,8 @@ class Selection {
             let shapeIndex;
             let dataIndex;
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            if (targetEle.id.indexOf('ShapeIndex') > -1) {
-                shapeIndex = parseInt(targetEle.id.split('_ShapeIndex_')[1].split('_')[0], 10);
+            if (targetEle.id.indexOf('shapeIndex') > -1) {
+                shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
                     this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
@@ -7190,7 +7191,7 @@ class Selection {
             }
             else if (targetEle.id.indexOf('MarkerIndex') > -1) {
                 let markerIndex = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_DataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].markerSettings[markerIndex].selectionSettings;
                 this.selectionType = 'Marker';
@@ -7255,7 +7256,7 @@ class Selection {
             removeClass(targetEle);
             if (targetEle.id.indexOf('NavigationIndex') > -1) {
                 let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                let layerIndex = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                let layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
@@ -7266,7 +7267,7 @@ class Selection {
                 removeClass(ele);
                 if (ele.id.indexOf('NavigationIndex') > -1) {
                     let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                    let layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
@@ -7291,7 +7292,7 @@ class Selection {
     //        for (let i: number = 0; i < legendCollection.length; i++) {
     //             for (let data of legendCollection[i]['data']) {
     //                 shape = getElement(this.maps.element.id + '_LayerIndex_' + data['layerIndex'] +
-    //                            '_ShapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex']);
+    //                            '_shapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex']);
     //                 removeClass(shape);
     //             }
     //         }
@@ -7352,17 +7353,17 @@ class MapsTooltip {
         let tooltipEle;
         let location;
         let templateData = [];
-        let index = parseFloat(targetId.split('_')[2]);
+        let index = targetId.indexOf('_LayerIndex_') > -1 && parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
         let layer = this.maps.layersCollection[index];
         let tooltipContent = [];
         let markerFill;
         location = getMousePosition(pageX, pageY, this.maps.svgObject);
-        let istooltipRender = (targetId.indexOf('_ShapeIndex_') > -1)
+        let istooltipRender = (targetId.indexOf('_shapeIndex_') > -1)
             || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
         if (istooltipRender) {
-            if (targetId.indexOf('_ShapeIndex_') > -1) {
+            if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
-                let shape = parseInt(targetId.split('_')[4], 10);
+                let shape = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
                 }
@@ -7385,8 +7386,8 @@ class MapsTooltip {
                 //location.y = this.template(option, location);
             }
             else if (targetId.indexOf('_MarkerIndex_') > -1) {
-                let markerIdex = parseInt(targetId.split('_')[4], 10);
-                let dataIndex = parseInt(targetId.split('_')[6], 10);
+                let markerIdex = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
+                let dataIndex = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[2], 10);
                 let marker = layer.markerSettings[markerIdex];
                 option = marker.tooltipSettings;
                 templateData = marker.dataSource[dataIndex];
@@ -7401,8 +7402,8 @@ class MapsTooltip {
                 //location.y = this.template(option, location);
             }
             else if (targetId.indexOf('_BubbleIndex_') > -1) {
-                let bubbleIndex = parseInt(targetId.split('_')[4], 10);
-                let dataIndex = parseInt(targetId.split('_')[6], 10);
+                let bubbleIndex = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[0], 10);
+                let dataIndex = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[2], 10);
                 let bubble = layer.bubbleSettings[bubbleIndex];
                 option = bubble.tooltipSettings;
                 templateData = bubble.dataSource[dataIndex];
@@ -7785,7 +7786,7 @@ class Zoom {
                 let layerElement = this.layerCollectionEle.childNodes[i];
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
-                    let index = parseFloat(layerElement.id.split('_')[2]);
+                    let index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
                     this.currentLayer = this.maps.layersCollection[index];
                     let factor = this.maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (let j = 0; j < layerElement.childElementCount; j++) {
@@ -7811,9 +7812,9 @@ class Zoom {
                             for (let k = 0; k < currentEle.childElementCount; k++) {
                                 childElement = currentEle.childNodes[k];
                                 let bubbleTransform = childElement.getAttribute('transform');
-                                layerIndex = parseFloat(childElement.id.split('_')[2]);
-                                let bubleIndex = parseFloat(childElement.id.split('_')[4]);
-                                let dataIndex = parseFloat(childElement.id.split('_')[6]);
+                                layerIndex = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                                let bubleIndex = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[0]);
+                                let dataIndex = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[2]);
                                 for (let l = 0; l < this.maps.bubbleModule.bubbleCollection.length; l++) {
                                     let bubbleCollection = this.maps.bubbleModule.bubbleCollection[l];
                                     if (bubbleCollection['LayerIndex'] === layerIndex && bubbleCollection['BubbleIndex'] === bubleIndex &&
@@ -7873,9 +7874,9 @@ class Zoom {
     }
     dataLabelTranslate(element, factor, x, y, scale, type, animate$$1 = false) {
         let labelCollection = this.maps.dataLabelModule.dataLabelCollections;
-        let layerIndex = parseFloat(element.id.split('_')[2]);
-        let shapeIndex = parseFloat(element.id.split('_')[4]);
-        let labelIndex = parseFloat(element.id.split('_')[6]);
+        let layerIndex = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
+        let shapeIndex = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
+        let labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         let duration = this.currentLayer.animationDuration;
         for (let l = 0; l < labelCollection.length; l++) {
             let label = labelCollection[l];
@@ -7909,9 +7910,9 @@ class Zoom {
         }
     }
     markerTranslate(element, factor, x, y, scale, type, animate$$1 = false) {
-        let layerIndex = parseInt(element.id.split('_')[2], 10);
-        let markerIndex = parseInt(element.id.split('_')[4], 10);
-        let dataIndex = parseInt(element.id.split('_')[6], 10);
+        let layerIndex = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        let markerIndex = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+        let dataIndex = parseInt(element.id.split('_dataIndex_')[1].split('_')[0], 10);
         let layer = this.maps.layersCollection[layerIndex];
         let marker = layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
@@ -8141,7 +8142,7 @@ class Zoom {
         let target = e.target;
         e.stopImmediatePropagation();
         let isTouch = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
-        let toolbar = target.id.split('_')[3];
+        let toolbar = target.id.split('_Zooming_ToolBar_')[1].split('_')[0];
         if (isTouch) {
             this.handled = true;
             this.performZoomingByToolBar(toolbar);
@@ -8209,7 +8210,7 @@ class Zoom {
         }
     }
     showTooltip(e) {
-        let text = e.target.id.split('_')[3];
+        let text = e.target.id.split('_Zooming_ToolBar_')[1].split('_')[0];
         if (!this.isTouch) {
             createTooltip('EJ2_Map_Toolbar_Tip', this.maps.getLocalizedLabel(text), (e.pageY + 10), (e.pageX + 10), '10px');
         }
@@ -8437,7 +8438,7 @@ class Zoom {
      */
     click(e) {
         let map = this.maps;
-        if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_ShapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
+        if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
             && (this.zoomColor === this.selectionColor && this.zoomElements)) {
             let bounds = e.target.getBBox();
             let boundwidth = bounds.width;

@@ -375,8 +375,6 @@ export class SfdtReader {
             rowFormat.gridAfterWidthType = data.gridAfterWidthType;
         }
     }
-
-    // tslint:disable:max-func-body-length
     private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean): void {
         let lineWidget: LineWidget = new LineWidget(paragraph);
         for (let i: number = 0; i < data.length; i++) {
@@ -408,14 +406,7 @@ export class SfdtReader {
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
                 lineWidget.children.push(image);
-                let imageString: string = HelperMethods.formatClippedString(inline.imageString).formatClippedString;
-                let isValidImage: boolean = this.validateImageUrl(imageString);
-                if (!isValidImage) {
-                    // tslint:disable-next-line:max-line-length
-                    image.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
-                } else {
-                    image.imageString = inline.imageString;
-                }
+                image.imageString = inline.imageString;
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
@@ -775,28 +766,5 @@ export class SfdtReader {
             tabStop.tabJustification = wTabs[i].tabJustification;
             tabs.push(tabStop);
         }
-    }
-
-    private validateImageUrl(imagestr: string): boolean {
-        let keyStr: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-        imagestr = imagestr.replace(/[^A-Za-z0-9\+\/\=]/g, '');
-
-        let totalLength: number = imagestr.length * 3 / 4;
-        if (imagestr.charAt(imagestr.length - 1) === keyStr.charAt(64)) {
-            totalLength--;
-        }
-        if (imagestr.charAt(imagestr.length - 2) === keyStr.charAt(64)) {
-            totalLength--;
-        }
-        if (totalLength % 1 !== 0) {
-            // totalLength is not an integer, the length does not match a valid
-            // base64 content. That can happen if:
-            // - the imagestr is not a base64 content
-            // - the imagestr is *almost* a base64 content, with a extra chars at the
-            // beginning or at the end
-            // - the imagestr uses a base64 variant (base64url for example)
-            return false;
-        }
-        return true;
     }
 }

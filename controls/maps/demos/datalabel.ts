@@ -2,7 +2,7 @@
  * Maps datalabel sample
  */
 import { Maps, MapsTooltip, DataLabel, ILoadEventArgs, MapsTheme, SmartLabelMode, IntersectAction, MapAjax } from '../src/index';
-
+import { usa } from './MapData/USA';
 Maps.Inject(MapsTooltip, DataLabel);
     let maps: Maps = new Maps({
         zoomSettings: {
@@ -15,7 +15,7 @@ Maps.Inject(MapsTooltip, DataLabel);
                     labelPath: 'name',
                     smartLabelMode: 'Trim'
                 },
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/USA.json'),
+                shapeData: usa,
                 shapeSettings: {
                     autofill: true
                 },

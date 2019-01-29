@@ -729,6 +729,7 @@ Tabs and shift-tabs work too`;
             selectNode = editNode.querySelector('.third-p-node');
             nodeSelection.setSelectionText(curDocument, selectNode.childNodes[0], selectNode.childNodes[0], 0, 6);
             document.getElementById(controlId + "_toolbar_Paste").click();
+            expect(actionBegin).toBe(true);
             setTimeout(() => {
                 expect(actionComplete).toBe(true);
                 actionBegin = false;
@@ -798,7 +799,6 @@ Tabs and shift-tabs work too`;
                 actionComplete = false;
                 done();
             });
-
         });
 
         afterAll(() => {

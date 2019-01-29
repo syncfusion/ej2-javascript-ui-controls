@@ -17,10 +17,10 @@ import { ConnectorEditing } from './connector-editing';
 import { Selector } from './selector';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
-import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools } from '../enum/enum';
+import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset } from '../utility/diagram-util';
-import { getObjectType, getInOutConnectPorts } from '../utility/diagram-util';
-import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize } from './../utility/constraints-util';
+import { getObjectType, getInOutConnectPorts, removeChildNodes } from '../utility/diagram-util';
+import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
 
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
 import {
@@ -586,6 +586,8 @@ export class DiagramEventHandler {
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
         }
+        this.diagram.previousSelectedObject = null;
+        this.diagram.removeConstraints(this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
         touches = (<TouchEvent & PointerEvent>evt).touches;
         if (this.isScrolling) {
             this.isScrolling = false; evt.preventDefault();
@@ -607,7 +609,7 @@ export class DiagramEventHandler {
                         let isMultipleSelect: boolean = true;
                         if ((!evt.ctrlKey && this.isMouseDown
                             && (this.diagram.selectedItems.nodes.length + this.diagram.selectedItems.connectors.length) > 1)
-                            && evt.which === 1) {
+                            && evt.which === 1 && !canPreventClearSelection(this.diagram.diagramActions)) {
                             isMultipleSelect = false; this.commandHandler.clearSelection();
                         }
                         if (!isSelected(this.diagram, obj) || (!isMultipleSelect)) {
@@ -767,8 +769,36 @@ export class DiagramEventHandler {
                                 parameter: command.parameter
                             })) {
                                 evt.preventDefault();
-                                if (evt.key === 'Escape' && (this.checkEditBoxAsTarget(evt))) {
-                                    document.getElementById(this.diagram.diagramCanvas.id).focus();
+                                if (evt.key === 'Escape') {
+                                    if (this.checkEditBoxAsTarget(evt)) {
+                                        document.getElementById(this.diagram.diagramCanvas.id).focus();
+                                    } else if (this.diagram.currentSymbol) {
+                                        let selectedSymbols: string = 'selectedSymbols';
+                                        let source: string = 'sourceElement'; let intDestroy: string = 'intDestroy';
+                                        this.diagram.removeFromAQuad(this.diagram.currentSymbol);
+                                        this.diagram.removeObjectsFromLayer(this.diagram.nameTable[this.diagram.currentSymbol.id]);
+                                        this.diagram.removeElements(this.diagram.currentSymbol);
+                                        removeChildNodes(this.diagram.currentSymbol as Node, this.diagram);
+                                        delete this.diagram.nameTable[this.diagram.currentSymbol.id];
+                                        let sourceElement: HTMLElement = this.diagram.droppable[source];
+                                        sourceElement.draggable[intDestroy]();
+                                        let element: HTMLElement = this.diagram.droppable[selectedSymbols];
+                                        element.parentNode.removeChild(element);
+                                        let diagramActions: DiagramAction = this.diagram.diagramActions;
+                                        this.diagram.addConstraints(diagramActions, DiagramAction.PreventClearSelection);
+                                        this.tool.mouseUp(this.eventArgs);
+                                        this.diagram.removeConstraints(
+                                            this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder
+                                        );
+                                        if (this.diagram.previousSelectedObject) {
+                                            this.diagram.select(this.diagram.previousSelectedObject);
+                                        }
+                                        this.action = 'Select';
+                                        this.diagram.previousSelectedObject = null;
+                                        this.diagram.currentSymbol = null;
+                                        this.diagram.removeConstraints(diagramActions, DiagramAction.PreventClearSelection);
+                                        this.isMouseDown = false;
+                                    }
                                 }
                                 if (command.execute) {
                                     // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
@@ -1325,7 +1355,7 @@ export class DiagramEventHandler {
                         style: { fill: node.style.fill, strokeColor: '#ffffff00' },
                         annotations: (target as Node).annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
-                            (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
+                        (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
                         minHeight: 25
                     } as NodeModel,
                     true);

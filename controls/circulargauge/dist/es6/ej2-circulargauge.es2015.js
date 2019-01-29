@@ -1003,10 +1003,12 @@ class Annotations {
      * Method to render the annotation for circular gauge.
      */
     renderAnnotation(axis, index) {
+        let width = parseInt(this.gauge.width, 10);
         let element = createElement('div', {
             id: this.elementId + '_Annotations_' + index
         });
         let parentElement = getElement(this.elementId + '_Secondary_Element');
+        document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
         axis.annotations.map((annotation, annotationIndex) => {
             if (annotation.content !== null) {
                 this.createTemplate(element, annotationIndex, index);
@@ -1037,11 +1039,10 @@ class Annotations {
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(axis).length) {
-                templateElement = templateFn(axis);
-                let count = templateElement.length;
-                while (count > 0) {
-                    childElement.appendChild(templateElement[0]);
-                    count--;
+                templateElement = Array.prototype.slice.call(templateFn(axis));
+                let length = templateElement.length;
+                for (let i = 0; i < length; i++) {
+                    childElement.appendChild(templateElement[i]);
                 }
             }
             else {
@@ -2013,8 +2014,10 @@ class AxisLayoutPanel {
         let argsData;
         axis.visibleLabels = [];
         let roundValue;
+        let roundingPlaces = ((axis.visibleRange.interval + '').indexOf('.') > -1) ?
+            ((axis.visibleRange.interval + '').split('.')[1]).length : 0;
         for (let i = axis.visibleRange.min, interval = axis.visibleRange.interval, max = axis.visibleRange.max; (i <= max && interval); i += interval) {
-            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
+            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : parseFloat(i.toFixed(roundingPlaces));
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
                 text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(roundValue)) :

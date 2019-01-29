@@ -622,10 +622,6 @@ export class HeaderFooterWidget extends BlockContainer {
      * @private
      */
     public headerFooterType: HeaderFooterType;
-    /**
-     * @private
-     */
-    public isEmpty: boolean = false;
     constructor(type: HeaderFooterType) {
         super();
         this.headerFooterType = type;
@@ -655,7 +651,6 @@ export class HeaderFooterWidget extends BlockContainer {
             block.index = i;
             block.containerWidget = headerFooter;
         }
-        headerFooter.isEmpty = this.isEmpty;
         headerFooter.x = this.x;
         headerFooter.y = this.y;
         headerFooter.height = 0;
@@ -1162,6 +1157,10 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
+    public tableGrids: number[];
+    /**
+     * @private
+     */
     public tableHolder: WTableHolder;
     /**
      * @private
@@ -1381,7 +1380,7 @@ export class TableWidget extends BlockWidget {
             //Converts the row grid before width from point to twips point by 15 factor.
             cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, tableWidth, null);
             currOffset += cellWidth;
-            let startOffset: number = parseFloat(currOffset.toFixed(2));
+            let startOffset: number = Math.round(currOffset);
             if (tempGrid.indexOf(startOffset) < 0) {
                 tempGrid.push(startOffset);
             }
@@ -1437,13 +1436,13 @@ export class TableWidget extends BlockWidget {
                 }
                 // Add start offset of each cell based on its index
                 if (!rowCellInfo.containsKey(cell.cellIndex)) {
-                    rowCellInfo.add(cell.cellIndex, parseFloat((currOffset - startOffset).toFixed(2)));
+                    rowCellInfo.add(cell.cellIndex, Math.round(currOffset - startOffset));
                 }
                 columnSpan += cell.cellFormat.columnSpan;
                 //Converts the cell width from pixel to twips point by 15 factor.
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, null);
                 currOffset += cellWidth;
-                let offset: number = parseFloat(currOffset.toFixed(2));
+                let offset: number = Math.round(currOffset);
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
                 }
@@ -1452,8 +1451,8 @@ export class TableWidget extends BlockWidget {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     currOffset += cellWidth;
 
-                    if (tempGrid.indexOf(parseFloat(currOffset.toFixed(2))) < 0) {
-                        tempGrid.push(parseFloat(currOffset.toFixed(2)));
+                    if (tempGrid.indexOf(Math.round(currOffset)) < 0) {
+                        tempGrid.push(Math.round(currOffset));
                     }
                     columnSpan += rowFormat.gridAfter;
                 }
@@ -1978,10 +1977,12 @@ export class TableWidget extends BlockWidget {
         //     this.tableFormat.destroy();
         // }
         this.tableFormat = undefined;
-        if (this.spannedRowCollection) {
-            this.spannedRowCollection.destroy();
-        }
+        // if (this.spannedRowCollection) {
+        //     this.spannedRowCollection.destroy();
+        // }
         this.spannedRowCollection = undefined;
+        this.tableGrids = [];
+        this.tableGrids = undefined;
         // if (this.tableHolder) {
         //     this.tableHolder.destroy();
         // }
@@ -2013,6 +2014,10 @@ export class TableRowWidget extends BlockWidget {
      * @private
      */
     public rowFormat: WRowFormat;
+    /**
+     * @private
+     */
+    public spannedRowCollection: TableRowWidget[] = [];
 
     /**
      * @private
@@ -2133,7 +2138,7 @@ export class TableRowWidget extends BlockWidget {
         return gridEndIndex - gridStartIndex;
     }
     private getOffsetIndex(tableGrid: number[], offset: number): number {
-        offset = parseFloat(offset.toFixed(2));
+        offset = Math.round(offset);
         let index: number = 0;
         if (tableGrid.indexOf(offset) >= 0) {
             index = tableGrid.indexOf(offset);
@@ -2329,6 +2334,8 @@ export class TableRowWidget extends BlockWidget {
         // }
         this.rowFormat = undefined;
         this.rowFormat = undefined;
+        this.spannedRowCollection = [];
+        this.spannedRowCollection = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
         super.destroy();
@@ -2535,9 +2542,9 @@ export class TableCellWidget extends BlockWidget {
      */
     public getCellWidth(): number {
         let ownerTable: TableWidget = this.ownerTable;
-        let containerWidth: number = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
+        let containerWidth: number = ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true));
         let cellWidth: number = containerWidth;
-        if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
+        if (ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         } else if (this.cellFormat.preferredWidthType === 'Percent') {
             cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - this.leftMargin - this.rightMargin;
@@ -2626,7 +2633,7 @@ export class TableCellWidget extends BlockWidget {
         let ownerTable: TableWidget = this.ownerTable;
         //Added null condition check for asynchronous loading.
         if (this.cellFormat !== null && this.cellFormat.borders !== null) {
-            borderWidth = TableCellWidget.getCellRightBorder(this).getLineWidth();
+            borderWidth = TableCellWidget.getCellLeftBorder(this).getLineWidth();
         }
         return borderWidth;
     }
@@ -2687,11 +2694,8 @@ export class TableCellWidget extends BlockWidget {
         if ((isNullOrUndefined(previousCell) || (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle === 'None' && !leftBorder.hasNoneStyle)))) {
             if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                leftBorder = this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
+                return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
             }
-        }
-        if (isNullOrUndefined(previousCell)) {
-            return leftBorder;
         } else {
             let prevCellRightBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length
@@ -2831,11 +2835,8 @@ export class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(nextCell) || (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle === 'None' && !rightBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(rightBorder) && !((rightBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                rightBorder = this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
+                return this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
             }
-        }
-        if (isNullOrUndefined(nextCell)) {
-            return rightBorder;
         } else {
             let nextCellLeftBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length
@@ -2944,11 +2945,8 @@ export class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(previousTopCell) || (!isNullOrUndefined(topBorder) && (topBorder.lineStyle === 'None' && !topBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                topBorder = this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
+                return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
             }
-        }
-        if (isNullOrUndefined(previousTopCell)) {
-            return topBorder;
         } else {
             let prevTopCellBottomBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length
@@ -3027,11 +3025,8 @@ export class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(nextBottomCell) || (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle === 'None' && !bottomBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(bottomBorder) && !((bottomBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                bottomBorder = this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
+                return this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
             }
-        }
-        if (isNullOrUndefined(nextBottomCell)) {
-            return bottomBorder;
         } else {
             let prevBottomCellTopBorder: WBorder = undefined;
             // tslint:disable-next-line:max-line-length

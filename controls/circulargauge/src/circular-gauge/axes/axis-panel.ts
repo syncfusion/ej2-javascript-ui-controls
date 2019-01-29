@@ -252,9 +252,11 @@ export class AxisLayoutPanel {
         let argsData: IAxisLabelRenderEventArgs;
         axis.visibleLabels = [];
         let roundValue: number;
+        let roundingPlaces: number = ((axis.visibleRange.interval + '').indexOf('.') > -1) ?
+            ((axis.visibleRange.interval + '').split('.')[1]).length : 0;
         for (let i: number = axis.visibleRange.min, interval: number = axis.visibleRange.interval,
             max: number = axis.visibleRange.max; (i <= max && interval); i += interval) {
-            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
+            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : parseFloat(i.toFixed(roundingPlaces));
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
                 text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(roundValue)) :
@@ -338,7 +340,7 @@ export class AxisLayoutPanel {
     }
 
     /**
-     * To render the Axis element of the circular gauge. 
+     * To render the Axis element of the circular gauge.
      * @return {void}
      * @private
      */

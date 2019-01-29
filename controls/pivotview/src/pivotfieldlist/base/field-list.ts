@@ -198,6 +198,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     constructor(options?: PivotFieldListModel, element?: string | HTMLElement) {
         super(options, <string | HTMLElement>element);
+        this.engineModule = new PivotEngine(this.dataSource, '');
     }
 
     /**
@@ -275,6 +276,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             by: 'by',
             enterValue: 'Enter value',
             chooseDate: 'Enter date',
+            all: 'All',
+            multipleItems: 'Multiple items',
             /* tslint:disable */
             Equals: 'Equals',
             DoesNotEquals: 'Does Not Equal',
@@ -437,7 +440,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             let isDrillThrough: boolean = this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
             let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
-            this.engineModule = new PivotEngine(this.dataSource, '', undefined, pageSettings, enableValueSorting, isDrillThrough);
+            this.engineModule.renderEngine(this.dataSource, '', undefined, pageSettings, enableValueSorting, isDrillThrough);
             this.pivotFieldList = this.engineModule.fieldList;
             let eventArgs: EnginePopulatedEventArgs = {
                 pivotFieldList: this.pivotFieldList,
@@ -521,8 +524,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             let isDrillThrough: boolean =
                 this.pivotGridModule ?
                     (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
-            this.engineModule =
-                new PivotEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting, isDrillThrough);
+            this.engineModule.renderEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting, isDrillThrough);
             this.getFieldCaption(this.dataSource);
         } else {
             this.axisFieldModule.render();

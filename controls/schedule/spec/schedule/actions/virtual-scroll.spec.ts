@@ -273,5 +273,24 @@ describe('Virtual scroll', () => {
             expect(resWrap.querySelector('div:nth-child(2)').innerHTML).toContain('Floor 1');
             expect(resWrap.querySelector('tr:nth-child(2)').children[0].children[1].innerHTML).toEqual('Floor 2');
         });
+
+        it('current time indicator checking', () => {
+            let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-today');
+            viewElement.click();
+            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            let resource1: HTMLElement = resourceRow.children[1]
+                .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            resource1.click();
+            let resource2: HTMLElement = resourceRow.children[0]
+                .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            resource2.click();
+            let resource3: HTMLElement = resourceRow.children[1]
+                .querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            resource3.click();
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(contentArea, 300);
+            let indicator: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
+            expect(indicator.style.transform).toEqual('translateY(300px)');
+        });
     });
 });

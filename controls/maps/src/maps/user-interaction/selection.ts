@@ -44,8 +44,8 @@ export class Selection {
             let shapeIndex: number;
             let dataIndex: number;
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            if (targetEle.id.indexOf('ShapeIndex') > -1) {
-                shapeIndex = parseInt(targetEle.id.split('_ShapeIndex_')[1].split('_')[0], 10);
+            if (targetEle.id.indexOf('shapeIndex') > -1) {
+                shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
                 this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
@@ -60,7 +60,7 @@ export class Selection {
                 this.selectionType = 'Bubble';
             }else if (targetEle.id.indexOf('MarkerIndex') > -1) {
                 let markerIndex: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_DataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].markerSettings[markerIndex].selectionSettings;
                 this.selectionType = 'Marker';
@@ -125,7 +125,7 @@ export class Selection {
                 removeClass(targetEle);
                 if (targetEle.id.indexOf('NavigationIndex') > -1) {
                     let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex: number = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                    let layerIndex: number = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color );
                 }
@@ -135,7 +135,7 @@ export class Selection {
                 removeClass(ele);
                 if (ele.id.indexOf('NavigationIndex') > -1) {
                     let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex: number = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                    let layerIndex: number = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color );
                 }
@@ -160,7 +160,7 @@ export class Selection {
     //        for (let i: number = 0; i < legendCollection.length; i++) {
     //             for (let data of legendCollection[i]['data']) {
     //                 shape = getElement(this.maps.element.id + '_LayerIndex_' + data['layerIndex'] +
-    //                            '_ShapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex']);
+    //                            '_shapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex']);
     //                 removeClass(shape);
     //             }
     //         }

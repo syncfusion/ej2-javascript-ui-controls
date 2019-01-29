@@ -365,28 +365,6 @@ describe('TreeGrid base module', () => {
     });
   });
 
-  describe('columnMenu, setmodel', () => {
-    let gridObj: TreeGrid;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          showColumnMenu: true,
-          treeColumnIndex: 1,
-          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
-        },
-        done
-      );
-    });
-    it('setmodel', () => {
-      gridObj.columnMenuItems = [{text:'Clear Sorting', id:'gridclearsorting'}];
-      expect(gridObj.columnMenuModule.getColumnMenu().children.length).toBeGreaterThan(0);
-    });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
   describe('Self Reference -multiple child levels', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -414,6 +392,7 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+
 
   describe('Set height and width as 100%', () => {
     let gridObj: TreeGrid;

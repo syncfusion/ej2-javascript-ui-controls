@@ -4,6 +4,7 @@ import { sampleData, projectData } from '../base/datasource.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { actionComplete } from '@syncfusion/ej2-grids';
 import { Filter } from '../../src/treegrid/actions/filter';
+import { CellSaveEventArgs } from '../../src';
 /**
  * Grid base spec 
  */
@@ -414,4 +415,283 @@ describe('Filter module', () => {
       destroy(gridObj);
     });
   });
+  describe('Excel Filter Type Testing - Parent', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let originalTimeout: number;
+    let actionComplete: () => void;
+
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowFiltering: true,
+          filterSettings: { type: 'Excel'},
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('Check the count of checkboxes in excel filter ', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.element.getElementsByClassName('e-label e-checkboxfiltertext').length==27).toBe(true);
+        done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+    describe('Excel Filter Checkbox Testing Of One Column After Filtering Another Column- Parent', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionComplete: (args: CellSaveEventArgs) => void ;
+  
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            filterSettings: { hierarchyMode: 'None', type: 'Excel' },
+            columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+          },
+          done
+        );
+      });
+      it('Check the filtered records for checkbox count', (done: Function) => {
+          actionComplete = (args: CellSaveEventArgs) => {
+            if(args.requestType === 'filterchoicerequest'){
+            expect(gridObj.element.getElementsByClassName('e-label e-checkboxfiltertext').length == 6).toBe(true);
+            }
+           done();
+          }
+          gridObj.grid.actionComplete = actionComplete;
+          gridObj.filterByColumn("duration","equal",11);
+          (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+   describe('Excel Clear Filter Testing - Parent', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionComplete: (args: CellSaveEventArgs) => void;
+  
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            filterSettings: { type: 'Excel', hierarchyMode: 'None'},
+            columns: ['taskID', 'taskName', 'startDate', 'duration'],
+          },
+          done
+        );
+      });
+      it('Check the filter levels - before clearfilter', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+            expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelectorAll(".e-treecolumn-container")[0].childNodes.length == 5).toBe(true);
+            done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.filterByColumn('taskName', 'startswith', 'phase');
+    });
+    it('Check the filter levels - after clearfilter', (done: Function) => {
+      actionComplete = (args: CellSaveEventArgs): void => {
+        if(args.requestType === 'refresh'){
+          expect(gridObj.getRows().length == 36).toBe(true);
+          expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelectorAll(".e-treecolumn-container")[0].childNodes.length == 4).toBe(true);
+        }
+        done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+      (<HTMLElement>gridObj.element.getElementsByClassName('e-menu-item')[0]).click();
+
+  });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+    describe('Excel Filter Custom Filter Testing - With AND', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let originalTimeout: number;
+      let actionComplete: (args: CellSaveEventArgs) => void;
+  
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            filterSettings: { type: 'Excel', hierarchyMode: 'None'},
+            columns: ['taskID', 'taskName', 'startDate', 'duration'],
+          },
+          done
+        );
+      });
+      it('Check the AND of custom filter- Mouseover', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'filterchoicerequest'){
+          expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length ==9).toBe(true);
+          }
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+          (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
+          var mouseEve = document.createEvent('MouseEvents');
+          mouseEve.initEvent('mouseover', true, true);
+          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);
+          
+      });
+      it('Check the AND of custom filter', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'filtering'){
+         expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(true);
+         expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Software Specification").toBe(true);
+        }
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        (<HTMLElement>document.getElementsByClassName('e-excel-menu')[0].querySelector('.e-menu-item')).click();
+        var dd1Obj=(<any>document.getElementById('taskName-xlfl-frstoptr')).ej2_instances[0];
+        dd1Obj.value ="contains";
+        var act1Obj = (<any>document.getElementById('taskName-xlfl-frstvalue')).ej2_instances[0];
+        act1Obj.value="software";
+        var dd2Obj=(<any>document.getElementById('taskName-xlfl-secndoptr')).ej2_instances[0];
+        dd2Obj.value ="contains"
+        var act2Obj = (<any>document.getElementById('taskName-xlfl-secndvalue')).ej2_instances[0];
+        act2Obj.value="specification";
+        (<HTMLElement>document.getElementsByClassName('e-footer-content')[0].querySelector('.e-primary')).click();
+    });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+    describe('Excel Filter Custom Filter Testing - With OR', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let originalTimeout: number;
+      let actionComplete: (args: CellSaveEventArgs) => void;
+  
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            filterSettings: { type: 'Excel', hierarchyMode: 'None'},
+            columns: ['taskID', 'taskName', 'startDate', 'duration'],
+          },
+          done
+        );
+      });
+      it('Check the OR of custom filter- Mouseover', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'filterchoicerequest'){
+          expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length ==9).toBe(true);
+          }
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+          (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
+          var mouseEve = document.createEvent('MouseEvents');
+          mouseEve.initEvent('mouseover', true, true);
+          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);
+      });
+      it('Check the OR of custom filter', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'filtering'){
+         expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(false);
+         expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
+         expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design Documentation").toBe(true);
+         expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
+
+        }
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        (<HTMLElement>document.getElementsByClassName('e-excel-menu')[0].querySelector('.e-menu-item')).click();
+        var act1Obj = (<any>document.getElementById('taskName-xlfl-frstvalue')).ej2_instances[0];
+        act1Obj.value="design";
+        var predicate1Obj=(<any>document.getElementById('taskNamee-xlfl-frstpredicate')).ej2_instances[0];
+        predicate1Obj.checked=false;
+        var predicate2Obj=(<any>document.getElementById('taskNamee-xlfl-secndpredicate')).ej2_instances[0];
+        predicate2Obj.checked=true;
+        var ddObj=(<any>document.getElementById('taskName-xlfl-secndoptr')).ej2_instances[0];
+        ddObj.value ="contains"
+        var act2Obj = (<any>document.getElementById('taskName-xlfl-secndvalue')).ej2_instances[0];
+        act2Obj.value="design";
+        (<HTMLElement>document.getElementsByClassName('e-footer-content')[0].querySelector('.e-primary')).click();
+    });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+    describe('Excel Filter Custom Filter Testing - MatchCase', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let originalTimeout: number;
+      let actionComplete: (args: CellSaveEventArgs) => void;
+  
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            filterSettings: { type: 'Excel', hierarchyMode: 'None'},
+            columns: ['taskID', 'taskName', 'startDate', 'duration'],
+          },
+          done
+        );
+      });
+      it('Check the custom filter of excel filter', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'filterchoicerequest'){
+          expect(document.getElementsByClassName('e-excel-menu')[0].querySelectorAll('.e-menu-item ').length ==9).toBe(true);
+          }
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+          (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
+          var mouseEve = document.createEvent('MouseEvents');
+          mouseEve.initEvent('mouseover', true, true);
+          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);  
+      });
+      it('Check the custom filter of excel filter', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if(args.requestType === 'filtering'){
+            expect(gridObj.getRows().length ==0).toBe(true);
+        }
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        (<HTMLElement>document.getElementsByClassName('e-excel-menu')[0].querySelector('.e-menu-item')).click();
+        var actObj = (<any>document.getElementById('taskName-xlfl-frstvalue')).ej2_instances[0];
+        actObj.value="design";
+        var matchObj=(<any>document.getElementById('taskName-xlflmtcase')).ej2_instances[0];
+        matchObj.checked=true;
+        (<HTMLElement>document.getElementsByClassName('e-footer-content')[0].querySelector('.e-primary')).click();
+    });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
 });

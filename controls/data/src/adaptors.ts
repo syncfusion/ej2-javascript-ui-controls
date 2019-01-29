@@ -752,7 +752,9 @@ export class UrlAdaptor extends Adaptor {
  */
 export class ODataAdaptor extends UrlAdaptor {
 
-    private getModuleName: Function;
+    protected getModuleName(): string {
+        return 'ODataAdaptor';
+    }
 
     // options replaced the default adaptor options
     protected options: RemoteOptions = extend({}, this.options, {
@@ -777,7 +779,6 @@ export class ODataAdaptor extends UrlAdaptor {
     });
     constructor(props?: RemoteOptions) {
         super();
-        this.getModuleName = getValue('getModulename', this);
         extend(this.options, props || {});
     }
     /**
@@ -823,10 +824,8 @@ export class ODataAdaptor extends UrlAdaptor {
             return returnValue + val;
         }
 
-        if (!isNullOrUndefined(this.getModuleName)) {
-            if (this.getModuleName() === 'ODataV4Adaptor') {
-                operator = DataUtil.odv4UniOperator[predicate.operator];
-            }
+        if (!isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor' ) {
+            operator = DataUtil.odv4UniOperator[predicate.operator];
         } else {
             operator = DataUtil.odUniOperator[predicate.operator];
         }
@@ -1351,9 +1350,9 @@ export class ODataV4Adaptor extends ODataAdaptor {
     /**
      * @hidden
      */
-    protected getModulename(): string {
+    protected getModuleName(): string {
         return 'ODataV4Adaptor';
-    };
+    }
 
     // options replaced the default adaptor options
     protected options: RemoteOptions = extend({}, this.options, {
@@ -1382,7 +1381,6 @@ export class ODataV4Adaptor extends ODataAdaptor {
 
     constructor(props?: RemoteOptions) {
         super(props);
-        getValue('getModulename', this.getModulename());
         extend(this.options, props || {});
     }
 
@@ -1538,6 +1536,10 @@ export class ODataV4Adaptor extends ODataAdaptor {
  * @hidden
  */
 export class WebApiAdaptor extends ODataAdaptor {
+
+    protected getModuleName(): string {
+        return 'WebApiAdaptor';
+    }
 
     /**
      * Prepare and returns request body which is used to insert a new record in the table.

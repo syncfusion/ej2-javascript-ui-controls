@@ -660,7 +660,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         Collection([{}], ButtonModelProps)
     ], Toast.prototype, "buttons", void 0);
     __decorate([
-        Property()
+        Property(null)
     ], Toast.prototype, "target", void 0);
     __decorate([
         Event()

@@ -20,7 +20,6 @@ import { seriesRender } from '../../common/model/constants';
 import { Alignment, SeriesCategories } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
 import { sort } from '../../common/utils/helper';
-import { Browser } from '@syncfusion/ej2-base';
 
 /**
  * Configures the data label in the series.
@@ -1721,10 +1720,9 @@ export class Series extends SeriesBase {
             let markerWidth: number = (this.type === 'Scatter') ? (this.marker.width + explodeValue) / 2 : 0;
             let options: CircleOption | RectOption;
             if (chart.chartAreaType === 'PolarRadar') {
-                let markerMaxValue: number = (this.drawType === 'Scatter') ? Math.max(this.marker.width, this.marker.height) : 0;
                 options = new CircleOption(
                     elementId + '_ChartSeriesClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1,
-                    this.clipRect.width / 2 + this.clipRect.x, this.clipRect.height / 2 + this.clipRect.y, chart.radius + markerMaxValue
+                    this.clipRect.width / 2 + this.clipRect.x, this.clipRect.height / 2 + this.clipRect.y, chart.radius
                 );
                 this.clipRectElement = appendClipElement(chart.redraw, options, render, 'drawCircularClipPath');
             } else {
@@ -1803,8 +1801,7 @@ export class Series extends SeriesBase {
             if (marker.visible) {
                 chart.markerRender.doMarkerAnimation(this);
             }
-            //to datalabel animation disabled for edge and IE
-            if (dataLabel.visible && Browser.info.name !== 'edge' && !Browser.isIE) {
+            if (dataLabel.visible) {
                 chart.dataLabelModule.doDataLabelAnimation(this);
             }
         }

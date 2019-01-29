@@ -318,10 +318,6 @@ export abstract class LayoutViewer {
      * @private
      */
     public moveCaretPosition: number = 0;
-    /**
-     * @private
-     */
-    public isTextInput: boolean = false;
 
     //#region Properties
     /**
@@ -1006,7 +1002,7 @@ export abstract class LayoutViewer {
                     clearTimeout(resizeTimer);
                 }
             }
-        }, 200);
+        }, 150);
     }
     /**
      * @private
@@ -1829,19 +1825,12 @@ export abstract class LayoutViewer {
             headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
             footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
         }
-        let isEmptyWidget: boolean = false;
         if (!isNullOrUndefined(page.headerWidget)) {
-            isEmptyWidget = page.headerWidget.isEmpty;
-            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
-            }
+            top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
         }
         let bottom: number = 0.667 + bottomMargin;
         if (!isNullOrUndefined(page.footerWidget)) {
-            isEmptyWidget = page.footerWidget.isEmpty;
-            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
-            }
+            bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
         }
         let width: number = 0; let height: number = 0;
         if (!isNullOrUndefined(sectionFormat)) {
@@ -2684,7 +2673,6 @@ export class PageLayoutViewer extends LayoutViewer {
             let headerFooter: HeaderFooterWidget = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
                 headerFooter = this.createHeaderFooterWidget(type);
-                headerFooter.isEmpty = true;
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;

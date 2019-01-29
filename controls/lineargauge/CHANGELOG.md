@@ -8,31 +8,7 @@
 
 ## [Unreleased]
 
-## 16.4.46 (2019-01-08)
-
-### LinearGauge
-
-#### Bug Fixes
-
-- When hover on pointer, console error thrown fixed now.
-
-## 16.3.32 (2018-11-13)
-
-### LinearGauge
-
-#### Bug Fixes
-
-- Linear gauge is rendering properly now, even if the id is not specified for the div element.
-
-## 16.3.17 (2018-09-12)
-
-### LinearGauge
-
-#### Breaking Changes
-
-- The linear gauge tooltip has been replaced with `EJ2 SVG Tooltip`, so now it is mandatory to include `ej2-svg-base.umd.min.js` in system.js configuration if you are using system.js module loader. Update the system.js configuration while using this version and above.
-
-## 16.1.24
+## 16.1.24 (2018-02-22)
 
 ### Common
 

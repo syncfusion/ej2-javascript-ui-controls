@@ -4108,53 +4108,54 @@ class TreeMapTooltip {
         let markerFill;
         if (targetId.indexOf('_Item_Index') > -1) {
             item = this.treemap.layout.renderItems[parseFloat(targetId.split('_')[6])];
-            toolTipHeader = item['name'];
-            value = item['weight'];
-            this.currentTime = new Date().getTime();
-            toolTipData = item['data'];
-            markerFill = item['options']['fill'];
-            tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
-                    this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
-            if (document.getElementById(this.tooltipId)) {
-                tooltipEle = document.getElementById(this.tooltipId);
-            }
-            else {
-                tooltipEle = createElement('div', {
-                    id: this.treemap.element.id + '_TreeMapTooltip',
-                    className: 'EJ2-TreeMap-Tooltip',
-                    styles: 'position: absolute;pointer-events:none;'
-                });
-                document.getElementById(this.treemap.element.id + '_Secondary_Element').appendChild(tooltipEle);
-            }
-            location = getMousePosition(pageX, pageY, this.treemap.svgObject);
-            location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-            tootipArgs = {
-                cancel: false, name: tooltipRendering, item: item,
-                options: {
-                    location: location, text: tooltipContent, data: toolTipData,
-                    textStyle: this.tooltipSettings.textStyle, template: this.tooltipSettings.template
-                },
-                treemap: this.treemap,
-                element: target, eventArgs: e
-            };
-            this.treemap.trigger(tooltipRendering, tootipArgs);
-            if (!tootipArgs.cancel) {
-                this.svgTooltip = new Tooltip({
-                    enable: true,
-                    header: '',
-                    data: tootipArgs.options['data'],
-                    template: tootipArgs.options['template'],
-                    content: tootipArgs.options['text'],
-                    shapes: [],
-                    location: tootipArgs.options['location'],
-                    palette: [markerFill],
-                    areaBounds: this.treemap.areaRect,
-                    textStyle: tootipArgs.options['textStyle']
-                });
-                this.svgTooltip.appendTo(tooltipEle);
-            }
-            else {
-                this.removeTooltip();
+            if (!isNullOrUndefined(item)) {
+                toolTipHeader = item['name'];
+                value = item['weight'];
+                toolTipData = item['data'];
+                markerFill = item['options']['fill'];
+                tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
+                        this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+                if (document.getElementById(this.tooltipId)) {
+                    tooltipEle = document.getElementById(this.tooltipId);
+                }
+                else {
+                    tooltipEle = createElement('div', {
+                        id: this.treemap.element.id + '_TreeMapTooltip',
+                        className: 'EJ2-TreeMap-Tooltip',
+                        styles: 'position: absolute;pointer-events:none;'
+                    });
+                    document.getElementById(this.treemap.element.id + '_Secondary_Element').appendChild(tooltipEle);
+                }
+                location = getMousePosition(pageX, pageY, this.treemap.svgObject);
+                location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
+                tootipArgs = {
+                    cancel: false, name: tooltipRendering, item: item,
+                    options: {
+                        location: location, text: tooltipContent, data: toolTipData,
+                        textStyle: this.tooltipSettings.textStyle, template: this.tooltipSettings.template
+                    },
+                    treemap: this.treemap,
+                    element: target, eventArgs: e
+                };
+                this.treemap.trigger(tooltipRendering, tootipArgs);
+                if (!tootipArgs.cancel) {
+                    this.svgTooltip = new Tooltip({
+                        enable: true,
+                        header: '',
+                        data: tootipArgs.options['data'],
+                        template: tootipArgs.options['template'],
+                        content: tootipArgs.options['text'],
+                        shapes: [],
+                        location: tootipArgs.options['location'],
+                        palette: [markerFill],
+                        areaBounds: this.treemap.areaRect,
+                        textStyle: tootipArgs.options['textStyle']
+                    });
+                    this.svgTooltip.appendTo(tooltipEle);
+                }
+                else {
+                    this.removeTooltip();
+                }
             }
         }
         else {

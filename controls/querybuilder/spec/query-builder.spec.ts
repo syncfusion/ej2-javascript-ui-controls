@@ -8,13 +8,24 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { Slider } from '@syncfusion/ej2-inputs';
 import { DatePicker } from '@syncfusion/ej2-calendars';
+import { profile , inMB, getMemoryProfile } from './common.spec';
+
 MultiSelect.Inject(CheckBoxSelection);
+
 /**
  * @param  {} 'Button'
  * @param  {} function(
  */
-
 describe('QueryBuilder', () => {
+    beforeAll(() => {
+        const isDef: any = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); // skips test (in Chai)
+            return;
+        }
+    });
+
     let queryBuilder: any;
     let employeeData: Object[] = [{
         'EmployeeID': 1,
@@ -524,7 +535,7 @@ describe('QueryBuilder', () => {
                 'type': 'number',
                 'operator': 'In',
                 'value': ['BERGS']
-            }], 'querybuilder_e_groupundefined');
+            }], 'querybuilder_e_group0');
             expect(queryBuilder.displayMode).toEqual('Vertical');
             let ruleElem: HTMLElement = queryBuilder.element.querySelector('.e-rule-container');
             expect(ruleElem.classList.contains('e-vertical-mode')).toBeTruthy();
@@ -542,7 +553,7 @@ describe('QueryBuilder', () => {
                 'type': 'number',
                 'operator': 'In',
                 'value': ['BERGS']
-            }], 'querybuilder_e_groupundefined');
+            }], 'querybuilder_e_group0');
             expect(queryBuilder.displayMode).toEqual('Horizontal');
             let ruleElem: HTMLElement = queryBuilder.element.querySelector('.e-rule-container');
             expect(ruleElem.classList.contains('e-horizontal-mode')).toBeTruthy();
@@ -675,7 +686,7 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.rule.rules[0].value).toEqual(2);
             //Change the operator 
             operatorElem[0].showPopup();
-           let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+           let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
            items[3].click();
             expect(operatorElem[0].value).toEqual('between');
             expect(queryBuilder.rule.rules[0].operator).toEqual('between');
@@ -702,7 +713,7 @@ describe('QueryBuilder', () => {
             //Change the operator
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
-            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+            items = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
             items[8].click();
             expect(operatorElem[0].value).toEqual('in');
             expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control').length).toBe(2);
@@ -711,7 +722,7 @@ describe('QueryBuilder', () => {
             //Change the field
             filterElem[0].showPopup();
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            items = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
             items[1].click();
             expect(filterElem[0].value).toEqual('FirstName');
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
@@ -722,12 +733,12 @@ describe('QueryBuilder', () => {
 
             //Change the field
             filterElem[0].showPopup();
-            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            items = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
             items[2].click();
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
             operatorElem[0].showPopup();
-            items = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+            items = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
             items[0].click();
             expect(operatorElem[0].value).toEqual('equal');
             expect(queryBuilder.rule.rules[0].operator).toEqual('equal');
@@ -933,7 +944,7 @@ describe('QueryBuilder', () => {
             // Field change
             let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
             filterElem[0].showPopup();
-            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[4].click();
             expect(filterElem[0].value).toEqual('Date');
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('date');
@@ -941,7 +952,7 @@ describe('QueryBuilder', () => {
 
              // Field change
              filterElem[0].showPopup();
-             itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+             itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
              itemsCln[1].click();
              expect(filterElem[0].value).toEqual('PaymentMode');
              expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
@@ -949,7 +960,7 @@ describe('QueryBuilder', () => {
 
           // Field change
           filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+          itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
           itemsCln[2].click();
           expect(filterElem[0].value).toEqual('TransactionType');
           expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
@@ -957,7 +968,7 @@ describe('QueryBuilder', () => {
 
           // Field change
           filterElem[0].showPopup();
-          itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+          itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
              itemsCln[5].click();
           expect(filterElem[0].value).toEqual('Amount');
           expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('number');
@@ -965,7 +976,7 @@ describe('QueryBuilder', () => {
 
            // Field change
            filterElem[0].showPopup();
-           itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+           itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
              itemsCln[3].click();
            expect(filterElem[0].value).toEqual('Description');
            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
@@ -974,10 +985,23 @@ describe('QueryBuilder', () => {
            //Operator change
            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
            operatorElem[0].showPopup();
-           itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+           itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
            itemsCln[5].click();
            expect(operatorElem[0].value).toEqual('in');
            expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-multiselect')).toBeTruthy();
+
+           //Multiple select
+            // multiple select 
+          filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
+          filterElem[0].showPopup();
+          itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
+          itemsCln[5].click();
+          queryBuilder.allowValidation = true;
+          queryBuilder.validateFields();
+          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
+          let msObj: MultiSelect = queryBuilder.element.querySelector('.e-rule-value input.e-control').ej2_instances;
+          queryBuilder.updateRules(msObj[0].element, ['US'], 0);
+          expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
 
         });
     });
@@ -1045,9 +1069,9 @@ describe('QueryBuilder', () => {
                 'type': 'number',
                 'operator': 'In',
                 'value': ['BERGS']
-            }], 'querybuilder_e_groupundefined');
+            }], 'querybuilder_e_group0');
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(2);
-            queryBuilder.deleteRules(['querybuilder_e_groupundefined_e_rule0']);
+            queryBuilder.deleteRules(['querybuilder_e_group0_e_rule0']);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(1);
         });
 
@@ -1065,9 +1089,9 @@ describe('QueryBuilder', () => {
                     'operator': 'In',
                     'value': [4, 5]
                 }]
-            }], 'querybuilder_e_groupundefined');
+            }], 'querybuilder_e_group0');
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(2);
-            queryBuilder.deleteGroups(['querybuilder_e_group0']);
+            queryBuilder.deleteGroups(['querybuilder_e_group1']);
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
         });
 
@@ -1096,7 +1120,7 @@ describe('QueryBuilder', () => {
                     'operator': 'In',
                     'value': [4, 5]
                 }]
-            }], 'querybuilder_e_groupundefined');
+            }], 'querybuilder_e_group0');
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(2);
             let rules: RuleModel = queryBuilder.getRules();
             expect(rules.rules.length).toBe(2);
@@ -1112,7 +1136,7 @@ describe('QueryBuilder', () => {
             expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeTruthy();
             expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
             filterElem[0].showPopup();
-            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
            items[3].click();
            expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
@@ -1121,7 +1145,7 @@ describe('QueryBuilder', () => {
            expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeTruthy();
            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(2);
            filterElem[0].showPopup();
-           items = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+           items = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
           items[3].click();
           expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeFalsy();
           expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
@@ -1154,7 +1178,7 @@ describe('QueryBuilder', () => {
             // Field change
             let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
             filterElem[0].showPopup();
-            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
             itemsCln[2].click();
             expect(filterElem[0].value).toEqual('TitleOfCourtesy');
             expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
@@ -1162,13 +1186,13 @@ describe('QueryBuilder', () => {
              //operator change
              let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
              operatorElem[0].showPopup();
-             itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+             itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
              itemsCln[0].click();
              expect(operatorElem[0].value).toEqual('equal');
              expect(queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].classList.contains('e-radio')).toBeTruthy();
 
              filterElem[0].showPopup();
-             itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule0_filterkey_options').querySelectorAll('li');
+             itemsCln = document.getElementById('querybuilder_e_group0_e_rule0_filterkey_options').querySelectorAll('li');
              itemsCln[1].click();
              expect(filterElem[0].value).toEqual('FirstName');
              expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
@@ -1184,12 +1208,12 @@ describe('QueryBuilder', () => {
             queryBuilder.getRulesFromSql("EmployeeID BETWEEN (4,5) and Title IN ('Sales Manager') and City LIKE ('u%')");
             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
-            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_groupundefined_e_rule0_operatorkey_options').querySelectorAll('li');
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_e_group0_e_rule0_operatorkey_options').querySelectorAll('li');
             itemsCln[5].click();
             expect(operatorElem[0].value).toEqual('notbetween');
             operatorElem  = queryBuilder.element.querySelectorAll('.e-rule-operator .e-control')[1].ej2_instances;
             operatorElem[0].showPopup();
-            itemsCln = document.getElementById('querybuilder_e_groupundefined_e_rule1_operatorkey_options').querySelectorAll('li');
+            itemsCln = document.getElementById('querybuilder_e_group0_e_rule1_operatorkey_options').querySelectorAll('li');
             itemsCln[6].click();
             expect(operatorElem[0].value).toEqual('notin');
             queryBuilder.getFilteredRecords(queryBuilder.rule);
@@ -1198,6 +1222,8 @@ describe('QueryBuilder', () => {
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);
             queryBuilder.setRulesFromSql("EmployeeID BETWEEN (0,0) and Title IN ('Sales Manager') and City LIKE ('u%')");
+            queryBuilder.getRulesFromSql("Category = ('Clothing') and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84");
+            expect(JSON.stringify(queryBuilder.getRulesFromSql("Category = ('Clothing') and (Description LIKE ('%s') or PaymentMode = 'Debit Card') and Amount > 84").rules)).toEqual('[{"label":"Category","field":"Category","operator":"equal","type":"string","value":"("},{"condition":"","rules":[]},{"condition":"or","rules":[{"label":"Description","field":"Description","operator":"startswith","value":"s","type":"string"},{"label":"PaymentMode","field":"PaymentMode","operator":"equal","type":"string","value":"Debit Card"}]},{"label":"Amount","field":"Amount","operator":"greaterthan","type":"number","value":84}]');
         });
         it(' Multiple value in textbox  Checking', () => {
             let valRule: RuleModel = {'condition': 'and',
@@ -1205,14 +1231,22 @@ describe('QueryBuilder', () => {
                 'label': 'First Name',
                 'field': 'FirstName',
                 'type': 'string',
-                'operator': 'in',
-                'value': 'Nancy, Andrew, Janet'
+                'operator': 'equal',
+                'value': ['Nancy', 'Andrew', 'Janet']
             }] };
             queryBuilder = new QueryBuilder({
                 dataSource: employeeData,
                 columns: fieldData,
                 rule: valRule
             }, '#querybuilder');
+            queryBuilder.addRules([{
+                'label': 'First Name',
+                'field': 'FirstName',
+                'type': 'string',
+                'operator': 'equal',
+                'value': 'US,45,45,4'
+            }], 'querybuilder_e_group0');
+            queryBuilder.updateRules( queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0], 'US,45,45,4', 0);
            
         });
     });
@@ -1228,5 +1262,15 @@ describe('QueryBuilder', () => {
         afterEach(() => {
             queryBuilder.destroy();
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        // check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

@@ -6,6 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Marker, ILoadEventArgs, BingMap } from '../../../src/maps/index';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Marker);
 
 let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/a{quadkey}.jpeg?g=6465";
@@ -18,6 +19,14 @@ export function getElementByID(id: string): Element {
 
 let MapData: Object = World_Map;
 describe('Map marker properties tesing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Marker testing', () => {
         let id: string = 'container';
         let map: Maps;
@@ -419,7 +428,7 @@ describe('Map marker properties tesing', () => {
 
         it('checking with add marker method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = <Element>document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_1_DataIndex_0').firstChild;
+                let element: Element = <Element>document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_1_dataIndex_0').firstChild;
                 let triger: MouseEvents = new MouseEvents();
                 triger.clickEvent(element);
                 expect(element.getAttribute('fill')).toBe('blueviolet');
@@ -503,5 +512,14 @@ describe('Map marker properties tesing', () => {
             map.layers[0].layerType = 'OSM';
             map.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

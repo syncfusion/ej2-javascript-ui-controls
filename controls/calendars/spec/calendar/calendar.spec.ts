@@ -2846,6 +2846,16 @@ describe('Calendar', () => {
             expect(+calendarObj.values[2]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[3]));
             expect(+calendarObj.values[3]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[0]));
         });
+        it('Check focus date class is present in last value of multiselection', () => {
+            calendarObj = new Calendar({
+                isMultiSelection: true,
+                values: [new Date('5/3/2018'), new Date('5/6/2018'), new Date('5/9/2018')]
+            });
+            calendarObj.appendTo('#calendar');
+            let length: number = calendarObj.values.length - 1;
+            expect(calendarObj.element.querySelectorAll(".e-selected")[length].classList.contains(".e-focused-date")).toBe(false);
+
+        });
         it('setmodel values Property', () => {
             calendarObj = new Calendar({
                 isMultiSelection: true,

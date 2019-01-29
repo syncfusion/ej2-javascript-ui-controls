@@ -1,5 +1,5 @@
 import { DocumentEditor, ContextType, TableOfContentsSettings } from '../../document-editor/index';
-import { createElement, L10n } from '@syncfusion/ej2-base';
+import { createElement, L10n, classList } from '@syncfusion/ej2-base';
 import { Button, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Toolbar } from '../tool-bar';
@@ -48,15 +48,13 @@ export class TocProperties {
     private initializeTocPane = (): void => {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         // tslint:disable-next-line:max-line-length
-        this.element = createElement('div', { id: this.elementId + '_tocProperties', styles: 'width:270px' });
-        let container: HTMLElement = createElement('div', { className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
-        this.tocHeaderDiv(container);
-        this.initTemplates(container);
-        container = createElement('div', { className: 'e-de-cntr-pane-padding' });
-        this.tocOptionsDiv(container);
-        this.contentStylesDropdown(container);
-        this.checkboxContent(container);
-        this.buttonDiv(container);
+        this.element = createElement('div', { id: this.elementId + '_tocProperties', styles: 'padding:9px;width:269px' });
+        this.tocHeaderDiv();
+        this.initTemplates();
+        this.tocOptionsDiv();
+        this.contentStylesDropdown();
+        this.checkboxContent();
+        this.buttonDiv();
         this.wireEvents();
         this.updateTocProperties();
         this.container.propertiesPaneContainer.appendChild(this.element);
@@ -82,7 +80,7 @@ export class TocProperties {
             this.container.showPropertiesPane = false;
         }
     }
-    private tocHeaderDiv = (container: HTMLElement): void => {
+    private tocHeaderDiv = (): void => {
         let closeButtonFloat: string;
         let headerDivMargin: string;
         let closeButtonMargin: string;
@@ -95,13 +93,11 @@ export class TocProperties {
             headerDivMargin = 'margin-right:5.5px;';
             closeButtonMargin = 'margin-left:7px;';
         }
-
         let headerDiv: HTMLElement = createElement('div', {
             id: this.elementId + 'toc_id',
-            styles: 'display: block;'
+            styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
         });
-        container.appendChild(headerDiv);
-        this.element.appendChild(container);
+        this.element.appendChild(headerDiv);
         let title: HTMLElement = createElement('label', {
             className: 'e-de-ctnr-prop-label'
         });
@@ -113,20 +109,20 @@ export class TocProperties {
         });
         headerDiv.appendChild(this.closeButton);
     }
-    private initTemplates = (container: HTMLElement): void => {
-        this.template1(container);
+    private initTemplates = (): void => {
+        this.template1();
         // tslint:disable-next-line:max-line-length
-        // let div: HTMLElement = createElement('div', { styles: 'display:block;border-top: 1px solid #E0E0E0;' }); this.element.appendChild(div);
+        let div: HTMLElement = createElement('div', { styles: 'display:block;border-top: 1px solid #E0E0E0;' }); this.element.appendChild(div);
     }
 
-    private template1 = (container: HTMLElement): void => {
+    private template1 = (): void => {
         this.template1Div = createElement('div', {
             className: 'e-de-toc-template1'
         });
         if (this.isRtl) {
             this.template1Div.classList.add('e-de-rtl');
         }
-        container.appendChild(this.template1Div);
+        this.element.appendChild(this.template1Div);
         let templateContent1: HTMLElement = createElement('div', {
             className: 'e-de-toc-template1-content1'
         });
@@ -144,10 +140,11 @@ export class TocProperties {
         this.template1Div.appendChild(templateContent3);
     }
 
-    private tocOptionsDiv = (container: HTMLElement): void => {
-        let optionsDiv: HTMLElement = createElement('div');
-        container.appendChild(optionsDiv);
-        this.element.appendChild(container);
+    private tocOptionsDiv = (): void => {
+        let optionsDiv: HTMLElement = createElement('div', {
+            className: 'e-de-toc-optionsdiv'
+        });
+        this.element.appendChild(optionsDiv);
         if (this.isRtl) {
             optionsDiv.classList.add('e-de-rtl');
         }
@@ -174,7 +171,7 @@ export class TocProperties {
         }
         let liInnerDiv: HTMLElement = createElement('div', {
             className: 'e-de-list-header-presetmenu',
-            innerHTML: innerHTML
+            id: 'ui-zlist0', innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
         return liTag;
@@ -184,21 +181,21 @@ export class TocProperties {
         let buttonElement: HTMLButtonElement = createElement('input', { id: id }) as HTMLButtonElement;
         parentDiv.appendChild(buttonElement);
         // tslint:disable-next-line:max-line-length  
-        let dropDownBtn: DropDownList = new DropDownList({ index: selectedIndex, dataSource: content, popupHeight: '150px', cssClass: 'e-de-prop-font-button' }, buttonElement);
+        let dropDownBtn: DropDownList = new DropDownList({ index: selectedIndex, dataSource: content, width: '75px', popupWidth: '75px', cssClass: 'e-de-prop-font-button' }, buttonElement);
         return dropDownBtn;
     }
     /* tslint:disable */
-    private contentStylesDropdown = (container: HTMLElement): void => {
+    private contentStylesDropdown = (): void => {
         let contentStyleElementMargin: string;
         if (!this.isRtl) {
             contentStyleElementMargin = 'margin-left:5.5px;';
         } else {
             contentStyleElementMargin = 'margin-right:5.5px;';
         }
-        let contentStyleElement: HTMLElement = createElement('div', { id: 'contentstyle_div' });
+        let contentStyleElement: HTMLElement = createElement('div', { id: 'contentstyle_div', styles: 'margin-bottom: 10px;' + contentStyleElementMargin });
         // tslint:disable-next-line:max-line-length
         contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents.'));
-        container.appendChild(contentStyleElement);
+        this.element.appendChild(contentStyleElement);
         // let items: ItemModel[] = [{ text: '___________', id: 'solid' }];
 
         // this.borderStyle = this.createDropDownButton(
@@ -211,10 +208,10 @@ export class TocProperties {
         } else {
             labelMargin = 'margin-left:8px';
         }
-        let label: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
+        let label: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: labelMargin });
         label.textContent = this.localObj.getConstant('Levels');
         contentStyleElement.appendChild(label);
-        container.appendChild(contentStyleElement);
+        this.element.appendChild(contentStyleElement);
         let dataSource: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
         this.borderLevelStyle = this.createDropDownButton(
             this.elementId + '_borderLevelDiv',
@@ -223,19 +220,19 @@ export class TocProperties {
         this.borderLevelStyle.change = (args: any): void => {
             this.borderLevelStyle.value = args.item.value;
         };
-        container.appendChild(contentStyleElement);
+        this.element.appendChild(contentStyleElement);
     }
 
-    private checkboxContent = (container: HTMLElement): void => {
+    private checkboxContent = (): void => {
         let checkboxElementMargin: string;
-        if (!this.isRtl) {
+        if (!this.isRtl){
             checkboxElementMargin = 'margin-left:5.5px;';
         } else {
             checkboxElementMargin = 'margin-right:5.5px;';
         }
         // tslint:disable-next-line:max-line-length
-        let checkboxElement: HTMLElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' });
-        container.appendChild(checkboxElement);
+        let checkboxElement: HTMLElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' + checkboxElementMargin });
+        this.element.appendChild(checkboxElement);
         let showPageNumberDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox1' });
         showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents.'));
         checkboxElement.appendChild(showPageNumberDiv);
@@ -271,7 +268,7 @@ export class TocProperties {
         this.hyperlink.appendTo(hyperlinkCheckboxElement);
     }
 
-    private buttonDiv = (container: HTMLElement): void => {
+    private buttonDiv = (): void => {
         let footerElementFloat: string;
         if (!this.isRtl) {
             footerElementFloat = 'float:right';
@@ -279,7 +276,7 @@ export class TocProperties {
             footerElementFloat = 'float:left';
         }
         let footerElement: HTMLElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
-        container.appendChild(footerElement);
+        this.element.appendChild(footerElement);
         let updatebuttoncontentStyleElement: HTMLElement = createElement('button', { id: 'footerupdatebuttonDiv' });
         footerElement.appendChild(updatebuttoncontentStyleElement);
         this.updateBtn = new Button({

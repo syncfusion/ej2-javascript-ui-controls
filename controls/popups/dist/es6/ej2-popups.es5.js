@@ -2557,6 +2557,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         var eventArgs = {
             cancel: false,
             isInteraction: event ? true : false,
+            isInteracted: event ? true : false,
             element: this.element,
             target: this.target,
             container: this.isModal ? this.dlgContainer : this.element,

@@ -154,3 +154,4 @@ export const CLS_TB_ROW_RES: string = 'e-row-resize';
 export const CLS_TB_BOX_RES: string = 'e-table-box';
 /** @hidden */
 export const CLS_RTE_HIDDEN: string = 'e-rte-hidden';
+

@@ -6,6 +6,17 @@
   margin: 0;
   overflow: hidden;
   user-select: none;
+
+  &.e-ul,
+  &.e-ul * {
+    box-sizing: border-box;
+  }
+
+  &.e-ul {
+    &:focus {
+      outline: none;
+    }
+  }
 }
 
 @mixin ul-size {

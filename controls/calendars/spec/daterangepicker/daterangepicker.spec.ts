@@ -311,6 +311,20 @@ describe('DateRangePicker', () => {
                         daterangepicker.appendTo('#date');
                         expect(daterangepicker.inputElement.value == '04/06/2018 10:30 AM - 04/16/2018 10:30 AM').toBe(true);
                     });
+                    it('Element created with object type Format property', () => {
+                        let date = new Date('04/06/2018');
+                        daterangepicker = new DateRangePicker({ format:{skeleton:'short'}, startDate: date, endDate: new Date(new Date('04/06/2018 10:30 AM').setDate(date.getDate() + 10)) });
+                        daterangepicker.appendTo('#date');
+                        expect(daterangepicker.inputElement.value == '4/6/18 - 4/16/18').toBe(true);
+                    });
+                    it('onproperty change for object type Format property', () => {
+                        let date = new Date('04/06/2018 10:30 AM');
+                        daterangepicker = new DateRangePicker({startDate: date, endDate: new Date(new Date('04/06/2018 10:30 AM').setDate(date.getDate() + 10)) });
+                        daterangepicker.appendTo('#date');
+                        daterangepicker.format={skeleton:'short'};
+                        daterangepicker.dataBind();
+                        expect(daterangepicker.inputElement.value == '4/6/18 - 4/16/18').toBe(true);
+                    });
                     it('Element created with placeholder property', () => {
                         daterangepicker = new DateRangePicker({ placeholder: 'Select a range' });
                         daterangepicker.appendTo('#date');
@@ -425,13 +439,6 @@ describe('DateRangePicker', () => {
             });
             it('clear icon', () => {
                 expect(daterangepicker.inputWrapper.clearButton.classList.contains('e-clear-icon')).toBe(true);
-            });
-            it('clear button with destroy state', () => {
-                daterangepicker.showClearButton = false;
-                daterangepicker.dataBind();
-                daterangepicker.destroy();
-                expect(daterangepicker.inputWrapper===null).toBe(true);
-                daterangepicker = null;
             });
             it('Clear button Setmodel', () => {
                 daterangepicker.showClearButton = false;

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.1.1-beta (2019-01-22)
+
+### MaskedTextBox
+
+#### New Features
+
+- Provided the "focus" and "blur" events for MaskedTextBox that will trigger when the control got focus or losses focus.
+
+### NumericTextBox
+
+#### New Features
+
+- Provided the "focus" and "blur" events for NumericTextBox that will trigger when the control got focus or losses focus.
+
 ## 16.4.48 (2019-01-22)
 
 ### Uploader

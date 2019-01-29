@@ -58,7 +58,7 @@ function setMouseCordinates(eventarg: any, x: number, y: number): Object {
 
 describe('TreeView control', () => {
     describe('DOM element testing', () => {
-		beforeAll(() => {
+        beforeAll(() => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
@@ -11237,7 +11237,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
             done();
         });
     });
-	it('memory leak testing', () => {
+    it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

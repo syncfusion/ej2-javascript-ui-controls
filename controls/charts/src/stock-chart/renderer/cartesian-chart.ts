@@ -163,7 +163,7 @@ export class CartesianChart {
      * @param start
      * @param end
      */
-    public cartesianChartRefresh(stockChart: StockChart, start: number, end: number, data?: object[]): void {
+    public cartesianChartRefresh(stockChart: StockChart, start: number, end: number, data?: Object[]): void {
         stockChart.chart.series.forEach((series: Series) => {
             series.dataSource = data ? data : ((stockChart.tempDataSource[series.index] ||
                 stockChart.dataSource) as Object[]).filter((data: Object) => {

@@ -8,7 +8,7 @@ let numeric: NumericTextBox = new NumericTextBox({
         (<HTMLInputElement>document.getElementById("events")).value = (<HTMLInputElement>document.getElementById("events")).value + 'NumericTextBox has been created. \\\n';
     },
     change: function(args:ChangeEventArgs) {
-        (<HTMLInputElement>document.getElementById("events")).value = (<HTMLInputElement>document.getElementById("events")).value + 'NumericTextBox value has been changed -->'+ args.previousValue+'-->'+ args.value+'    isInteracted-->'+args.isInteracted+'    name-->'+args.name+'\\\n';
+        (<HTMLInputElement>document.getElementById("events")).value = (<HTMLInputElement>document.getElementById("events")).value + 'NumericTextBox value has been changed -->'+ args.previousValue+'-->'+ args.value+'    isInteraction-->'+args.isInteraction+'    name-->'+args.name+'\\\n';
     },
     destroyed: function(args:ChangeEventArgs) {
         (<HTMLInputElement>document.getElementById("events")).value = (<HTMLInputElement>document.getElementById("events")).value + 'NumericTextBox has been destroyed. \\\n';

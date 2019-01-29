@@ -6,9 +6,18 @@ import { Population_Density } from '../data/PopulationDensity.spec';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
 import { getElement } from '../../../src/maps/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { ILoadedEventArgs, Highlight, Maps, Legend, Selection } from '../../../src/maps/index';
 Maps.Inject(Highlight, Legend, Selection);
 describe('Selection Settings', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Testing selection is applied or not', () => {
         let id: string = 'container';
         let highlight: Maps;
@@ -42,7 +51,7 @@ describe('Selection Settings', () => {
         });
         it('Highlight checking', (done: Function) => {
             highlight.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_2_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_2_dataIndex_undefined');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             expect(spec.getAttribute('class')).toBe('highlightMapStyle');
             done();
@@ -50,13 +59,13 @@ describe('Selection Settings', () => {
             highlight.appendTo('#' + id);
         });
         it('Highlight same element', (done: Function) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_2_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_2_dataIndex_undefined');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             expect(spec.getAttribute('class')).toBe('highlightMapStyle');
             done();
         });
         it('Moving to next element in highlight', (done: Function) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_4_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_4_dataIndex_undefined');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             expect(spec.getAttribute('class')).toBe('highlightMapStyle');
             done();
@@ -69,13 +78,13 @@ describe('Selection Settings', () => {
         });
         it('Highlight checking using public method', (done: Function) => {
             highlight.highlightModule.addHighlight(0, 'Minnesota', true);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_1_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_1_dataIndex_undefined');
             expect(spec.getAttribute('class')).toBe('highlightMapStyle');
             done();
         });
         it('Checking remove highlight using public method', (done: Function) => {
             highlight.highlightModule.addHighlight(0, 'Minnesota', false);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_1_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_1_dataIndex_undefined');
             expect(spec.getAttribute('class')).toBe(null);
             done();
         });
@@ -182,7 +191,7 @@ describe('Testing bubble, marker and navigation line highlight', () => {
                 spec = getElement('container_LayerIndex_0_BubbleIndex_0_dataIndex_2');
                 trigger.mousemoveEvent(spec, 0, 0, 0, 0);
                 expect(spec.getAttribute('class')).toBe('highlightMapStyle');
-                spec = getElement('container_LayerIndex_0_MarkerIndex_0_DataIndex_3');
+                spec = getElement('container_LayerIndex_0_MarkerIndex_0_dataIndex_3');
                 trigger.mousemoveEvent(spec, 0, 0, 0, 0);
                 expect(spec.getAttribute('class')).toBe('highlightMapStyle');
                 spec = getElement('container_LayerIndex_0_NavigationIndex_0_Line0');
@@ -204,7 +213,7 @@ describe('Testing bubble, marker and navigation line highlight', () => {
     it('Disabling selection', (done: Function) => {
         world.layers[0].highlightSettings.enable = false;
         world.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_64_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_64_dataIndex_undefined');
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
             expect(spec.getAttribute('class')).not.toBe('highlightMapStyle');
             done();
@@ -284,7 +293,7 @@ describe('Highlight Settings', () => {
         });
         it('Highlight checking for legends on shapes', (done: Function) => {
             highlight.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_134_dataIndex_125');
+            spec = getElement('container_LayerIndex_0_shapeIndex_134_dataIndex_125');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             done();
         };
@@ -330,13 +339,13 @@ describe('Highlight Settings', () => {
         });
         it('Highlight after selection on shapes', (done: Function) => {
             highlight.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_26_dataIndex_25');
+            spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_25');
             trigger.clickEvent(spec);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_108_dataIndex_95');
+            spec = getElement('container_LayerIndex_0_shapeIndex_108_dataIndex_95');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             spec = getElement('container_MapAreaBorder');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_29_dataIndex_29');
+            spec = getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_29');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             done();
         };
@@ -357,7 +366,7 @@ describe('Highlight Settings', () => {
         });
         it('Shape highlight with other window', (done: Function) => {
             highlight.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_29_dataIndex_29');
+            spec = getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_29');
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
             let eventObj: Object = {};
             eventObj = {
@@ -372,5 +381,14 @@ describe('Highlight Settings', () => {
             highlight.legendSettings.mode = 'Interactive';
             highlight.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

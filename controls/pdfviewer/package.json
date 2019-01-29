@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-pdfviewer",
-	"version": "16.4.47",
+	"version": "16.4.42",
 	"description": "Essential JS 2 PDF viewer Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -15,7 +15,8 @@
 		"@syncfusion/ej2-dropdowns": "*",
 		"@syncfusion/ej2-popups": "*",
 		"@syncfusion/ej2-buttons": "*",
-		"@syncfusion/ej2-lists": "*"
+		"@syncfusion/ej2-lists": "*",
+		"@syncfusion/ej2-notifications": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

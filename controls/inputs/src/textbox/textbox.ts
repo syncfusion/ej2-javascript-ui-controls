@@ -28,8 +28,10 @@ export interface FocusOutEventArgs {
 export interface ChangedEventArgs extends FocusInEventArgs {
     /** Returns the previously entered value of the TextBox. */
     previousValue?: string;
-    /** Returns the original event. */
+    /** DEPRECATED-Returns the original event. */
     isInteraction?: boolean;
+    /** Returns the original event. */
+    isInteracted?: boolean;
 }
 
 export interface InputEventArgs extends FocusInEventArgs {
@@ -369,7 +371,8 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
             value: this.value,
             previousValue: this.previousValue,
             container: this.textboxWrapper.container,
-            isInteraction: interaction ? interaction : false
+            isInteraction: interaction ? interaction : false,
+            isInteracted: interaction ? interaction : false
         };
         this.trigger('change', eventArgs);
         this.previousValue = this.value;

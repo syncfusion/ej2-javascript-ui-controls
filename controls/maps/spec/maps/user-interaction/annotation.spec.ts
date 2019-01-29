@@ -1,15 +1,24 @@
+/**
+ * Annotation spec document
+ */
 import { Maps, ILoadedEventArgs, ITouches } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Zoom, Bubble, Marker, Annotations } from '../../../src/maps/index';
-import { getElementByID } from '../layers/colormapping.spec';
-import { electiondata, randomcountriesData } from '../data/us-data.spec';
-import { Point } from '../../../src/maps/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble, Annotations);
 
 let MapData: Object = World_Map;
 describe('Zoom feature tesing for map control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Checking tool bar zooming', () => {
         let id: string = 'container';
         let map: Maps;
@@ -108,6 +117,14 @@ describe('Zoom feature tesing for map control', () => {
             }];
             map.refresh();
         });
-
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

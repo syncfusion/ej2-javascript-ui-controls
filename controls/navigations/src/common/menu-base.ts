@@ -727,7 +727,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private getPopups(): Element[] {
-        return [].slice.call(document.querySelectorAll('.' + POPUP));
+        let popups: Element[] = [];
+        let ele: NodeListOf<Element> = document.querySelectorAll('.' + POPUP);
+        ele.forEach((elem: Element) => {
+            if (this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
+                popups.push(elem);
+            }
+        });
+        return popups;
     }
 
     private isMenuVisible(): boolean {
@@ -1026,7 +1033,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
         if (this.isMenu) {
-            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup')) && !cli) {
+            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
+                && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
                     this.closeMenu(null, e);

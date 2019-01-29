@@ -55,8 +55,8 @@ export class Highlight {
             let data: object;
             let shapeIn: number;
             let dataIndex: number;
-            if (targetEle.id.indexOf('ShapeIndex') > -1) {
-                shapeIn = parseInt(targetEle.id.split('_ShapeIndex_')[1].split('_')[0], 10);
+            if (targetEle.id.indexOf('shapeIndex') > -1) {
+                shapeIn = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
                     this.maps.layers[layerIndex].shapeData['features'][shapeIn]['properties'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
@@ -69,7 +69,7 @@ export class Highlight {
                 this.highlightSettings = this.maps.layers[layerIndex].bubbleSettings[bubble].highlightSettings;
             } else if (targetEle.id.indexOf('MarkerIndex') > -1) {
                 let marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_DataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[marker].dataSource[dataIndex];
                 this.highlightSettings = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings;
             } else {
@@ -94,7 +94,7 @@ export class Highlight {
                     removeClass(element);
                     if (element.id.indexOf('NavigationIndex') > -1) {
                         let index: number = parseInt(element.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                        let layerIndex: number = parseInt(element.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                        let layerIndex: number = parseInt(element.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                         element.setAttribute(
                             'stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                         element.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
@@ -105,7 +105,7 @@ export class Highlight {
             targetEle = <Element>getElementsByClassName('highlightMapStyle')[0];
             if (targetEle.id.indexOf('NavigationIndex') > -1) {
                 let index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                layerIndex = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
@@ -150,7 +150,7 @@ export class Highlight {
                 removeClass(elem);
                 if (elem.id.indexOf('NavigationIndex') > -1) {
                     let index: number = parseInt(elem.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex: number = parseInt(elem.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                    let layerIndex: number = parseInt(elem.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     elem.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     elem.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }

@@ -438,3 +438,12 @@ describe('Toolbar- public Method testing', function () {
         browser.compareScreen(element(By.id('ej2Toolbar')), 'tbar_removeAlign3_api');
     },120000);
 });
+
+describe('Toolbar - overflow mode set as extended', function () {
+    it('showTextOn property with popup open', function () {
+        browser.load('/demos/Toolbar/toolbar-extended.html');
+        load_delay(2000, 'presence',element(By.css('.e-toolbar.e-keyboard.e-control')));
+        browser.executeScript("document.getElementById('toolbar_pop_nav').click();")
+        browser.compareScreen(element(By.id('Toolbar')), 'tbar_overflow_extended_showtexton_popup_open');
+    },120000);
+});

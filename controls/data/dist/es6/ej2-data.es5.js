@@ -1,4 +1,4 @@
-import { Ajax, extend, getValue, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
+import { Ajax, extend, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Query class is used to build query which is used by the DataManager to communicate with datasource.
@@ -3211,10 +3211,12 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
             batchChangeSetContentType: 'Content-Type: application/json; charset=utf-8 ',
             updateType: 'PUT'
         });
-        _this.getModuleName = getValue('getModulename', _this);
         extend(_this.options, props || {});
         return _this;
     }
+    ODataAdaptor.prototype.getModuleName = function () {
+        return 'ODataAdaptor';
+    };
     /**
      * Generate request string based on the filter criteria from query.
      * @param  {Predicate} pred
@@ -3255,10 +3257,8 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
             }
             return returnValue + val;
         }
-        if (!isNullOrUndefined(this.getModuleName)) {
-            if (this.getModuleName() === 'ODataV4Adaptor') {
-                operator = DataUtil.odv4UniOperator[predicate.operator];
-            }
+        if (!isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor') {
+            operator = DataUtil.odv4UniOperator[predicate.operator];
         }
         else {
             operator = DataUtil.odUniOperator[predicate.operator];
@@ -3784,17 +3784,15 @@ var ODataV4Adaptor = /** @__PURE__ @class */ (function (_super) {
             localTime: false,
             apply: '$apply'
         });
-        getValue('getModulename', _this.getModulename());
         extend(_this.options, props || {});
         return _this;
     }
     /**
      * @hidden
      */
-    ODataV4Adaptor.prototype.getModulename = function () {
+    ODataV4Adaptor.prototype.getModuleName = function () {
         return 'ODataV4Adaptor';
     };
-    
     /**
      * Returns the query string which requests total count from the data source.
      * @param  {boolean} e
@@ -3940,6 +3938,9 @@ var WebApiAdaptor = /** @__PURE__ @class */ (function (_super) {
     function WebApiAdaptor() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    WebApiAdaptor.prototype.getModuleName = function () {
+        return 'WebApiAdaptor';
+    };
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
      * @param  {DataManager} dm

@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 16.3.30 (2018-10-31)
+## 17.1.1-beta (2019-01-22)
 
 ### Common
 
 #### Bug Fixes
 
-- Fixed `exporting issue` while complex field value is null.
+- Fixed `e-control` class removed after control refresh issue.
 
 ## 16.3.29 (2018-10-31)
 

@@ -781,7 +781,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 for (let i: number = 0; i < elements.childNodes.length; i++) {
                     let childElement: SVGAElement = elements.childNodes[i] as SVGAElement;
                     if (childElement.tagName === 'g') {
-                        let layerIndex: number = parseFloat(childElement.id.split('_')[2]);
+                        let layerIndex: number = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                         for (let j: number = 0; j < childElement.childNodes.length; j++) {
                             let childNode: Element = <Element>childElement.childNodes[j];
                             if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
@@ -1036,7 +1036,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY
         };
         this.trigger(click, eventArgs);
-        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+        if (targetEle.id.indexOf('shapeIndex') !== -1) {
             let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
@@ -1075,7 +1075,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             pageY = e.pageY;
             target = <Element>e.target;
         }
-        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+        if (targetEle.id.indexOf('shapeIndex') !== -1) {
             let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
@@ -1118,7 +1118,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let touches: TouchList = null;
         target = (e.type === 'touchmove') ? <Element>(<TouchEvent & PointerEvent>e).target :
             target = <Element>e.target;
-        // if (target.id.indexOf('ShapeIndex') !== -1 && !this.highlightSettings.enable) {
+        // if (target.id.indexOf('shapeIndex') !== -1 && !this.highlightSettings.enable) {
         //     triggerShapeEvent(target.id, this.highlightSettings, this, shapeHighlight);
         // }
         if (this.markerModule) {

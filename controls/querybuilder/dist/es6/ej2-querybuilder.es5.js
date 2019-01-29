@@ -124,14 +124,7 @@ var ShowButtons = /** @__PURE__ @class */ (function (_super) {
 var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __extends(QueryBuilder, _super);
     function QueryBuilder(options, element) {
-        var _this = _super.call(this, options, element) || this;
-        _this.groupIdCounter = 0;
-        _this.ruleIdCounter = 0;
-        _this.btnGroupId = 0;
-        _this.isImportRules = false;
-        _this.parser = [];
-        _this.intl = new Internationalization();
-        return _this;
+        return _super.call(this, options, element) || this;
     }
     QueryBuilder.prototype.getPersistData = function () {
         return this.addOnPersist(['rule']);
@@ -752,7 +745,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            detach(inputElement[i]);
+            if (document.getElementById(inputElement[i].id)) {
+                detach(inputElement[i]);
+            }
         }
         for (var i = 0, len = divElement.length; i < len; i++) {
             if (divElement[i].className.indexOf('e-template') > -1) {
@@ -1529,6 +1524,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization();
+        this.groupIdCounter = 0;
+        this.ruleIdCounter = 0;
+        this.btnGroupId = 0;
+        this.isImportRules = false;
+        this.parser = [];
         this.customOperators = {
             stringOperator: [
                 { value: 'startswith', key: this.l10n.getConstant('StartsWith') },
@@ -1685,6 +1685,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.isImportRules = true;
         this.rule = rule;
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
+        this.isImportRules = false;
     };
     /**
      * Set the rule or rules collection.

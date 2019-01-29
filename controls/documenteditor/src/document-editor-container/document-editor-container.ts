@@ -258,9 +258,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             'Access to system clipboard through script is denied due to browsers security policy. Instead, </br>' +
             ' 1. You can enable internal clipboard to cut, copy and paste within the component.</br>' +
             ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
-        'Restrict editing.': 'Restrict editing.',
-        // tslint:disable-next-line:max-line-length
-        'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.'
+        'Restrict editing.': 'Restrict editing.'
 
     };
 
@@ -373,7 +371,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             viewChange: this.onViewChange.bind(this),
             locale: this.locale
         });
-        this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
         this.documentEditor.pageOutline = '#E0E0E0';
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);

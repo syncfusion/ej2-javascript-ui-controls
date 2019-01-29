@@ -680,7 +680,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * Customize the legend background
-     * @default transparent
+     * @default 'transparent'
      */
     @Property('transparent')
     public background: string;

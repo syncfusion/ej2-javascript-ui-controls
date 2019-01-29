@@ -1,7 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { NodeModel, PathModel, FlowShapeModel, TextModel,BasicShapeModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, PathModel, FlowShapeModel, TextModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { TextStyle } from '../../../src/diagram/core/appearance';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Rect } from '../../../src/diagram/primitives/rect';
@@ -11,11 +11,12 @@ import { Node } from '../../../src/diagram/objects/node';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { HistoryEntry, History } from '../../../src/diagram/diagram/history';
-import { PortVisibility,PortConstraints,DiagramTools, NodeConstraints } from '../../../src/diagram/enum/enum';
+import { PortVisibility, PortConstraints, DiagramTools, NodeConstraints } from '../../../src/diagram/enum/enum';
 import {
     SymbolPalette, SymbolInfo, PaletteModel
 } from '../../../src/symbol-palette/index';
 import { IElement, TextElement, StackPanel, DiagramElement, randomId } from '../../../src/diagram/index';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 /**
  * Interaction Specification Document
@@ -29,6 +30,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram12' });
             document.body.appendChild(ele);
             let connector1: ConnectorModel = {
@@ -62,7 +69,7 @@ describe('Diagram Control', () => {
                 }],
                 annotations: [{ content: 'Connect' }]
             };
-              let node33: NodeModel = {
+            let node33: NodeModel = {
                 id: 'node33', width: 100, height: 150, offsetX: 300, offsetY: 500,
                 ports: [{
                     shape: 'Circle',
@@ -90,7 +97,7 @@ describe('Diagram Control', () => {
                 }],
                 annotations: [{ content: 'Port Hidden' }]
             };
-             let node5: NodeModel = {
+            let node5: NodeModel = {
                 id: 'node5', width: 100, height: 100, offsetX: 100, offsetY: 300,
                 ports: [
                     {
@@ -106,12 +113,12 @@ describe('Diagram Control', () => {
                 ],
                 annotations: [{ content: 'Port Hidden' }]
             };
-                  var node6 :NodeModel= {
-                    id: 'node6', width: 100, height: 100, offsetX: 300, offsetY: 400,
-                    annotations: [{ content: 'connector node' }]
-                };
+            var node6: NodeModel = {
+                id: 'node6', width: 100, height: 100, offsetX: 300, offsetY: 400,
+                annotations: [{ content: 'connector node' }]
+            };
             diagram = new Diagram({
-                width: 1000, height: 1000, nodes: [node1, node2, node3, node4,node33], connectors: [connector1] 
+                width: 1000, height: 1000, nodes: [node1, node2, node3, node4, node33], connectors: [connector1]
             });
 
             diagram.appendTo('#diagram12');
@@ -172,8 +179,8 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[3] as Node).wrapper.children[2].visible === false).toBe(true);
             done();
         });
-         it('Checking PortVisibility - Connect-issue', (done: Function) => {
-              
+        it('Checking PortVisibility - Connect-issue', (done: Function) => {
+
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 300, 500);
             mouseEvents.dragEvent(diagramCanvas, 300, 500, 300, 200);
@@ -181,27 +188,24 @@ describe('Diagram Control', () => {
             mouseEvents.dragEvent(diagramCanvas, 350, 100, 300, 100);
             expect((diagram.nodes[1] as Node).wrapper.children[2].visible === true).toBe(true);
             mouseEvents.dragEvent(diagramCanvas, 350, 100, 300, 200);
-            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === false&&(diagram.nodes[4] as Node).wrapper.children[2].visible===true).toBe(true);
+            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === false && (diagram.nodes[4] as Node).wrapper.children[2].visible === true).toBe(true);
             done();
 
         });
         it('Checking Port drag constraints and draw constraints for port hidden and hover ', (done: Function) => {
-             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-             mouseEvents.clickEvent(diagramCanvas, 500, 300);
-             mouseEvents.clickEvent(diagramCanvas, 500, 300);
-             mouseEvents.mouseMoveEvent(diagramCanvas, 100, 300);
-             mouseEvents.mouseMoveEvent(diagramCanvas, 52, 253);
-             let element1 = document.getElementById('diagram12content')
-             expect(element1.style.cursor != 'crosshair').toBe(true);
-             mouseEvents.clickEvent(diagramCanvas, 500, 300);
-             mouseEvents.mouseMoveEvent(diagramCanvas, 156 + 8, 251);
-             let element2 = document.getElementById('diagram12content')
-             expect(element2.style.cursor != 'pointer').toBe(true);
-             done();
-         })
-
-
-
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 500, 300);
+            mouseEvents.clickEvent(diagramCanvas, 500, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 100, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 52, 253);
+            let element1 = document.getElementById('diagram12content')
+            expect(element1.style.cursor != 'crosshair').toBe(true);
+            mouseEvents.clickEvent(diagramCanvas, 500, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 156 + 8, 251);
+            let element2 = document.getElementById('diagram12content')
+            expect(element2.style.cursor != 'pointer').toBe(true);
+            done();
+        })
     });
     describe('Testing symbol palette', () => {
         let diagram: Diagram;
@@ -287,6 +291,12 @@ describe('Diagram Control', () => {
         };
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
             ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
             ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
@@ -337,7 +347,7 @@ describe('Diagram Control', () => {
         it('Checking PortVisibility - Hover issue', (done: Function) => {
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.mouseMoveEvent(diagramCanvas, 40+diagram.element.offsetLeft, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 40 + diagram.element.offsetLeft, 100);
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === true).toBe(true);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
@@ -347,10 +357,16 @@ describe('Diagram Control', () => {
     describe('Port Visiblity', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let diagramCanvas:HTMLElement;
+        let diagramCanvas: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram12' });
             document.body.appendChild(ele);
 
@@ -371,22 +387,22 @@ describe('Diagram Control', () => {
                         { id: 'port4', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 1, y: 1 } }
                         ]
                     },
-                {
-                    id: 'node3', width: 100, height: 100, offsetX: 50, offsetY: 300,
-                    ports: [{ id: 'port1', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0, y: 0 } },
-                    { id: 'port2', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 1, y: 0 } },
-                    { id: 'port3', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0, y: 1 } },
-                    { id: 'port4', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 1, y: 1 } }
-                    ]
+                    {
+                        id: 'node3', width: 100, height: 100, offsetX: 50, offsetY: 300,
+                        ports: [{ id: 'port1', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0, y: 0 } },
+                        { id: 'port2', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 1, y: 0 } },
+                        { id: 'port3', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0, y: 1 } },
+                        { id: 'port4', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 1, y: 1 } }
+                        ]
 
-                },{
-                    id: 'node4', width: 100, height: 100, offsetX: 400, offsetY: 400,
-                    ports: [{ id: 'port1', visibility: PortVisibility.Connect|PortVisibility.Hover, shape: 'Circle', offset: { x: 0, y: 0 } },]
+                    }, {
+                        id: 'node4', width: 100, height: 100, offsetX: 400, offsetY: 400,
+                        ports: [{ id: 'port1', visibility: PortVisibility.Connect | PortVisibility.Hover, shape: 'Circle', offset: { x: 0, y: 0 } },]
 
-                }
+                    }
                 ], connectors: [{
-                        type: 'Orthogonal', sourcePoint: { x: 400, y: 400 }, targetPoint: { x: 500, y: 500 },
-                    }]
+                    type: 'Orthogonal', sourcePoint: { x: 400, y: 400 }, targetPoint: { x: 500, y: 500 },
+                }]
             });
 
             diagram.appendTo('#diagram12');
@@ -399,7 +415,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking PortVisibility - Hover When try to create the connection', (done: Function) => {
-            
+
             diagram.select([diagram.connectors[0]]);
             var node1 = diagram.nodes[0];
             expect(document.getElementById('node1_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port2').getAttribute('visibility') == 'hidden' &&
@@ -438,21 +454,20 @@ describe('Diagram Control', () => {
                 document.getElementById('node3_port3').getAttribute('visibility') == 'visible' && document.getElementById('node3_port4').getAttribute('visibility') == 'visible').toBe(true);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
             expect(document.getElementById('node3_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node3_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('node3_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node3_port4').getAttribute('visibility') == 'hidden').toBe(true);            
+                document.getElementById('node3_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node3_port4').getAttribute('visibility') == 'hidden').toBe(true);
             done();
         });
         it('Checking PortVisibility with drawing tool', (done: Function) => {
             diagram.tool = DiagramTools.DrawOnce;
             let shape: BasicShapeModel = { type: 'Basic', shape: 'Diamond' };
             let node: NodeModel =
-                {shape: shape};
+                { shape: shape };
             diagram.drawingObject = node;
             diagram.dataBind();
             mouseEvents.mouseMoveEvent(diagramCanvas, 400, 400, false, false);
-            expect(diagram.nodes[3].wrapper.children[1].visible===false).toBe(true)
+            expect(diagram.nodes[3].wrapper.children[1].visible === false).toBe(true)
             done();
         })
-
     });
 
     describe('Port Visiblity', () => {
@@ -462,6 +477,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram123' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -495,5 +516,14 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as Node).wrapper.children[1].visible === false).toBe(true);
             done();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

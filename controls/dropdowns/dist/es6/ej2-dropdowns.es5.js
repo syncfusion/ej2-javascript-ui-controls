@@ -1058,6 +1058,9 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DropDownBase.prototype, "ignoreAccent", void 0);
     __decorate([
+        Property()
+    ], DropDownBase.prototype, "locale", void 0);
+    __decorate([
         Event()
     ], DropDownBase.prototype, "actionBegin", void 0);
     __decorate([
@@ -5137,36 +5140,35 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.wrapperClick = function (e) {
         this.setDynValue = false;
-        if (this.readonly || !this.enabled) {
+        if (!this.enabled) {
             return;
         }
         if (e.target === this.overAllClear) {
             e.preventDefault();
             return;
         }
-        if (!this.inputFocus && this.mode !== 'CheckBox') {
-            this.dispatchEvent(this.inputElement, 'focus');
+        if (!this.inputFocus) {
+            this.inputElement.focus();
         }
-        if (!this.inputFocus && this.mode === 'CheckBox') {
-            this.focusIn(e);
-        }
-        if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
-            if (this.isPopupOpen()) {
-                this.refreshPopup();
+        if (!this.readonly) {
+            if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
+                if (this.isPopupOpen()) {
+                    this.refreshPopup();
+                }
+                return;
             }
-            return;
-        }
-        if (!this.isPopupOpen() &&
-            (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
-            this.showPopup();
-        }
-        else {
-            this.hidePopup();
-            if (this.mode === 'CheckBox') {
-                this.showOverAllClear();
-                this.inputFocus = true;
-                if (!this.overAllWrapper.classList.contains(FOCUS)) {
-                    this.overAllWrapper.classList.add(FOCUS);
+            if (!this.isPopupOpen() &&
+                (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
+                this.showPopup();
+            }
+            else {
+                this.hidePopup();
+                if (this.mode === 'CheckBox') {
+                    this.showOverAllClear();
+                    this.inputFocus = true;
+                    if (!this.overAllWrapper.classList.contains(FOCUS)) {
+                        this.overAllWrapper.classList.add(FOCUS);
+                    }
                 }
             }
         }
@@ -5296,7 +5298,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             + ':not(.' + HIDE_LIST + ')') : null;
     };
     MultiSelect.prototype.focusIn = function (e) {
-        if (this.enabled && !this.readonly) {
+        if (this.enabled) {
             this.showOverAllClear();
             this.inputFocus = true;
             if (!this.value) {
@@ -5396,6 +5398,16 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.setAttribute('aria-activedescendant', focusedItem.id);
         }
     };
+    MultiSelect.prototype.homeNavigation = function (isHome) {
+        this.removeFocus();
+        var scrollEle = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
+            + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+        if (scrollEle.length > 0) {
+            var element = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
+            element.classList.add(dropDownBaseClasses.focus);
+            this.scrollBottom(element);
+        }
+    };
     MultiSelect.prototype.onKeyDown = function (e) {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
             return;
@@ -5414,7 +5426,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             var activeIndex = void 0;
             switch (e.keyCode) {
                 case 36:
-                case 35: break;
+                case 35:
+                    this.homeNavigation((e.keyCode === 36) ? true : false);
+                    break;
                 case 33:
                     e.preventDefault();
                     if (focusedItem) {
@@ -7838,7 +7852,12 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         }
         if (!this.parent.overAllWrapper.contains(e.target) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            this.parent.onBlur(e);
+            if (Browser.isIE) {
+                this.parent.onBlur();
+            }
+            else {
+                this.parent.inputElement.blur();
+            }
         }
         if (this.filterInput === target) {
             this.filterInput.focus();

@@ -2,11 +2,13 @@
 
 ## [Unreleased]
 
-## 16.4.40-beta (2018-12-10)
+## 17.1.1-beta (2019-01-22)
 
 ### Excel Export
 
 #### New Features
+
+- Added rotation property to set text rotation on export.
 
 - Added formula property to set formulas on export.
 

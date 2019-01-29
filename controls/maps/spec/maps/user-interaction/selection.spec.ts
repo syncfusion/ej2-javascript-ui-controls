@@ -6,9 +6,18 @@ import { Population_Density } from '../data/PopulationDensity.spec';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
 import { getElement } from '../../../src/maps/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { ILoadedEventArgs, Selection, Maps, Legend, Highlight } from '../../../src/maps/index';
 Maps.Inject(Selection, Legend, Highlight);
 describe('Selection Settings', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Testing selection is applied or not', () => {
         let id: string = 'container';
         let select: Maps;
@@ -42,7 +51,7 @@ describe('Selection Settings', () => {
         });
         it('Selection checking', (done: Function) => {
             select.loaded = (args: ILoadedEventArgs) => {
-                spec = getElement('container_LayerIndex_0_ShapeIndex_2_dataIndex_undefined');
+                spec = getElement('container_LayerIndex_0_shapeIndex_2_dataIndex_undefined');
                 trigger.clickEvent(spec);
                 expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
                 done();
@@ -50,19 +59,19 @@ describe('Selection Settings', () => {
             select.appendTo('#' + id);
         });
         it('Checking unselect using click', (done: Function) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_2_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_2_dataIndex_undefined');
             trigger.clickEvent(spec);
             expect(spec.getAttribute('class')).toBe(null);
             done();
         });
         it('Switching selection element in click', (done: Function) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_3_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_3_dataIndex_undefined');
             trigger.clickEvent(spec);
             expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
             done();
         });
         it('selection element in click', (done: Function) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_3_dataIndex_undefined');  
+            spec = getElement('container_LayerIndex_0_shapeIndex_3_dataIndex_undefined');  
             let ele: object = {};
             ele['type'] = 'touchend';
             ele['target'] = spec;
@@ -73,13 +82,13 @@ describe('Selection Settings', () => {
         });
         it('Selection checking using public method', (done: Function) => {
             select.selectionModule.addSelection(0, 'Minnesota', true);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_1_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_1_dataIndex_undefined');
             expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
             done();
         });
         it('Checking unselect using public method', (done: Function) => {
             select.selectionModule.addSelection(0, 'Minnesota', false);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_1_dataIndex_undefined');
+            spec = getElement('container_LayerIndex_0_shapeIndex_1_dataIndex_undefined');
             expect(spec.getAttribute('class')).toBe(null);
             done();
         });
@@ -153,7 +162,7 @@ describe('Selection Settings', () => {
         //     worldmap.appendTo('#' + id);
         // });
         // it('Removing legend selection', (done: Function) => {
-        //     spec = getElement('container_LayerIndex_0_ShapeIndex_26_dataIndex_null');
+        //     spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_null');
         //     trigger.clickEvent(spec);
         //     expect(getElement('container_Legend_Shape_Index_0').getAttribute('class')).toBe(null);
         //     done();
@@ -164,7 +173,7 @@ describe('Selection Settings', () => {
         //     spec = getElement('container_Legend_Shape_Index_0');
         //     trigger.clickEvent(spec);
         //     expect(spec.getAttribute('class')).toBe(null);
-        //     spec = getElement('container_LayerIndex_0_ShapeIndex_26_dataIndex_null');
+        //     spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_null');
         //     trigger.clickEvent(spec);
         //     expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
         //     done();
@@ -220,9 +229,9 @@ describe('Selection Settings', () => {
         //         spec = getElement('maps_Legend_Shape_Index_0');
         //         trigger.clickEvent(spec);
         //         expect(spec.getAttribute('opacity')).toBe('1');
-        //         expect(getElement('maps_LayerIndex_0_ShapeIndex_167_dataIndex_4').getAttribute('opacity')).toBe('0');
+        //         expect(getElement('maps_LayerIndex_0_shapeIndex_167_dataIndex_4').getAttribute('opacity')).toBe('0');
         //         trigger.clickEvent(spec);
-        //         expect(getElement('maps_LayerIndex_0_ShapeIndex_167_dataIndex_4').getAttribute('opacity')).toBe('1');
+        //         expect(getElement('maps_LayerIndex_0_shapeIndex_167_dataIndex_4').getAttribute('opacity')).toBe('1');
         //         done();
         //     };
         //     world.appendTo('#' + id);
@@ -327,7 +336,7 @@ describe('Selection Settings', () => {
                         spec = getElement('container_LayerIndex_0_BubbleIndex_0_dataIndex_2');
                         trigger.clickEvent(spec);
                         expect(spec.getAttribute('class')).toBe('BubbleselectionMapStyle');
-                        spec = getElement('container_LayerIndex_0_MarkerIndex_0_DataIndex_3');
+                        spec = getElement('container_LayerIndex_0_MarkerIndex_0_dataIndex_3');
                         trigger.clickEvent(spec);
                         expect(spec.getAttribute('class')).toBe('MarkerselectionMapStyle');
                         spec = getElement('container_LayerIndex_0_NavigationIndex_0_Line0');
@@ -349,7 +358,7 @@ describe('Selection Settings', () => {
             it('Disabling selection', (done: Function) => {
                 world.layers[0].selectionSettings.enable = false;
                 world.loaded = (args: ILoadedEventArgs) => {
-                    spec = getElement('container_LayerIndex_0_ShapeIndex_64_dataIndex_undefined');
+                    spec = getElement('container_LayerIndex_0_shapeIndex_64_dataIndex_undefined');
                     trigger.clickEvent(spec);
                     expect(spec.getAttribute('class')).toBe(null);
                     done();
@@ -358,8 +367,25 @@ describe('Selection Settings', () => {
             });
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
 });
 describe('Selection Settings', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Testing selection is applied or not', () => {
         let id: string = 'container';
         let selection: Maps;
@@ -420,7 +446,7 @@ describe('Selection Settings', () => {
         });
         it('Selection checking for legends on shapes', (done: Function) => {
             selection.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_64_dataIndex_56');
+            spec = getElement('container_LayerIndex_0_shapeIndex_64_dataIndex_56');
             trigger.clickEvent(spec);
             expect(spec.getAttribute('fill')).toBe('yellow');
             done();
@@ -448,7 +474,7 @@ describe('Selection Settings', () => {
         });
         it('Dual selection on same shapes', (done: Function) => {
             selection.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_92_dataIndex_87');
+            spec = getElement('container_LayerIndex_0_shapeIndex_92_dataIndex_87');
             trigger.clickEvent(spec);
             trigger.clickEvent(spec);
             expect(spec.getAttribute('fill')).toBe('yellow');
@@ -458,10 +484,10 @@ describe('Selection Settings', () => {
         });
         it('Different shape selection', (done: Function) => {
             selection.loaded = (args: ILoadedEventArgs) => {
-            spec = getElement('container_LayerIndex_0_ShapeIndex_72_dataIndex_65');
+            spec = getElement('container_LayerIndex_0_shapeIndex_72_dataIndex_65');
             trigger.clickEvent(spec);
             expect(spec.getAttribute('fill')).toBe('violet');
-            spec = getElement('container_LayerIndex_0_ShapeIndex_26_dataIndex_25');
+            spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_25');
             trigger.clickEvent(spec);
             expect(spec.getAttribute('fill')).toBe('yellow');
             done();
@@ -478,14 +504,23 @@ describe('Selection Settings', () => {
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
             spec = getElement('container_Legend_Index_0');
             trigger.clickEvent(spec);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_29_dataIndex_29');
+            spec = getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_29');
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
-            spec = getElement('container_LayerIndex_0_ShapeIndex_134_dataIndex_125');
+            spec = getElement('container_LayerIndex_0_shapeIndex_134_dataIndex_125');
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
             done();
         };
             selection.legendSettings.mode = 'Interactive';
             selection.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

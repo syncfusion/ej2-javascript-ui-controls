@@ -10,7 +10,7 @@ import {
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth);
 Calendar.Inject(Islamic);
-xdescribe('Schedule Islamic Calendar', () => {
+describe('Schedule Islamic Calendar', () => {
     describe('Islamic in Day view', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -253,74 +253,68 @@ xdescribe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(6);
         });
         it('(Safar1440) month element checking', () => {
-            schObj.selectedDate = new Date(1539109800000);
+            schObj.selectedDate = new Date(2018, 9, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Safar 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(5);
         });
 
         it('(Rabiʻ I1440) month element checking', () => {
-            schObj.selectedDate = new Date(1541701800000);
+            schObj.selectedDate = new Date(2018, 10, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rabiʻ I 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(6);
         });
         it('(Rabiʻ II1440) month element checking', () => {
-            schObj.selectedDate = new Date(1544207400000);
+            schObj.selectedDate = new Date(2018, 11, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rabiʻ II 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(12);
         });
         it('(Jumada I1440) month element checking', () => {
-            schObj.selectedDate = new Date(1546799400000);
+            schObj.selectedDate = new Date(2019, 0, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(5);
         });
         it('(Jumada II1440) month element checking', () => {
-            schObj.selectedDate = new Date(1549391400000);
+            schObj.selectedDate = new Date(2019, 1, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada II 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(5);
         });
         it('(Rajab1440) month element checking', () => {
-            schObj.selectedDate = new Date(1551983400000);
+            schObj.selectedDate = new Date(2019, 2, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rajab 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(6);
         });
         it('(Shaʻban1440) month element checking', () => {
-            schObj.selectedDate = new Date(1554489000000);
+            schObj.selectedDate = new Date(2019, 3, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Shaʻban 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(12);
         });
         it('(Ramadan1440) month element checking', () => {
-            schObj.selectedDate = new Date(1557081000000);
+            schObj.selectedDate = new Date(2019, 4, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Ramadan 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(6);
         });
         it('(Shawwal1440) month element checking', () => {
-            schObj.selectedDate = new Date(1559759400000);
-            schObj.dataBind();
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Shawwal 1440');
-            expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(5);
-        });
-        it('(Shawwal1440) month element checking', () => {
-            schObj.selectedDate = new Date(1559586600000);
+            schObj.selectedDate = new Date(2019, 5, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Shawwal 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(5);
         });
         it('(Dhuʻl-Qiʻdah1440) month element checking', () => {
-            schObj.selectedDate = new Date(1562178600000);
+            schObj.selectedDate = new Date(2019, 6, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Dhuʻl-Qiʻdah 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(6);
         });
         it('(Dhuʻl-Hijjah1440) month element checking', () => {
-            schObj.selectedDate = new Date(1564684200000);
+            schObj.selectedDate = new Date(2019, 7, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Dhuʻl-Hijjah 1440');
             expect(schObj.element.querySelectorAll('tr td.e-other-month').length).toBe(6);
@@ -361,80 +355,74 @@ xdescribe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(29);
         });
         it('(Safar1440) month element checking', () => {
-            schObj.selectedDate = new Date(1539109800000);
+            schObj.selectedDate = new Date(2018, 9, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Safar 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
 
         it('(Rabiʻ I1440) month element checking', () => {
-            schObj.selectedDate = new Date(1541701800000);
+            schObj.selectedDate = new Date(2018, 10, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rabiʻ I 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(29);
         });
         it('(Rabiʻ II1440) month element checking', () => {
-            schObj.selectedDate = new Date(1544207400000);
+            schObj.selectedDate = new Date(2018, 11, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rabiʻ II 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
         it('(Jumada I1440) month element checking', () => {
-            schObj.selectedDate = new Date(1546799400000);
+            schObj.selectedDate = new Date(2019, 0, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
         it('(Jumada II1440) month element checking', () => {
-            schObj.selectedDate = new Date(1549391400000);
+            schObj.selectedDate = new Date(2019, 1, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada II 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
         it('(Rajab1440) month element checking', () => {
-            schObj.selectedDate = new Date(1551983400000);
+            schObj.selectedDate =new Date(2019, 2, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rajab 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(29);
         });
         it('(Shaʻban1440) month element checking', () => {
-            schObj.selectedDate = new Date(1554489000000);
+            schObj.selectedDate = new Date(2019, 3, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Shaʻban 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
         it('(Ramadan1440) month element checking', () => {
-            schObj.selectedDate = new Date(1557081000000);
+            schObj.selectedDate = new Date(2019, 4, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Ramadan 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(29);
         });
         it('(Shawwal1440) month element checking', () => {
-            schObj.selectedDate = new Date(1559759400000);
-            schObj.dataBind();
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Shawwal 1440');
-            expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
-        });
-        it('(Shawwal1440) month element checking', () => {
-            schObj.selectedDate = new Date(1559586600000);
+            schObj.selectedDate = new Date(2019, 5, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Shawwal 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
         it('(Dhuʻl-Qiʻdah1440) month element checking', () => {
-            schObj.selectedDate = new Date(1562178600000);
+            schObj.selectedDate = new Date(2019, 6, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Dhuʻl-Qiʻdah 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(29);
         });
         it('(Dhuʻl-Hijjah1440) month element checking', () => {
-            schObj.selectedDate = new Date(1564684200000);
+            schObj.selectedDate = new Date(2019, 7, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Dhuʻl-Hijjah 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(29);
         });
         it('checking leap year', () => {
-            schObj.selectedDate = new Date(1623436200000);
+            schObj.selectedDate = new Date(2021, 5, 12);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Dhuʻl-Qiʻdah 1442');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);

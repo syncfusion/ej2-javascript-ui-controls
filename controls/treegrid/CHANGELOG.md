@@ -2,23 +2,20 @@
 
 ## [Unreleased]
 
-## 16.4.48 (2019-01-16)
+## 17.1.1-beta (2019-01-22)
 
 ### TreeGrid
 
 #### Bug Fixes
 
 - `Query` maintenance support provided for `refresh` method after expanding any child rows.
-
-## 16.4.46 (2019-01-08)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - Property change support for `height` property has been provided.
 - Expand icon is prevented from displaying for the root/zeroth level record which has `hasChildMapping` field as false.
 - Child records of third level or its successor displays properly based on their hierarchy relation in self reference data binding.
+
+#### New Features
+
+- `Excel-Like Filtering` support is provided that allows users to create complex filter criteria for a column by allowing users to select possible filter values from a checkbox list. The advanced filter can be used to build complex filter criteria.
 
 ## 16.4.45 (2019-01-02)
 

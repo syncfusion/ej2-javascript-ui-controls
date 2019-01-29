@@ -5,12 +5,12 @@
 import { EventHandler, KeyboardEvents, Internationalization, NumberFormatOptions, Ajax, cldrData, loadCldr, L10n, Browser } from '@syncfusion/ej2-base';
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
-import { NumericTextBox , ChangeEventArgs } from '../src/numerictextbox/numerictextbox';
+import { NumericTextBox , ChangeEventArgs, NumericFocusEventArgs , NumericBlurEventArgs } from '../src/numerictextbox/numerictextbox';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
 
 describe('Numerictextbox Control', () => {
     describe('NumericTextBox creation', () => {
-		beforeAll(() => {
+        beforeAll(() => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
@@ -534,15 +534,37 @@ describe('Numerictextbox Control', () => {
 
 describe('Change Event testing', () => {
         let numeric: any;
-        let i: number = 0;
+        let i: number = 0, j: number = 0, k: number = 0, containerValue = 0;
         let mouseEvent: MouseEvent = document.createEvent('MouseEvents');
         let mouseEvent2: MouseEvent = document.createEvent('MouseEvents');
-        let value:any, prevValue: any, isInteracted: any;
+        let value:any, prevValue: any, isInteracted: any, name: any, event: any, container: any, isInteraction: any;
+        let focusvalue: any, blurvalue:any;
         function clickFn(args: ChangeEventArgs): void {
             i++;
             value= args.value;
             isInteracted =args.isInteracted;
+            isInteraction = args.isInteraction;
             prevValue = args.previousValue;
+        }
+        function focusFn(args: NumericFocusEventArgs): void {
+            j= 1;
+            name= args.name;
+            focusvalue = args.value;
+            event = args.event;
+            container = args.container;
+            if((args.container.classList.contains("e-input-group")) && (args.container.classList.contains("e-numeric")) ){
+                containerValue = 1;
+            }
+        }
+        function blurFn(args: NumericBlurEventArgs): void {
+            k= 1;
+            name= args.name;
+            blurvalue = args.value;
+            event = args.event;
+            container = args.container;
+            if(args.container.classList.contains("e-input-group")) {
+                containerValue = 1;
+            }
         }
         beforeEach((): void => {
             numeric = undefined;
@@ -597,7 +619,67 @@ describe('Change Event testing', () => {
             numeric.dataBind();
             expect(value).toEqual(0.6);
             expect(prevValue).toEqual(56.00);
-            expect(isInteracted).toEqual(false); 
+            expect(isInteracted).toEqual(false);
+            expect(isInteraction).toEqual(false);  
+        });
+        it('Focus event testing', () => {
+            numeric = new NumericTextBox({
+                value: 123,
+                focus: focusFn,
+            });
+            numeric.appendTo('#tsNumeric');
+            expect(j).toEqual(0);
+            numeric.focusIn(); 
+            expect(j).toEqual(1);
+            expect(name).toEqual("focus");
+        });
+        it('Focus event testing with arguments value and event', () => {
+            numeric = new NumericTextBox({
+                value: 123,
+                focus: focusFn,
+            });
+            numeric.appendTo('#tsNumeric');
+            expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('123.00');
+            numeric.focusIn(); 
+            expect(j).toEqual(1);
+            expect(focusvalue).toEqual(123);
+            expect(event).not.toBeNull();
+            expect(container).not.toBeNull();
+            expect(containerValue).toEqual(1);
+        });
+        it('Blur event testing', () => {
+            numeric = new NumericTextBox({
+                value: 123,
+                focus: focusFn,
+                blur: blurFn,
+            });
+            numeric.appendTo('#tsNumeric');
+            numeric.focusIn(); 
+            expect(name).toEqual("focus");
+            expect(j).toEqual(1);
+            numeric.focusOut();
+            expect(k).toEqual(1);
+            expect(name).toEqual("blur");
+            expect(blurvalue).toEqual(123);
+        });
+        it('Blur event testing with argument value and event', () => {
+            numeric = new NumericTextBox({
+                value: 123,
+                focus: focusFn,
+                blur: blurFn,
+            });
+            numeric.appendTo('#tsNumeric');
+            numeric.focusIn(); 
+            numeric.value = 0.6;
+            numeric.dataBind();
+            expect(name).toEqual("focus");
+            numeric.focusOut();
+            expect(k).toEqual(1);
+            expect(name).toEqual("blur");
+            expect(blurvalue).toEqual(0.6);
+            expect(event).not.toBeNull();
+            expect(container).not.toBeNull();
+            expect(containerValue).toEqual(1);
         });
         });
     describe('Numeric textbox with element attribute', () => {
@@ -5036,7 +5118,7 @@ describe('Change Event testing', () => {
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-float-input')).toEqual(false);
         });
     });
-	it('memory leak testing', () => {
+    it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

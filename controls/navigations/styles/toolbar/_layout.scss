@@ -6,7 +6,7 @@
     height: $tbar-bgr-size;
     min-height: $tbar-bgr-size;
 
-    .e-icons {
+    .e-tbar-btn .e-icons {
       font-size: $tbar-icons-bgr-font-size;
     }
 
@@ -510,6 +510,14 @@
 
     &.e-extended-toolbar {
 
+      .e-toolbar-items .e-toolbar-item {
+
+        &.e-popup-text .e-tbar-btn-text {
+          display:  none;
+        }
+
+     }
+
       &.e-extended-toolbar.e-tbar-extended {
         border-bottom: 0;
         border-bottom-left-radius: 0;
@@ -534,6 +542,10 @@
           margin-left: -1px;
         }
 
+      }
+
+      .e-toolbar-item.e-toolbar-text .e-tbar-btn-text {
+        display: none;
       }
 
       .e-toolbar-extended.e-popup-close {
@@ -1049,7 +1061,6 @@
         .e-toolbar-right {
           display: inline;
         }
-
       }
 
       &.e-toolbar-multirow:not(.e-tbar-pos) {

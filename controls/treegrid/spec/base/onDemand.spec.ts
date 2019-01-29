@@ -45,9 +45,12 @@ describe('DataSource onDemand', () => {
         let elem: HTMLElement = createElement('div', { id: 'Grid' });
         let request: JasmineAjaxRequest;
         let dataManager: DataManager;
+        let originalTimeout: number;
         beforeAll((done: Function) => {
             let dataBound: EmitType<Object> = () => { done(); };
             jasmine.Ajax.install();
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
             dataManager = new DataManager({
                 url: 'http://localhost:50499/Home/UrlData',
                 crossDomain: true
@@ -129,6 +132,7 @@ describe('DataSource onDemand', () => {
             expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(2);
         });
         afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             gridObj.destroy();
             remove(elem);
             jasmine.Ajax.uninstall();

@@ -71,6 +71,7 @@ export class VirtualScroll {
         let resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
         let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
+        let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         addClass([conWrap], 'e-transition');
         let resCollection: TdData[] = [];
@@ -85,7 +86,7 @@ export class VirtualScroll {
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
-            this.setTranslate(resWrap, conWrap, eventWrap);
+            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
         }
     }
 
@@ -141,7 +142,7 @@ export class VirtualScroll {
         return this.parent.resourceBase.expandedResources.slice(startIndex, endIndex);
     }
 
-    private setTranslate(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement): void {
+    private setTranslate(resWrap: HTMLElement, conWrap: HTMLElement, eventWrap: HTMLElement, timeIndicator?: HTMLElement): void {
         setStyleAttribute(resWrap.querySelector('table') as HTMLElement, {
             transform: `translateY(${this.translateY}px)`
         });
@@ -151,6 +152,11 @@ export class VirtualScroll {
         setStyleAttribute(eventWrap, {
             transform: `translateY(${this.translateY}px)`
         });
+        if (!isNullOrUndefined(timeIndicator)) {
+            setStyleAttribute(timeIndicator, {
+                transform: `translateY(${this.translateY}px)`
+            });
+        }
     }
 
     public destroy(): void {

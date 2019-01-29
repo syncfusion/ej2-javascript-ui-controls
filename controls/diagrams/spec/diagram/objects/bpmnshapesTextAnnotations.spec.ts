@@ -9,6 +9,7 @@ import { PathElement } from '../../../src/diagram/index';
 import { MouseEvents } from './../interaction/mouseevents.spec';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { Container } from '../../../src/diagram/core/containers/container';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 
 Diagram.Inject(BpmnDiagrams);
@@ -28,6 +29,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let shadow1: ShadowModel = { angle: 135 };
@@ -224,7 +231,7 @@ describe('Diagram Control', () => {
             expect((diagram.selectedItems.nodes[0].shape as BpmnShapeModel).annotation.text === 'textAnnotation node').toBe(true);
             done();
         });
-    });
+       });
     describe('BPMN Text Annotations  undo redo', () => {
 
         let diagram: Diagram;
@@ -235,6 +242,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let shadow1: ShadowModel = { angle: 135 };
@@ -293,6 +306,15 @@ describe('Diagram Control', () => {
             diagram.undo();
             diagram.redo();
             done();
+        })
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     })
 

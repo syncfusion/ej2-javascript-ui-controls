@@ -40,6 +40,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private redoCollec: MaskUndo[];
     private changeEventArgs: MaskChangeEventArgs;
     private focusEventArgs: MaskFocusEventArgs;
+    private blurEventArgs: MaskBlurEventArgs;
     private maskKeyPress: boolean;
     private angularTagName: string;
     private prevValue: string;
@@ -197,11 +198,18 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     @Event()
     public change: EmitType <MaskChangeEventArgs>;
     /**
-     * Triggers when the MaskedTextBox while got focus in.
+     * Triggers when the MaskedTextBox got focus in.
      * @event
      */
     @Event()
     public focus: EmitType<MaskFocusEventArgs>;
+    /**
+     * Triggers when the MaskedTextBox got focus out.
+     * @event
+     */
+    @Event()
+    public blur: EmitType<MaskBlurEventArgs>;
+
 
     constructor(options?: MaskedTextBoxModel, element?: string | HTMLElement | HTMLInputElement) {
         super(options, <HTMLInputElement | string>element);
@@ -229,6 +237,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.redoCollec = [];
         this.changeEventArgs = {};
         this.focusEventArgs = {};
+        this.blurEventArgs = {};
         this.maskKeyPress = false;
         this.isFocus = false;
         this.isInitial = false;
@@ -455,6 +464,10 @@ export interface MaskChangeEventArgs extends BaseEventArgs {
      * which have been set in the mask of MaskedTextBox.
      */
     value?: string;
+    /** Returns true when the value of MaskedTextBox is changed by user interaction. Otherwise, it returns false.
+     * @private
+     */
+    isInteraction?: boolean;
     /** Returns true when the value of MaskedTextBox is changed by user interaction. Otherwise, it returns false */
     isInteracted?: boolean;
     /** Returns the original event arguments. */
@@ -466,5 +479,24 @@ export interface MaskFocusEventArgs extends BaseEventArgs {
     selectionStart?: number;
     /** Returns selectionEnd value depends on mask length */
     selectionEnd?: number;
+    /** Returns the original event arguments. */
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    /** Returns the value of MaskedTextBox. */
+    value?: string;
+    /** Returns the maskedValue of MaskedTextBox. */
+    maskedValue?: string;
+    /** Returns the MaskedTextBox container element */
+    container?: HTMLElement;
 }
+export interface MaskBlurEventArgs extends BaseEventArgs {
+    /** Returns the original event arguments. */
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    /** Returns the value of MaskedTextBox. */
+    value?: string;
+    /** Returns the maskedValue of MaskedTextBox. */
+    maskedValue?: string;
+    /** Returns the MaskedTextBox container element */
+    container?: HTMLElement;
+}
+
 

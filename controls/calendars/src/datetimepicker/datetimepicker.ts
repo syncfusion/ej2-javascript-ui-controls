@@ -97,6 +97,13 @@ export class DateTimePicker extends DatePicker {
     @Property(30)
     public step: number;
     /**
+     * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
+     * the given value is not present in the timepicker popup list.
+     * @default null
+     */
+    @Property(null)
+    public scrollTo: Date;
+    /**
      * specifies the z-index value of the popup element.
      * @default 1000
      * @aspType int
@@ -438,10 +445,10 @@ export class DateTimePicker extends DatePicker {
         let cldrTime: string;
         let culture: Internationalization = new Internationalization(this.locale);
         let dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         } else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     }
@@ -469,7 +476,7 @@ export class DateTimePicker extends DatePicker {
     }
     private timeHandler(e?: MouseEvent): void {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', '');
+            this.element.setAttribute('readonly', 'readonly');
         }
         if (e.currentTarget === this.timeIcon) {
             e.preventDefault();
@@ -754,18 +761,39 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private setTimeScrollPosition(): void {
-        let popupHeight: number = this.getPopupHeight();
         let popupElement: HTMLElement;
         popupElement = this.selectedElement;
         if (!isNullOrUndefined(popupElement)) {
-            let nextEle: Element = popupElement.nextElementSibling;
-            let height: number = nextEle ? (<HTMLElement>nextEle).offsetTop : popupElement.offsetTop;
-            let liHeight: number = popupElement.getBoundingClientRect().height;
-            if ((height + popupElement.offsetTop) > popupHeight) {
-                this.dateTimeWrapper.scrollTop = nextEle ? (height - (popupHeight / HALFPOSITION + liHeight / HALFPOSITION)) : height;
-            } else {
-                this.dateTimeWrapper.scrollTop = 0;
-            }
+            this.findScrollTop(popupElement);
+        } else if (this.dateTimeWrapper && this.checkDateValue(this.scrollTo)) {
+            this.setScrollTo();
+        }
+    }
+    private findScrollTop(element: HTMLElement): void {
+        let listHeight: number = this.getPopupHeight();
+        let nextElement: Element = element.nextElementSibling;
+        let height: number = nextElement ? (<HTMLElement>nextElement).offsetTop : element.offsetTop;
+        let lineHeight: number = element.getBoundingClientRect().height;
+        if ((height + element.offsetTop) > listHeight) {
+            this.dateTimeWrapper.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
+        } else {
+            this.dateTimeWrapper.scrollTop = 0;
+        }
+    }
+    private setScrollTo(): void {
+        let element: HTMLElement;
+        let items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS);
+        if (items.length >= 0) {
+            let initialTime: number = this.timeCollections[0];
+            let scrollTime: number = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
+            element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
+        } else {
+            this.dateTimeWrapper.scrollTop = 0;
+        }
+        if (!isNullOrUndefined(element)) {
+            this.findScrollTop(element);
+        } else {
+            this.dateTimeWrapper.scrollTop = 0;
         }
     }
     private setInputValue(type: string): void {
@@ -964,7 +992,7 @@ export class DateTimePicker extends DatePicker {
                 }
             }
         }
-        if (Browser.isDevice && this.allowEdit && !this.readonly) {
+        if (Browser.isDevice) {
             this.element.removeAttribute('readonly');
         }
     }
@@ -1058,11 +1086,8 @@ export class DateTimePicker extends DatePicker {
                 let date: number = status ? value.getDate() : DAY;
                 let month: number = status ? value.getMonth() : MONTH;
                 let year: number = status ? value.getFullYear() : YEAR;
-                let hour: number = status ? value.getHours() : HOUR;
-                let minute: number = status ? value.getMinutes() : MINUTE;
-                let second: number = status ? value.getSeconds() : SECOND;
-                let millisecond: number = status ? value.getMilliseconds() : MILLISECOND;
-                return new Date(year, month, date, hour, minute, second, millisecond);
+                //tslint:disable-next-line:max-line-length
+                return new Date(year, month, date, dateValue.getHours(), dateValue.getMinutes(), dateValue.getSeconds(), dateValue.getMilliseconds());
             }
         }
         return null;
@@ -1122,11 +1147,12 @@ export class DateTimePicker extends DatePicker {
         }
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
+                type: 'dateTime', skeleton: 'yMd'
             });
         } else {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(),
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
                 type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
             });
         }
@@ -1265,6 +1291,7 @@ export class DateTimePicker extends DatePicker {
                     break;
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkFormat();
                     this.setValue();
                     break;
                 case 'placeholder':
@@ -1288,6 +1315,14 @@ export class DateTimePicker extends DatePicker {
                     this.floatLabelType = newProp.floatLabelType;
                     Input.removeFloating(this.inputWrapper);
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                    break;
+                case 'scrollTo':
+                    if (this.checkDateValue(new Date('' + newProp.scrollTo))) {
+                        if (this.dateTimeWrapper) { this.setScrollTo(); }
+                        this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                    } else {
+                        this.setProperties({ scrollTo: null }, true);
+                    }
                     break;
                 default:
                     super.onPropertyChanged(newProp, oldProp);

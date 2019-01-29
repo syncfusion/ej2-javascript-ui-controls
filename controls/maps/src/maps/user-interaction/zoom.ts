@@ -279,7 +279,7 @@ export class Zoom {
                 let layerElement: Element = this.layerCollectionEle.childNodes[i] as Element;
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
-                    let index: number = parseFloat(layerElement.id.split('_')[2]);
+                    let index: number = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
                     this.currentLayer = <LayerSettings>this.maps.layersCollection[index];
                     let factor: number = this.maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (let j: number = 0; j < layerElement.childElementCount; j++) {
@@ -303,9 +303,9 @@ export class Zoom {
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                 childElement = currentEle.childNodes[k] as HTMLElement;
                                 let bubbleTransform: string = childElement.getAttribute('transform');
-                                layerIndex = parseFloat(childElement.id.split('_')[2]);
-                                let bubleIndex: number = parseFloat(childElement.id.split('_')[4]);
-                                let dataIndex: number = parseFloat(childElement.id.split('_')[6]);
+                                layerIndex = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                                let bubleIndex: number = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[0]);
+                                let dataIndex: number = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[2]);
                                 for (let l: number = 0; l < this.maps.bubbleModule.bubbleCollection.length; l++) {
                                     let bubbleCollection: Object = this.maps.bubbleModule.bubbleCollection[l];
                                     if (bubbleCollection['LayerIndex'] === layerIndex && bubbleCollection['BubbleIndex'] === bubleIndex &&
@@ -364,9 +364,9 @@ export class Zoom {
 
     private dataLabelTranslate(element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, animate: boolean = false): void {
         let labelCollection: Object[] = this.maps.dataLabelModule.dataLabelCollections;
-        let layerIndex: number = parseFloat(element.id.split('_')[2]);
-        let shapeIndex: number = parseFloat(element.id.split('_')[4]);
-        let labelIndex: number = parseFloat(element.id.split('_')[6]);
+        let layerIndex: number = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
+        let shapeIndex: number = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
+        let labelIndex: number = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         let duration: number = this.currentLayer.animationDuration;
         for (let l: number = 0; l < labelCollection.length; l++) {
             let label: Object = labelCollection[l];
@@ -401,9 +401,9 @@ export class Zoom {
     private markerTranslate(
         element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, animate: boolean = false
     ): void {
-        let layerIndex: number = parseInt(element.id.split('_')[2], 10);
-        let markerIndex: number = parseInt(element.id.split('_')[4], 10);
-        let dataIndex: number = parseInt(element.id.split('_')[6], 10);
+        let layerIndex: number = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        let markerIndex: number = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+        let dataIndex: number = parseInt(element.id.split('_dataIndex_')[1].split('_')[0], 10);
         let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         let marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
@@ -653,7 +653,7 @@ export class Zoom {
         let target: Element = <Element>e.target;
         e.stopImmediatePropagation();
         let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
-        let toolbar: string = target.id.split('_')[3];
+        let toolbar: string = target.id.split('_Zooming_ToolBar_')[1].split('_')[0];
         if (isTouch) {
             this.handled = true;
             this.performZoomingByToolBar(toolbar);
@@ -721,7 +721,7 @@ export class Zoom {
     }
 
     public showTooltip(e: PointerEvent): void {
-        let text: string = (<Element>e.target).id.split('_')[3];
+        let text: string = (<Element>e.target).id.split('_Zooming_ToolBar_')[1].split('_')[0];
         if (!this.isTouch) {
             createTooltip('EJ2_Map_Toolbar_Tip', this.maps.getLocalizedLabel(text), (e.pageY + 10), (e.pageX + 10), '10px');
         }
@@ -952,7 +952,7 @@ export class Zoom {
      */
     public click(e: PointerEvent): void {
         let map: Maps = this.maps;
-        if (map.zoomSettings.zoomOnClick && (<Element>e.target).id.indexOf('_ShapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
+        if (map.zoomSettings.zoomOnClick && (<Element>e.target).id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
             && (this.zoomColor === this.selectionColor && this.zoomElements)) {
             let bounds: Rect = (<SVGPathElement>e.target).getBBox() as Rect;
             let boundwidth: number = bounds.width;

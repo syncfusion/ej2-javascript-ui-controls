@@ -73,22 +73,31 @@ export interface MeridianText {
     pm: string;
 }
 
+export interface TimeFormatObject {
+    skeleton?: string;
+}
+
 export interface PopupEventArgs {
     /** Specifies the name of the event  */
     name?: string;
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
+
     cancel?: boolean;
+
     /** Defines the TimePicker popup object. */
     popup?: Popup;
+
     /**
      * Specifies the original event arguments.
      */
+
     event?: MouseEvent | KeyboardEvent | FocusEvent | Event;
     /**
      * Specifies the node to which the popup element to be appended.
      */
+
     appendTo?: HTMLElement;
 }
 
@@ -162,6 +171,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private initValue: Date;
     private initMin: Date;
     private initMax: Date;
+    private formatString: string;
     private formElement: Element;
     private invalidValueString: string = null;
     private openPopupEventArgs: PopupEventArgs;
@@ -194,10 +204,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * based on the culture. 
      * > For more details refer to 
      * [`Format`](../timepicker/getting-started#setting-the-time-format) documentation.
+     * @aspType string
      * @default null
      */
     @Property(null)
-    public format: string;
+    public format: string | TimeFormatObject;
     /**
      * Specifies whether the component to be disabled or not.
      * @default true
@@ -445,6 +456,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private initialize(): void {
         this.globalize = new Internationalization(this.locale);
         this.defaultCulture = new Internationalization('en');
+        this.checkTimeFormat();
         this.checkInvalidValue(this.value);
         // persist the value property.
         this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true);
@@ -469,6 +481,20 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
         if (isNullOrUndefined(this.inputElement.getAttribute('name'))) {
             attributes(this.inputElement, { 'name': this.element.id });
+        }
+    }
+    protected checkTimeFormat(): void {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            } else if (!isNullOrUndefined(this.format.skeleton) && this.format.skeleton !== '') {
+                let skeletonString: string = this.format.skeleton;
+                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: skeletonString });
+            } else {
+                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: 'short' });
+            }
+        } else {
+            this.formatString = null;
         }
     }
     private checkDateValue(value: Date): Date {
@@ -506,10 +532,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         let culture: Internationalization = new Internationalization(this.locale);
         let cldrTime: string;
         let dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.CldrFormat('time');
         } else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     }
@@ -528,7 +554,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.format, type: 'dateTime', skeleton: 'yMd'
+                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
                             }));
                         }
                     }
@@ -824,14 +850,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private cldrTimeFormat(): string {
         let cldrTime: string;
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
                 cldrTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
             } else {
                 cldrTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
             }
         } else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     }
@@ -1920,7 +1946,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         }
     }
-
     /**
      * Gets the properties to be maintained upon browser refresh.     
      * @returns string
@@ -1996,6 +2021,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     break;
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkTimeFormat();
                     this.setValue(this.value);
                     break;
                 case 'value':

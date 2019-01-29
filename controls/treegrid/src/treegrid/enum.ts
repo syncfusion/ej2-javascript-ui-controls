@@ -155,3 +155,16 @@ export type RowPosition =
 'Below' |
 /**  Defines new row position as child to the selected row */
 'Child' ;
+/** 
+ * Defines types of Filter 
+ * * Menu - Specifies the filter type as menu. 
+ * * Excel - Specifies the filter type as excel. 
+ * * FilterBar - Specifies the filter type as filter bar. 
+ */
+export type FilterType =
+    /**  Defines FilterType as filterbar */
+    'FilterBar' |
+    /**  Defines FilterType as excel */
+    'Excel' |
+    /**  Defines FilterType as menu */
+    'Menu' ;

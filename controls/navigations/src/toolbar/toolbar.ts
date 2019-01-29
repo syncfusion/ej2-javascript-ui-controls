@@ -842,6 +842,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     public refreshOverflow(): void {
         this.resize();
     }
+    private toolbarAlign(innerItems: HTEle): void {
+        if (this.tbarAlign) {
+            this.add(innerItems, CLS_TBARPOS);
+            this.itemPositioning();
+        }
+    }
     private renderOverflowMode(): void {
         let ele: HTEle = this.element;
         let innerItems: HTEle = <HTEle>ele.querySelector('.' + CLS_ITEMS);
@@ -864,10 +870,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
-                    if (this.tbarAlign) {
-                        this.add(innerItems, CLS_TBARPOS);
-                        this.itemPositioning();
-                    }
+                    this.toolbarAlign(innerItems);
                     break;
                 case 'MultiRow':
                     this.add(innerItems, CLS_MULTIROW);
@@ -891,6 +894,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
+                    this.toolbarAlign(innerItems);
             }
         }
     }
@@ -1820,8 +1824,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.destroyScroll();
             let multirowele: HTEle = ele.querySelector('.' + CLS_ITEMS);
             if (!isNOU(multirowele)) {
-            this.remove(multirowele, CLS_MULTIROWPOS);
-            if (this.tbarAlign) { this.add(multirowele, CLS_TBARPOS); }
+                this.remove(multirowele, CLS_MULTIROWPOS);
+                if (this.tbarAlign) { this.add(multirowele, CLS_TBARPOS); }
             }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) { return; }

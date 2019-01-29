@@ -4,6 +4,7 @@
 import { Accordion, AccordionClickArgs, ExpandEventArgs } from "../src/accordion/index";
 import { isNullOrUndefined as isNOU } from "@syncfusion/ej2-base";
 import { isVisible, classList } from "@syncfusion/ej2-base";
+import { profile, inMB, getMemoryProfile } from './common.spec';
 
 type Str = string;
 
@@ -32,13 +33,13 @@ const CLS_NEST: Str = 'e-nested';
 
 interface AcrdnTemplateRef {
     elementRef: AcrdnElementRef;
-  }
-  
-  interface AcrdnElementRef {
+}
+
+interface AcrdnElementRef {
     nativeElement: AcrdnElementComment;
-  }
-  
-  interface AcrdnElementComment {
+}
+
+interface AcrdnElementComment {
     childNodes?: NodeList;
     firstChild?: HTMLElement;
     lastChild?: HTMLElement;
@@ -46,10 +47,18 @@ interface AcrdnTemplateRef {
     parentElement?: HTMLElement;
     propName?: HTMLElement;
     data?: string;
-  }
-
+}
 
 describe("Accordion Testing", () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     let css: string = ".e-content-hide,.e-hide { display: none }  ";
     let style: HTMLStyleElement = document.createElement("style"); style.type = "text/css";
     style.appendChild(document.createTextNode(css));
@@ -2907,7 +2916,7 @@ describe("Accordion Testing", () => {
             accordion.enableItem(index, false);
             expect(ele.children[index].firstElementChild.getAttribute('aria-disabled')).toBe('true');
         });
-        it("Accordion Angular contnet conditon testing", () => {
+        it("Accordion Angular content condition testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
             let contentAngularEle: any = {
                 elementRef : {
@@ -2929,7 +2938,7 @@ describe("Accordion Testing", () => {
             accordion1.isAngular = true;
             accordion1.appendTo('#accordion');
         });
-        it("Accordion Angular contnet conditon testing", () => {
+        it("Accordion Angular content condition testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
             let contentAngularEle: any = {
                 elementRef : {
@@ -2951,7 +2960,7 @@ describe("Accordion Testing", () => {
             accordion1.isAngular = true;
             accordion1.appendTo('#accordion');
         });
-        it("Accordion Angular contnet conditon testing", () => {
+        it("Accordion Angular content condition testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
             let contentAngularEle: any = {
                 elementRef : {
@@ -2973,7 +2982,6 @@ describe("Accordion Testing", () => {
             accordion1.isAngular = true;
             accordion1.appendTo('#accordion');
         });
-
     });
 
     describe("Accordion Aria Attributes with ExpandItem Public method Testing", () => {
@@ -3318,4 +3326,14 @@ describe("Accordion Testing", () => {
             setTimeout(() => { done(); }, TIME_DELAY);
         });
     });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

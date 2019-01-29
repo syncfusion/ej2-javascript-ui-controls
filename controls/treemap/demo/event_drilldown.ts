@@ -41,7 +41,7 @@ let treemap: TreeMap = new TreeMap({
     dataSource: DrillDown,
     weightValuePath: 'Population',
     tooltipSettings: {
-        visible: true,
+      //  visible: true,
         format: '${Name} : ${Population}'
     },
     leafItemSettings: {

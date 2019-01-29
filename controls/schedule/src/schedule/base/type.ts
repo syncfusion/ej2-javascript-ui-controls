@@ -26,5 +26,3 @@ export type PopupType = 'Editor' | 'EventContainer' | 'QuickInfo' | 'RecurrenceA
     'ValidationAlert' | 'RecurrenceValidationAlert';
 
 export type HeaderRowType = 'Year' | 'Month' | 'Week' | 'Date' | 'Hour';
-
-export type CalendarType = 'Islamic' | 'Gregorian';

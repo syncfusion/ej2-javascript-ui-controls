@@ -146,6 +146,8 @@ export class QuickToolbar {
             if (target.nodeName === 'TEXTAREA') {
                 this.showInlineQTBar(this.offsetX, this.offsetY, target);
             } else {
+                let closestAnchor: HTMLElement = closest(target, 'a') as HTMLElement;
+                target = closestAnchor ? closestAnchor : target;
                 if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
                     if (this.parent.inlineMode.onSelection && range.collapsed) { return; }
                     this.target = target;
@@ -311,10 +313,10 @@ export class QuickToolbar {
             removeClass([this.parent.element], [CLS_INLINE]);
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
-            if (this.parent.inlineMode.enable && !Browser.isDevice) {
-                addClass([this.parent.element], [CLS_INLINE]);
-                this.wireInlineQTBarEvents();
-            }
+        }
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            addClass([this.parent.element], [CLS_INLINE]);
+            this.wireInlineQTBarEvents();
         }
     }
 

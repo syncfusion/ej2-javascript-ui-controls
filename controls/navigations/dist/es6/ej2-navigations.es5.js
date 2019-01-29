@@ -165,7 +165,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Specifies the value to disable/enable the HScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, HScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -638,7 +638,7 @@ var VScroll = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Specifies the value to disable/enable the VScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, VScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -1435,7 +1435,15 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MenuBase.prototype.getPopups = function () {
-        return [].slice.call(document.querySelectorAll('.' + POPUP));
+        var _this = this;
+        var popups = [];
+        var ele = document.querySelectorAll('.' + POPUP);
+        ele.forEach(function (elem) {
+            if (_this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
+                popups.push(elem);
+            }
+        });
+        return popups;
     };
     MenuBase.prototype.isMenuVisible = function () {
         return (this.navIdx.length > 0 || (this.element.classList.contains('e-contextmenu') && isVisible(this.element).valueOf()));
@@ -1748,7 +1756,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.isMenu) {
-            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup')) && !cli) {
+            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
+                && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
                     this.closeMenu(null, e);
@@ -3144,6 +3153,12 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.refreshOverflow = function () {
         this.resize();
     };
+    Toolbar.prototype.toolbarAlign = function (innerItems) {
+        if (this.tbarAlign) {
+            this.add(innerItems, CLS_TBARPOS);
+            this.itemPositioning();
+        }
+    };
     Toolbar.prototype.renderOverflowMode = function () {
         var ele = this.element;
         var innerItems = ele.querySelector('.' + CLS_ITEMS);
@@ -3169,10 +3184,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
-                    if (this.tbarAlign) {
-                        this.add(innerItems, CLS_TBARPOS);
-                        this.itemPositioning();
-                    }
+                    this.toolbarAlign(innerItems);
                     break;
                 case 'MultiRow':
                     this.add(innerItems, CLS_MULTIROW);
@@ -3196,6 +3208,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
+                    this.toolbarAlign(innerItems);
             }
         }
     };
@@ -11071,11 +11084,9 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         this.element.classList.add(ROOT$1);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
         if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
-            this.setProperties({ isOpen: true }, true);
             addClass([this.element], OPEN);
         }
         else {
-            this.setProperties({ isOpen: false }, true);
             addClass([this.element], CLOSE);
         }
     };
@@ -11095,8 +11106,14 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Hide the Sidebar component, if it is in an open state.
      * @returns void
      */
-    Sidebar.prototype.hide = function () {
-        var closeArguments = { model: this, element: this.element, cancel: false };
+    Sidebar.prototype.hide = function (e) {
+        var closeArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -11131,8 +11148,14 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
-    Sidebar.prototype.show = function () {
-        var openArguments = { model: this, element: this.element, cancel: false };
+    Sidebar.prototype.show = function (e) {
+        var openArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -11234,7 +11257,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
             return;
         }
-        this.hide();
+        this.hide(e);
     };
     Sidebar.prototype.enableGestureHandler = function (args) {
         if (this.position === 'Left' && args.swipeDirection === 'Right' &&

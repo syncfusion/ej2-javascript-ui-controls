@@ -2,7 +2,7 @@
  * dialog spec document
  */
 import { createElement, addClass, EmitType } from '@syncfusion/ej2-base'
-import { Dialog, DialogUtility } from '../../src/dialog/dialog';
+import { Dialog, DialogUtility, BeforeCloseEventArgs } from '../../src/dialog/dialog';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import { EventHandler, L10n } from '@syncfusion/ej2-base';
 import { Touch, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -696,6 +696,19 @@ describe('Dialog Control', () => {
             expect(document.getElementById('dialog').classList.contains("close")).toEqual(true);
             expect(document.getElementById('dialog').classList.contains("beforeclose")).toEqual(true);
             expect(dialog.visible).toEqual(false);
+        });
+
+        it('dialog isInteracted event testing', () => {
+            let dlgcontent: HTMLElement = createElement("div");
+            let dialog = new Dialog({
+                content: dlgcontent,
+                animationSettings: { effect: 'None' },
+                beforeClose: beforeClose
+            }, '#dialog');
+            dialog.hide();
+            function beforeClose(args: BeforeCloseEventArgs) {
+                expect(args.isInteracted).toEqual(false);
+            }
         });
 
         it('dialog allowdragging with target testing', () => {

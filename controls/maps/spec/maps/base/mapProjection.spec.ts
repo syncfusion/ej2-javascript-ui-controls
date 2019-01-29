@@ -1,11 +1,23 @@
+/**
+ * it defines projection spec
+ */
 import { createElement } from '@syncfusion/ej2-base';
 import { Maps, ILoadedEventArgs } from '../../../src/index';
 import { World_Map, usMap, CustomPathData, Oceania, flightRoutes, intermediatestops1 } from '../data/data.spec';
 import { new_Continent } from '../data/worldData.spec';
 import { MouseEvents } from './events.spec';
 import { LayerSettings } from '../../../src/maps/index';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 describe('Maps Component testing with its projection types ', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Maps testing projection', () => {
         let element: Element;
         let maps: Maps;
@@ -200,5 +212,14 @@ describe('Maps Component testing with its projection types ', () => {
             (<LayerSettings>maps.layers[0]).isBaseLayer = true;
             maps.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

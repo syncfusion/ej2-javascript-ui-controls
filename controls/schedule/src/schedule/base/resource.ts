@@ -93,7 +93,8 @@ export class ResourceBase {
             let resource: { [key: string]: Object } = this.lastResourceLevel[i].resourceData;
             let count: number = resource.Count as number;
             resources.push(this.lastResourceLevel[i]);
-            if (!isNullOrUndefined(resource.Expand) && !resource.Expand && count > 0) {
+            let isExpanded: boolean = resource[this.lastResourceLevel[i].resource.expandedField] as boolean;
+            if (!isNullOrUndefined(isExpanded) && !isExpanded && count > 0) {
                 i = i + count;
             }
         }
@@ -297,6 +298,11 @@ export class ResourceBase {
             this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'table') as HTMLElement;
         let eventTable: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
         this.parent.virtualScrollModule.updateContent(resTable, contentTable, eventTable, this.renderedResources);
+        let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+        if (!isNullOrUndefined(timeIndicator)) {
+            timeIndicator.style.height =
+                (this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement).offsetHeight + 'px';
+        }
     }
 
     public renderResourceHeader(): void {

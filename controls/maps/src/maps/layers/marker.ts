@@ -62,7 +62,7 @@ export class Marker {
                 let offset: Point = markerSettings.offset;
                 if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                     let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
-                        + markerIndex + '_DataIndex_' + dataIndex;
+                        + markerIndex + '_dataIndex_' + dataIndex;
                     let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                         new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true
                     ) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
@@ -179,7 +179,7 @@ export class Marker {
         let marker: MarkerSettingsModel;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex: number = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
-            let dataIndex: number = parseInt(id[1].split('_DataIndex_')[1].split('_')[0], 10);
+            let dataIndex: number = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
             marker = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker.dataSource[dataIndex];

@@ -40,7 +40,7 @@ export class Paragraph {
     private tickBullet: HTMLElement;
     public localObj: L10n;
     private isRtl: boolean;
-    private splitButtonClass: string = 'e-de-prop-splitbutton';
+
     get documentEditor(): DocumentEditor {
         return this.container.documentEditor;
     }
@@ -51,35 +51,24 @@ export class Paragraph {
     public initializeParagraphPropertiesDiv(wholeDiv: HTMLElement, isRtl?: boolean): void {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.isRtl = isRtl;
-        if (this.isRtl) {
-            this.splitButtonClass = 'e-rtl ' + this.splitButtonClass;
-        }
         this.textProperties = wholeDiv;
         let element: string = 'font_properties';
-        let paragraphDiv: HTMLElement = this.createDivElement(element + '_paragraph', wholeDiv, '');
-        classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
+        let paragraphDiv: HTMLElement = this.createDivElement(element + '_paragraph', wholeDiv, 'padding:10px;');
         let label: HTMLElement = createElement('label', { styles: 'width:26px;', className: 'e-de-ctnr-prop-label' });
         label.innerHTML = this.localObj.getConstant('Paragraph');
         paragraphDiv.appendChild(label);
         let styleDiv: HTMLElement = this.createDivElement(element + '_styleDiv', paragraphDiv);
         styleDiv.classList.add('e-de-ctnr-segment');
         // tslint:disable-next-line:max-line-length
-        let styleSelect: HTMLSelectElement = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;' }) as HTMLSelectElement;
+        let styleSelect: HTMLSelectElement = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;padding-left:10px;' }) as HTMLSelectElement;
         styleDiv.appendChild(styleSelect);
         this.createStyleDropDownList(styleSelect);
         let indentWholeDiv: HTMLElement = this.createDivElement(element + '_indentWholeDiv', paragraphDiv);
         indentWholeDiv.style.display = 'flex';
         indentWholeDiv.classList.add('e-de-ctnr-segment');
-        if (isRtl) {
-            classList(indentWholeDiv, ['e-de-ctnr-segment-rtl'], []);
-        }
         // tslint:disable-next-line:max-line-length
         let indentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
-        let indentClassName: string = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
-        if (isRtl) {
-            indentClassName = 'e-rtl ' + indentClassName;
-        }
-        indentDiv.className = indentClassName;
+        indentDiv.className = 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group';
         // tslint:disable-next-line:max-line-length
         this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align left (Ctrl+L)'));
         // tslint:disable-next-line:max-line-length
@@ -89,26 +78,28 @@ export class Paragraph {
         // tslint:disable-next-line:max-line-length
         this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify (Ctrl+J)'));
         let incDecIndentDiv: HTMLElement = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
-        indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
+        incDecIndentDiv.className = 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group';
         if (isRtl) {
-            indentClassName = 'e-rtl ' + indentClassName;
+            incDecIndentDiv.style.marginRight = '8px';
+        } else {
+            incDecIndentDiv.style.marginLeft = '8px';
         }
-        incDecIndentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
         this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', 'e-de-ctnr-decreaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
         // tslint:disable-next-line:max-line-length
         this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         let listDiv: HTMLElement = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
-        classList(listDiv, ['e-de-ctnr-segment'], []);
-        if (isRtl) {
-            classList(listDiv, ['e-de-ctnr-segment-rtl'], []);
-        }
         let lineHeight: HTMLElement = createElement('button', { id: element + '_lineHeight' });
         listDiv.appendChild(lineHeight);
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
 
         let listDropDown: HTMLElement = this.createDivElement(element + '_listDropDiv', listDiv);
         listDropDown.className = 'de-split-button';
+        if (isRtl) {
+            listDropDown.style.paddingRight = '10px';
+        } else {
+            listDropDown.style.paddingLeft = '10px';
+        }
         let bulletButton: HTMLElement = createElement('button', { id: element + '_bullet' });
         listDropDown.appendChild(bulletButton);
         let numberingList: HTMLElement = createElement('button', { id: element + '_numberingList' });
@@ -159,7 +150,7 @@ export class Paragraph {
             iconCss: 'e-de-ctnr-linespacing e-icons',
             enableRtl: this.isRtl,
             select: this.lineSpacingAction,
-            cssClass: this.splitButtonClass,
+            cssClass: 'e-de-prop-splitbutton',
             beforeItemRender: (args: MenuEventArgs) => {
                 args.element.innerHTML = '<span></span>' + args.item.text;
                 let span: HTMLElement = args.element.children[0] as HTMLElement;
@@ -179,7 +170,7 @@ export class Paragraph {
 
     private createNumberListDropButton(iconcss: string, button: HTMLElement): void {
         // tslint:disable-next-line:max-line-length
-        let div: HTMLElement = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
+        let div: HTMLElement = createElement('div', { id: 'target', styles: 'width: 213px;height: auto;display:none' });
         let ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
@@ -201,7 +192,7 @@ export class Paragraph {
         let menuOptions: SplitButtonModel = {
             target: div,
             iconCss: iconcss,
-            cssClass: this.splitButtonClass,
+            cssClass: 'e-de-prop-splitbutton',
             beforeOpen: (): void => {
                 div.style.display = 'block';
                 this.updateSelectedNumberedListType(this.documentEditor.selection.paragraphFormat.listText);
@@ -304,7 +295,7 @@ export class Paragraph {
     }
     private createBulletListDropButton(iconcss: string, button: HTMLElement): void {
         // tslint:disable-next-line:max-line-length
-        let div: HTMLElement = createElement('div', { id: 'bullet_list', styles: 'width: 196px;height: auto;display:none' });
+        let div: HTMLElement = createElement('div', { id: 'bullet_list', styles: 'width: 198px;height: auto;display:none' });
         let ulTag: HTMLElement = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
             className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
@@ -327,7 +318,7 @@ export class Paragraph {
         let menuOptions: SplitButtonModel = {
             target: div,
             iconCss: iconcss,
-            cssClass: this.splitButtonClass,
+            cssClass: 'e-de-prop-splitbutton',
             beforeOpen: (): void => {
                 div.style.display = 'block';
                 this.updateSelectedBulletListType(this.documentEditor.selection.paragraphFormat.listText);
@@ -369,7 +360,7 @@ export class Paragraph {
         let innerHTML: string = '<div class="e-de-list-items-size"><span class="e-de-bullets e-de-list-items-size"' +
             'style="display:table-cell; text-align: center; vertical-align:middle">None</span></div>';
         let liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu e-de-list-items-size', styles: 'position:relative;left:11px;top:13px',
+            className: 'e-de-list-header-presetmenu e-de-list-items-size',
             id: 'ui-zlist0', innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
@@ -394,6 +385,8 @@ export class Paragraph {
             dataSource: [{ StyleName: 'Normal', Class: 'e-icons e-edit-font' }],
             cssClass: 'e-de-prop-dropdown',
             popupHeight: '240px',
+            popupWidth: '240px',
+            width: '240px',
             enableRtl: this.isRtl,
             query: new Query().select(['StyleName', 'Style']),
             fields: { text: 'StyleName', value: 'StyleName' },
@@ -475,9 +468,9 @@ export class Paragraph {
         if (!isNullOrUndefined(styleObj.characterFormat.italic) && styleObj.characterFormat.italic) {
             domStyle += 'font-style:italic;';
         }
-        // if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
-        //     domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
-        // }
+        if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
+            domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
+        }
         if (textDecoration.length > 1) {
             domStyle += 'text-decoration:' + textDecoration + ';';
         }

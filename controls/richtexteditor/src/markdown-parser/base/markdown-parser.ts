@@ -47,7 +47,7 @@ export class MarkdownParser {
         this.undoRedoManager = new UndoRedoCommands(this, options.options);
         this.mdSelectionFormats = new MDSelectionFormats({ parent: this, syntax: this.selectionTags });
         this.linkObj = new MDLink(this);
-        this.tableObj = new MDTable(this);
+        this.tableObj = new MDTable({ parent: this, syntaxTag: ({Formats: this.formatTags, List: this.listTags}) });
         this.clearObj = new ClearFormat(this);
         this.wireEvents();
     }

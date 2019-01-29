@@ -111,7 +111,7 @@ export class Crud {
                 promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<Object>;
             }
         } else {
-            let parentEvent: { [key: string]: Object } = this.parent.eventBase.getRecurrenceEvent(data);
+            let parentEvent: { [key: string]: Object } = this.getParentEvent(data);
             let query: Query;
             switch (action) {
                 case 'EditOccurrence':
@@ -200,7 +200,7 @@ export class Crud {
                 case 'Delete':
                 case 'DeleteOccurrence':
                     for (let i: number = 0; i < recEvent.length; i++) {
-                        let parentEvent: { [key: string]: Object } = this.parent.eventBase.getRecurrenceEvent(recEvent[i]);
+                        let parentEvent: { [key: string]: Object } = this.getParentEvent(recEvent[i]);
                         args.data = { occurrence: recEvent[i], parent: parentEvent };
                         this.parent.trigger(events.actionBegin, args);
                         if (args.cancel) {
@@ -239,6 +239,15 @@ export class Crud {
         this.parent.eventBase.selectWorkCellByTime(dataObj);
         let crudArgs: CrudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise };
         this.refreshData(crudArgs);
+    }
+
+    private getParentEvent(event: { [key: string]: Object }): { [key: string]: Object } {
+        let fields: EventFieldsMapping = this.parent.eventFields;
+        let parentEvent: { [key: string]: Object } = this.parent.eventBase.getRecurrenceEvent(event);
+        if (parentEvent[fields.startTimezone] || parentEvent[fields.endTimezone]) {
+            this.parent.eventBase.timezoneConvert(parentEvent);
+        }
+        return parentEvent;
     }
 
     private processCrudTimezone(events: { [key: string]: Object }): void {

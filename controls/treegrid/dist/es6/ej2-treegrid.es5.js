@@ -470,7 +470,6 @@ function getPlainData(value) {
     delete value.childRecords;
     delete value.index;
     delete value.parentItem;
-    delete value.parentIndex;
     delete value.level;
     return value;
 }
@@ -496,10 +495,10 @@ var Render = /** @__PURE__ @class */ (function () {
         var data = args.data;
         var parentData = data.parentItem;
         var index;
-        if (!isNullOrUndefined(data.parentIndex) &&
+        if (!isNullOrUndefined(data.parentItem) &&
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent)))) {
-            index = data.parentIndex;
+            index = data.parentItem.index;
             var collapsed$$1 = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                 parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
                 !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
@@ -568,7 +567,7 @@ var Render = /** @__PURE__ @class */ (function () {
                     expand = data.expanded;
                 }
                 var collapsed$$1 = true;
-                if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
+                if (!isNullOrUndefined(data.parentItem) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
                     && data[this.parent.expandStateMapping])
                     && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
                     collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
@@ -626,7 +625,6 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
         this.taskIds = [];
         this.flatSortedData = [];
         this.storedIndex = -1;
-        this.rootIndex = -1;
         this.isSelfReference = !isNullOrUndefined(this.parent.parentIdMapping);
         this.addEventListener();
     }
@@ -663,7 +661,6 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
     Sort$$1.prototype.createSortRecords = function (data) {
         var sortData = getObject('modifiedData', data);
         var parentRecords = getObject('parentRecords', data);
-        var parentIndex = getObject('parentIndex', data);
         var filteredResult = getObject('filteredResult', data);
         var dataLength = Object.keys(sortData).length;
         for (var i = 0, len = dataLength; i < len; i++) {
@@ -687,22 +684,15 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
                 currentSortData.parentItem = parentData;
                 currentSortData.parentUniqueID = parentData.uniqueID;
                 level = parentRecords.level + 1;
-                currentSortData.parentIndex = parentIndex;
             }
             currentSortData.level = level;
-            if (isNullOrUndefined(currentSortData.parentIndex)) {
-                this.rootIndex = currentSortData.index;
-            }
-            else {
-                currentSortData.rootIndex = this.rootIndex;
-            }
             if (isNullOrUndefined(currentSortData[this.parent.parentIdMapping]) ||
                 currentSortData.parentItem) {
                 this.flatSortedData.push(currentSortData);
             }
             if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
                 this.createSortRecords({ modifiedData: currentSortData[this.parent.childMapping], parentRecords: currentSortData,
-                    parentIndex: this.storedIndex, filteredResult: filteredResult });
+                    filteredResult: filteredResult });
             }
         }
         this.parent.notify('Sorting', { sortedData: this.flatSortedData, filteredData: filteredResult });
@@ -779,7 +769,6 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         this.parentItems = [];
         this.taskIds = [];
         this.hierarchyData = [];
-        this.rootIndex = -1;
         this.storedIndex = -1;
         this.sortedData = [];
         this.isSortAction = false;
@@ -993,7 +982,6 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     result[r].level = rowDetails.record.level + 1;
                     result[r].index = Math.ceil(Math.random() * 1000);
                     result[r].parentItem = rowDetails.record;
-                    result[r].parentIndex = rowDetails.record.index;
                     if ((result[r][_this.parent.hasChildMapping] || _this.parentItems.indexOf(result[r][_this.parent.idMapping]) !== -1)
                         && !(haveChild && !haveChild[r])) {
                         result[r].hasChildRecords = true;
@@ -1014,7 +1002,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     DataManipulation.prototype.beginSorting = function () {
         this.isSortAction = true;
     };
-    DataManipulation.prototype.createRecords = function (data, parentRecords, parentIndex) {
+    DataManipulation.prototype.createRecords = function (data, parentRecords) {
         for (var i = 0, len = Object.keys(data).length; i < len; i++) {
             var currentData = data[i];
             var level = 0;
@@ -1038,20 +1026,13 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 currentData.parentItem = parentData;
                 currentData.parentUniqueID = parentData.uniqueID;
                 level = parentRecords.level + 1;
-                currentData.parentIndex = parentIndex;
             }
             currentData.level = level;
-            if (isNullOrUndefined(currentData.parentIndex)) {
-                this.rootIndex = currentData.index;
-            }
-            else {
-                currentData.rootIndex = this.rootIndex;
-            }
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
                 this.parent.flatData.push(currentData);
             }
             if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
-                this.createRecords(currentData[this.parent.childMapping], currentData, this.storedIndex);
+                this.createRecords(currentData[this.parent.childMapping], currentData);
             }
         }
         if (!Object.keys(data).length) {
@@ -1147,7 +1128,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 this.parent.notify('createSort', { modifiedData: modifiedData, parent: this.parent, srtQry: srtQry });
                 this.parent.notify('createSortRecords', {
                     modifiedData: modifiedData,
-                    parentRecords: null, parentIndex: null, filteredResult: results
+                    parentRecords: null, filteredResult: results
                 });
             }
             results = this.sortedData;
@@ -1597,9 +1578,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.defaultLocale = {
             Above: 'Above',
             Below: 'Below',
-            AddRow: 'AddRow',
+            AddRow: 'Add Row',
             ExpandAll: 'Expand All',
-            CollapseAll: 'Collapse All',
+            CollapseAll: 'Collapse All'
         };
         if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
             this.childMapping = 'Children';
@@ -1975,7 +1956,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.printMode = getActualProperties(this.printMode);
         this.grid.locale = getActualProperties(this.locale);
         this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
-        this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
     };
     TreeGrid.prototype.triggerEvents = function (args) {
@@ -2023,8 +2003,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.cellDeselected = this.triggerEvents.bind(this);
         this.grid.cellSelecting = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
-        this.grid.columnMenuOpen = this.triggerEvents.bind(this);
-        this.grid.columnMenuClick = this.triggerEvents.bind(this);
         this.grid.cellSelected = this.triggerEvents.bind(this);
         this.grid.headerCellInfo = this.triggerEvents.bind(this);
         this.grid.resizeStart = this.triggerEvents.bind(this);
@@ -2441,9 +2419,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'contextMenuItems':
                     this.grid.contextMenuItems = this.getContextMenu();
-                    break;
-                case 'columnMenuItems':
-                    this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
                     break;
                 case 'editSettings':
                     if (this.grid.isEdit && this.grid.editSettings.mode === 'Normal' && newProp[prop].mode &&
@@ -3343,9 +3318,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         Property()
     ], TreeGrid.prototype, "contextMenuItems", void 0);
     __decorate([
-        Property()
-    ], TreeGrid.prototype, "columnMenuItems", void 0);
-    __decorate([
         Property(null)
     ], TreeGrid.prototype, "rowHeight", void 0);
     __decorate([
@@ -3438,12 +3410,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], TreeGrid.prototype, "cellSelecting", void 0);
-    __decorate([
-        Event()
-    ], TreeGrid.prototype, "columnMenuOpen", void 0);
-    __decorate([
-        Event()
-    ], TreeGrid.prototype, "columnMenuClick", void 0);
     __decorate([
         Event()
     ], TreeGrid.prototype, "cellSelected", void 0);
@@ -3659,7 +3625,6 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         this.filteredResult = [];
         this.flatFilteredData = [];
         this.filteredParentRecs = [];
-        this.filterRootIndex = -1;
         this.addEventListener();
     }
     /**
@@ -3806,12 +3771,9 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
             if (isPrst) {
                 var parent_3 = this_2.filteredResult.filter(function (e) { return e.uniqueID === record[c].parentUniqueID; })[0];
                 setValue('filterLevel', parent_3.filterLevel + 1, record[c]);
-                record[c].filterRootIndex = this_2.filterRootIndex;
             }
             else {
                 setValue('filterLevel', 0, record[c]);
-                this_2.filterRootIndex = record[c].filterIndex = c;
-                record[c].filterIndex = this_2.filterRootIndex;
                 this_2.filteredParentRecs.push(record[c]);
             }
         };
@@ -3834,8 +3796,6 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
                     setValue('hasFilteredChildRecords', true, currentRecord);
                 }
                 setValue('filterLevel', null, currentRecord);
-                setValue('filterIndex', null, currentRecord);
-                setValue('filterRootIndex', null, currentRecord);
             }
         }
         this.parent.notify('updateResults', { result: flatData, count: flatData.length });
@@ -4178,40 +4138,42 @@ var Page$1 = /** @__PURE__ @class */ (function () {
         };
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
     };
+    Page$$1.prototype.pageRoot = function (pagedResults, temp, result) {
+        var newResults = isNullOrUndefined(result) ? [] : result;
+        var _loop_1 = function (t) {
+            newResults.push(temp[t]);
+            var res = [];
+            if (temp[t].hasChildRecords) {
+                res = pagedResults.filter(function (e) {
+                    return temp[t].uniqueID === e.parentUniqueID;
+                });
+                newResults = this_1.pageRoot(pagedResults, res, newResults);
+            }
+        };
+        var this_1 = this;
+        for (var t = 0; t < temp.length; t++) {
+            _loop_1(t);
+        }
+        return newResults;
+    };
     Page$$1.prototype.pageAction = function (pageingDetails) {
         var _this = this;
         var dm = new DataManager(pageingDetails.result);
         if (this.parent.pageSettings.pageSizeMode === 'Root') {
-            var temp_1 = [];
+            var temp = [];
             var propname = (this.parent.grid.filterSettings.columns.length > 0) &&
                 (this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'None') ?
                 'filterLevel' : 'level';
             var query = new Query().where(propname, 'equal', 0);
-            temp_1 = dm.executeLocal(query);
-            pageingDetails.count = temp_1.length;
+            temp = dm.executeLocal(query);
+            pageingDetails.count = temp.length;
             var size = this.parent.grid.pageSettings.pageSize;
             var current = this.parent.grid.pageSettings.currentPage;
             var skip = size * (current - 1);
             query = query.skip(skip).take(size);
-            temp_1 = dm.executeLocal(query);
-            var child = [];
-            var _loop_1 = function (r) {
-                child = pageingDetails.result.filter(function (e) {
-                    if (!isNullOrUndefined(temp_1[r].filterIndex)) {
-                        return e.filterRootIndex === temp_1[r].filterIndex;
-                    }
-                    else {
-                        return e.rootIndex === temp_1[r].index;
-                    }
-                });
-                for (var c = 0; c < child.length; c++) {
-                    temp_1.splice(r + c + 1, 0, child[c]);
-                }
-            };
-            for (var r = 0; r < temp_1.length; r++) {
-                _loop_1(r);
-            }
-            pageingDetails.result = temp_1;
+            temp = dm.executeLocal(query);
+            var newResults = this.pageRoot(pageingDetails.result, temp);
+            pageingDetails.result = newResults;
         }
         else {
             var dm_1 = new DataManager(pageingDetails.result);
@@ -4383,7 +4345,6 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
                     var level = getObject('level', summaryParent);
                     setValue('level', level + 1, item);
                     var index = getObject('index', summaryParent);
-                    setValue('parentIndex', index, item);
                     setValue('isSummaryRow', true, item);
                     if (isSort) {
                         var childRecords = getObject('childRecords', parentRecord);
@@ -4869,7 +4830,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             var level = void 0;
             var dataIndex = void 0;
             var idMapping = void 0;
-            var parentIndex = void 0;
             var parentUniqueID = void 0;
             var parentItem = void 0;
             var parentIdMapping = void 0;
@@ -4877,7 +4837,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 level = currentData[this.addRowIndex].level;
                 dataIndex = currentData[this.addRowIndex].index;
                 idMapping = currentData[this.addRowIndex][this.parent.idMapping];
-                parentIndex = currentData[this.addRowIndex].parentIndex;
                 parentIdMapping = currentData[this.addRowIndex][this.parent.parentIdMapping];
                 if (currentData[this.addRowIndex].parentItem) {
                     parentUniqueID = currentData[this.addRowIndex].parentItem.uniqueID;
@@ -4895,7 +4854,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 else if (this.parent.editSettings.newRowPosition === 'Child') {
                     position = 'after';
                     if (this.selectedIndex > -1) {
-                        value.parentIndex = dataIndex;
                         value.parentItem = extend({}, currentData[this.addRowIndex]);
                         value.parentUniqueID = value.parentItem.uniqueID;
                         delete value.parentItem.childRecords;
@@ -4905,14 +4863,13 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                     value.level = level + 1;
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = idMapping;
-                        if (!isNullOrUndefined(value.parentIndex)) {
+                        if (!isNullOrUndefined(value.parentItem)) {
                             this.updateParentRow(key, value.parentItem, 'add', value);
                         }
                     }
                 }
                 if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                     if (this.selectedIndex > -1 && level) {
-                        value.parentIndex = parentIndex;
                         value.parentUniqueID = parentUniqueID;
                         value.parentItem = extend({}, parentItem);
                         delete value.parentItem.childRecords;
@@ -4921,7 +4878,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                     value.level = level;
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = parentIdMapping;
-                        if (!isNullOrUndefined(value.parentIndex)) {
+                        if (!isNullOrUndefined(value.parentItem)) {
                             this.updateParentRow(key, value.parentItem, 'add', value);
                         }
                     }

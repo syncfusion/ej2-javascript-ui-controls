@@ -610,6 +610,9 @@ export class Workbook {
                 cellStyle.hAlign = 'left';
             }
         }
+        if (json.rotation !== null && json.rotation !== undefined) {
+            cellStyle.rotation = json.rotation;
+        }
         //vAlign
         if (json.vAlign !== null && json.vAlign !== undefined) {
             cellStyle.vAlign = json.vAlign.toLowerCase();
@@ -636,7 +639,6 @@ export class Workbook {
         } else {
             cellStyle.numberFormat = 'GENERAL';
         }
-
         cellStyle.index = this.processCellStyle(cellStyle);
     }
     private switchNumberFormat(numberFormat: string, type: string): void {
@@ -798,6 +800,7 @@ export class Workbook {
                 baseStyle.underline === toCompareStyle.underline &&
                 baseStyle.vAlign === toCompareStyle.vAlign &&
                 baseStyle.indent === toCompareStyle.indent &&
+                baseStyle.rotation === toCompareStyle.rotation &&
                 baseStyle.wrapText === toCompareStyle.wrapText &&
                 (baseStyle.borders.all.color === toCompareStyle.borders.all.color &&
                     baseStyle.borders.all.lineStyle === toCompareStyle.borders.all.lineStyle) &&
@@ -1217,6 +1220,7 @@ export class Workbook {
             cellXfs.alignment.horizontal = style.hAlign;
             cellXfs.alignment.vertical = style.vAlign;
             cellXfs.alignment.wrapText = style.wrapText ? 1 : 0;
+            cellXfs.alignment.rotation = style.rotation;
 
 
             if (style.isGlobalStyle) {
@@ -1342,8 +1346,10 @@ export class Workbook {
         if (cellXf.alignment.horizontal !== undefined) {
             alignString += 'horizontal="' + cellXf.alignment.horizontal + '" ';
         }
-        if (cellXf.alignment.indent !== undefined) {
+        if (cellXf.alignment.indent !== undefined && cellXf.alignment.indent !== 0 ) {
             alignString += 'indent="' + cellXf.alignment.indent + '" ';
+        }else if (cellXf.alignment.rotation !== undefined &&  cellXf.alignment.rotation !== 0 ) {
+            alignString += 'textRotation="' + cellXf.alignment.rotation + '" ';
         }
         if (cellXf.alignment.vertical !== undefined) {
             alignString += 'vertical="' + cellXf.alignment.vertical + '" ';

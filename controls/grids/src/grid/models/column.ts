@@ -391,6 +391,13 @@ export class Column {
      */
     public lockColumn: boolean;
 
+    /**    
+     * If `allowSearching` set to false, then it disables Searching of a particular column.
+     * By default all columns allow Searching.
+     * @default true   
+     */
+    public allowSearching: boolean = true;
+
     constructor(options: ColumnModel) {
         merge(this, options);
         this.uid = getUid('grid-column');
@@ -1011,4 +1018,11 @@ export interface ColumnModel {
      * @default false         
      */
     lockColumn?: boolean;
+
+    /**    
+     * If `allowSearching` set to false, then it disables Searching of a particular column.
+     * By default all columns allow Searching.
+     * @default true   
+     */
+    allowSearching?: boolean;
 }

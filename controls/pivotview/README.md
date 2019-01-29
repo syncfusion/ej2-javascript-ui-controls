@@ -61,4 +61,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/pivotview/CHANGELOG.md?utm_source=npm&utm_campaign=pivot-grid)
 
-&copy; Copyright 2018 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2019 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

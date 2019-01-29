@@ -176,16 +176,16 @@ export type SortDirection =
 @NotifyPropertyChanges
 
 export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPropertyChanged {
-    private groupIdCounter: number = 0;
-    private ruleIdCounter: number = 0;
-    private btnGroupId: number = 0;
+    private groupIdCounter: number;
+    private ruleIdCounter: number;
+    private btnGroupId: number;
     private levelColl: Level;
-    private isImportRules: boolean = false;
+    private isImportRules: boolean;
     private filterIndex: number;
-    private parser: string[][] = [];
+    private parser: string[][];
     private defaultLocale: Object;
     private l10n: L10n;
-    private intl: Internationalization = new Internationalization();
+    private intl: Internationalization;
     private items: ItemModel[];
     private customOperators: Object;
     private operators: Object;
@@ -934,7 +934,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
             }
-            detach(inputElement[i]);
+            if (document.getElementById(inputElement[i].id)) {
+                detach(inputElement[i]);
+            }
         }
         for (let i: number = 0, len: number = divElement.length; i < len; i++) {
             if (divElement[i].className.indexOf('e-template') > -1) {
@@ -1657,6 +1659,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization();
+        this.groupIdCounter = 0;
+        this.ruleIdCounter = 0;
+        this.btnGroupId = 0;
+        this.isImportRules = false;
+        this.parser = [];
         this.customOperators = {
             stringOperator: [
                 { value: 'startswith', key: this.l10n.getConstant('StartsWith') },
@@ -1805,6 +1812,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.isImportRules = true;
         this.rule = rule;
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
+        this.isImportRules = false;
     }
     /**
      * Set the rule or rules collection.

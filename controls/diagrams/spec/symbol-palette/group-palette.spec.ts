@@ -17,6 +17,7 @@ import {
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { PaletteModel, IElement, PointModel, PortVisibility, PortConstraints, IDragEnterEventArgs } from '../../src/index';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Diagram.Inject(BpmnDiagrams);
 SymbolPalette.Inject(BpmnDiagrams);
 Diagram.Inject(UndoRedo);
@@ -132,7 +133,7 @@ describe('Symbol Palette - Group', () => {
             expect(element === null).toBe(true);
             done();
         });
-    });
+      });
     describe('Testing symbol palette with multi level group', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
@@ -273,7 +274,7 @@ describe('Symbol Palette - Group', () => {
             expect(diagram.nodes.length).toBe(9);
             done();
         });
-    });
+      });
     describe('Symbol Palette - group with path element', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
@@ -402,7 +403,7 @@ describe('Symbol Palette - Group', () => {
             expect(diagram.nodes.length).toBe(5);
             done();
         });
-    });
+     });
 
 
 
@@ -497,7 +498,7 @@ describe('Symbol Palette - Group', () => {
                 expect(diagram.nodes.length).toBe(3);
             });
         });
-    });
+     });
 });
 
 describe('SymbolPalette - swimLane', () => {
@@ -618,7 +619,7 @@ describe('SymbolPalette - swimLane', () => {
             diagram.clear();
             done();
         });
-    });
+     });
     describe('Testing symbol palette with group Symbols', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
@@ -742,5 +743,14 @@ describe('SymbolPalette - swimLane', () => {
             diagram.clear();
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

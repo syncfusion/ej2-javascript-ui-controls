@@ -1,7 +1,7 @@
 $range-bg-color:  $content-bg-color !default;
 $range-primary-color: $brand-primary !default;
 $range-primary-font-color: $brand-primary-font !default;
-$range-presets-bg: $content-bg-color !default;
+$range-presets-bg: $grey-dark !default;
 $range-preset-normal-font-color: $grey-dark-font !default;
 $range-font-color: none !default;
 $range-active-icon-color: $grey-dark-font !default;
@@ -10,7 +10,7 @@ $range-hover-color: $grey-99 !default;
 $range-today-color: $grey-light !default;
 $range-calendar-today-color: $grey-dark-font !default;
 $range-selection-bg: darken($brand-primary, 10%) !default;
-$range-other-hover-color: $content-bg-color !default;
+$range-other-hover-color: $grey-99 !default;
 $range-other-month-date: $grey-cc !default;
 $range-box-shadow: 0 6px 12px rgba($grey-base, .175) !default;
 $range-box-shadow-none: none !default;

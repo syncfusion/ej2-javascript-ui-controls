@@ -70,7 +70,7 @@ export interface DropDownBaseModel extends ComponentModel{
     /**
      * When set to true, enables RTL mode of the component that 
      * displays the content in the right-to-left direction.
-     * @default false.
+     * @default false
      */
     enableRtl?: boolean;
 
@@ -78,7 +78,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. value
-     * @default false.
+     * @default false
      */
     enablePersistence?: boolean;
 
@@ -88,27 +88,27 @@ export interface DropDownBaseModel extends ComponentModel{
      * 
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals. 
-     * @default null.
+     * @default null
      */
     itemTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
-     * @default null.
+     * @default null
      */
     groupTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
-     * @default 'No Records Found'.
+     * @default 'No Records Found'
      */
     noRecordsTemplate?: string;
 
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'.
+     * @default 'The Request Failed'
      */
     actionFailureTemplate?: string;
 
@@ -117,13 +117,13 @@ export interface DropDownBaseModel extends ComponentModel{
      * * `None` - The data source is not sorting.
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
-     * @default None.
+     * @default None
      */
     sortOrder?: SortOrder;
 
     /**
      * Specifies a value that indicates whether the component is enabled or not.
-     * @default true.
+     * @default true
      */
     enabled?: boolean;
 
@@ -131,14 +131,14 @@ export interface DropDownBaseModel extends ComponentModel{
      * Accepts the list items either through local or remote service and binds it to the component.
      * It can be an array of JSON Objects or an instance of
      * [`DataManager`](./api-dataManager.html).
-     * @default [].
+     * @default []
      */
     dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
 
     /**
      * Accepts the external [`Query`](./api-query.html)
      * which will execute along with the data processing.
-     * @default null.
+     * @default null
      */
     query?: Query;
 
@@ -152,6 +152,12 @@ export interface DropDownBaseModel extends ComponentModel{
      * ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
      */
     ignoreAccent?: boolean;
+
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     */
+    locale?: string;
 
     /**
      * Triggers before fetching data from the remote server.

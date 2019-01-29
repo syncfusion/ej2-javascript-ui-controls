@@ -1011,7 +1011,7 @@ function getElement(id) {
  */
 function getShapeData(targetId, map) {
     var layerIndex = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
-    var shapeIndex = parseInt(targetId.split('_ShapeIndex_')[1].split('_')[0], 10);
+    var shapeIndex = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
     var layer = map.layers[layerIndex];
     var shapeData = layer.layerData[shapeIndex]['property'];
     var data;
@@ -1070,7 +1070,7 @@ function getTargetElement(layerIndex, name, enable, map) {
     var shapeData = map.layers[layerIndex].shapeData['features'];
     for (var i = 0; i < shapeData.length; i++) {
         if (shapeData[i]['properties'].name === name) {
-            targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_undefined';
+            targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_undefined';
             break;
         }
     }
@@ -1390,7 +1390,7 @@ function changeNavaigationLineWidth(element, index, scale, maps) {
         node = element.childNodes[m];
         if (node.tagName === 'path') {
             var currentStroke = (maps.layersCollection[index]
-                .navigationLineSettings[parseFloat(node.id.split('_')[2])].width);
+                .navigationLineSettings[parseFloat(node.id.split('_NavigationIndex_')[1].split('_')[0])].width);
             node.setAttribute('stroke-width', (currentStroke / scale).toString());
         }
     }
@@ -2689,7 +2689,7 @@ var Marker = /** @__PURE__ @class */ (function () {
                 var offset = markerSettings.offset;
                 if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                     var markerID = _this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
-                        + markerIndex + '_DataIndex_' + dataIndex;
+                        + markerIndex + '_dataIndex_' + dataIndex;
                     var location_1 = (_this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, _this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, _this.maps);
                     var animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(_this.maps.zoomModule);
                     var translate = (_this.maps.isTileMap) ? new Object() : getTranslate(_this.maps, currentLayer, animate$$1);
@@ -2804,7 +2804,7 @@ var Marker = /** @__PURE__ @class */ (function () {
         var marker;
         if (target.indexOf('_MarkerIndex_') > -1) {
             var markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
-            var dataIndex = parseInt(id[1].split('_DataIndex_')[1].split('_')[0], 10);
+            var dataIndex = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
             marker = layer.markerSettings[markerIndex];
             if (!isNaN(markerIndex)) {
                 data = marker.dataSource[dataIndex];
@@ -3452,7 +3452,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     fill = currentShapeData['property'][shapeSettings.colorValuePath];
                 }
             }
-            var shapeID = this_1.mapObject.element.id + '_LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_' + k;
+            var shapeID = this_1.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
             getShapeColor_1 = this_1.getShapeColorMapping(this_1.currentLayer, currentShapeData['property'], fill);
             fill = Object.prototype.toString.call(getShapeColor_1) === '[object Object]' && !isNullOrUndefined(getShapeColor_1['fill'])
                 ? getShapeColor_1['fill'] : fill;
@@ -3568,7 +3568,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             }
         }
         var group = (this.mapObject.renderer.createGroup({
-            id: this.mapObject.element.id + '_layerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
+            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
         }));
         if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
             renderData.map(function (currentShapeData, i) {
@@ -4470,7 +4470,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 for (var i = 0; i < elements.childNodes.length; i++) {
                     var childElement = elements.childNodes[i];
                     if (childElement.tagName === 'g') {
-                        var layerIndex = parseFloat(childElement.id.split('_')[2]);
+                        var layerIndex = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
                         for (var j = 0; j < childElement.childNodes.length; j++) {
                             var childNode = childElement.childNodes[j];
                             if (!(childNode.id.indexOf('_Markers_Group') > -1) &&
@@ -4705,7 +4705,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY
         };
         this.trigger(click, eventArgs);
-        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+        if (targetEle.id.indexOf('shapeIndex') !== -1) {
             var layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
@@ -4744,7 +4744,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             pageY = e.pageY;
             target = e.target;
         }
-        if (targetEle.id.indexOf('ShapeIndex') !== -1) {
+        if (targetEle.id.indexOf('shapeIndex') !== -1) {
             var layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
@@ -4777,7 +4777,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var target;
         target = (e.type === 'touchmove') ? e.target :
             target = e.target;
-        // if (target.id.indexOf('ShapeIndex') !== -1 && !this.highlightSettings.enable) {
+        // if (target.id.indexOf('shapeIndex') !== -1 && !this.highlightSettings.enable) {
         //     triggerShapeEvent(target.id, this.highlightSettings, this, shapeHighlight);
         // }
         if (this.markerModule) {
@@ -5850,7 +5850,7 @@ var NavigationLine = /** @__PURE__ @class */ (function () {
         var navigationGroup;
         var d;
         var group = (this.maps.renderer.createGroup({
-            id: this.maps.element.id + '_layerIndex_' + layerIndex + '_line_Group'
+            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_line_Group'
         }));
         for (var i = 0; i < navigation.length; i++) {
             latitude = navigation[i]['properties']['latitude'];
@@ -5869,7 +5869,7 @@ var NavigationLine = /** @__PURE__ @class */ (function () {
                 }
             }
             navigationGroup = (this.maps.renderer.createGroup({
-                id: this.maps.element.id + '_layerIndex_' + layerIndex + '_NavigationGroup' + i + ''
+                id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_NavigationGroup' + i + ''
             }));
             for (var j = 0; j < point['length'] - 1; j++) {
                 angle = (-1 > angle) ? -1 : angle;
@@ -6439,7 +6439,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                             layerIndex = data[j]['layerIndex'];
                             dataIndex = data[j]['dataIndex'];
                             var shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
-                                layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                                layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
                                 if (value === 'highlight' && this.shapeElement !== targetElement) {
                                     this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
@@ -6642,7 +6642,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 layerIndex = data[j]['layerIndex'];
                 dataIndex = data[j]['dataIndex'];
                 var shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
-                    layerIndex + '_ShapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+                    layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                 if (targetElement === shapeEle) {
                     process = true;
                 }
@@ -6955,11 +6955,11 @@ var Legend = /** @__PURE__ @class */ (function () {
         var target = e.target;
         var legend = this.maps.legendSettings;
         var id = this.maps.element.id + '_Interactive_Legend';
-        var hoverId = legend.type === 'Layers' ? '_ShapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
+        var hoverId = legend.type === 'Layers' ? '_shapeIndex_' : (legend.type === 'Markers') ? '_MarkerIndex_' :
             '_BubbleIndex_';
         if (target.id.indexOf(hoverId) > 1) {
-            var layerIndex = parseFloat(target.id.split('_')[2]);
-            var dataIndex = parseFloat(target.id.split('_')[6]);
+            var layerIndex = parseFloat(target.id.split('_LayerIndex_')[1].split('_')[0]);
+            var dataIndex = parseFloat(target.id.split(/_dataIndex_/i)[1].split('_')[0]);
             var fill = void 0;
             var stroke = void 0;
             var strokeWidth = void 0;
@@ -6967,10 +6967,11 @@ var Legend = /** @__PURE__ @class */ (function () {
                 remove(querySelector(id, this.maps.element.id));
             }
             var layer = this.maps.layersCollection[layerIndex];
+            var markerVisible = (legend.type === 'Layers' ? layer.visible :
+                legend.type === 'Markers' ? layer.markerSettings[parseFloat(target.id.split('_MarkerIndex_')[1].split('_')[0])].visible :
+                    (this.maps.getBubbleVisible(this.maps.layersCollection[layerIndex])));
             if (legend.visible && this.legendRenderingCollections.length > 0
-                && legend.mode === 'Interactive' && (legend.type === 'Layers' ? layer.visible :
-                legend.type === 'Markers' ? layer.markerSettings[parseFloat(target.id.split('_')[4])].visible :
-                    (this.maps.getBubbleVisible(this.maps.layersCollection[layerIndex])))) {
+                && legend.mode === 'Interactive' && markerVisible) {
                 var svgRect = this.maps.svgObject.getBoundingClientRect();
                 for (var i = 0; i < this.legendCollection.length; i++) {
                     var currentData = this.legendCollection[i];
@@ -7260,8 +7261,8 @@ var Highlight = /** @__PURE__ @class */ (function () {
             var data = void 0;
             var shapeIn = void 0;
             var dataIndex = void 0;
-            if (targetEle.id.indexOf('ShapeIndex') > -1) {
-                shapeIn = parseInt(targetEle.id.split('_ShapeIndex_')[1].split('_')[0], 10);
+            if (targetEle.id.indexOf('shapeIndex') > -1) {
+                shapeIn = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
                     this.maps.layers[layerIndex].shapeData['features'][shapeIn]['properties'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
@@ -7276,7 +7277,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
             }
             else if (targetEle.id.indexOf('MarkerIndex') > -1) {
                 var marker = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_DataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[marker].dataSource[dataIndex];
                 this.highlightSettings = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings;
             }
@@ -7302,7 +7303,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
                     removeClass(element);
                     if (element.id.indexOf('NavigationIndex') > -1) {
                         var index = parseInt(element.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                        var layerIndex_1 = parseInt(element.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                        var layerIndex_1 = parseInt(element.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                         element.setAttribute('stroke-width', this.maps.layers[layerIndex_1].navigationLineSettings[index].width.toString());
                         element.setAttribute('stroke', this.maps.layers[layerIndex_1].navigationLineSettings[index].color);
                     }
@@ -7313,7 +7314,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
             targetEle = getElementsByClassName('highlightMapStyle')[0];
             if (targetEle.id.indexOf('NavigationIndex') > -1) {
                 var index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                layerIndex = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
@@ -7359,7 +7360,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
                 removeClass(elem);
                 if (elem.id.indexOf('NavigationIndex') > -1) {
                     var index = parseInt(elem.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    var layerIndex = parseInt(elem.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                    var layerIndex = parseInt(elem.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     elem.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     elem.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
@@ -7434,8 +7435,8 @@ var Selection = /** @__PURE__ @class */ (function () {
             var shapeIndex = void 0;
             var dataIndex = void 0;
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            if (targetEle.id.indexOf('ShapeIndex') > -1) {
-                shapeIndex = parseInt(targetEle.id.split('_ShapeIndex_')[1].split('_')[0], 10);
+            if (targetEle.id.indexOf('shapeIndex') > -1) {
+                shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
                     this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
@@ -7452,7 +7453,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             else if (targetEle.id.indexOf('MarkerIndex') > -1) {
                 var markerIndex = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_DataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].markerSettings[markerIndex].selectionSettings;
                 this.selectionType = 'Marker';
@@ -7517,7 +7518,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             removeClass(targetEle);
             if (targetEle.id.indexOf('NavigationIndex') > -1) {
                 var index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                var layerIndex = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                var layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                 targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                 targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
             }
@@ -7528,7 +7529,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 removeClass(ele);
                 if (ele.id.indexOf('NavigationIndex') > -1) {
                     var index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    var layerIndex = parseInt(targetEle.parentElement.id.split('_layerIndex_')[1].split('_')[0], 10);
+                    var layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                     ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                     ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
@@ -7553,7 +7554,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     //        for (let i: number = 0; i < legendCollection.length; i++) {
     //             for (let data of legendCollection[i]['data']) {
     //                 shape = getElement(this.maps.element.id + '_LayerIndex_' + data['layerIndex'] +
-    //                            '_ShapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex']);
+    //                            '_shapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex']);
     //                 removeClass(shape);
     //             }
     //         }
@@ -7615,17 +7616,17 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
         var tooltipEle;
         var location;
         var templateData = [];
-        var index = parseFloat(targetId.split('_')[2]);
+        var index = targetId.indexOf('_LayerIndex_') > -1 && parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
         var layer = this.maps.layersCollection[index];
         var tooltipContent = [];
         var markerFill;
         location = getMousePosition(pageX, pageY, this.maps.svgObject);
-        var istooltipRender = (targetId.indexOf('_ShapeIndex_') > -1)
+        var istooltipRender = (targetId.indexOf('_shapeIndex_') > -1)
             || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
         if (istooltipRender) {
-            if (targetId.indexOf('_ShapeIndex_') > -1) {
+            if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
-                var shape = parseInt(targetId.split('_')[4], 10);
+                var shape = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
                 }
@@ -7648,8 +7649,8 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                 //location.y = this.template(option, location);
             }
             else if (targetId.indexOf('_MarkerIndex_') > -1) {
-                var markerIdex = parseInt(targetId.split('_')[4], 10);
-                var dataIndex = parseInt(targetId.split('_')[6], 10);
+                var markerIdex = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
+                var dataIndex = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[2], 10);
                 var marker = layer.markerSettings[markerIdex];
                 option = marker.tooltipSettings;
                 templateData = marker.dataSource[dataIndex];
@@ -7664,8 +7665,8 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                 //location.y = this.template(option, location);
             }
             else if (targetId.indexOf('_BubbleIndex_') > -1) {
-                var bubbleIndex = parseInt(targetId.split('_')[4], 10);
-                var dataIndex = parseInt(targetId.split('_')[6], 10);
+                var bubbleIndex = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[0], 10);
+                var dataIndex = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[2], 10);
                 var bubble = layer.bubbleSettings[bubbleIndex];
                 option = bubble.tooltipSettings;
                 templateData = bubble.dataSource[dataIndex];
@@ -8051,7 +8052,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 var layerElement = this.layerCollectionEle.childNodes[i];
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
-                    var index = parseFloat(layerElement.id.split('_')[2]);
+                    var index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
                     this.currentLayer = this.maps.layersCollection[index];
                     var factor = this.maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (var j = 0; j < layerElement.childElementCount; j++) {
@@ -8077,9 +8078,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             for (var k = 0; k < currentEle.childElementCount; k++) {
                                 childElement = currentEle.childNodes[k];
                                 var bubbleTransform = childElement.getAttribute('transform');
-                                layerIndex = parseFloat(childElement.id.split('_')[2]);
-                                var bubleIndex = parseFloat(childElement.id.split('_')[4]);
-                                var dataIndex = parseFloat(childElement.id.split('_')[6]);
+                                layerIndex = parseFloat(childElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                                var bubleIndex = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[0]);
+                                var dataIndex = parseFloat(childElement.id.split('_BubbleIndex_')[1].split('_')[2]);
                                 for (var l = 0; l < this.maps.bubbleModule.bubbleCollection.length; l++) {
                                     var bubbleCollection = this.maps.bubbleModule.bubbleCollection[l];
                                     if (bubbleCollection['LayerIndex'] === layerIndex && bubbleCollection['BubbleIndex'] === bubleIndex &&
@@ -8140,9 +8141,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
     Zoom.prototype.dataLabelTranslate = function (element, factor, x, y, scale, type, animate$$1) {
         if (animate$$1 === void 0) { animate$$1 = false; }
         var labelCollection = this.maps.dataLabelModule.dataLabelCollections;
-        var layerIndex = parseFloat(element.id.split('_')[2]);
-        var shapeIndex = parseFloat(element.id.split('_')[4]);
-        var labelIndex = parseFloat(element.id.split('_')[6]);
+        var layerIndex = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
+        var shapeIndex = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
+        var labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         var duration = this.currentLayer.animationDuration;
         for (var l = 0; l < labelCollection.length; l++) {
             var label = labelCollection[l];
@@ -8177,9 +8178,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
     };
     Zoom.prototype.markerTranslate = function (element, factor, x, y, scale, type, animate$$1) {
         if (animate$$1 === void 0) { animate$$1 = false; }
-        var layerIndex = parseInt(element.id.split('_')[2], 10);
-        var markerIndex = parseInt(element.id.split('_')[4], 10);
-        var dataIndex = parseInt(element.id.split('_')[6], 10);
+        var layerIndex = parseInt(element.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        var markerIndex = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+        var dataIndex = parseInt(element.id.split('_dataIndex_')[1].split('_')[0], 10);
         var layer = this.maps.layersCollection[layerIndex];
         var marker = layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
@@ -8409,7 +8410,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var target = e.target;
         e.stopImmediatePropagation();
         var isTouch = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
-        var toolbar = target.id.split('_')[3];
+        var toolbar = target.id.split('_Zooming_ToolBar_')[1].split('_')[0];
         if (isTouch) {
             this.handled = true;
             this.performZoomingByToolBar(toolbar);
@@ -8477,7 +8478,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         }
     };
     Zoom.prototype.showTooltip = function (e) {
-        var text = e.target.id.split('_')[3];
+        var text = e.target.id.split('_Zooming_ToolBar_')[1].split('_')[0];
         if (!this.isTouch) {
             createTooltip('EJ2_Map_Toolbar_Tip', this.maps.getLocalizedLabel(text), (e.pageY + 10), (e.pageX + 10), '10px');
         }
@@ -8705,7 +8706,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
      */
     Zoom.prototype.click = function (e) {
         var map = this.maps;
-        if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_ShapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
+        if (map.zoomSettings.zoomOnClick && e.target.id.indexOf('_shapeIndex_') > -1 && !map.zoomSettings.doubleClickZoom
             && (this.zoomColor === this.selectionColor && this.zoomElements)) {
             var bounds = e.target.getBBox();
             var boundwidth = bounds.width;

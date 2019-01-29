@@ -14,6 +14,7 @@ import { BaseToolbar } from './base-toolbar';
 import { DropDownButtons } from './dropdown-buttons';
 import { IToolbarStatus } from '../../common/interface';
 import { ColorPickerInput } from './color-picker';
+import { RichTextEditorModel } from '../base/rich-text-editor-model';
 
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
@@ -314,14 +315,34 @@ export class BaseQuickToolbar {
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         if (this.parent.inlineMode.enable) {
             this.parent.on(events.toolbarUpdated, this.updateStatus, this);
         }
     }
-
+   /**
+    * Called internally if any of the property value changed.
+    * @hidden
+    */
+    protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
+        if (!isNullOrUndefined(e.newProp.inlineMode)) {
+            for (let prop of Object.keys(e.newProp.inlineMode)) {
+                switch (prop) {
+                    case 'enable':
+                        if (e.newProp.inlineMode.enable) {
+                            this.parent.on(events.toolbarUpdated, this.updateStatus, this);
+                        } else {
+                            this.parent.off(events.toolbarUpdated, this.updateStatus);
+                        }
+                        break;
+                }
+            }
+        }
+    }
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.modelChanged, this.onPropertyChanged);
         if (this.parent.inlineMode.enable) {
             this.parent.off(events.toolbarUpdated, this.updateStatus);
         }

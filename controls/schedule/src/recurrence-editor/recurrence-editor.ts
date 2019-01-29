@@ -6,8 +6,9 @@ import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';
 import { EJ2Instance } from '../schedule/base/interface';
-import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate } from './date-generator';
+import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';
 import { RecurrenceEditorModel } from './recurrence-editor-model';
+import { CalendarUtil, CalendarType } from '../common/calendar-util';
 
 const HEADER: string = 'e-editor';
 const INPUTWARAPPER: string = 'e-input-wrapper';
@@ -163,6 +164,12 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     @Property()
     public dateFormat: string;
     /**
+     * Sets the specific calendar type to be applied on recurrence editor.
+     * @default 'Gregorian'
+     */
+    @Property('Gregorian')
+    public calendarMode: CalendarType;
+    /**
      * Allows styling with custom class names.
      * @default null
      */
@@ -266,6 +273,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private onWeekDay: RadioButton;
     private dayButtons: Button[] = [];
     private monthButtons: RadioButton[] = [];
+    private calendarUtil: CalendarUtil = getCalendarUtil(this.calendarMode);
     private startState(freq: string, endOn: string, startDate: Date): void {
         this.showFormElement();
         this.updateForm(freq);
@@ -332,9 +340,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private selectMonthDay(date: Date): void {
         let weekday: string[] = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
-        this.monthDate.setProperties({ value: date.getDate() });
+        this.monthDate.setProperties({ value: this.calendarUtil.getDate(date) });
         this.monthWeekDays.setProperties({ value: valueData[weekday[date.getDay()]] });
-        this.monthValue.setProperties({ value: '' + (date.getMonth() + 1) });
+        this.monthValue.setProperties({ value: '' + this.calendarUtil.getMonth(date) });
         this.monthWeekPos.setProperties({ value: this.getDayPosition(date) });
         this.daySelection(date.getDay());
     }
@@ -653,9 +661,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         let endDate: Date = new Date(date.getTime());
         let day: number = date.getDay();
         let positionCollection: number[] = [];
-        temp.setDate(1);
-        endDate.setDate(1);
-        endDate.setMonth(endDate.getMonth() + 1);
+        temp = this.calendarUtil.getMonthStartDate(temp);
+        endDate = this.calendarUtil.getMonthEndDate(endDate);
         while (temp < endDate) {
             if (temp.getDay() === day) {
                 positionCollection.push(temp.getTime());
@@ -700,7 +707,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = <string[]>(getValue('days.stand-alone.' + format, getDefaultDateObject()));
         } else {
-            cldrObj = <string[]>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.stand-alone.' + format, cldrData));
+            cldrObj = <string[]>(getValue(
+                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format, cldrData));
         }
         for (let obj of weekday) {
             dayData.push({ text: getValue(obj, cldrObj), value: valueData[obj] });
@@ -713,7 +721,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = <string[]>(getValue('months.stand-alone.wide', getDefaultDateObject()));
         } else {
-            cldrObj = <string[]>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.months.stand-alone.wide', cldrData));
+            cldrObj = <string[]>(getValue(
+                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide', cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
             monthData.push({
@@ -912,13 +921,15 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.startState(NONE, NEVER, this.startDate);
         this.setDefaultValue();
     }
-
+    public getCalendarMode(): string {
+        return this.calendarMode.toLowerCase();
+    }
     public getRuleSummary(rule: string = this.getRecurrenceRule()): string {
-        return generateSummary(rule, this.localeObj, this.locale);
+        return generateSummary(rule, this.localeObj, this.locale, this.getCalendarMode());
     }
     public getRecurrenceDates(startDate: Date, rule: string, excludeDate?: string, maximumCount?: number, viewDate?: Date): number[] {
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
-        return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate);
+        return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate, this.calendarMode);
     }
     public getRecurrenceRule(): string {
         let ruleData: string = RULEFREQ + EQUAL;
@@ -1046,6 +1057,10 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                     if (this.getRecurrenceRule() !== this.value) {
                         this.setRecurrenceRule(this.value as string);
                     }
+                    break;
+                case 'calendarMode':
+                    this.calendarMode = newProp.calendarMode;
+                    this.calendarUtil = getCalendarUtil(newProp.calendarMode);
                     break;
                 case 'locale':
                 case 'frequencies':

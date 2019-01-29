@@ -2,7 +2,9 @@
  * Multi-layer map sample
  */
 import { Maps, Marker, ILoadEventArgs, MapsTheme, MapsTooltip, DataLabel, ZoomSettings, Zoom, MapAjax } from '../src/index';
-
+import {usa } from './MapData/USA';
+import {california} from './MapData/california';
+import {texas } from './MapData/texas';
 Maps.Inject(Marker, MapsTooltip, DataLabel,Zoom);
 //tslint:disable:max-func-body-length
     let maps: Maps = new Maps({
@@ -18,7 +20,7 @@ Maps.Inject(Marker, MapsTooltip, DataLabel,Zoom);
         },
         layers: [
             {
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/USA.json'),
+                shapeData: usa,
                 shapeSettings: {
                     fill: '#E5E5E5',
                     border: {
@@ -33,7 +35,7 @@ Maps.Inject(Marker, MapsTooltip, DataLabel,Zoom);
                 }
             },
             {
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Texas.json'),
+                shapeData: texas,
                 type: 'SubLayer',
                 shapeSettings: {
                     fill: 'rgba(141, 206, 255, 0.6)',
@@ -74,7 +76,7 @@ Maps.Inject(Marker, MapsTooltip, DataLabel,Zoom);
                 ]
             },
             {
-                shapeData:new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/California.json'),
+                shapeData: california,
                 type: 'SubLayer',
                 shapeSettings: {
                     fill: 'rgba(141, 206, 255, 0.6)',

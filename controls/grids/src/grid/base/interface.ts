@@ -354,6 +354,12 @@ export interface IGrid extends Component<HTMLElement> {
      */
     frozenColumns?: number;
 
+    /**
+     * Specifies whether the Searching for columns is enable or not.
+     * @default true
+     */
+    allowSearching?: boolean;
+
     isEdit?: boolean;
 
     commonQuery?: Query;

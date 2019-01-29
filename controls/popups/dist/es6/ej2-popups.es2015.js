@@ -2495,6 +2495,7 @@ let Dialog = class Dialog extends Component {
         let eventArgs = {
             cancel: false,
             isInteraction: event ? true : false,
+            isInteracted: event ? true : false,
             element: this.element,
             target: this.target,
             container: this.isModal ? this.dlgContainer : this.element,

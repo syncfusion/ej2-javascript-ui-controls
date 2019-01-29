@@ -1095,7 +1095,7 @@ export function getElement(id: string): Element {
  */
 export function getShapeData(targetId: string, map: Maps): { shapeData: object, data: object } {
     let layerIndex: number = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
-    let shapeIndex: number = parseInt(targetId.split('_ShapeIndex_')[1].split('_')[0], 10);
+    let shapeIndex: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
     let layer: LayerSettings = map.layers[layerIndex] as LayerSettings;
     let shapeData: Object = layer.layerData[shapeIndex]['property'];
     let data: object;
@@ -1157,7 +1157,7 @@ export function getTargetElement(layerIndex: number, name: string, enable: boole
     let shapeData: Object[] = <Object[]>map.layers[layerIndex].shapeData['features'];
     for (let i: number = 0; i < shapeData.length; i++) {
         if (shapeData[i]['properties'].name === name) {
-            targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_ShapeIndex_' + i + '_dataIndex_undefined';
+            targetId = map.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_undefined';
             break;
         }
     }
@@ -1490,7 +1490,7 @@ export function changeNavaigationLineWidth(element: Element, index: number, scal
         node = element.childNodes[m] as HTMLElement;
         if (node.tagName === 'path') {
             let currentStroke: number = ((<LayerSettingsModel>maps.layersCollection[index])
-                .navigationLineSettings[parseFloat(node.id.split('_')[2])].width);
+                .navigationLineSettings[parseFloat(node.id.split('_NavigationIndex_')[1].split('_')[0])].width);
             node.setAttribute('stroke-width', (currentStroke / scale).toString());
         }
     }

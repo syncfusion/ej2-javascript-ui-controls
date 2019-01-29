@@ -19,6 +19,7 @@ export class CellStyle {
     public bold: boolean;
     public hAlign: HAlignType;
     public indent: number;
+    public rotation: number;
     public vAlign: VAlignType;
     public underline: boolean;
 
@@ -39,6 +40,7 @@ export class CellStyle {
         this.hAlign = 'general';
         this.vAlign = 'bottom';
         this.indent = 0;
+        this.rotation = 0;
         this.numberFormat = 'GENERAL';
         this.type = 'datetime';
         this.borders = new Borders();
@@ -89,6 +91,7 @@ export class Alignment {
     public vertical: string;
     public wrapText: number;
     public indent: number;
+    public rotation: number;
 }
 /**
  * CellStyleXfs class

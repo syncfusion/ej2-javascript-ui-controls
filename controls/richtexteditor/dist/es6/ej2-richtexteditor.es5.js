@@ -1150,7 +1150,8 @@ function setToolbarStatus(e, isPopToolbar) {
                     var result = '';
                     switch (key) {
                         case 'formats':
-                            if (isNullOrUndefined(dropDown.formatDropDown) || isPopToolbar) {
+                            if (isNullOrUndefined(dropDown.formatDropDown) || isPopToolbar ||
+                                (!isNullOrUndefined(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) {
                                 return;
                             }
                             var formatItems = e.parent.format.types;
@@ -1163,7 +1164,8 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.formatDropDown.dataBind();
                             break;
                         case 'alignments':
-                            if (isNullOrUndefined(dropDown.alignDropDown)) {
+                            if (isNullOrUndefined(dropDown.alignDropDown) ||
+                                (!isNullOrUndefined(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) {
                                 return;
                             }
                             var alignItems = alignmentItems;
@@ -1172,7 +1174,8 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.alignDropDown.dataBind();
                             break;
                         case 'fontname':
-                            if (isNullOrUndefined(dropDown.fontNameDropDown) || isPopToolbar) {
+                            if (isNullOrUndefined(dropDown.fontNameDropDown) || isPopToolbar ||
+                                (!isNullOrUndefined(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) {
                                 return;
                             }
                             var fontNameItems = e.parent.fontFamily.items;
@@ -1186,7 +1189,8 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.fontNameDropDown.dataBind();
                             break;
                         case 'fontsize':
-                            if (isNullOrUndefined(dropDown.fontSizeDropDown)) {
+                            if (isNullOrUndefined(dropDown.fontSizeDropDown) ||
+                                (!isNullOrUndefined(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) {
                                 return;
                             }
                             var fontSizeItems = e.parent.fontSize.items;
@@ -1267,6 +1271,18 @@ function parseHtml(value) {
     else {
         return document.createRange().createContextualFragment(value);
     }
+}
+function getTextNodesUnder(docElement, node) {
+    var nodes = [];
+    for (node = node.firstChild; node; node = node.nextSibling) {
+        if (node.nodeType === 3) {
+            nodes.push(node);
+        }
+        else {
+            nodes = nodes.concat(getTextNodesUnder(docElement, node));
+        }
+    }
+    return nodes;
 }
 function toObjectLowerCase(obj) {
     var convertedValue = {};
@@ -1791,7 +1807,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                 switch (item) {
                     case 'formats':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_Formats', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         var formatItem = _this.parent.format.types.slice();
@@ -1811,7 +1827,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                         break;
                     case 'fontname':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_FontName', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         var fontItem = _this.parent.fontFamily.items.slice();
@@ -1831,7 +1847,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                         break;
                     case 'fontsize':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_FontSize', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         var fontsize = _this.parent.fontSize.items.slice();
@@ -1850,7 +1866,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                         break;
                     case 'alignments':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_Alignments', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         _this.alignDropDown = _this.toolbarRenderer.renderDropDownButton({
@@ -2695,6 +2711,25 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Toolbar$$1.prototype.onPropertyChanged = function (e) {
+        if (!isNullOrUndefined(e.newProp.inlineMode)) {
+            for (var _i = 0, _a = Object.keys(e.newProp.inlineMode); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'enable':
+                        if (e.newProp.inlineMode.enable) {
+                            this.parent.off(scroll, this.scrollHandler);
+                            this.parent.off(bindOnEnd, this.toolbarBindEvent);
+                            this.parent.off(toolbarUpdated, this.updateToolbarStatus);
+                        }
+                        else {
+                            this.parent.on(scroll, this.scrollHandler, this);
+                            this.parent.on(bindOnEnd, this.toolbarBindEvent, this);
+                            this.parent.on(toolbarUpdated, this.updateToolbarStatus, this);
+                        }
+                        break;
+                }
+            }
+        }
         if (e.module !== this.getModuleName()) {
             return;
         }
@@ -3406,8 +3441,30 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.on(destroy, this.destroy, this);
+        this.parent.on(modelChanged, this.onPropertyChanged, this);
         if (this.parent.inlineMode.enable) {
             this.parent.on(toolbarUpdated, this.updateStatus, this);
+        }
+    };
+    /**
+     * Called internally if any of the property value changed.
+     * @hidden
+     */
+    BaseQuickToolbar.prototype.onPropertyChanged = function (e) {
+        if (!isNullOrUndefined(e.newProp.inlineMode)) {
+            for (var _i = 0, _a = Object.keys(e.newProp.inlineMode); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'enable':
+                        if (e.newProp.inlineMode.enable) {
+                            this.parent.on(toolbarUpdated, this.updateStatus, this);
+                        }
+                        else {
+                            this.parent.off(toolbarUpdated, this.updateStatus);
+                        }
+                        break;
+                }
+            }
         }
     };
     BaseQuickToolbar.prototype.removeEventListener = function () {
@@ -3415,6 +3472,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.off(destroy, this.destroy);
+        this.parent.off(modelChanged, this.onPropertyChanged);
         if (this.parent.inlineMode.enable) {
             this.parent.off(toolbarUpdated, this.updateStatus);
         }
@@ -3603,6 +3661,8 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
                 this.showInlineQTBar(this.offsetX, this.offsetY, target);
             }
             else {
+                var closestAnchor = closest(target, 'a');
+                target = closestAnchor ? closestAnchor : target;
                 if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
                     if (this.parent.inlineMode.onSelection && range.collapsed) {
                         return;
@@ -3778,10 +3838,10 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
             removeClass([this.parent.element], [CLS_INLINE]);
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
-            if (this.parent.inlineMode.enable && !Browser.isDevice) {
-                addClass([this.parent.element], [CLS_INLINE]);
-                this.wireInlineQTBarEvents();
-            }
+        }
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            addClass([this.parent.element], [CLS_INLINE]);
+            this.wireInlineQTBarEvents();
         }
     };
     /**
@@ -5424,8 +5484,8 @@ var MDTable = /** @__PURE__ @class */ (function () {
      * Constructor for creating the Formats plugin
      * @hidden
      */
-    function MDTable(parent) {
-        this.parent = parent;
+    function MDTable(options) {
+        extend(this, this, options, true);
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
     }
@@ -5439,26 +5499,25 @@ var MDTable = /** @__PURE__ @class */ (function () {
         this.removeEventListener();
     };
     MDTable.prototype.createTable = function (e) {
-        var dummy = document;
-        var textArea = this.parent.element;
-        textArea.focus();
-        var start = textArea.selectionStart;
-        var end = textArea.selectionEnd;
-        var end3;
-        var text = this.selection.getSelectedText(textArea);
-        var end1;
-        var textEmpty;
+        this.element = this.parent.element;
+        var start = this.element.selectionStart;
+        var end = this.element.selectionEnd;
         var textAreaInitial;
-        if (start !== end) { // It will check start !== end and will clear the text selected.
-            textEmpty = text.replace(text, '');
-            end1 = end;
-            end3 = start;
-            text = textEmpty;
-        }
-        else {
-            end3 = end;
-        }
-        text += this.textUnEmpty(start, end3, dummy, text, end1, textArea);
+        textAreaInitial = this.element.value;
+        this.locale = e;
+        this.selection.save(start, end);
+        this.restore(this.element.selectionStart, this.element.selectionEnd, e);
+        this.insertTable(start, end, textAreaInitial, e);
+    };
+    MDTable.prototype.getTable = function () {
+        var table = '';
+        table += this.textNonEmpty();
+        table += this.tableHeader(this.locale);
+        table += this.tableCell(this.locale);
+        return table;
+    };
+    MDTable.prototype.tableHeader = function (e) {
+        var text = '';
         for (var i = 1; i <= 2; i++) {
             text += '|';
             for (var j = 1; j <= 2; j++) {
@@ -5469,251 +5528,117 @@ var MDTable = /** @__PURE__ @class */ (function () {
                     text += '---------|';
                 }
             }
-            var dummyElement = dummy.createElement('div');
-            dummyElement.innerHTML = '\n';
-            var text1 = dummyElement.textContent;
-            text += text1;
+            text += this.insertLine();
         }
+        return text;
+    };
+    MDTable.prototype.tableCell = function (e) {
+        var text = '';
         for (var i = 1; i <= 2; i++) {
             text += '|';
             for (var j = 1; j <= 2; j++) {
                 text += e.item.colText + ' ' + this.convertToLetters(i) + j + '|';
             }
-            var dummyElement = dummy.createElement('div');
-            dummyElement.innerHTML = '\n';
-            var text1 = dummyElement.textContent;
-            text += text1;
+            text += this.insertLine();
         }
-        text = this.textUnEmpty(start, end3, dummy, text, end1, textArea);
-        textAreaInitial = textArea.value;
-        if (start !== end) {
-            this.startNotEqualEnd(start, end, text, textArea, textAreaInitial, e);
+        text += this.insertLine();
+        return text;
+    };
+    MDTable.prototype.insertLine = function () {
+        var dummyElement = document.createElement('div');
+        dummyElement.innerHTML = '\n';
+        return dummyElement.textContent;
+    };
+    MDTable.prototype.insertTable = function (start, end, textAreaInitial, e) {
+        var parentText = this.selection.getSelectedParentPoints(this.element);
+        var lastLineSplit = parentText[parentText.length - 1].text.split(' ', 2);
+        var syntaxArr = this.getFormatTag();
+        if (lastLineSplit.length < 2) {
+            this.element.value = this.updateValue(this.getTable());
+            this.makeSelection(textAreaInitial, start, end);
         }
-        else if (start === 0 && end === 0) {
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-            if (textAreaInitial.length) {
-                this.restore(textArea, start + 3, end + 12, e);
+        else {
+            if (this.ensureFormatApply(parentText[parentText.length - 1].text)) {
+                this.checkValid(start, end, this.getTable(), textAreaInitial, e, lastLineSplit, parentText, syntaxArr);
             }
             else {
-                this.restore(textArea, start + 1, end + 10, e);
+                this.element.value = this.updateValue(this.getTable());
+                this.makeSelection(textAreaInitial, start, end);
             }
         }
-        else {
-            this.startEqualEnd(start, end, text, textArea, textAreaInitial, e);
-        }
+        this.restore(this.element.selectionStart, this.element.selectionEnd, e);
     };
-    MDTable.prototype.startEqualEnd = function (start, end, text, textArea, textAreaInitial, e) {
-        var parentText = this.selection.getSelectedParentPoints(textArea);
-        var selectedLine = parentText.length - 1;
-        var formatSplit;
-        formatSplit = parentText[selectedLine].text.split(' ', 2);
-        var textApplyFormat;
-        var parentTextLength;
-        if (formatSplit.length > 1) {
-            parentTextLength = formatSplit[0].length + formatSplit[1].length + 1;
+    MDTable.prototype.makeSelection = function (textAreaInitial, start, end) {
+        end = start + (textAreaInitial.length > 0 ? 12 : 10); //end is added 12 or 10 because to make the table heading selected
+        start += textAreaInitial.length > 0 ? 3 : 1; // Start is added 3 or 1 because new lines are added when inserting table
+        this.selection.setSelection(this.element, start, end);
+    };
+    MDTable.prototype.getFormatTag = function () {
+        var syntaxFormatKey = Object.keys(this.syntaxTag.Formats);
+        var syntaxListKey = Object.keys(this.syntaxTag.List);
+        var syntaxArr = [];
+        for (var i = 0; i < syntaxFormatKey.length; i++) {
+            syntaxArr.push(this.syntaxTag.Formats[syntaxFormatKey[i]]);
         }
-        textApplyFormat = textArea.value.substring(end, textArea.value.length);
-        if (start === parentTextLength) {
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-            this.callRestore(textArea, start, end, e, textAreaInitial);
+        for (var j = 0; j < syntaxListKey.length; j++) {
+            syntaxArr.push(this.syntaxTag.List[syntaxListKey[j]]);
         }
-        else if (textArea.value[start] === '2' && textArea.value[start + 1] === '.') {
-            text = '';
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
-        else if (!(textArea.value[start] === '#' || textArea.value[start - 1] === '#' ||
-            textArea.value[start - 2] === '#' || textArea.value[start] === '2.' ||
-            textArea.value[start - 1] === '2.' || textArea.value[start - 2] === '2.' || (textArea.value[start - 1] === '2' &&
-            textArea.value[start] === '.') || (textArea.value[start - 1] === '.' && textArea.value[start] === ' ') ||
-            (textArea.value[start - 1] === ' ' &&
-                textArea.value[start - 2] === '.' && textArea.value[start - 3] === '2') ||
-            textArea.value[start] === '>' || textArea.value[start - 1] === '>' || textArea.value[start - 2] === '>' ||
-            textArea.value[start] === '+' || textArea.value[start - 1] === '+' || textArea.value[start - 2] === '+')) {
-            if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                parentText[0].text.match('2.'))) {
-                formatSplit[0] = '';
+        return syntaxArr;
+    };
+    MDTable.prototype.ensureFormatApply = function (line) {
+        var formatTags = this.getFormatTag();
+        var formatSplitZero = line.split(' ', 2)[0] + ' ';
+        for (var i = 0; i < formatTags.length; i++) {
+            if (formatSplitZero === formatTags[i]) {
+                return true;
             }
-            text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-            textArea.value = textArea.value.substr(0, start)
-                + text;
-            this.callRestore(textArea, start, end, e, textAreaInitial);
         }
-        else {
-            text = '';
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
+        return false;
     };
-    MDTable.prototype.startNotEqualEnd = function (start, end, text, textArea, textAreaInitial, e) {
-        var parentText = this.selection.getSelectedParentPoints(textArea);
-        var textApplyFormat;
-        textApplyFormat = textArea.value.substring(end, textArea.value.length);
-        if (parentText.length < 2) {
-            this.singleLine(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
-        }
-        else {
-            this.multipleLines(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
-        }
-    };
-    MDTable.prototype.singleLine = function (start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e) {
-        var formatSplit;
-        formatSplit = parentText[0].text.split(' ', 2);
-        var selectedText;
-        selectedText = this.selection.getSelectedText(textArea);
-        var selectedTextSplit;
-        selectedTextSplit = selectedText.split(' ', 2);
-        if (selectedTextSplit.length === 2) {
-            this.selectedSplitText(start, end, text, textArea, selectedText, parentText, formatSplit, textApplyFormat, e, textAreaInitial, selectedTextSplit);
-        }
-        else {
-            if (textArea.value[start - 1] === ' ' && (textArea.value[start - 2] === '.' || textArea.value[start - 2] === '#' ||
-                textArea.value[start - 2] === '>' || textArea.value[start - 2] === '+')) {
-                text = '';
-                start += selectedText.length;
-                textArea.value = textArea.value.substr(0, start)
-                    + text + textArea.value.substr(end, textArea.value.length);
+    MDTable.prototype.ensureStartValid = function (firstLine, parentText) {
+        var firstLineSplit = parentText[0].text.split(' ', 2);
+        for (var i = firstLine + 1; i <= firstLine + firstLineSplit[0].length + 1; i++) {
+            if (this.element.selectionStart === i || this.element.selectionEnd === i) {
+                return false;
             }
-            else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
-                textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
-                if (textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '2' ||
-                    textArea.value[end - 1] === '#' || (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') ||
-                    (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
-                        textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+'))) {
-                    text = '';
-                    start += selectedText.length;
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
+        }
+        return true;
+    };
+    MDTable.prototype.ensureEndValid = function (lastLine, formatSplitLength) {
+        for (var i = lastLine + 1; i <= lastLine + formatSplitLength + 1; i++) {
+            if (this.element.selectionEnd === i) {
+                return false;
+            }
+        }
+        return true;
+    };
+    MDTable.prototype.updateValueWithFormat = function (formatSplit, text) {
+        var textApplyFormat = this.element.value.substring(this.element.selectionEnd, this.element.value.length);
+        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+        return this.element.value.substr(0, this.element.selectionStart) + text;
+    };
+    MDTable.prototype.updateValue = function (text) {
+        return this.element.value.substr(0, this.element.selectionStart) + text +
+            this.element.value.substr(this.element.selectionEnd, this.element.value.length);
+    };
+    MDTable.prototype.checkValid = function (start, end, text, textAreaInitial, e, formatSplit, parentText, syntaxArr) {
+        if (this.ensureStartValid(parentText[0].start, parentText) &&
+            this.ensureEndValid(parentText[parentText.length - 1].start, formatSplit[0].length)) {
+            if (start === parentText[0].start) {
+                if (start !== end && end !== (parentText[parentText.length - 1].end - 1)) {
+                    this.element.value = this.updateValueWithFormat(formatSplit, text);
                 }
                 else {
-                    if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                        parentText[0].text.match('2.'))) {
-                        formatSplit[0] = '';
-                    }
-                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                    textArea.value = textArea.value.substr(0, start)
-                        + text;
-                    this.callRestore(textArea, start, end, e, textAreaInitial);
+                    this.element.value = this.updateValue(text);
                 }
+            }
+            else if (end === parentText[parentText.length - 1].end - 1) {
+                this.element.value = this.updateValue(text);
             }
             else {
-                if (end === formatSplit[0].length + formatSplit[1].length + 1) {
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
-                    this.callRestore(textArea, start, end, e, textAreaInitial);
-                }
-                else {
-                    if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                        parentText[0].text.match('2.'))) {
-                        formatSplit[0] = '';
-                    }
-                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                    textArea.value = textArea.value.substr(0, start)
-                        + text;
-                    this.callRestore(textArea, start, end, e, textAreaInitial);
-                }
+                this.element.value = this.updateValueWithFormat(formatSplit, text);
             }
-        }
-    };
-    MDTable.prototype.selectedSplitText = function (start, end, text, textArea, selectedText, parentText, formatSplit, textApplyFormat, e, textAreaInitial, selectedTextSplit) {
-        if (selectedTextSplit[0] === '') {
-            if (textArea.value[start - 1] === '#' || textArea.value[start - 1] === '.' ||
-                textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+') {
-                text = '';
-                start += selectedText.length;
-                textArea.value = textArea.value.substr(0, start)
-                    + text + textArea.value.substr(end, textArea.value.length);
-            }
-            else {
-                if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                    parentText[0].text.match('2.'))) {
-                    formatSplit[0] = '';
-                }
-                text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                textArea.value = textArea.value.substr(0, start)
-                    + text;
-                this.callRestore(textArea, start, end, e, textAreaInitial);
-            }
-        }
-        else {
-            if (textArea.value[start] === '>' || textArea.value[start] === '+' || textArea.value[start] === '#' ||
-                textArea.value[start] === '2' || (textArea.value[start] === '.' && textArea.value[start - 1] === '2')) {
-                if (selectedText.length === (formatSplit[0].length + formatSplit[1].length + 1)) {
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
-                }
-                else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
-                    textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
-                    if (!(textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '#' ||
-                        (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') || (textArea.value[end - 1] === ' ' &&
-                        (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' || textArea.value[end - 2] === '>' ||
-                            textArea.value[end - 2] === '+')))) {
-                        if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                            parentText[0].text.match('2.'))) {
-                            formatSplit[0] = '';
-                        }
-                        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                        textArea.value = textArea.value.substr(0, start)
-                            + text;
-                        this.callRestore(textArea, start, end, e, textAreaInitial);
-                    }
-                    else {
-                        text = '';
-                        start += selectedText.length;
-                        textArea.value = textArea.value.substr(0, start)
-                            + text + textArea.value.substr(end, textArea.value.length);
-                    }
-                }
-                else {
-                    text = '';
-                    start += selectedText.length;
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
-                }
-            }
-        }
-    };
-    MDTable.prototype.multipleLines = function (start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e) {
-        var lastSelectedLineIndex = parentText.length - 1;
-        var formatLastLine;
-        formatLastLine = parentText[lastSelectedLineIndex].text.split(' ', 2);
-        var formatFirstLine;
-        formatFirstLine = parentText[0].text.split(' ', 2);
-        var selectedText;
-        selectedText = this.selection.getSelectedText(textArea);
-        if (textArea.value[start - 1] === '#' || (textArea.value[start - 1] === '.' && textArea.value[start - 2] === '2') ||
-            textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+' ||
-            textArea.value[start - 1] === '2' || (textArea.value[start - 1] === ' ' &&
-            (textArea.value[start - 2] === '#' || textArea.value[start - 2] === '>' ||
-                textArea.value[start - 2] === '+' || textArea.value[start - 2] === '.'))) {
-            text = '';
-            start += selectedText.length;
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
-        else if (textArea.value[end] === '#' || textArea.value[end] === '>' || textArea.value[end] === '+' ||
-            textArea.value[end] === '2' || (textArea.value[end] === '.' && textArea.value[end - 1] === '2') ||
-            (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
-                textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+')) || (textArea.value[end] === ' ' &&
-            (textArea.value[end - 1] === '#' || textArea.value[end - 1] === '>' || textArea.value[end - 1] === '+' ||
-                textArea.value[end - 1] === '.'))) {
-            text = '';
-            start += selectedText.length;
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
-        else {
-            if (!(parentText[lastSelectedLineIndex].text.match('#') ||
-                parentText[lastSelectedLineIndex].text.match('>') ||
-                parentText[lastSelectedLineIndex].text.match('2.'))) {
-                formatLastLine[0] = '';
-            }
-            text += textApplyFormat.replace(textApplyFormat, (formatLastLine[0] + ' ' + textApplyFormat));
-            textArea.value = textArea.value.substr(0, start)
-                + text;
-            this.callRestore(textArea, start, end, e, textAreaInitial);
+            this.makeSelection(textAreaInitial, start, end);
         }
     };
     MDTable.prototype.convertToLetters = function (rowNumber) {
@@ -5726,42 +5651,29 @@ var MDTable = /** @__PURE__ @class */ (function () {
         } while (rowNumber > 0);
         return letters;
     };
-    MDTable.prototype.textUnEmpty = function (start, end, dummy, text, end1, textArea) {
-        if (start === end && ((start !== 0 && end !== 0) || end1 !== 0)) {
-            var dummyElement = dummy.createElement('div');
-            if (!(text.length > 0)) {
-                if (textArea.value.length > 0) {
-                    dummyElement.innerHTML = '\n\n';
-                }
-                else {
-                    dummyElement.innerHTML = '';
-                }
+    MDTable.prototype.textNonEmpty = function () {
+        var emptyText = '';
+        if (this.isCursorBased() || this.isSelectionBased()) {
+            if (this.element.value.length > 0) {
+                emptyText += this.insertLine();
+                emptyText += this.insertLine(); // to append two new line when textarea having content.               
             }
-            else {
-                dummyElement.innerHTML = '\n';
-            }
-            var text1 = dummyElement.textContent;
-            return text += text1;
         }
-        else {
-            return text;
-        }
+        return emptyText;
     };
-    MDTable.prototype.callRestore = function (textArea, start, end, e, textAreaInitial) {
-        if (textAreaInitial.length) {
-            this.restore(textArea, start + 3, start + 12, e);
-        }
-        else {
-            this.restore(textArea, start + 1, end + 10, e);
-        }
+    MDTable.prototype.isCursorBased = function () {
+        return this.element.selectionStart === this.element.selectionEnd;
     };
-    MDTable.prototype.restore = function (textArea, start, end, event) {
+    MDTable.prototype.isSelectionBased = function () {
+        return this.element.selectionStart !== this.element.selectionEnd;
+    };
+    MDTable.prototype.restore = function (start, end, event) {
         this.selection.save(start, end);
-        this.selection.restore(textArea);
+        this.selection.restore(this.element);
         if (event && event.callBack) {
             event.callBack({
                 requestType: event.subCommand,
-                selectedText: this.selection.getSelectedText(textArea),
+                selectedText: this.selection.getSelectedText(this.element),
                 editorMode: 'Markdown',
                 event: event.event
             });
@@ -5892,7 +5804,7 @@ var MarkdownParser = /** @__PURE__ @class */ (function () {
         this.undoRedoManager = new UndoRedoCommands(this, options.options);
         this.mdSelectionFormats = new MDSelectionFormats({ parent: this, syntax: this.selectionTags });
         this.linkObj = new MDLink(this);
-        this.tableObj = new MDTable(this);
+        this.tableObj = new MDTable({ parent: this, syntaxTag: ({ Formats: this.formatTags, List: this.listTags }) });
         this.clearObj = new ClearFormat(this);
         this.wireEvents();
     }
@@ -6013,17 +5925,16 @@ var MarkdownRender = /** @__PURE__ @class */ (function () {
      */
     function MarkdownRender(parent) {
         this.parent = parent;
-        this.rteID = this.parent.element.id;
     }
     /**
      * The function is used to render RichTextEditor content div
      */
     MarkdownRender.prototype.renderPanel = function () {
         var rteObj = this.parent;
-        var div = this.parent.createElement('div', { id: this.rteID + '_view', className: 'e-rte-content' });
+        var div = this.parent.createElement('div', { id: this.parent.getID() + '_view', className: 'e-rte-content' });
         this.editableElement = this.parent.createElement('textarea', {
             className: 'e-content',
-            id: this.rteID + '_editable-content'
+            id: this.parent.getID() + '_editable-content'
         });
         div.appendChild(this.editableElement);
         this.setPanel(div);
@@ -7723,9 +7634,12 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
         }
     };
     LinkCommand.prototype.createLink = function (e) {
-        if (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0 &&
-            e.item.selectParent[0].tagName === 'A') {
-            var anchorEle = e.item.selectParent[0];
+        var closestAnchor = (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) &&
+            closest(e.item.selectParent[0], 'a');
+        closestAnchor = !isNullOrUndefined(closestAnchor) ? closestAnchor :
+            (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) : null;
+        if (!isNullOrUndefined(closestAnchor) && closestAnchor.tagName === 'A') {
+            var anchorEle = closestAnchor;
             anchorEle.setAttribute('href', e.item.url);
             anchorEle.setAttribute('title', e.item.title);
             anchorEle.innerHTML = e.item.text;
@@ -7736,7 +7650,7 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
             var anchor = createElement('a', {
                 className: 'e-rte-anchor', attrs: {
                     href: e.item.url,
-                    title: e.item.title === '' ? e.item.url : e.item.title
+                    title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
                 }
             });
             if (!isNullOrUndefined(e.item.target)) {
@@ -7779,16 +7693,20 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
         this.callBack(e);
     };
     LinkCommand.prototype.removeLink = function (e) {
-        var parent = e.item.selectParent[0].parentNode;
+        this.parent.domNode.setMarker(e.item.selection);
+        var closestAnchor = closest(e.item.selectParent[0], 'a');
+        var selectParent = closestAnchor ? closestAnchor : e.item.selectParent[0];
+        var parent = selectParent.parentNode;
         var child = [];
-        for (; e.item.selectParent[0].firstChild; null) {
-            child.push(parent.insertBefore(e.item.selectParent[0].firstChild, e.item.selectParent[0]));
+        for (; selectParent.firstChild; null) {
+            child.push(parent.insertBefore(selectParent.firstChild, selectParent));
         }
-        parent.removeChild(e.item.selectParent[0]);
+        parent.removeChild(selectParent);
         if (child && child.length === 1) {
             e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
             e.item.selection.endContainer = e.item.selection.startContainer;
         }
+        e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         e.item.selection.restore();
         this.callBack(e);
     };
@@ -10194,8 +10112,8 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
      * @private
      */
     HtmlEditor.prototype.selectAll = function () {
-        this.parent.contentModule.getEditPanel().focus();
-        this.parent.contentModule.getDocument().execCommand('selectAll', false, null);
+        var nodes = getTextNodesUnder(this.parent.contentModule.getDocument(), this.parent.contentModule.getEditPanel());
+        this.parent.formatter.editorManager.nodeSelection.setSelectionText(this.parent.contentModule.getDocument(), nodes[0], nodes[nodes.length - 1], 0, nodes[nodes.length - 1].textContent.length);
     };
     /**
      * For selecting all content in RTE
@@ -10399,6 +10317,7 @@ var Link = /** @__PURE__ @class */ (function () {
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             var target = args.target;
+            target = this.getAnchorNode(target);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             var isPopupOpen = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && !target.contains(target.querySelector('img'))) {
@@ -10629,20 +10548,25 @@ var Link = /** @__PURE__ @class */ (function () {
         this.hideLinkQuickToolbar();
     };
     Link.prototype.openLink = function (e) {
-        if (e.selectParent[0].classList.contains('e-rte-anchor') || e.selectParent[0].tagName === 'A') {
+        var selectParentEle = this.getAnchorNode(e.selectParent[0]);
+        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             this.parent.formatter.process(this.parent, e.args, e.args, {
-                url: e.selectParent[0].href,
-                target: e.selectParent[0].target === '' ? '_self' : '_blank', selectNode: e.selectNode,
+                url: selectParentEle.href,
+                target: selectParentEle.target === '' ? '_self' : '_blank', selectNode: e.selectNode,
                 subCommand: e.args.item.subCommand
             });
         }
     };
+    Link.prototype.getAnchorNode = function (element) {
+        var selectParent = closest(element, 'a');
+        return (selectParent ? selectParent : element);
+    };
     Link.prototype.editLink = function (e) {
-        if (e.selectParent[0].classList.contains('e-rte-anchor') || e.selectParent[0].tagName === 'A') {
-            var selectParentEle = e.selectParent[0];
+        var selectParentEle = this.getAnchorNode(e.selectParent[0]);
+        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             var linkUpdate = this.i10n.getConstant('dialogUpdate');
             var inputDetails = {
-                url: selectParentEle.href, text: selectParentEle.innerHTML,
+                url: selectParentEle.href, text: selectParentEle.innerText,
                 title: selectParentEle.title, target: selectParentEle.target,
                 header: 'Edit Link', btnText: linkUpdate
             };
@@ -10714,6 +10638,7 @@ var Image = /** @__PURE__ @class */ (function () {
         this.parent.on(dropDownSelect, this.alignmentSelect, this);
         this.parent.on(initialEnd, this.afterRender, this);
         this.parent.on(paste, this.imagePaste, this);
+        this.parent.on(destroy, this.removeEventListener, this);
     };
     Image.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10733,6 +10658,7 @@ var Image = /** @__PURE__ @class */ (function () {
         this.parent.off(dropDownSelect, this.alignmentSelect);
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(paste, this.imagePaste);
+        this.parent.off(destroy, this.removeEventListener);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(checkUndo, this.undoStack);
@@ -13903,6 +13829,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
          */
         _this.isBlur = true;
         _this.needsID = true;
+        _this.onBlurHandler = _this.blurHandler.bind(_this);
+        _this.onFocusHandler = _this.focusHandler.bind(_this);
+        _this.onResizeHandler = _this.resizeHandler.bind(_this);
         return _this;
     }
     /**
@@ -14233,6 +14162,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     RichTextEditor.prototype.destroy = function () {
         this.notify(destroy, {});
         this.destroyDependentModules();
+        if (!isNullOrUndefined(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
         this.unWireEvents();
         if (this.originalElement.tagName === 'TEXTAREA') {
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
@@ -14345,6 +14278,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'width':
                     this.setWidth(newProp[prop]);
+                    if (this.toolbarSettings.enable) {
+                        this.toolbarModule.refreshToolbarOverflow();
+                        this.resizeHandler();
+                    }
                     break;
                 case 'height':
                     this.setHeight(newProp[prop]);
@@ -14831,7 +14768,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RichTextEditor.prototype.resizeHandler = function () {
-        var isExpand = (this.toolbarSettings.type === ToolbarType.Expand) ? true : false;
+        var isExpand = false;
+        if (this.toolbarSettings.enable && !this.inlineMode.enable) {
+            this.toolbarModule.refreshToolbarOverflow();
+            isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(CLS_EXPAND_OPEN);
+        }
         this.setContentHeight('', isExpand);
     };
     RichTextEditor.prototype.scrollHandler = function (e) {
@@ -14914,6 +14855,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.trigger('blur', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
             if (!isNullOrUndefined(this.timeInterval)) {
                 clearInterval(this.timeInterval);
+                this.timeInterval = null;
             }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         }
@@ -14978,8 +14920,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         element.style.overflow = 'hidden';
     };
     RichTextEditor.prototype.wireEvents = function () {
-        this.element.addEventListener('focusin', this.focusHandler.bind(this), true);
-        this.element.addEventListener('focusout', this.blurHandler.bind(this), true);
+        this.element.addEventListener('focusin', this.onFocusHandler, true);
+        this.element.addEventListener('focusout', this.onBlurHandler, true);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -14998,7 +14940,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
         this.formatter.editorManager.observer.on(KEY_DOWN_HANDLER, this.editorKeyDown, this);
-        window.addEventListener('resize', this.resizeHandler.bind(this), true);
+        this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
@@ -15028,8 +14970,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RichTextEditor.prototype.unWireEvents = function () {
-        this.element.removeEventListener('focusin', this.focusHandler.bind(this), false);
-        this.element.removeEventListener('focusout', this.blurHandler.bind(this), false);
+        this.element.removeEventListener('focusin', this.onFocusHandler, true);
+        this.element.removeEventListener('focusout', this.onBlurHandler, true);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -15050,7 +14992,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         if (this.formatter) {
             this.formatter.editorManager.observer.off(KEY_DOWN_HANDLER, this.editorKeyDown);
         }
-        window.removeEventListener('resize', this.resizeHandler.bind(this), false);
+        this.element.ownerDocument.defaultView.removeEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);

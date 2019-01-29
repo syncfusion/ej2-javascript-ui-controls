@@ -30,19 +30,13 @@ export interface Wheel {
 }
 let animationComplete: EmitType<IAnimationCompleteEventArgs>;
 let series1: Object[] = [];
-let series2: Object[] = [];
 let yValue: number[] = [7.66, 8.03, 8.41, 8.97, 8.77, 8.20, 8.16, 7.89, 8.68, 9.48, 10.11, 11.36, 12.34, 12.60, 12.95, 13.91, 16.21, 17.50, 22.72, 28.14, 31.26, 31.39, 32.43, 35.52, 36.36,
     41.33, 43.12, 45.00, 47.23, 48.62, 46.60, 45.28, 44.01, 45.17, 41.20, 43.41, 48.32, 45.65, 46.61, 53.34, 58.53];
-let yValue1: number[] = [7.66, 8.03, 8.41, 8.97, 8.77, 8.20, NaN, 7.89, 8.68, 9.48, 10.11, 11.36, 12.34, 12.60, 12.95, 13.91, 16.21, 17.50, 22.72, 28.14, 31.26, 31.39, 32.43, 35.52, 36.36,
-    41.33, 43.12, 45.00, 47.23, 48.62, 46.60, 45.28, 44.01, 45.17, 41.20, 43.41, NaN, 45.65, 46.61, 53.34, 58.53];
 let point1: Object;
-let point2: Object;
 let i: number; let j: number = 0;
 for (i = 1973; i <= 2013; i++) {
     point1 = { x: i, y: yValue[j] };
-    point2 = { x: i, y: yValue1[j] };
     series1.push(point1);
-    series2.push(point2);
     j++;
 }
 
@@ -334,17 +328,6 @@ describe('Chart', () => {
             };
             chartObj.loaded = loaded;
             chartObj.tooltip.shared = true;
-            chartObj.refresh();
-        });
-        it('Linear Trendlines with NaN as value', (done: Function) => {
-            loaded = (args: Object): void => {
-                let stroke: string = document.getElementById('container_Series_0_TrendLine_0').getAttribute('stroke');
-                expect(stroke === 'blue');
-
-                done();
-            };
-            chartObj.loaded = loaded;
-            chartObj.series[0].dataSource = series2;
             chartObj.refresh();
         });
     });

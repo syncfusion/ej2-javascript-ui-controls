@@ -14,6 +14,7 @@ import { UndoRedo } from '../../src/diagram/objects/undo-redo'
 import {
     SymbolPalette, SymbolInfo, PaletteModel,
 } from '../../src/symbol-palette/index';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId } from '../../src/diagram/index';
@@ -926,7 +927,7 @@ describe('Symbol Palette', () => {
             expect(palette.palettes.length === 1).toBe(true);
             done();
         });
-    });
+        });
     describe('Testing symbol palette', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
@@ -1043,6 +1044,179 @@ describe('Symbol Palette', () => {
                 expect(diagram.nodes.length === 4).toBe(true);
                 done();
             }, 1000);
+        });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
+    });
+
+    describe('Testing symbol palette drag stop on escape', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+
+        let palettes: PaletteModel[] = [
+            {
+                id: 'basicShapes', expanded: true,
+                title: 'Basic Shapes',
+                symbols: [
+                    {
+                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle'}, height: 100, width: 100
+                    }
+                ]
+            }
+        ];
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolPaletteEscape', styles: 'width:25%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramEscape', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                pageSettings: { background: { color: 'transparent' } },
+                nodes: [
+                    { id: 'node1', height: 100, width: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'Rectangle'}}
+                ],
+                width: '74%', height: '600px'
+            });
+            diagram.appendTo('#diagramEscape');
+
+            palette = new SymbolPalette({
+                width: '250px', height: '100%',
+                palettes: palettes,
+                expandMode: 'Multiple',
+                enableAnimation: false, symbolHeight: 50, symbolWidth: 50,
+                symbolPreview: { height: 100, width: 100 }
+            });
+            palette.appendTo('#symbolPaletteEscape');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+        it('Checking retaining selection on dragging', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable['symbol1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            expect(diagram.nodes.length === 1).toBe(true);
+            events.mouseDownEvent(palette.element, 45, 85, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+            events.mouseUpEvent(diagram.element, 300, 300, false, false);
+            expect(diagram.nodes.length > 1).toBe(true);
+            let previousSelectedObjectID: string = diagram.selectedItems.nodes[0].id;
+            events.mouseDownEvent(palette.element, 45, 85, false, false);
+            events.mouseDownEvent(palette.element, 45, 85, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            events.mouseMoveEvent(diagram.element, 150, 300, false, false);
+            expect(diagram.previousSelectedObject !== null &&
+                diagram.previousSelectedObject[0].id === previousSelectedObjectID).toBe(true);
+            events.mouseUpEvent(diagram.element, 150, 300, false, false);
+            done();
+        });
+        it('Checking Esc key pressing inside diagram', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable['symbol1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 45, 85, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 200, 150, false, false);
+            events.keyDownEvent(diagram.element, 'Escape');
+            expect(document.getElementsByClassName('e-dragclone').length === 0).toBe(true);
+            events.mouseUpEvent(diagram.element, 200, 150, false, false);
+            done();
+        });
+        it('Checking Esc key pressing inside symbol palette', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
+                let symbols: IElement = palette.symbolTable['symbol1'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            }
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            }
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            }
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 45, 85, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.keyDownEvent(document, 'Escape');
+            expect(document.getElementsByClassName('e-dragclone').length === 0).toBe(true);
+            events.mouseUpEvent(palette.element, 200, 200, false, false);
+            done();
         });
     });
 });

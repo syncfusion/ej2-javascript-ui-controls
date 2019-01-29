@@ -91,12 +91,6 @@ __decorate([
 let QueryBuilder = class QueryBuilder extends Component {
     constructor(options, element) {
         super(options, element);
-        this.groupIdCounter = 0;
-        this.ruleIdCounter = 0;
-        this.btnGroupId = 0;
-        this.isImportRules = false;
-        this.parser = [];
-        this.intl = new Internationalization();
     }
     getPersistData() {
         return this.addOnPersist(['rule']);
@@ -717,7 +711,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                 }
             }
-            detach(inputElement[i]);
+            if (document.getElementById(inputElement[i].id)) {
+                detach(inputElement[i]);
+            }
         }
         for (let i = 0, len = divElement.length; i < len; i++) {
             if (divElement[i].className.indexOf('e-template') > -1) {
@@ -1493,6 +1489,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization();
+        this.groupIdCounter = 0;
+        this.ruleIdCounter = 0;
+        this.btnGroupId = 0;
+        this.isImportRules = false;
+        this.parser = [];
         this.customOperators = {
             stringOperator: [
                 { value: 'startswith', key: this.l10n.getConstant('StartsWith') },
@@ -1649,6 +1650,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.isImportRules = true;
         this.rule = rule;
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
+        this.isImportRules = false;
     }
     /**
      * Set the rule or rules collection.

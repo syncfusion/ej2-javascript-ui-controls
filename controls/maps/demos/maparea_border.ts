@@ -3,6 +3,7 @@
  */
 import { Maps, Legend, Marker, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { dafaultData } from './MapData/salesCountry';
+import { world_Map } from './MapData/worldMap';
 
 Maps.Inject(Legend, Marker, MapsTooltip);
 //tslint:disable:max-func-body-length
@@ -25,7 +26,7 @@ Maps.Inject(Legend, Marker, MapsTooltip);
         layers: [
             {
 
-                shapeData:new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
+                shapeData: world_Map,
                 shapePropertyPath: 'continent',
                 shapeDataPath: 'continent',
             },

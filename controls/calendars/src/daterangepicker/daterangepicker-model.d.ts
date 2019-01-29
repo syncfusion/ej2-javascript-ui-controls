@@ -1,5 +1,5 @@
 import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { Input, InputObject, FloatLabelType, FocusEventArgs, BlurEventArgs } from '@syncfusion/ej2-inputs';import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
-import {DateRange,RangeEventArgs} from "./daterangepicker";
+import {DateRange,RangeEventArgs,RangeFormatObject} from "./daterangepicker";
 import {CalendarBaseModel} from "../calendar/calendar-model";
 
 /**
@@ -201,6 +201,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * > For more details refer to 
      * [`Range Span`] (../daterangepicker/range-restriction#range-span) documentation.
      * @default null    
+     * @aspType int    
      */
     minDays?: number;
 
@@ -209,6 +210,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * > For more details refer to 
      * [`Range Span`](../daterangepicker/range-restriction#range-span) documentation.
      * @default null
+     * @aspType int
      */
     maxDays?: number;
 
@@ -224,9 +226,10 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Sets or gets the required date format to the start and end date string.
      * > For more details refer to 
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
+     * @aspType string
      * @default null
      */
-    format?: string;
+    format?: string | RangeFormatObject;
 
     /**
      * Specifies the component to be disabled which prevents the DateRangePicker from user interactions. 

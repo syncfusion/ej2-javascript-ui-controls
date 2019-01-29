@@ -907,12 +907,14 @@ let NumericTextBox = class NumericTextBox extends Component {
     raiseChangeEvent(event) {
         if (this.prevValue !== this.value) {
             let eventArgs = {};
-            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract, event: event };
+            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract,
+                isInteraction: this.isInteract, event: event };
             if (event) {
                 this.changeEventArgs.event = event;
             }
             if (this.changeEventArgs.event === undefined) {
                 this.changeEventArgs.isInteracted = false;
+                this.changeEventArgs.isInteraction = false;
             }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
@@ -1221,6 +1223,8 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.cancelEvent(event);
     }
     focusIn(event) {
+        this.focusEventArgs = { event: event, value: this.value, container: this.container };
+        this.trigger('focus', this.focusEventArgs);
         if (!this.enabled || this.readonly) {
             return;
         }
@@ -1243,6 +1247,8 @@ let NumericTextBox = class NumericTextBox extends Component {
     }
     ;
     focusOut(event) {
+        this.blurEventArgs = { event: event, value: this.value, container: this.container };
+        this.trigger('blur', this.blurEventArgs);
         if (this.isPrevFocused) {
             event.preventDefault();
             if (Browser.isDevice) {
@@ -1575,6 +1581,12 @@ __decorate([
 __decorate([
     Event()
 ], NumericTextBox.prototype, "change", void 0);
+__decorate([
+    Event()
+], NumericTextBox.prototype, "focus", void 0);
+__decorate([
+    Event()
+], NumericTextBox.prototype, "blur", void 0);
 NumericTextBox = __decorate([
     NotifyPropertyChanges
 ], NumericTextBox);
@@ -1815,16 +1827,15 @@ function pushIntoRegExpCollec(value) {
     }
 }
 function maskInputFocusHandler(event) {
-    if (this.promptMask.length > 0) {
-        this.focusEventArgs = { selectionStart: 0, selectionEnd: this.promptMask.length };
-    }
-    else {
-        this.focusEventArgs = { selectionStart: 0, selectionEnd: this.element.value.length };
-    }
-    let eventArgs = {};
-    merge(eventArgs, this.focusEventArgs);
-    this.trigger('focus', eventArgs);
-    this.focusEventArgs = eventArgs;
+    this.focusEventArgs = {
+        selectionStart: 0,
+        event: event,
+        value: this.value,
+        maskedValue: this.element.value,
+        container: this.inputObj.container,
+        selectionEnd: (this.promptMask.length > 0) ? this.promptMask.length : this.element.value.length,
+    };
+    this.trigger('focus', this.focusEventArgs);
     if (this.mask) {
         this.isFocus = true;
         if (this.element.value === '') {
@@ -1845,6 +1856,13 @@ function maskInputFocusHandler(event) {
     }
 }
 function maskInputBlurHandler(event) {
+    this.blurEventArgs = {
+        event: event,
+        value: this.value,
+        maskedValue: this.element.value,
+        container: this.inputObj.container
+    };
+    this.trigger('blur', this.blurEventArgs);
     if (this.mask) {
         this.isFocus = false;
         if (this.placeholder && this.element.value === this.promptMask && this.floatLabelType !== 'Always') {
@@ -2159,12 +2177,13 @@ function maskInputKeyPressHandler(event) {
 function triggerMaskChangeEvent(event, oldValue) {
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         let eventArgs = {};
-        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteracted: false };
+        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false, isInteracted: false };
         if (this.mask) {
             this.changeEventArgs.value = strippedValue.call(this, this.element);
         }
         if (!isNullOrUndefined(event)) {
             this.changeEventArgs.isInteracted = true;
+            this.changeEventArgs.isInteraction = true;
             this.changeEventArgs.event = event;
         }
         merge(eventArgs, this.changeEventArgs);
@@ -2643,6 +2662,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         this.redoCollec = [];
         this.changeEventArgs = {};
         this.focusEventArgs = {};
+        this.blurEventArgs = {};
         this.maskKeyPress = false;
         this.isFocus = false;
         this.isInitial = false;
@@ -2899,6 +2919,9 @@ __decorate$1([
 __decorate$1([
     Event()
 ], MaskedTextBox.prototype, "focus", void 0);
+__decorate$1([
+    Event()
+], MaskedTextBox.prototype, "blur", void 0);
 MaskedTextBox = __decorate$1([
     NotifyPropertyChanges
 ], MaskedTextBox);
@@ -11084,7 +11107,8 @@ let TextBox = class TextBox extends Component {
             value: this.value,
             previousValue: this.previousValue,
             container: this.textboxWrapper.container,
-            isInteraction: interaction ? interaction : false
+            isInteraction: interaction ? interaction : false,
+            isInteracted: interaction ? interaction : false
         };
         this.trigger('change', eventArgs);
         this.previousValue = this.value;

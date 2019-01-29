@@ -2,6 +2,7 @@ import { Internationalization, EmitType, createElement, remove, extend, EventHan
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import { ResourceDetails, TreeViewArgs, Schedule, ScheduleModel, EJ2Instance } from '../../src/schedule/index';
 import { cloneDataSource } from './base/datasource.spec';
+import * as cls from '../../src/schedule/base/css-constant';
 
 /**
  * schedule spec utils
@@ -151,6 +152,10 @@ export function triggerMouseEvent(
     let mouseEve: MouseEvent = new MouseEvent(eventType);
     mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, isCtrlKey, false, isShiftKey, false, 0, null);
     node.dispatchEvent(mouseEve);
+}
+
+export function getInstance(className: string): Object {
+    return (document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS + ' .' + className) as EJ2Instance).ej2_instances[0];
 }
 
 export function triggerScrollEvent(target: HTMLElement, scrollTop: number): void {

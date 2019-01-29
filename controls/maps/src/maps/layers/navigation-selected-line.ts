@@ -44,7 +44,7 @@ export class NavigationLine {
         let navigationGroup: Element;
         let d: string;
         let group: Element = (this.maps.renderer.createGroup({
-            id: this.maps.element.id + '_layerIndex_' + layerIndex + '_line_Group'
+            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_line_Group'
         }));
         for (let i: number = 0; i < navigation.length; i++) {
             latitude = navigation[i]['properties']['latitude'];
@@ -65,7 +65,7 @@ export class NavigationLine {
                 }
             }
             navigationGroup = (this.maps.renderer.createGroup({
-                id: this.maps.element.id + '_layerIndex_' + layerIndex + '_NavigationGroup' + i + ''
+                id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_NavigationGroup' + i + ''
             }));
             for (let j: number = 0; j < point['length'] - 1; j++) {
                 angle = (-1 > angle) ? -1 : angle;

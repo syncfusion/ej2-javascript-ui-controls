@@ -1152,6 +1152,8 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
     switch (shape) {
         case 'MultiColoredLine':
         case 'Line':
+        case 'StackingLine':
+        case 'StackingLine100':
             path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY) + ' ' +
                 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY);
             merge(options, { 'd': path });

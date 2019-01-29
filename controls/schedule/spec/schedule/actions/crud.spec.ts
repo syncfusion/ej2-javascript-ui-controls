@@ -1,7 +1,8 @@
-import { createElement, remove, EmitType, extend } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, ReturnType, ActionEventArgs } from '../../../src/schedule/index';
+import { createElement, remove, EmitType, extend, closest } from '@syncfusion/ej2-base';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, ReturnType, ActionEventArgs, ScheduleModel } from '../../../src/schedule/index';
 import { defaultData, stringData, cloneDataSource } from '../base/datasource.spec';
 import { createSchedule, destroy } from '../util.spec';
+import * as util from '../util.spec';
 
 /**
  * Schedule CRUD module
@@ -537,6 +538,48 @@ describe('Schedule CRUD', () => {
             schObj.dataBound = dataBound;
         });
 
+    });
+
+    describe('Timezone Recurrence Events', () => {
+        let schObj: Schedule;
+        let datas: Object[] = [{
+                Id: 8,
+                Subject: 'test',
+                StartTime: "2017-10-30T10:00:00.000Z",
+                EndTime: "2017-10-30T12:00:00.000Z",
+                IsAllDay: false,
+                StartTimezone: 'Europe/Moscow',
+                EndTimezone: 'Europe/Moscow',
+                RecurrenceRule: "FREQ=DAILY;INTERVAL=1;COUNT=10;"
+        }];
+        beforeAll((done: Function) => {
+            let schOptions : ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 1),
+                timezone: 'UTC'
+            };
+            schObj = util.createSchedule(schOptions, datas, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('delete occurrence', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let elements:NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');                
+                let event: { [key: string]: Object } = schObj.getEventDetails(elements[0]) as { [key: string]: Object };
+                expect(elements.length).toEqual(5);
+                expect(event.RecurrenceException).not.toBeNull();
+                done();
+            };            
+            let recurrenceEle: NodeListOf<Element> = schObj.element.querySelectorAll('.e-recurrence-icon');
+            expect(recurrenceEle.length).toEqual(6);
+            let appointmentElement: HTMLElement = closest(recurrenceEle[1], '.e-appointment') as HTMLElement;
+            appointmentElement.click();
+            (<HTMLElement>(<HTMLElement>schObj.quickPopup.quickPopup.content).querySelector('.e-event-edit')).click();
+            (<HTMLElement>schObj.eventWindow.dialogObject.element.querySelector('.e-event-delete')).click();
+            (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-delete')).click();
+            schObj.dataBound = dataBound;
+        });
     });
 
     describe('Public methods', () => {

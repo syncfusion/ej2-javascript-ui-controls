@@ -14,7 +14,6 @@ export class Filter {
     private flatFilteredData: Object[];
     private filteredParentRecs: Object[];
     private isHierarchyFilter: boolean;
-    private filterRootIndex: number;
     /**
      * Constructor for Filter module
      */
@@ -25,7 +24,6 @@ export class Filter {
         this.filteredResult = [];
         this.flatFilteredData = [];
         this.filteredParentRecs = [];
-        this.filterRootIndex = -1;
         this.addEventListener();
     }
     /**
@@ -161,11 +159,8 @@ export class Filter {
             if (isPrst) {
                 let parent: ITreeData = this.filteredResult.filter((e: ITreeData) => {return e.uniqueID === record[c].parentUniqueID; })[0];
                 setValue('filterLevel', parent.filterLevel + 1, record[c]);
-                record[c].filterRootIndex = this.filterRootIndex;
             } else {
                 setValue('filterLevel', 0, record[c]);
-                this.filterRootIndex = record[c].filterIndex = c;
-                record[c].filterIndex = this.filterRootIndex;
                 this.filteredParentRecs.push(record[c]);
             }
         }
@@ -184,8 +179,6 @@ export class Filter {
                     setValue('hasFilteredChildRecords', true, currentRecord);
                 }
                 setValue('filterLevel', null, currentRecord);
-                setValue('filterIndex', null, currentRecord);
-                setValue('filterRootIndex', null, currentRecord);
             }
         }
         this.parent.notify('updateResults', { result: flatData, count: flatData.length });

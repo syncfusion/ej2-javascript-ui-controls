@@ -11,6 +11,7 @@ import { drawStar, MapLocation, measureText, Rect, RectOption, TextOption, Size,
 import { checkShapeDataFields, findMidPointOfPolygon, getFieldData, removeElement } from '../../../src/maps/utils/helper';
 import { getShapeColor } from '../../../src/maps/model/theme';
 import { LayerSettingsModel } from '../../../src/maps/index';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { Bubble, MapsTooltip, DataLabel, Zoom, Marker, ColorMapping, Highlight, Selection, Legend } from '../../../src/index';
 import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
 Maps.Inject(Bubble, MapsTooltip, Zoom, Highlight, Selection, Legend);
@@ -18,7 +19,14 @@ export function getIdElement(id: string): Element {
     return document.getElementById(id);
 }
 describe('Maps Component Base Spec', () => {
-
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Maps testing spec', () => {
         let element: Element;
         let maps: Maps;
@@ -570,5 +578,14 @@ describe('Maps Component Base Spec', () => {
             maps.titleSettings.subtitleSettings.alignment = 'Far';
             maps.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

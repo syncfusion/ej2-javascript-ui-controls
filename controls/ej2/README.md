@@ -161,5 +161,5 @@ This is a commercial product and requires a paid license for possession or use. 
 
 A free community license (https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
-    © Copyright 2019 Syncfusion, Inc. All Rights Reserved. 
+    © Copyright 2018 Syncfusion, Inc. All Rights Reserved. 
     The Syncfusion Essential Studio license and copyright applies to this distribution.

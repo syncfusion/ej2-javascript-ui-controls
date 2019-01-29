@@ -1326,7 +1326,7 @@ export class ZoomPanTool extends ToolBase {
                 let difX: number = this.currentPosition.x - this.prevPosition.x;
                 let difY: number = this.currentPosition.y - this.prevPosition.y;
                 this.commandHandler.scroll(difX, difY, this.currentPosition);
-            } else if (args.moveTouches.length >= 2) {
+            } else if (args.moveTouches && args.moveTouches.length && args.moveTouches.length >= 2) {
                 let startTouch0: ITouches = args.startTouches[0];
                 let startTouch1: ITouches = args.startTouches[1];
                 let moveTouch0: ITouches = args.moveTouches[0];

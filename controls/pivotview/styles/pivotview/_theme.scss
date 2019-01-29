@@ -29,6 +29,12 @@
       font-weight: $pivotgrid-summary-font-weight;
     }
 
+    th.e-active,
+    th.e-cellselectionbackground {
+      background: $pivotgrid-header-selection-bg-color;
+      color: $pivotgrid-header-selection-color;
+    }
+
     .e-drop-indicator {
       display: block;
     }

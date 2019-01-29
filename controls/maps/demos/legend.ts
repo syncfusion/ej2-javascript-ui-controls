@@ -3,12 +3,13 @@
  */
 import { Maps, Legend, MapsTooltip, ITooltipRenderEventArgs, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { Population_Density } from './MapData/PopulationDensity';
+import { world_Map } from './MapData/worldMap';
 
 Maps.Inject(Legend, MapsTooltip);
     let maps: Maps = new Maps({
         tooltipRender: (args: ITooltipRenderEventArgs) => {
-            if (args.content.toString().indexOf('density') > -1) {
-            args.cancel = true;
+            if (!args.options['data']) {
+                args.cancel = true;
             }
         },
         zoomSettings: {
@@ -26,7 +27,7 @@ Maps.Inject(Legend, MapsTooltip);
         },
         layers: [
             {
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
+                shapeData: world_Map,
                 shapeDataPath: 'name',
                 shapePropertyPath: 'name',
                 dataSource: Population_Density,

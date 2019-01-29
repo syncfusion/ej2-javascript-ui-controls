@@ -6,6 +6,7 @@ import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { ShapeAnnotationModel } from '../../../src';
 import { getDiagramElement } from '../../../src/diagram/utility/dom-util';
 import { MouseEvents } from '../interaction/mouseevents.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
  * Annotation - changing offsets
@@ -18,6 +19,12 @@ describe('Diagram Control', () => {
         let pathData: string = 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,' +
             '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram50' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -95,6 +102,7 @@ describe('Diagram Control', () => {
                 (diagram.nodes[2] as Node).wrapper.children[1].offsetY === 150).toBe(true);
             done();
         });
+
     });
 
 
@@ -104,6 +112,12 @@ describe('Diagram Control', () => {
         let pathData: string = 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,' +
             '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram50' });
             document.body.appendChild(ele);
             let element1: TextElement = new TextElement();
@@ -192,6 +206,8 @@ describe('Diagram Control', () => {
             ).toBe(true);
             done();
         });
+
+
     });
 
     describe('Remove labels API ', () => {
@@ -199,6 +215,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram50' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -244,6 +266,15 @@ describe('Diagram Control', () => {
             expect(document.getElementById('diagram50_editBox').style.background === 'white')
             done();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 
 });;

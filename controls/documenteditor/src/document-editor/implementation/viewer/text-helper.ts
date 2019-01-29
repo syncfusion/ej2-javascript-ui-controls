@@ -24,7 +24,6 @@ export interface TextHeightInfo {
 export class TextHelper {
     private owner: LayoutViewer;
     private context: CanvasRenderingContext2D;
-    private paragraphMarkInfo: TextHeightInfo = {};
     private get paragraphMark(): string {
         return '¶';
     }
@@ -42,24 +41,21 @@ export class TextHelper {
      * @private
      */
     public getParagraphMarkWidth(characterFormat: WCharacterFormat): number {
-        return this.getParagraphMarkSize(characterFormat).Width;
+        return this.getWidth(this.paragraphMark, characterFormat);
     }
     /**
      * @private
      */
     public getParagraphMarkSize(characterFormat: WCharacterFormat): TextSizeInfo {
-        let format: string = this.getFormatText(characterFormat);
-        if (this.paragraphMarkInfo[format]) {
-            return this.paragraphMarkInfo[format];
-        }
         // Gets the text element's width;
         let width: number = this.getWidth(this.paragraphMark, characterFormat);
+        let height: number = 0;
+        let baselineOffset: number = 0;
         // Calculate the text element's height and baseline offset.
         let textHelper: TextSizeInfo = this.getHeight(characterFormat);
-        let textSizeInfo: TextSizeInfo = {
+        return {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
-        return this.paragraphMarkInfo[format] = textSizeInfo;
     }
     /**
      * @private
@@ -115,8 +111,11 @@ export class TextHelper {
         let textHeight: number = 0;
         let baselineOffset: number = 0;
         let spanElement: HTMLSpanElement = document.createElement('span');
+        spanElement.id = 'tempSpan';
+        spanElement.style.whiteSpace = 'nowrap';
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
+        let body: NodeListOf<HTMLBodyElement> = document.getElementsByTagName('body');
         let parentDiv: HTMLDivElement = document.createElement('div');
         parentDiv.style.display = 'inline-block';
         let tempDiv: HTMLDivElement = document.createElement('div');
@@ -165,10 +164,9 @@ export class TextHelper {
         if (textToRender.length === 0) {
             return '';
         }
-        let isRtlText: boolean = isBidi;
-        if ((!isRtlText && (bdo === 'RTL')) || (isRtlText && (bdo === 'LTR'))) {
+        if ((!this.isRTLText(textToRender) && (bdo === 'RTL')) || (this.isRTLText(textToRender) && (bdo === 'LTR'))) {
             textToRender = HelperMethods.ReverseString(textToRender);
-        } else if (isRender && isRtlText && HelperMethods.endsWith(textToRender)) {
+        } else if (isRender && this.isRTLText(textToRender) && HelperMethods.endsWith(textToRender)) {
             let spaceCount: number = textToRender.length - HelperMethods.trimEnd(textToRender).length;
             textToRender = HelperMethods.addSpace(spaceCount) + HelperMethods.trimEnd(textToRender);
         }
@@ -179,22 +177,20 @@ export class TextHelper {
      */
     public applyStyle(spanElement: HTMLSpanElement, characterFormat: WCharacterFormat): void {
         if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
-            let style: string = 'white-space:nowrap;';
             if (characterFormat.fontFamily !== '') {
-                style += 'font-family:' + characterFormat.fontFamily + ';';
+                spanElement.style.fontFamily = characterFormat.fontFamily;
             }
             let fontSize: number = characterFormat.fontSize;
             if (fontSize <= 0.5) {
                 fontSize = 0.5;
             }
-            style += 'font-size:' + fontSize.toString() + 'pt;';
+            spanElement.style.fontSize = fontSize.toString() + 'pt';
             if (characterFormat.bold) {
-                style += 'font-weight:bold;';
+                spanElement.style.fontWeight = 'bold';
             }
             if (characterFormat.italic) {
-                style += 'font-style:italic;';
+                spanElement.style.fontStyle = 'italic';
             }
-            spanElement.setAttribute('style', style);
         }
     }
     /**
@@ -248,7 +244,7 @@ export class TextHelper {
      */
     public isRTLText(text: string): boolean {
         let isRTL: boolean = false;
-        if (!isNullOrUndefined(text)) {
+        if (!isNullOrUndefined(text) && text !== '') {
             for (let i: number = 0; i < text.length; i++) {
                 let temp: string = text[i];
                 if ((temp >= '\u0590' && temp <= '\u05ff') //Hebrew characters
@@ -308,7 +304,5 @@ export class TextHelper {
     public destroy(): void {
         this.owner = undefined;
         this.context = undefined;
-        this.paragraphMarkInfo = {};
-        this.paragraphMarkInfo = undefined;
     }
 }

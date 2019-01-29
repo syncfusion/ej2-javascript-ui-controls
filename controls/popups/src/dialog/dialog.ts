@@ -141,9 +141,13 @@ export interface BeforeCloseEventArgs {
      */
     cancel: boolean;
     /**
-     * Determines whether the event is triggered by interaction.
+     * DEPRECATED-Determines whether the event is triggered by interaction.
      */
     isInteraction: boolean;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
     /**
      * Returns the root container element of the dialog.
      */
@@ -1314,6 +1318,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         let eventArgs: BeforeCloseEventArgs = {
             cancel: false,
             isInteraction: event ? true : false,
+            isInteracted: event ? true : false,
             element: this.element,
             target: this.target,
             container: this.isModal ? this.dlgContainer : this.element,

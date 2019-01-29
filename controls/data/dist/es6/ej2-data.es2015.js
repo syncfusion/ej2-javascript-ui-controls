@@ -1,4 +1,4 @@
-import { Ajax, extend, getValue, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
+import { Ajax, extend, isNullOrUndefined, merge, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Query class is used to build query which is used by the DataManager to communicate with datasource.
@@ -3155,8 +3155,10 @@ class ODataAdaptor extends UrlAdaptor {
             batchChangeSetContentType: 'Content-Type: application/json; charset=utf-8 ',
             updateType: 'PUT'
         });
-        this.getModuleName = getValue('getModulename', this);
         extend(this.options, props || {});
+    }
+    getModuleName() {
+        return 'ODataAdaptor';
     }
     /**
      * Generate request string based on the filter criteria from query.
@@ -3198,10 +3200,8 @@ class ODataAdaptor extends UrlAdaptor {
             }
             return returnValue + val;
         }
-        if (!isNullOrUndefined(this.getModuleName)) {
-            if (this.getModuleName() === 'ODataV4Adaptor') {
-                operator = DataUtil.odv4UniOperator[predicate.operator];
-            }
+        if (!isNullOrUndefined(this.getModuleName) && this.getModuleName() === 'ODataV4Adaptor') {
+            operator = DataUtil.odv4UniOperator[predicate.operator];
         }
         else {
             operator = DataUtil.odUniOperator[predicate.operator];
@@ -3721,16 +3721,14 @@ class ODataV4Adaptor extends ODataAdaptor {
             localTime: false,
             apply: '$apply'
         });
-        getValue('getModulename', this.getModulename());
         extend(this.options, props || {});
     }
     /**
      * @hidden
      */
-    getModulename() {
+    getModuleName() {
         return 'ODataV4Adaptor';
     }
-    ;
     /**
      * Returns the query string which requests total count from the data source.
      * @param  {boolean} e
@@ -3870,6 +3868,9 @@ class ODataV4Adaptor extends ODataAdaptor {
  * @hidden
  */
 class WebApiAdaptor extends ODataAdaptor {
+    getModuleName() {
+        return 'WebApiAdaptor';
+    }
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
      * @param  {DataManager} dm

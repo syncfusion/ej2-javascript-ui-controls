@@ -9,7 +9,7 @@ import { Scroll } from '../actions/scroll';
 import { ScheduleTouch } from '../actions/touch';
 import { KeyboardInteraction } from '../actions/keyboard';
 import { Data } from '../actions/data';
-import { View, CurrentAction, ReturnType, CalendarType } from '../base/type';
+import { View, CurrentAction, ReturnType } from '../base/type';
 import { EventBase } from '../event-renderer/event-base';
 import { QuickPopups } from '../popups/quick-popups';
 import { EventTooltip } from '../popups/event-tooltip';
@@ -43,7 +43,7 @@ import { ResourceBase } from '../base/resource';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
-import { CalendarUtil, Gregorian, Islamic } from './calendar-util';
+import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
 
 /**
  * Represents the Schedule component that displays a list of events scheduled against specific date and timings, 
@@ -802,7 +802,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public getTimeString(date: Date): string {
         return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
     }
-    private setcalendarMode(): void {
+    private setCalendarMode(): void {
         if (this.calendarMode === 'Islamic') {
             this.calendarUtil = new Islamic();
         } else {
@@ -991,7 +991,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.setCldrTimeFormat();
-        this.setcalendarMode();
+        this.setCalendarMode();
         this.eventsData = [];
         this.eventsProcessed = [];
         this.blockData = [];
@@ -1241,7 +1241,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 case 'locale':
                 case 'calendarMode':
                     this.setCldrTimeFormat();
-                    this.setcalendarMode();
+                    this.setCalendarMode();
                     state.isRefresh = true;
                     break;
                 case 'firstDayOfWeek':

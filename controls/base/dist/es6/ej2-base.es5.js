@@ -5559,10 +5559,10 @@ var Component = /** @__PURE__ @class */ (function (_super) {
             this.setPersistData();
         }
         this.localObserver.destroy();
-        removeClass([this.element], ['e-control']);
         if (this.refreshing) {
             return;
         }
+        removeClass([this.element], ['e-control']);
         this.trigger('destroyed', { cancel: false });
         _super.prototype.destroy.call(this);
         this.moduleLoader.clean();

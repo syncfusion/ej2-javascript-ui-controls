@@ -649,7 +649,7 @@ let Tooltip = class Tooltip extends Component {
                         line = ' '; //to trim multiple white spaces to single white space
                     }
                     if ((!isColumn && line === ' ') || (line.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '')) {
-                        subWidth += spaceWidth;
+                        subWidth += line !== ' ' ? spaceWidth : 0;
                         if (isColumn && !isRow) {
                             tspanOption = { x: (this.marginX * 2) + (markerSize + markerPadding),
                                 dy: dy + ((isColumn) ? headerSpace : 0), fill: '' };

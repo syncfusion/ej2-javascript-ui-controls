@@ -236,16 +236,16 @@ function pushIntoRegExpCollec(value: string): void {
     }
 }
 
-export function maskInputFocusHandler(event: KeyboardEvent): void {
-    if (this.promptMask.length > 0) {
-        this.focusEventArgs = { selectionStart: 0, selectionEnd: this.promptMask.length };
-    } else {
-        this.focusEventArgs = { selectionStart: 0, selectionEnd: this.element.value.length };
-    }
-    let eventArgs: Object = {};
-    merge(eventArgs, this.focusEventArgs);
-    this.trigger('focus', eventArgs);
-    this.focusEventArgs = eventArgs;
+export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
+    this.focusEventArgs = {
+        selectionStart: 0,
+        event: event,
+        value: this.value,
+        maskedValue: this.element.value,
+        container: this.inputObj.container,
+        selectionEnd: (this.promptMask.length > 0) ? this.promptMask.length : this.element.value.length,
+    };
+    this.trigger('focus', this.focusEventArgs);
     if (this.mask) {
         this.isFocus = true;
         if (this.element.value === '') {
@@ -266,7 +266,14 @@ export function maskInputFocusHandler(event: KeyboardEvent): void {
     }
 }
 
-export function maskInputBlurHandler(event: KeyboardEvent): void {
+export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
+    this.blurEventArgs = {
+        event: event,
+        value: this.value,
+        maskedValue: this.element.value,
+        container: this.inputObj.container
+    };
+    this.trigger('blur', this.blurEventArgs);
     if (this.mask) {
         this.isFocus = false;
         if (this.placeholder && this.element.value === this.promptMask && this.floatLabelType !== 'Always') {
@@ -579,12 +586,13 @@ function maskInputKeyPressHandler(event: KeyboardEvent): void {
 function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         let eventArgs: Object = {};
-        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteracted: false };
+        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false, isInteracted: false };
         if (this.mask) {
             this.changeEventArgs.value = strippedValue.call(this, this.element);
         }
         if (!isNullOrUndefined(event)) {
             this.changeEventArgs.isInteracted = true;
+            this.changeEventArgs.isInteraction = true;
             this.changeEventArgs.event = event;
         }
         merge(eventArgs, this.changeEventArgs);

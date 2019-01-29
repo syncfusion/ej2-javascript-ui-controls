@@ -149,7 +149,7 @@ let HScroll = class HScroll extends Component {
     }
     /**
      * Specifies the value to disable/enable the HScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, HScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -600,7 +600,7 @@ let VScroll = class VScroll extends Component {
     }
     /**
      * Specifies the value to disable/enable the VScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, VScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -1357,7 +1357,14 @@ let MenuBase = class MenuBase extends Component {
         }
     }
     getPopups() {
-        return [].slice.call(document.querySelectorAll('.' + POPUP));
+        let popups = [];
+        let ele = document.querySelectorAll('.' + POPUP);
+        ele.forEach((elem) => {
+            if (this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
+                popups.push(elem);
+            }
+        });
+        return popups;
     }
     isMenuVisible() {
         return (this.navIdx.length > 0 || (this.element.classList.contains('e-contextmenu') && isVisible(this.element).valueOf()));
@@ -1663,7 +1670,8 @@ let MenuBase = class MenuBase extends Component {
             }
         }
         if (this.isMenu) {
-            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup')) && !cli) {
+            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
+                && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
                     this.closeMenu(null, e);
@@ -3014,6 +3022,12 @@ let Toolbar = class Toolbar extends Component {
     refreshOverflow() {
         this.resize();
     }
+    toolbarAlign(innerItems) {
+        if (this.tbarAlign) {
+            this.add(innerItems, CLS_TBARPOS);
+            this.itemPositioning();
+        }
+    }
     renderOverflowMode() {
         let ele = this.element;
         let innerItems = ele.querySelector('.' + CLS_ITEMS);
@@ -3039,10 +3053,7 @@ let Toolbar = class Toolbar extends Component {
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
-                    if (this.tbarAlign) {
-                        this.add(innerItems, CLS_TBARPOS);
-                        this.itemPositioning();
-                    }
+                    this.toolbarAlign(innerItems);
                     break;
                 case 'MultiRow':
                     this.add(innerItems, CLS_MULTIROW);
@@ -3066,6 +3077,7 @@ let Toolbar = class Toolbar extends Component {
                         this.createPopupEle(ele, [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, ele)));
                         this.element.querySelector('.' + CLS_TBARNAV).setAttribute('tabIndex', '0');
                     }
+                    this.toolbarAlign(innerItems);
             }
         }
     }
@@ -10747,11 +10759,9 @@ let Sidebar = class Sidebar extends Component {
         this.element.classList.add(ROOT$1);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
         if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
-            this.setProperties({ isOpen: true }, true);
             addClass([this.element], OPEN);
         }
         else {
-            this.setProperties({ isOpen: false }, true);
             addClass([this.element], CLOSE);
         }
     }
@@ -10771,8 +10781,14 @@ let Sidebar = class Sidebar extends Component {
      * Hide the Sidebar component, if it is in an open state.
      * @returns void
      */
-    hide() {
-        let closeArguments = { model: this, element: this.element, cancel: false };
+    hide(e) {
+        let closeArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -10807,8 +10823,14 @@ let Sidebar = class Sidebar extends Component {
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
-    show() {
-        let openArguments = { model: this, element: this.element, cancel: false };
+    show(e) {
+        let openArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -10910,7 +10932,7 @@ let Sidebar = class Sidebar extends Component {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
             return;
         }
-        this.hide();
+        this.hide(e);
     }
     enableGestureHandler(args) {
         if (this.position === 'Left' && args.swipeDirection === 'Right' &&

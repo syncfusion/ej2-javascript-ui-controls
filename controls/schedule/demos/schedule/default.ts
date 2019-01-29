@@ -36,7 +36,7 @@ let scheduleOptions: ScheduleModel = {
 let scheduleObj: Schedule = new Schedule(scheduleOptions, document.getElementById('schedule'));
 
 let currentDate: DatePicker = new DatePicker({
-    value: new Date(),
+    value: new Date(2017, 10, 1),
     showClearButton: false,
     change: (args: ChangeEventArgs) => {
         scheduleObj.selectedDate = args.value;

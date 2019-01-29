@@ -1,6 +1,8 @@
 import { PivotEngine, IDataOptions, IDataSet, IAxisSet, IPageSettings } from '../../src/base/engine';
 import { pivot_dataset, excel_data } from '../base/datasource.spec';
 import { PivotUtil } from '../../src/base/util';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 describe('PivotView spec', () => {
     /**
      * Test case for PivotEngine
@@ -12,6 +14,14 @@ describe('PivotView spec', () => {
             { Amount: 100, Country: 'Canada', Date: 'FY 2005', Product: 'Tempo', State: 'Tada' },
             { Amount: 200, Country: 'Canada', Date: 'FY 2005', Product: 'Van', State: 'Basuva' }
         ];
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        });
         describe('Check the Field List information', () => {
             let dataSource: IDataOptions = {
                 data: pivotDataset, rows: [{ name: 'Product' }],
@@ -191,6 +201,7 @@ describe('PivotView spec', () => {
             let dataSource: IDataOptions = {
                 expandAll: false,
                 data: ds,
+                emptyCellsTextContent: '*',
                 rows: [{ name: 'Product' }],
                 columns: [{ name: 'Date' }],
                 values: [{ name: 'Qty 1', type: 'Product' }, { name: 'Qty 2' }],
@@ -200,6 +211,8 @@ describe('PivotView spec', () => {
             it('Product', () => {
                 expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(776);
                 expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(7740600000000);
+                expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('*');
+                expect((pivotEngine.pivotValues[4][11] as IDataSet).formattedText).toBe('0');
             });
             it('DistinctCount type', () => {
                 dataSource.values[0].type = 'DistinctCount';
@@ -387,14 +400,14 @@ describe('PivotView spec', () => {
                 };
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[3][19] as IDataSet).formattedText).toBe('-55');
-                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('');
             });
             it('Difference From with value(one level) in column type using selected row member', () => {
                 dataSource.values[0].baseField = 'Product';
                 dataSource.values[0].baseItem = 'Staplers';
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[2][19] as IDataSet).formattedText).toBe('13');
-                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('');
             });
             it('Difference From with value(one level) in rows type without using selected row member', () => {
                 dataSource.valueAxis = 'row';
@@ -409,7 +422,7 @@ describe('PivotView spec', () => {
                 dataSource.values[0].baseItem = 'Staplers';
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[2][10] as IDataSet).formattedText).toBe('13');
-                expect((pivotEngine.pivotValues[14][10] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[14][10] as IDataSet).formattedText).toBe('');
             });
             it('Difference From with value(mulitple level) in column type using selected row member', () => {
                 dataSource = {
@@ -422,13 +435,13 @@ describe('PivotView spec', () => {
                 };
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[1][1] as IDataSet).formattedText).toBe('13');
-                expect((pivotEngine.pivotValues[5][1] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[5][1] as IDataSet).formattedText).toBe('');
             });
             it('Difference From with value(multiple level) in rows type using selected row member', () => {
                 dataSource.valueAxis = 'row';
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('13');
-                expect((pivotEngine.pivotValues[14][1] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[14][1] as IDataSet).formattedText).toBe('');
             });
             it('% Of Difference From with value(one level) in column type using selected row member', () => {
                 dataSource = {
@@ -441,13 +454,13 @@ describe('PivotView spec', () => {
                 };
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[2][19] as IDataSet).formattedText).toBe('14.13%');
-                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[6][19] as IDataSet).formattedText).toBe('');
             });
             it('% Of Difference From with value(one level) in rows type using selected row member', () => {
                 dataSource.valueAxis = 'row';
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[2][10] as IDataSet).formattedText).toBe('14.13%');
-                expect((pivotEngine.pivotValues[14][10] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[14][10] as IDataSet).formattedText).toBe('');
             });
             it('% Of Difference From with value(mulitple level) in column type using selected row member', () => {
                 dataSource = {
@@ -460,13 +473,13 @@ describe('PivotView spec', () => {
                 };
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[1][1] as IDataSet).formattedText).toBe('14.13%');
-                expect((pivotEngine.pivotValues[5][1] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[5][1] as IDataSet).formattedText).toBe('');
             });
             it('% Of Difference From with value(multiple level) in rows type using selected row member', () => {
                 dataSource.valueAxis = 'row';
                 pivotEngine = new PivotEngine(dataSource);
                 expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('14.13%');
-                expect((pivotEngine.pivotValues[14][1] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[14][1] as IDataSet).formattedText).toBe('');
             });
             it('Difference From with value(one level) in column type using selected column member', () => {
                 dataSource = {
@@ -1415,5 +1428,14 @@ describe('PivotView spec', () => {
                 expect(PivotUtil.getType(date)).toEqual('date');
             });
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

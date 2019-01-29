@@ -52,8 +52,7 @@ export class StatusBar {
         }
         this.updatePageNumber();
         div.appendChild(this.editablePageNumber);
-        // tslint:disable-next-line:max-line-length
-        this.editablePageNumber.setAttribute('title', this.localObj.getConstant('The current page number in the document. Click or tap to navigate specific page.'));
+        this.editablePageNumber.setAttribute('title', 'The current page number in the document. Click or tap to navigate specific page.');
         let label1: HTMLElement = createElement('label', { styles: 'width:16px' });
         label1.textContent = ' ' + this.localObj.getConstant('of') + ' ';
         div.appendChild(label1);

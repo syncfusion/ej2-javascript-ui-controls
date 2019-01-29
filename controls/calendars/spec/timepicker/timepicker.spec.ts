@@ -450,6 +450,33 @@ describe('TimePicker', () => {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
             }
         });
+        it('timeformat value as skeleton object while Creation', () => {
+            timeObj.destroy();
+            timeObj = new TimePicker({ value: new Date('2/2/2017 10:30'),format : {skeleton:'medium'}, strictMode: true });
+            timeObj.appendTo('#timepicker1');
+            expect(timeObj.getText()).toBe('10:30:00 AM');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(30);
+        });
+        it('timeformat value as skeleton object', () => {
+            timeObj.format = {skeleton:'ms'};
+            timeObj.dataBind();
+            expect(timeObj.getText()).toBe('00:00');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(0);
+            expect((timeObj.value).getSeconds()).toBe(0);
+            timeObj.value = new Date('2/2/2017 10:30');
+            timeObj.format = {skeleton:'Hm'};
+            timeObj.dataBind();
+            expect(timeObj.getText()).toBe('10:30');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(30);
+            timeObj.format = {skeleton:'medium'};
+            timeObj.dataBind();
+            expect(timeObj.getText()).toBe('10:30:00 AM');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(30);
+        });
     });
     describe('DOM Wrapper Testing with min & max value', () => {
         beforeEach(() => {
@@ -1392,7 +1419,7 @@ describe('TimePicker', () => {
     describe('Keyboard Navigation in input testing', () => {
         let KeyboardEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
-            stopPropagation: (): void => { /** No Code */ },
+            stopPropagation: (): void => { /** No Code */},
             action: '',
             altKey: false,
             keyCode: ''
@@ -2993,83 +3020,83 @@ describe('TimePicker', () => {
             expect(+timepicker.value).toBe(+new Date('2/2/2017'));
         });
     });
-    /**
+        /**
     * Model dialog test case
     */
-   describe('Model dialog', function () {
-       let timepicker: any;
-       beforeEach(()=>{
-           let ele: HTMLElement = createElement('input', { id: 'date' });
-           document.body.appendChild(ele);
-           timepicker = new TimePicker({
-               value: new Date('4/4/2017 1:00 AM')
-           });
-           timepicker.appendTo('#date');
-       });
-       afterEach(()=>{
-           if (timepicker) {
-               timepicker.destroy();
-           }
-           document.body.innerHTML = '';
-       });
-       it(' desktop test case', function () {
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('left');
-           expect(timepicker.popupObj.position.Y).toBe('bottom');
-           expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
-       });
-       it(' desktop no value test case', function () {
-           timepicker.value = null;
-           timepicker.dataBind();
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('left');
-           expect(timepicker.popupObj.position.Y).toBe('bottom');
-           expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
-       });
-   });
-   describe('Model dialog-mobile', function () {
-       let timepicker: any;
-       beforeAll(() => {
-           let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-           Browser.userAgent = androidPhoneUa;
-       });
-       beforeEach(()=>{
-           let ele: HTMLElement = createElement('input', { id: 'date' });
-           document.body.appendChild(ele);
-           timepicker = new TimePicker({
-               value: new Date('4/5/2017 1:00 AM')
-           });
-           timepicker.appendTo('#date');
-       });
-       afterEach(()=>{
-           if (timepicker) {
-               timepicker.destroy();
-           }
-           document.body.innerHTML = '';
-       });
-       afterAll(() => {
-           let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
-           Browser.userAgent = androidPhoneUa;
-       });
-       it(' mobile test case', function () {
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('center');
-           expect(timepicker.popupObj.position.Y).toBe('center');
-           expect(timepicker.popupObj.relateTo).toBe(document.body)
-       });
-       it(' mobile no value test case', function () {
-           timepicker.value = null;
-           timepicker.dataBind();
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('center');
-           expect(timepicker.popupObj.position.Y).toBe('center');
-           expect(timepicker.popupObj.relateTo).toBe(document.body)
-       });
-   });
+    describe('Model dialog', function () {
+        let timepicker: any;
+        beforeEach(()=>{
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            timepicker = new TimePicker({
+                value: new Date('4/4/2017 1:00 AM')
+            });
+            timepicker.appendTo('#date');
+        });
+        afterEach(()=>{
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it(' desktop test case', function () {
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('left');
+            expect(timepicker.popupObj.position.Y).toBe('bottom');
+            expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
+        });
+        it(' desktop no value test case', function () {
+            timepicker.value = null;
+            timepicker.dataBind();
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('left');
+            expect(timepicker.popupObj.position.Y).toBe('bottom');
+            expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
+        });
+    });
+    describe('Model dialog-mobile', function () {
+        let timepicker: any;
+        beforeAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        beforeEach(()=>{
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            timepicker = new TimePicker({
+                value: new Date('4/5/2017 1:00 AM')
+            });
+            timepicker.appendTo('#date');
+        });
+        afterEach(()=>{
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        afterAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        it(' mobile test case', function () {
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('center');
+            expect(timepicker.popupObj.position.Y).toBe('center');
+            expect(timepicker.popupObj.relateTo).toBe(document.body)
+        });
+        it(' mobile no value test case', function () {
+            timepicker.value = null;
+            timepicker.dataBind();
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('center');
+            expect(timepicker.popupObj.position.Y).toBe('center');
+            expect(timepicker.popupObj.relateTo).toBe(document.body)
+        });
+    });
 });
 

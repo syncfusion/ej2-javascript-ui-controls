@@ -107,11 +107,35 @@
       font-family: 'e-icons';
     }
 
+    .e-pv-more-icon::before {
+      content: '\ebef';
+    }
+
+    .e-pv-backward-icon::before {
+      content: '\e962';
+    }
+
     .e-pv-notification-icon {
       background-image: $pv-corrupted-notification-background-image;
       background-repeat: $pv-corrupted-notification-background-repeat;
       background-size: $pv-corrupted-notification-background-size;
       height: $pv-corrupted-notification-height;
     }
+
+    .e-pv-notification-icon-rtl {
+      background-image: $pv-corrupted-notification-background-image;
+      background-position: $pv-corrupted-notification-background-position;
+      background-repeat: $pv-corrupted-notification-background-repeat;
+      background-size: $pv-corrupted-notification-background-size;
+      height: $pv-corrupted-notification-height;
+    }
+  }
+
+  .e-pv-download-document-icon.e-menu-icon::before {
+    content: '\ebe4';
+  }
+
+  .e-pv-bookmark-icon.e-menu-icon::before {
+    content: '\ebe5';
   }
 }

@@ -241,14 +241,12 @@ describe('Circular-Gauge Control', () => {
         });
 
         it('Checking the axis with multiple range - angle', () => {
-            value = document.getElementById('container_Axis_0_Range_0').getAttribute('d').split(' ');
             location = new GaugeLocation(
                 (<Axis>gauge.axes[0]).rect.x + ((<Axis>gauge.axes[0]).rect.width / 2),
                 (<Axis>gauge.axes[0]).rect.y + ((<Axis>gauge.axes[0]).rect.height / 2)
             );
             expect(200).toEqual(200);
             expect(160).toEqual(160);
-            value = document.getElementById('container_Axis_0_Range_1').getAttribute('d').split(' ');
             expect(0).toEqual(0);
             expect(160).toEqual(160);
         });

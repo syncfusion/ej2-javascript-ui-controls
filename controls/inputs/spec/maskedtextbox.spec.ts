@@ -3,7 +3,7 @@
  */
 
 import { createElement, KeyboardEvents, EventHandler, extend  } from '@syncfusion/ej2-base';
-import { MaskedTextBox, MaskChangeEventArgs, MaskFocusEventArgs} from '../src/maskedtextbox/maskedtextbox/maskedtextbox';
+import { MaskedTextBox, MaskChangeEventArgs, MaskFocusEventArgs, MaskBlurEventArgs} from '../src/maskedtextbox/maskedtextbox/maskedtextbox';
 import { maskInput, setMaskValue, getVal, getMaskedVal, mobileRemoveFunction, maskInputDropHandler, maskInputBlurHandler } from '../src/maskedtextbox/base/mask-base';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
 
@@ -17,7 +17,7 @@ function eventObject(eventType: string, eventName: string): Object {
 
 describe('MaskedTextBox Component', () => {
     describe('MaskedTextBox creation', () => {
-		beforeAll(() => {
+        beforeAll(() => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
@@ -824,6 +824,31 @@ describe('MaskedTextBox Component', () => {
             EventHandler.trigger(input, 'keydown', event);
             expect(input.value.length === 8 && input.value[2].trim() === '').toEqual(true);
             expect(input.selectionStart === 0).toEqual(true);
+        });
+         it('Edit values in MaskedTextBox - floatLabelType Never', () => {
+            maskBox = new MaskedTextBox({
+                mask: '00',
+                placeholder: 'Time(10PM - 10AM)',
+                floatLabelType: 'Never'
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            let event: any = eventObject('KeyboardEvent', 'keypress');
+            event.key = "1";
+            EventHandler.trigger(input, 'keypress', event);
+            event.key = "2";
+            EventHandler.trigger(input, 'keypress', event);
+            expect(input.value === '12').toEqual(true);
+            let event1: any = eventObject('KeyboardEvent', 'keydown');
+            event1.key = 'Backspace';
+            event1.keyCode = 8;
+            EventHandler.trigger(input, 'keydown', event1);
+            EventHandler.trigger(input, 'keydown', event1);
+            event.key = "4";
+            EventHandler.trigger(input, 'keypress', event);
+            event.key = "5";
+            EventHandler.trigger(input, 'keypress', event);
+            expect(input.value === '45').toEqual(true);
         });
     });
     describe('Edit values in MaskedTextBox-- Custom Characters', () => {
@@ -2102,21 +2127,37 @@ describe('MaskedTextBox Component', () => {
     });
     describe('Event testing', () => {
         let maskBox: any;
-        let i: number = 0, j: number = 0;
+        let i: number = 0, j: number = 0, k: number = 0, containerValue = 0;
         let selectEnd: number = 0 , selectStart: number = 0;
-        let name: any, maskedvalue: any ,value: any;
-        let isInteracted: any;
+        let name: any, maskedvalue: any ,value: any, container: any, event:any;
+        let isInteracted: any, isInteraction: any;
         function clickFn(args:MaskChangeEventArgs): void {
             i++;
             value= args.value;
             maskedvalue= args.maskedValue;
             isInteracted=args.isInteracted;
+            isInteraction = args.isInteraction;
         }
          function FocusFn(args: MaskFocusEventArgs): void {
             j++;
             selectStart = args.selectionStart;
             selectEnd = args.selectionEnd;
             name = args.name;
+            value = args.value;
+            event = args.event;
+            container =args.container;
+            if(args.container.classList.contains('e-input-focus') && (args.container.classList.contains("e-input-group"))) {
+             containerValue =1;
+            }
+        }
+        function BlurFn(args: MaskBlurEventArgs): void {
+            k = 1;
+            name = args.name;
+            value = args.value;
+            container =args.container;
+            if(args.container.classList.contains('e-input-group')) {
+                containerValue = 1;
+            }   
         }
         beforeEach((): void => {
             maskBox = undefined;
@@ -2144,6 +2185,7 @@ describe('MaskedTextBox Component', () => {
             expect(maskedvalue).toEqual("098_ ____ ____ ____");
             expect(value).toEqual("098");
             expect(isInteracted).toEqual(false);
+            expect(isInteraction).toEqual(false);
         });
          it('FocusFn event testing', () => {
             maskBox = new MaskedTextBox({
@@ -2161,8 +2203,60 @@ describe('MaskedTextBox Component', () => {
             expect(selectEnd).toEqual(19);
             expect(name).toEqual("focus");
         });
+        it('FocusFn event testing with argument value and event', () => {
+            maskBox = new MaskedTextBox({
+                mask: '9999 9999 9999 9999',
+                placeholder: 'Enter card number',
+                value: "123",
+                change: clickFn,
+                focus: FocusFn
+            });
+            maskBox.appendTo('#mask1');
+            document.getElementById('mask1').focus();
+            expect(selectStart).toEqual(0);
+            expect(selectEnd).toEqual(19);
+            expect(name).toEqual("focus");
+            expect(value).toEqual("123");
+            expect(event).not.toBeNull();
+            expect(container).not.toBeNull();     
+            expect(containerValue).toEqual(1);
+        });
+        it('BlurFn event testing', () => {
+            maskBox = new MaskedTextBox({
+                mask: '9999 9999 9999 9999',
+                placeholder: 'Enter card number',
+                value: "123",
+                focus:FocusFn,
+                blur: BlurFn
+            });
+            maskBox.appendTo('#mask1');
+            document.getElementById("mask1").focus();
+            expect(name).toEqual("focus");
+            document.getElementById('mask1').blur();
+            expect(k).toEqual(1);
+            expect(name).toEqual("blur");
+        });
+        it('BlurFn event testing with argument event and  value', () => {
+            maskBox = new MaskedTextBox({
+                mask: '9999 9999 9999 9999',
+                placeholder: 'Enter card number',
+                value: "123",
+                focus:FocusFn,
+                blur: BlurFn
+            });
+            maskBox.appendTo('#mask1');
+            document.getElementById("mask1").focus();
+            expect(name).toEqual("focus");
+            document.getElementById('mask1').blur();
+            expect(k).toEqual(1);
+            expect(name).toEqual("blur");
+            expect(value).toEqual("123");
+            expect(event).not.toBeNull();
+            expect(container).not.toBeNull();     
+            expect(containerValue).toEqual(1);
+        });
     });
-	it('memory leak testing', () => {
+    it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

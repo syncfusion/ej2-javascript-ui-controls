@@ -7,6 +7,7 @@ import { Segments, AnnotationConstraints, ConnectorConstraints } from '../../../
 import { TextStyle } from '../../../src/diagram/core/appearance';
 import { PathAnnotationModel } from '../../../src/diagram/objects/annotation-model';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 /**
  * Connector Property Change  spec
@@ -18,6 +19,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let connector1: ConnectorModel = {
@@ -138,6 +145,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
 
@@ -214,6 +227,15 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[1].offsetX === 600).toBe(true);
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 
 });

@@ -5,12 +5,20 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Maps, removeElement, Zoom, Marker, Bubble, DataLabel, NavigationLine, getElement } from '../../../src/index';
 import { MouseEvents } from './events.spec';
 import { World_Map, usMap } from '../data/data.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble, DataLabel, NavigationLine);
 export function getIdElement(id: string): Element {
     return document.getElementById(id);
 }
 describe('Maps Component Base Spec', () => {
-
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Maps testing spec', () => {
         let element: Element;
         let maps: Maps;
@@ -168,5 +176,14 @@ describe('Maps Component Base Spec', () => {
             maps.layers[1].markerSettings[0].template = null;
             maps.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

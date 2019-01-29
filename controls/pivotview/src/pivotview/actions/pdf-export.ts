@@ -67,8 +67,7 @@ export class PDFExport {
                                     let cellValue: string | number = pivotCell.formattedText;
                                     cellValue = pivotCell.type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
                                         (pivotCell.type === 'sum' ?
-                                            cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) :
-                                            (cellValue === '0' ? '' : cellValue));
+                                            cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
                                             (6 - localCnt < pivotCell.colSpan ? 6 - localCnt : pivotCell.colSpan) : 1;

@@ -33,6 +33,8 @@ export class PivotEngine {
     /** @hidden */
     public isMutiMeasures: boolean;
     /** @hidden */
+    public alwaysShowValueHeader: boolean;
+    /** @hidden */
     public drilledMembers: IDrillOptions[];
     /** @hidden */
     public formats: IFormatSettings[];
@@ -95,6 +97,8 @@ export class PivotEngine {
     /** @hidden */
     public isEmptyData: boolean;
     /** @hidden */
+    public emptyCellTextContent: string;
+    /** @hidden */
     public isHeaderAvail: boolean;
     /** @hidden */
     public isDrillThrough: boolean;
@@ -128,15 +132,51 @@ export class PivotEngine {
      * @param  {string} mode?
      * @hidden
      */
-    /* tslint:disable:align */
-    constructor(dataSource?: IDataOptions, mode?: string, savedFieldList?: IFieldListOptions,
+    constructor(
+        dataSource?: IDataOptions, mode?: string, savedFieldList?: IFieldListOptions,
         pageSettings?: IPageSettings, enableValueSoring?: boolean, isDrillThrough?: boolean) {
-        /* tslint:enable:align */
+        this.renderEngine(dataSource, mode, savedFieldList, pageSettings, enableValueSoring, isDrillThrough);
+    }
+
+    public renderEngine(
+        dataSource?: IDataOptions, mode?: string, savedFieldList?: IFieldListOptions,
+        pageSettings?: IPageSettings, enableValueSoring?: boolean, isDrillThrough?: boolean): void {
+        this.formatFields = {};
+        this.calculatedFields = {};
+        this.calculatedFormulas = {};
+        this.valueAxis = 0;
+        this.saveDataHeaders = {};
+        this.columnCount = 0;
+        this.rowCount = 0;
+        this.colFirstLvl = 0;
+        this.rowFirstLvl = 0;
+        this.rowStartPos = 0;
+        this.colStartPos = 0;
+        this.enableValueSorting = false;
+        this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
+        this.valueMatrix = [];
+        this.indexMatrix = [];
+        this.rMembers = [];
+        this.cMembers = [];
+        this.memberCnt = -1;
+        this.pageInLimit = false;
+        this.endPos = 0;
+        this.removeCount = 0;
+        this.colHdrBufferCalculated = false;
+        this.colValuesLength = 1;
+        this.rowValuesLength = 1;
+        this.slicedHeaders = [];
+        this.fieldFilterMem = {};
+        this.filterPosObj = {};
+        this.selectedHeaders = { selectedHeader: [], values: [] };
+        this.rawIndexObject = {};
+        this.isEditing = false;
         let fields: IDataSet;
         let val: string;
         let filterRw: number[][][];
         this.globalize = new Internationalization();
         this.enableSort = dataSource.enableSorting;
+        this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showSubTotals = isNullOrUndefined(dataSource.showSubTotals) ? true : dataSource.showSubTotals;
         this.showRowSubTotals = isNullOrUndefined(dataSource.showRowSubTotals) ? true : dataSource.showRowSubTotals;
         this.showColumnSubTotals = isNullOrUndefined(dataSource.showColumnSubTotals) ? true : dataSource.showColumnSubTotals;
@@ -146,38 +186,42 @@ export class PivotEngine {
         this.allowValueFilter = dataSource.allowValueFilter;
         this.isValueFilterEnabled = false;
         this.enableValueSorting = enableValueSoring;
-        fields = (dataSource.data as IDataSet[])[0];
-        this.fields = Object.keys(fields);
-        this.rows = dataSource.rows ? dataSource.rows : [];
-        this.columns = dataSource.columns ? dataSource.columns : [];
-        this.filters = dataSource.filters ? dataSource.filters : [];
-        this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
-        this.values = dataSource.values ? dataSource.values : [];
-        this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
-        this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
-        this.validateFilters(dataSource);
-        this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
-        this.drilledMembers =
-            dataSource.drilledMembers ? (this.isValueFiltersAvail && dataSource.allowValueFilter) ? [] : dataSource.drilledMembers : [];
-        this.isMutiMeasures = this.values.length > 1 ? true : false;
-        this.valueAxis = dataSource.valueAxis === 'row' ? 1 : 0;
-        this.rowValuesLength = this.valueAxis === 1 ? this.values.length : 1;
-        this.colValuesLength = this.valueAxis === 0 ? this.values.length : 1;
-        this.valueSortSettings = dataSource.valueSortSettings ||
-            { sortOrder: 'None', headerDelimiter: '.', headerText: '', columnIndex: undefined } as IValueSortSettings;
-        this.valueSortData = [];
-        this.pageSettings = pageSettings ? pageSettings : this.pageSettings;
-        this.savedFieldList = savedFieldList;
-        this.isDrillThrough = isDrillThrough ? isDrillThrough : false;
-        this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-        this.fillFieldMembers(dataSource.data as IDataSet[], this.indexMatrix);
-        this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-        this.valueMatrix = this.generateValueMatrix(dataSource.data as IDataSet[]);
-        this.filterMembers = [];
-        this.updateFilterMembers(dataSource);
-        this.generateGridData(dataSource);
-        return this;
+        this.valueContent = [];
+        if (dataSource.data && (dataSource.data as IDataSet[])[0]) {
+            fields = (dataSource.data as IDataSet[])[0];
+            this.fields = Object.keys(fields);
+            this.rows = dataSource.rows ? dataSource.rows : [];
+            this.columns = dataSource.columns ? dataSource.columns : [];
+            this.filters = dataSource.filters ? dataSource.filters : [];
+            this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
+            this.values = dataSource.values ? dataSource.values : [];
+            this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
+            this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
+            this.validateFilters(dataSource);
+            this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
+            this.drilledMembers =
+                dataSource.drilledMembers ? (this.isValueFiltersAvail && dataSource.allowValueFilter) ? [] : dataSource.drilledMembers : [];
+            this.isMutiMeasures = this.values.length > 1 ? true : false;
+            this.valueAxis = dataSource.valueAxis === 'row' ? 1 : 0;
+            this.emptyCellTextContent = dataSource.emptyCellsTextContent ? dataSource.emptyCellsTextContent : '';
+            this.rowValuesLength = this.valueAxis === 1 ? this.values.length : 1;
+            this.colValuesLength = this.valueAxis === 0 ? this.values.length : 1;
+            this.valueSortSettings = dataSource.valueSortSettings ||
+                { sortOrder: 'None', headerDelimiter: '.', headerText: '', columnIndex: undefined } as IValueSortSettings;
+            this.valueSortData = [];
+            this.pageSettings = pageSettings ? pageSettings : this.pageSettings;
+            this.savedFieldList = savedFieldList;
+            this.isDrillThrough = isDrillThrough ? isDrillThrough : false;
+            this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
+            this.fillFieldMembers(dataSource.data as IDataSet[], this.indexMatrix);
+            this.updateSortSettings(dataSource.sortSettings, this.enableSort);
+            this.valueMatrix = this.generateValueMatrix(dataSource.data as IDataSet[]);
+            this.filterMembers = [];
+            this.updateFilterMembers(dataSource);
+            this.generateGridData(dataSource);
+        }
     }
+
     private getFormattedFields(fields: IFieldOptions[]): void {
         let cnt: number = this.formats.length;
         while (cnt--) {
@@ -592,7 +636,7 @@ export class PivotEngine {
                         break;
                     case 'EndsWith':
                     case 'DoesNotEndsWith':
-                        if (filterValue.match(value1.toLowerCase() + '$') != null) {
+                        if (filterValue.match(value1.toLowerCase() + '$') !== null) {
                             items.push(member);
                         }
                         break;
@@ -727,59 +771,60 @@ export class PivotEngine {
     }
     /* tslint:disable-next-line:max-line-length */
     private frameFilterList(filter: string[], name: string, list: IIterator, type: string, isLabelFilter: boolean, isInclude?: boolean): void {
-        let updateFilter: Function = () => {
-            let fln: number = 0;
-            let field: IField = this.fieldList[name];
-            field.filter = filter;
-            field.filterType = type;
-            field.isExcelFilter = isLabelFilter;
-            let members: IMembers = (this.formatFields[name] && this.formatFields[name].type === 'date') ?
-                field.formattedMembers : field.members;
-            let allowFil: boolean = isInclude;
-            let final: IIterator = {};
-            let filterObj: IStringIndex = {};
-            final[type] = { indexObject: {}, index: [] };
-            this.fieldFilterMem[name] = { memberObj: {} };
-            while (filter[fln]) {
-                let indx: number[] = members[filter[fln]].index;
-                if (type === 'include') {
-                    for (let iln: number = 0, ilt: number = indx.length; iln < ilt; iln++) {
-                        if (!allowFil || list[type].indexObject[indx[iln]] !== undefined) {
-                            final[type].indexObject[indx[iln]] = indx[iln];
-                            final[type].index.push(indx[iln]);
-                        }
-                    }
-                } else {
-                    for (let iln: number = 0, ilt: number = indx.length; iln < ilt; iln++) {
-                        if (list[type].indexObject[indx[iln]] === undefined) {
-                            list[type].indexObject[indx[iln]] = indx[iln];
-                            list[type].index.push(indx[iln]);
-                        }
-                    }
-                    this.fieldFilterMem[name].memberObj[filter[fln]] = filter[fln];
-                }
-                fln++;
-            }
-            if (type === 'include') {
-                list[type] = final[type];
-                for (let iln: number = 0; iln < filter.length; iln++) {
-                    filterObj[filter[iln]] = filter[iln];
-                }
-                let items: string[] = Object.keys(members);
-                for (let iln: number = 0, ilt: number = items.length; iln < ilt; iln++) {
-                    if (filterObj[items[iln]] === undefined) {
-                        this.fieldFilterMem[name].memberObj[items[iln]] = items[iln];
-                    }
-                }
-            }
-        };
         if (!list[type]) {
             list[type] = { indexObject: {}, index: [] };
-            updateFilter();
+            this.updateFilter(filter, name, list, type, isLabelFilter, isInclude);
         } else {
-            updateFilter();
+            this.updateFilter(filter, name, list, type, isLabelFilter, isInclude);
         }
         // }
+    }
+
+    private updateFilter(filter: string[], name: string, list: IIterator, type: string, isLabelFilter: boolean, isInclude?: boolean): void {
+        let fln: number = 0;
+        let field: IField = this.fieldList[name];
+        field.filter = filter;
+        field.filterType = type;
+        field.isExcelFilter = isLabelFilter;
+        let members: IMembers = (this.formatFields[name] && this.formatFields[name].type === 'date') ?
+            field.formattedMembers : field.members;
+        let allowFil: boolean = isInclude;
+        let final: IIterator = {};
+        let filterObj: IStringIndex = {};
+        final[type] = { indexObject: {}, index: [] };
+        this.fieldFilterMem[name] = { memberObj: {} };
+        while (filter[fln]) {
+            let indx: number[] = members[filter[fln]].index;
+            if (type === 'include') {
+                for (let iln: number = 0, ilt: number = indx.length; iln < ilt; iln++) {
+                    if (!allowFil || list[type].indexObject[indx[iln]] !== undefined) {
+                        final[type].indexObject[indx[iln]] = indx[iln];
+                        final[type].index.push(indx[iln]);
+                    }
+                }
+            } else {
+                for (let iln: number = 0, ilt: number = indx.length; iln < ilt; iln++) {
+                    if (list[type].indexObject[indx[iln]] === undefined) {
+                        list[type].indexObject[indx[iln]] = indx[iln];
+                        list[type].index.push(indx[iln]);
+                    }
+                }
+                this.fieldFilterMem[name].memberObj[filter[fln]] = filter[fln];
+            }
+            fln++;
+        }
+        if (type === 'include') {
+            list[type] = final[type];
+            for (let iln: number = 0; iln < filter.length; iln++) {
+                filterObj[filter[iln]] = filter[iln];
+            }
+            let items: string[] = Object.keys(members);
+            for (let iln: number = 0, ilt: number = items.length; iln < ilt; iln++) {
+                if (filterObj[items[iln]] === undefined) {
+                    this.fieldFilterMem[name].memberObj[items[iln]] = items[iln];
+                }
+            }
+        }
     }
 
     /* tslint:disable-next-line:max-line-length */
@@ -1167,7 +1212,13 @@ export class PivotEngine {
                 mIndex = this.fieldList[caption].index;
                 mType = this.fieldList[caption].aggregateType;
             } else {
-                hText = this.valueSortSettings.headerText;
+                if (!this.alwaysShowValueHeader || textArray.length === 1) {
+                    hText = this.valueSortSettings.headerText;
+                } else {
+                    for (let i: number = 0; i < textArray.length - 1; i++) {
+                        hText = hText === '' ? textArray[i] : (hText + this.valueSortSettings.headerDelimiter + textArray[i]);
+                    }
+                }
                 mIndex = this.fieldList[this.values[0].name].index;
                 mType = this.fieldList[this.values[0].name].aggregateType;
             }
@@ -1701,7 +1752,7 @@ export class PivotEngine {
                 // data[tnum][0] = rows[rln].name;
                 data[tnum][0] = this.valueContent[actCnt][0] = rows[rln];
             }
-            if (this.valueAxis && this.isMutiMeasures && !(rows[rln].isDrilled &&
+            if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && !(rows[rln].isDrilled &&
                 ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                     !this.showSubTotals || !this.showRowSubTotals))) {
                 let hpos: number = tnum;
@@ -1777,7 +1828,7 @@ export class PivotEngine {
                         if (values[vln].baseField && values[vln].baseItem) {
                             baseField = values[vln].baseField;
                             baseItem = values[vln].baseItem;
-                        } else if (this.valueAxis && this.isMutiMeasures && columns.length > 0) {
+                        } else if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && columns.length > 0) {
                             baseField = columns[0].name;
                             baseItem = Object.keys(this.fieldList[columns[0].name].members)[0];
                         } else if (rows.length > 0) {
@@ -1816,7 +1867,7 @@ export class PivotEngine {
                     {
                         this.selectedHeaders.values.push(values[vln].name);
                         /* tslint:disable-next-line:max-line-length */
-                        this.getAggregatedHeaderData((this.valueAxis && this.isMutiMeasures ? cMembers : rMembers), values[vln].name, undefined, false, (this.valueAxis && this.isMutiMeasures ? 'column' : 'row'), values[vln].type, this.selectedHeaders.selectedHeader, vln);
+                        this.getAggregatedHeaderData((this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) ? cMembers : rMembers), values[vln].name, undefined, false, (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) ? 'column' : 'row'), values[vln].type, this.selectedHeaders.selectedHeader, vln);
                     }
                     break;
                 case 'PercentageOfParentTotal':
@@ -1825,7 +1876,7 @@ export class PivotEngine {
                         this.selectedHeaders.values.push(values[vln].name);
                         if (values[vln].baseField) {
                             baseField = values[vln].baseField;
-                        } else if (this.valueAxis && this.isMutiMeasures && columns.length > 0) {
+                        } else if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && columns.length > 0) {
                             baseField = columns[0].name;
                         } else if (rows.length > 0) {
                             baseField = rows[0].name;
@@ -1971,7 +2022,7 @@ export class PivotEngine {
             for (let index of indexCollection) {
                 let currentSet: IAxisSet = data[pivotIndex[index][0]][pivotIndex[index][1]] as IAxisSet;
                 // currentSet.formattedText = '0';
-                currentSet.formattedText = (this.selectedHeaders.selectedHeader.length > 0 ? '0' : '#N/A');
+                currentSet.formattedText = (this.selectedHeaders.selectedHeader.length > 0 ? this.emptyCellTextContent : '#N/A');
             }
         } else {
             return;
@@ -1983,7 +2034,7 @@ export class PivotEngine {
         for (let headers of selectedHeaders) {
             let selectedHeaderCollection: IAxisSet[] = headers.aggregateHeaders;
             let name: string = headers.value;
-            let valueCount: number = (this.valueAxis && this.isMutiMeasures ? headers.valueCount : 0);
+            let valueCount: number = (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) ? headers.valueCount : 0);
             let aggregateType: SummaryTypes = headers.type;
             let uniqueName: string = headers.uniqueName;
             let axis: string = headers.axis;
@@ -2097,11 +2148,11 @@ export class PivotEngine {
                                 let cVal: number = currentSet.value - (selectedRowValues[index[1]] as IAxisSet).value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
                                 if (aggregateType === 'DifferenceFrom') {
-                                    currentSet.formattedText = this.getFormattedValue(cVal, name).formattedText;
+                                    currentSet.formattedText = cVal === 0 ? this.emptyCellTextContent : this.getFormattedValue(cVal, name).formattedText;
                                 } else {
                                     cVal = ((selectedRowValues[index[1]] as IAxisSet).value === 0 ?
                                         0 : (cVal / (selectedRowValues[index[1]] as IAxisSet).value));
-                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                                 }
                             }
                         } else {
@@ -2154,11 +2205,11 @@ export class PivotEngine {
                                 let cVal: number = currentSet.value - (selectedColumnValues[index[0]] as IAxisSet).value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
                                 if (aggregateType === 'DifferenceFrom') {
-                                    currentSet.formattedText = this.getFormattedValue(cVal, name).formattedText;
+                                    currentSet.formattedText = cVal === 0 ? this.emptyCellTextContent : this.getFormattedValue(cVal, name).formattedText;
                                 } else {
                                     cVal = ((selectedColumnValues[index[0]] as IAxisSet).value === 0 ?
                                         0 : (cVal / (selectedColumnValues[index[0]] as IAxisSet).value));
-                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                                 }
                             }
                         }
@@ -2194,7 +2245,7 @@ export class PivotEngine {
                                 let currentSet: IAxisSet = data[i[0]][i[1]] as IAxisSet;
                                 let cVal: number = currentSet.value / (selectedRowValues[i[1]] as IAxisSet).value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
-                                currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                             }
                         } else {
                             for (let item of selectedHeaderCollection) {
@@ -2220,7 +2271,7 @@ export class PivotEngine {
                                 let currentSet: IAxisSet = data[i[0]][i[1]] as IAxisSet;
                                 let val: number = currentSet.value / (selectedColumnValues[i[0]] as IAxisSet).value;
                                 val = isNaN(val) ? 0 : val;
-                                currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                             }
                         }
                     }
@@ -2344,11 +2395,14 @@ export class PivotEngine {
         let subTotal: boolean = (rows[rln].isDrilled && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
             !this.showSubTotals || !this.showRowSubTotals));
         let formattedText: string = subTotal ?
-            '' : aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
-        if (value && (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
+            '' : (value === undefined && this.emptyCellTextContent !== '') ? this.emptyCellTextContent :
+                aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
+        if (!isNaN(value) && !isNullOrUndefined(value) &&
+            (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
             formattedText = this.globalize.formatNumber(value, { format: 'P', maximumFractionDigits: 2 });
         } else if (!subTotal &&
-            isNaN(value) && (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {
+            isNaN(value) && !isNullOrUndefined(value) &&
+            (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {
             formattedText = '#DIV/0!';
         }
         //dln = data[tnum].length;
@@ -2356,7 +2410,7 @@ export class PivotEngine {
             axis: 'value', actualText: field, indexObject: this.isDrillThrough ? this.rawIndexObject : {},
             rowHeaders: rows[rln].type === 'grand sum' ? '' : rows[rln].valueSort.levelName,
             columnHeaders: columns[cln].type === 'grand sum' ? '' : columns[cln].valueSort.levelName,
-            formattedText: formattedText, value: value, rowIndex: tnum, colIndex: dln, isSum: isSum
+            formattedText: formattedText, value: isNullOrUndefined(value) ? 0 : value, rowIndex: tnum, colIndex: dln, isSum: isSum
         };
         this.rawIndexObject = {};
     }
@@ -2392,7 +2446,7 @@ export class PivotEngine {
             } else {
                 data[lvl][(tnum * vcnt) + vcnt] = this.headerContent[lvl][(tnum * vcnt) + vcnt] = axis[rln];
             }
-            if (this.isMutiMeasures && !this.valueAxis) {
+            if ((this.isMutiMeasures || this.alwaysShowValueHeader) && !this.valueAxis) {
                 for (let vln: number = 0; vln < vcnt; vln++) {
                     let name: string = this.values[vln].caption ? this.values[vln].caption : this.values[vln].name;
                     let calObj: Object = {
@@ -2436,9 +2490,11 @@ export class PivotEngine {
         let cellValue: number = 0;
         let avgCnt: number = 0;
         let isInit: boolean = true;
+        let isValueExist: boolean = false;
         if (type && type.toLowerCase() === 'count') {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     cellValue += (this.valueMatrix[rowIndex[ri]][value] === undefined ? 0 : 1);
                 }
@@ -2448,6 +2504,7 @@ export class PivotEngine {
             let duplicateValues: number[] = [];
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
                     if (currentVal !== undefined) {
@@ -2463,6 +2520,7 @@ export class PivotEngine {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                    isValueExist = true;
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
                     if (currentVal !== undefined) {
                         cellValue = (isInit ? 1 : (cellValue === 0 ? 1 : cellValue));
@@ -2481,6 +2539,7 @@ export class PivotEngine {
             let avgDifferenceVal: number = 0;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
                     if (currentVal !== undefined) {
@@ -2509,6 +2568,7 @@ export class PivotEngine {
             let isFirst: boolean = true;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     if (isFirst) {
                         cellValue = this.valueMatrix[rowIndex[ri]][value];
@@ -2523,6 +2583,7 @@ export class PivotEngine {
             let isMaxFirst: boolean = true;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     if (isMaxFirst) {
                         cellValue = this.valueMatrix[rowIndex[ri]][value];
@@ -2536,6 +2597,7 @@ export class PivotEngine {
         } else if (type && type.toLowerCase() === 'calculatedfield') {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let calcField: ICalculatedFields = this.calculatedFields[this.fields[value]];
                     let actualFormula: string = calcField.formula;
@@ -2563,6 +2625,7 @@ export class PivotEngine {
         } else {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
@@ -2592,7 +2655,7 @@ export class PivotEngine {
                  ri++;
              }
          } */
-        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : cellValue);
+        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
     }
     /* tslint:enable */
     /** hidden */
@@ -2674,7 +2737,9 @@ export interface IDataOptions {
     showGrandTotals?: boolean;
     showRowGrandTotals?: boolean;
     showColumnGrandTotals?: boolean;
+    alwaysShowValueHeader?: boolean;
     conditionalFormatSettings?: IConditionalFormatSettings[];
+    emptyCellsTextContent?: string;
 }
 /**
  * @hidden

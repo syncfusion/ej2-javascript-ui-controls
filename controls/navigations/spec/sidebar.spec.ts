@@ -141,7 +141,7 @@ describe("Sidebar DOM class Testing ", () => {
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia(('min-width:1400px')) }, ele);
         expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
-        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
     });
 
     // animation onproperty change test case
@@ -490,7 +490,7 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('(max-width:400px)') }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(false);
+        expect(ele.classList.contains("e-close")).toEqual(true);
         sidebar.mediaQuery = window.matchMedia('(min-width:700px)');
         sidebar.dataBind();
         expect(ele.classList.contains("e-open")).toEqual(true);
@@ -500,8 +500,10 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('(max-width:400px)') }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(false);
-        expect(ele.classList.contains("e-open")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(true);
+        sidebar.isOpen = true;
+        sidebar.dataBind();
+        //expect(ele.classList.contains("e-open")).toEqual(true);
         sidebar.isOpen = false;
         sidebar.dataBind();
         expect(ele.classList.contains("e-open")).toEqual(false);
@@ -860,6 +862,8 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar = new Sidebar({
             type: "Push", open: function (args: any) {
                 expect(args.name).toBe("open");
+                expect(args.isInteracted).toBe(false);
+                expect(args.event).toBe(null);
             }
         }, ele);
         sidebar.show();
@@ -871,6 +875,8 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar = new Sidebar({
             type: "Push", close: function (args: any) {
                 expect(args.name).toBe("close");
+                expect(args.isInteracted).toBe(false);
+                expect(args.event).toBe(null);
             }
         }, ele);
         sidebar.hide();

@@ -167,7 +167,8 @@
 
     .e-list-item.e-disable {
 
-      .e-list-text {
+      > .e-text-content,
+      > .e-fullrow {
         color: $treeview-text-disable-color;
       }
 

@@ -2,9 +2,15 @@
  * Schedule work week view spec 
  */
 import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
-import { Schedule, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs } from '../../../src/schedule/index';
 import { Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
-import { triggerMouseEvent } from '../util.spec';
+import { triggerMouseEvent, triggerScrollEvent } from '../util.spec';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
+import { EJ2Instance } from '../../../src/schedule/base/interface';
+import { blockData } from '../base/datasource.spec';
+import * as cls from '../../../src/schedule/base/css-constant';
+import * as util from '../util.spec';
+
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule work week view', () => {
@@ -823,6 +829,227 @@ describe('Schedule work week view', () => {
 
         it('date header cells count', () => {
             expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toBe(5);
+        });
+    });
+
+    describe('Default schedule block events', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'WorkWeek', selectedDate: new Date(2017, 9, 30) };
+            schObj = util.createSchedule(schOptions, blockData.slice(0, 14), done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('block event initial rendering testing', () => {
+            expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(2);
+            let blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(blockEvent.offsetTop).toEqual(720);
+            expect(blockEvent.offsetWidth).toEqual(80);
+            expect(blockEvent.offsetHeight).toEqual(108);
+        });
+
+        it('add event', (done: Function) => {
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
+            triggerScrollEvent(contentArea, 648);
+            expect(contentArea.scrollTop).toEqual(648);
+            expect(timeCellsArea.scrollTop).toEqual(648);
+            expect(schObj.blockData.length).toEqual(7);
+            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startObj.value = new Date(2017, 9, 30, 10, 30);
+            startObj.dataBind();
+            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endObj.value = new Date(2017, 9, 30, 11, 30);
+            endObj.dataBind();
+            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            expect(schObj.quickPopup.quickDialog.visible).toBe(true);
+            expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
+                .toEqual('Events cannot be scheduled within the blocked time range.');
+            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            okButton.click();
+            expect(schObj.quickPopup.quickDialog.visible).toBe(false);            
+            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startRevisedObj.value = new Date(2017, 9, 30, 1, 0);
+            startRevisedObj.dataBind();
+            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endRevisedObj.value = new Date(2017, 9, 30, 2, 0);
+            endRevisedObj.dataBind();
+            saveButton.click();
+            triggerScrollEvent(contentArea, 648);
+            schObj.dataBound = (args: Object) => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
+                expect(addedEvent.offsetTop).toEqual(72);
+                expect(addedEvent.offsetWidth).toEqual(74);
+                expect(addedEvent.offsetHeight).toEqual(72);
+                done();
+            };
+            schObj.dataBind();
+        });
+
+        it('edit event', (done: Function) => {
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'dblclick');
+            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startObj.value = new Date(2017, 9, 30, 10, 30);
+            startObj.dataBind();
+            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endObj.value = new Date(2017, 9, 30, 11, 30);
+            endObj.dataBind();
+            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            expect(schObj.quickPopup.quickDialog.visible).toBe(true);
+            expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
+                .toEqual('Events cannot be scheduled within the blocked time range.');
+            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            okButton.click();
+            expect(schObj.quickPopup.quickDialog.visible).toBe(false);
+            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startRevisedObj.value = new Date(2017, 9, 31, 9, 30);
+            startRevisedObj.dataBind();
+            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endRevisedObj.value = new Date(2017, 9, 31, 11, 30);
+            endRevisedObj.dataBind();
+            saveButton.click();
+            schObj.dataBound = (args: Object) => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+                expect(editedEvent.offsetTop).toEqual(684);
+                expect(editedEvent.style.width).toEqual('46%');
+                expect(editedEvent.offsetHeight).toEqual(144);
+                done();
+            };
+            schObj.dataBind();
+        });
+    });
+
+
+    describe('Multi level resource rendering  in block events', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                height: '500px',
+                width: '500px',
+                currentView: 'WorkWeek',
+                selectedDate: new Date(2017, 9, 30),
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                    }, {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                        ],
+                        textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                    }
+                ]
+            };
+            schObj = util.createSchedule(schOptions, blockData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('resource add event', (done: Function) => {
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
+            triggerScrollEvent(contentArea, 648);
+            expect(contentArea.scrollTop).toEqual(648);
+            expect(timeCellsArea.scrollTop).toEqual(648);
+            expect(schObj.blockData.length).toEqual(10);
+            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startObj.value = new Date(2017, 9, 30, 10, 30);
+            startObj.dataBind();
+            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endObj.value = new Date(2017, 9, 30, 11, 30);
+            endObj.dataBind();
+            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            expect(schObj.quickPopup.quickDialog.visible).toBe(true);
+            expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
+                .toEqual('Events cannot be scheduled within the blocked time range.');
+            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            okButton.click();
+            expect(schObj.quickPopup.quickDialog.visible).toBe(false);
+            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startRevisedObj.value = new Date(2017, 9, 30, 1, 0);
+            startRevisedObj.dataBind();
+            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endRevisedObj.value = new Date(2017, 9, 30, 2, 0);
+            endRevisedObj.dataBind();
+            saveButton.click();
+            triggerScrollEvent(contentArea, 648);
+            schObj.dataBound = (args: Object) => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
+                expect(addedEvent.offsetTop).toEqual(72);
+                expect(addedEvent.offsetWidth).toEqual(33);
+                expect(addedEvent.offsetHeight).toEqual(72);
+                done();
+            };
+            schObj.dataBind();
+        });
+
+        it('resource edit event', (done: Function) => {
+            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let startObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startObj.value = new Date(2017, 9, 30, 10, 0);
+            startObj.dataBind();
+            let endObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endObj.value = new Date(2017, 9, 30, 11, 30);
+            endObj.dataBind();
+            let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+            saveButton.click();
+            let alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            expect(schObj.quickPopup.quickDialog.visible).toBe(true);
+            expect(alertDialog.querySelector('.e-dlg-content').innerHTML)
+                .toEqual('Events cannot be scheduled within the blocked time range.');
+            let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
+            okButton.click();
+            expect(schObj.quickPopup.quickDialog.visible).toBe(false);
+            let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
+            startRevisedObj.value = new Date(2017, 9, 31, 9, 30);
+            startRevisedObj.dataBind();
+            let endRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_END_CLASS) as DateTimePicker;
+            endRevisedObj.value = new Date(2017, 9, 31, 11, 30);
+            endRevisedObj.dataBind();
+            saveButton.click();
+            schObj.dataBound = (args: Object) => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+                expect(editedEvent.offsetTop).toEqual(684);
+                expect(editedEvent.offsetWidth).toEqual(33);
+                expect(editedEvent.offsetHeight).toEqual(144);
+                done();
+            };
+            schObj.dataBind();
         });
     });
 });

@@ -227,6 +227,7 @@ export class BatchEdit {
                     } else {
                         refreshForeignData(rows[i], this.parent.getForeignKeyColumns(), rows[i].data);
                         delete rows[i].changes;
+                        delete rows[i].edit;
                         rows[i].isDirty = false;
                         let ftr: HTMLElement = mTr ? mTr : tr;
                         classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
@@ -823,7 +824,9 @@ export class BatchEdit {
         }
         let tr: Element = parentsUntil(this.form, 'e-row');
         let column: Column = this.cellDetails.column;
-        let editedData: Object = gObj.editModule.getCurrentEditedData(this.form, {});
+        let obj: Object = {};
+        obj[column.field] = this.cellDetails.rowData[column.field];
+        let editedData: Object = gObj.editModule.getCurrentEditedData(this.form, obj);
         let cloneEditedData: Object = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
         let value: string = getObject(column.field, cloneEditedData);

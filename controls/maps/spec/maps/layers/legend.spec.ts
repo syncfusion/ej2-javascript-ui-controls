@@ -3,6 +3,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, randomcountriesData, topPopulation, flightRoutes, intermediatestops1, internetUser } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Legend, Marker } from '../../../src/maps/index';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Legend, Marker);
 
 export function getElementByID(id: string): Element {
@@ -13,6 +14,14 @@ export function getElementByID(id: string): Element {
  */
 let MapData: Object = World_Map;
 describe('Map marker properties tesing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Marker testing', () => {
         let id: string = 'legend';
         let map: Maps;
@@ -304,6 +313,17 @@ describe('Map marker properties tesing', () => {
                 expect(element.getAttribute('height')).toBe('474');
                 expect(element.getAttribute('width')).toBe('492');
             };
+            map.refresh();
+        });
+        it('Legend with gradient color check', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers[0].shapeSettings.colorMapping[0].from = 500;
+            map.layers[0].shapeSettings.colorMapping[0].to = 600;
+            map.layers[0].shapeSettings.colorMapping[0].value = 'Oceania';
+            map.layers[0].shapeSettings.colorMapping[0].color = ['red', 'blue'];
             map.refresh();
         });
 
@@ -608,7 +628,7 @@ describe('Map marker properties tesing', () => {
 
         it('Check with interactive legend as top position', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_ShapeIndex_64_dataIndex_2');
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_2');
                 let eventObj: Object = {
                     target: element,
                     pageX: element.getBoundingClientRect().left,
@@ -622,7 +642,7 @@ describe('Map marker properties tesing', () => {
 
         it('Check with interactive legend as top position - inverter pointer', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_ShapeIndex_64_dataIndex_2');
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_2');
                 let eventObj: Object = {
                     target: element,
                     pageX: element.getBoundingClientRect().left,
@@ -636,7 +656,7 @@ describe('Map marker properties tesing', () => {
 
         it('Check with interactive legend a left position', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_ShapeIndex_64_dataIndex_2');
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_2');
                 let eventObj: Object = {
                     target: element,
                     pageX: element.getBoundingClientRect().left,
@@ -650,7 +670,7 @@ describe('Map marker properties tesing', () => {
 
         it('Check with interactive legend as left position - inverter pointer', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_ShapeIndex_64_dataIndex_2');
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_2');
                 let eventObj: Object = {
                     target: element,
                     pageX: element.getBoundingClientRect().left,
@@ -738,7 +758,7 @@ describe('Map marker properties tesing', () => {
 
         it('Check with interactive legend and data source color mapping', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_ShapeIndex_167_dataIndex_2');
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_shapeIndex_167_dataIndex_2');
                 let eventObj: Object = {
                     target: element,
                     pageX: element.getBoundingClientRect().left,
@@ -941,7 +961,7 @@ describe('Map marker properties tesing', () => {
 
         it('Check with marker legend', () => {
             map.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_DataIndex_0');
+                let element: Element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0');
                 let eventObj: Object = {
                     target: element,
                     pageX: element.getBoundingClientRect().left,
@@ -1229,5 +1249,88 @@ describe('Map marker properties tesing', () => {
                 expect(element.getAttribute('fill')).toBe('#DADADA');
             };
         });
+    });
+    describe('Legend Equal Color Mapping ', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                theme:'FabricDark',
+                layers: [
+                    {
+                        shapeData: World_Map,
+                        shapePropertyPath: 'continent',
+                        shapeDataPath: 'continent',
+                        dataSource: randomcountriesData,
+                        tooltipSettings: {
+                            visible: true
+                        },                        
+                        shapeSettings: {
+                           // autofill: true,
+                            //fill: 'grey',
+                            border: {
+                                width: 1,
+                                color: 'white'
+                            },
+                            colorValuePath: 'continent',
+                            colorMapping: [{
+                               value: 'Europe', color: 'orange', label: 'Europe Continent'
+                            },
+                            {
+                                value: 'Asia', color: 'yellow', showLegend: false
+                            },
+                            {
+                                value: 'South America', color: 'blueviolet', label: 'South America Continent'
+                            },
+                            {
+                                value: 'Asia', color: 'teal', label: 'Asia Continent'
+                            },
+                            {
+                                value: 'Oceania',  color: 'aqua', label: 'Oceania Continent'
+                            },
+                            {
+                                value: 'Africa',  color: 'blue', label: 'Africa Continent'
+                            },
+                            {
+                                value: 'North America',  color: 'blue', label: 'North America Continent'
+                            }
+                        ]
+                        }
+                    }
+                ],
+                legendSettings: {
+                    visible: true
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Legend with gradient color check', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Legend_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            map.layers[0].shapeSettings.colorMapping[0].value = 'Asia'
+            map.layers[0].shapeSettings.colorMapping[0].label= 'Asia continents'
+            debugger;
+            map.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

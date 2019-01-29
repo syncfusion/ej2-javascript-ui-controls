@@ -4,11 +4,20 @@
 import { Maps, ILoadedEventArgs, NavigationLine } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, } from '../data/data.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(NavigationLine);
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
 }
 describe('Map navigation properties tesing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('navigation testing', () => {
         let id: string = 'container';
         let map: Maps;
@@ -420,32 +429,32 @@ describe('Map navigation properties tesing', () => {
                 },
             ];
             map.refresh();
-    });
+        });
 
         it('Navigation line selected arrow position start, angle -0.5 and offSet', () => {
-          map.loaded = (args: ILoadedEventArgs) => {
-             let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
-             let markerEnd: string = spec.getAttribute('marker-end');
-             expect(markerEnd).toEqual('url(#triangle0)');
-    };
-          map.layers[0].navigationLineSettings = [
-            {
-              visible: true,
-              latitude: [38.8833, 21.0000],
-              longitude: [-77.0167, 78.0000],
-              angle: -0.5,
-              width: 5,
-              color: 'none',
-              arrowSettings: {
-                  showArrow: true,
-                  size: 5,
-                  position: 'End',
-                  offSet: 5
-            }
-        },
-    ];
-          map.refresh();
-});
+            map.loaded = (args: ILoadedEventArgs) => {
+                let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
+                let markerEnd: string = spec.getAttribute('marker-end');
+                expect(markerEnd).toEqual('url(#triangle0)');
+            };
+            map.layers[0].navigationLineSettings = [
+                {
+                    visible: true,
+                    latitude: [38.8833, 21.0000],
+                    longitude: [-77.0167, 78.0000],
+                    angle: -0.5,
+                    width: 5,
+                    color: 'none',
+                    arrowSettings: {
+                        showArrow: true,
+                        size: 5,
+                        position: 'End',
+                        offSet: 5
+                    }
+                },
+            ];
+            map.refresh();
+        });
         it('Navigation line selected arrow position start, angle -0.5 and offSet', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
@@ -453,24 +462,80 @@ describe('Map navigation properties tesing', () => {
                expect(markerEnd).toEqual('url(#triangle0)');
             };
             map.layers[0].navigationLineSettings = [
+                {
+                    visible: true,
+                    latitude: [38.8833, 21.0000],
+                    longitude: [-77.0167, 78.0000],
+                    angle: -0.5,
+                    width: 5,
+                    color: 'none',
+                    arrowSettings: {
+                        showArrow: true,
+                        size: 5,
+                        position: 'End',
+                        offSet: 5
+                    }
+                },
+                ];
+            map.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+    describe('navigation testing', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                theme: 'HighContrastLight',
+                layers: [
+                    {
+                        shapeData: World_Map
+                    }
+
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Navigation line selected arrow position start, angle -0.5 and offSet', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+               let spec: Element = document.getElementById('container_LayerIndex_0_NavigationIndex_0_Line0');
+              // let markerEnd: string = spec.getAttribute('marker-end');
+              // expect(markerEnd).toEqual('url(#triangle0)');
+            };
+            map.layers[0].navigationLineSettings = [
               {
                 visible: true,
                 latitude: [38.8833, 21.0000],
                 longitude: [-77.0167, 78.0000],
-                angle: -0.5,
-                width: 5,
-                color: 'none',
+                angle: 0,
                 arrowSettings: {
                    showArrow: true,
                    size: 5,
-                   position: 'End',
+                   position: 'Start',
                    offSet: 5
                }
              },
             ];
+            debugger;
+            map.theme = 'MaterialDark';
             map.refresh();
 });
-
     });
 });
 

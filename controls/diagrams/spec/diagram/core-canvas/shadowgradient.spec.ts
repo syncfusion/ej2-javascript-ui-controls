@@ -5,6 +5,7 @@ import { NodeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { ShadowModel, RadialGradientModel, StopModel, LinearGradientModel } from '../../../src/diagram/core/appearance-model';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { DiagramModel } from '../../../src/diagram/index';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 /**
  * Shadow & Gradient
  */
@@ -14,6 +15,12 @@ describe('Diagram Control for shadow properties', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             let constraints: number = NodeConstraints.Default | NodeConstraints.Shadow;
             ele = createElement('div', { id: 'diagramg' });
             document.body.appendChild(ele);
@@ -76,12 +83,18 @@ describe('Diagram Control for shadow properties', () => {
             expect(failure).toBe(false);
             done();
         });
-    });
+       });
     describe('Gradient', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagramh' });
             document.body.appendChild(ele);
 
@@ -136,12 +149,18 @@ describe('Diagram Control for shadow properties', () => {
             expect(failure).toBe(false);
             done();
         });
-    });
+       });
     describe('Gradient', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagrami' });
             document.body.appendChild(ele);
 
@@ -197,6 +216,15 @@ describe('Diagram Control for shadow properties', () => {
             done();
 
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 
 

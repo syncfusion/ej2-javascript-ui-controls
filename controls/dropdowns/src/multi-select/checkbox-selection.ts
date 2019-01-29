@@ -386,7 +386,11 @@ export class CheckBoxSelection {
         }
         if (!this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            this.parent.onBlur(e);
+            if (Browser.isIE) {
+                this.parent.onBlur();
+            } else {
+                this.parent.inputElement.blur();
+            }
         }
         if (this.filterInput === target) { this.filterInput.focus(); }
     }

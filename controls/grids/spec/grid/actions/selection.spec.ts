@@ -556,6 +556,95 @@ describe('Selection Shortcuts testing with Freeze pane', () => {
         args = { action: 'upArrow', preventDefault: preventDefault };
         gridObj.keyboardModule.keyAction(args);
     });
+    
+    it('change frozen row', function (done) {
+        gridObj.dataBound = function () {
+            gridObj.dataBound = undefined;
+            done();
+        };
+        gridObj.frozenRows = 0;
+        gridObj.clearSelection();
+        gridObj.selectionSettings = { type: 'Multiple', mode: 'Cell' },
+            gridObj.dataBind();
+    });
+    
+    it('Cell Select shortcut testing without frozen rows', function () {
+        let args: any = { action: 'downArrow', preventDefault: preventDefault };
+        gridObj.selectionModule.selectCell({ rowIndex: 1, cellIndex: 2 }, true);
+        gridObj.keyboardModule.keyAction(args);
+        expect(gridObj.getRowByIndex(2).querySelector('td').classList.contains('e-cellselectionbackground')).toBeFalsy();
+        expect(gridObj.getMovableRowByIndex(2).querySelector('td').classList.contains('e-cellselectionbackground')).toBeTruthy();
+    });
+    
+    it('Cell Select upArrow shortcut testing', function () {
+        let args: any = { action: 'upArrow', preventDefault: preventDefault };
+        gridObj.selectionModule.selectCell({ rowIndex: 2, cellIndex: 2 }, true);
+        gridObj.keyboardModule.keyAction(args);
+        expect(gridObj.getRowByIndex(1).querySelector('td').classList.contains('e-cellselectionbackground')).toBeFalsy();
+        expect(gridObj.getMovableRowByIndex(1).querySelector('td').classList.contains('e-cellselectionbackground')).toBeTruthy();
+    });
+    
+    it('shiftDown cell shortcut testing', function () {
+        let args: any = { action: 'shiftDown', preventDefault: preventDefault };
+        gridObj.keyboardModule.keyAction(args);
+        gridObj.keyboardModule.keyAction(args);
+        expect(gridObj.getRowByIndex(1).querySelector('td').classList.contains('e-cellselectionbackground')).toBeFalsy();
+        expect(gridObj.getMovableRowByIndex(2).querySelector('td').classList.contains('e-cellselectionbackground')).toBeTruthy();
+    });
+    
+    it('shiftUp cell shortcut testing', function () {
+        let args: any = { action: 'shiftUp', preventDefault: preventDefault };
+        gridObj.keyboardModule.keyAction(args);
+        gridObj.keyboardModule.keyAction(args);
+        expect(gridObj.getRowByIndex(1).querySelector('td').classList.contains('e-cellselectionbackground')).toBeFalsy();
+        expect(gridObj.getMovableRowByIndex(1).querySelector('td').classList.contains('e-cellselectionbackground')).toBeTruthy();
+    });
+
+    describe('grid selection functionalities with Frozen rows', function () {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        let selectionModule: Selection;
+        let rows: Element[];
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                frozenRows: 2,
+                dataSource: data,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID' },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Row' },
+            }, done);
+        });
+        it('downarrow shortcut testing', function () {
+            rows = gridObj.getRows();
+            let args: any = { action: 'downArrow', preventDefault: preventDefault };
+            (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+            gridObj.keyboardModule.keyAction(args);
+            expect(gridObj.element.querySelectorAll('tr[aria-selected="true"]')[0].getAttribute('aria-rowindex')).toBe('2');
+            expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(gridObj.getSelectedRecords().length).toBe(1);
+            expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+            expect(rows[2].firstElementChild.classList.contains('e-cellselectionbackground')).toBeFalsy();
+            expect(gridObj.getSelectedRowCellIndexes().length).toBe(0);
+        });
+        it('upArrow shortcut testing', function () {
+            let args: any = { action: 'upArrow', preventDefault: preventDefault };
+            gridObj.keyboardModule.keyAction(args);
+            expect(gridObj.element.querySelectorAll('tr[aria-selected="true"]')[0].getAttribute('aria-rowindex')).toBe('1');
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+            expect(gridObj.selectionModule.selectedRowIndexes.length).toBe(1);
+        });
+        afterAll(function () {
+            destroy(gridObj);
+        });
+    });
+    
     afterAll(() => {
         destroy(gridObj);
     });
@@ -692,6 +781,25 @@ describe('Grid Selection module', () => {
             expect(selectionModule.selectedRowCellIndexes.length).toBe(0);
         });
 
+        it('Single Cell selection while refreshing grid testing', function (done) {
+            gridObj.dataBound = function () {
+                gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
+                gridObj.refresh();
+                gridObj.dataBound = function () {
+                    gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
+                    expect(gridObj.getCellFromIndex(0,0).classList.contains('e-cellselectionbackground')).toBeTruthy;
+                    expect(selectionModule.selectedRowCellIndexes.length).toBe(1);
+                    selectionModule.clearCellSelection();
+                    gridObj.selectRow(0);
+                    expect(gridObj.getRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
+                    expect(selectionModule.getSelectedRecords().length).toBe(1);
+                    done();
+                }
+            };
+            gridObj.refresh();
+            gridObj.refresh();
+        });
+
         afterAll(() => {
             destroy(gridObj);
         });
@@ -772,6 +880,26 @@ describe('Grid Selection module', () => {
             expect(selectionModule.selectedRecords.length).toBe(0);
             expect(selectionModule.selectedRowIndexes.length).toBe(0);
             expect(selectionModule.selectedRowCellIndexes.length).toBe(0);
+        });
+
+        it('Single Cell selection while refreshing grid testing freeze', function (done) {
+            gridObj.dataBound = function () {
+                gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
+                gridObj.refresh();
+                gridObj.dataBound = function () {
+                    gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
+                    expect(gridObj.getCellFromIndex(0,0).classList.contains('e-cellselectionbackground')).toBeTruthy;
+                    expect(selectionModule.selectedRowCellIndexes.length).toBe(1);
+                    selectionModule.clearCellSelection();
+                    gridObj.selectRow(0);
+                    expect(gridObj.getRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
+                    expect(gridObj.getMovableRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
+                    expect(selectionModule.getSelectedRecords().length).toBe(1);
+                    done();
+                }
+            };
+            gridObj.refresh();
+            gridObj.refresh();
         });
 
         afterAll(() => {
@@ -1309,6 +1437,22 @@ describe('Grid Selection module', () => {
             expect(selectionModule.selectedRowCellIndexes.length).toBe(3);
         });
 
+        it('Muliple Cell selection while refreshing grid testing', function (done) {
+            gridObj.dataBound = function () {
+                gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
+                gridObj.refresh();
+                gridObj.dataBound = function () {
+                    gridObj.selectCellsByRange({rowIndex: 0, cellIndex: 0},{rowIndex: 0, cellIndex: 2});
+                    expect(gridObj.getCellFromIndex(0,2).classList.contains('e-cellselectionbackground')).toBeTruthy;
+                    expect(gridObj.getSelectedRowCellIndexes()[0].cellIndexes.length).toBe(3);
+                    selectionModule.clearCellSelection();
+                    done();
+                }
+            };
+            gridObj.refresh();
+            gridObj.refresh();
+        });
+
         afterAll(() => {
             destroy(gridObj);
         });
@@ -1450,6 +1594,22 @@ describe('Grid Selection module', () => {
                 }
             }
             expect(selectionModule.selectedRowCellIndexes.length).toBe(3);
+        });
+
+        it('Muliple Cell selection while refreshing grid testing in Freeze', function (done) {
+            gridObj.dataBound = function () {
+                gridObj.selectCell({ rowIndex: 0, cellIndex: 0 }, true);
+                gridObj.refresh();
+                gridObj.dataBound = function () {
+                    gridObj.selectCellsByRange({rowIndex: 0, cellIndex: 0},{rowIndex: 0, cellIndex: 1});
+                    expect(gridObj.getCellFromIndex(0,1).classList.contains('e-cellselectionbackground')).toBeTruthy;
+                    expect(gridObj.getSelectedRowCellIndexes()[0].cellIndexes.length).toBe(2);
+                    selectionModule.clearCellSelection();
+                    done();
+                }
+            };
+            gridObj.refresh();
+            gridObj.refresh();
         });
 
         afterAll(() => {
@@ -3326,6 +3486,16 @@ describe('Row,cell Selecting in batch edit while adding record => ', () => {
 
 describe('enableSimpleMultiRowSelection property Testing => ', () => {
     let gridObj: Grid;
+    let rows: Element[];
+    let ctrlEvt: MouseEvent = document.createEvent('MouseEvent');
+    ctrlEvt.initMouseEvent(
+        'click',
+        true /* bubble */, true /* cancelable */,
+        window, null,
+        0, 0, 0, 0, /* coordinates */
+        true, false, false, false, /* modifier keys */
+        0 /*left*/, null
+    );
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
@@ -3342,13 +3512,91 @@ describe('enableSimpleMultiRowSelection property Testing => ', () => {
     });
     it('Multiple row selection without pressing ctrl/shift', () => {
         gridObj.selectRow(0);
-        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
+        rows = gridObj.getRows();
+        expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
         gridObj.selectRow(1);
-        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
-        expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeTruthy();
+        expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
         gridObj.selectRow(1);
-        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
-        expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeFalsy();
+        expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    it('enableToggle Property check without pressing ctrl/shift', () => {
+        gridObj.selectionSettings.enableToggle = false;
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+    });
+
+    it('enableToggle Property check by pressing ctrl/shift', () => {
+        rows[1].firstChild.dispatchEvent(ctrlEvt);
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('enableToggle property Testing => ', () => {
+    let gridObj: Grid;
+    let rows: Element[];
+    let ctrlEvt: MouseEvent = document.createEvent('MouseEvent');
+    ctrlEvt.initMouseEvent(
+        'click',
+        true /* bubble */, true /* cancelable */,
+        window, null,
+        0, 0, 0, 0, /* coordinates */
+        true, false, false, false, /* modifier keys */
+        0 /*left*/, null
+    );
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                selectionSettings: { type:'Multiple', enableToggle: false},
+                columns: [
+                    { type: 'checkbox', width: 50},
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                ]
+            }, done);
+    });
+
+    it('enableToggle(false) Property check without pressing ctrl/shift', () => {
+        rows = gridObj.getRows();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    it('enableToggle(false) Property check by pressing ctrl key', () => {
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        rows[1].firstChild.dispatchEvent(ctrlEvt);
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+        gridObj.selectionSettings.enableToggle = true;
+    });
+
+    it('enableToggle(true) Property check without pressing ctrl/shift', () => {
+        expect(gridObj.selectionSettings.enableToggle).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    it('enableToggle(true) Property check by pressing ctrl key', () => {
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        rows[1].firstChild.dispatchEvent(ctrlEvt);
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
     });
 
     afterAll(() => {

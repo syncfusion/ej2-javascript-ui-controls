@@ -487,6 +487,13 @@ export class DataSource extends ChildProperty<DataSource> implements IDataOption
     public showColumnGrandTotals: boolean;
 
     /**
+     * It allows enable/disable single measure headers in pivot table.
+     * @default false
+     */
+    @Property(false)
+    public alwaysShowValueHeader: boolean;
+
+    /**
      * It allows to set the settings of number formatting.
      * @default []
      */
@@ -519,4 +526,10 @@ export class DataSource extends ChildProperty<DataSource> implements IDataOption
      */
     @Collection<ConditionalFormatSettingsModel[]>([], ConditionalFormatSettings)
     public conditionalFormatSettings: ConditionalFormatSettingsModel[];
+
+    /**
+     * It allows to set the custom values to empty value cells .
+     */
+    @Property()
+    public emptyCellsTextContent: string;
 }

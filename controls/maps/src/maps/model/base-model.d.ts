@@ -663,7 +663,7 @@ export interface LegendSettingsModel {
 
     /**
      * Customize the legend background
-     * @default transparent
+     * @default 'transparent'
      */
     background?: string;
 

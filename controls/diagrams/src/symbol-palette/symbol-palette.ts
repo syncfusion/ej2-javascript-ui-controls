@@ -1204,6 +1204,19 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
     }
 
+    private keyDown(evt: KeyboardEvent): void {
+        let palette: SymbolPalette = this;
+        let helperElement: string = 'helperElement';
+        let intDestroy: string = 'intDestroy';
+        if (evt && (evt.key === 'Escape')) {
+            let element: HTMLElement = palette.draggable[helperElement];
+            if (element  && element.parentNode) {
+                element.parentNode.removeChild(element);
+                palette.draggable[intDestroy]();
+            }
+        }
+    }
+
     //end region - event handlers
 
     // region - draggable
@@ -1486,11 +1499,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let moveEvent: string = Browser.touchMoveEvent;
         let cancelEvent: string = 'mouseleave';
         let keyEvent: string = 'keyup';
+        let keyDownEvent: string = 'keydown';
 
         EventHandler.add(this.element, startEvent, this.mouseDown, this);
         EventHandler.add(this.element, moveEvent, this.mouseMove, this);
         EventHandler.add(this.element, stopEvent, this.mouseUp, this);
         EventHandler.add(this.element, keyEvent, this.keyUp, this);
+        EventHandler.add(document, keyDownEvent, this.keyDown, this);
         // initialize the draggable component
         this.initDraggable();
     }
@@ -1504,10 +1519,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let moveEvent: string = Browser.touchMoveEvent;
         let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         let keyEvent: string = 'keyup';
+        let keyDownEvent: string = 'keydown';
         EventHandler.remove(this.element, startEvent, this.mouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
         EventHandler.remove(this.element, stopEvent, this.mouseUp);
         EventHandler.remove(this.element, keyEvent, this.keyUp);
+        EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
 
     //end region - helper methods

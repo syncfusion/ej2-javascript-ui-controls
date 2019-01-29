@@ -6,6 +6,7 @@ import * as cls from '../../common/base/css-constant';
 import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar } from '@syncfusion/ej2-grids';
 import { VirtualScroll, Selection, Edit, Page, CommandColumn } from '@syncfusion/ej2-grids';
 import { IDataSet, INumberIndex } from '../../base';
+import * as events from '../../common/base/constant';
 
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
@@ -176,6 +177,7 @@ export class DrillThroughDialog {
             allowPaging: this.parent.editSettings.allowEditing
         });
         let dialogModule: DrillThroughDialog = this;
+        this.parent.trigger(events.beginDrillThrough, { cellInfo: eventArgs, gridObj: this.drillThroughGrid, type: 'editing' });
         if (this.parent.editSettings.allowEditing) {
             Grid.Inject(Edit, Page);
             this.drillThroughGrid.editSettings = this.parent.editSettings;
@@ -216,6 +218,7 @@ export class DrillThroughDialog {
         } else {
             Grid.Inject(VirtualScroll);
         }
+        document.body.appendChild(drillThroughGrid);
         this.drillThroughGrid.appendTo(drillThroughGrid);
         drillThroughBody.appendChild(drillThroughBodyHeader);
         drillThroughBody.appendChild(drillThroughGrid);

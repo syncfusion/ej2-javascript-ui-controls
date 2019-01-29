@@ -18,8 +18,8 @@
       padding-right: initial;
     }
 
-    .e-icons {
-      font-size: 18px;
+    .e-nav-arrow.e-icons {
+      font-size: $hscroll-device-arrow-size-bigger;
      }
 
     &.e-rtl .e-scroll-overlay.e-scroll-right-overlay {

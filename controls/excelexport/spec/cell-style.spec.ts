@@ -779,4 +779,58 @@ describe('CellStyle', () => {
             }
         });
     });
+    it('Text-Rotation', (done) => {
+        let book: Workbook = new Workbook({
+                        /*Global Styles*/styles: [
+                /*Style ->1*/{ name: 'Rotation', rotation: 30 },
+              ],
+            worksheets: [
+                {
+                    name: 'TextRotation',
+                    rows: [
+                        {
+                            index: 1,
+                            cells: [
+                                {
+                                    index: 1, value: 'Text1',
+                                    style: {
+                                        hAlign: 'right',
+                                        rotation: 45
+                                    }
+                                },
+                                {
+                                    index: 2, value: 'Text2',
+                                    style: {
+                                        hAlign: 'center',
+                                        rotation: 90
+                                    }
+                                },
+                                {
+                                    index: 3, value: 'Text3',
+                                    style: {
+                                        hAlign: 'left',
+                                        rotation: 120
+                                    }
+                                }
+                            ]
+                        },
+                    ],
+                }]
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'TextRotation.xlsx');
+                done();
+            } else {
+                let reader: FileReader = new FileReader();
+                reader.readAsArrayBuffer(xlBlob.blobData);
+                reader.onload = (): void => {
+                    if (reader.readyState == 2) { // DONE == 2
+                        expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                        done();
+                    }
+                }
+            }
+        });
+    });
 });

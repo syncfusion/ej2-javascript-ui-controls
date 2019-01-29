@@ -1581,7 +1581,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 35;
             (<any>listObj).onKeyDown(keyboardEventArgs);
             expect((<any>listObj).list.querySelector(
-                'li.' + dropDownBaseClasses.focus).getAttribute('data-value')).toBe(elem[0].getAttribute('data-value'));
+                'li.' + dropDownBaseClasses.focus).getAttribute('data-value')).toBe(elem[elem.length - 1].getAttribute('data-value'));
             keyboardEventArgs.keyCode = 36;
             (<any>listObj).onKeyDown(keyboardEventArgs);
             expect((<any>listObj).list.querySelector(

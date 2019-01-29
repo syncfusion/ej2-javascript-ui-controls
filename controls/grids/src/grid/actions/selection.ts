@@ -50,6 +50,7 @@ export class Selection implements IAction {
     private prevRowIndex: number;
     private prevCIdxs: IIndex;
     private prevECIdxs: IIndex;
+    private selectedRowIndex: number;
     private isMultiShiftRequest: boolean = false;
     private isMultiCtrlRequest: boolean = false;
     private enableSelectMultiTouch: boolean = false;
@@ -357,11 +358,12 @@ export class Selection implements IAction {
             return;
         }
         let args: Object;
+        let checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
         for (let rowIndex of rowIndexes) {
             let rowObj: Row<Column> = this.getRowObj(rowIndex);
             let isUnSelected: boolean = this.selectedRowIndexes.indexOf(rowIndex) > -1;
             this.selectRowIndex(rowIndex);
-            if (isUnSelected) {
+            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.rowDeselect(events.rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
@@ -909,21 +911,25 @@ export class Selection implements IAction {
         let frzCols: number = this.parent.getFrozenColumns();
         if (frzCols) {
             if (index >= frzCols) {
-                cells = this.parent.getMovableDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
+                cells = this.parent.getMovableDataRows()[rowIndex] &&
+                        this.parent.getMovableDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
             }
         }
         if (!cells) {
-            cells = this.parent.getDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
+            cells = this.parent.getDataRows()[rowIndex] &&
+                    this.parent.getDataRows()[rowIndex].querySelectorAll('td.e-rowcell');
         }
-        for (let m: number = 0; m < cells.length; m++) {
-            let colIndex: number = parseInt(cells[m].getAttribute('aria-colindex'), 10);
-            if (colIndex === index) {
-                if (frzCols) {
-                    if (index >= frzCols) {
-                        m += frzCols;
+        if (cells) {
+            for (let m: number = 0; m < cells.length; m++) {
+                let colIndex: number = parseInt(cells[m].getAttribute('aria-colindex'), 10);
+                if (colIndex === index) {
+                    if (frzCols) {
+                        if (index >= frzCols) {
+                            m += frzCols;
+                        }
                     }
+                    return m;
                 }
-                return m;
             }
         }
         return -1;
@@ -1027,7 +1033,9 @@ export class Selection implements IAction {
                             cells.push(gObj.getMovableCellFromIndex(rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
                         }
                     } else {
-                        foreignKeyData.push(rowObj.cells[rowCell[i].cellIndexes[j]].foreignKeyData);
+                        if (rowObj.cells) {
+                            foreignKeyData.push(rowObj.cells[rowCell[i].cellIndexes[j]].foreignKeyData);
+                        }
                         cells.push(gObj.getCellFromIndex(rowCell[i].rowIndex, rowCell[i].cellIndexes[j]));
                     }
                 }
@@ -2056,9 +2064,9 @@ export class Selection implements IAction {
     private rowCellSelectionHandler(rowIndex: number, cellIndex: number): void {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
-                this.selectRow(rowIndex, true);
+                this.selectRow(rowIndex, this.selectionSettings.enableToggle);
             }
-            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
+            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
             if (this.selectedRowCellIndexes.length) {
                 this.updateAutoFillPosition();
             }
@@ -2123,11 +2131,11 @@ export class Selection implements IAction {
                 rowIndex += this.parent.frozenRows;
                 prev.rowIndex = prev.rowIndex === 0 || !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex + this.parent.frozenRows : null;
             }
-            if (this.parent.getFrozenColumns()) {
-                let cIdx: number = Number(e.element.getAttribute('aria-colindex'));
-                prev.cellIndex = prev.cellIndex ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
-                cellIndex = cIdx;
-            }
+        }
+        if (this.parent.getFrozenColumns()) {
+            let cIdx: number = Number(e.element.getAttribute('aria-colindex'));
+            prev.cellIndex = prev.cellIndex ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
+            cellIndex = cIdx;
         }
         if (headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 && e.keyArgs.action !== 'space' &&
             rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) { return; }
@@ -2381,8 +2389,10 @@ export class Selection implements IAction {
             this.refreshPersistSelection();
         }
     }
+
     private selectRowIndex(index: number): void {
         this.parent.isSelectedRowIndexUpdating = true;
         this.parent.selectedRowIndex = index;
     }
+
 }

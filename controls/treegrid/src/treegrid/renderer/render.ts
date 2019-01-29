@@ -28,10 +28,10 @@ export class Render {
         let data: ITreeData = <ITreeData>args.data;
         let parentData: ITreeData = <ITreeData>data.parentItem;
         let index: number;
-        if (!isNullOrUndefined(data.parentIndex) &&
+        if (!isNullOrUndefined(data.parentItem) &&
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent))))  {
-            index = data.parentIndex;
+            index = data.parentItem.index;
             let collapsed: boolean = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                              parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
                             !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
@@ -98,7 +98,7 @@ export class Render {
                     expand = data.expanded;
                 }
                 let collapsed: boolean = true;
-                if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
+                if (!isNullOrUndefined(data.parentItem) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
                     && data[this.parent.expandStateMapping])
                     && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
                     collapsed = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());

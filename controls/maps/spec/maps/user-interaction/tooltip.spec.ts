@@ -8,11 +8,20 @@ import { electiondata, populationData } from '../data/us-data.spec';
 import { ITooltipRenderEventArgs, Bubble, MapsTooltip, Marker, LayerSettingsModel, MapLocation } from '../../../src/maps/index';
 import { MouseEvents } from '../base/events.spec';
 import { getElement, timeout } from '../../../src/maps/utils/helper';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Bubble, MapsTooltip, Marker);
 export function getShape(i: number): string {
-    return 'mapst_LayerIndex_0_ShapeIndex_' + i + '_dataIndex_undefined';
+    return 'mapst_LayerIndex_0_shapeIndex_' + i + '_dataIndex_undefined';
 }
 describe('Map layer testing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('tooltip Map layer testing', () => {
         let id: string = 'mapst';
         let tooltip: Maps;
@@ -22,7 +31,7 @@ describe('Map layer testing', () => {
         let tooltipElements: HTMLCollection;
         let tooltipElement: HTMLElement;
         let bubbleId: string = id + '_LayerIndex_0_BubbleIndex_0_dataIndex_';
-        let markerId: string = id + '_LayerIndex_0_MarkerIndex_0_DataIndex_';
+        let markerId: string = id + '_LayerIndex_0_MarkerIndex_0_dataIndex_';
         beforeAll(() => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
@@ -422,7 +431,7 @@ describe('Map layer testing', () => {
         let tooltipElements: HTMLCollection;
         let tooltipElement: HTMLElement;
         let bubbleId: string = id + '_LayerIndex_0_BubbleIndex_0_dataIndex_';
-        let markerId: string = id + '_LayerIndex_0_MarkerIndex_0_DataIndex_';
+        let markerId: string = id + '_LayerIndex_0_MarkerIndex_0_dataIndex_';
         beforeAll(() => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
@@ -465,5 +474,62 @@ describe('Map layer testing', () => {
             tooltips.useGroupingSeparator = true;
             tooltips.refresh();
         });
+        it('tooltip with valuepath for layer', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.childElementCount > 1).toBe(true);
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltips.format = 'c';
+            tooltips.useGroupingSeparator = true;
+            tooltips.layers[0].tooltipSettings.format = null;
+            tooltips.layers[0].tooltipSettings.valuePath = 'name';
+            tooltips.layers[0].dataSource = [];
+            tooltips.refresh();
+        });
+        it('tooltip without valuepath for layer', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.childElementCount > 1).toBe(true);
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltips.format = 'c';
+            tooltips.useGroupingSeparator = true;
+            tooltips.layers[0].tooltipSettings.format = null;
+            tooltips.layers[0].tooltipSettings.valuePath = 'null';
+            tooltips.layers[0].dataSource = [];
+            tooltips.refresh();
+        });
+        it('tooltip with format for layer', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement(getShape(23));
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                // expect(tooltipElement.childElementCount > 1).toBe(true);
+                //expect(tooltipElement.textContent.length).toBe(1);
+                done();
+            };
+            tooltips.format = 'c';
+            tooltips.useGroupingSeparator = true;
+            tooltips.layers[0].tooltipSettings.format =  'Name: ${name}';
+            tooltips.layers[0].tooltipSettings.valuePath = name;
+            tooltips.layers[0].dataSource = [];
+            tooltips.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

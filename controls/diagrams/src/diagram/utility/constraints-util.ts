@@ -316,6 +316,24 @@ export function canDrag(port: PointPortModel | NodeModel, diagram: Diagram): num
 }
 
 /** @private */
+export function canPreventClearSelection(diagramActions: DiagramAction): boolean {
+    if (diagramActions & DiagramAction.PreventClearSelection) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/** @private */
+export function canDrawThumbs(rendererActions: RendererAction): boolean {
+    if (!(rendererActions & RendererAction.DrawSelectorBorder)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/** @private */
 export function avoidDrawSelector(rendererActions: RendererAction): boolean {
     if ((rendererActions & RendererAction.PreventRenderSelector)) {
         return true;

@@ -4,6 +4,13 @@
 import { Maps, shapeSelected, IShapeSelectedEventArgs, Highlight, MapsTooltip, Marker, ILoadEventArgs,
     MapsTheme, MapAjax } from '../src/index';
 import { dafaultData } from './MapData/salesCountry';
+import { world_Map } from './MapData/worldMap';
+import { asia } from './MapData/asia';
+import { SouthAmerica } from './MapData/SouthAmerica';
+import { NorthAmerica} from './MapData/NorthAmerica';
+import { europe } from './MapData/europe';
+import { africa } from './MapData/africa';
+import { Oceania} from './MapData/Oceania';
 Maps.Inject(Highlight, MapsTooltip, Marker );
 
 export interface ShapeData {
@@ -50,7 +57,7 @@ export interface ShapeData {
                 shapePropertyPath: 'continent',
                 shapeDataPath: 'continent',
                 dataSource: dafaultData,
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
+                shapeData: world_Map,
                 shapeSettings: {
                     colorValuePath: 'drillColor'
                 },
@@ -120,7 +127,7 @@ export interface ShapeData {
             },
             {
                 layerType: 'Geometry',
-                shapeData:new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Africa.json'),
+                shapeData: africa,
                 shapeSettings: {
                     fill: '#80306A'
                 },
@@ -135,7 +142,7 @@ export interface ShapeData {
             },
             {
                 layerType: 'Geometry',
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Europe.json'),
+                shapeData: europe,
                 shapeSettings: {
                     fill: '#622D6C'
                 },
@@ -150,7 +157,7 @@ export interface ShapeData {
             },
             {
                 layerType: 'Geometry',
-                shapeData:  new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Asia.json'),
+                shapeData:  asia,
                 shapeSettings: {
                     fill: '#462A6D'
                 },
@@ -165,7 +172,7 @@ export interface ShapeData {
             },
             {
                 layerType: 'Geometry',
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/NorthAmerica.json'),
+                shapeData: NorthAmerica,
                 shapeSettings: {
                     fill: '#C13664'
                 },
@@ -180,7 +187,7 @@ export interface ShapeData {
             },
             {
                 layerType: 'Geometry',
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/SouthAmerica.json'),
+                shapeData: SouthAmerica,
                 shapeSettings: {
                     fill: '#9C3367'
                 },
@@ -195,7 +202,7 @@ export interface ShapeData {
             },
             {
                 layerType: 'Geometry',
-                shapeData:  new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Oceania.json'),
+                shapeData:  Oceania,
                 shapeSettings: {
                     fill: '#2A2870'
                 },

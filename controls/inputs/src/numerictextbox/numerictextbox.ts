@@ -59,6 +59,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private nextEle: string;
     private cursorPosChanged: boolean;
     private changeEventArgs: ChangeEventArgs;
+    private focusEventArgs: NumericFocusEventArgs;
+    private blurEventArgs: NumericBlurEventArgs;
+
     private isInteract: boolean;
 
     /*NumericTextBox Options */
@@ -271,6 +274,21 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
+
+    /**
+     * Triggers when the NumericTextBox got focus in.
+     * @event
+     */
+    @Event()
+    public focus: EmitType<NumericFocusEventArgs>;
+
+    /**
+     * Triggers when the NumericTextBox got focus out.
+     * @event
+     */
+    @Event()
+    public blur: EmitType<NumericBlurEventArgs>;
+
 
     constructor(options?: NumericTextBoxModel, element?: string | HTMLInputElement) {
         super(options, <HTMLInputElement | string>element);
@@ -555,10 +573,12 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private raiseChangeEvent(event?: Event): void {
         if (this.prevValue !== this.value) {
             let eventArgs: Object = {};
-            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract, event: event };
+            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract,
+                                                                                            isInteraction: this.isInteract, event: event };
             if (event) { this.changeEventArgs.event = event; }
             if (this.changeEventArgs.event === undefined) {
                 this.changeEventArgs.isInteracted = false;
+                this.changeEventArgs.isInteraction = false;
              }
             merge(eventArgs, this.changeEventArgs);
             this.prevValue = this.value;
@@ -854,7 +874,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.cancelEvent(event);
     }
 
-    private focusIn(event: FocusEvent): void {
+    private focusIn(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
+        this.focusEventArgs = {event: event, value: this.value, container: this.container };
+        this.trigger('focus', this.focusEventArgs);
         if (!this.enabled || this.readonly) { return; }
         this.isFocused = true;
         removeClass([this.container], ERROR);
@@ -876,7 +898,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         }
     };
 
-    private focusOut(event: FocusEvent): void {
+    private focusOut(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
+        this.blurEventArgs = {event: event, value: this.value, container: this.container };
+        this.trigger('blur', this.blurEventArgs);
         if (this.isPrevFocused) {
             event.preventDefault();
             if (Browser.isDevice) {
@@ -1150,6 +1174,28 @@ export interface ChangeEventArgs extends BaseEventArgs {
     previousValue?: number;
     /** Returns the event parameters from NumericTextBox. */
     event?: Event;
+    /** Returns true when the value of NumericTextBox is changed by user interaction. Otherwise, it returns false 
+     * @private
+     */
+    isInteraction?: boolean;
     /** Returns true when the value of NumericTextBox is changed by user interaction. Otherwise, it returns false */
     isInteracted?: boolean;
+}
+
+export interface NumericFocusEventArgs extends BaseEventArgs {
+    /** Returns the original event arguments. */
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    /** Returns the value of the NumericTextBox. */
+    value: number;
+    /** Returns the NumericTextBox container element */
+    container?: HTMLElement;
+}
+
+export interface NumericBlurEventArgs extends BaseEventArgs {
+    /** Returns the original event arguments. */
+    event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
+    /** Returns the value of the NumericTextBox. */
+    value: number;
+    /** Returns the NumericTextBox container element */
+    container?: HTMLElement;
 }

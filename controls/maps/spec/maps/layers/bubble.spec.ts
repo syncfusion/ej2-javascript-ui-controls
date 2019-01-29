@@ -6,6 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usState, } from '../data/data.spec';
 import { cont_countriesdata, mapSalesData2, randomcountriesData } from '../data/us-data.spec';
 import { MouseEvents } from '../base/events.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { IBubbleClickEventArgs, Bubble, IBubbleRenderingEventArgs } from '../../../src/maps/index';
 
 export function getElementByID(id: string): Element {
@@ -13,6 +14,14 @@ export function getElementByID(id: string): Element {
 }
 Maps.Inject(Bubble);
 describe('Map layer testing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Bubble Map layer testing', () => {
         let id: string = 'bubble';
         let specId: string = id + '_LayerIndex_1_BubbleIndex_0_dataIndex_';
@@ -218,5 +227,14 @@ describe('Map layer testing', () => {
             };
             bubble.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

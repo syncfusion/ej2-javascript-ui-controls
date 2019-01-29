@@ -2,19 +2,13 @@
 
 ## [Unreleased]
 
-## 16.4.48 (2019-01-16)
+## 17.1.1-beta (2019-01-22)
 
 ### AutoComplete
 
 #### Bug Fixes
 
 - Custom value is not maintain after reload the data issue has been resolved.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `en-US` locale JSON file not generated issue has been resolved.
 
 ## 16.4.47 (2019-01-16)
 
@@ -31,6 +25,12 @@
 #### Bug Fixes
 
 - Value is updated in reverse while using select all option in checkbox selection issue has been resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- Change event is not trigger when focus out the control using tab key issue has been resolved.
 
 ## 16.4.44 (2018-12-24)
 

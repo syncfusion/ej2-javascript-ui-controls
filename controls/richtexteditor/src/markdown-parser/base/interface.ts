@@ -18,6 +18,21 @@ export interface IMDFormats {
 }
 
 /**
+ * Specifies IMTable interfaces.
+ * @hidden
+ */
+export interface IMDTable {
+    syntaxTag?: {[key in MarkdownTableFormat]: {[key: string]: string} };
+
+    /**
+     * Specifies the parent.
+     */
+    parent?: MarkdownParser;
+}
+
+export type MarkdownTableFormat = 'Formats' | 'List';
+
+/**
  * Specifies ISelectedLines interfaces.
  * @hidden
  */
@@ -119,7 +134,6 @@ export interface IMDKeyboardEvent {
      */
     event: KeyboardEventArgs;
 }
-
 
 export interface ITextArea extends HTMLTextAreaElement {
     selectionDirection: string;

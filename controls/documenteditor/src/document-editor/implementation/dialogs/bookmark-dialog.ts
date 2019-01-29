@@ -1,7 +1,7 @@
 import { ListView } from '@syncfusion/ej2-lists';
 import { Button } from '@syncfusion/ej2-buttons';
 import { LayoutViewer } from '../index';
-import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, remove, L10n } from '@syncfusion/ej2-base';
 
 /**
  * The Bookmark dialog is used to add, navigate or delete bookmarks.
@@ -14,9 +14,6 @@ export class BookmarkDialog {
     private target: HTMLElement;
     private listviewInstance: ListView;
     private textBoxInput: HTMLElement;
-    private addButton: Button;
-    private deleteButton: Button;
-    private gotoButton: Button;
     /**
      * @private
      */
@@ -53,7 +50,7 @@ export class BookmarkDialog {
         searchDiv.appendChild(textBoxDiv);
 
         // tslint:disable-next-line:max-line-length
-        this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } }) as HTMLInputElement;
+        this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box' }) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
         textBoxDiv.appendChild(this.textBoxInput);
 
@@ -65,7 +62,6 @@ export class BookmarkDialog {
             dataSource: bookmarks,
             cssClass: 'e-bookmark-listview',
         });
-        let hasNoBookmark: boolean =  (bookmarks === undefined || bookmarks.length === 0);
 
         this.listviewInstance.appendTo(listviewDiv);
         this.listviewInstance.addEventListener('select', this.selectHandler);
@@ -77,20 +73,16 @@ export class BookmarkDialog {
         buttonDiv.appendChild(addbuttonDiv);
         let addButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Add'), id: 'add' });
         addbuttonDiv.appendChild(addButtonElement);
-        this.addButton = new Button({ cssClass: 'e-button-custom' });
-        this.addButton.disabled = true;
-        this.addButton.appendTo(addButtonElement);
-        this.textBoxInput.addEventListener('input', this.onKeyUpOnTextBox);
-        this.textBoxInput.addEventListener('keyup', this.onKeyUpOnTextBox);
+        let addbutton: Button = new Button({ cssClass: 'e-button-custom' });
+        addbutton.appendTo(addButtonElement);
         addButtonElement.addEventListener('click', this.addBookmark);
 
         let deleteButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-deletebutton' });
         buttonDiv.appendChild(deleteButtonDiv);
         let deleteButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Delete'), id: 'delete' });
         deleteButtonDiv.appendChild(deleteButtonElement);
-        this.deleteButton = new Button({ cssClass: 'e-button-custom' });
-        this.deleteButton.disabled = hasNoBookmark;
-        this.deleteButton.appendTo(deleteButtonElement);
+        let deletebutton: Button = new Button({ cssClass: 'e-button-custom' });
+        deletebutton.appendTo(deleteButtonElement);
         deleteButtonElement.addEventListener('click', this.deleteBookmark);
 
 
@@ -98,9 +90,8 @@ export class BookmarkDialog {
         buttonDiv.appendChild(gotoButtonDiv);
         let gotoButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Go To'), id: 'goto' });
         gotoButtonDiv.appendChild(gotoButtonElement);
-        this.gotoButton = new Button({ cssClass: 'e-button-custom' });
-        this.gotoButton.disabled = hasNoBookmark;
-        this.gotoButton.appendTo(gotoButtonElement);
+        let gotobutton: Button = new Button({ cssClass: 'e-button-custom' });
+        gotobutton.appendTo(gotoButtonElement);
         gotoButtonElement.addEventListener('click', this.gotoBookmark);
     }
     /**
@@ -124,25 +115,7 @@ export class BookmarkDialog {
             buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
         }];
         this.owner.dialog.dataBind();
-        let hasNoBookmark: boolean =  (bookmarks === undefined || bookmarks.length === 0);
-        if (!hasNoBookmark) {
-            /* tslint:disable:no-any */
-            let firstItem: any = bookmarks[0];
-            this.listviewInstance.selectItem(firstItem);
-        }
         this.owner.dialog.show();
-    }
-    /**
-     * @private
-     */
-    public onKeyUpOnTextBox = (event: KeyboardEvent): void => {
-        this.enableOrDisableButton();
-    }
-    private enableOrDisableButton(): void {
-        if (!isNullOrUndefined(this.addButton)) {
-            // tslint:disable-next-line:max-line-length
-            this.addButton.disabled = ((this.textBoxInput as HTMLInputElement).value === '');
-        }
     }
     private addBookmark = (): void => {
         this.owner.owner.editorModule.insertBookmark((this.textBoxInput as HTMLInputElement).value);
@@ -150,16 +123,11 @@ export class BookmarkDialog {
     }
     /* tslint:disable:no-any */
     private selectHandler = (args: any): void => {
-        this.focusTextBox(args.text);
-    }
-    /* tslint:disable:no-any */
-    private focusTextBox(text: string): void {
-        (this.textBoxInput as HTMLInputElement).value = text;
+        (this.textBoxInput as HTMLInputElement).value = args.text;
         /* tslint:disable:no-any */
         let value: any = document.getElementById('bookmark_text_box');
-        value.setSelectionRange(0, (text as string).length);
+        value.setSelectionRange(0, (args.text as string).length);
         value.focus();
-        this.enableOrDisableButton();
     }
     private removeObjects(): void {
         this.owner.dialog.hide();

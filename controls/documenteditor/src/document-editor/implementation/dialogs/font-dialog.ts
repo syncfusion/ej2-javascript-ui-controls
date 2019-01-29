@@ -142,6 +142,7 @@ export class FontDialog {
         fontEffectSubDiv2.appendChild(doubleStrikeThroughElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv2);
         this.target.appendChild(fontEffectsDiv);
+        this.owner.owner.element.appendChild(this.target);
         this.colorPicker = new ColorPicker({
             change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.owner.owner.locale
         });

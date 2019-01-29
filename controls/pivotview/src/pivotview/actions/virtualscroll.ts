@@ -73,6 +73,18 @@ export class VirtualScroll {
         };
     }
 
+    private getPointXY(e: PointerEvent | TouchEvent): { x: number, y: number } {
+        let pageXY: { x: number, y: number } = { x: 0, y: 0 };
+        if (!((e as TouchEvent).touches && (e as TouchEvent).touches.length)) {
+            pageXY.x = (e as PointerEvent).pageX;
+            pageXY.y = (e as PointerEvent).pageY;
+        } else {
+            pageXY.x = (e as TouchEvent).touches[0].pageX;
+            pageXY.y = (e as TouchEvent).touches[0].pageY;
+        }
+        return pageXY;
+    }
+
     private onTouchScroll(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {
         let element: HTMLElement = mCont;
         return (e: PointerEvent | TouchEvent) => {
@@ -102,28 +114,6 @@ export class VirtualScroll {
             this.eventType = e.type;
         };
     }
-
-    private setPageXY(): Function {
-        return (e: PointerEvent | TouchEvent) => {
-            if ((e as PointerEvent).pointerType === 'mouse') {
-                return;
-            }
-            this.pageXY = this.getPointXY(e);
-        };
-    }
-
-    private getPointXY(e: PointerEvent | TouchEvent): { x: number, y: number } {
-        let pageXY: { x: number, y: number } = { x: 0, y: 0 };
-        if ((e as TouchEvent).touches && (e as TouchEvent).touches.length) {
-            pageXY.x = (e as TouchEvent).touches[0].pageX;
-            pageXY.y = (e as TouchEvent).touches[0].pageY;
-        } else {
-            pageXY.x = (e as PointerEvent).pageX;
-            pageXY.y = (e as PointerEvent).pageY;
-        }
-        return pageXY;
-    }
-
 
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
         if (this.direction === 'vertical') {
@@ -169,6 +159,15 @@ export class VirtualScroll {
                 colValues * this.parent.gridSettings.columnWidth);
             this.parent.scrollPosObject.horizontalSection = pos;
         }
+    }
+
+    private setPageXY(): Function {
+        return (e: PointerEvent | TouchEvent) => {
+            if ((e as PointerEvent).pointerType === 'mouse') {
+                return;
+            }
+            this.pageXY = this.getPointXY(e);
+        };
     }
 
     private common(mHdr: HTMLElement, mCont: HTMLElement, fCont: HTMLElement): Function {

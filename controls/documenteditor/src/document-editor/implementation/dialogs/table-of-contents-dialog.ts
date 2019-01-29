@@ -52,6 +52,7 @@ export class TableOfContentsDialog {
         let ownerId: string = this.owner.owner.containerId;
         let id: string = ownerId + '_toc_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-toc-dlg-container' });
+        this.owner.owner.element.appendChild(this.target);
         // tslint:disable-next-line:max-line-length
         let generalDiv: HTMLDivElement = createElement('div', { id: 'general_div', className: 'e-de-toc-dlg-sub-container' }) as HTMLDivElement;
         this.target.appendChild(generalDiv);

@@ -4,9 +4,6 @@
 import { DropDownButton, DropDownButtonModel } from '../../../src/drop-down-button/index';
 import { MenuEventArgs, ItemModel } from '../../../src/common/index';
 import { enableRipple } from '@syncfusion/ej2-base';
-import { createTable } from '../../common/common';
-
-createTable();
 
 let items: ItemModel[] = [
     {
@@ -139,24 +136,6 @@ document.getElementById('bootstrap').onclick = (e: Event) => {
 document.getElementById('highcontrast').onclick = (e: Event) => {
     enableRipple(false);
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
-    document.body.style.backgroundColor = 'black';
-    document.body.style.color = 'white';
-};
-document.getElementById('material-dark').onclick = (e: Event) => {
-    enableRipple(false);
-    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
-    document.body.style.backgroundColor = 'black';
-    document.body.style.color = 'white';
-};
-document.getElementById('fabric-dark').onclick = (e: Event) => {
-    enableRipple(false);
-    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
-    document.body.style.backgroundColor = 'black';
-    document.body.style.color = 'white';
-};
-document.getElementById('bootstrap-dark').onclick = (e: Event) => {
-    enableRipple(false);
-    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
     document.body.style.backgroundColor = 'black';
     document.body.style.color = 'white';
 };

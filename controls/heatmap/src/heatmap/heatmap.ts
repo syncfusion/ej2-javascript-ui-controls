@@ -12,7 +12,7 @@ import { HeatMapModel } from './heatmap-model';
 import { FontModel, MarginModel, TitleModel } from './model/base-model';
 import { Margin, Title, ColorCollection, LegendColorCollection } from './model/base';
 import { Theme, getThemeColor } from './model/theme';
-import { IThemeStyle, ILoadedEventArgs, ICellClickEventArgs, ITooltipEventArgs } from './model/interface';
+import { IThemeStyle, ILoadedEventArgs, ICellClickEventArgs, ITooltipEventArgs, IResizeEventArgs } from './model/interface';
 import { ICellEventArgs, ISelectedEventArgs } from './model/interface';
 import { DrawType, HeatMapTheme } from './utils/enum';
 import { Axis } from './axis/axis';
@@ -66,6 +66,21 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Event()
     public tooltipRender: EmitType<ITooltipEventArgs>;
+
+    /**
+     * Triggers after resizing of Heatmap.
+     * @event
+     */
+    @Event()
+    public resized: EmitType<IResizeEventArgs>;
+
+    /**
+     * Triggers after heatmap is loaded.
+     * @event
+     */
+
+    @Event()
+    public loaded: EmitType<ILoadedEventArgs>;
 
     /**
      * Triggers before each heatmap cell renders.
@@ -453,6 +468,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private renderElements(): void {
+        this.tooltipCollection = [];
         this.renderSecondaryElement();
         this.renderBorder();
         this.renderTitle();
@@ -499,7 +515,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.legendModule && ((newProp.cellSettings.tileType !==
                         oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -512,7 +528,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.reRenderDatasource();
                     renderer = true;
@@ -528,7 +544,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(false);
+                        this.legendModule.updateLegendRangeCollections();
                     } else {
                         this.legendOnLoad = false;
                     }
@@ -539,7 +555,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -548,7 +564,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.cellColor.getColorCollection();
                     this.calculateBounds();
@@ -787,7 +803,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             let tooltipText: string = getTooltipText(this.tooltipCollection, x, y);
             if (tooltipText) {
                 showTooltip(
-                    tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_axis_Tooltip',
+                    tooltipText, x, y, this.element.offsetWidth, this.element.id + '_axis_Tooltip',
                     getElement(this.element.id + '_Secondary_Element'), this.isTouch, this
                 );
             } else {
@@ -923,6 +939,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public heatMapResize(e: Event): boolean {
         this.resizing = true;
+        let argData: IResizeEventArgs = {
+            heatmap: this,
+            cancel: false,
+            name: 'resized',
+            currentSize: new Size(0, 0),
+            previousSize: new Size(
+                this.availableSize.width,
+                this.availableSize.height
+            ),
+        };
         this.clearSelection();
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
@@ -934,8 +960,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     return;
                 }
                 this.createSvg();
+                argData.currentSize = this.availableSize;
+                this.trigger('resized', argData);
                 this.refreshBound();
                 this.appendSvgObject();
+                this.trigger('loaded', { heatmap: this });
                 this.resizing = false;
             },
             500);
@@ -1106,7 +1135,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     (this.legendModule && tooltipRect && getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY));
                 if (tooltipText) {
                     showTooltip(
-                        tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip',
+                        tooltipText,  pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip',
                         getElement(this.element.id + '_Secondary_Element'), this.isTouch, this
                     );
                 } else {
@@ -1122,7 +1151,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private cellSelectionOnMouseMove(
         e: PointerEvent, currentRect: CurrentRect, pageX: number, pageY: number, isshowTooltip: boolean): boolean {
-        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart') && this.allowSelection) {
+        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart' ||
+        e.type === 'pointerdown') && this.allowSelection) {
             this.previousRect = currentRect; this.multiSelection = true; this.rectSelected = true;
             this.initialCellX = pageX; this.initialCellY = pageY;
         }
@@ -1252,7 +1282,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                             textElement.setAttribute('opacity', '0.3');
                         }
                     }
-                    this.removeSvgClass(rectElement, textElement, elementClassName);
+                    this.removeSvgClass(rectElement as HTMLElement, elementClassName);
                 }
             }
         } else {
@@ -1335,7 +1365,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      * To remove class for unselected cells
      * @private
      */
-    public removeSvgClass(rectElement: Element, textElement: Element, className: string): void {
+    public removeSvgClass(rectElement: HTMLElement, className: string): void {
         if (className) {
             rectElement.setAttribute('class', className.replace(className, ''));
         }
@@ -1349,13 +1379,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             let rect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
             let text: Element = document.getElementById(this.element.id + '_Container_TextGroup');
             for (let i: number = 0; i < rect.childNodes.length; i++) {
-                let elementClassName: string = rect.children[i].getAttribute('class');
+                let elementClassName: string = (rect.childNodes[i] as HTMLElement).getAttribute('class');
                 if (elementClassName === this.element.id + '_selected') {
-                    this.removeSvgClass(rect.children[i], text.children[i], elementClassName);
+                    this.removeSvgClass(rect.childNodes[i] as HTMLElement, elementClassName);
                 }
-                rect.children[i].setAttribute('opacity', '1');
-                if (this.cellSettings.showLabel && text && text.children[i]) {
-                    text.children[i].setAttribute('opacity', '1');
+                (rect.childNodes[i] as HTMLElement).setAttribute('opacity', '1');
+                if (this.cellSettings.showLabel && text && text.childNodes[i]) {
+                    (text.childNodes[i] as HTMLElement).setAttribute('opacity', '1');
                 }
             }
         } else {
@@ -1419,22 +1449,22 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.allowSelection && this.multiSelection) {
             this.multiSelection = false;
-            if (e.type === 'mouseup' || e.type === 'touchend') {
+            if (e.type === 'mouseup' || e.type === 'touchend' || e.type === 'pointerup') {
                 if (!this.enableCanvasRendering) {
                     this.tempMultiCellCollection.push(this.multiCellCollection);
                     let containerRect: Element = document.getElementById(this.element.id + '_Container_RectGroup');
                     let containerText: Element = document.getElementById(this.element.id + '_Container_TextGroup');
                     for (let i: number = 0; i < containerRect.childNodes.length; i++) {
-                        let elementClassName: string = containerRect.children[i].getAttribute('class');
+                        let elementClassName: string = (containerRect.childNodes[i] as HTMLElement).getAttribute('class');
                         if (elementClassName !== this.element.id + '_selected') {
-                            containerRect.children[i].setAttribute('opacity', '0.3');
-                            if (this.cellSettings.showLabel && containerText.children[i]) {
-                                containerText.children[i].setAttribute('opacity', '0.3');
+                            (containerRect.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
+                            if (this.cellSettings.showLabel && containerText.childNodes[i]) {
+                                (containerText.childNodes[i] as HTMLElement).setAttribute('opacity', '0.3');
                             }
                         } else {
-                            containerRect.children[i].setAttribute('opacity', '1');
-                            if (this.cellSettings.showLabel && containerText.children[i]) {
-                                containerText.children[i].setAttribute('opacity', '1');
+                            (containerRect.childNodes[i] as HTMLElement).setAttribute('opacity', '1');
+                            if (this.cellSettings.showLabel && containerText.childNodes[i]) {
+                                (containerText.childNodes[i] as HTMLElement).setAttribute('opacity', '1');
                             }
                         }
                     }

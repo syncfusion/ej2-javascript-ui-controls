@@ -80,27 +80,29 @@ export class Render {
             this.parent.grid.appendTo('#' + this.parent.element.id + '_grid');
         }
         /* tslint:disable */
-        this.parent.grid.on(headerRefreshed, function (): void {
-            if (this.parent.enableVirtualization) {
-                let mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-                let mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
-                let vtr: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
-                this.parent.virtualHeaderDiv = mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
-                if (mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV)) {
-                    remove(mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV));
-                } else {
-                    this.parent.virtualHeaderDiv = createElement('div', { className: cls.VIRTUALTRACK_DIV }) as HTMLElement;
-                }
-                mHdr.appendChild(this.parent.virtualHeaderDiv);
-                if (vtr) {
-                    setStyleAttribute(this.parent.virtualHeaderDiv, { height: 0, width: vtr.style.width });
-                }
-                setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
-                    transform: ((mCont.querySelector('.e-table') as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
-                });
-                mHdr.scrollLeft = mCont.scrollLeft;
+        this.parent.grid.on(headerRefreshed, this.refreshHeader, this);
+    }
+
+    private refreshHeader(): void {
+        if (this.parent.enableVirtualization) {
+            let mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
+            let mCont: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement;
+            let vtr: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
+            this.parent.virtualHeaderDiv = mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
+            if (mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV)) {
+                remove(mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV));
+            } else {
+                this.parent.virtualHeaderDiv = createElement('div', { className: cls.VIRTUALTRACK_DIV }) as HTMLElement;
             }
-        }, this);
+            mHdr.appendChild(this.parent.virtualHeaderDiv);
+            if (vtr) {
+                setStyleAttribute(this.parent.virtualHeaderDiv, { height: 0, width: vtr.style.width });
+            }
+            setStyleAttribute(mHdr.querySelector('.e-table') as HTMLElement, {
+                transform: ((mCont.querySelector('.e-table') as HTMLElement).style.transform).split(',')[0] + ',' + 0 + 'px)'
+            });
+            mHdr.scrollLeft = mCont.scrollLeft;
+        }
     }
     /** @hidden */
     public bindGrid(parent: PivotView, isEmpty: boolean): void {
@@ -123,7 +125,7 @@ export class Render {
             allowSelection: this.gridSettings.allowSelection,
             contextMenuItems: this.gridSettings.contextMenuItems,
             selectedRowIndex: this.gridSettings.selectedRowIndex,
-            selectionSettings: this.gridSettings.selectionSettings,
+            selectionSettings: this.gridSettings.selectionSettings as any,
             printMode: this.gridSettings.printMode,
             rowHeight: this.gridSettings.rowHeight,
             gridLines: this.gridSettings.gridLines,
@@ -133,61 +135,89 @@ export class Render {
             beforePrint: this.gridSettings.beforePrint ? this.gridSettings.beforePrint.bind(this.parent) : undefined,
             printComplete: this.gridSettings.printComplete ? this.gridSettings.printComplete.bind(this.parent) : undefined,
             rowSelecting: this.gridSettings.rowSelecting ? this.gridSettings.rowSelecting.bind(this.parent) : undefined,
-            rowSelected: (args: RowSelectEventArgs): void => {
-                parent.renderModule.selected(args);
-                parent.trigger(events.rowSelected, args);
-            },
+            rowSelected: this.rowSelected.bind(this),
             rowDeselecting: this.gridSettings.rowDeselecting ? this.gridSettings.rowDeselecting.bind(this.parent) : undefined,
-            rowDeselected: (args: RowDeselectEventArgs): void => {
-                parent.renderModule.selected(args);
-                parent.trigger(events.rowDeselected, args);
-            },
+            rowDeselected: this.rowDeselected.bind(this),
             cellSelecting: this.gridSettings.cellSelecting ? this.gridSettings.cellSelecting.bind(this.parent) : undefined,
-            cellSelected: (args: CellSelectEventArgs): void => {
-                parent.renderModule.selected(args);
-                parent.trigger(events.selected, args);
-            },
+            cellSelected: this.cellSelected.bind(this),
             cellDeselecting: this.gridSettings.cellDeselecting ? this.gridSettings.cellDeselecting.bind(this.parent) : undefined,
-            cellDeselected: (args: CellDeselectEventArgs): void => {
-                parent.renderModule.selected(args);
-                parent.trigger(events.cellDeselected, args);
-            },
+            cellDeselected: this.cellDeselected.bind(this),
             resizeStart: this.gridSettings.resizeStart ? this.gridSettings.resizeStart.bind(this.parent) : undefined,
             columnDragStart: this.gridSettings.columnDragStart ? this.gridSettings.columnDragStart.bind(this) : undefined,
             columnDrag: this.gridSettings.columnDrag ? this.gridSettings.columnDrag.bind(this) : undefined,
             columnDrop: this.gridSettings.columnDrop ? this.gridSettings.columnDrop.bind(this) : undefined,
             resizing: this.setGroupWidth.bind(this),
             resizeStop: this.onResizeStop.bind(this),
-            queryCellInfo: (args: QueryCellInfoEventArgs): void => {
-                parent.renderModule.rowCellBoundEvent(args);
-            },
-            dataBound: (args: DataBoundEventArgs): void => {
-                if (parent.element.querySelector('.e-firstcell')) {
-                    if (parent.enableRtl) {
-                        (parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderRight = 'none';
-                    } else {
-                        (parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderLeft = 'none';
-                    }
-                }
-                this.parent.grid.widthService.setWidthToTable();
-                parent.notify(events.contentReady, {});
-            },
-            headerCellInfo: (args: HeaderCellInfoEventArgs): void => {
-                parent.renderModule.columnCellBoundEvent(args);
-            },
-            excelHeaderQueryCellInfo: (args: ExcelHeaderQueryCellInfoEventArgs): void => {
-                parent.renderModule.excelColumnEvent(args);
-            },
-            pdfHeaderQueryCellInfo: (args: PdfHeaderQueryCellInfoEventArgs): void => {
-                parent.renderModule.pdfColumnEvent(args);
-            },
-            excelQueryCellInfo: (args: ExcelQueryCellInfoEventArgs): void => {
-                parent.renderModule.excelRowEvent(args);
-            },
-            pdfQueryCellInfo: (args: PdfQueryCellInfoEventArgs): void => {
-                parent.renderModule.pdfRowEvent(args);
-            }
+            queryCellInfo: this.queryCellInfo.bind(this),
+            dataBound: this.dataBound.bind(this),
+            headerCellInfo: this.headerCellInfo.bind(this),
+            excelHeaderQueryCellInfo: this.excelHeaderQueryCellInfo.bind(this),
+            pdfHeaderQueryCellInfo: this.pdfHeaderQueryCellInfo.bind(this),
+            excelQueryCellInfo: this.excelQueryCellInfo.bind(this),
+            pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this)
         });
+    }
+
+    private rowSelected(args: RowSelectEventArgs): void {
+        this.parent.renderModule.selected();
+        this.parent.trigger(events.rowSelected, args);
+    }
+
+    private rowDeselected(args: RowDeselectEventArgs): void {
+        this.parent.renderModule.selected();
+        this.parent.trigger(events.rowDeselected, args);
+    }
+
+    private cellSelected(args: CellSelectEventArgs): void {
+        if (this.parent.rowRangeSelection.enable) {
+            this.parent.grid.selectionModule.selectRowsByRange(
+                this.parent.rowRangeSelection.startIndex, this.parent.rowRangeSelection.endIndex);
+            this.parent.rowRangeSelection.enable = false;
+        } else {
+            this.parent.renderModule.selected();
+            this.parent.trigger(events.selected, args);
+        }
+    }
+
+    private cellDeselected(args: CellDeselectEventArgs): void {
+        this.parent.renderModule.selected();
+        this.parent.trigger(events.cellDeselected, args);
+    }
+
+    private queryCellInfo(args: QueryCellInfoEventArgs): void {
+        this.parent.renderModule.rowCellBoundEvent(args);
+    }
+
+    private headerCellInfo(args: HeaderCellInfoEventArgs): void {
+        this.parent.renderModule.columnCellBoundEvent(args);
+    }
+
+    private excelHeaderQueryCellInfo(args: ExcelHeaderQueryCellInfoEventArgs): void {
+        this.parent.renderModule.excelColumnEvent(args);
+    }
+
+    private pdfQueryCellInfo(args: PdfQueryCellInfoEventArgs): void {
+        this.parent.renderModule.pdfRowEvent(args);
+    }
+
+    private excelQueryCellInfo(args: ExcelQueryCellInfoEventArgs): void {
+        this.parent.renderModule.excelRowEvent(args);
+    }
+
+    private pdfHeaderQueryCellInfo(args: PdfHeaderQueryCellInfoEventArgs): void {
+        this.parent.renderModule.pdfColumnEvent(args);
+    }
+
+    private dataBound(args: DataBoundEventArgs): void {
+        if (this.parent.element.querySelector('.e-firstcell')) {
+            if (this.parent.enableRtl) {
+                (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderRight = 'none';
+            } else {
+                (this.parent.element.querySelector('.e-firstcell') as HTMLElement).style.borderLeft = 'none';
+            }
+        }
+        this.parent.grid.widthService.setWidthToTable();
+        this.parent.notify(events.contentReady, {});
     }
 
     private injectGridModules(parent: PivotView): void {
@@ -221,7 +251,7 @@ export class Render {
         this.parent.grid.allowSelection = this.gridSettings.allowSelection;
         this.parent.grid.contextMenuItems = this.gridSettings.contextMenuItems;
         this.parent.grid.selectedRowIndex = this.gridSettings.selectedRowIndex;
-        this.parent.grid.selectionSettings = this.gridSettings.selectionSettings;
+        this.parent.grid.selectionSettings = this.gridSettings.selectionSettings as any;
         this.parent.grid.printMode = this.gridSettings.printMode;
         this.parent.grid.rowHeight = this.gridSettings.rowHeight;
         this.parent.grid.gridLines = this.gridSettings.gridLines;
@@ -229,8 +259,8 @@ export class Render {
 
     private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number): HTMLElement {
         let vSort: IValueSortSettings = this.parent.dataSource.valueSortSettings;
-        let len: number = (cell.type === 'grand sum' && this.parent.dataSource.values.length === 1) ? 0 :
-            this.parent.dataSource.values.length > 1 ? (this.parent.engineModule.headerContent.length - 1) :
+        let len: number = (cell.type === 'grand sum' && this.parent.dataSource.values.length === 1 && !this.parent.dataSource.alwaysShowValueHeader) ? 0 :
+            (this.parent.dataSource.values.length > 1 || this.parent.dataSource.alwaysShowValueHeader) ? (this.parent.engineModule.headerContent.length - 1) :
                 this.parent.dataSource.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
         let lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
         if (vSort !== undefined && lock && rCnt === len && this.parent.dataSource.valueAxis === 'column') {
@@ -283,17 +313,20 @@ export class Render {
     }
 
     /* tslint:disable */
-    private selected(args: any): void {
+    /** @hidden */
+    public selected(): void {
         clearTimeout(this.timeOutObj);
-        this.timeOutObj = setTimeout(() => {
-            let pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues };
-            let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR);
-            selectedElements = selectedElements.length === 0 ? this.parent.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR) :
-                selectedElements;
-            for (let element of selectedElements) {
-                let colIndex: number = Number(element.getAttribute('aria-colindex'));
-                let rowIndex: number = Number(element.getAttribute('index'));
-                let cell: IAxisSet = (this.engine.pivotValues[rowIndex][colIndex] as IAxisSet);
+        this.timeOutObj = setTimeout(this.onSelect.bind(this), 300);
+    }
+
+    private onSelect(): void {
+        let pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues };
+        let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
+        for (let element of selectedElements) {
+            let colIndex: number = Number(element.getAttribute('aria-colindex'));
+            let rowIndex: number = Number(element.getAttribute('index'));
+            let cell: IAxisSet = (this.engine.pivotValues[rowIndex][colIndex] as IAxisSet);
+            if (cell) {
                 if (cell.axis === 'value') {
                     pivotArgs.selectedCellsInfo.push({
                         currentCell: cell,
@@ -320,8 +353,8 @@ export class Render {
                     });
                 }
             }
-            this.parent.trigger(events.cellSelected, pivotArgs);
-        }, 300);
+        }
+        this.parent.trigger(events.cellSelected, pivotArgs);
     }
 
     private rowCellBoundEvent(args: QueryCellInfoEventArgs): void {
@@ -393,7 +426,7 @@ export class Render {
                     }
                 }
             } else {
-                let innerText: string = tCell.innerText.toString() === '0' ? '' : tCell.innerText;
+                let innerText: string = tCell.innerText;
                 tCell.innerText = '';
                 tCell.classList.add(cls.VALUESCONTENT);
                 cell = (args.data as IGridValues)[Number(tCell.getAttribute('aria-colindex'))] as IAxisSet;
@@ -748,9 +781,6 @@ export class Render {
     }
 
     private exportContentEvent(args: ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs): any {
-        if (args.value === '0') {
-            args.value = '';
-        }
         args.value = (<any>args).data[Number(args.column.field.split('.formattedText')[0])].type === 'grand sum' ?
             this.parent.localeObj.getConstant('grandTotal') : args.value;
         return args;

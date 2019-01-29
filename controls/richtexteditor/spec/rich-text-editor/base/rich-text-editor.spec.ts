@@ -767,7 +767,6 @@ describe('RTE base module', () => {
             beforeCount = false;
         });
 
-
         it(' trigger the actionBegin and actionComplete while pressing the action key in copy', () => {
             editNode.focus();
             selectNode = editNode.querySelector('.first-p');
@@ -2761,6 +2760,7 @@ describe('RTE textarea with innerText', () => {
         detach(element);
     });
 });
+
 describe(' Paste url', () => {
     let rteObj: RichTextEditor;
     let rteEle: HTMLElement;
@@ -2783,16 +2783,17 @@ describe(' Paste url', () => {
             getData: () => {
                 return 'https://ej2.syncfusion.com';
             },
-            items: []
+            items:[]
         };
         rteObj.onPaste(keyBoardEvent);
         setTimeout(() => {
             selectNode = (rteObj as any).inputElement.querySelector('a');
             expect(!isNullOrUndefined(selectNode)).toBe(true);
+            expect(selectNode.getAttribute('title')==='https://ej2.syncfusion.com').toBe(true);
             done();
         }, 10);
     });
     afterAll(() => {
         destroy(rteObj);
     });
-})
+});

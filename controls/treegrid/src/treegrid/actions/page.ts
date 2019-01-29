@@ -89,6 +89,20 @@ export class Page {
         };
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
     }
+    private pageRoot(pagedResults: ITreeData[], temp: ITreeData[], result?: ITreeData[]) : ITreeData[] {
+      let newResults: ITreeData[] = isNullOrUndefined(result) ? [] : result;
+      for (let t: number = 0; t < temp.length; t++) {
+          newResults.push(temp[t]);
+          let res: ITreeData[] = [];
+          if (temp[t].hasChildRecords) {
+              res = pagedResults.filter((e: ITreeData) => {
+                  return temp[t].uniqueID === e.parentUniqueID;
+              });
+              newResults = this.pageRoot(pagedResults, res, newResults);
+          }
+      }
+      return newResults;
+    }
     private pageAction(pageingDetails: {result: ITreeData[], count: number}): void {
       let dm: DataManager = new DataManager(pageingDetails.result);
       if (this.parent.pageSettings.pageSizeMode === 'Root') {
@@ -105,20 +119,8 @@ export class Page {
         let skip: number = size * (current - 1);
         query = query.skip(skip).take(size);
         temp = dm.executeLocal(query);
-        let child: ITreeData[] = [];
-        for (let r: number = 0; r < temp.length; r++) {
-          child = pageingDetails.result.filter((e: ITreeData) => {
-            if (!isNullOrUndefined(temp[r].filterIndex)) {
-              return e.filterRootIndex === temp[r].filterIndex;
-            } else {
-              return e.rootIndex === temp[r].index;
-            }
-          });
-          for (let c: number = 0; c < child.length; c++) {
-            temp.splice(r + c + 1, 0, child[c]);
-          }
-        }
-        pageingDetails.result = temp;
+        let newResults: ITreeData[] = this.pageRoot(pageingDetails.result, temp);
+        pageingDetails.result = newResults;
       } else {
         let dm: DataManager = new DataManager(pageingDetails.result);
         let expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);

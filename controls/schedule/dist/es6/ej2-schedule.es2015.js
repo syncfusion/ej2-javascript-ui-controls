@@ -2354,10 +2354,224 @@ let timezoneData = [
     { Value: 'Pacific/Kiritimati', Text: '(UTC+14:00) Kiritimati' }
 ];
 
+class Gregorian {
+    firstDateOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth());
+    }
+    lastDateOfMonth(dt) {
+        return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
+    }
+    isMonthStart(date) {
+        return (date.getDate() === 1);
+    }
+    getLeapYearDaysCount() {
+        return 366;
+    }
+    getYearDaysCount(date, interval) {
+        return ((date.getFullYear() + interval) % 4 === 0) ? 366 : 365;
+    }
+    getDate(date) {
+        return date.getDate();
+    }
+    getMonth(date) {
+        return (date.getMonth() + 1);
+    }
+    getFullYear(date) {
+        return date.getFullYear();
+    }
+    getYearLastDate(date, interval) {
+        return new Date(date.getFullYear() + interval, 0, 0);
+    }
+    getMonthDaysCount(date) {
+        return this.lastDateOfMonth(date).getDate();
+    }
+    getMonthStartDate(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1, date.getHours(), date.getMinutes());
+    }
+    getMonthEndDate(date) {
+        date.setDate(1);
+        return new Date(date.setMonth(date.getMonth() + 1));
+    }
+    getExpectedDays(date, days) {
+        return days;
+    }
+    setDate(dateObj, date) {
+        dateObj.setDate(date);
+    }
+    setValidDate(date, interval, startDate, monthValue, beginDate) {
+        if (!isNullOrUndefined(beginDate)) {
+            date.setMonth((beginDate ? monthValue : date.getMonth()) + interval);
+        }
+        else {
+            date.setMonth(date.getMonth() + interval, startDate);
+        }
+    }
+    setMonth(date, interval, startDate) {
+        date.setFullYear(date.getFullYear());
+        date.setMonth(interval - 1);
+        date.setDate(startDate);
+    }
+    addYears(date, interval) {
+        date.setFullYear(date.getFullYear() + interval);
+    }
+    isSameMonth(date1, date2) {
+        return (date1.getMonth() === date2.getMonth());
+    }
+    checkMonth(date, months) {
+        return (months.indexOf(date.getMonth() + 1) === -1);
+    }
+    compareMonth(date1, date2) {
+        return (date1.getMonth() > date2.getMonth());
+    }
+    isSameYear(date1, date2) {
+        return (date1.getFullYear() === date2.getFullYear());
+    }
+    isLastMonth(date) {
+        return (date.getMonth() === 11);
+    }
+    isLeapYear(year, interval) {
+        return ((year + interval) % 4 === 0);
+    }
+}
+class Islamic {
+    firstDateOfMonth(date) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, 1);
+        return gDate;
+    }
+    lastDateOfMonth(date) {
+        let hDate = this.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, this.getDaysInMonth(hDate.month, hDate.year));
+        let finalGDate = new Date(gDate.getTime());
+        new Date(finalGDate.setDate(finalGDate.getDate() + 1));
+        let finalHDate = this.getHijriDate(finalGDate);
+        if (hDate.month === finalHDate.month) {
+            return finalGDate;
+        }
+        finalHDate = HijriParser.getHijriDate(gDate);
+        if (hDate.month === finalHDate.month) {
+            return gDate;
+        }
+        return new Date(gDate.setDate(gDate.getDate() - 1));
+    }
+    isMonthStart(date) {
+        let hijriDate = this.getHijriDate(date);
+        return (hijriDate.date === 1);
+    }
+    getLeapYearDaysCount() {
+        return 355;
+    }
+    getYearDaysCount(date, interval) {
+        let hDate = this.getHijriDate(date);
+        return this.isLeapYear(hDate.year, interval) ? 355 : 354;
+    }
+    getDate(date) {
+        let hijriDate = this.getHijriDate(date);
+        return hijriDate.date;
+    }
+    getMonth(date) {
+        let hDate = this.getHijriDate(date);
+        return hDate.month;
+    }
+    getFullYear(date) {
+        let hDate = this.getHijriDate(date);
+        return hDate.year;
+    }
+    getYearLastDate(date, interval) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year + interval, 1, 0);
+        return gDate;
+    }
+    getMonthDaysCount(date) {
+        let maxDate = this.lastDateOfMonth(date);
+        let hijriDate = this.getHijriDate(maxDate);
+        return hijriDate.date;
+    }
+    getMonthStartDate(date) {
+        let firstDate = this.firstDateOfMonth(date);
+        return new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate(), date.getHours(), date.getMinutes());
+    }
+    getMonthEndDate(date) {
+        let lastDate = this.lastDateOfMonth(date);
+        lastDate.setDate(lastDate.getDate() + 1);
+        return new Date(lastDate.setMonth(lastDate.getMonth()));
+    }
+    getExpectedDays(date, days) {
+        let hDate = this.getHijriDate(date);
+        let day = [];
+        for (let i = 0; i < days.length; i++) {
+            let gDate = HijriParser.toGregorian(hDate.year, hDate.month, days[i]);
+            day.push(gDate.getDate());
+        }
+        return day;
+    }
+    setDate(dateObj, date) {
+        let hDate = HijriParser.getHijriDate(dateObj);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, date);
+        this.updateDateObj(dateObj, gDate);
+    }
+    setValidDate(date, interval, startDate, monthValue, beginDate) {
+        let firstDate = (!isNullOrUndefined(beginDate)) ? this.firstDateOfMonth(beginDate) : date;
+        let hDate = HijriParser.getHijriDate(firstDate);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month + interval, startDate);
+        this.updateDateObj(date, gDate);
+    }
+    setMonth(date, interval, startDate) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year, interval, startDate);
+        this.updateDateObj(date, gDate);
+    }
+    addYears(date, interval, monthValue) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year + interval, monthValue, 1);
+        this.updateDateObj(date, gDate);
+    }
+    isSameMonth(date1, date2) {
+        let currentHijri = this.getHijriDate(date1);
+        let tempHijri = this.getHijriDate(date2);
+        return (currentHijri.month === tempHijri.month);
+    }
+    checkMonth(date, months) {
+        let hDate = this.getHijriDate(date);
+        return (months.indexOf(hDate.month) === -1);
+    }
+    compareMonth(date1, date2) {
+        let hDate = this.getHijriDate(date1);
+        let hDate1 = this.getHijriDate(date2);
+        return (hDate.month > hDate1.month);
+    }
+    isSameYear(date1, date2) {
+        let hDate = this.getHijriDate(date1);
+        let hDate1 = this.getHijriDate(date2);
+        return (hDate.year === hDate1.year);
+    }
+    isLastMonth(date) {
+        let hDate = this.getHijriDate(date);
+        return (hDate.month === 12);
+    }
+    updateDateObj(date, gDate) {
+        date.setFullYear(gDate.getFullYear(), gDate.getMonth(), gDate.getDate());
+    }
+    isLeapYear(year, interval) {
+        return (14 + 11 * (year + interval)) % 30 < 11;
+    }
+    getDaysInMonth(month, year) {
+        let length = 0;
+        length = 29 + ((month + 1) % 2);
+        if (month === 11 && this.isLeapYear(year, 0)) {
+            length++;
+        }
+        return length;
+    }
+    getHijriDate(date) {
+        return HijriParser.getHijriDate(date);
+    }
+}
+
 /**
  * Date Generator from Recurrence Rule
  */
-function generateSummary(rule, localeObject, locale) {
+function generateSummary(rule, localeObject, locale, calendarMode = 'gregorian') {
     let ruleObject = extractObjectFromRule(rule);
     let summary = localeObject.getConstant(EVERY) + ' ';
     let cldrObj;
@@ -2367,8 +2581,10 @@ function generateSummary(rule, localeObject, locale) {
         cldrObj = (getValue('days.stand-alone.abbreviated', getDefaultDateObject()));
     }
     else {
-        cldrObj1 = (getValue('main.' + '' + locale + '.dates.calendars.gregorian.months.stand-alone.abbreviated', cldrData));
-        cldrObj = (getValue('main.' + '' + locale + '.dates.calendars.gregorian.days.stand-alone.abbreviated', cldrData));
+        cldrObj1 =
+            (getValue('main.' + '' + locale + '.dates.calendars.' + calendarMode + '.months.stand-alone.abbreviated', cldrData));
+        cldrObj =
+            (getValue('main.' + '' + locale + '.dates.calendars.' + calendarMode + '.days.stand-alone.abbreviated', cldrData));
     }
     if (ruleObject.interval > 1) {
         summary += ruleObject.interval + ' ';
@@ -2418,9 +2634,10 @@ function getMonthSummary(ruleObject, cldrObj, localeObj) {
     }
     return summary;
 }
-function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = MAXOCCURRENCE, viewDate = null) {
+function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = MAXOCCURRENCE, viewDate = null, calendarMode = 'Gregorian') {
     let ruleObject = extractObjectFromRule(rule);
     let cacheDate;
+    calendarUtil = getCalendarUtil(calendarMode);
     let data = [];
     let modifiedDate = new Date(startDate.getTime());
     if (viewDate && viewDate > startDate && !ruleObject.count) {
@@ -2478,10 +2695,11 @@ function dailyType(startDate, endDate, data, ruleObject) {
     let interval = ruleObject.interval;
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     let state;
+    let expectedDays = ruleObject.day;
     while (compareDates(tempDate, endDate)) {
         state = true;
         state = validateRules(tempDate, ruleObject);
-        if (state) {
+        if (state && (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1 || expectedDays.length === 0)) {
             excludeDateHandler(data, tempDate.getTime());
             if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
                 break;
@@ -2491,35 +2709,87 @@ function dailyType(startDate, endDate, data, ruleObject) {
     }
 }
 function weeklyType(startDate, endDate, data, ruleObject) {
-    let tempDate = getStartDateForWeek(startDate, ruleObject.day);
+    let tempDate = new Date(startDate.getTime());
+    if (!ruleObject.day.length) {
+        ruleObject.day.push(DAYINDEX[startDate.getDay()]);
+    }
     let interval = ruleObject.interval;
     let expectedDays = ruleObject.day;
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
-    let weekState;
-    while (compareDates(tempDate, endDate)) {
-        weekState = true;
-        weekState = validateRules(tempDate, ruleObject);
-        if (weekState) {
-            excludeDateHandler(data, tempDate.getTime());
+    let weekState = true;
+    let wkstIndex;
+    let weekCollection = [];
+    if (expectedDays.length > 1) {
+        if (isNullOrUndefined(ruleObject.wkst) || ruleObject.wkst === '') {
+            ruleObject.wkst = dayIndex[0];
+        }
+        wkstIndex = DAYINDEX.indexOf(ruleObject.wkst);
+        while (compareDates(tempDate, endDate)) {
+            let startDateDiff = DAYINDEX.indexOf(DAYINDEX[tempDate.getDay()]) - wkstIndex;
+            startDateDiff = startDateDiff === -1 ? 6 : startDateDiff;
+            let weekstartDate = addDays(tempDate, -startDateDiff);
+            let weekendDate = addDays(weekstartDate, 6);
+            let compareTempDate = new Date(tempDate.getTime());
+            resetTime(weekendDate);
+            resetTime(compareTempDate);
+            while (weekendDate >= compareTempDate) {
+                if (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1) {
+                    weekCollection.push([tempDate.getTime()]);
+                }
+                if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+                    break;
+                }
+                tempDate.setDate(tempDate.getDate() + 1);
+                compareTempDate = new Date(tempDate.getTime());
+                resetTime(compareTempDate);
+            }
+            tempDate.setDate(tempDate.getDate() - 1);
             if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
                 break;
             }
+            tempDate.setDate((tempDate.getDate()) + 1 + ((interval - 1) * 7));
+            insertWeekCollection(weekCollection, weekState, startDate, endDate, data, ruleObject);
+            weekCollection = [];
         }
-        if (expectedDays.length > 1) {
-            let days = ((expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) === expectedDays.length - 1) ? ((interval - 1) * 7) : 0);
-            tempDate.setDate(tempDate.getDate() + 1 + days);
+    }
+    else {
+        tempDate = getStartDateForWeek(startDate, ruleObject.day);
+        while (compareDates(tempDate, endDate)) {
+            weekState = validateRules(tempDate, ruleObject);
+            if (weekState && (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1)) {
+                excludeDateHandler(data, tempDate.getTime());
+            }
+            if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+                break;
+            }
+            tempDate.setDate(tempDate.getDate() + (interval * 7));
         }
-        else {
-            tempDate.setDate(tempDate.getDate()
-                + (interval * 7));
-        }
+        insertWeekCollection(weekCollection, weekState, startDate, endDate, data, ruleObject);
+        weekCollection = [];
     }
 }
 function monthlyType(startDate, endDate, data, ruleObject) {
+    // Set monthday value if BYDAY, BYMONTH and Month day property is not set based on start date
+    if (!ruleObject.month.length && !ruleObject.day.length && !ruleObject.monthDay.length) {
+        ruleObject.monthDay.push(startDate.getDate());
+        if (ruleObject.freq === 'YEARLY') {
+            ruleObject.month.push(startDate.getMonth() + 1);
+        }
+    }
+    else if (ruleObject.month.length > 0 && !ruleObject.day.length && !ruleObject.monthDay.length) {
+        ruleObject.monthDay.push(startDate.getDate());
+    }
     let ruleType = validateMonthlyRuleType(ruleObject);
     switch (ruleType) {
         case 'day':
-            monthlyDayTypeProcess(startDate, endDate, data, ruleObject);
+            switch (ruleObject.freq) {
+                case 'MONTHLY':
+                    monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject);
+                    break;
+                case 'YEARLY':
+                    monthlyDayTypeProcess(startDate, endDate, data, ruleObject);
+                    break;
+            }
             break;
         case 'both':
         case 'date':
@@ -2542,7 +2812,7 @@ function yearlyType(startDate, endDate, data, ruleObject) {
     }
 }
 function processWeekNo(startDate, endDate, data, ruleObject) {
-    let stDate = new Date(startDate.getFullYear(), 0, 0);
+    let stDate = calendarUtil.getYearLastDate(startDate, 0);
     let tempDate;
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     let state;
@@ -2572,11 +2842,11 @@ function processWeekNo(startDate, endDate, data, ruleObject) {
                 minDate++;
             }
         }
-        stDate = new Date(tempDate.getFullYear() + ruleObject.interval, 0, 0);
+        stDate = calendarUtil.getYearLastDate(tempDate, ruleObject.interval);
     }
 }
 function processYearDay(startDate, endDate, data, ruleObject) {
-    let stDate = new Date(startDate.getFullYear(), 0, 0);
+    let stDate = calendarUtil.getYearLastDate(startDate, 0);
     let tempDate;
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     let state;
@@ -2585,11 +2855,13 @@ function processYearDay(startDate, endDate, data, ruleObject) {
         for (let index = 0; index < ruleObject.yearDay.length; index++) {
             date = ruleObject.yearDay[index];
             tempDate = new Date(stDate.getTime());
-            if ((date === LEAPYEAR || date === -LEAPYEAR) && ((tempDate.getFullYear() + 1) % 4 !== 0)) {
+            if ((date === calendarUtil.getLeapYearDaysCount() || date === -calendarUtil.getLeapYearDaysCount()) &&
+                (!calendarUtil.isLeapYear(calendarUtil.getFullYear(tempDate), 1))) {
                 tempDate.setDate(tempDate.getDate() + 1);
                 continue;
             }
-            tempDate.setDate(tempDate.getDate() + ((date < 0) ? getMaxYearDay(tempDate.getFullYear() + 1) + 1 + date : date));
+            tempDate.setDate(tempDate.getDate() + ((date < 0) ?
+                calendarUtil.getYearDaysCount(tempDate, 1) + 1 + date : date));
             state = validateRules(tempDate, ruleObject);
             if ((tempDate >= startDate) && state && compareDates(tempDate, endDate)) {
                 excludeDateHandler(data, tempDate.getTime());
@@ -2598,11 +2870,8 @@ function processYearDay(startDate, endDate, data, ruleObject) {
                 }
             }
         }
-        stDate = new Date(tempDate.getFullYear() + ruleObject.interval, 0, 0);
+        stDate = calendarUtil.getYearLastDate(tempDate, ruleObject.interval);
     }
-}
-function getMaxYearDay(date) {
-    return (date % 4 === 0) ? LEAPYEAR : NORMALYEAR;
 }
 function checkYearlyType(ruleObject) {
     if (ruleObject.yearDay.length) {
@@ -2621,19 +2890,21 @@ function monthlyDateTypeProcess(startDate, endDate, data, ruleObject) {
     let monthInit = 0;
     let date;
     let state;
-    tempDate.setDate(1);
-    mainDate.setDate(1);
+    let beginDate;
+    tempDate = calendarUtil.getMonthStartDate(tempDate);
+    mainDate = calendarUtil.getMonthStartDate(mainDate);
     if (ruleObject.month.length) {
-        tempDate.setMonth(ruleObject.month[0] - 1);
+        calendarUtil.setMonth(tempDate, ruleObject.month[0], 1);
     }
     while (compareDates(tempDate, endDate)) {
+        beginDate = new Date(tempDate.getTime());
         for (let index = 0; index < ruleObject.monthDay.length; index++) {
+            tempDate = calendarUtil.getMonthStartDate(tempDate);
             date = ruleObject.monthDay[index];
-            let maxDate = (tempDate.getMonth() === 1) ?
-                (tempDate.getFullYear() % 4 === 0 ? 29 : 28) : monthDay[tempDate.getMonth()];
+            let maxDate = calendarUtil.getMonthDaysCount(tempDate);
             date = date > 0 ? date : (maxDate + date + 1);
             if ((date > 0) && validateProperDate(tempDate, date, mainDate)) {
-                tempDate.setDate(date);
+                calendarUtil.setDate(tempDate, date);
                 if (endDate && tempDate > endDate) {
                     return;
                 }
@@ -2646,109 +2917,471 @@ function monthlyDateTypeProcess(startDate, endDate, data, ruleObject) {
                 }
             }
         }
-        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval);
+        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
     }
 }
 function setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate = null) {
     let monthData = beginDate ? beginDate.getMonth() : 0;
-    tempDate.setDate(1);
+    let startDate = calendarUtil.getMonthStartDate(tempDate);
+    tempDate.setFullYear(startDate.getFullYear());
+    tempDate.setMonth(startDate.getMonth());
+    tempDate.setDate(startDate.getDate());
     if (ruleObject.month.length) {
         monthInit++;
         monthInit = monthInit % ruleObject.month.length;
-        tempDate.setMonth(ruleObject.month[monthInit] - 1);
+        calendarUtil.setMonth(tempDate, ruleObject.month[monthInit], 1);
         if (monthInit === 0) {
-            tempDate.setFullYear(tempDate.getFullYear() + interval);
+            calendarUtil.addYears(tempDate, interval, ruleObject.month[0]);
         }
     }
     else {
         if (beginDate && (beginDate.getFullYear() < tempDate.getFullYear())) {
             monthData = tempDate.getMonth() - 1;
         }
-        tempDate.setMonth((beginDate ?
-            monthData :
-            tempDate.getMonth()) + interval);
+        calendarUtil.setValidDate(tempDate, interval, 1, monthData, beginDate);
     }
     return monthInit;
 }
-function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
-    let tempDate = new Date(startDate.getTime());
+// To get month collection when BYDAY property having more than one value in list.
+function getMonthCollection(startDate, endDate, data, ruleObject) {
     let expectedDays = ruleObject.day;
-    let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
-    let dayCycleData = processWeekDays(expectedDays);
+    let tempDate = new Date(startDate.getTime());
+    tempDate = calendarUtil.getMonthStartDate(tempDate);
     let interval = ruleObject.interval;
-    let state;
     let monthCollection = [];
-    let weekCollection = [];
-    let month;
+    let dateCollection = [];
+    let dates = [];
     let index;
-    let beginDate;
+    let state;
+    let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     let monthInit = 0;
-    tempDate.setDate(1);
+    let beginDate;
     if (ruleObject.month.length) {
-        tempDate.setMonth(ruleObject.month[0] - 1);
+        calendarUtil.setMonth(tempDate, ruleObject.month[0], 1);
     }
     tempDate = getStartDateForWeek(tempDate, ruleObject.day);
-    while (compareDates(tempDate, endDate)) {
-        month = tempDate.getMonth();
-        beginDate = new Date(tempDate.getTime());
-        if (expectedDays.length > 1) {
-            while (tempDate.getMonth() === month) {
+    while (compareDates(tempDate, endDate)
+        && (expectedCount && (data.length + tempExcludeDate.length) < expectedCount)) {
+        let currentMonthDate = new Date(tempDate.getTime());
+        let isHavingNumber = expectedDays.map((item) => HASNUMBER.test(item));
+        if (isHavingNumber.indexOf(true) > -1) {
+            for (let j = 0; j <= expectedDays.length - 1; j++) {
+                let expectedDaysArray = expectedDays[j].match(SPLITNUMBERANDSTRING);
+                let position = parseInt(expectedDaysArray[0], 10);
+                tempDate = new Date(tempDate.getTime());
+                tempDate = calendarUtil.getMonthStartDate(tempDate);
+                tempDate = getStartDateForWeek(tempDate, expectedDays);
+                currentMonthDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+                while (calendarUtil.isSameYear(currentMonthDate, tempDate) && calendarUtil.isSameMonth(currentMonthDate, tempDate)) {
+                    if (expectedDaysArray[expectedDaysArray.length - 1] === DAYINDEX[currentMonthDate.getDay()]) {
+                        monthCollection.push([currentMonthDate.getTime()]);
+                    }
+                    currentMonthDate.setDate(currentMonthDate.getDate() + (1));
+                }
+                currentMonthDate.setDate(currentMonthDate.getDate() - (1));
+                if (expectedDaysArray[0].indexOf('-') > -1) {
+                    index = monthCollection.length - (-1 * position);
+                }
+                else {
+                    index = position - 1;
+                }
+                index = isNaN(index) ? 0 : index;
+                if (monthCollection.length > 0) {
+                    (ruleObject.setPosition === null) ?
+                        insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) :
+                        dateCollection = [(filterDateCollectionByIndex(monthCollection, index, dates))];
+                }
+                if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+                    return;
+                }
+                monthCollection = [];
+            }
+            if (ruleObject.setPosition !== null) {
+                insertDateCollectionBasedonBySetPos(dateCollection, state, startDate, endDate, data, ruleObject);
+                dates = [];
+            }
+            monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
+            tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+            monthCollection = [];
+        }
+        else {
+            let weekCollection = [];
+            let dayCycleData = processWeekDays(expectedDays);
+            currentMonthDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+            let initialDate = new Date(tempDate.getTime());
+            beginDate = new Date(tempDate.getTime());
+            while (calendarUtil.isSameMonth(initialDate, tempDate)) {
                 weekCollection.push(tempDate.getTime());
-                if (DAYINDEX[tempDate.getDay()] === expectedDays[expectedDays.length - 1]) {
+                if (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1) {
                     monthCollection.push(weekCollection);
                     weekCollection = [];
                 }
                 tempDate.setDate(tempDate.getDate()
                     + dayCycleData[DAYINDEX[tempDate.getDay()]]);
             }
-        }
-        else {
-            let currentMonthDate = new Date(tempDate.getTime());
-            while (currentMonthDate.getMonth() === month) {
-                monthCollection.push([currentMonthDate.getTime()]);
-                currentMonthDate.setDate(currentMonthDate.getDate() + (7));
+            index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+            if (ruleObject.setPosition === null) {
+                index = 0;
+                let datas = [];
+                for (let week = 0; week < monthCollection.length; week++) {
+                    for (let row = 0; row < monthCollection[week].length; row++) {
+                        datas.push(monthCollection[week][row]);
+                    }
+                }
+                monthCollection = [datas];
             }
+            if (monthCollection.length > 0) {
+                insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+            }
+            if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+                return;
+            }
+            monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
+            tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+            monthCollection = [];
+        }
+    }
+}
+// To process monday day type for FREQ=MONTHLY
+function monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject) {
+    let expectedDays = ruleObject.day;
+    // When BYDAY property having more than 1 value.
+    if (expectedDays.length > 1) {
+        getMonthCollection(startDate, endDate, data, ruleObject);
+        return;
+    }
+    let tempDate = new Date(startDate.getTime());
+    let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
+    let interval = ruleObject.interval;
+    let state;
+    let monthCollection = [];
+    let month;
+    let index;
+    let beginDate;
+    let monthInit = 0;
+    tempDate = calendarUtil.getMonthStartDate(tempDate);
+    if (ruleObject.month.length) {
+        calendarUtil.setMonth(tempDate, ruleObject.month[0], 1);
+    }
+    tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+    while (compareDates(tempDate, endDate) && (expectedCount && (data.length + tempExcludeDate.length) < expectedCount)) {
+        month = tempDate.getMonth();
+        beginDate = new Date(tempDate.getTime());
+        let currentMonthDate = new Date(tempDate.getTime());
+        while (calendarUtil.isSameMonth(tempDate, currentMonthDate)) {
+            monthCollection.push([currentMonthDate.getTime()]);
+            currentMonthDate.setDate(currentMonthDate.getDate() + (7));
         }
         index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
         if (ruleObject.setPosition === null) {
-            index = 0;
-            let datas = [];
-            for (let week = 0; week < monthCollection.length; week++) {
-                for (let row = 0; row < monthCollection[week].length; row++) {
-                    datas.push(monthCollection[week][row]);
+            let recurrenceCollections;
+            recurrenceCollections = getRecurrenceCollection(monthCollection, expectedDays);
+            monthCollection = recurrenceCollections.monthCollection;
+            index = recurrenceCollections.index;
+        }
+        if (monthCollection.length > 0) {
+            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+        }
+        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
+        tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+        monthCollection = [];
+    }
+}
+// To process monday day type for FREQ=YEARLY
+function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
+    let expectedDays = ruleObject.day;
+    let isHavingNumber = expectedDays.map((item) => HASNUMBER.test(item));
+    // If BYDAY property having more than 1 value in list
+    if (expectedDays.length > 1 && isHavingNumber.indexOf(true) > -1) {
+        processDateCollectionforByDayWithInteger(startDate, endDate, data, ruleObject);
+        return;
+    }
+    let tempDate = new Date(startDate.getTime());
+    let index;
+    let currentMonthDate;
+    let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
+    let interval = ruleObject.interval;
+    let state;
+    let monthCollection = [];
+    if (ruleObject.month.length) {
+        calendarUtil.setMonth(tempDate, ruleObject.month[0], tempDate.getDate());
+        let compareTempDate = new Date(tempDate.getTime());
+        resetTime(compareTempDate);
+    }
+    // Set the date as start date of the yeear if yearly freq having ByDay property alone
+    if (ruleObject.setPosition === null && ruleObject.month.length === 0 && ruleObject.weekNo.length === 0) {
+        tempDate = new Date(startDate.getFullYear(), 0, 1);
+    }
+    tempDate = calendarUtil.getMonthStartDate(tempDate);
+    tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+    while (compareDates(tempDate, endDate)) {
+        currentMonthDate = new Date(tempDate.getTime());
+        while (calendarUtil.isSameYear(currentMonthDate, tempDate) &&
+            (expectedCount && (data.length + tempExcludeDate.length) <= expectedCount)) {
+            currentMonthDate = new Date(tempDate.getTime());
+            while (calendarUtil.isSameYear(currentMonthDate, tempDate)) {
+                if (ruleObject.month.length === 0 || (ruleObject.month.length > 0
+                    && !calendarUtil.checkMonth(tempDate, ruleObject.month))) {
+                    if (expectedDays.length > 1) {
+                        if (calendarUtil.compareMonth(currentMonthDate, tempDate)) {
+                            calendarUtil.setValidDate(tempDate, 1, 1);
+                            tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+                            break;
+                        }
+                        if (expectedDays.indexOf(DAYINDEX[currentMonthDate.getDay()]) > -1) {
+                            monthCollection.push([currentMonthDate.getTime()]);
+                        }
+                        currentMonthDate.setDate(currentMonthDate.getDate() + (1));
+                    }
+                    else {
+                        // If BYDAY property having 1 value in list
+                        if (currentMonthDate.getFullYear() > tempDate.getFullYear()) {
+                            calendarUtil.setValidDate(tempDate, 1, 1);
+                            tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+                            break;
+                        }
+                        let newstr = getDayString(expectedDays[0]);
+                        if (DAYINDEX[currentMonthDate.getDay()] === newstr
+                            && new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), 0)
+                                > new Date(startDate.getFullYear())) {
+                            monthCollection.push([currentMonthDate.getTime()]);
+                        }
+                        currentMonthDate.setDate(currentMonthDate.getDate() + (7));
+                    }
+                }
+                else {
+                    calendarUtil.setValidDate(tempDate, 1, 1);
+                    tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+                    break;
                 }
             }
-            monthCollection = [datas];
         }
-        for (let week = 0; week < monthCollection[index].length; week++) {
-            let dayData = monthCollection[index][week];
-            let chDate = new Date(dayData);
-            state = validateRules(chDate, ruleObject);
-            if ((chDate >= startDate) && compareDates(chDate, endDate) && state) {
-                excludeDateHandler(data, dayData);
+        tempDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), currentMonthDate.getDate());
+        index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+        if (ruleObject.setPosition === null) {
+            let recurrenceObject;
+            recurrenceObject = getRecurrenceCollection(monthCollection, expectedDays);
+            monthCollection = recurrenceObject.monthCollection;
+            index = recurrenceObject.index;
+        }
+        if (monthCollection.length > 0) {
+            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+        }
+        if (calendarUtil.isLastMonth(tempDate)) {
+            calendarUtil.setValidDate(tempDate, 1, 1);
+            tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+        }
+        tempDate.setFullYear(tempDate.getFullYear() + interval - 1);
+        if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+            return;
+        }
+        tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+        monthCollection = [];
+    }
+}
+// To process the recurrence rule when BYDAY property having values with integer
+function processDateCollectionforByDayWithInteger(startDate, endDate, data, ruleObject) {
+    let expectedDays = ruleObject.day;
+    let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
+    let tempDate = new Date(startDate.getTime());
+    let interval = ruleObject.interval;
+    let monthCollection = [];
+    let dateCollection = [];
+    let index;
+    let state;
+    let monthInit = 0;
+    let currentMonthDate;
+    let currentDate;
+    let beginDate;
+    tempDate = calendarUtil.getMonthStartDate(tempDate);
+    let datas = [];
+    if (ruleObject.month.length) {
+        calendarUtil.setMonth(tempDate, ruleObject.month[0], 1);
+    }
+    tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+    while (compareDates(tempDate, endDate)) {
+        currentMonthDate = new Date(tempDate.getTime());
+        for (let i = 0; i <= ruleObject.month.length; i++) {
+            for (let j = 0; j <= expectedDays.length - 1; j++) {
+                tempDate = calendarUtil.getMonthStartDate(tempDate);
+                tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+                monthCollection = [];
+                while (calendarUtil.isSameYear(currentMonthDate, tempDate) &&
+                    (expectedCount && (data.length + tempExcludeDate.length) <= expectedCount)) {
+                    while (calendarUtil.isSameYear(currentMonthDate, tempDate)) {
+                        currentMonthDate = new Date(tempDate.getTime());
+                        if (ruleObject.month.length === 0 ||
+                            (ruleObject.month.length > 0 && ruleObject.month[i] === calendarUtil.getMonth(currentMonthDate))) {
+                            let expectedDaysArray = expectedDays[j].match(SPLITNUMBERANDSTRING);
+                            let position = parseInt(expectedDaysArray[0], 10);
+                            currentDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+                            while (calendarUtil.isSameYear(currentDate, tempDate)
+                                && calendarUtil.isSameMonth(currentDate, tempDate)) {
+                                if (expectedDaysArray[expectedDaysArray.length - 1] === DAYINDEX[currentDate.getDay()]) {
+                                    monthCollection.push([currentDate.getTime()]);
+                                }
+                                currentDate.setDate(currentDate.getDate() + (1));
+                            }
+                            currentDate.setDate(currentDate.getDate() - (1));
+                            if (expectedDaysArray[0].indexOf('-') > -1) {
+                                index = monthCollection.length - (-1 * position);
+                            }
+                            else {
+                                index = position - 1;
+                            }
+                            index = isNaN(index) ? 0 : index;
+                        }
+                        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, 1, beginDate);
+                        tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+                    }
+                }
+                tempDate = j === 0 && currentDate ? new Date(currentDate.getTime()) : new Date(currentMonthDate.getTime());
+                if (monthCollection.length > 0) {
+                    (ruleObject.setPosition === null) ?
+                        insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) :
+                        dateCollection = [(filterDateCollectionByIndex(monthCollection, index, datas))];
+                }
                 if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
                     return;
                 }
             }
         }
-        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
-        monthCollection = [];
-        weekCollection = [];
+        if (ruleObject.setPosition !== null) {
+            insertDateCollectionBasedonBySetPos(dateCollection, state, startDate, endDate, data, ruleObject);
+            datas = [];
+        }
+        if (calendarUtil.isLastMonth(tempDate)) {
+            calendarUtil.setValidDate(tempDate, 1, 1);
+            tempDate.setFullYear(tempDate.getFullYear() + interval - 1);
+        }
+        else {
+            tempDate.setFullYear(tempDate.getFullYear() + interval);
+        }
         tempDate = getStartDateForWeek(tempDate, ruleObject.day);
+        if (ruleObject.month.length) {
+            calendarUtil.setMonth(tempDate, ruleObject.month[0], tempDate.getDate());
+        }
+    }
+}
+// To get recurrence collection if BYSETPOS is null
+function getRecurrenceCollection(monthCollection, expectedDays) {
+    let index;
+    let recurrenceCollectionObject = {
+        monthCollection: [],
+        index: 0,
+    };
+    if (expectedDays.length === 1) {
+        // To split numeric value from BYDAY property value
+        let expectedDaysArrays = expectedDays[0].match(SPLITNUMBERANDSTRING);
+        let arrPosition;
+        if (expectedDaysArrays.length > 1) {
+            arrPosition = parseInt(expectedDaysArrays[0], 10);
+            index = ((arrPosition < 1) ? (monthCollection.length + arrPosition) : arrPosition - 1);
+        }
+        else {
+            index = 0;
+            monthCollection = getDateCollectionforBySetPosNull(monthCollection);
+        }
+    }
+    else {
+        index = 0;
+        monthCollection = getDateCollectionforBySetPosNull(monthCollection);
+    }
+    recurrenceCollectionObject.monthCollection = monthCollection;
+    recurrenceCollectionObject.index = index;
+    return recurrenceCollectionObject;
+}
+function insertWeekCollection(weekCollection, state, startDate, endDate, data, ruleObject) {
+    let index = ((ruleObject.setPosition < 1) ?
+        (weekCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+    if (ruleObject.setPosition === null) {
+        index = 0;
+        weekCollection = getDateCollectionforBySetPosNull(weekCollection);
+    }
+    if (weekCollection.length > 0) {
+        insertDatasIntoExistingCollection(weekCollection, index, state, startDate, endDate, data, ruleObject);
+    }
+}
+// To process month collection if BYSETPOS is null
+function getDateCollectionforBySetPosNull(monthCollection) {
+    let datas = [];
+    for (let week = 0; week < monthCollection.length; week++) {
+        for (let row = 0; row < monthCollection[week].length; row++) {
+            datas.push(new Date(monthCollection[week][row]).getTime());
+        }
+    }
+    monthCollection = datas.length > 0 ? [datas] : [];
+    return monthCollection;
+}
+// To filter date collection when BYDAY property having values with number
+function filterDateCollectionByIndex(monthCollection, index, datas) {
+    for (let week = 0; week < monthCollection[index].length; week++) {
+        datas.push(monthCollection[index][week]);
+    }
+    return datas;
+}
+// To insert processed date collection in final array element
+function insertDateCollection(state, startDate, endDate, data, ruleObject, dayData) {
+    let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
+    let chDate = new Date(dayData);
+    state = validateRules(chDate, ruleObject);
+    if ((chDate >= startDate) && compareDates(chDate, endDate) && state
+        && expectedCount && (data.length + tempExcludeDate.length) < expectedCount) {
+        excludeDateHandler(data, dayData);
+    }
+}
+// To process datte collection based on Byset position after process the collection based on BYDAY property value index: EX:BYDAY=1SUm-1SU
+function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, endDate, data, ruleObject) {
+    if (monthCollection.length > 0) {
+        let index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+        for (let week = 0; week < monthCollection.length; week++) {
+            let dayData = monthCollection[week][index];
+            insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
+        }
+    }
+}
+// To insert datas into existing collection which is processed from previous loop.
+function insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) {
+    for (let week = 0; week < monthCollection[index].length; week++) {
+        let dayData = monthCollection[index][week];
+        insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
     }
 }
 function compareDates(startDate, endDate) {
     return endDate ? (startDate <= endDate) : true;
 }
+function getDayString(expectedDays) {
+    // To get BYDAY value without numeric value
+    let newstr = expectedDays.replace(REMOVENUMBERINSTRING, '');
+    return newstr;
+}
 function checkDayIndex(day, expectedDays) {
-    return (expectedDays.indexOf(DAYINDEX[day]) === -1);
+    let sortedExpectedDays = [];
+    expectedDays.forEach((element) => {
+        let expectedDaysNumberSplit = element.match(SPLITNUMBERANDSTRING);
+        if (expectedDaysNumberSplit.length === 2) {
+            sortedExpectedDays.push(expectedDaysNumberSplit[1]);
+        }
+        else {
+            sortedExpectedDays.push(expectedDaysNumberSplit[0]);
+        }
+    });
+    return (sortedExpectedDays.indexOf(DAYINDEX[day]) === -1);
 }
 function getStartDateForWeek(startDate, expectedDays) {
     let tempDate = new Date(startDate.getTime());
-    if (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) === -1) {
-        do {
-            tempDate.setDate(tempDate.getDate() + 1);
-        } while (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) === -1);
+    let newstr;
+    if (expectedDays.length > 0) {
+        let expectedDaysArr = [];
+        for (let i = 0; i <= expectedDays.length - 1; i++) {
+            newstr = getDayString(expectedDays[i]);
+            expectedDaysArr.push(newstr);
+        }
+        if (expectedDaysArr.indexOf(DAYINDEX[tempDate.getDay()]) === -1) {
+            do {
+                tempDate.setDate(tempDate.getDate() + 1);
+            } while (expectedDaysArr.indexOf(DAYINDEX[tempDate.getDay()]) === -1);
+        }
     }
     return tempDate;
 }
@@ -2759,6 +3392,7 @@ function extractObjectFromRule(rules) {
         count: null,
         until: null,
         day: [],
+        wkst: null,
         month: [],
         weekNo: [],
         monthDay: [],
@@ -2808,6 +3442,9 @@ function extractObjectFromRule(rules) {
             case 'FREQ':
                 ruleObject.freq = splitData[1];
                 break;
+            case 'WKST':
+                ruleObject.wkst = splitData[1];
+                break;
         }
     });
     if ((ruleObject.freq === 'MONTHLY') && (ruleObject.monthDay.length === 0)) {
@@ -2817,7 +3454,7 @@ function extractObjectFromRule(rules) {
     return ruleObject;
 }
 function validateProperDate(tempDate, data, startDate) {
-    let maxDate = (tempDate.getMonth() === 1) ? (tempDate.getFullYear() % 4 === 0 ? 29 : 28) : monthDay[tempDate.getMonth()];
+    let maxDate = calendarUtil.getMonthDaysCount(tempDate);
     return (data <= maxDate) && (tempDate >= startDate);
 }
 function processWeekDays(expectedDays) {
@@ -2837,14 +3474,10 @@ function processWeekDays(expectedDays) {
     });
     return dayCycle;
 }
-function checkMonth(tempDate, expectedMonth) {
-    return (expectedMonth.indexOf(tempDate.getMonth() + 1) === -1);
-}
 function checkDate(tempDate, expectedDate) {
     let temp = expectedDate.slice(0);
     let data;
-    let maxDate = (tempDate.getMonth() === 1) ?
-        (tempDate.getFullYear() % 4 === 0 ? 29 : 28) : monthDay[tempDate.getMonth()];
+    let maxDate = calendarUtil.getMonthDaysCount(tempDate);
     data = temp.shift();
     while (data) {
         if (data < 0) {
@@ -2864,7 +3497,7 @@ function checkYear(tempDate, expectedyearDay) {
     data = temp.shift();
     while (data) {
         if (data < 0) {
-            data = data + getMaxYearDay(tempDate.getFullYear()) + 1;
+            data = data + calendarUtil.getYearDaysCount(tempDate, 0) + 1;
         }
         if (data === yearDay) {
             return false;
@@ -2874,10 +3507,10 @@ function checkYear(tempDate, expectedyearDay) {
     return true;
 }
 function getYearDay(currentDate) {
-    if (!startDateCollection[currentDate.getFullYear()]) {
-        startDateCollection[currentDate.getFullYear()] = new Date(currentDate.getFullYear(), 0, 0);
+    if (!startDateCollection[calendarUtil.getFullYear(currentDate)]) {
+        startDateCollection[calendarUtil.getFullYear(currentDate)] = calendarUtil.getYearLastDate(currentDate, 0);
     }
-    let tempDate = startDateCollection[currentDate.getFullYear()];
+    let tempDate = startDateCollection[calendarUtil.getFullYear(currentDate)];
     let diff = currentDate.getTime() - tempDate.getTime();
     return Math.ceil(diff / MS_PER_DAY);
 }
@@ -2903,7 +3536,7 @@ function validateRules(tempDate, ruleObject) {
     let state = true;
     let expectedDays = ruleObject.day;
     let expectedMonth = ruleObject.month;
-    let expectedDate = ruleObject.monthDay;
+    let expectedDate = calendarUtil.getExpectedDays(tempDate, ruleObject.monthDay);
     let expectedyearDay = ruleObject.yearDay;
     ruleObject.validRules.forEach((rule) => {
         switch (rule) {
@@ -2913,7 +3546,7 @@ function validateRules(tempDate, ruleObject) {
                 }
                 break;
             case 'BYMONTH':
-                if (checkMonth(tempDate, expectedMonth)) {
+                if (calendarUtil.checkMonth(tempDate, expectedMonth)) {
                     state = false;
                 }
                 break;
@@ -2931,16 +3564,20 @@ function validateRules(tempDate, ruleObject) {
     });
     return state;
 }
+function getCalendarUtil(calendarMode) {
+    if (calendarMode === 'Islamic') {
+        return new Islamic();
+    }
+    return new Gregorian();
+}
 let startDateCollection = {};
 let tempExcludeDate;
 let dayIndex = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
 let maxOccurrence;
 let tempViewDate;
-const monthDay = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+let calendarUtil;
 const DAYINDEX = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
 const MAXOCCURRENCE = 43;
-const LEAPYEAR = 366;
-const NORMALYEAR = 365;
 const WEEKPOS = ['first', 'second', 'third', 'fourth', 'last'];
 const TIMES = 'summaryTimes';
 const ON = 'summaryOn';
@@ -2959,6 +3596,12 @@ const DAYINDEXOBJECT = {
     FR: 'fri',
     SA: 'sat'
 };
+// To check string has number
+const HASNUMBER = /\d/;
+// To find the numbers in string
+const REMOVENUMBERINSTRING = /[^A-Z]+/;
+// To split number and string
+const SPLITNUMBERANDSTRING = /[a-z]+|[^a-z]+/gi;
 function getRecurrenceStringFromDate(date) {
     return [date.getUTCFullYear(),
         roundDateValues(date.getUTCMonth() + 1),
@@ -3424,10 +4067,6 @@ class EventBase {
         }
     }
     wireAppointmentEvents(element, isAllDay = false, event) {
-        if (this.parent.calendarMode === 'Islamic' && (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) ||
-            !isNullOrUndefined(event[this.parent.eventFields.recurrenceID]))) {
-            return;
-        }
         let isReadOnly = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
@@ -3582,7 +4221,7 @@ class EventBase {
         let eventRule = event[fields.recurrenceRule];
         let duration = endDate.getTime() - startDate.getTime();
         currentViewDate = new Date(+currentViewDate - duration);
-        let dates = generate(startDate, eventRule, event[fields.recurrenceException], this.parent.firstDayOfWeek, undefined, currentViewDate);
+        let dates = generate(startDate, eventRule, event[fields.recurrenceException], this.parent.firstDayOfWeek, undefined, currentViewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -3818,7 +4457,7 @@ class Crud {
             }
         }
         else {
-            let parentEvent = this.parent.eventBase.getRecurrenceEvent(data);
+            let parentEvent = this.getParentEvent(data);
             let query;
             switch (action) {
                 case 'EditOccurrence':
@@ -3906,7 +4545,7 @@ class Crud {
                 case 'Delete':
                 case 'DeleteOccurrence':
                     for (let i = 0; i < recEvent.length; i++) {
-                        let parentEvent = this.parent.eventBase.getRecurrenceEvent(recEvent[i]);
+                        let parentEvent = this.getParentEvent(recEvent[i]);
                         args.data = { occurrence: recEvent[i], parent: parentEvent };
                         this.parent.trigger(actionBegin, args);
                         if (args.cancel) {
@@ -3946,6 +4585,14 @@ class Crud {
         this.parent.eventBase.selectWorkCellByTime(dataObj);
         let crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise };
         this.refreshData(crudArgs);
+    }
+    getParentEvent(event) {
+        let fields = this.parent.eventFields;
+        let parentEvent = this.parent.eventBase.getRecurrenceEvent(event);
+        if (parentEvent[fields.startTimezone] || parentEvent[fields.endTimezone]) {
+            this.parent.eventBase.timezoneConvert(parentEvent);
+        }
+        return parentEvent;
     }
     processCrudTimezone(events) {
         let fields = this.parent.eventFields;
@@ -5375,6 +6022,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         this.renderStatus = false;
         this.dayButtons = [];
         this.monthButtons = [];
+        this.calendarUtil = getCalendarUtil(this.calendarMode);
     }
     startState(freq, endOn, startDate) {
         this.showFormElement();
@@ -5444,9 +6092,9 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
     }
     selectMonthDay(date) {
         let weekday = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
-        this.monthDate.setProperties({ value: date.getDate() });
+        this.monthDate.setProperties({ value: this.calendarUtil.getDate(date) });
         this.monthWeekDays.setProperties({ value: valueData[weekday[date.getDay()]] });
-        this.monthValue.setProperties({ value: '' + (date.getMonth() + 1) });
+        this.monthValue.setProperties({ value: '' + this.calendarUtil.getMonth(date) });
         this.monthWeekPos.setProperties({ value: this.getDayPosition(date) });
         this.daySelection(date.getDay());
     }
@@ -5763,9 +6411,8 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         let endDate = new Date(date.getTime());
         let day = date.getDay();
         let positionCollection = [];
-        temp.setDate(1);
-        endDate.setDate(1);
-        endDate.setMonth(endDate.getMonth() + 1);
+        temp = this.calendarUtil.getMonthStartDate(temp);
+        endDate = this.calendarUtil.getMonthEndDate(endDate);
         while (temp < endDate) {
             if (temp.getDay() === day) {
                 positionCollection.push(temp.getTime());
@@ -5811,7 +6458,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             cldrObj = (getValue('days.stand-alone.' + format, getDefaultDateObject()));
         }
         else {
-            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.days.stand-alone.' + format, cldrData));
+            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format, cldrData));
         }
         for (let obj of weekday) {
             dayData.push({ text: getValue(obj, cldrObj), value: valueData[obj] });
@@ -5825,7 +6472,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             cldrObj = (getValue('months.stand-alone.wide', getDefaultDateObject()));
         }
         else {
-            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.months.stand-alone.wide', cldrData));
+            cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide', cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
             monthData.push({
@@ -6026,12 +6673,15 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         this.startState(NONE, NEVER, this.startDate);
         this.setDefaultValue();
     }
+    getCalendarMode() {
+        return this.calendarMode.toLowerCase();
+    }
     getRuleSummary(rule = this.getRecurrenceRule()) {
-        return generateSummary(rule, this.localeObj, this.locale);
+        return generateSummary(rule, this.localeObj, this.locale, this.getCalendarMode());
     }
     getRecurrenceDates(startDate, rule, excludeDate, maximumCount, viewDate) {
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
-        return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate);
+        return generate(startDate, rule, excludeDate, this.firstDayOfWeek, maximumCount, viewDate, this.calendarMode);
     }
     getRecurrenceRule() {
         let ruleData = RULEFREQ + EQUAL;
@@ -6158,6 +6808,10 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
                         this.setRecurrenceRule(this.value);
                     }
                     break;
+                case 'calendarMode':
+                    this.calendarMode = newProp.calendarMode;
+                    this.calendarUtil = getCalendarUtil(newProp.calendarMode);
+                    break;
                 case 'locale':
                 case 'frequencies':
                 case 'firstDayOfWeek':
@@ -6179,6 +6833,9 @@ __decorate$1([
 __decorate$1([
     Property()
 ], RecurrenceEditor.prototype, "dateFormat", void 0);
+__decorate$1([
+    Property('Gregorian')
+], RecurrenceEditor.prototype, "calendarMode", void 0);
 __decorate$1([
     Property()
 ], RecurrenceEditor.prototype, "cssClass", void 0);
@@ -6298,10 +6955,7 @@ class EventWindow {
     openEditor(data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
-        if (this.parent.calendarMode === 'Islamic') {
-            addClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
-        }
-        else if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
+        if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
         }
         switch (type) {
@@ -7094,6 +7748,7 @@ class EventWindow {
     }
     renderRecurrenceEditor() {
         return new RecurrenceEditor({
+            calendarMode: this.parent.calendarMode,
             cssClass: this.parent.cssClass,
             dateFormat: this.parent.dateFormat,
             enableRtl: this.parent.enableRtl,
@@ -7726,6 +8381,7 @@ class VirtualScroll {
         let resWrap = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);
         let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         let eventWrap = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        let timeIndicator = this.parent.element.querySelector('.' + CURRENT_TIMELINE_CLASS);
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         addClass([conWrap], 'e-transition');
         let resCollection = [];
@@ -7741,7 +8397,7 @@ class VirtualScroll {
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
-            this.setTranslate(resWrap, conWrap, eventWrap);
+            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
         }
     }
     upScroll(resWrap, conWrap) {
@@ -7792,7 +8448,7 @@ class VirtualScroll {
     getBufferCollection(startIndex, endIndex) {
         return this.parent.resourceBase.expandedResources.slice(startIndex, endIndex);
     }
-    setTranslate(resWrap, conWrap, eventWrap) {
+    setTranslate(resWrap, conWrap, eventWrap, timeIndicator) {
         setStyleAttribute(resWrap.querySelector('table'), {
             transform: `translateY(${this.translateY}px)`
         });
@@ -7802,6 +8458,11 @@ class VirtualScroll {
         setStyleAttribute(eventWrap, {
             transform: `translateY(${this.translateY}px)`
         });
+        if (!isNullOrUndefined(timeIndicator)) {
+            setStyleAttribute(timeIndicator, {
+                transform: `translateY(${this.translateY}px)`
+            });
+        }
     }
     destroy() {
         this.removeEventListener();
@@ -8287,7 +8948,8 @@ class ResourceBase {
             let resource = this.lastResourceLevel[i].resourceData;
             let count = resource.Count;
             resources.push(this.lastResourceLevel[i]);
-            if (!isNullOrUndefined(resource.Expand) && !resource.Expand && count > 0) {
+            let isExpanded = resource[this.lastResourceLevel[i].resource.expandedField];
+            if (!isNullOrUndefined(isExpanded) && !isExpanded && count > 0) {
                 i = i + count;
             }
         }
@@ -8485,6 +9147,11 @@ class ResourceBase {
         let contentTable = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' ' + 'table');
         let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
         this.parent.virtualScrollModule.updateContent(resTable, contentTable, eventTable, this.renderedResources);
+        let timeIndicator = this.parent.element.querySelector('.' + CURRENT_TIMELINE_CLASS);
+        if (!isNullOrUndefined(timeIndicator)) {
+            timeIndicator.style.height =
+                this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS).offsetHeight + 'px';
+        }
     }
     renderResourceHeader() {
         let resourceWrapper = createElement('div', { className: RESOURCE_TOOLBAR_CONTAINER });
@@ -8998,55 +9665,6 @@ class ResourceBase {
     }
 }
 
-class Gregorian {
-    firstDateOfMonth(date) {
-        return new Date(date.getFullYear(), date.getMonth());
-    }
-    lastDateOfMonth(dt) {
-        return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
-    }
-    isMonthStart(date) {
-        return (date.getDate() === 1);
-    }
-}
-class Islamic {
-    firstDateOfMonth(date) {
-        let hDate = HijriParser.getHijriDate(date);
-        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, 1);
-        return gDate;
-    }
-    lastDateOfMonth(dt) {
-        let hDate = HijriParser.getHijriDate(dt);
-        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, this.getDaysInMonth(hDate.month, hDate.year));
-        let finalGDate = new Date(gDate.getTime());
-        new Date(finalGDate.setDate(finalGDate.getDate() + 1));
-        let finalHDate = HijriParser.getHijriDate(finalGDate);
-        if (hDate.month === finalHDate.month) {
-            return finalGDate;
-        }
-        finalHDate = HijriParser.getHijriDate(gDate);
-        if (hDate.month === finalHDate.month) {
-            return gDate;
-        }
-        return new Date(gDate.setDate(gDate.getDate() - 1));
-    }
-    isMonthStart(date) {
-        let hijriDate = HijriParser.getHijriDate(date);
-        return (hijriDate.date === 1);
-    }
-    isLeapYear(year) {
-        return (14 + 11 * year) % 30 < 11;
-    }
-    getDaysInMonth(month, year) {
-        let length = 0;
-        length = 29 + ((month + 1) % 2);
-        if (month === 11 && this.isLeapYear(year)) {
-            length++;
-        }
-        return length;
-    }
-}
-
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -9325,7 +9943,7 @@ let Schedule = class Schedule extends Component {
     getTimeString(date) {
         return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
     }
-    setcalendarMode() {
+    setCalendarMode() {
         if (this.calendarMode === 'Islamic') {
             this.calendarUtil = new Islamic();
         }
@@ -9515,7 +10133,7 @@ let Schedule = class Schedule extends Component {
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.setCldrTimeFormat();
-        this.setcalendarMode();
+        this.setCalendarMode();
         this.eventsData = [];
         this.eventsProcessed = [];
         this.blockData = [];
@@ -9763,7 +10381,7 @@ let Schedule = class Schedule extends Component {
                 case 'locale':
                 case 'calendarMode':
                     this.setCldrTimeFormat();
-                    this.setcalendarMode();
+                    this.setCalendarMode();
                     state.isRefresh = true;
                     break;
                 case 'firstDayOfWeek':
@@ -15892,6 +16510,13 @@ class TimelineViews extends VerticalView {
             className: CURRENT_TIMELINE_CLASS,
             styles: (this.parent.enableRtl ? 'right' : 'left') + ':' + formatUnit(left) + '; height:' + formatUnit(height)
         }));
+        if (this.parent.virtualScrollModule) {
+            let timeIndicator = this.parent.element.querySelector('.' + CURRENT_TIMELINE_CLASS);
+            let element = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS + ' table');
+            setStyleAttribute(timeIndicator, {
+                transform: element.style.transform
+            });
+        }
         let currentTimeEle = createElement('div', {
             innerHTML: this.parent.getTimeString(new Date()),
             className: CURRENT_TIME_CLASS
@@ -16156,8 +16781,12 @@ class TimelineMonth extends Month {
  */
 
 /**
+ * Calendar util exported items
+ */
+
+/**
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, RecurrenceEditor };
+export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, RecurrenceEditor, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

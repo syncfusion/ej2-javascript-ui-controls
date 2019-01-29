@@ -2,20 +2,7 @@
 
 ## [Unreleased]
 
-## 16.4.48 (2019-01-22)
-
-### In-place Editor
-
-#### New Features
-
-- Type `number` support provided for `primaryKey` API.
-
-#### Bug Fixes
-
-- Formatting not applied to calendar component issue fixed.
-- Key returned instead of value while using fieldSettings with `dropDown` components issue has been fixed.
-
-## 16.4.44 (2018-12-24)
+## 17.1.1-beta (2019-01-22)
 
 ### In-place Editor
 

@@ -1031,6 +1031,9 @@ __decorate([
     Property(false)
 ], DropDownBase.prototype, "ignoreAccent", void 0);
 __decorate([
+    Property()
+], DropDownBase.prototype, "locale", void 0);
+__decorate([
     Event()
 ], DropDownBase.prototype, "actionBegin", void 0);
 __decorate([
@@ -5027,36 +5030,35 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     wrapperClick(e) {
         this.setDynValue = false;
-        if (this.readonly || !this.enabled) {
+        if (!this.enabled) {
             return;
         }
         if (e.target === this.overAllClear) {
             e.preventDefault();
             return;
         }
-        if (!this.inputFocus && this.mode !== 'CheckBox') {
-            this.dispatchEvent(this.inputElement, 'focus');
+        if (!this.inputFocus) {
+            this.inputElement.focus();
         }
-        if (!this.inputFocus && this.mode === 'CheckBox') {
-            this.focusIn(e);
-        }
-        if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
-            if (this.isPopupOpen()) {
-                this.refreshPopup();
+        if (!this.readonly) {
+            if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
+                if (this.isPopupOpen()) {
+                    this.refreshPopup();
+                }
+                return;
             }
-            return;
-        }
-        if (!this.isPopupOpen() &&
-            (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
-            this.showPopup();
-        }
-        else {
-            this.hidePopup();
-            if (this.mode === 'CheckBox') {
-                this.showOverAllClear();
-                this.inputFocus = true;
-                if (!this.overAllWrapper.classList.contains(FOCUS)) {
-                    this.overAllWrapper.classList.add(FOCUS);
+            if (!this.isPopupOpen() &&
+                (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
+                this.showPopup();
+            }
+            else {
+                this.hidePopup();
+                if (this.mode === 'CheckBox') {
+                    this.showOverAllClear();
+                    this.inputFocus = true;
+                    if (!this.overAllWrapper.classList.contains(FOCUS)) {
+                        this.overAllWrapper.classList.add(FOCUS);
+                    }
                 }
             }
         }
@@ -5186,7 +5188,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             + ':not(.' + HIDE_LIST + ')') : null;
     }
     focusIn(e) {
-        if (this.enabled && !this.readonly) {
+        if (this.enabled) {
             this.showOverAllClear();
             this.inputFocus = true;
             if (!this.value) {
@@ -5286,6 +5288,16 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.inputElement.setAttribute('aria-activedescendant', focusedItem.id);
         }
     }
+    homeNavigation(isHome) {
+        this.removeFocus();
+        let scrollEle = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
+            + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+        if (scrollEle.length > 0) {
+            let element = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
+            element.classList.add(dropDownBaseClasses.focus);
+            this.scrollBottom(element);
+        }
+    }
     onKeyDown(e) {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
             return;
@@ -5304,7 +5316,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let activeIndex;
             switch (e.keyCode) {
                 case 36:
-                case 35: break;
+                case 35:
+                    this.homeNavigation((e.keyCode === 36) ? true : false);
+                    break;
                 case 33:
                     e.preventDefault();
                     if (focusedItem) {
@@ -7721,7 +7735,12 @@ class CheckBoxSelection {
         }
         if (!this.parent.overAllWrapper.contains(e.target) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            this.parent.onBlur(e);
+            if (Browser.isIE) {
+                this.parent.onBlur();
+            }
+            else {
+                this.parent.inputElement.blur();
+            }
         }
         if (this.filterInput === target) {
             this.filterInput.focus();

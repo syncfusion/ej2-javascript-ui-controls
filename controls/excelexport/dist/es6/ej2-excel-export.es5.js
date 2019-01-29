@@ -19,6 +19,7 @@ var CellStyle = /** @__PURE__ @class */ (function () {
         this.hAlign = 'general';
         this.vAlign = 'bottom';
         this.indent = 0;
+        this.rotation = 0;
         this.numberFormat = 'GENERAL';
         this.type = 'datetime';
         this.borders = new Borders();
@@ -1140,6 +1141,9 @@ var Workbook = /** @__PURE__ @class */ (function () {
                 cellStyle.hAlign = 'left';
             }
         }
+        if (json.rotation !== null && json.rotation !== undefined) {
+            cellStyle.rotation = json.rotation;
+        }
         //vAlign
         if (json.vAlign !== null && json.vAlign !== undefined) {
             cellStyle.vAlign = json.vAlign.toLowerCase();
@@ -1337,6 +1341,7 @@ var Workbook = /** @__PURE__ @class */ (function () {
                 baseStyle.underline === toCompareStyle.underline &&
                 baseStyle.vAlign === toCompareStyle.vAlign &&
                 baseStyle.indent === toCompareStyle.indent &&
+                baseStyle.rotation === toCompareStyle.rotation &&
                 baseStyle.wrapText === toCompareStyle.wrapText &&
                 (baseStyle.borders.all.color === toCompareStyle.borders.all.color &&
                     baseStyle.borders.all.lineStyle === toCompareStyle.borders.all.lineStyle) &&
@@ -1762,6 +1767,7 @@ var Workbook = /** @__PURE__ @class */ (function () {
             cellXfs.alignment.horizontal = style.hAlign;
             cellXfs.alignment.vertical = style.vAlign;
             cellXfs.alignment.wrapText = style.wrapText ? 1 : 0;
+            cellXfs.alignment.rotation = style.rotation;
             if (style.isGlobalStyle) {
                 this.mCellStyleXfs.push(cellXfs);
                 this.mCellXfs.push(cellXfs);
@@ -1889,8 +1895,11 @@ var Workbook = /** @__PURE__ @class */ (function () {
         if (cellXf.alignment.horizontal !== undefined) {
             alignString += 'horizontal="' + cellXf.alignment.horizontal + '" ';
         }
-        if (cellXf.alignment.indent !== undefined) {
+        if (cellXf.alignment.indent !== undefined && cellXf.alignment.indent !== 0) {
             alignString += 'indent="' + cellXf.alignment.indent + '" ';
+        }
+        else if (cellXf.alignment.rotation !== undefined && cellXf.alignment.rotation !== 0) {
+            alignString += 'textRotation="' + cellXf.alignment.rotation + '" ';
         }
         if (cellXf.alignment.vertical !== undefined) {
             alignString += 'vertical="' + cellXf.alignment.vertical + '" ';

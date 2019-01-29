@@ -2,6 +2,7 @@
  * Bing map layer testing
  */
 import { Maps, ILoadedEventArgs, ILoadEventArgs, BingMap } from '../../../src/index';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { createElement, remove } from '@syncfusion/ej2-base';
 
 export function getElementByID(id: string): Element {
@@ -11,6 +12,14 @@ let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/
 let subDomains: string[] = ["t0","t1","t2","t3"];
 let zoomMax: string = "21";
 describe('Map layer testing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Bing Map layer testing', () => {
         let id: string = 'bing-map';
         let bingmap: Maps;
@@ -224,5 +233,14 @@ describe('Map layer testing', () => {
             ele.setAttribute('style', 'height: 512px; width: 512px;');
             osm.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

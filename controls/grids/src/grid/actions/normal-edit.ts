@@ -223,7 +223,12 @@ export class NormalEdit {
 
     private editSuccess(e: Object, args: EditArgs): void {
         if (!isNullOrUndefined(e)) {
-            args.data = e;
+            let adaptor: string = 'adaptor';
+            let rowData: string = 'rowData';
+            let isAdaptor: {getModuleName: Function} = this.parent.dataSource[adaptor];
+            args.data = (isAdaptor && isAdaptor.getModuleName && (isAdaptor.getModuleName() === 'ODataAdaptor' ||
+                        isAdaptor.getModuleName() === 'ODataV4Adaptor' || isAdaptor.getModuleName() === 'WebApiAdaptor')) ?
+                        extend({}, args[rowData], e) : e;
         }
         this.requestSuccess(args);
         this.parent.trigger(events.beforeDataBound, args);

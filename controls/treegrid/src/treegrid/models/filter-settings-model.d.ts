@@ -16,9 +16,6 @@ export interface FilterSettingsModel {
      * * `Menu` - Specifies the filter type as menu.
      * * `FilterBar` - Specifies the filter type as filterbar.
      * @default FilterBar
-     * @aspDefaultValueIgnore
-     * @isEnumeration true
-     * @aspType Syncfusion.EJ2.Grids.FilterType
      */
     type?: FilterType;
 

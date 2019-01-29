@@ -482,10 +482,6 @@ export class EventBase {
     }
 
     public wireAppointmentEvents(element: HTMLElement, isAllDay: boolean = false, event?: { [key: string]: Object }): void {
-        if (this.parent.calendarMode === 'Islamic' && (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) ||
-            !isNullOrUndefined(event[this.parent.eventFields.recurrenceID]))) {
-            return;
-        }
         let isReadOnly: boolean = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] as boolean : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
@@ -651,7 +647,8 @@ export class EventBase {
         let duration: number = endDate.getTime() - startDate.getTime();
         currentViewDate = new Date(+currentViewDate - duration);
         let dates: number[] = generate(
-            startDate, eventRule, <string>event[fields.recurrenceException], this.parent.firstDayOfWeek, undefined, currentViewDate);
+            startDate, eventRule, <string>event[fields.recurrenceException],
+            this.parent.firstDayOfWeek, undefined, currentViewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };

@@ -45,16 +45,16 @@ export class MapsTooltip {
         let tooltipEle: HTMLElement; let location: MapLocation;
         let toolTipData: Object = {};
         let templateData: object = [];
-        let index: number = parseFloat(targetId.split('_')[2]);
+        let index: number = targetId.indexOf('_LayerIndex_') > -1 && parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
         let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[index];
         let tooltipContent: string[] = []; let markerFill: string;
         location = getMousePosition(pageX, pageY, this.maps.svgObject);
-        let istooltipRender: boolean = (targetId.indexOf('_ShapeIndex_') > -1)
+        let istooltipRender: boolean = (targetId.indexOf('_shapeIndex_') > -1)
             || (targetId.indexOf('_MarkerIndex_') > -1) || (targetId.indexOf('_BubbleIndex_') > -1);
         if (istooltipRender) {
-            if (targetId.indexOf('_ShapeIndex_') > -1) {
+            if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
-                let shape: number = parseInt(targetId.split('_')[4], 10);
+                let shape: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
                 }
@@ -76,8 +76,8 @@ export class MapsTooltip {
                 //location.y = this.template(option, location);
 
             } else if (targetId.indexOf('_MarkerIndex_') > -1) {
-                let markerIdex: number = parseInt(targetId.split('_')[4], 10);
-                let dataIndex: number = parseInt(targetId.split('_')[6], 10);
+                let markerIdex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[0], 10);
+                let dataIndex: number = parseInt(targetId.split('_MarkerIndex_')[1].split('_')[2], 10);
                 let marker: MarkerSettingsModel = layer.markerSettings[markerIdex];
                 option = marker.tooltipSettings;
                 templateData = marker.dataSource[dataIndex];
@@ -90,8 +90,8 @@ export class MapsTooltip {
                 }
                 //location.y = this.template(option, location);
             } else if (targetId.indexOf('_BubbleIndex_') > -1) {
-                let bubbleIndex: number = parseInt(targetId.split('_')[4], 10);
-                let dataIndex: number = parseInt(targetId.split('_')[6], 10);
+                let bubbleIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[0], 10);
+                let dataIndex: number = parseInt(targetId.split('_BubbleIndex_')[1].split('_')[2], 10);
                 let bubble: BubbleSettingsModel = layer.bubbleSettings[bubbleIndex];
                 option = bubble.tooltipSettings;
                 templateData = bubble.dataSource[dataIndex];

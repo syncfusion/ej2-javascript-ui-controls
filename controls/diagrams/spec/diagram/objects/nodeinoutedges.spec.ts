@@ -5,7 +5,7 @@ import { Node } from '../../../src/diagram/objects/node';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 /**
  * Node - Connector Relationships
  */
@@ -16,6 +16,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -88,5 +94,14 @@ describe('Diagram Control', () => {
             expect(node.outEdges.length === 0 && newSource.outEdges[0] === connector.id).toBe(true);
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

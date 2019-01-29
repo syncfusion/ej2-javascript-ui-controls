@@ -2174,7 +2174,6 @@ let LinearGauge = class LinearGauge extends Component {
      */
     render() {
         this.renderGaugeElements();
-        this.renderArea();
         this.calculateBounds();
         this.renderAxisElements();
         this.trigger(loaded, { gauge: this });
@@ -2196,15 +2195,6 @@ let LinearGauge = class LinearGauge extends Component {
             secondaryElement.setAttribute('style', 'position: relative');
             this.element.appendChild(secondaryElement);
         }
-    }
-    /**
-     * Render the map area border
-     */
-    renderArea() {
-        let size = measureText(this.title, this.titleStyle);
-        let rectSize = new Rect(this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
-        let rect = new RectOption(this.element.id + 'LinearGaugeBorder', this.background, this.border, 1, rectSize);
-        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
     }
     /**
      * @private

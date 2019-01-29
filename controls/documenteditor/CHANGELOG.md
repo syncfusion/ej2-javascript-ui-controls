@@ -2,41 +2,7 @@
 
 ## [Unreleased]
 
-## 16.4.48 (2019-01-16)
-
-### Document Editor
-
-#### Bug Fixes
-
-- Broken image rendering is handled.
-
-## 16.4.46 (2019-01-08)
-
-### Document Editor
-
-#### New Features
-
-- Table editing performance optimized.
-
-## 16.4.45 (2019-01-02)
-
-### Document Editor
-
-#### Bug Fixes
-
-- Table border is rendered properly.
-
-## 16.4.44 (2018-12-24)
-
-### Document Editor
-
-#### Bug Fixes
-
-- Tab stop now layout properly in header and footer.
-- Empty header and footer now layout properly.
-- Table column span values are now updated properly.
-
-## 16.4.40-beta (2018-12-10)
+## 17.1.1-beta (2019-01-22)
 
 ### Document Editor
 

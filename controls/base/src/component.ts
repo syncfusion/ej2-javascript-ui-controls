@@ -58,8 +58,8 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             this.setPersistData();
         }
         this.localObserver.destroy();
-        removeClass([this.element], ['e-control']);
         if (this.refreshing) { return; }
+        removeClass([this.element], ['e-control']);
         this.trigger('destroyed', { cancel: false });
         super.destroy();
         this.moduleLoader.clean();

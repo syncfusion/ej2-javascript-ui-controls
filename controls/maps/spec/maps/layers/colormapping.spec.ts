@@ -5,11 +5,20 @@ import { Maps, ILoadedEventArgs, Zoom } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { electiondata } from '../data/us-data.spec';
 import { usMap, usState } from '../data/data.spec';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 Maps.Inject(Zoom)
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
 }
 describe('Map layer testing', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Color Map testing', () => {
         let id: string = 'color-map';
         let colormap: Maps;
@@ -51,21 +60,21 @@ describe('Map layer testing', () => {
             colormap.destroy();
         });
         it('Equal color mappping testing spec', (done: Function) => {
-            spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_28');
+            spec = getElementByID(id + '_LayerIndex_0_shapeIndex_10_dataIndex_28');
             expect(spec.getAttribute('fill')).toBe('#FF4500');
-            // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_50_dataIndex_undefined');
+            // spec = getElementByID(id + '_LayerIndex_0_shapeIndex_50_dataIndex_undefined');
             // expect(spec.getAttribute('fill')).toBe('#33CCFF');
             done();
         });
         it('Range color mappping testing spec', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_28');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_10_dataIndex_28');
                 expect(spec.getAttribute('fill')).toBe('#33CCFF');
-                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_50_dataIndex_undefined');
+                // spec = getElementByID(id + '_LayerIndex_0_shapeIndex_50_dataIndex_undefined');
                 // expect(spec.getAttribute('fill')).toBe('#33CCFF');
-                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_20_dataIndex_undefined');
+                // spec = getElementByID(id + '_LayerIndex_0_shapeIndex_20_dataIndex_undefined');
                 // expect(spec.getAttribute('fill')).toBe('#33CCFF');
-                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_41_dataIndex_undefined');
+                // spec = getElementByID(id + '_LayerIndex_0_shapeIndex_41_dataIndex_undefined');
                 // expect(spec.getAttribute('fill')).toBe('#33CCFF');
                 done();
             };
@@ -88,13 +97,13 @@ describe('Map layer testing', () => {
         });
         it('Desaturation color mappping testing spec', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_28');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_10_dataIndex_28');
                 expect(spec.getAttribute('fill')).toBe('#33CCFF');
-                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_50_dataIndex_undefined');
+                // spec = getElementByID(id + '_LayerIndex_0_shapeIndex_50_dataIndex_undefined');
                 // expect(spec.getAttribute('fill')).toBe('#33CCFF');
-                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_20_dataIndex_undefined');
+                // spec = getElementByID(id + '_LayerIndex_0_shapeIndex_20_dataIndex_undefined');
                 // expect(spec.getAttribute('fill')).toBe('#33CCFF');
-                // spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_41_dataIndex_undefined');
+                // spec = getElementByID(id + '_LayerIndex_0_shapeIndex_41_dataIndex_undefined');
                 // expect(spec.getAttribute('fill')).toBe('#33CCFF');
                 done();
             };
@@ -118,7 +127,7 @@ describe('Map layer testing', () => {
 
         it('color value path and value path null color mappping testing spec', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_undefined');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_10_dataIndex_undefined');
                 expect(spec.getAttribute('fill')).toBe('Orange');
                 done();
             };
@@ -128,7 +137,7 @@ describe('Map layer testing', () => {
         });
         it('shape data auto fill testing spec', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_undefined');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_10_dataIndex_undefined');
                 expect(spec.getAttribute('fill')).not.toBe('Orange');
                 done();
             };
@@ -137,7 +146,7 @@ describe('Map layer testing', () => {
         });
         it('shape data color value path bindiing testing spec', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_10_dataIndex_28');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_10_dataIndex_28');
                 expect(spec.getAttribute('fill')).toBe('#B5E485');
                 done();
             };
@@ -146,15 +155,15 @@ describe('Map layer testing', () => {
         });
         it('shape data color property checking', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_0_dataIndex_null');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_0_dataIndex_null');
                 expect(spec.getAttribute('fill')).toBe('red');
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_2_dataIndex_null');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_2_dataIndex_null');
                 expect(spec.getAttribute('fill')).toBe('aqua');
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_1_dataIndex_null');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_1_dataIndex_null');
                 expect(spec.getAttribute('fill')).toBe('orange');
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_3_dataIndex_null');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_3_dataIndex_null');
                 expect(spec.getAttribute('fill')).toBe('teal');
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_4_dataIndex_null');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_4_dataIndex_null');
                 expect(spec.getAttribute('fill')).toBe('purple');
                 done();
             };
@@ -215,7 +224,7 @@ describe('Map layer testing', () => {
 
         it('Equal color mappping testing spec for out of the ranges', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID('color-map_LayerIndex_0_ShapeIndex_10_dataIndex_28');
+                spec = getElementByID('color-map_LayerIndex_0_shapeIndex_10_dataIndex_28');
                 expect(spec.getAttribute('fill')).toBe('#FF4500');
                 done();
             };
@@ -224,7 +233,7 @@ describe('Map layer testing', () => {
 
         it('Range color mappping testing spec for out of the ranges', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID('color-map_LayerIndex_0_ShapeIndex_8_dataIndex_4');
+                spec = getElementByID('color-map_LayerIndex_0_shapeIndex_8_dataIndex_4');
                 expect(spec.getAttribute('fill')).toBe('violet');
                 done();
             };
@@ -294,7 +303,7 @@ describe('Map layer testing', () => {
 
         it('Equal color mappping testing spec with multi colors', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_9_dataIndex_5');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_9_dataIndex_5');
                 expect(spec.getAttribute('fill')).toBe('red');
                 done();
             };
@@ -303,9 +312,9 @@ describe('Map layer testing', () => {
 
         it('Range color mappping testing spec with multi colors', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_19_dataIndex_27');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_19_dataIndex_27');
                 expect(spec.getAttribute('fill')).toBe('#555500');
-                let spec1: Element = getElementByID(id + '_LayerIndex_0_ShapeIndex_16_dataIndex_15');
+                let spec1: Element = getElementByID(id + '_LayerIndex_0_shapeIndex_16_dataIndex_15');
                 expect(spec1.getAttribute('fill')).toBe('#2b6b00');
                 done();
             };
@@ -326,10 +335,10 @@ describe('Map layer testing', () => {
 
         it('Desaturation color mappping testing spec with multi colors', (done: Function) => {
             colormap.loaded = (args: ILoadedEventArgs) => {
-                spec = getElementByID(id + '_LayerIndex_0_ShapeIndex_14_dataIndex_50');
+                spec = getElementByID(id + '_LayerIndex_0_shapeIndex_14_dataIndex_50');
                 expect(spec.getAttribute('fill')).toBe('#aa2b00');
                 expect(spec.getAttribute('opacity')).toBe('0.5');
-                let specanother: Element = getElementByID(id + '_LayerIndex_0_ShapeIndex_34_dataIndex_14');
+                let specanother: Element = getElementByID(id + '_LayerIndex_0_shapeIndex_34_dataIndex_14');
                 expect(specanother.getAttribute('fill')).toBe('#24f6f8');
                 expect(specanother.getAttribute('opacity')).toBe('0.7142857142857143');
                 done();
@@ -348,6 +357,14 @@ describe('Map layer testing', () => {
             ];
             colormap.refresh();
         });
-
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

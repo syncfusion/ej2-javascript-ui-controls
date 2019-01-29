@@ -1,5 +1,5 @@
 import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, attributes, addClass, detach, createElement } from '@syncfusion/ej2-base';import { removeClass , Browser} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';import { maskInputBlurHandler } from '../base/mask-base';
-import {MaskChangeEventArgs,MaskFocusEventArgs} from "./maskedtextbox";
+import {MaskChangeEventArgs,MaskFocusEventArgs,MaskBlurEventArgs} from "./maskedtextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -142,9 +142,15 @@ export interface MaskedTextBoxModel extends ComponentModel{
     change?: EmitType <MaskChangeEventArgs>;
 
     /**
-     * Triggers when the MaskedTextBox while got focus in.
+     * Triggers when the MaskedTextBox got focus in.
      * @event
      */
     focus?: EmitType<MaskFocusEventArgs>;
+
+    /**
+     * Triggers when the MaskedTextBox got focus out.
+     * @event
+     */
+    blur?: EmitType<MaskBlurEventArgs>;
 
 }

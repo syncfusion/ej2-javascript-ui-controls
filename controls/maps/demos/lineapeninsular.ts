@@ -3,6 +3,7 @@
  */
 import { Maps, Marker, Zoom, NavigationLine, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { penisular_location, penisular_marker } from './MapData/MapLocation';
+import { world_Map } from './MapData/worldMap';
 
 Maps.Inject(Marker, Zoom, NavigationLine);
 //tslint:disable:max-func-body-length
@@ -26,7 +27,7 @@ Maps.Inject(Marker, Zoom, NavigationLine);
         },
         layers: [
             {
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
+                shapeData: world_Map,
                 shapeSettings: {
                     fill: '#789071',
                 },
