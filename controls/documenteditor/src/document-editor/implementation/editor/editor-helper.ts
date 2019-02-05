@@ -293,6 +293,51 @@ export class HelperMethods {
         return text;
     }
 
+    /**
+     * @private
+     */
+    public static formatClippedString(base64ImageString: string): ImageInfo {
+        let extension: string = '';
+        let formatClippedString: string = '';
+        if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
+            extension = '.bmp';
+            formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
+            extension = '.emf';
+            formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
+            extension = '.exif';
+            formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
+            extension = '.gif';
+            formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
+            extension = '.ico';
+            formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
+            extension = '.jpeg';
+            formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
+            extension = '.jpg';
+            formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
+            extension = '.png';
+            formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
+            extension = '.tif';
+            formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
+        } else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
+            extension = '.wmf';
+            formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
+        } else {
+            extension = '.jpeg';
+        }
+        return { 'extension': extension, 'formatClippedString': formatClippedString };
+    }
+    private static startsWith(sourceString: string, startString: string): boolean {
+        return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
+    }
+
 }
 /** 
  * @private
@@ -489,4 +534,12 @@ export interface WidthInfo {
 export interface RtlInfo {
     isRtl: boolean;
     id: number;
+}
+
+/**
+ * @private
+ */
+export interface ImageInfo {
+    extension: string;
+    formatClippedString: string;
 }

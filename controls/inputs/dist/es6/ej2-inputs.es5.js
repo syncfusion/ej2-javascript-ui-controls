@@ -7945,7 +7945,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 index: index,
                 isPreload: this.isPreLoadFile(listItem)
             };
+            var eventsArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
+            };
             this.trigger('rendering', eventArgs);
+            this.trigger('fileListRendering', eventsArgs);
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
@@ -8017,7 +8024,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     index: index,
                     isPreload: this.isPreLoadFile(listItem)
                 };
+                var eventsArgs = {
+                    element: liElement,
+                    fileInfo: listItem,
+                    index: index,
+                    isPreload: this.isPreLoadFile(listItem)
+                };
                 this.trigger('rendering', eventArgs);
+                this.trigger('fileListRendering', eventsArgs);
                 this.listParent.appendChild(liElement);
                 this.fileList.push(liElement);
                 this.truncateName(textElement);
@@ -9305,6 +9319,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Event()
     ], Uploader.prototype, "rendering", void 0);
+    __decorate$4([
+        Event()
+    ], Uploader.prototype, "fileListRendering", void 0);
     __decorate$4([
         Event()
     ], Uploader.prototype, "selected", void 0);

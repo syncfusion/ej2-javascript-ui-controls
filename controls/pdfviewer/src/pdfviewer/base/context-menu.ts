@@ -32,9 +32,6 @@ export class ContextMenu {
      */
     public createContextMenu(): void {
         this.contextMenuElement = createElement('ul', { id: this.pdfViewer.element.id + '_context_menu' });
-        if (this.pdfViewer.enableRtl) {
-            this.contextMenuElement.style.direction = 'rtl';
-        }
         this.pdfViewer.element.appendChild(this.contextMenuElement);
         this.contextMenuObj = new Context({
             target: '#' + this.pdfViewerBase.viewerContainer.id, items: this.copyContextMenu,

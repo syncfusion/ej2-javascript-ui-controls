@@ -75,7 +75,7 @@ export class ExcelExport {
                                 } else if (pivotCell.type === 'sum') {
                                     cellValue = cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total'));
                                 } else {
-                                    cellValue = cellValue;
+                                    cellValue = cellValue === '0' ? '' : cellValue;
                                 }
                                 if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                     cells.push({

@@ -9,12 +9,13 @@ import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RulesModel, RuleMode
 import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DropDownList, ChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { MultiSelect, MultiSelectChangeEventArgs } from '@syncfusion/ej2-dropdowns';
-import { EmitType, Event, EventHandler, getValue } from '@syncfusion/ej2-base';
-import { Query, Predicate, DataManager } from '@syncfusion/ej2-data';
+import { EmitType, Event, EventHandler, getValue, Animation } from '@syncfusion/ej2-base';
+import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';
 import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip } from '@syncfusion/ej2-popups';
+type ReturnType = { result: Object[], count: number, aggregates?: Object };
 MultiSelect.Inject(CheckBoxSelection);
 export class Columns extends ChildProperty<Columns> {
     /**
@@ -192,6 +193,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private operatorValue: Object;
     private ruleElem: Element;
     private groupElem: Element;
+    private dataColl: object[];
+    private dataManager: DataManager;
     /** 
      * Triggers when the component is created.
      * @event 
@@ -308,7 +311,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @default []
      */
     @Property([])
-    public dataSource: Object[];
+    public dataSource: Object[] | Object | DataManager;
     /**
      * Specifies the displayMode as Horizontal or Vertical.
      * @default 'Horizontal'
@@ -386,8 +389,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return 'query-builder';
     }
     private initialize(): void {
-        if (this.dataSource.length) {
-            let columnKeys: string[] = Object.keys(this.dataSource[0]);
+        if (this.dataColl.length) {
+            let columnKeys: string[] = Object.keys(this.dataColl[0]);
             let cols: ColumnsModel[] = [];
             let type: string;
             let isDate: boolean = false; let value: string | number | boolean | Object;
@@ -398,7 +401,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 for (let i: number = 0, len: number = columns.length; i < len; i++) {
                     if (!columns[i].type) {
                         if (columnKeys.indexOf(columns[i].field) > -1) {
-                            value = this.dataSource[0][columns[i].field];
+                            value = this.dataColl[0][columns[i].field];
                             type = typeof value;
                             if (type === 'string') {
                                 isDate = !isNaN(Date.parse(value as string));
@@ -417,7 +420,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             } else {
                 for (let i: number = 0, len: number = columnKeys.length; i < len; i++) {
-                    value = this.dataSource[0][columnKeys[i]];
+                    value = this.dataColl[0][columnKeys[i]];
                     type = typeof value;
                     if (type === 'string') {
                         isDate = !isNaN(Date.parse(value as string));
@@ -440,6 +443,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (target.tagName === 'SPAN') {
             target = target.parentElement;
         }
+        if (target.className.indexOf('e-collapse-rule') > -1) {
+            let animation: Animation = new Animation({ duration: 1000, delay: 0 });
+            let summaryElem: HTMLElement =  document.getElementById(this.element.id + '_summary_content');
+            let txtareaElem: HTMLElement = summaryElem.querySelector('.e-summary-text');
+            animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
+            let groupElem: HTMLElement = this.element.querySelector('.e-group-container') as HTMLElement;
+            groupElem.style.display = 'none';
+            txtareaElem.textContent = this.getSqlFromRules(this.rule);
+            summaryElem.style.display = 'block';
+            txtareaElem.style.height = txtareaElem.scrollHeight + 'px';
+        }
         if (target.tagName === 'BUTTON') {
             if (target.className.indexOf('e-removerule') > -1) {
                 if (target.className.indexOf('e-tooltip') > -1) {
@@ -450,6 +464,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 (getComponent(target as HTMLElement, 'tooltip') as Tooltip).destroy();
                 this.deleteGroup(closest(target, '.e-group-container'));
             } else if (target.className.indexOf('e-edit-rule') > -1) {
+                let animation: Animation = new Animation({ duration: 1000, delay: 0 });
+                animation.animate('.e-query-builder' , { name: 'SlideLeftIn' });
                 document.getElementById(this.element.id + '_summary_content').style.display = 'none';
                 if (this.element.querySelectorAll('.e-group-container').length < 1) {
                     this.addGroupElement(false, this.element, this.rule.condition);
@@ -463,11 +479,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     groupElem.style.display = 'block';
                 }
-            } else if (target.className.indexOf('e-collapse-rule') > -1) {
-                let groupElem: HTMLElement = this.element.querySelector('.e-group-container') as HTMLElement;
-                groupElem.style.display = 'none';
-                this.element.querySelector('.e-summary-text').textContent = this.getSqlFromRules(this.rule);
-                document.getElementById(this.element.id + '_summary_content').style.display = 'block';
             }
         } else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
             let element: Element = closest(target, '.e-group-container');
@@ -508,6 +519,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let height: string;
         if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
             element.textContent = this.l10n.getConstant('Remove');
+            addClass([element], 'e-flat');
+            addClass([element], 'e-primary');
         } else {
             addClass([element], 'e-round');
             addClass([element], 'e-icon-btn');
@@ -653,11 +666,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl' }, innerHTML: 'AND' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl e-small' }, innerHTML: 'AND' });
         glueElem.appendChild(labelElem);
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-or', value: 'OR' } });
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl' }, innerHTML: 'OR' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl e-small' }, innerHTML: 'OR' });
         glueElem.appendChild(labelElem);
         groupHdrElem.appendChild(glueElem);
         grpActElem = this.createElement('div', { attrs: { class: 'e-group-action' } });
@@ -980,7 +993,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return result;
     }
     private renderMultiSelect(rule: RulesModel, parentId: string, i: number, selectedValue: string[] | number[]): void {
-        let ds: object[] = this.getDistinctValues(this.dataSource, rule.field);
+        let ds: object[] = this.getDistinctValues(this.dataColl, rule.field);
         let multiSelectObj: MultiSelect = new MultiSelect({
             dataSource: new DataManager(ds),
             query: new Query([rule.field]),
@@ -1011,7 +1024,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private renderStringValue(parentId: string, rule: RulesModel, operator: string, idx: number, ruleValElem: HTMLElement): void {
         let selectedVal: string[];
         let selectedValue: string = this.isImportRules ? rule.value as string : '';
-        if ((operator === 'in' || operator === 'notin') && this.dataSource.length > 0) {
+        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
             selectedVal = this.isImportRules ? rule.value as string[] : [];
             this.renderMultiSelect(rule, parentId, idx, selectedVal);
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
@@ -1039,7 +1052,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         length: number): void {
         let selectedValue: number = this.isImportRules ? rule.value as number : 0;
         let selectedVal: number[];
-        if ((operator === 'in' || operator === 'notin') && this.dataSource.length > 0) {
+        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
             selectedVal = this.isImportRules ? rule.value as number[] : [];
             this.renderMultiSelect(rule, parentId, idx, selectedVal);
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
@@ -1511,21 +1524,24 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 id: this.element.id + '_summary_content'
             }
         });
-        let textElem: Element = this.createElement('textarea', { attrs: { class: 'e-summary-text', readonly: 'true' } });
-        let editElem: Element = this.createElement('button', { attrs: { class: 'e-edit-rule e-css e-btn e-small' } });
+        let textElem: Element =
+        this.createElement('textarea', { attrs: { class: 'e-summary-text', readonly: 'true' }, styles: 'max-height:500px' });
+        let editElem: Element = this.createElement('button', { attrs: { class: 'e-edit-rule e-css e-btn e-small e-flat e-primary' } });
+        let divElem: Element = this.createElement('div', { attrs: { class: 'e-summary-btndiv' } });
         contentElem.appendChild(textElem);
         textElem.textContent = this.getSqlFromRules(this.rule);
         editElem.textContent = this.l10n.getConstant('Edit');
-        contentElem.appendChild(editElem);
+        divElem.appendChild(editElem);
+        contentElem.appendChild(divElem);
         this.element.appendChild(contentElem);
     }
     private renderSummaryCollapse(): void {
-        let collapseElem: Element = this.createElement('button', {
+        let collapseElem: Element = this.createElement('div', {
             attrs: {
-                class: 'e-collapse-rule e-css e-btn e-small'
+                class: 'e-collapse-rule e-icons',
+                title: this.l10n.getConstant('SummaryViewTitle')
             }
         });
-        collapseElem.appendChild(this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-collapse-icon' } }));
         this.element.querySelector('.e-group-header').appendChild(collapseElem);
     }
     private columnSort(): void {
@@ -1642,11 +1658,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             GreaterThanOrEqual: 'Greater Than Or Equal',
             Between: 'Between',
             NotBetween: 'Not Between',
-            Empty: 'Empty',
-            NotEmpty: 'Not Empty',
             In: 'In',
             NotIn: 'Not In',
-            NotContains: 'Not Contains',
             Remove: 'REMOVE',
             SelectField: 'Select a field',
             SelectOperator: 'Select operator',
@@ -1655,7 +1668,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             AddGroup: 'Add Group',
             AddCondition: 'Add Condition',
             Edit: 'EDIT',
-            ValidationMessage: 'This field is required'
+            ValidationMessage: 'This field is required',
+            SummaryViewTitle: 'Summary View'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization();
@@ -1701,11 +1715,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         };
         this.operatorValue = {
             equal: 'Equal', greaterthan: 'GreaterThan', greaterthanorequal: 'GreaterThanOrEqual',
-            lessthan: 'LessThan', lessthanorequal: 'LessThanOrEqual', notequal: 'NotEqual', empty: 'Empty', notempty: 'NotEmpty',
+            lessthan: 'LessThan', lessthanorequal: 'LessThanOrEqual', notequal: 'NotEqual',
             between: 'Between', in: 'in', notin: 'NotIn', notbetween: 'NotBetween', startswith: 'StartsWith', endswith: 'EndsWith',
             contains: 'Contains'
         };
     }
+
     protected render(): void {
         this.levelColl = {};
         this.items = [
@@ -1719,6 +1734,26 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }];
         this.ruleElem = this.ruleTemplate();
         this.groupElem = this.groupTemplate();
+        if (this.dataSource instanceof DataManager) {
+            this.dataManager = this.dataSource as DataManager;
+            this.executeDataManager(new Query());
+        } else {
+            this.dataManager = new DataManager(this.dataSource as object[]);
+            this.dataColl = this.dataManager.executeLocal(new Query());
+            this.initControl();
+        }
+    }
+    private executeDataManager(query: Query): void {
+        let data: Promise<Object> = this.dataManager.executeQuery(query) as Promise<Object>;
+        let deferred: Deferred = new Deferred();
+        data.then((e: { result: Object[]}) => {
+            this.dataColl = e.result;
+            this.initControl();
+        }).catch((e: ReturnType) => {
+            deferred.reject(e);
+        });
+    }
+    private initControl(): void {
         this.initialize();
         this.initWrapper();
         this.wireEvents();

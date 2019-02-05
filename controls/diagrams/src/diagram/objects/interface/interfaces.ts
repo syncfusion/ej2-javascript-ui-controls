@@ -139,14 +139,6 @@ export interface IExportOptions extends IPrintOptions {
      * @default (0)
      */
     bounds?: Rect;
-
-    /**
-     * Sets the printOptions that has to be printed
-     * @default false
-     */
-    printOptions?: boolean;
-
-
 }
 
 /** Interface to cancel the diagram context menu click event */

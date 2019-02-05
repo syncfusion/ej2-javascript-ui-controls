@@ -6,7 +6,6 @@ import { Node } from '../../../src/diagram/objects/node';
 import { HorizontalAlignment, VerticalAlignment, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from './../interaction/mouseevents.spec';
 import { ConnectorModel, PathModel, BasicShapeModel } from '../../../src';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
  * Annotations - Alignments
@@ -19,12 +18,6 @@ describe('Diagram Control', () => {
         let pathData: string = 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,'
             + '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram53' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -273,12 +266,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
 
             ele = createElement('div', { id: 'diagramannotationEditing' });
             document.body.appendChild(ele);
@@ -301,18 +288,13 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as NodeModel).annotations.length > 0).toBe(true);
             done();
         });
+
     });
     describe('Annotation style update SVG mode', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramh' });
             document.body.appendChild(ele);
 
@@ -360,11 +342,11 @@ describe('Diagram Control', () => {
                 return (textElement.childNodes[i] as HTMLElement).getAttribute('y');
             }
             expect(getAttributeX(0) === '0' && getAttributeY(0) === '10.800000000000004').toBe(true);
-            expect(getAttributeX(1) === '3' && getAttributeY(1) === '25.200000000000003').toBe(true);
-            expect(getAttributeX(2) === '3' && getAttributeY(2) === '39.6').toBe(true);
-            expect(getAttributeX(3) === '3' && getAttributeY(3) === '54').toBe(true);
-            expect(getAttributeX(4) === '3' && getAttributeY(4) === '68.4').toBe(true);
-            expect(getAttributeX(5) === '0' && getAttributeY(5) === '82.80000000000001').toBe(true);
+                expect(getAttributeX(1) === '3' && getAttributeY(1) === '25.200000000000003').toBe(true);
+                expect(getAttributeX(2) === '3' && getAttributeY(2) === '39.6').toBe(true);
+                expect(getAttributeX(3) === '3' && getAttributeY(3) === '54').toBe(true);
+                expect(getAttributeX(4) === '3' && getAttributeY(4) === '68.4').toBe(true);
+                expect(getAttributeX(5) === '0' && getAttributeY(5) === '82.80000000000001').toBe(true);
             done();
         });
     });
@@ -374,12 +356,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramAnnotationPositionIssue' });
             document.body.appendChild(ele);
 
@@ -423,15 +399,9 @@ describe('Diagram Control', () => {
         let htmlElement: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramAnnotationTemplate' });
             document.body.appendChild(ele);
-
+            
             htmlElement = createElement('div', { id: 'element', className: 'domelement', styles: 'background:red; height:100%;width:100%;' });
             document.body.appendChild(htmlElement);
 
@@ -472,7 +442,7 @@ describe('Diagram Control', () => {
                 shape: shape
             };
             let connector1: ConnectorModel = {
-                id: 'connector1', sourcePoint: { x: 800, y: 100 }, targetPoint: { x: 600, y: 300 },
+                id: 'connector1', sourcePoint: {x: 800, y: 100}, targetPoint: {x: 600, y: 300},
                 annotations: [{
                     id: 'label1', height: 100, width: 100, template: '<div style="background:red; height:100%;width:100%;"><div/>'
                 }],
@@ -565,12 +535,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -629,14 +593,5 @@ describe('Diagram Control', () => {
             expect(text !== undefined).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

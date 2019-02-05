@@ -12,7 +12,6 @@ import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Selector } from '../../../src/diagram/interaction/selector';
 import { Container } from '../../../src/diagram/core/containers/container';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 function drag(diagram: Diagram) {
     let diagramCanvas: HTMLElement; let left: number; let top: number;
@@ -68,12 +67,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane1' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -134,18 +127,11 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });
-
     });
     describe('Horizontal Swimlane without header', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane11' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -202,8 +188,6 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });
-
-
     });
     // describe('Horizontal Swimlane without phase', () => {
     //     let diagram: Diagram;
@@ -333,12 +317,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane2' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -392,18 +370,11 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });
-
     });
     describe('Vertical Swimlane without header', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane21' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -457,18 +428,11 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });
-
     });
     describe('Vertical Swimlane without phase', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane22' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -522,18 +486,11 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });
-
     });
     describe('Vertical Swimlane without header and phase', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane23' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -587,7 +544,6 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });
-
     });
 
     describe('Horziontal Swimlane Selection when resizing - resizeEast', () => {
@@ -596,12 +552,6 @@ describe('Diagram Control', () => {
         let mouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane24' });
             document.body.appendChild(ele);
 
@@ -645,7 +595,7 @@ describe('Diagram Control', () => {
                                 style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
                                 header: { content: { content: 'Phase' } }
                             },
-
+                            
                         ],
                         phaseSize: 20,
                     },
@@ -672,7 +622,6 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
             done();
         });
-
     });
 
     describe('Horziontal Swimlane Selection when resizing - resizeSouth', () => {
@@ -681,12 +630,6 @@ describe('Diagram Control', () => {
         let mouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane25' });
             document.body.appendChild(ele);
 
@@ -730,7 +673,7 @@ describe('Diagram Control', () => {
                                 style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
                                 header: { content: { content: 'Phase' } }
                             },
-
+                            
                         ],
                         phaseSize: 20,
                     },
@@ -757,7 +700,6 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
             done();
         });
-
     });
 
     describe('Horziontal Swimlane Selection when resizing - resizeSouth', () => {
@@ -766,12 +708,6 @@ describe('Diagram Control', () => {
         let mouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane26' });
             document.body.appendChild(ele);
 
@@ -815,7 +751,7 @@ describe('Diagram Control', () => {
                                 style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
                                 header: { content: { content: 'Phase' } }
                             },
-
+                            
                         ],
                         phaseSize: 20,
                     },
@@ -842,15 +778,6 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
     describe('Horziontal Swimlane Selection when resizing - resizeSouth', () => {
         let diagram: Diagram;
@@ -858,12 +785,6 @@ describe('Diagram Control', () => {
         let mouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramSwimlane26' });
             document.body.appendChild(ele);
 
@@ -909,8 +830,8 @@ describe('Diagram Control', () => {
             var mouseevents = new MouseEvents();
             var swimlaneElement = document.getElementById('swimlane');
             var bounds = swimlaneElement.getBoundingClientRect();
-            mouseevents.clickEvent(diagramCanvas, (bounds.left + (bounds.width / 2) + diagram.element.offsetLeft) + 20, (bounds.top + diagram.element.offsetTop) + 20);
-            mouseevents.mouseDownEvent(diagramCanvas, (bounds.left + (bounds.width / 2) + diagram.element.offsetLeft + 10) + 20, (bounds.top + bounds.height + diagram.element.offsetTop) + 20);
+            mouseevents.clickEvent(diagramCanvas, (bounds.left + (bounds.width / 2) + diagram.element.offsetLeft)+20, (bounds.top + diagram.element.offsetTop)+20);
+            mouseevents.mouseDownEvent(diagramCanvas, (bounds.left + (bounds.width / 2) + diagram.element.offsetLeft + 10)+20, (bounds.top + bounds.height + diagram.element.offsetTop)+20);
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });

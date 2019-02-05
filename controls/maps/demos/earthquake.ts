@@ -2,7 +2,6 @@
  * Earth quake map sample
  */
 import { Maps, Zoom, Marker, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
-import { asia } from './MapData/asia';
 
 Maps.Inject(Zoom, Marker);
 
@@ -28,7 +27,7 @@ Maps.Inject(Zoom, Marker);
             {
                 shapeDataPath: 'name',
                 shapePropertyPath: 'name',
-                shapeData: asia,
+                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Asia.json'),
                 markerSettings: [{
                     visible: true,
                     height: 100,

@@ -1,5 +1,5 @@
 import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, getUniqueID } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType, FocusEventArgs, BlurEventArgs } from '@syncfusion/ej2-inputs';import { ListBase, cssClass as ListBaseClasses, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
-import {TimeFormatObject,ChangeEventArgs,PopupEventArgs,ItemEventArgs} from "./timepicker";
+import {ChangeEventArgs,PopupEventArgs,ItemEventArgs} from "./timepicker";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -23,8 +23,6 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Specifies the component to act as strict so that, it allows to enter only a valid time value within a specified range or else 
      * resets to previous value. By default, strictMode is in false.
-     * > For more details refer to 
-     * [`Strict Mode`](https://ej2.syncfusion.com/documentation/timepicker/strict-mode?lang=typescript) documentation.
      * @default false
      */
     strictMode?: boolean;
@@ -32,12 +30,9 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Specifies the format of value that is to be displayed in component. By default, the format is
      * based on the culture. 
-     * > For more details refer to 
-     * [`Format`](../timepicker/getting-started#setting-the-time-format) documentation.
-     * @aspType string
      * @default null
      */
-    format?: string | TimeFormatObject;
+    format?: string;
 
     /**
      * Specifies whether the component to be disabled or not.
@@ -91,8 +86,6 @@ export interface TimePickerModel extends ComponentModel{
 
     /**
      * Specifies the time interval between the two adjacent time values in the popup list. 
-     * > For more details refer to 
-     * [`Format`](../timepicker/getting-started#setting-the-time-format)documentation.
      * @default 30
      * 
      */
@@ -101,8 +94,6 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Specifies the scroll bar position if there is no value is selected in the popup list or
      *  the given value is not present in the popup list.
-     * > For more details refer to 
-     * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
      * @default null
      */
     scrollTo?: Date;
@@ -115,16 +106,12 @@ export interface TimePickerModel extends ComponentModel{
 
     /**
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
-     * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     min?: Date;
 
     /**
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
-     * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     max?: Date;

@@ -1495,21 +1495,6 @@ var NodeConstraints;
     /** Enables all constraints */
     NodeConstraints[NodeConstraints["Default"] = 5240814] = "Default";
 })(NodeConstraints || (NodeConstraints = {}));
-/** Enables/Disables The element actions
- * None - Diables all element actions are none
- * ElementIsPort - Enable element action is port
- * ElementIsGroup - Enable element action as Group
- * @private
- */
-var ElementAction;
-(function (ElementAction) {
-    /** Disables all element actions are none  */
-    ElementAction[ElementAction["None"] = 0] = "None";
-    /** Enable the element action is Port  */
-    ElementAction[ElementAction["ElementIsPort"] = 2] = "ElementIsPort";
-    /** Enable the element action as Group  */
-    ElementAction[ElementAction["ElementIsGroup"] = 4] = "ElementIsGroup";
-})(ElementAction || (ElementAction = {}));
 /** Enables/Disables the handles of the selector
  * Rotate - Enable Rotate Thumb
  * ConnectorSource - Enable Connector source point
@@ -1894,7 +1879,6 @@ var Keys;
  * * TextEdit - Indicates the text editing is in progress.
  * * Group - Indicates the group is in progress.
  * * Clear - Indicates diagram have clear all.
- * * PreventClearSelection - prevents diagram from clear selection
  */
 var DiagramAction;
 (function (DiagramAction) {
@@ -2122,12 +2106,6 @@ class DiagramElement {
          */
         this.verticalAlignment = 'Auto';
         /**
-         * Sets/Gets the mirror image of diagram element in both horizontal and vertical directions
-         * * FlipHorizontal - Translate the diagram element throughout its immediate parent
-         * * FlipVertical - Rotate the diagram element throughout its immediate parent
-         */
-        this.flip = 'None';
-        /**
          * Sets whether the element has to be aligned with respect to a point/with respect to its immediate parent
          * * Point - Diagram elements will be aligned with respect to a point
          * * Object - Diagram elements will be aligned with respect to its immediate parent
@@ -2183,16 +2161,6 @@ class DiagramElement {
         this.isRectElement = false;
         /** @private */
         this.isCalculateDesiredSize = true;
-        /**
-         * Set the offset values for container in flipping
-         */
-        /** @private */
-        this.flipOffset = { x: 0, y: 0 };
-        /**
-         * Defines whether the element is group or port
-         */
-        /** @private */
-        this.elementActions = ElementAction.None;
         //private variables
         this.position = undefined;
         this.unitMode = undefined;
@@ -2711,10 +2679,6 @@ class Container extends DiagramElement {
                     if (child.horizontalAlignment === 'Stretch') {
                         child.offsetX = this.offsetX;
                         child.parentTransform = this.parentTransform + this.rotateAngle;
-                        if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
-                            child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
-                                -child.parentTransform : child.parentTransform;
-                        }
                         arrange = true;
                     }
                     if (child.verticalAlignment === 'Stretch') {
@@ -2731,9 +2695,6 @@ class Container extends DiagramElement {
         this.actualSize = desiredSize;
         this.updateBounds();
         this.prevRotateAngle = this.rotateAngle;
-        if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
-            alignElement(this, this.offsetX, this.offsetY, this.flip);
-        }
         return desiredSize;
     }
     //protected methods
@@ -3276,10 +3237,6 @@ class Canvas extends Container {
             for (let child of this.children) {
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
-                    if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
-                        child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
-                            -child.parentTransform : child.parentTransform;
-                    }
                     let childSize = child.desiredSize.clone();
                     let topLeft;
                     let center = { x: 0, y: 0 };
@@ -3319,9 +3276,6 @@ class Canvas extends Container {
         this.actualSize = desiredSize;
         this.updateBounds();
         this.outerBounds.uniteRect(this.bounds);
-        if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
-            alignElement(this, this.offsetX, this.offsetY, this.flip);
-        }
         return desiredSize;
     }
     /**
@@ -3963,9 +3917,6 @@ __decorate$6([
 __decorate$6([
     Property()
 ], NodeBase.prototype, "addInfo", void 0);
-__decorate$6([
-    Property('None')
-], NodeBase.prototype, "flip", void 0);
 
 /**
  * Connector modules are used to dock and update the connectors
@@ -4641,9 +4592,6 @@ function connectToOneEnd(element, source, target) {
         source.point = nodeConnectingPoint;
         if (element.sourcePortWrapper) {
             source.point = { x: sourcePort.offsetX, y: sourcePort.offsetY };
-            if (element.sourcePadding) {
-                source.point = addPaddingToConnector(element, source, target, false);
-            }
         }
     }
     else {
@@ -4651,27 +4599,12 @@ function connectToOneEnd(element, source, target) {
         target.point = nodeConnectingPoint;
         if (element.targetPortWrapper) {
             target.point = { x: targetPort.offsetX, y: targetPort.offsetY };
-            if (element.targetPadding) {
-                target.point = addPaddingToConnector(element, source, target, true);
-            }
         }
     }
 }
-function addPaddingToConnector(element, source, target, isTarget) {
-    let sourcePort = element.sourcePortWrapper;
-    let targetPort = element.targetPortWrapper;
-    let padding = (isTarget) ? element.targetPadding : element.sourcePadding;
-    let paddingPort = (isTarget) ? targetPort : sourcePort;
-    let rect = new Rect(paddingPort.bounds.x - padding, paddingPort.bounds.y - padding, paddingPort.actualSize.width + 2 * padding, paddingPort.actualSize.height + 2 * padding);
-    let segmentPoints = [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft];
-    segmentPoints[segmentPoints.length] = segmentPoints[0];
-    let thisSegment = { x1: source.point.x, y1: source.point.y, x2: target.point.x, y2: target.point.y };
-    let point = (isTarget) ? target.point : source.point;
-    return getIntersectionPoints(thisSegment, segmentPoints, true, point) || point;
-}
-function checkSourceAndTargetIntersect(sourceWrapper, targetWrapper, connector) {
-    let sourceSegment = createSegmentsCollection(sourceWrapper, connector.sourcePadding);
-    let targetSegment = createSegmentsCollection(targetWrapper, connector.targetPadding);
+function checkSourceAndTargetIntersect(sourceWrapper, targetWrapper) {
+    let sourceSegment = createSegmentsCollection(sourceWrapper);
+    let targetSegment = createSegmentsCollection(targetWrapper);
     for (let i = 0; i < sourceSegment.length - 1; i++) {
         let srcSegment = sourceSegment[i];
         for (let j = 0; j < targetSegment.length - 1; j++) {
@@ -4683,9 +4616,9 @@ function checkSourceAndTargetIntersect(sourceWrapper, targetWrapper, connector) 
     }
     return false;
 }
-function createSegmentsCollection(sourceWrapper, padding) {
+function createSegmentsCollection(sourceWrapper) {
     let segments = [];
-    let points = getPoints(sourceWrapper, sourceWrapper.corners, padding);
+    let points = getPoints(sourceWrapper, sourceWrapper.corners);
     points.push(points[0]);
     for (let i = 0; i < points.length - 1; i++) {
         segments.push(createLineSegment(points[i], points[i + 1]));
@@ -4758,7 +4691,7 @@ function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
     let tarBounds = swapBounds(targetEle, tarCor, ele.targetWrapper.bounds);
     let isInterSect = false;
     if (ele.sourceWrapper && ele.targetWrapper) {
-        isInterSect = checkSourceAndTargetIntersect(ele.sourceWrapper, ele.targetWrapper, ele);
+        isInterSect = checkSourceAndTargetIntersect(ele.sourceWrapper, ele.targetWrapper);
     }
     if (srcPort !== undefined) {
         source.point = { x: srcPort.offsetX, y: srcPort.offsetY };
@@ -4771,15 +4704,6 @@ function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
             case 'Right':
                 source.point.x = source.point.x;
                 break;
-        }
-        if (ele.sourcePadding && !isInterSect) {
-            if (tarPort) {
-                target.point = {
-                    x: tarPort.offsetX,
-                    y: tarPort.offsetY
-                };
-            }
-            source.point = addPaddingToConnector(ele, source, target, false);
         }
     }
     else {
@@ -4809,9 +4733,6 @@ function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
             case 'Right':
                 target.point.x = target.point.x;
                 break;
-        }
-        if (ele.targetPadding && !isInterSect) {
-            target.point = addPaddingToConnector(ele, source, target, true);
         }
     }
     else {
@@ -5322,8 +5243,6 @@ function getIntersection(ele, bounds, sPt, tPt, isTar) {
     let angle = Point.findAngle(tPt, sPt);
     let child;
     let wrapper = isTar ? ele.targetWrapper : ele.sourceWrapper;
-    let padding = (isTar ? ele.targetPadding : ele.sourcePadding);
-    let rect;
     let segmentPoints;
     let point = isTar || ele.type === 'Orthogonal' ? sPt : tPt;
     let sourcePoint = Point.transform(sPt, angle, Math.max(wrapper.actualSize.height / 2, wrapper.actualSize.width / 2));
@@ -5368,10 +5287,7 @@ function getIntersection(ele, bounds, sPt, tPt, isTar) {
         }
     }
     else {
-        if ((ele.sourcePadding || ele.targetPadding)) {
-            rect = new Rect(wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding, wrapper.actualSize.height + 2 * padding);
-        }
-        segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : getPoints(wrapper, wrapper.corners);
+        segmentPoints = getPoints(wrapper, wrapper.corners);
         segmentPoints[segmentPoints.length] = segmentPoints[0];
     }
     let length = segmentPoints.length;
@@ -7533,7 +7449,6 @@ class Connector extends NodeBase {
     /** @private */
     getSegmentElement(connector, segmentElement) {
         let points = [];
-        flipConnector(connector);
         points = this.getConnectorPoints(connector.type);
         this.intermediatePoints = points;
         segmentElement.staticSize = true;
@@ -7850,12 +7765,6 @@ __decorate$9([
 __decorate$9([
     Property('')
 ], Connector.prototype, "targetPortID", void 0);
-__decorate$9([
-    Property(0)
-], Connector.prototype, "sourcePadding", void 0);
-__decorate$9([
-    Property(0)
-], Connector.prototype, "targetPadding", void 0);
 __decorate$9([
     Complex({ strokeWidth: 1, strokeColor: 'black' }, StrokeStyle)
 ], Connector.prototype, "style", void 0);
@@ -8318,24 +8227,6 @@ function canDraw(port, diagram) {
 /** @private */
 function canDrag(port, diagram) {
     return port.constraints & PortConstraints.Drag;
-}
-/** @private */
-function canPreventClearSelection(diagramActions) {
-    if (diagramActions & DiagramAction.PreventClearSelection) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-/** @private */
-function canDrawThumbs(rendererActions) {
-    if (!(rendererActions & RendererAction.DrawSelectorBorder)) {
-        return true;
-    }
-    else {
-        return false;
-    }
 }
 /** @private */
 function avoidDrawSelector(rendererActions) {
@@ -10293,7 +10184,6 @@ class Node extends NodeBase {
             case 'Bpmn':
                 if (diagram.bpmnModule) {
                     content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
-                    this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
                     let subProcess = this.shape.activity.subProcess;
                     if (subProcess.processes && subProcess.processes.length) {
                         let children = this.shape.activity.subProcess.processes;
@@ -10372,9 +10262,6 @@ class Node extends NodeBase {
                 content.style = this.style;
             }
         }
-        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {
-            content.flip = this.flip;
-        }
         return content;
     }
     /* tslint:enable */
@@ -10425,7 +10312,6 @@ class Node extends NodeBase {
         canvas.maxWidth = this.maxWidth;
         canvas.pivot = this.pivot;
         canvas.margin = this.margin;
-        canvas.flip = this.flip;
         this.wrapper = canvas;
         return canvas;
     }
@@ -10435,7 +10321,6 @@ class Node extends NodeBase {
         let port;
         for (let i = 0; this.ports !== undefined, i < this.ports.length; i++) {
             port = this.initPortWrapper(this.ports[i]);
-            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
             // tslint:disable-next-line:no-any
             let wrapperContent;
             let contentAccessibility = getFunction(accessibilityContent);
@@ -10532,7 +10417,7 @@ class Node extends NodeBase {
         };
         portContent.horizontalAlignment = ports.horizontalAlignment;
         portContent.verticalAlignment = ports.verticalAlignment;
-        portContent = updatePortEdges(portContent, this.flip, ports);
+        portContent.setOffsetWithRespectToBounds(ports.offset.x, ports.offset.y, 'Fraction');
         if (this.width !== undefined || this.height !== undefined) {
             portContent.float = true;
         }
@@ -11676,17 +11561,12 @@ function getLineSegment(x1, y1, x2, y2) {
     return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
 }
 /** @private */
-function getPoints(element, corners, padding) {
+function getPoints(element, corners) {
     let line = [];
-    padding = padding || 0;
-    let left = { x: corners.topLeft.x - padding, y: corners.topLeft.y };
-    let right = { x: corners.topRight.x + padding, y: corners.topRight.y };
-    let top = { x: corners.bottomRight.x, y: corners.bottomRight.y - padding };
-    let bottom = { x: corners.bottomLeft.x, y: corners.bottomLeft.y + padding };
-    line.push(left);
-    line.push(right);
-    line.push(top);
-    line.push(bottom);
+    line.push(corners.topLeft);
+    line.push(corners.topRight);
+    line.push(corners.bottomRight);
+    line.push(corners.bottomLeft);
     return line;
 }
 /**
@@ -11909,19 +11789,6 @@ function getBezierDirection(src, tar) {
     }
     else {
         return src.y < tar.y ? 'bottom' : 'top';
-    }
-}
-/** @private */
-function removeChildNodes(node, diagram) {
-    if (node instanceof Node && node.children) {
-        for (let i = 0; i < node.children.length; i++) {
-            if (diagram.nameTable[node.children[i]].children) {
-                removeChildNodes(node, diagram);
-            }
-            diagram.removeFromAQuad(diagram.nameTable[node.children[i]]);
-            diagram.removeObjectsFromLayer(diagram.nameTable[node.children[i]]);
-            delete diagram.nameTable[node.children[i]];
-        }
     }
 }
 /** @private */
@@ -12601,7 +12468,7 @@ function arrangeChild(obj, x, y, nameTable, drop, diagram) {
         node = nameTable[child[i]];
         if (node) {
             if (node.children) {
-                arrangeChild(node, x, y, nameTable, drop, diagram);
+                this.arrangeChild(node, x, y, nameTable, drop, diagram);
             }
             else {
                 node.offsetX -= x;
@@ -12780,75 +12647,6 @@ let getObjectType = (obj) => {
         }
     }
     return obj;
-};
-/** @private */
-let flipConnector = (connector) => {
-    if (!connector.sourceID || !connector.targetID) {
-        let source = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
-        let target = { x: connector.targetPoint.x, y: connector.targetPoint.y };
-        if (connector.flip === 'Horizontal') {
-            connector.sourcePoint.x = target.x;
-            connector.targetPoint.x = source.x;
-        }
-        else if (connector.flip === 'Vertical') {
-            connector.sourcePoint.y = target.y;
-            connector.targetPoint.y = source.y;
-        }
-        else if (connector.flip === 'Both') {
-            connector.sourcePoint = target;
-            connector.targetPoint = source;
-        }
-        else {
-            connector.sourcePoint = source;
-            connector.targetPoint = target;
-        }
-    }
-};
-/** @private */
-let updatePortEdges = (portContent, flip, port) => {
-    let offsetX = port.offset.x;
-    let offsetY = port.offset.y;
-    if (flip === 'Horizontal') {
-        offsetX = 1 - port.offset.x;
-        offsetY = port.offset.y;
-    }
-    else if (flip === 'Vertical') {
-        offsetX = port.offset.x;
-        offsetY = 1 - port.offset.y;
-    }
-    else if (flip === 'Both') {
-        offsetX = 1 - port.offset.x;
-        offsetY = 1 - port.offset.y;
-    }
-    portContent.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
-    return portContent;
-};
-/** @private */
-let alignElement = (element, offsetX, offsetY, flip) => {
-    if (element.hasChildren()) {
-        for (let child of element.children) {
-            if (child instanceof TextElement || (child.elementActions && ElementAction.ElementIsPort)) {
-                child.flip = flip;
-            }
-            if (!(child instanceof Canvas) && !(child instanceof Container) && !(child.elementActions && ElementAction.ElementIsPort)) {
-                let childX = ((offsetX - child.offsetX) + offsetX);
-                let childY = ((offsetY - child.offsetY) + offsetY);
-                if (flip === 'Horizontal') {
-                    child.flipOffset.x = childX - child.actualSize.width / 2;
-                }
-                else if (flip === 'Vertical') {
-                    child.flipOffset.y = childY - child.actualSize.height / 2;
-                }
-                else if (flip === 'Both') {
-                    child.flipOffset.x = childX - child.actualSize.width / 2;
-                    child.flipOffset.y = childY - child.actualSize.height / 2;
-                }
-            }
-            else if (child instanceof Canvas || child instanceof Container) {
-                alignElement(child, offsetX, offsetY, flip);
-            }
-        }
-    }
 };
 
 /**
@@ -14051,28 +13849,9 @@ class CanvasRenderer {
         ctx.beginPath();
         let pivotY = options.y + options.height * options.pivotY;
         let pivotX = options.x + options.width * options.pivotX;
-        if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
-            ctx.translate(options.x + options.width / 2, options.y + options.height / 2);
-            ctx.rotate(-options.angle * Math.PI / 180);
-            ctx.translate(-options.x - options.width / 2, -options.y - options.height / 2);
-        }
-        else {
-            this.rotateContext(canvas, options.angle, pivotX, pivotY);
-        }
+        this.rotateContext(canvas, options.angle, pivotX, pivotY);
         this.setStyle(canvas, options);
         ctx.translate(options.x, options.y);
-        if (options.flip === 'Horizontal') {
-            ctx.scale(-1, 1);
-            ctx.translate(options.width * -1, 0);
-        }
-        else if (options.flip === 'Vertical') {
-            ctx.scale(1, -1);
-            ctx.translate(0, options.height * -1);
-        }
-        else if (options.flip === 'Both') {
-            ctx.scale(-1, -1);
-            ctx.translate(options.width * -1, options.height * -1);
-        }
         this.renderPath(canvas, options, collection);
         ctx.fill();
         ctx.translate(-options.x, -options.y);
@@ -14377,22 +14156,6 @@ class CanvasRenderer {
             else {
                 ctx.drawImage(image, x, y, width, height);
             }
-        }
-        else if (alignOptions.flip !== 'None') {
-            let scaleX = 1;
-            let scaleY = 1;
-            if (alignOptions.flip === 'Horizontal' || alignOptions.flip === 'Both') {
-                x = -x;
-                width = -width;
-                scaleX = -1;
-            }
-            if (alignOptions.flip === 'Vertical' || alignOptions.flip === 'Both') {
-                y = -y;
-                height = -height;
-                scaleY = -1;
-            }
-            ctx.scale(scaleX, scaleY);
-            ctx.drawImage(image, x, y, width, height);
         }
         else {
             ctx.drawImage(image, x, y, width, height);
@@ -14870,13 +14633,11 @@ class SvgRenderer {
         setAttributeSvg(nativeElement, element.description ? { 'aria-label': element.description } : {});
     }
     setNativTransform(element, nativeElement, height, width) {
-        let angle;
         let contentWidth = element.contentSize.width !== 0 ? element.contentSize.width : 1;
         let contentHeight = element.contentSize.height !== 0 ? element.contentSize.height : 1;
         let x = element.templatePosition.x * width / contentWidth;
         let y = element.templatePosition.y * height / contentHeight;
-        angle = (element.flip === 'Horizontal' || element.flip === 'Vertical') ? -element.parentTransform : element.parentTransform;
-        nativeElement.setAttribute('transform', 'rotate(' + angle + ',' + element.offsetX + ',' + element.offsetY +
+        nativeElement.setAttribute('transform', 'rotate(' + element.parentTransform + ',' + element.offsetX + ',' + element.offsetY +
             ') translate(' + (element.offsetX - x - width * element.pivot.x) + ',' + (element.offsetY - y - height * element.pivot.y) +
             ') scale(' + (width / contentWidth) + ',' + (height / contentHeight) + ')');
     }
@@ -15267,14 +15028,14 @@ class DiagramRenderer {
         let top = element.offsetY - element.actualSize.height * element.pivot.y;
         let height = element.actualSize.height;
         let width = element.actualSize.width;
-        if (constraints & ThumbsConstraints.Rotate && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
+        if (constraints & ThumbsConstraints.Rotate && (!avoidDrawSelector(this.rendererActions))) {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
         }
         this.renderBorder(element, canvas, transform, enableNode, nodeConstraints);
         let nodeWidth = element.actualSize.width * currentZoom;
         let nodeHeight = element.actualSize.height * currentZoom;
-        if (!nodeConstraints && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
+        if (!nodeConstraints && (!avoidDrawSelector(this.rendererActions))) {
             if (nodeWidth >= 40 && nodeHeight >= 40) {
                 //Hide corners when the size is less than 40
                 if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
@@ -15480,7 +15241,6 @@ class DiagramRenderer {
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
         options.id = 'borderRect';
-        options.id = (this.rendererActions & RendererAction.DrawSelectorBorder) ? 'borderRect_symbol' : 'borderRect';
         if (!enableNode) {
             options.class += ' e-disabled';
         }
@@ -15590,15 +15350,9 @@ class DiagramRenderer {
     /**   @private  */
     renderPathElement(element, canvas, transform, parentSvg, fromPalette) {
         let options = this.getBaseAttributes(element, transform);
-        let pathAngle = (options.flip === 'Horizontal' || options.flip === 'Vertical') ? -options.angle : options.angle;
-        options.angle = pathAngle;
         options.data = element.absolutePath;
         options.data = element.absolutePath;
         let ariaLabel = element.description ? element.description : element.id;
-        if (!this.isSvgMode) {
-            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
-            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
-        }
         this.renderer.drawPath(canvas, options, this.diagramId, undefined, parentSvg, ariaLabel);
     }
     /**   @private  */
@@ -15830,8 +15584,6 @@ class DiagramRenderer {
         let nativeSvg = this.getParentSvg(element, undefined, canvas) || parentSvg;
         let nativeLayer = this.getParentElement(element, canvas, nativeSvg).g || canvas;
         let options = this.getBaseAttributes(element, transform);
-        let nativEAngle = (options.flip === 'Horizontal' || options.flip === 'Vertical') ? -options.angle : options.angle;
-        options.angle = nativEAngle;
         options.fill = 'transparent';
         options.cornerRadius = element.cornerRadius;
         options.stroke = 'transparent';
@@ -15868,9 +15620,6 @@ class DiagramRenderer {
     }
     renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette) {
         let options = this.getBaseAttributes(element, transform);
-        if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
-            options.angle = -options.angle;
-        }
         options.fill = 'transparent';
         options.cornerRadius = element.cornerRadius;
         options.stroke = 'transparent';
@@ -15882,8 +15631,6 @@ class DiagramRenderer {
     /**   @private  */
     renderImageElement(element, canvas, transform, parentSvg, fromPalette) {
         let options = this.getBaseAttributes(element, transform);
-        let imageAngle = (options.flip === 'Horizontal' || options.flip === 'Vertical') ? -options.angle : options.angle;
-        options.angle = imageAngle;
         options.cornerRadius = 0;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
         // let sx: number; let sy: number;
@@ -15966,7 +15713,6 @@ class DiagramRenderer {
         if (group.hasChildren()) {
             let parentG;
             let svgParent;
-            let flip;
             for (let child of group.children) {
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children) || child) || parentSvg;
                 if (this.isSvgMode) {
@@ -15976,53 +15722,8 @@ class DiagramRenderer {
                         parentSvg = svgParent.svg;
                     }
                 }
-                if (!this.isSvgMode) {
-                    child.flip = group.flip;
-                }
                 this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette);
-                if (child instanceof TextElement && parentG) {
-                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
-                    this.renderFlipElement(child, parentG, flip);
-                }
-                if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
-                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
-                    this.renderFlipElement(group, parentG, flip);
-                }
             }
-            this.renderFlipElement(group, canvas, group.flip);
-        }
-    }
-    renderFlipElement(element, canvas, flip) {
-        let attr = {};
-        let scaleX = 1;
-        let scaleY = 1;
-        let posX = 0;
-        let posY = 0;
-        let offsetX = 0;
-        let offsetY = 0;
-        if (flip !== 'None') {
-            if (flip === 'Horizontal' || flip === 'Both') {
-                posX = element.bounds.center.x;
-                offsetX = -element.bounds.center.x;
-                scaleX = -1;
-            }
-            if (flip === 'Vertical' || flip === 'Both') {
-                posY = element.bounds.center.y;
-                offsetY = -element.bounds.center.y;
-                scaleY = -1;
-            }
-            attr = {
-                'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
-                    + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
-            };
-        }
-        else {
-            attr = {
-                'transform': 'translate(' + 0 + ',' + 0 + ')'
-            };
-        }
-        if (attr) {
-            setAttributeSvg(canvas, attr);
         }
     }
     /**   @private  */
@@ -16062,9 +15763,6 @@ class DiagramRenderer {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
-        if (element.flip) {
-            options.flip = element.flip;
-        }
         if (transform) {
             options.x += transform.tx;
             options.y += transform.ty;
@@ -19653,8 +19351,6 @@ class DiagramEventHandler {
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
         }
-        this.diagram.previousSelectedObject = null;
-        this.diagram.removeConstraints(this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
         touches = evt.touches;
         if (this.isScrolling) {
             this.isScrolling = false;
@@ -19677,7 +19373,7 @@ class DiagramEventHandler {
                         let isMultipleSelect = true;
                         if ((!evt.ctrlKey && this.isMouseDown
                             && (this.diagram.selectedItems.nodes.length + this.diagram.selectedItems.connectors.length) > 1)
-                            && evt.which === 1 && !canPreventClearSelection(this.diagram.diagramActions)) {
+                            && evt.which === 1) {
                             isMultipleSelect = false;
                             this.commandHandler.clearSelection();
                         }
@@ -19848,36 +19544,8 @@ class DiagramEventHandler {
                                 parameter: command.parameter
                             })) {
                                 evt.preventDefault();
-                                if (evt.key === 'Escape') {
-                                    if (this.checkEditBoxAsTarget(evt)) {
-                                        document.getElementById(this.diagram.diagramCanvas.id).focus();
-                                    }
-                                    else if (this.diagram.currentSymbol) {
-                                        let selectedSymbols = 'selectedSymbols';
-                                        let source = 'sourceElement';
-                                        let intDestroy = 'intDestroy';
-                                        this.diagram.removeFromAQuad(this.diagram.currentSymbol);
-                                        this.diagram.removeObjectsFromLayer(this.diagram.nameTable[this.diagram.currentSymbol.id]);
-                                        this.diagram.removeElements(this.diagram.currentSymbol);
-                                        removeChildNodes(this.diagram.currentSymbol, this.diagram);
-                                        delete this.diagram.nameTable[this.diagram.currentSymbol.id];
-                                        let sourceElement = this.diagram.droppable[source];
-                                        sourceElement.draggable[intDestroy]();
-                                        let element = this.diagram.droppable[selectedSymbols];
-                                        element.parentNode.removeChild(element);
-                                        let diagramActions = this.diagram.diagramActions;
-                                        this.diagram.addConstraints(diagramActions, DiagramAction.PreventClearSelection);
-                                        this.tool.mouseUp(this.eventArgs);
-                                        this.diagram.removeConstraints(this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
-                                        if (this.diagram.previousSelectedObject) {
-                                            this.diagram.select(this.diagram.previousSelectedObject);
-                                        }
-                                        this.action = 'Select';
-                                        this.diagram.previousSelectedObject = null;
-                                        this.diagram.currentSymbol = null;
-                                        this.diagram.removeConstraints(diagramActions, DiagramAction.PreventClearSelection);
-                                        this.isMouseDown = false;
-                                    }
+                                if (evt.key === 'Escape' && (this.checkEditBoxAsTarget(evt))) {
+                                    document.getElementById(this.diagram.diagramCanvas.id).focus();
                                 }
                                 if (command.execute) {
                                     // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
@@ -22360,9 +22028,6 @@ class CommandHandler {
         if (hasSelection(this.diagram)) {
             let selectormodel = this.diagram.selectedItems;
             let arrayNodes = this.getSelectedObject();
-            if (this.diagram.currentSymbol) {
-                this.diagram.previousSelectedObject = arrayNodes;
-            }
             let arg = {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false
@@ -27270,54 +26935,6 @@ class Diagram extends Component {
         return deserialize(data, this);
     }
     /**
-     * To  get the html diagram content
-     * @param styleSheets defines the collection of style files to be considered while exporting.
-     */
-    getDiagramContent(styleSheets) {
-        if (this.printandExportModule) {
-            let data = this.printandExportModule.getDiagramContent(styleSheets);
-            return data;
-        }
-        return '';
-    }
-    /**
-     * To export diagram native/html image
-     * @param image defines image content to be exported.
-     * @param options defines the image properties.
-     */
-    exportImage(image, options) {
-        if (this.printandExportModule) {
-            this.printandExportModule.exportImages(image, options);
-        }
-    }
-    /**
-     * To print native/html nodes of diagram
-     * @param image defines image content.
-     * @param options defines the properties of the image
-     */
-    printImage(image, options) {
-        if (this.printandExportModule) {
-            options.printOptions = true;
-            this.printandExportModule.exportImages(image, options);
-        }
-    }
-    /**
-     * To get the bound of the diagram
-     */
-    getDiagramBounds() {
-        if (this.printandExportModule) {
-            let bounds = this.printandExportModule.getDiagramBounds('', {});
-            bounds.width = bounds.width > this.scrollSettings.viewPortWidth ?
-                bounds.width + (bounds.x > 0 ? bounds.x : 0) : this.scrollSettings.viewPortWidth;
-            bounds.height = bounds.height > this.scrollSettings.viewPortHeight ?
-                bounds.height + (bounds.y > 0 ? bounds.y : 0) : this.scrollSettings.viewPortHeight;
-            bounds.x = bounds.x > 0 ? 0 : bounds.x;
-            bounds.y = bounds.y > 0 ? 0 : bounds.y;
-            return bounds;
-        }
-        return new Rect();
-    }
-    /**
      * To export Diagram
      * @param options defines the how the image to be exported.
      */
@@ -28230,7 +27847,6 @@ class Diagram extends Component {
                         let child = this.nameTable[obj.children[i]];
                         this.updateStackProperty(obj, child, i);
                         canvas.children.push(child.wrapper);
-                        canvas.elementActions = canvas.elementActions | ElementAction.ElementIsGroup;
                     }
                 }
             }
@@ -29116,10 +28732,6 @@ class Diagram extends Component {
         let size = new Size();
         let selectorModel = this.selectedItems;
         let selectorConstraints = selectorModel.constraints;
-        let rendererActions = this.diagramRenderer.rendererActions;
-        this.diagramRenderer.rendererActions = this.currentSymbol ?
-            this.addConstraints(rendererActions, RendererAction.DrawSelectorBorder) :
-            this.removeConstraints(rendererActions, RendererAction.DrawSelectorBorder);
         this.clearSelectorLayer();
         if (this.commandHandler.hasSelection()) {
             if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
@@ -29167,7 +28779,7 @@ class Diagram extends Component {
                     }
                     this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel.nodes[0]), (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
                 }
-                else if (selectorModel.connectors[0] instanceof Connector && canDrawThumbs(this.diagramRenderer.rendererActions)) {
+                else if (selectorModel.connectors[0] instanceof Connector) {
                     let connector = selectorModel.connectors[0];
                     this.diagramRenderer.renderEndPointHandle(connector, selectorElement, selectorModel.thumbsConstraints, selectorModel.constraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
                 }
@@ -29222,7 +28834,7 @@ class Diagram extends Component {
                     this.renderSelectorForAnnotation(selectorModel, selectorElement);
                 }
                 else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
-                    if (selectorModel.connectors[0] instanceof Connector && canDrawThumbs(this.diagramRenderer.rendererActions)) {
+                    if (selectorModel.connectors[0] instanceof Connector) {
                         let connector = selectorModel.connectors[0];
                         this.diagramRenderer.renderEndPointHandle(connector, selectorElement, selectorModel.thumbsConstraints, selectorConstraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
                     }
@@ -29290,24 +28902,17 @@ class Diagram extends Component {
     /** @private */
     clearSelectorLayer() {
         let adornerSvg = getAdornerLayerSvg(this.element.id);
-        if (!this.currentSymbol) {
-            let selectionRect = adornerSvg.getElementById(this.adornerLayer.id + '_selected_region');
-            if (selectionRect) {
-                selectionRect.parentNode.removeChild(selectionRect);
-            }
-            this.clearHighlighter();
-            let childNodes = getSelectorElement(this.element.id).childNodes;
-            let child;
-            for (let i = childNodes.length; i > 0; i--) {
-                child = childNodes[i - 1];
-                child.parentNode.removeChild(child);
-            }
+        let highlighter = adornerSvg.getElementById(adornerSvg.id + '_highlighter');
+        let selectionRect = adornerSvg.getElementById(this.adornerLayer.id + '_selected_region');
+        if (selectionRect) {
+            selectionRect.parentNode.removeChild(selectionRect);
         }
-        else {
-            let symbolBorder = adornerSvg.getElementById('borderRect_symbol');
-            if (symbolBorder) {
-                symbolBorder.parentNode.removeChild(symbolBorder);
-            }
+        this.clearHighlighter();
+        let childNodes = getSelectorElement(this.element.id).childNodes;
+        let child;
+        for (let i = childNodes.length; i > 0; i--) {
+            child = childNodes[i - 1];
+            child.parentNode.removeChild(child);
         }
     }
     /** @private */
@@ -29621,23 +29226,6 @@ class Diagram extends Component {
             update = true;
             updateConnector$$1 = true;
         }
-        if (node.flip !== undefined) {
-            actualObject.wrapper.flip = node.flip;
-            update = true;
-            updateConnector$$1 = true;
-            if (actualObject.wrapper.elementActions && ElementAction.ElementIsGroup) {
-                if (actualObject && actualObject.children) {
-                    for (let child of actualObject.children) {
-                        let updateNode = this.nameTable[child];
-                        this.updatePorts(updateNode, node.flip);
-                    }
-                }
-            }
-            else {
-                actualObject.wrapper.children[0].flip = node.flip;
-                this.updatePorts(actualObject, node.flip);
-            }
-        }
         if (node.rotateAngle !== undefined) {
             if (actualObject.children && rotate) {
                 this.commandHandler.rotateObjects(actualObject, [actualObject], actualObject.rotateAngle - actualObject.wrapper.rotateAngle, { x: actualObject.offsetX, y: actualObject.offsetY }, false);
@@ -29768,19 +29356,6 @@ class Diagram extends Component {
             }
         }
     }
-    updatePorts(actualObject, flip) {
-        if (actualObject && actualObject.ports.length > 0) {
-            for (let key of Object.keys(actualObject.ports)) {
-                let index = Number(key);
-                let actualPort = actualObject.ports[index];
-                let portWrapper = this.getWrapper(actualObject.wrapper, actualPort.id);
-                portWrapper = updatePortEdges(portWrapper, flip, actualPort);
-                portWrapper.relativeMode = 'Point';
-                portWrapper.measure(new Size(portWrapper.width, portWrapper.height));
-                portWrapper.arrange(portWrapper.desiredSize);
-            }
-        }
-    }
     updateUMLActivity(changedProp, oldObject, actualObject, diagram) {
         let sizeChanged = changedProp.width !== undefined || changedProp.height !== undefined;
         if (sizeChanged) {
@@ -29852,9 +29427,9 @@ class Diagram extends Component {
             this.updateElementVisibility(actualObject.wrapper, actualObject, actualObject.visible);
         }
         if (newProp.sourcePoint !== undefined || newProp.targetPoint !== undefined
-            || newProp.sourceID !== undefined || newProp.targetID !== undefined || newProp.targetPadding !== undefined ||
-            newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined || newProp.sourcePadding !== undefined ||
-            newProp.type !== undefined || newProp.segments !== undefined || newProp.flip !== undefined) {
+            || newProp.sourceID !== undefined || newProp.targetID !== undefined ||
+            newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined ||
+            newProp.type !== undefined || newProp.segments !== undefined) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 let sourceNode = this.nameTable[actualObject.sourceID];
                 outPort = this.findInOutConnectPorts(sourceNode, false);
@@ -29897,10 +29472,6 @@ class Diagram extends Component {
                 }
                 actualObject.targetPortWrapper = target ?
                     this.getWrapper(target, newProp.targetPortID) : undefined;
-            }
-            if (newProp.flip !== undefined) {
-                actualObject.flip = newProp.flip;
-                flipConnector(actualObject);
             }
             points = this.getPoints(actualObject);
         } //Add prop change for zindex, alignments and margin
@@ -30476,7 +30047,6 @@ class Diagram extends Component {
                 if (args.dragData) {
                     let newObj;
                     let isHorizontal;
-                    document.getElementById(this.element.id + 'content').focus();
                     let position = this.eventHandler.getMousePosition(args.event);
                     let clonedObject;
                     let selectedSymbol = args.dragData.helper;
@@ -30655,7 +30225,7 @@ class Diagram extends Component {
                 this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
                 this.removeElements(this.currentSymbol);
                 if (arg.cancel) {
-                    removeChildNodes(this.currentSymbol, this);
+                    this.removeChildNodes(this.currentSymbol);
                 }
                 delete this.nameTable[this.currentSymbol.id];
                 this.currentSymbol = null;
@@ -30723,13 +30293,20 @@ class Diagram extends Component {
                 this.droppable[selectedSymbols].style.opacity = '1';
                 let source = 'sourceElement';
                 delete this.droppable[source];
-                this.removeConstraints(this.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
-                if (this.previousSelectedObject) {
-                    this.select(this.previousSelectedObject, this.previousSelectedObject.length > 1 ? true : false);
-                }
-                this.previousSelectedObject = null;
             }
         };
+    }
+    removeChildNodes(node) {
+        if (node instanceof Node && node.children) {
+            for (let i = 0; i < node.children.length; i++) {
+                if (this.nameTable[node.children[i]].children) {
+                    this.removeChildNodes(node);
+                }
+                this.removeFromAQuad(this.nameTable[node.children[i]]);
+                this.removeObjectsFromLayer(this.nameTable[node.children[i]]);
+                delete this.nameTable[node.children[i]];
+            }
+        }
     }
     findChild(node, childTable) {
         let group;
@@ -30971,9 +30548,6 @@ __decorate([
     Property()
 ], Diagram.prototype, "getCustomCursor", void 0);
 __decorate([
-    Property()
-], Diagram.prototype, "updateSelection", void 0);
-__decorate([
     Complex({}, Selector)
 ], Diagram.prototype, "selectedItems", void 0);
 __decorate([
@@ -31149,26 +30723,23 @@ class PrintAndExport {
         return null;
     }
     setCanvas(options, bounds, margin, mode, customBounds, region, fileName) {
+        let fileType;
         let content;
         options.bounds = bounds;
         options.region = region;
         let scaleX = 'scaleX';
         let scaleY = 'scaleY';
+        let images = [];
         this.setScaleValueforCanvas(options, bounds);
         let canvas = this.diagramAsCanvas({
             bounds: bounds, margin: margin, region: region, scaleX: options[scaleX],
             scaleY: options[scaleY]
         }, customBounds);
+        fileType = options.format || 'JPG';
         let image = content = canvas.toDataURL();
         if (mode === 'Data') {
             return content;
         }
-        this.canvasMultiplePage(options, canvas, margin, image, fileName);
-        return null;
-    }
-    canvasMultiplePage(options, canvas, margin, image, fileName) {
-        let images = [];
-        let fileType = options.format || 'JPG';
         if (options.multiplePage) {
             options.pageHeight = options.pageHeight ? options.pageHeight : this.diagram.pageSettings.height;
             options.pageWidth = options.pageWidth ? options.pageWidth : this.diagram.pageSettings.width;
@@ -31203,6 +30774,7 @@ class PrintAndExport {
             images = [image];
             this.exportImage(images, fileName, fileType, image);
         }
+        return null;
     }
     exportImage(images, fileName, fileType, image) {
         let buffers = [];
@@ -31272,7 +30844,6 @@ class PrintAndExport {
         }
         return nodebounds || new Rect(0, 0, 0, 0);
     }
-    /**   @private  */
     getDiagramBounds(mode, options) {
         let rect = this.getObjectsBound(options);
         let left = rect.left;
@@ -31627,15 +31198,12 @@ class PrintAndExport {
      */
     print(options) {
         options.mode = 'Data';
+        options.margin = { top: 0, bottom: 0, right: 0, left: 0 };
         let url = this.exportDiagram(options);
-        this.printImages(url, options);
-    }
-    printImages(url, options) {
         let attr = {
             'id': this.diagram.element.id + '_printImage',
             'src': url,
         };
-        options.margin = { top: 0, bottom: 0, right: 0, left: 0 };
         let img = createHtmlElement('img', attr);
         img.onload = () => {
             let div = this.getMultipleImage(img, options);
@@ -31651,105 +31219,6 @@ class PrintAndExport {
                     printWind.document.close();
                 }
             }
-        };
-    }
-    /** @private */
-    getDiagramContent(styleSheets) {
-        let container = document.getElementById(this.diagram.element.id + 'content');
-        let scrollerX = container.scrollLeft;
-        let scrollerY = container.scrollTop;
-        let oldZoom = this.diagram.scrollSettings.currentZoom;
-        let oldHorizontalOffset = this.diagram.scroller.horizontalOffset;
-        let oldVerticalOffset = this.diagram.scroller.verticalOffset;
-        let oldWidth = Number(String(this.diagram.width).split('px')[0]);
-        let oldHeight = Number(String(this.diagram.height).split('px')[0]);
-        let bounds = this.getDiagramBounds('', {});
-        this.diagram.scroller.zoom((1 / oldZoom));
-        let scrollX = 0;
-        let scrollY = 0;
-        scrollX = bounds.x;
-        scrollY = bounds.y;
-        this.diagram.scroller.transform = {
-            tx: -scrollX,
-            ty: -scrollY,
-            scale: this.diagram.scroller.currentZoom
-        };
-        this.diagram.scroller.horizontalOffset = -scrollX;
-        this.diagram.scroller.verticalOffset = -scrollY;
-        this.diagram.scroller.setSize();
-        this.diagram.setSize(bounds.width, bounds.height);
-        let snapConstraints = this.diagram.snapSettings.constraints;
-        this.diagram.snapSettings.constraints = (this.diagram.snapSettings.constraints & ~SnapConstraints.ShowLines);
-        this.diagram.dataBind();
-        this.diagram.clearSelection();
-        styleSheets = styleSheets || document.styleSheets;
-        let styleSheetRef = '';
-        for (let i = 0; i < styleSheets.length; i++) {
-            if (styleSheets[i].href || typeof styleSheets[i] === 'string') {
-                styleSheetRef += '<link href=\'' + (styleSheets[i].href || styleSheets[i]) + '\' rel=\'stylesheet\' />';
-            }
-        }
-        let htmlData = document.getElementById(this.diagram.element.id + 'content').innerHTML;
-        let marginStyle = 'margin-left:' + 0 + 'px;margin-top:' + 0 + 'px;margin-right:'
-            + 0 + 'px;margin-bottom:' + 0 + 'px;';
-        htmlData = styleSheetRef + '<body style="margin: 0px; padding: 0px"><div style=\'' +
-            marginStyle + '\'>' + htmlData + '</div></body>';
-        htmlData = htmlData.replace(/ transform: t/g, ' -webkit-transform: t');
-        this.diagram.setSize(oldWidth, oldHeight);
-        this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
-        this.diagram.snapSettings.constraints = snapConstraints;
-        this.diagram.dataBind();
-        if (scrollerX || scrollerY) {
-            this.diagram.setOffset(scrollerX, scrollerY);
-        }
-        else {
-            this.diagram.scroller.transform = {
-                tx: (oldHorizontalOffset) / this.diagram.scroller.currentZoom,
-                ty: (oldVerticalOffset) / this.diagram.scroller.currentZoom,
-                scale: this.diagram.scroller.currentZoom
-            };
-            this.diagram.scroller.horizontalOffset = oldHorizontalOffset;
-            this.diagram.scroller.verticalOffset = oldVerticalOffset;
-        }
-        this.diagram.renderSelector(false);
-        return htmlData;
-    }
-    /** @private */
-    exportImages(image, options) {
-        let region = options && options.region ? options.region : 'Content';
-        let margin = options.margin || {};
-        margin = {
-            top: !isNaN(margin.top) ? margin.top : 0,
-            bottom: !isNaN(margin.bottom) ? margin.bottom : 0,
-            left: !isNaN(margin.left) ? margin.left : 0,
-            right: !isNaN(margin.right) ? margin.right : 0
-        };
-        let bounds = this.getDiagramBounds(region, {});
-        if (options.bounds) {
-            bounds.x = (!isNaN(options.bounds.x) ? options.bounds.x : bounds.x);
-            bounds.y = (!isNaN(options.bounds.y) ? options.bounds.y : bounds.y);
-            bounds.width = (options.bounds.width || bounds.width);
-            bounds.height = (options.bounds.height || bounds.height);
-        }
-        let img = document.createElement('img');
-        let attr = {
-            'src': image
-        };
-        setAttributeHtml(img, attr);
-        let context = this;
-        img.onload = () => {
-            let canvas = CanvasRenderer.createCanvas(context.diagram.element.id + 'innerImage', bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
-            let ctx = canvas.getContext('2d');
-            ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
-            ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, margin.left, margin.top, bounds.width, bounds.height);
-            image = canvas.toDataURL();
-            if (options.printOptions) {
-                context.printImages(image, options);
-                return;
-            }
-            ctx.restore();
-            let fileName = options.fileName || 'diagram';
-            this.canvasMultiplePage(options, canvas, margin, image, fileName);
         };
     }
     /**
@@ -36624,16 +36093,13 @@ class UndoRedo {
     }
     undoEntry(entry, diagram) {
         let obj;
-        let nodeObject;
         if (entry.type !== 'PropertyChanged' && entry.type !== 'CollectionChanged' && entry.type !== 'LabelCollectionChanged') {
             obj = (entry.undoObject);
-            nodeObject = (entry.undoObject);
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
             if (diagram.historyManager.undoStack.length > 0) {
                 let addObject = diagram.historyManager.undoStack.splice(0, 1);
                 diagram.historyManager.redoStack.splice(0, 0, addObject[0]);
-                nodeObject = (entry.undoObject);
             }
         }
         diagram.protectPropertyChange(true);
@@ -36697,42 +36163,6 @@ class UndoRedo {
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
         diagram.historyChangeTrigger(entry);
-        if (nodeObject) {
-            let object = this.checkNodeObject(nodeObject, diagram);
-            if (object) {
-                let getnodeDefaults = getFunction(diagram.updateSelection);
-                if (getnodeDefaults) {
-                    getnodeDefaults(object, diagram);
-                }
-            }
-        }
-    }
-    checkNodeObject(value, diagram) {
-        let object;
-        if (!value.id) {
-            if ((value.nodes && value.nodes.length > 0) ||
-                (value.connectors && value.connectors.length > 0)) {
-                let undoNode = value.nodes.length > 0 ?
-                    value.nodes : value.connectors;
-                for (object of undoNode) {
-                    object = diagram.nameTable[object.id];
-                }
-            }
-            else {
-                let knownNode = value.nodes ?
-                    value.nodes : value.connectors;
-                if (knownNode) {
-                    for (let key of Object.keys(knownNode)) {
-                        let index = Number(key);
-                        object = value.nodes ? diagram.nodes[index] : diagram.connectors[index];
-                    }
-                }
-            }
-        }
-        else {
-            object = diagram.nameTable[value.id];
-        }
-        return object;
     }
     group(historyEntry, diagram) {
         diagram.add(historyEntry.undoObject);
@@ -37173,17 +36603,14 @@ class UndoRedo {
     }
     redoEntry(historyEntry, diagram) {
         let redoObject;
-        let redovalue;
         if (historyEntry.type !== 'PropertyChanged' && historyEntry.type !== 'CollectionChanged') {
             redoObject = (historyEntry.redoObject);
-            redovalue = (historyEntry.redoObject);
         }
         diagram.diagramActions |= DiagramAction.UndoRedo;
         if (historyEntry.type !== 'StartGroup' && historyEntry.type !== 'EndGroup') {
             if (diagram.historyManager.redoStack.length > 0) {
                 let addObject = diagram.historyManager.redoStack.splice(0, 1);
                 diagram.historyManager.undoStack.splice(0, 0, addObject[0]);
-                redovalue = (historyEntry.redoObject);
             }
         }
         diagram.protectPropertyChange(true);
@@ -37240,15 +36667,6 @@ class UndoRedo {
         diagram.protectPropertyChange(false);
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.historyChangeTrigger(historyEntry);
-        if (redovalue) {
-            let value = this.checkNodeObject(redovalue, diagram);
-            if (value) {
-                let getnodeDefaults = getFunction(diagram.updateSelection);
-                if (getnodeDefaults) {
-                    getnodeDefaults(value, diagram);
-                }
-            }
-        }
     }
     getUndoEntry(diagram) {
         let undoEntry = null;
@@ -42627,18 +42045,6 @@ class SymbolPalette extends Component {
             evt.preventDefault();
         }
     }
-    keyDown(evt) {
-        let palette = this;
-        let helperElement = 'helperElement';
-        let intDestroy = 'intDestroy';
-        if (evt && (evt.key === 'Escape')) {
-            let element = palette.draggable[helperElement];
-            if (element && element.parentNode) {
-                element.parentNode.removeChild(element);
-                palette.draggable[intDestroy]();
-            }
-        }
-    }
     //end region - event handlers
     // region - draggable
     initDraggable() {
@@ -42887,12 +42293,10 @@ class SymbolPalette extends Component {
         let stopEvent = Browser.touchEndEvent;
         let moveEvent = Browser.touchMoveEvent;
         let keyEvent = 'keyup';
-        let keyDownEvent = 'keydown';
         EventHandler.add(this.element, startEvent, this.mouseDown, this);
         EventHandler.add(this.element, moveEvent, this.mouseMove, this);
         EventHandler.add(this.element, stopEvent, this.mouseUp, this);
         EventHandler.add(this.element, keyEvent, this.keyUp, this);
-        EventHandler.add(document, keyDownEvent, this.keyDown, this);
         // initialize the draggable component
         this.initDraggable();
     }
@@ -42905,12 +42309,10 @@ class SymbolPalette extends Component {
         let moveEvent = Browser.touchMoveEvent;
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         let keyEvent = 'keyup';
-        let keyDownEvent = 'keydown';
         EventHandler.remove(this.element, startEvent, this.mouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
         EventHandler.remove(this.element, stopEvent, this.mouseUp);
         EventHandler.remove(this.element, keyEvent, this.keyUp);
-        EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
 }
 __decorate$19([
@@ -43856,5 +43258,5 @@ __decorate$20([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

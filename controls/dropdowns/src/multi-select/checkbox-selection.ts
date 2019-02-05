@@ -386,11 +386,7 @@ export class CheckBoxSelection {
         }
         if (!this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            if (Browser.isIE) {
-                this.parent.onBlur();
-            } else {
-                this.parent.inputElement.blur();
-            }
+            this.parent.onBlur(e);
         }
         if (this.filterInput === target) { this.filterInput.focus(); }
     }
@@ -431,7 +427,10 @@ export class CheckBoxSelection {
             }
         } else {
             let l10nLocale: Object = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
-            let l10n: L10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
+            let l10n: L10n = new L10n(this.parent.getLocaleName(), {}, this.parent.locale);
+            if (l10n.getConstant('selectAllText') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
+            }
             this.selectAllSpan.textContent = unSelect ? l10n.getConstant('unSelectAllText') : l10n.getConstant('selectAllText');
         }
     }

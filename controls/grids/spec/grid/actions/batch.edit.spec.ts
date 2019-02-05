@@ -2182,7 +2182,7 @@ describe('Batch Editing module', () => {
             childGridObj.cellEdit = cellEdit;
             childGridObj.editModule.editCell(0, 'CustomerID');
         });
-        
+
         it('shift tab key', () => {
             childGridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
             childGridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: childGridObj.element.querySelector('.e-editedbatchcell') } as any);
@@ -2438,14 +2438,6 @@ describe('Batch Editing module', () => {
         it('EJ2-8084====>Checking customerID value(last row and lat column)', () => {
             let tr = gridObj.getContent().querySelectorAll('tr')[2];
             expect(tr.cells[4].innerText).toBe('updated');
-        });
-
-        it('save empty string', () => {
-            gridObj.editModule.editCell(0,'CustomerID');
-            (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = '';
-            gridObj.editModule.saveCell();
-            let tr = gridObj.getContent().querySelectorAll('tr')[0];
-            expect(tr.cells[4].innerText).toBe('');
         });
 
         afterAll(() => {

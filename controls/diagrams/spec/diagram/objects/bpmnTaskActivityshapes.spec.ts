@@ -7,7 +7,6 @@ import { ShadowModel, RadialGradientModel, StopModel } from '../../../src/diagra
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { BpmnShape } from "../../../src/index";
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams);
 
 /**
@@ -23,12 +22,6 @@ describe('Diagram Control', () => {
 
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -241,12 +234,6 @@ describe('Diagram Control', () => {
         let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
         let subeventMargin: MarginModel = { left: 10, top: 10 };
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -322,7 +309,7 @@ describe('Diagram Control', () => {
                                         strokeColor: 'white',
                                     }
                                 }],
-                                ports: [{
+                                ports:[{
                                     shape: 'Square', id: 'port4', margin: sourceMargin, horizontalAlignment: 'Right',
                                     verticalAlignment: 'Bottom',
                                     width: 6, height: 6, offset: { x: 1, y: 1 }, style: {
@@ -401,12 +388,6 @@ describe('Diagram Control', () => {
         let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
         let subeventMargin: MarginModel = { left: 10, top: 10 };
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodea: NodeModel = {
@@ -444,12 +425,6 @@ describe('Diagram Control', () => {
         let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
         let subeventMargin: MarginModel = { left: 10, top: 10 };
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodea: NodeModel = {
@@ -460,7 +435,7 @@ describe('Diagram Control', () => {
                     type: 'Bpmn', shape: 'Activity', activity: {
                         activity: 'SubProcess',
                         subProcess: {
-                            type: 'Transaction', collapsed: false
+                            type: 'Transaction',collapsed:false
                         } as BpmnSubProcessModel
                     },
                 },
@@ -481,21 +456,12 @@ describe('Diagram Control', () => {
             (diagram.selectedItems.nodes[0].shape as BpmnShape).activity.subProcess.loop = 'Standard';
             (diagram.selectedItems.nodes[0].shape as BpmnShape).activity.subProcess.adhoc = true;
             diagram.dataBind();
-
+            
             let task = (diagram.selectedItems.nodes[0].wrapper.children[0] as Canvas).children[0];
             expect((task as Canvas).children[4].visible).toBe(true);
             expect((task as Canvas).children[5].visible).toBe(true);
             expect((task as Canvas).children[6].visible).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

@@ -2,7 +2,6 @@
  * Maps Annotation
  */
 import { Maps, Annotations, Marker, MapsTheme, ILoadEventArgs, MapAjax } from '../src/index';
-import { Africa_Continent } from './MapData/Africa_Continent';
 
 Maps.Inject(Annotations, Marker);
 
@@ -23,7 +22,7 @@ Maps.Inject(Annotations, Marker);
             {
                 shapeDataPath: 'name',
                 shapePropertyPath: 'name',
-                shapeData: Africa_Continent,
+                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Africa_Continent.json'),
                 shapeSettings: {
                     fill: 'url(#grad1)'
                 },

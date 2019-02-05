@@ -3,6 +3,7 @@
  */
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '@syncfusion/ej2-base';
 import { ComboBox, CustomValueSpecifierEventArgs } from '../../src/combo-box/combo-box';
+import { ChangeEventArgs } from '../../src/drop-down-list/drop-down-list';
 import { FilteringEventArgs } from '../../src/drop-down-base';
 import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
 
@@ -1840,6 +1841,56 @@ describe('ComboBox', () => {
             ddl.appendTo(element);
             ddl.focusOut();
             expect(isBlur).toBe(false);
+        });
+    });
+    describe('EJ2-21994 - combobox ngModel value not updated when enable autofill and type text and press tab', () => {
+        let element: HTMLInputElement;
+        let empList: { [key: string]: Object }[] = [
+            { id: 'level1', sports: 'American Football' }, { id: 'level2', sports: 'Badminton' },
+            { id: 'level3', sports: 'Basketball' }, { id: 'level4', sports: 'Cricket' },
+            { id: 'level5', sports: 'Football' }, { id: 'level6', sports: 'Golf' },
+            { id: 'level7', sports: 'Hockey' }, { id: 'level8', sports: 'Rugby' },
+            { id: 'level9', sports: 'Snooker' }, { id: 'level10', sports: 'Tennis' },
+        ];
+        let ddl: ComboBox;
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up', keyCode: 70 };
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            document.body.innerHTML = '';
+        });
+        it('check blur event trigger', (done) => {
+            ddl = new ComboBox({
+                dataSource: empList,
+                fields: { text: 'sports', value: 'id' },
+                popupHeight: '300px',
+                autofill: true,
+                allowCustom:false,
+                change: (args: ChangeEventArgs): void => {
+                    expect(args.value).toBe('level5');
+                    done();
+                },
+                open: (): void => {
+                    keyEventArgs.action = 'tab';
+                    (<any>ddl).keyActionHandler(keyEventArgs);
+                    keyEventArgs.action = 'tab';
+                    (<any>ddl).keyActionHandler(keyEventArgs);
+                    setTimeout((): void => {
+                        ddl.focusOut();
+                    }, 300);
+                }
+            });
+            ddl.appendTo(element);
+            ddl.focusIn();
+            (<any>ddl).inputElement.value = 'f';
+            (<any>ddl).isValidKey = true;
+            (<any>ddl).onFilterUp(keyEventArgs);
         });
     });
 });

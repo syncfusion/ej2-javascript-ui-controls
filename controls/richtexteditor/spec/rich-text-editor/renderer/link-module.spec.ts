@@ -4,7 +4,7 @@
 import { isNullOrUndefined, detach, Browser } from '@syncfusion/ej2-base';
 import { RichTextEditor, Toolbar, Link } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
-import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
+import { renderRTE, destroy } from "./../render.spec";
 import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
 
 RichTextEditor.Inject(MarkdownEditor);
@@ -416,8 +416,7 @@ describe('insert Link', () => {
             action: ''
         };
         beforeAll(() => {
-            rteObj = renderRTE({
-                value: '<p>syncfusion</p>',
+            rteObj = renderRTE({ value: '<p>syncfusion</p>' ,
                 toolbarSettings: {
                     items: ['CreateLink', 'Bold']
                 }
@@ -429,15 +428,15 @@ describe('insert Link', () => {
         });
         it('check link text', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let selObj: any = new NodeSelection();
+            let selObj:any = new NodeSelection();
             selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value  = 'https://www.syncfusion.com';
+             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({target: target, preventDefault: function(){}});
             expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'syncfusion').toBe(true);
-            keyboardEventArgs.ctrlKey = true;
+             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.keyCode = 90;
             keyboardEventArgs.action = 'undo';
             (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
@@ -472,148 +471,6 @@ describe('insert Link', () => {
             let anchor: HTMLAnchorElement = pEle.querySelector('a');
             expect(anchor.hasAttribute('target')).toBe(false);
         });
+
     })
-
-    describe(' quickToolbarSettings property - link quick toolbar - ', () => {
-        let rteObj: RichTextEditor;
-        let controlId: string;
-        beforeEach((done: Function) => {
-            rteObj = renderRTE({
-                value: `<p><a id="link" href="https://ej2.syncfusion.com/home/" target='_blank'><strong>HTML</strong></a></p>`
-            });
-            controlId = rteObj.element.id;
-            done();
-        });
-        afterEach((done: Function) => {
-            destroy(rteObj);
-            done();
-        });
-        it(' Test - open quickToolbar after applied selection command (italic)', (done) => {
-            let link: HTMLElement = rteObj.element.querySelector("#link");
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 0, 3);
-            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Italic');
-            item.click();
-            dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
-            setTimeout(() => {
-                let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_EditLink");
-                expect(!isNullOrUndefined(linkBtn)).toBe(true);
-                done();
-            }, 100);
-        });
-
-        it(' Test - link toolbar - Update the link', (done) => {
-            let link: HTMLElement = rteObj.element.querySelector("#link");
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
-            dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
-            setTimeout(() => {
-                let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_EditLink");
-                linkBtn.click();
-                let dialog: HTMLElement = document.getElementById(controlId + "_rtelink");
-                let text: HTMLInputElement = dialog.querySelector('.e-rte-linkurl');
-                text.value = "";
-                let title: HTMLInputElement = dialog.querySelector('.e-rte-linkTitle');
-                title.value = 'ej-controls';
-                let update: HTMLButtonElement = dialog.querySelector('.e-insertLink');
-                update.click();
-                expect(text.classList.contains('e-error')).toBe(true);
-                text.value = "https://js.syncfusion.com/";
-                update = dialog.querySelector('.e-insertLink');
-                update.click();
-                let link: HTMLAnchorElement = rteObj.element.querySelector("#link");
-                expect(link.href === "https://js.syncfusion.com/").toBe(true);
-                expect(link.title === 'ej-controls').toBe(true);
-                done();
-            }, 100);
-        });
-
-        it(' Test - link toolbar - remove link', (done) => {
-            let link: HTMLElement = rteObj.element.querySelector("#link");
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
-            dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
-            setTimeout(() => {
-                let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_RemoveLink");
-                linkBtn.click();
-                let link: HTMLAnchorElement = rteObj.element.querySelector("#link");
-                expect(isNullOrUndefined(link)).toBe(true);
-                done();
-            }, 100);
-        });
-    });
-
-    describe(' quickToolbarSettings property - inlineMode - link quick toolbar - ', () => {
-        let rteObj: RichTextEditor;
-        let controlId: string;
-        beforeEach((done: Function) => {
-            rteObj = renderRTE({
-                value: `<p><a id="link" href="https://ej2.syncfusion.com/home/" target='_blank'><strong>HTML</strong></a></p>`,
-                inlineMode: {
-                    enable: true
-                }
-            });
-            controlId = rteObj.element.id;
-            done();
-        });
-        afterEach((done: Function) => {
-            destroy(rteObj);
-            done();
-        });
-        it(' Test - inline QuickToolbar while select the anchor tag', (done) => {
-            let link: HTMLElement = rteObj.element.querySelector("#link");
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 0, 3);
-            dispatchEvent(link, 'mouseup');
-            setTimeout(() => {
-                let item: HTMLElement = document.querySelector('#' + controlId + '_quick_Italic');
-                expect(isNullOrUndefined(item)).toBe(true);
-                done();
-            }, 200);
-        });
-
-        it(' Test - link toolbar - Update the link', (done) => {
-            let link: HTMLElement = rteObj.element.querySelector("#link");
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
-            dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
-            setTimeout(() => {
-                let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_EditLink");
-                linkBtn.click();
-                let dialog: HTMLElement = document.getElementById(controlId + "_rtelink");
-                let text: HTMLInputElement = dialog.querySelector('.e-rte-linkurl');
-                text.value = "";
-                let title: HTMLInputElement = dialog.querySelector('.e-rte-linkTitle');
-                title.value = 'ej-controls';
-                let update: HTMLButtonElement = dialog.querySelector('.e-insertLink');
-                update.click();
-                expect(text.classList.contains('e-error')).toBe(true);
-                text.value = "https://js.syncfusion.com/";
-                update = dialog.querySelector('.e-insertLink');
-                update.click();
-                let link: HTMLAnchorElement = rteObj.element.querySelector("#link");
-                expect(link.href === "https://js.syncfusion.com/").toBe(true);
-                expect(link.title === 'ej-controls').toBe(true);
-                done();
-            }, 100);
-        });
-
-        it(' Test - link toolbar - remove link', (done) => {
-            let link: HTMLElement = rteObj.element.querySelector("#link");
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
-            dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
-            setTimeout(() => {
-                let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_RemoveLink");
-                linkBtn.click();
-                let link: HTMLAnchorElement = rteObj.element.querySelector("#link");
-                expect(isNullOrUndefined(link)).toBe(true);
-                done();
-            }, 100);
-        });
-    });
 });

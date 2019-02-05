@@ -622,7 +622,7 @@ __decorate([
     Collection([{}], ButtonModelProps)
 ], Toast.prototype, "buttons", void 0);
 __decorate([
-    Property(null)
+    Property()
 ], Toast.prototype, "target", void 0);
 __decorate([
     Event()

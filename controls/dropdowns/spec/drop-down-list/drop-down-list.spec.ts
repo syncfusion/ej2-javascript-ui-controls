@@ -2,7 +2,7 @@
  * Dropdownlist spec document
  */
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
-import { DropDownBase, FilteringEventArgs, dropDownBaseClasses } from '../../src/drop-down-base/drop-down-base';
+import { DropDownBase, FilteringEventArgs, dropDownBaseClasses, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DropDownList } from '../../src/drop-down-list/drop-down-list';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
@@ -14,6 +14,12 @@ L10n.load({
     'fr': {
         'dropdowns': {
             noRecordsTemplate: "Pas de modèle d'enregistrement"
+        }
+    },
+    'es': {
+        'drop-down-list': {
+            noRecordsTemplate: "Pas de",
+            actionFailureTemplate:  "Pas de"
         }
     }
 });
@@ -854,6 +860,23 @@ describe('DDList', () => {
             listObj.dataBind();
             expect(listObj.popupObj.element.lastElementChild.innerHTML).not.toEqual('Total items count 5');
         })
+        /**
+       * locale
+       */
+      it('locale property - es', (done) => {
+            setCulture('es');
+            listObj.htmlAttributes = {};
+            listObj.enabled = true;
+            listObj.readonly = false;
+            listObj.locale = 'es';
+            listObj.dataSource = [];
+            listObj.open = (args: PopupEventArgs): void => {
+                expect((args.popup.element.querySelector('.e-nodata') as HTMLElement).innerText).toEqual('Pas de');
+                done();
+            };
+            listObj.dataBind();
+            listObj.showPopup();
+        });
     });
 
     // Initialize the properties

@@ -11,7 +11,6 @@ export interface DictionaryInfo<K, V> {
 export class Dictionary<K, V> implements DictionaryInfo<K, V> {
     private keysInternal: K[] = [];
     private valuesInternal: V[] = [];
-    private item: K[] = [];
 
     /**
      * @private
@@ -23,18 +22,9 @@ export class Dictionary<K, V> implements DictionaryInfo<K, V> {
      * @private
      */
     get keys(): K[] {
-        return this.getItem();
+        return this.keysInternal;
     }
-    /**
-     * @private
-     */
-    public getItem(): K[] {
-        this.item = [];
-        for (let i: number = 0; i < this.keysInternal.length; i++) {
-            this.item.push(this.keysInternal[i]);
-        }
-        return this.item;
-    }
+
     /**
      * @private
      */
@@ -113,7 +103,7 @@ export class Dictionary<K, V> implements DictionaryInfo<K, V> {
     /**
      * @private
      */
-    public clear(): void {        
+    public clear(): void {
         this.keysInternal = [];
         this.valuesInternal = [];
     }

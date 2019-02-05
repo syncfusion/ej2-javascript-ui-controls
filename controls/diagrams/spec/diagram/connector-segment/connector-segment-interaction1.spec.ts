@@ -12,7 +12,6 @@ import { SnapConstraints } from '../../../src/diagram/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 Diagram.Inject(ConnectorEditing);
 /**
@@ -36,12 +35,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'SegmentsCopyAndPaste' });
             document.body.appendChild(ele);
             let connector1: ConnectorModel = {
@@ -164,12 +157,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'SegmentsUndoRedo' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -304,7 +291,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.connectors[0].sourceID == srcNode.id).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Multiple Segments connect to source node ', () => {
         let diagram: Diagram;
@@ -313,12 +300,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'SegmentsConnect' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -455,7 +436,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.connectors[0].segments.length == 3).toBe(true);
             done();
         });
-         });
+    });
 
 
     describe('Multiple Segments update segments when drag the source node (connect to node)', () => {
@@ -465,12 +446,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'SegmentsChangeSourceNodeDrag1' });
             document.body.appendChild(ele);
 
@@ -661,6 +636,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 500 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 200 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 400 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 350 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 400 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 350 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 500 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 400 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 500).toBe(true);
             done();
         });
+
     });
 
 
@@ -671,12 +647,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'SegmentsChangeSourceNodeDrag' });
             document.body.appendChild(ele);
 
@@ -1094,7 +1064,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[7] as Connector).intermediatePoints[0].x == 1070 && (diagram.connectors[7] as Connector).intermediatePoints[0].y == 300 && (diagram.connectors[7] as Connector).intermediatePoints[1].x == 1055 && (diagram.connectors[7] as Connector).intermediatePoints[1].y == 300 && (diagram.connectors[7] as Connector).intermediatePoints[2].x == 1055 && (diagram.connectors[7] as Connector).intermediatePoints[2].y == 250 && (diagram.connectors[7] as Connector).intermediatePoints[3].x == 1005 && (diagram.connectors[7] as Connector).intermediatePoints[3].y == 250 && (diagram.connectors[7] as Connector).intermediatePoints[4].x == 1005 && (diagram.connectors[7] as Connector).intermediatePoints[4].y == 220 && (diagram.connectors[7] as Connector).intermediatePoints[5].x == 950 && (diagram.connectors[7] as Connector).intermediatePoints[5].y == 220).toBe(true);
             done();
         });
-         });
+    });
 
     describe('Conectors with segments - Orthogonal Segment Interaction(Port To Node)', () => {
         let diagram: Diagram;
@@ -1102,12 +1072,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'PortToNodeIssue' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1156,7 +1120,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 147.55 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 235 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 97.55 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 235 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 97.55 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 135 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 170 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 135).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Conectors with segments - Orthogonal Segment Interaction(Port To Node)', () => {
         let diagram: Diagram;
@@ -1164,12 +1128,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'MultipleSelectionDraggingNodeAndConnectorConnectToNode' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1224,7 +1182,7 @@ describe('Diagram Control', () => {
                 (diagram.connectors[0].wrapper.children[0] as PathElement).data == 'M76 200 L66 200 L66 250 L116 250 L116 300 L299.5 300').toBe(true);
             done();
         });
-       });
+    });
 
     describe('Conectors with segments - Terminal segment(Two points) - Drag target point', () => {
         let diagram: Diagram;
@@ -1232,12 +1190,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'TerminalSegmentTwoPoints' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1294,15 +1246,6 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 200 && (diagram.connectors[3] as Connector).intermediatePoints[1].x == 100 && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 200 && (diagram.connectors[3] as Connector).intermediatePoints[2].x == 100 && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 118).toBe(true);
             done();
         });
-        it('memory leak', () => {     
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 
     describe('Conectors with multiple segments - Source Node Rotion', () => {
@@ -1311,13 +1254,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'SourceNodeRotion' });
             document.body.appendChild(ele);
             diagram = new Diagram({

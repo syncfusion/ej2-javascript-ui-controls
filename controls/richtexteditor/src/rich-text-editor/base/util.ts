@@ -119,8 +119,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                     let result: string = '';
                     switch (key) {
                         case 'formats':
-                            if (isNOU(dropDown.formatDropDown) || isPopToolbar ||
-                                (!isNOU(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) { return; }
+                            if (isNOU(dropDown.formatDropDown) || isPopToolbar) { return; }
                             let formatItems: IDropDownItemModel[] = e.parent.format.types;
                             result = getDropDownValue(formatItems, value, 'subCommand', 'text');
                             dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
@@ -131,16 +130,14 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             dropDown.formatDropDown.dataBind();
                             break;
                         case 'alignments':
-                            if (isNOU(dropDown.alignDropDown) ||
-                                (!isNOU(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) { return; }
+                            if (isNOU(dropDown.alignDropDown)) { return; }
                             let alignItems: IDropDownItemModel[] = model.alignmentItems;
                             result = getDropDownValue(alignItems, value, 'subCommand', 'iconCss');
                             dropDown.alignDropDown.iconCss = isNOU(result) ? 'e-icons e-justify-left' : result;
                             dropDown.alignDropDown.dataBind();
                             break;
                         case 'fontname':
-                            if (isNOU(dropDown.fontNameDropDown) || isPopToolbar ||
-                                (!isNOU(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) { return; }
+                            if (isNOU(dropDown.fontNameDropDown) || isPopToolbar) { return; }
                             let fontNameItems: IDropDownItemModel[] = e.parent.fontFamily.items;
                             result = getDropDownValue(fontNameItems, value, 'value', 'text');
                             let name: string = (isNOU(result) ? 'Segoe UI' : result);
@@ -152,8 +149,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             dropDown.fontNameDropDown.dataBind();
                             break;
                         case 'fontsize':
-                            if (isNOU(dropDown.fontSizeDropDown) ||
-                                (!isNOU(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) { return; }
+                            if (isNOU(dropDown.fontSizeDropDown)) { return; }
                             let fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
                             result = getDropDownValue(
                                 fontSizeItems, (value === '' ? e.parent.fontSize.default.replace(/\s/g, '') : value), 'value', 'text');
@@ -229,17 +225,6 @@ export function parseHtml(value: string): DocumentFragment {
     } else {
         return document.createRange().createContextualFragment(value);
     }
-}
-export function getTextNodesUnder(docElement: Document, node: Element): Node[] {
-    let nodes: Node[] = [];
-    for (node = node.firstChild as Element; node; node = node.nextSibling as Element) {
-        if (node.nodeType === 3) {
-            nodes.push(node);
-        } else {
-            nodes = nodes.concat(getTextNodesUnder(docElement, node));
-        }
-    }
-    return nodes;
 }
 export function toObjectLowerCase(obj: { [key: string]: IToolsItemConfigs }): { [key: string]: IToolsItemConfigs } {
     let convertedValue: { [key: string]: IToolsItemConfigs } = {};

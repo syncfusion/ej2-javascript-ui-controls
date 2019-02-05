@@ -10,7 +10,7 @@ import  {profile , inMB, getMemoryProfile} from './common.spec';
 
 describe('Numerictextbox Control', () => {
     describe('NumericTextBox creation', () => {
-        beforeAll(() => {
+		beforeAll(() => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
@@ -5118,7 +5118,7 @@ describe('Change Event testing', () => {
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-float-input')).toEqual(false);
         });
     });
-    it('memory leak testing', () => {
+	it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

@@ -1,7 +1,7 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -148,8 +148,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         return 'query-builder';
     };
     QueryBuilder.prototype.initialize = function () {
-        if (this.dataSource.length) {
-            var columnKeys = Object.keys(this.dataSource[0]);
+        if (this.dataColl.length) {
+            var columnKeys = Object.keys(this.dataColl[0]);
             var cols = [];
             var type = void 0;
             var isDate = false;
@@ -161,7 +161,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 for (var i = 0, len = columns.length; i < len; i++) {
                     if (!columns[i].type) {
                         if (columnKeys.indexOf(columns[i].field) > -1) {
-                            value = this.dataSource[0][columns[i].field];
+                            value = this.dataColl[0][columns[i].field];
                             type = typeof value;
                             if (type === 'string') {
                                 isDate = !isNaN(Date.parse(value));
@@ -182,7 +182,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 for (var i = 0, len = columnKeys.length; i < len; i++) {
-                    value = this.dataSource[0][columnKeys[i]];
+                    value = this.dataColl[0][columnKeys[i]];
                     type = typeof value;
                     if (type === 'string') {
                         isDate = !isNaN(Date.parse(value));
@@ -205,6 +205,17 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         if (target.tagName === 'SPAN') {
             target = target.parentElement;
         }
+        if (target.className.indexOf('e-collapse-rule') > -1) {
+            var animation = new Animation({ duration: 1000, delay: 0 });
+            var summaryElem = document.getElementById(this.element.id + '_summary_content');
+            var txtareaElem = summaryElem.querySelector('.e-summary-text');
+            animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
+            var groupElem = this.element.querySelector('.e-group-container');
+            groupElem.style.display = 'none';
+            txtareaElem.textContent = this.getSqlFromRules(this.rule);
+            summaryElem.style.display = 'block';
+            txtareaElem.style.height = txtareaElem.scrollHeight + 'px';
+        }
         if (target.tagName === 'BUTTON') {
             if (target.className.indexOf('e-removerule') > -1) {
                 if (target.className.indexOf('e-tooltip') > -1) {
@@ -217,6 +228,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.deleteGroup(closest(target, '.e-group-container'));
             }
             else if (target.className.indexOf('e-edit-rule') > -1) {
+                var animation = new Animation({ duration: 1000, delay: 0 });
+                animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
                 document.getElementById(this.element.id + '_summary_content').style.display = 'none';
                 if (this.element.querySelectorAll('.e-group-container').length < 1) {
                     this.addGroupElement(false, this.element, this.rule.condition);
@@ -231,12 +244,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                     groupElem.style.display = 'block';
                 }
-            }
-            else if (target.className.indexOf('e-collapse-rule') > -1) {
-                var groupElem = this.element.querySelector('.e-group-container');
-                groupElem.style.display = 'none';
-                this.element.querySelector('.e-summary-text').textContent = this.getSqlFromRules(this.rule);
-                document.getElementById(this.element.id + '_summary_content').style.display = 'block';
             }
         }
         else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
@@ -283,6 +290,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var height;
         if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
             element.textContent = this.l10n.getConstant('Remove');
+            addClass([element], 'e-flat');
+            addClass([element], 'e-primary');
         }
         else {
             addClass([element], 'e-round');
@@ -448,11 +457,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl' }, innerHTML: 'AND' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl e-small' }, innerHTML: 'AND' });
         glueElem.appendChild(labelElem);
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-or', value: 'OR' } });
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl' }, innerHTML: 'OR' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl e-small' }, innerHTML: 'OR' });
         glueElem.appendChild(labelElem);
         groupHdrElem.appendChild(glueElem);
         grpActElem = this.createElement('div', { attrs: { class: 'e-group-action' } });
@@ -792,7 +801,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         return result;
     };
     QueryBuilder.prototype.renderMultiSelect = function (rule, parentId, i, selectedValue) {
-        var ds = this.getDistinctValues(this.dataSource, rule.field);
+        var ds = this.getDistinctValues(this.dataColl, rule.field);
         var multiSelectObj = new MultiSelect({
             dataSource: new DataManager(ds),
             query: new Query([rule.field]),
@@ -826,7 +835,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.renderStringValue = function (parentId, rule, operator, idx, ruleValElem) {
         var selectedVal;
         var selectedValue = this.isImportRules ? rule.value : '';
-        if ((operator === 'in' || operator === 'notin') && this.dataSource.length > 0) {
+        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
             selectedVal = this.isImportRules ? rule.value : [];
             this.renderMultiSelect(rule, parentId, idx, selectedVal);
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
@@ -854,7 +863,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.renderNumberValue = function (parentId, rule, operator, idx, ruleValElem, itemData, length) {
         var selectedValue = this.isImportRules ? rule.value : 0;
         var selectedVal;
-        if ((operator === 'in' || operator === 'notin') && this.dataSource.length > 0) {
+        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
             selectedVal = this.isImportRules ? rule.value : [];
             this.renderMultiSelect(rule, parentId, idx, selectedVal);
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
@@ -1368,21 +1377,23 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 id: this.element.id + '_summary_content'
             }
         });
-        var textElem = this.createElement('textarea', { attrs: { class: 'e-summary-text', readonly: 'true' } });
-        var editElem = this.createElement('button', { attrs: { class: 'e-edit-rule e-css e-btn e-small' } });
+        var textElem = this.createElement('textarea', { attrs: { class: 'e-summary-text', readonly: 'true' }, styles: 'max-height:500px' });
+        var editElem = this.createElement('button', { attrs: { class: 'e-edit-rule e-css e-btn e-small e-flat e-primary' } });
+        var divElem = this.createElement('div', { attrs: { class: 'e-summary-btndiv' } });
         contentElem.appendChild(textElem);
         textElem.textContent = this.getSqlFromRules(this.rule);
         editElem.textContent = this.l10n.getConstant('Edit');
-        contentElem.appendChild(editElem);
+        divElem.appendChild(editElem);
+        contentElem.appendChild(divElem);
         this.element.appendChild(contentElem);
     };
     QueryBuilder.prototype.renderSummaryCollapse = function () {
-        var collapseElem = this.createElement('button', {
+        var collapseElem = this.createElement('div', {
             attrs: {
-                class: 'e-collapse-rule e-css e-btn e-small'
+                class: 'e-collapse-rule e-icons',
+                title: this.l10n.getConstant('SummaryViewTitle')
             }
         });
-        collapseElem.appendChild(this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-collapse-icon' } }));
         this.element.querySelector('.e-group-header').appendChild(collapseElem);
     };
     QueryBuilder.prototype.columnSort = function () {
@@ -1507,11 +1518,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             GreaterThanOrEqual: 'Greater Than Or Equal',
             Between: 'Between',
             NotBetween: 'Not Between',
-            Empty: 'Empty',
-            NotEmpty: 'Not Empty',
             In: 'In',
             NotIn: 'Not In',
-            NotContains: 'Not Contains',
             Remove: 'REMOVE',
             SelectField: 'Select a field',
             SelectOperator: 'Select operator',
@@ -1520,7 +1528,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             AddGroup: 'Add Group',
             AddCondition: 'Add Condition',
             Edit: 'EDIT',
-            ValidationMessage: 'This field is required'
+            ValidationMessage: 'This field is required',
+            SummaryViewTitle: 'Summary View'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization();
@@ -1570,7 +1579,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         };
         this.operatorValue = {
             equal: 'Equal', greaterthan: 'GreaterThan', greaterthanorequal: 'GreaterThanOrEqual',
-            lessthan: 'LessThan', lessthanorequal: 'LessThanOrEqual', notequal: 'NotEqual', empty: 'Empty', notempty: 'NotEmpty',
+            lessthan: 'LessThan', lessthanorequal: 'LessThanOrEqual', notequal: 'NotEqual',
             between: 'Between', in: 'in', notin: 'NotIn', notbetween: 'NotBetween', startswith: 'StartsWith', endswith: 'EndsWith',
             contains: 'Contains'
         };
@@ -1589,6 +1598,28 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         ];
         this.ruleElem = this.ruleTemplate();
         this.groupElem = this.groupTemplate();
+        if (this.dataSource instanceof DataManager) {
+            this.dataManager = this.dataSource;
+            this.executeDataManager(new Query());
+        }
+        else {
+            this.dataManager = new DataManager(this.dataSource);
+            this.dataColl = this.dataManager.executeLocal(new Query());
+            this.initControl();
+        }
+    };
+    QueryBuilder.prototype.executeDataManager = function (query) {
+        var _this = this;
+        var data = this.dataManager.executeQuery(query);
+        var deferred = new Deferred();
+        data.then(function (e) {
+            _this.dataColl = e.result;
+            _this.initControl();
+        }).catch(function (e) {
+            deferred.reject(e);
+        });
+    };
+    QueryBuilder.prototype.initControl = function () {
         this.initialize();
         this.initWrapper();
         this.wireEvents();

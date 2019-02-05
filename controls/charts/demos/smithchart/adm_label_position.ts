@@ -2,7 +2,7 @@
  * Default sample for smith chart
  */
 import { Smithchart } from '../../src/smithchart/smithchart';
-import { AxisLabelPosition } from '../../src';
+import { LabelAlignment, LabelPosition, AxisLabelPosition } from '../../src';
 
 let smithchart: Smithchart = new Smithchart({
     title: {

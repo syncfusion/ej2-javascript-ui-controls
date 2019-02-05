@@ -136,12 +136,6 @@ var Column = /** @__PURE__ @class */ (function () {
          * @default {}
          */
         this.edit = {};
-        /**
-         * If `allowSearching` set to false, then it disables Searching of a particular column.
-         * By default all columns allow Searching.
-         * @default true
-         */
-        this.allowSearching = true;
         this.sortDirection = 'Descending';
         /** @hidden */
         this.getEditTemplate = function () { return _this.editTemplateFn; };
@@ -2621,7 +2615,7 @@ var Data = /** @__PURE__ @class */ (function () {
     Data.prototype.searchQuery = function (query) {
         var _this = this;
         var sSettings = this.parent.searchSettings;
-        var fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
+        var fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map(function (f) { return f.field; });
         var predicateList = [];
         var needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
@@ -2909,14 +2903,17 @@ var Data = /** @__PURE__ @class */ (function () {
         if (args.requestType !== undefined && this.dataState.isDataChanged !== false) {
             state.action = args;
             if (args.requestType === 'save' || args.requestType === 'delete') {
-                var editArgs = args;
-                editArgs.key = key;
-                editArgs.state = state;
+                var editArgs_1 = args;
+                editArgs_1.key = key;
+                editArgs_1.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;
-                this.parent.trigger(dataSourceChanged, editArgs);
+                this.parent.trigger(dataSourceChanged, editArgs_1);
                 deff.promise.then(function (e) {
                     _this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs_1.requestType === 'save') {
+                        _this.parent.notify(recordAdded, editArgs_1);
+                    }
                     _this.parent.trigger(dataStateChange, state);
                 });
             }
@@ -2930,21 +2927,6 @@ var Data = /** @__PURE__ @class */ (function () {
             def.resolve(this.parent.dataSource);
         }
         return def;
-    };
-    /**
-     * Gets the columns where searching needs to be performed from the Grid.
-     * @return {string[]}
-     */
-    Data.prototype.getSearchColumnFieldNames = function () {
-        var colFieldNames = [];
-        var columns = this.parent.getColumns();
-        for (var _i = 0, columns_2 = columns; _i < columns_2.length; _i++) {
-            var col = columns_2[_i];
-            if (col.allowSearching) {
-                colFieldNames.push(col.field);
-            }
-        }
-        return colFieldNames;
     };
     return Data;
 }());
@@ -7522,13 +7504,12 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         var args;
-        var checkboxColumn = this.parent.getColumns().filter(function (col) { return col.type === 'checkbox'; });
         for (var _i = 0, rowIndexes_2 = rowIndexes; _i < rowIndexes_2.length; _i++) {
             var rowIndex = rowIndexes_2[_i];
             var rowObj = this.getRowObj(rowIndex);
             var isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
             this.selectRowIndex(rowIndex);
-            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
+            if (isUnSelected) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
@@ -9155,9 +9136,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.rowCellSelectionHandler = function (rowIndex, cellIndex) {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
-                this.selectRow(rowIndex, this.selectionSettings.enableToggle);
+                this.selectRow(rowIndex, true);
             }
-            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
+            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
             if (this.selectedRowCellIndexes.length) {
                 this.updateAutoFillPosition();
             }
@@ -10630,9 +10611,6 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], SelectionSettings.prototype, "enableSimpleMultiRowSelection", void 0);
-    __decorate([
-        Property(true)
-    ], SelectionSettings.prototype, "enableToggle", void 0);
     return SelectionSettings;
 }(ChildProperty));
 /**
@@ -11496,6 +11474,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                         result: gResult_1, count: this.dataSource.count,
                         aggregates: this.dataSource.aggregates
                     };
+                    this.getDataModule().setState({});
                     pending_1.resolver(this.dataSource);
                 }
                 else {
@@ -12605,30 +12584,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.reorderColumns = function (fromFName, toFName) {
         if (this.reorderModule) {
             this.reorderModule.reorderColumns(fromFName, toFName);
-        }
-    };
-    /**
-     * Changes the Grid column positions by field index. If you invoke reorderColumnByIndex multiple times,
-     * then you won't get the same results every time.
-     * @param  {number} fromIndex - Defines the origin field index.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    Grid.prototype.reorderColumnByIndex = function (fromIndex, toIndex) {
-        if (this.reorderModule) {
-            this.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
-        }
-    };
-    /**
-     * Changes the Grid column positions by field index. If you invoke reorderColumnByTargetIndex multiple times,
-     * then you will get the same results every time.
-     * @param  {string} fieldName - Defines the field name.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    Grid.prototype.reorderColumnByTargetIndex = function (fieldName, toIndex) {
-        if (this.reorderModule) {
-            this.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
         }
     };
     /**
@@ -16120,11 +16075,11 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         var selectedMenu;
         var predicates = this.existingPredicate[this.options.field];
         if (predicates && predicates.length === 2) {
-            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
-                selectedMenu = 'between';
+            if (predicates[0].operator === 'greaterThanOrEqual' && predicates[1].operator === 'lessThanOrEqual') {
+                selectedMenu = 'Between';
             }
             else {
-                selectedMenu = 'customfilter';
+                selectedMenu = 'CustomFilter';
             }
         }
         else {
@@ -17499,7 +17454,6 @@ var Filter = /** @__PURE__ @class */ (function () {
     };
     Filter.prototype.updateFilter = function () {
         var cols = this.filterSettings.columns;
-        this.actualPredicate = {};
         for (var i = 0; i < cols.length; i++) {
             this.column = this.parent.getColumnByField(cols[i].field) ||
                 getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns());
@@ -17513,17 +17467,15 @@ var Filter = /** @__PURE__ @class */ (function () {
     };
     /* tslint:disable-next-line:max-line-length */
     Filter.prototype.refreshFilterIcon = function (fieldName, operator, value, type, predicate, matchCase, ignoreAccent) {
-        var obj;
-        obj = {
-            field: fieldName,
-            predicate: predicate,
-            matchCase: matchCase,
-            ignoreAccent: ignoreAccent,
-            operator: operator,
-            value: value,
-            type: type
-        };
-        this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
+        this.actualPredicate[fieldName] = [{
+                field: fieldName,
+                predicate: predicate,
+                matchCase: matchCase,
+                ignoreAccent: ignoreAccent,
+                operator: operator,
+                value: value,
+                type: type
+            }];
         this.addFilteredClass(fieldName);
     };
     Filter.prototype.addFilteredClass = function (fieldName) {
@@ -18439,20 +18391,6 @@ var Reorder = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Reorder.prototype.moveTargetColumn = function (column, toIndex) {
-        if (toIndex > -1) {
-            this.moveColumns(toIndex, column, true);
-        }
-    };
-    Reorder.prototype.reorderSingleColumnByTarget = function (fieldName, toIndex) {
-        var column = this.parent.getColumnByField(fieldName);
-        this.moveTargetColumn(column, toIndex);
-    };
-    Reorder.prototype.reorderMultipleColumnByTarget = function (fieldName, toIndex) {
-        for (var i = 0; i < fieldName.length; i++) {
-            this.reorderSingleColumnByTarget(fieldName[i], toIndex);
-        }
-    };
     /**
      * Changes the position of the Grid columns by field names.
      * @param  {string | string[]} fromFName - Defines the origin field names.
@@ -18461,26 +18399,6 @@ var Reorder = /** @__PURE__ @class */ (function () {
      */
     Reorder.prototype.reorderColumns = function (fromFName, toFName) {
         typeof fromFName === 'string' ? this.reorderSingleColumn(fromFName, toFName) : this.reorderMultipleColumns(fromFName, toFName);
-    };
-    /**
-     * Changes the position of the Grid columns by field index.
-     * @param  {number} fromIndex - Defines the origin field index.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    Reorder.prototype.reorderColumnByIndex = function (fromIndex, toIndex) {
-        var column = this.parent.getColumnByIndex(fromIndex);
-        this.moveTargetColumn(column, toIndex);
-    };
-    /**
-     * Changes the position of the Grid columns by field index.
-     * @param  {string | string[]} fieldName - Defines the field name.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    Reorder.prototype.reorderColumnByTargetIndex = function (fieldName, toIndex) {
-        typeof fieldName === 'string' ? this.reorderSingleColumnByTarget(fieldName, toIndex) :
-            this.reorderMultipleColumnByTarget(fieldName, toIndex);
     };
     Reorder.prototype.enableAfterRender = function (e) {
         if (e.module === this.getModuleName() && e.enable) {
@@ -23051,7 +22969,6 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     else {
                         refreshForeignData(rows[i], this.parent.getForeignKeyColumns(), rows[i].data);
                         delete rows[i].changes;
-                        delete rows[i].edit;
                         rows[i].isDirty = false;
                         var ftr = mTr ? mTr : tr;
                         classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
@@ -23628,9 +23545,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
         var tr = parentsUntil(this.form, 'e-row');
         var column = this.cellDetails.column;
-        var obj = {};
-        obj[column.field] = this.cellDetails.rowData[column.field];
-        var editedData = gObj.editModule.getCurrentEditedData(this.form, obj);
+        var editedData = gObj.editModule.getCurrentEditedData(this.form, {});
         var cloneEditedData = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
         var value = getObject(column.field, cloneEditedData);

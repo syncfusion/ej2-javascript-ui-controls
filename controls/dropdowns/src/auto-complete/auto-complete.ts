@@ -214,6 +214,10 @@ export class AutoComplete extends ComboBox {
         super.preRender();
     }
 
+    protected getLocaleName(): string {
+        return 'auto-complete';
+    };
+
     protected getNgDirective(): string {
         return 'EJS-AUTOCOMPLETE';
     }

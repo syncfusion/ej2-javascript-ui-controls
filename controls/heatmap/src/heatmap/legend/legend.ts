@@ -1275,12 +1275,17 @@ export class Legend {
      * update visibility collections of legend and series
      * @private
      */
-    public updateLegendRangeCollections(): void {
+    public updateLegendRangeCollections(load: boolean): void {
+        if (load) {
             let heatMap: HeatMap = this.heatMap;
             heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
             this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
             heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
             this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
             this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
+        } else {
+            this.legendRange = [];
+            this.legendTextRange = [];
         }
+    }
 }

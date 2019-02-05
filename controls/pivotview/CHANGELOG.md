@@ -2,16 +2,6 @@
 
 ## [Unreleased]
 
-## 17.1.1-beta (2019-01-22)
-
-### Pivot Grid
-
-#### New Features
-
-- F141747- Always shows value caption in headers even having single measure.
-- Cell selection now allows to select cells as row and column wise.
-- Shows the filter state in the fields of filter axis.
-
 ## 16.4.42 (2018-12-14)
 
 ### Pivot Grid

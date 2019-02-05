@@ -20,7 +20,6 @@ import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } 
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path } from './objects/node';
-import { flipConnector, updatePortEdges } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
 import { Connector } from './objects/connector';
 import { ConnectorModel, BpmnFlowModel } from './objects/connector-model';
@@ -37,7 +36,7 @@ import { Point } from './primitives/point';
 import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
 import { DistributeOptions, SizingOptions, RenderingMode, DiagramAction, ThumbsConstraints, NudgeDirection } from './enum/enum';
-import { RealAction, ElementAction, FlipDirection } from './enum/enum';
+import { RealAction } from './enum/enum';
 import { PathElement } from './core/elements/path-element';
 import { TextElement } from './core/elements/text-element';
 import { updateStyle, removeItem, updateConnector, updateShape, setUMLActivityDefaults, findNodeByName } from './utility/diagram-util';
@@ -78,11 +77,11 @@ import { getPortLayerSvg, getDiagramLayerSvg } from './utility/dom-util';
 import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';
 import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';
-import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs } from './utility/constraints-util';
+import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize } from './utility/constraints-util';
 import { canPortInConnect, canPortOutConnect } from './utility/constraints-util';
 import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit } from './utility/constraints-util';
 import { canDragSourceEnd, canDragTargetEnd, canDragSegmentThumb, enableReadOnly, canMove } from './utility/constraints-util';
-import { findAnnotation, arrangeChild, getInOutConnectPorts, removeChildNodes } from './utility/diagram-util';
+import { findAnnotation, arrangeChild, getInOutConnectPorts } from './utility/diagram-util';
 import { randomId, cloneObject, extendObject, getFunction, getBounds } from './utility/base-util';
 import { Snapping } from './objects/snapping';
 import { DiagramTooltipModel } from './objects/tooltip-model';
@@ -787,35 +786,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public getCustomCursor: Function | string;
 
     /**
-     * Helps to set the undo and redo node selection
-     * ```html
-     * <div id='diagram'></div>
-     * ```
-     * ```typescript
-     *       let connectors: ConnectorModel[] = [{
-     *           id: 'connector1',
-     *           sourcePoint: { x: 100, y: 300 },
-     *           targetPoint: { x: 200, y: 400 },
-     *       }];
-     * let diagram: Diagram = new Diagram({
-     * ...
-     *   connectors: connectors,
-     *   updateSelection: (object: ConnectorModel | NodeModel, diagram: Diagram) => {
-     *   let objectCollection = [];
-     *   objectCollection.push(obejct);
-     *   diagram.select(objectCollection);
-     *   },
-     * ...
-     * });
-     * diagram.appendTo('#diagram');
-     * ```
-     * @aspDefaultValueIgnore
-     * @default undefined
-     */
-    @Property()
-    public updateSelection: Function | string;
-
-    /**
      * Defines the collection of selected items, size and position of the selector
      * @default {}
      */
@@ -1121,8 +1091,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public deleteVirtualObject: boolean = false;
     /** @private */
     public realActions: RealAction;
-    /** @private */
-    public previousSelectedObject: (NodeModel | ConnectorModel)[];
     private crudDeleteNodes: Object[] = [];
     /** @private */
     public selectedObject: { helperObject: NodeModel, actualObject: NodeModel } = { helperObject: undefined, actualObject: undefined };
@@ -2947,16 +2915,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     attributes = {
                         'id': this.element.id + '_editTextBoxDiv', 'style': 'position: absolute' + ';left:' + x + 'px;top:' +
-                        y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
-                        'px; containerName:' + node.id + ';'
+                            y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
+                            'px; containerName:' + node.id + ';'
                     };
                     setAttributeHtml(textEditing, attributes);
                     attributes = {
                         'id': this.element.id + '_editBox', 'style': 'width:' + ((bounds.width + 1) * scale) +
-                        'px;height:' + (bounds.height * scale) + 'px;resize: none;outline: none;overflow: hidden;' +
-                        ';font-family:' + style.fontFamily +
-                        ';font-size:' + (style.fontSize * scale) + 'px;text-align:' +
-                        ((textWrapper.style as TextStyleModel).textAlign.toLocaleLowerCase()) + ';', 'class': 'e-diagram-text-edit'
+                            'px;height:' + (bounds.height * scale) + 'px;resize: none;outline: none;overflow: hidden;' +
+                            ';font-family:' + style.fontFamily +
+                            ';font-size:' + (style.fontSize * scale) + 'px;text-align:' +
+                            ((textWrapper.style as TextStyleModel).textAlign.toLocaleLowerCase()) + ';', 'class': 'e-diagram-text-edit'
                     };
                     setAttributeHtml(textArea, attributes);
                     textArea.style.fontWeight = (style.bold) ? 'bold' : '';
@@ -3050,6 +3018,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.nodes as INode[], this.nameTable, this.layout as Layout, viewPort);
             update = true;
         }
+
+
         if (update) {
             this.preventUpdate = true;
             let connectors: Object = {};
@@ -3110,58 +3080,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public loadDiagram(data: string): Object {
         return deserialize(data, this);
-    }
-
-    /**
-     * To  get the html diagram content
-     * @param styleSheets defines the collection of style files to be considered while exporting.
-     */
-    public getDiagramContent(styleSheets?: StyleSheetList): string {
-        if (this.printandExportModule) {
-            let data: string | SVGElement = this.printandExportModule.getDiagramContent(styleSheets);
-            return data;
-        }
-        return '';
-    }
-
-    /**
-     * To export diagram native/html image
-     * @param image defines image content to be exported.
-     * @param options defines the image properties.
-     */
-    public exportImage(image: string, options: IExportOptions): void {
-        if (this.printandExportModule) {
-            this.printandExportModule.exportImages(image, options);
-        }
-    }
-
-    /**
-     * To print native/html nodes of diagram
-     * @param image defines image content.
-     * @param options defines the properties of the image
-     */
-    public printImage(image: string, options: IExportOptions): void {
-        if (this.printandExportModule) {
-            options.printOptions = true;
-            this.printandExportModule.exportImages(image, options);
-        }
-    }
-
-    /**
-     * To get the bound of the diagram
-     */
-    public getDiagramBounds(): Rect {
-        if (this.printandExportModule) {
-            let bounds: Rect = this.printandExportModule.getDiagramBounds('', {});
-            bounds.width = bounds.width > this.scrollSettings.viewPortWidth ?
-                bounds.width + (bounds.x > 0 ? bounds.x : 0) : this.scrollSettings.viewPortWidth;
-            bounds.height = bounds.height > this.scrollSettings.viewPortHeight ?
-                bounds.height + (bounds.y > 0 ? bounds.y : 0) : this.scrollSettings.viewPortHeight;
-            bounds.x = bounds.x > 0 ? 0 : bounds.x;
-            bounds.y = bounds.y > 0 ? 0 : bounds.y;
-            return bounds;
-        }
-        return new Rect();
     }
 
     /**
@@ -3483,7 +3401,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.intOffPageBackground();
         setAttributeHtml(this.element, {
             style: 'width:' + this.getSizeValue(this.width) + '; height:'
-            + this.getSizeValue(this.height) + ';position:relative;overflow:hidden;'
+                + this.getSizeValue(this.height) + ';position:relative;overflow:hidden;'
         });
     };
 
@@ -3600,7 +3518,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.htmlLayer = createHtmlElement('div', {
             'id': this.element.id + '_htmlLayer',
             'style': 'width:' + bounds.width + 'px; height:' + bounds.height + 'px;position:absolute;top:0px;' +
-            'left:0px;overflow:hidden;pointer-events:none;',
+                'left:0px;overflow:hidden;pointer-events:none;',
             'class': 'e-html-layer'
         });
         let htmlLayerDiv: HTMLElement = createHtmlElement('div', {
@@ -4104,7 +4022,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         let child: Node = this.nameTable[obj.children[i]];
                         this.updateStackProperty(obj, child, i);
                         canvas.children.push(child.wrapper);
-                        canvas.elementActions = canvas.elementActions | ElementAction.ElementIsGroup;
                     }
                 }
             }
@@ -4407,6 +4324,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+
     /** @private */
     public updateDiagramObject(obj: (NodeModel | ConnectorModel)): void {
         let view: View;
@@ -4425,6 +4343,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         htmlLayer, undefined);
                     this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
+
             }
         }
     }
@@ -5020,10 +4939,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let size: Size = new Size();
         let selectorModel: Selector = this.selectedItems as Selector;
         let selectorConstraints: SelectorConstraints = selectorModel.constraints;
-        let rendererActions: RendererAction = this.diagramRenderer.rendererActions;
-        this.diagramRenderer.rendererActions = this.currentSymbol ?
-            this.addConstraints(rendererActions, RendererAction.DrawSelectorBorder) :
-            this.removeConstraints(rendererActions, RendererAction.DrawSelectorBorder);
         this.clearSelectorLayer();
         if (this.commandHandler.hasSelection()) {
             if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
@@ -5072,7 +4987,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom,
                         selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel.nodes[0]),
                         (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
-                } else if (selectorModel.connectors[0] instanceof Connector && canDrawThumbs(this.diagramRenderer.rendererActions)) {
+                } else if (selectorModel.connectors[0] instanceof Connector) {
                     let connector: Connector = selectorModel.connectors[0] as Connector;
                     this.diagramRenderer.renderEndPointHandle(
                         connector, selectorElement, selectorModel.thumbsConstraints, selectorModel.constraints,
@@ -5131,7 +5046,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (selectorModel.annotation) {
                     this.renderSelectorForAnnotation(selectorModel, selectorElement);
                 } else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
-                    if (selectorModel.connectors[0] instanceof Connector && canDrawThumbs(this.diagramRenderer.rendererActions)) {
+                    if (selectorModel.connectors[0] instanceof Connector) {
                         let connector: Connector = selectorModel.connectors[0] as Connector;
                         this.diagramRenderer.renderEndPointHandle(
                             connector, selectorElement, selectorModel.thumbsConstraints, selectorConstraints,
@@ -5158,10 +5073,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     this.diagramRenderer.renderResizeHandle(
                         selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom,
-                        selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel)
+                        selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel),
                     );
                     this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions & ~RendererAction.PreventRenderSelector;
-
                 }
             }
         }
@@ -5216,22 +5130,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public clearSelectorLayer(): void {
         let adornerSvg: SVGElement = getAdornerLayerSvg(this.element.id);
-        if (!this.currentSymbol) {
-            let selectionRect: SVGElement =
-                (adornerSvg as SVGSVGElement).getElementById(this.adornerLayer.id + '_selected_region') as SVGElement;
-            if (selectionRect) {
-                selectionRect.parentNode.removeChild(selectionRect);
-            }
-            this.clearHighlighter();
-            let childNodes: NodeList = getSelectorElement(this.element.id).childNodes;
-            let child: SVGElement;
-            for (let i: number = childNodes.length; i > 0; i--) {
-                child = childNodes[i - 1] as SVGElement;
-                child.parentNode.removeChild(child);
-            }
-        } else {
-            let symbolBorder: SVGElement = (adornerSvg as SVGSVGElement).getElementById('borderRect_symbol') as SVGElement;
-            if (symbolBorder) { symbolBorder.parentNode.removeChild(symbolBorder); }
+        let highlighter: SVGElement =
+            (adornerSvg as SVGSVGElement).getElementById(adornerSvg.id + '_highlighter') as SVGElement;
+
+        let selectionRect: SVGElement =
+            (adornerSvg as SVGSVGElement).getElementById(this.adornerLayer.id + '_selected_region') as SVGElement;
+        if (selectionRect) {
+            selectionRect.parentNode.removeChild(selectionRect);
+        }
+        this.clearHighlighter();
+        let childNodes: NodeList = getSelectorElement(this.element.id).childNodes;
+        let child: SVGElement;
+        for (let i: number = childNodes.length; i > 0; i--) {
+            child = childNodes[i - 1] as SVGElement;
+            child.parentNode.removeChild(child);
         }
     }
 
@@ -5542,22 +5454,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             actualObject.wrapper.maxHeight = node.maxHeight; update = true;
             updateConnector = true;
         }
-        if (node.flip !== undefined) {
-            actualObject.wrapper.flip = node.flip;
-            update = true;
-            updateConnector = true;
-            if (actualObject.wrapper.elementActions && ElementAction.ElementIsGroup) {
-                if (actualObject && actualObject.children) {
-                    for (let child of actualObject.children) {
-                        let updateNode: Node = this.nameTable[child];
-                        this.updatePorts(updateNode, node.flip);
-                    }
-                }
-            } else {
-                actualObject.wrapper.children[0].flip = node.flip;
-                this.updatePorts(actualObject, node.flip);
-            }
-        }
         if (node.rotateAngle !== undefined) {
             if (actualObject.children && rotate) {
                 this.commandHandler.rotateObjects(actualObject, [actualObject], actualObject.rotateAngle - actualObject.wrapper.rotateAngle, { x: actualObject.offsetX, y: actualObject.offsetY }, false)
@@ -5622,7 +5518,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.bpmnModule.updateTextAnnotationProp(actualObject, { offsetX: (oldObject.offsetX || actualObject.offsetX), offsetY: (oldObject.offsetY || actualObject.offsetY) } as Node, this);
             }
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
-
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize); this.updateObject(actualObject, oldObject, node);
             if ((!(this.diagramActions & DiagramAction.ToolAction)) || (this.diagramActions & DiagramAction.UndoRedo)) {
                 if (this.checkSelectedItem(actualObject)) {
@@ -5668,20 +5563,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (actualObject.status !== 'New' && this.diagramActions) {
                 actualObject.status = 'Update';
-            }
-        }
-    }
-
-    private updatePorts(actualObject: Node, flip: FlipDirection): void {
-        if (actualObject && actualObject.ports.length > 0) {
-            for (let key of Object.keys(actualObject.ports)) {
-                let index: number = Number(key);
-                let actualPort: PointPortModel = actualObject.ports[index];
-                let portWrapper: DiagramElement = this.getWrapper(actualObject.wrapper, actualPort.id);
-                portWrapper = updatePortEdges(portWrapper, flip, actualPort);
-                portWrapper.relativeMode = 'Point';
-                portWrapper.measure(new Size(portWrapper.width, portWrapper.height));
-                portWrapper.arrange(portWrapper.desiredSize);
             }
         }
     }
@@ -5752,9 +5633,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let inPort: PointPortModel; let outPort: PointPortModel;
         if (newProp.visible !== undefined) { this.updateElementVisibility(actualObject.wrapper, actualObject, actualObject.visible); }
         if (newProp.sourcePoint !== undefined || newProp.targetPoint !== undefined
-            || newProp.sourceID !== undefined || newProp.targetID !== undefined || newProp.targetPadding !== undefined ||
-            newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined || newProp.sourcePadding !== undefined ||
-            newProp.type !== undefined || newProp.segments !== undefined || newProp.flip !== undefined) {
+            || newProp.sourceID !== undefined || newProp.targetID !== undefined ||
+            newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined ||
+            newProp.type !== undefined || newProp.segments !== undefined) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 let sourceNode: Node = this.nameTable[actualObject.sourceID];
                 outPort = this.findInOutConnectPorts(sourceNode, false);
@@ -5797,9 +5678,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 actualObject.targetPortWrapper = target ?
                     this.getWrapper(target, newProp.targetPortID) : undefined;
             }
-            if (newProp.flip !== undefined) {
-                actualObject.flip = newProp.flip; flipConnector(actualObject);
-            }
             points = this.getPoints(actualObject);
         }//Add prop change for zindex, alignments and margin
         if (newProp.style !== undefined) {
@@ -5808,7 +5686,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (points.length > 0 || newProp.sourceDecorator !== undefined || newProp.targetDecorator !== undefined ||
             newProp.cornerRadius !== undefined) {
             updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
-            if (newProp.type !== undefined) { updateSelector = true; }
+            if (newProp.type !== undefined) {
+                updateSelector = true;
+            }
             if (points.length > 0) {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
@@ -5820,7 +5700,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             && this.diagramActions === DiagramAction.Render) {
             updateSelector = true;
         }
-        if (!disableBridging) { this.updateBridging(); }
+        if (!disableBridging) {
+            this.updateBridging();
+        }
         this.updateAnnotations(newProp, actualObject);
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
@@ -6389,7 +6271,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (args.dragData) {
                     let newObj: NodeModel | Connector;
                     let isHorizontal: boolean;
-                    document.getElementById(this.element.id + 'content').focus();
                     let position: PointModel = this.eventHandler.getMousePosition(args.event);
                     let clonedObject: Object; let selectedSymbol: HTMLElement = args.dragData.helper;
                     let paletteId: string = selectedSymbol.getAttribute('paletteId');
@@ -6553,7 +6434,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.removeFromAQuad(this.currentSymbol);
                 this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
                 this.removeElements(this.currentSymbol);
-                if (arg.cancel) { removeChildNodes(this.currentSymbol as Node, this) }
+                if (arg.cancel) { this.removeChildNodes(this.currentSymbol as Node) }
                 delete this.nameTable[this.currentSymbol.id]; this.currentSymbol = null;
                 this.protectPropertyChange(true);
                 if (!arg.cancel) {
@@ -6611,13 +6492,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.droppable[selectedSymbols].style.opacity = '1';
                 let source: string = 'sourceElement';
                 delete this.droppable[source];
-                this.removeConstraints(this.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
-                if (this.previousSelectedObject) {
-                    this.select(this.previousSelectedObject, this.previousSelectedObject.length > 1 ? true : false);
-                }
-                this.previousSelectedObject = null;
             }
         };
+    }
+    private removeChildNodes(node: NodeModel): void {
+        if (node instanceof Node && node.children) {
+            for (let i: number = 0; i < node.children.length; i++) {
+                if (this.nameTable[node.children[i]].children) {
+                    this.removeChildNodes(node);
+                }
+                this.removeFromAQuad(this.nameTable[node.children[i]]);
+                this.removeObjectsFromLayer(this.nameTable[node.children[i]]);
+                delete this.nameTable[node.children[i]];
+            }
+        }
     }
 
     private findChild(node: NodeModel, childTable: {}): void {

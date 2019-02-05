@@ -45,12 +45,12 @@ export class ImageProperties {
     private initImageProp = (): void => {
         let localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         // tslint:disable-next-line:max-line-length
-        let imageDiv: HTMLElement = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-property-div-padding', styles: 'border:0px' });
+        let imageDiv: HTMLElement = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding', styles: 'border:0px' });
         this.element.appendChild(imageDiv);
-        let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'padding:3px' });
+        let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.textContent = localObj.getConstant('Image');
         imageDiv.appendChild(label);
-        let outerDiv: HTMLElement = createElement('div', { styles: 'margin-left:2px;' });
+        let outerDiv: HTMLElement = createElement('div');
         imageDiv.appendChild(outerDiv);
         // tslint:disable-next-line:max-line-length
         this.widthElement = this.createImagePropertiesDiv('_widthDiv', outerDiv, '_widthInput', localObj.getConstant('W'), localObj.getConstant('Width'));
@@ -63,7 +63,7 @@ export class ImageProperties {
         this.heightNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
         this.heightNumericBox.appendTo(this.heightElement);
         // tslint:disable-next-line:max-line-length        
-        let aspectRatioDiv: HTMLElement = createElement('div', { id: this.elementId + '_aspectRatioDiv', styles: 'height:14px;margin-left:5px;float:left' });
+        let aspectRatioDiv: HTMLElement = createElement('div', { id: this.elementId + '_aspectRatioDiv' });
         aspectRatioDiv.setAttribute('title', localObj.getConstant('Aspect ratio'));
         outerDiv.appendChild(aspectRatioDiv);
         // tslint:disable-next-line:max-line-length
@@ -74,7 +74,7 @@ export class ImageProperties {
     // tslint:disable-next-line:max-line-length
     private createImagePropertiesDiv = (id: string, outerDiv: HTMLElement, inputId: string, spanContent: string, tooltip: string): HTMLElement => {
         // tslint:disable-next-line:max-line-length
-        let divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;margin-right:6px; float:left;margin-bottom: 7px;' });
+        let divElement: HTMLElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
         divElement.setAttribute('title', tooltip);
         outerDiv.appendChild(divElement);
         // tslint:disable-next-line:max-line-length

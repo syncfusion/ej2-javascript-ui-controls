@@ -87,7 +87,7 @@ describe('Map layer testing', () => {
         it('Checking argument cancel', (done: Function) => {
                 mapObj.beforePrint = (args: IPrintEventArgs): void => {
                   args.cancel = true;
-                  expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-maps e-lib" aria-label="Maps Element" tabindex="1">') > -1).toBe(true);
+                  expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') > -1).toBe(true);
                   done();
                 };
                 mapObj.print();
@@ -115,7 +115,7 @@ describe('Map layer testing', () => {
                     mapObj.print(document.getElementById('container'));
                 };
                 mapObj.beforePrint = (args: IPrintEventArgs): void => {
-                    expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-maps e-lib" aria-label="Maps Element" tabindex="1">') > -1).toBe(true);
+                    expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') > -1).toBe(true);
                     done();
                 };
                 mapObj.refresh();

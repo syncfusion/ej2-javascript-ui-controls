@@ -138,7 +138,6 @@ export class TablePropertiesDialog {
         this.localValue = localValue;
         let id: string = this.owner.owner.containerId + '_TablePropertiesDialog';
         this.target = createElement('div', { id: id, className: 'e-de-table-properties-dlg' });
-        this.owner.owner.element.appendChild(this.target);
         let ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_TabContainer' });
         this.target.appendChild(ejtabContainer);
         this.tableTab = <HTMLDivElement>createElement('div', {
@@ -189,7 +188,6 @@ export class TablePropertiesDialog {
         }
         let tableTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
         let tableTabHeaderItem: HTMLElement = tableTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        tableTabHeaderItem.classList.add('e-de-table-ppty-dlg-table-header');
 
         let rowTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1] as HTMLElement;
         let rowTabHeaderItem: HTMLElement = rowTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;

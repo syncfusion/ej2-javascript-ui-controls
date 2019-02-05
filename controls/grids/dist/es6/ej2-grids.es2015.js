@@ -134,12 +134,6 @@ class Column {
          * @default {}
          */
         this.edit = {};
-        /**
-         * If `allowSearching` set to false, then it disables Searching of a particular column.
-         * By default all columns allow Searching.
-         * @default true
-         */
-        this.allowSearching = true;
         this.sortDirection = 'Descending';
         /** @hidden */
         this.getEditTemplate = () => this.editTemplateFn;
@@ -2590,7 +2584,7 @@ class Data {
     }
     searchQuery(query) {
         let sSettings = this.parent.searchSettings;
-        let fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
+        let fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f) => f.field);
         let predicateList = [];
         let needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
@@ -2878,6 +2872,9 @@ class Data {
                 this.parent.trigger(dataSourceChanged, editArgs);
                 deff.promise.then((e) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs.requestType === 'save') {
+                        this.parent.notify(recordAdded, editArgs);
+                    }
                     this.parent.trigger(dataStateChange, state);
                 });
             }
@@ -2891,20 +2888,6 @@ class Data {
             def.resolve(this.parent.dataSource);
         }
         return def;
-    }
-    /**
-     * Gets the columns where searching needs to be performed from the Grid.
-     * @return {string[]}
-     */
-    getSearchColumnFieldNames() {
-        let colFieldNames = [];
-        let columns = this.parent.getColumns();
-        for (let col of columns) {
-            if (col.allowSearching) {
-                colFieldNames.push(col.field);
-            }
-        }
-        return colFieldNames;
     }
 }
 
@@ -7137,12 +7120,11 @@ class Selection {
             return;
         }
         let args;
-        let checkboxColumn = this.parent.getColumns().filter((col) => col.type === 'checkbox');
         for (let rowIndex of rowIndexes) {
             let rowObj = this.getRowObj(rowIndex);
             let isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
             this.selectRowIndex(rowIndex);
-            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
+            if (isUnSelected) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
@@ -8759,9 +8741,9 @@ class Selection {
     rowCellSelectionHandler(rowIndex, cellIndex) {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
-                this.selectRow(rowIndex, this.selectionSettings.enableToggle);
+                this.selectRow(rowIndex, true);
             }
-            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
+            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
             if (this.selectedRowCellIndexes.length) {
                 this.updateAutoFillPosition();
             }
@@ -10159,9 +10141,6 @@ __decorate([
 __decorate([
     Property(false)
 ], SelectionSettings.prototype, "enableSimpleMultiRowSelection", void 0);
-__decorate([
-    Property(true)
-], SelectionSettings.prototype, "enableToggle", void 0);
 /**
  * Configures the search behavior of the Grid.
  */
@@ -10991,6 +10970,7 @@ let Grid = Grid_1 = class Grid extends Component {
                         result: gResult, count: this.dataSource.count,
                         aggregates: this.dataSource.aggregates
                     };
+                    this.getDataModule().setState({});
                     pending.resolver(this.dataSource);
                 }
                 else {
@@ -12088,30 +12068,6 @@ let Grid = Grid_1 = class Grid extends Component {
     reorderColumns(fromFName, toFName) {
         if (this.reorderModule) {
             this.reorderModule.reorderColumns(fromFName, toFName);
-        }
-    }
-    /**
-     * Changes the Grid column positions by field index. If you invoke reorderColumnByIndex multiple times,
-     * then you won't get the same results every time.
-     * @param  {number} fromIndex - Defines the origin field index.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    reorderColumnByIndex(fromIndex, toIndex) {
-        if (this.reorderModule) {
-            this.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
-        }
-    }
-    /**
-     * Changes the Grid column positions by field index. If you invoke reorderColumnByTargetIndex multiple times,
-     * then you will get the same results every time.
-     * @param  {string} fieldName - Defines the field name.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    reorderColumnByTargetIndex(fieldName, toIndex) {
-        if (this.reorderModule) {
-            this.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
         }
     }
     /**
@@ -15522,11 +15478,11 @@ class ExcelFilter extends CheckBoxFilter {
         let selectedMenu;
         let predicates = this.existingPredicate[this.options.field];
         if (predicates && predicates.length === 2) {
-            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
-                selectedMenu = 'between';
+            if (predicates[0].operator === 'greaterThanOrEqual' && predicates[1].operator === 'lessThanOrEqual') {
+                selectedMenu = 'Between';
             }
             else {
-                selectedMenu = 'customfilter';
+                selectedMenu = 'CustomFilter';
             }
         }
         else {
@@ -16890,7 +16846,6 @@ class Filter {
     }
     updateFilter() {
         let cols = this.filterSettings.columns;
-        this.actualPredicate = {};
         for (let i = 0; i < cols.length; i++) {
             this.column = this.parent.getColumnByField(cols[i].field) ||
                 getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns());
@@ -16904,17 +16859,15 @@ class Filter {
     }
     /* tslint:disable-next-line:max-line-length */
     refreshFilterIcon(fieldName, operator, value, type, predicate, matchCase, ignoreAccent) {
-        let obj;
-        obj = {
-            field: fieldName,
-            predicate: predicate,
-            matchCase: matchCase,
-            ignoreAccent: ignoreAccent,
-            operator: operator,
-            value: value,
-            type: type
-        };
-        this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
+        this.actualPredicate[fieldName] = [{
+                field: fieldName,
+                predicate: predicate,
+                matchCase: matchCase,
+                ignoreAccent: ignoreAccent,
+                operator: operator,
+                value: value,
+                type: type
+            }];
         this.addFilteredClass(fieldName);
     }
     addFilteredClass(fieldName) {
@@ -17814,20 +17767,6 @@ class Reorder {
             }
         }
     }
-    moveTargetColumn(column, toIndex) {
-        if (toIndex > -1) {
-            this.moveColumns(toIndex, column, true);
-        }
-    }
-    reorderSingleColumnByTarget(fieldName, toIndex) {
-        let column = this.parent.getColumnByField(fieldName);
-        this.moveTargetColumn(column, toIndex);
-    }
-    reorderMultipleColumnByTarget(fieldName, toIndex) {
-        for (let i = 0; i < fieldName.length; i++) {
-            this.reorderSingleColumnByTarget(fieldName[i], toIndex);
-        }
-    }
     /**
      * Changes the position of the Grid columns by field names.
      * @param  {string | string[]} fromFName - Defines the origin field names.
@@ -17836,26 +17775,6 @@ class Reorder {
      */
     reorderColumns(fromFName, toFName) {
         typeof fromFName === 'string' ? this.reorderSingleColumn(fromFName, toFName) : this.reorderMultipleColumns(fromFName, toFName);
-    }
-    /**
-     * Changes the position of the Grid columns by field index.
-     * @param  {number} fromIndex - Defines the origin field index.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    reorderColumnByIndex(fromIndex, toIndex) {
-        let column = this.parent.getColumnByIndex(fromIndex);
-        this.moveTargetColumn(column, toIndex);
-    }
-    /**
-     * Changes the position of the Grid columns by field index.
-     * @param  {string | string[]} fieldName - Defines the field name.
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void}
-     */
-    reorderColumnByTargetIndex(fieldName, toIndex) {
-        typeof fieldName === 'string' ? this.reorderSingleColumnByTarget(fieldName, toIndex) :
-            this.reorderMultipleColumnByTarget(fieldName, toIndex);
     }
     enableAfterRender(e) {
         if (e.module === this.getModuleName() && e.enable) {
@@ -22288,7 +22207,6 @@ class BatchEdit {
                     else {
                         refreshForeignData(rows[i], this.parent.getForeignKeyColumns(), rows[i].data);
                         delete rows[i].changes;
-                        delete rows[i].edit;
                         rows[i].isDirty = false;
                         let ftr = mTr ? mTr : tr;
                         classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
@@ -22862,9 +22780,7 @@ class BatchEdit {
         }
         let tr = parentsUntil(this.form, 'e-row');
         let column = this.cellDetails.column;
-        let obj = {};
-        obj[column.field] = this.cellDetails.rowData[column.field];
-        let editedData = gObj.editModule.getCurrentEditedData(this.form, obj);
+        let editedData = gObj.editModule.getCurrentEditedData(this.form, {});
         let cloneEditedData = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
         let value = getObject(column.field, cloneEditedData);

@@ -3,7 +3,7 @@
  */
 import { Maps, Zoom, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { randomcountriesData } from './MapData/salesCountry';
-import { world_Map } from './MapData/worldMap';
+
 Maps.Inject(Zoom);
 
     let maps: Maps = new Maps({
@@ -14,7 +14,7 @@ Maps.Inject(Zoom);
     },
     layers: [
         {
-            shapeData: world_Map,
+            shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
             shapePropertyPath: 'continent',
             shapeDataPath: 'continent',
             shapeSettings: {

@@ -17,7 +17,7 @@ describe('Diagram Control', () => {
     it('Diagram NoneDisableConstraints', () => {
         executeSelectionOption('None');
         executeClickEvent('NodeConstraints-Select');
-        browser.compareScreen(element(By.id('diagram')), 'NoneConstraints-Diagram1');
+        browser.compareScreen(element(By.id('diagram')), 'NoneConstraints-Diagram');
     });
     it('Diagram BridgingEnableConstraints', () => {
         browser.load('/demos/constraints/diagram.html');
@@ -28,7 +28,7 @@ describe('Diagram Control', () => {
     it('Diagram BridgingDisableConstraints', () => {
         executeSelectionOption('Bridging');
         executeClickEvent('Bridging1');
-        browser.compareScreen(element(By.id('diagram')), 'BridgingConstraints-Diagram1');
+        browser.compareScreen(element(By.id('diagram')), 'BridgingConstraints-Diagram');
     });
     it('Diagram UndoEnableConstraints', () => {
         browser.load('/demos/constraints/diagram.html');

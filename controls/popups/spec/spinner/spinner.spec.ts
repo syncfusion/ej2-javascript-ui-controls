@@ -4,19 +4,9 @@
 
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, setSpinner } from '../../src/spinner/spinner';
-import  {profile , inMB, getMemoryProfile} from './common.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 describe('Spinner Control', () => {
-    beforeAll(() => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-    });
-
     let css: string = ".e-spinner-pane::after { content: 'Material'; display: none;} ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -925,14 +915,4 @@ describe('Spinner Control', () => {
             expect(isNullOrUndefined(materialObj)).toEqual(true);
         });
     });
-    
-    it('memory leak', () => {     
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

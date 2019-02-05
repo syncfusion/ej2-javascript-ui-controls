@@ -1,7 +1,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
 import { DatePicker, DatePickerModel, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -544,6 +544,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             case 'UrlAdaptor':
                 this.dataAdaptor = new UrlAdaptor;
                 break;
+            case 'WebApiAdaptor':
+                this.dataAdaptor = new WebApiAdaptor;
+                break;
             case 'ODataV4Adaptor':
                 this.dataAdaptor = new ODataV4Adaptor;
                 break;
@@ -706,7 +709,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.trigger('actionBegin', eventArgs);
         if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)) {
             this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
-            this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+            if (this.adaptor === 'UrlAdaptor') {
+              this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+            } else {
+                let crud: Promise<Object> = this.dataManager.insert(eventArgs.data) as Promise<Object>;
+                crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
+            }
         } else {
             let eventArg: ActionEventArgs = { data: {}, value: eventArgs.data.value as string };
             this.triggerSuccess(eventArg);

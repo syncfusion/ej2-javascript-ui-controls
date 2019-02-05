@@ -2,8 +2,6 @@ import { MarkdownParser } from './../base/markdown-parser';
 import { MarkdownSelection } from './../plugin/markdown-selection';
 import * as CONSTANT from './../base/constant';
 import { IMarkdownItem } from '../index';
-import { IMDTable, MarkdownTableFormat } from './../base/interface';
-import { extend } from '@syncfusion/ej2-base';
 /**
  * Link internal component
  * @hidden
@@ -11,21 +9,20 @@ import { extend } from '@syncfusion/ej2-base';
 export class MDTable {
     private parent: MarkdownParser;
     private selection: MarkdownSelection;
-    private syntaxTag: { [key in MarkdownTableFormat]: { [key: string]: string } };
-    private element: HTMLTextAreaElement;
-    private locale: IMarkdownItem;
+
     /**
      * Constructor for creating the Formats plugin
      * @hidden
      */
-    constructor(options: IMDTable) {
-        extend(this, this, options, true);
+    constructor(parent: MarkdownParser) {
+        this.parent = parent;
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.MD_TABLE, this.createTable, this);
     }
+
     private removeEventListener(): void {
         this.parent.observer.off(CONSTANT.MD_TABLE, this.createTable);
     }
@@ -35,29 +32,27 @@ export class MDTable {
     }
 
     private createTable(e: IMarkdownItem): void {
-        this.element = this.parent.element as HTMLTextAreaElement;
-        let start: number = this.element.selectionStart;
-        let end: number = this.element.selectionEnd;
+        let dummy: Document = document;
+        let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
+        textArea.focus();
+        let start: number = textArea.selectionStart;
+        let end: number = textArea.selectionEnd;
+        let end3: number;
+        let text: string = this.selection.getSelectedText(textArea);
+        let end1: number;
+        let textEmpty: string;
         let textAreaInitial: string;
-        textAreaInitial = this.element.value;
-        this.locale = e;
-        this.selection.save(start, end);
-        this.restore(this.element.selectionStart, this.element.selectionEnd, e);
-        this.insertTable(start, end, textAreaInitial, e);
-    }
-
-    private getTable(): string {
-        let table: string = '';
-        table += this.textNonEmpty();
-        table += this.tableHeader(this.locale);
-        table += this.tableCell(this.locale);
-        return table;
-    }
-
-    private tableHeader(e: IMarkdownItem): string {
-        let text: string = '';
+        if (start !== end) { // It will check start !== end and will clear the text selected.
+            textEmpty = text.replace(text, '');
+            end1 = end;
+            end3 = start;
+            text = textEmpty;
+        } else {
+            end3 = end;
+        }
+        text += this.textUnEmpty(start, end3, dummy, text, end1, textArea);
         for (let i: number = 1; i <= 2; i++) {
-            text += '|';
+            text +=  '|';
             for (let j: number = 1; j <= 2; j++) {
                 if (i === 1) {
                     text += e.item.headingText + ' ' + j + '|';
@@ -65,128 +60,250 @@ export class MDTable {
                     text += '---------|';
                 }
             }
-            text += this.insertLine();
+            let dummyElement: HTMLElement = dummy.createElement('div');
+            dummyElement.innerHTML = '\n';
+            let text1: string = dummyElement.textContent;
+            text += text1;
         }
-        return text;
-    }
-
-    private tableCell(e: IMarkdownItem): string {
-        let text: string = '';
         for (let i: number = 1; i <= 2; i++) {
             text += '|';
             for (let j: number = 1; j <= 2; j++) {
-                text += e.item.colText + ' ' + this.convertToLetters(i) + j + '|';
+                text += e.item.colText + ' ' +  this.convertToLetters(i) + j + '|';
             }
-            text += this.insertLine();
+            let dummyElement: HTMLElement = dummy.createElement('div');
+            dummyElement.innerHTML = '\n';
+            let text1: string = dummyElement.textContent;
+            text += text1;
         }
-        text += this.insertLine();
-        return text;
-    }
-
-    private insertLine(): string {
-        let dummyElement: HTMLElement = document.createElement('div');
-        dummyElement.innerHTML = '\n';
-        return dummyElement.textContent;
-    }
-
-    private insertTable(start: number, end: number, textAreaInitial: string, e: IMarkdownItem): void {
-        let parentText: { [key: string]: string | number; }[] = this.selection.getSelectedParentPoints(this.element);
-        let lastLineSplit: string[] = (parentText[parentText.length - 1].text as string).split(' ', 2);
-        let syntaxArr: string[] = this.getFormatTag();
-        let syntaxCount: number = 0;
-        if (lastLineSplit.length < 2) {
-            this.element.value = this.updateValue(this.getTable());
-            this.makeSelection(textAreaInitial, start, end);
+        text = this.textUnEmpty(start, end3, dummy, text, end1, textArea);
+        textAreaInitial = textArea.value;
+        if (start !== end) {
+            this.startNotEqualEnd(start, end, text, textArea, textAreaInitial, e);
+        } else if (start === 0 && end === 0) {
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+            if (textAreaInitial.length) {
+                this.restore(textArea, start + 3, end + 12, e);
+            } else {
+                this.restore(textArea, start + 1, end + 10, e);
+            }
         } else {
-            if (this.ensureFormatApply(parentText[parentText.length - 1].text as string)) {
-                this.checkValid(
-                    start, end, this.getTable(), textAreaInitial, e,
-                    lastLineSplit, parentText, syntaxArr);
-            } else {
-                this.element.value = this.updateValue(this.getTable());
-                this.makeSelection(textAreaInitial, start, end);
-            }
+            this.startEqualEnd(start, end, text, textArea, textAreaInitial, e);
         }
-        this.restore(this.element.selectionStart, this.element.selectionEnd, e);
     }
 
-    private makeSelection(textAreaInitial: string, start: number, end: number): void {
-        end = start + (textAreaInitial.length > 0 ? 12 : 10); //end is added 12 or 10 because to make the table heading selected
-        start += textAreaInitial.length > 0 ? 3 : 1; // Start is added 3 or 1 because new lines are added when inserting table
-        this.selection.setSelection(this.element, start, end);
-    }
-    private getFormatTag(): string[] {
-        let syntaxFormatKey: string[] = Object.keys(this.syntaxTag.Formats);
-        let syntaxListKey: string[] = Object.keys(this.syntaxTag.List);
-        let syntaxArr: string[] = [];
-        for (let i: number = 0; i < syntaxFormatKey.length; i++) {
-            syntaxArr.push(this.syntaxTag.Formats[syntaxFormatKey[i]]);
-        }
-        for (let j: number = 0; j < syntaxListKey.length; j++) {
-            syntaxArr.push(this.syntaxTag.List[syntaxListKey[j]]);
-        }
-        return syntaxArr;
-    }
-
-    private ensureFormatApply(line: string): boolean {
-        let formatTags: string[] = this.getFormatTag();
-        let formatSplitZero: string = line.split(' ', 2)[0] + ' ';
-        for (let i: number = 0; i < formatTags.length; i++) {
-            if (formatSplitZero === formatTags[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private ensureStartValid(firstLine: number, parentText: { [key: string]: string | number; }[]): boolean {
-        let firstLineSplit: string[] = (parentText[0].text as string).split(' ', 2);
-        for (let i: number = firstLine + 1; i <= firstLine + firstLineSplit[0].length + 1; i++) {
-            if (this.element.selectionStart === i || this.element.selectionEnd === i) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private ensureEndValid(lastLine: number, formatSplitLength: number): boolean {
-        for (let i: number = lastLine + 1; i <= lastLine + formatSplitLength + 1; i++) {
-            if (this.element.selectionEnd === i) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private updateValueWithFormat(formatSplit: string[], text: string): string {
-        let textApplyFormat: string = this.element.value.substring(this.element.selectionEnd, this.element.value.length);
-        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-        return this.element.value.substr(0, this.element.selectionStart) + text;
-    }
-
-    private updateValue(text: string): string {
-        return this.element.value.substr(0, this.element.selectionStart) + text +
-        this.element.value.substr(this.element.selectionEnd, this.element.value.length);
-    }
-
-    private checkValid(
+    private startEqualEnd(
         start: number, end: number, text: string,
-        textAreaInitial: string,
-        e: IMarkdownItem, formatSplit: string[], parentText: { [key: string]: string | number; }[], syntaxArr: string[]): void {
-        if (this.ensureStartValid(parentText[0].start as number, parentText) &&
-        this.ensureEndValid(parentText[parentText.length - 1].start as number, formatSplit[0].length)) {
-            if (start === parentText[0].start as number) {
-                if (start !== end && end !== ((parentText[parentText.length - 1].end as number) - 1)) {
-                    this.element.value = this.updateValueWithFormat(formatSplit, text);
-                } else {
-                    this.element.value = this.updateValue(text);
-                }
-            } else if (end === (parentText[parentText.length - 1].end as number) - 1) {
-                this.element.value = this.updateValue(text);
-            } else {
-                this.element.value = this.updateValueWithFormat(formatSplit, text);
+        textArea: HTMLTextAreaElement, textAreaInitial: string, e: IMarkdownItem): void {
+        let parentText: { [key: string]: string | number; }[] = this.selection.getSelectedParentPoints(textArea);
+        let selectedLine: number = parentText.length - 1;
+        let formatSplit: string[];
+        formatSplit = (parentText[selectedLine].text as string).split(' ', 2);
+        let textApplyFormat: string;
+        let parentTextLength: number;
+        if (formatSplit.length > 1) {
+            parentTextLength = formatSplit[0].length + formatSplit[1].length + 1;
+        }
+        textApplyFormat = textArea.value.substring(end, textArea.value.length);
+        if (start === parentTextLength) {
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+            this.callRestore(textArea, start, end, e, textAreaInitial);
+        } else if (textArea.value[start] === '2' && textArea.value[start + 1] === '.') {
+            text = '';
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        } else if (!(textArea.value[start] === '#' || textArea.value[start - 1] === '#' ||
+        textArea.value[start - 2] === '#' || textArea.value[start] === '2.' ||
+        textArea.value[start - 1] === '2.' || textArea.value[start - 2] === '2.' || (textArea.value[start - 1] === '2' &&
+        textArea.value[start] === '.') || (textArea.value[start - 1] === '.' && textArea.value[start] === ' ') ||
+        (textArea.value[start - 1] === ' ' &&
+        textArea.value[start - 2] === '.' && textArea.value[start - 3] === '2') ||
+        textArea.value[start] === '>' || textArea.value[start - 1] === '>' || textArea.value[start - 2] === '>' ||
+        textArea.value[start] === '+' || textArea.value[start - 1] === '+' || textArea.value[start - 2] === '+')) {
+            if (!((parentText[0].text as string).match('#') || (parentText[0].text as string).match('>') ||
+            (parentText[0].text as string).match('2.'))) {
+                formatSplit[0] = '';
             }
-            this.makeSelection(textAreaInitial, start, end);
+            text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+            textArea.value = textArea.value.substr(0, start)
+                + text;
+            this.callRestore(textArea, start, end, e, textAreaInitial);
+        } else {
+            text = '';
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        }
+    }
+
+    private startNotEqualEnd(
+        start: number, end: number, text: string, textArea: HTMLTextAreaElement,
+        textAreaInitial: string, e: IMarkdownItem): void {
+        let parentText: { [key: string]: string | number; }[] = this.selection.getSelectedParentPoints(textArea);
+        let textApplyFormat: string;
+        textApplyFormat = textArea.value.substring(end, textArea.value.length);
+
+        if (parentText.length < 2) {
+            this.singleLine(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
+        } else {
+            this.multipleLines(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
+        }
+    }
+    private singleLine(
+        start: number, end: number, text: string, textArea: HTMLTextAreaElement,
+        parentText: { [key: string]: string | number; }[], textApplyFormat: string, textAreaInitial: string, e: IMarkdownItem): void {
+        let formatSplit: string[];
+        formatSplit = (parentText[0].text as string).split(' ', 2);
+        let selectedText: string;
+        selectedText = this.selection.getSelectedText(textArea);
+        let selectedTextSplit: string[];
+        selectedTextSplit = selectedText.split(' ', 2);
+        if (selectedTextSplit.length === 2) {
+            this.selectedSplitText(
+                start, end, text, textArea, selectedText, parentText,
+                formatSplit, textApplyFormat, e, textAreaInitial, selectedTextSplit);
+        } else {
+            if (textArea.value[start - 1] === ' ' && (textArea.value[start - 2] === '.' || textArea.value[start - 2] === '#' ||
+            textArea.value[start - 2] === '>' || textArea.value[start - 2] === '+')) {
+                text = '';
+                start += selectedText.length;
+                textArea.value = textArea.value.substr(0, start)
+                    + text + textArea.value.substr(end, textArea.value.length);
+            } else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
+            textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
+                if (textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '2' ||
+                textArea.value[end - 1] === '#' || (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') ||
+                (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
+                textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+'))) {
+                    text = '';
+                    start += selectedText.length;
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
+                } else {
+                    if (!((parentText[0].text as string).match('#') || (parentText[0].text as string).match('>') ||
+                    (parentText[0].text as string).match('2.'))) {
+                        formatSplit[0] = '';
+                    }
+                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                    textArea.value = textArea.value.substr(0, start)
+                        + text;
+                    this.callRestore(textArea, start, end, e, textAreaInitial);
+                }
+            } else {
+                if (end === formatSplit[0].length + formatSplit[1].length + 1) {
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
+                    this.callRestore(textArea, start, end, e, textAreaInitial);
+                } else {
+                    if (!((parentText[0].text as string).match('#') || (parentText[0].text as string).match('>') ||
+                    (parentText[0].text as string).match('2.'))) {
+                        formatSplit[0] = '';
+                    }
+                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                    textArea.value = textArea.value.substr(0, start)
+                        + text;
+                    this.callRestore(textArea, start, end, e, textAreaInitial);
+                }
+            }
+        }
+    }
+    private selectedSplitText(
+        start: number, end: number, text: string, textArea: HTMLTextAreaElement,
+        selectedText: string, parentText: { [key: string]: string | number; }[],
+        formatSplit: string[], textApplyFormat: string, e: IMarkdownItem, textAreaInitial: string,
+        selectedTextSplit: string[]): void {
+        if (selectedTextSplit[0] === '') {
+            if (textArea.value[start - 1] === '#' || textArea.value[start - 1] === '.' ||
+            textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+') {
+                text = '';
+                start += selectedText.length;
+                textArea.value = textArea.value.substr(0, start)
+                    + text + textArea.value.substr(end, textArea.value.length);
+            } else {
+                if (!((parentText[0].text as string).match('#') || (parentText[0].text as string).match('>') ||
+                (parentText[0].text as string).match('2.'))) {
+                    formatSplit[0] = '';
+                }
+                text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                textArea.value = textArea.value.substr(0, start)
+                    + text;
+                this.callRestore(textArea, start, end, e, textAreaInitial);
+            }
+        } else {
+            if (textArea.value[start] === '>' || textArea.value[start] === '+' || textArea.value[start] === '#' ||
+            textArea.value[start] === '2' || (textArea.value[start] === '.' && textArea.value[start - 1] === '2')) {
+                if (selectedText.length === (formatSplit[0].length + formatSplit[1].length + 1)) {
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
+                } else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
+                textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
+                    if (!(textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '#' ||
+                    (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') || (textArea.value[end - 1] === ' ' &&
+                    (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' || textArea.value[end - 2] === '>' ||
+                    textArea.value[end - 2] === '+')))) {
+                        if (!((parentText[0].text as string).match('#') || (parentText[0].text as string).match('>') ||
+                        (parentText[0].text as string).match('2.'))) {
+                            formatSplit[0] = '';
+                        }
+                        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                        textArea.value = textArea.value.substr(0, start)
+                            + text;
+                        this.callRestore(textArea, start, end, e, textAreaInitial);
+                    } else {
+                        text = '';
+                        start += selectedText.length;
+                        textArea.value = textArea.value.substr(0, start)
+                            + text + textArea.value.substr(end, textArea.value.length);
+                    }
+                } else {
+                    text = '';
+                    start += selectedText.length;
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
+                }
+            }
+        }
+    }
+    private multipleLines(
+        start: number, end: number, text: string,
+        textArea: HTMLTextAreaElement, parentText: { [key: string]: string | number; }[],
+        textApplyFormat: string, textAreaInitial: string, e: IMarkdownItem): void {
+        let lastSelectedLineIndex: number = parentText.length - 1;
+        let formatLastLine: string[];
+        formatLastLine = (parentText[lastSelectedLineIndex].text as string).split(' ', 2);
+        let formatFirstLine: string[];
+        formatFirstLine = (parentText[0].text as string).split(' ', 2);
+        let selectedText: string;
+        selectedText = this.selection.getSelectedText(textArea);
+        if (textArea.value[start - 1] === '#' || (textArea.value[start - 1] === '.' && textArea.value[start - 2] === '2') ||
+        textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+' ||
+        textArea.value[start - 1] === '2' || (textArea.value[start - 1] === ' ' &&
+        (textArea.value[start - 2] === '#' || textArea.value[start - 2] === '>' ||
+        textArea.value[start - 2] === '+' || textArea.value[start - 2] === '.'))) {
+            text = '';
+            start += selectedText.length;
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        } else if (textArea.value[end] === '#' || textArea.value[end] === '>' || textArea.value[end] === '+' ||
+        textArea.value[end] === '2' || (textArea.value[end] === '.' && textArea.value[end - 1] === '2') ||
+        (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
+        textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+')) || (textArea.value[end] === ' ' &&
+        (textArea.value[end - 1] === '#' || textArea.value[end - 1] === '>' || textArea.value[end - 1] === '+' ||
+        textArea.value[end - 1] === '.'))) {
+            text = '';
+            start += selectedText.length;
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        } else {
+            if (!((parentText[lastSelectedLineIndex].text as string).match('#') ||
+            (parentText[lastSelectedLineIndex].text as string).match('>') ||
+            (parentText[lastSelectedLineIndex].text as string).match('2.'))) {
+                formatLastLine[0] = '';
+            }
+            text += textApplyFormat.replace(textApplyFormat, (formatLastLine[0] + ' ' + textApplyFormat));
+            textArea.value = textArea.value.substr(0, start)
+                + text;
+            this.callRestore(textArea, start, end, e, textAreaInitial);
         }
     }
 
@@ -200,33 +317,38 @@ export class MDTable {
         } while (rowNumber > 0);
         return letters;
     }
-
-    private textNonEmpty(): string {
-        let emptyText: string = '';
-        if (this.isCursorBased() || this.isSelectionBased()) {
-            if (this.element.value.length > 0) {
-                emptyText += this.insertLine();
-                emptyText += this.insertLine(); // to append two new line when textarea having content.               
+    private textUnEmpty(start: number, end: number, dummy: Document, text: string, end1: number, textArea: HTMLTextAreaElement): string {
+        if (start === end && ((start !== 0 && end !== 0) || end1 !== 0)) {
+            let dummyElement: HTMLElement = dummy.createElement('div');
+            if (!(text.length > 0)) {
+                if (textArea.value.length > 0) {
+                    dummyElement.innerHTML = '\n\n';
+                } else {
+                    dummyElement.innerHTML = '';
+                }
+            } else {
+                dummyElement.innerHTML = '\n';
             }
+            let text1: string = dummyElement.textContent;
+            return text += text1;
+        } else {
+            return text;
         }
-        return emptyText;
     }
-
-    private isCursorBased(): boolean {
-        return this.element.selectionStart === this.element.selectionEnd;
+    private callRestore(textArea: HTMLTextAreaElement, start: number, end: number, e: IMarkdownItem, textAreaInitial: string): void {
+        if (textAreaInitial.length) {
+            this.restore(textArea, start + 3, start + 12, e);
+        } else {
+            this.restore(textArea, start + 1, end + 10, e);
+        }
     }
-
-    private isSelectionBased(): boolean {
-        return this.element.selectionStart !== this.element.selectionEnd;
-    }
-
-    private restore(start: number, end: number, event?: IMarkdownItem): void {
+    private restore(textArea: HTMLTextAreaElement, start: number, end: number, event?: IMarkdownItem): void {
         this.selection.save(start, end);
-        this.selection.restore(this.element);
+        this.selection.restore(textArea);
         if (event && event.callBack) {
             event.callBack({
                 requestType: event.subCommand,
-                selectedText: this.selection.getSelectedText(this.element),
+                selectedText: this.selection.getSelectedText(textArea),
                 editorMode: 'Markdown',
                 event: event.event
             });

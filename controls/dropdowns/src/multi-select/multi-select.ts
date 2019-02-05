@@ -52,6 +52,7 @@ const destroy: string = 'destroy';
 const dropdownIcon: string = 'e-input-group-icon e-ddl-icon';
 const iconAnimation: string = 'e-icon-anim';
 const TOTAL_COUNT_WRAPPER: string = 'e-delim-total';
+const BOX_ELEMENT: string = 'e-multiselect-box';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -274,7 +275,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public mode: visualMode;
     /**
      * Sets the delimiter character for 'default' and 'delimiter' visibility modes.
-     * @default ','
+     * @default ,
      */
     @Property(',')
     public delimiterChar: string;
@@ -1027,34 +1028,35 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private wrapperClick(e: MouseEvent): void {
         this.setDynValue = false;
-        if (!this.enabled) {
+        if (this.readonly || !this.enabled) {
             return;
         }
         if ((<HTMLElement>e.target) === this.overAllClear) {
             e.preventDefault();
             return;
         }
-        if (!this.inputFocus) {
-            this.inputElement.focus();
+        if (!this.inputFocus && this.mode !== 'CheckBox') {
+            this.dispatchEvent(this.inputElement, 'focus');
         }
-        if (!this.readonly) {
-            if (e.target && (<HTMLElement>e.target).classList.toString().indexOf(CHIP_CLOSE) !== -1) {
-                if (this.isPopupOpen()) {
-                    this.refreshPopup();
-                }
-                return;
+        if (!this.inputFocus && this.mode === 'CheckBox') {
+            this.focusIn(e);
+        }
+        if (e.target && (<HTMLElement>e.target).classList.toString().indexOf(CHIP_CLOSE) !== -1) {
+            if (this.isPopupOpen()) {
+                this.refreshPopup();
             }
-            if (!this.isPopupOpen() &&
-            (this.openOnClick || (this.showDropDownIcon && e.target && (<HTMLElement>e.target).className === dropdownIcon))) {
-                this.showPopup();
-            } else {
-                this.hidePopup();
-                if (this.mode === 'CheckBox') {
-                    this.showOverAllClear();
-                    this.inputFocus = true;
-                    if (!this.overAllWrapper.classList.contains(FOCUS)) {
-                        this.overAllWrapper.classList.add(FOCUS);
-                    }
+            return;
+        }
+        if (!this.isPopupOpen() &&
+        (this.openOnClick || (this.showDropDownIcon && e.target && (<HTMLElement>e.target).className === dropdownIcon))) {
+            this.showPopup();
+        } else {
+            this.hidePopup();
+            if (this.mode === 'CheckBox') {
+                this.showOverAllClear();
+                this.inputFocus = true;
+                if (!this.overAllWrapper.classList.contains(FOCUS)) {
+                    this.overAllWrapper.classList.add(FOCUS);
                 }
             }
         }
@@ -1192,7 +1194,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             + ':not(.' + HIDE_LIST + ')')) : null;
     }
     private focusIn(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): boolean {
-        if (this.enabled) {
+        if (this.enabled && !this.readonly) {
             this.showOverAllClear();
             this.inputFocus = true;
             if (!this.value) {
@@ -1287,17 +1289,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
 
-    private homeNavigation(isHome: boolean): void {
-        this.removeFocus();
-        let scrollEle: NodeListOf<HTMLElement> = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
-        + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
-        if (scrollEle.length > 0) {
-            let element: HTMLElement = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
-            element.classList.add(dropDownBaseClasses.focus);
-            this.scrollBottom(element);
-        }
-    }
-
     private onKeyDown(e: KeyboardEventArgs): void {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') { return; }
         this.keyDownStatus = true;
@@ -1311,9 +1302,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             let activeIndex: number;
             switch (e.keyCode) {
                 case 36:
-                case 35:
-                    this.homeNavigation((e.keyCode === 36) ? true : false);
-                    break;
+                case 35: break;
                 case 33:
                     e.preventDefault();
                     if (focusedItem) {
@@ -2192,6 +2181,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.updateDataAttribute(this.htmlAttributes);
         super.preRender();
     }
+    protected getLocaleName(): string {
+        return 'multi-select';
+    };
     private initializeData(): void {
         this.mainListCollection = [];
         this.beforePopupOpen = false;
@@ -2580,7 +2572,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
-            let l10n: L10n = new L10n('dropdowns', l10nLocale, this.locale);
+            let l10n: L10n = new L10n(this.getLocaleName(), {}, this.locale);
+            if (l10n.getConstant('actionFailureTemplate') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
             let remainContent: string = l10n.getConstant('overflowCountTemplate');
             let raminElement: HTMLElement = this.createElement('span', {
                 className: REMAIN_WRAPPER
@@ -2994,7 +2989,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      */
     public render(): void {
         this.setDynValue = this.initStatus = false;
-        this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER });
+        this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER + ' ' + ((this.mode === 'Box') ? BOX_ELEMENT : '')});
         this.viewWrapper = this.createElement('span', { className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER, styles: 'display:none;' });
         this.overAllClear = this.createElement('span', {
             className: CLOSEICON_CLASS, styles: 'display:none;'

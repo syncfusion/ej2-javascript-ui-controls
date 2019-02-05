@@ -17,6 +17,7 @@
   .e-de-search-result-item {
     cursor: default;
     padding: $search-result-item-padding-top 1px $search-result-item-padding-bottom 5px;
+    word-break: break-word;
   }
 
   .e-de-search-result-item:hover {
@@ -180,7 +181,6 @@
   }
 
   .e-de-page-setup-dlg-sub-header  {
-    color: $de-page-setup-margin-dia-common-label;
     display: block;
     font-size: $de-page-setup-margin-dia-common-font;
     font-weight: normal;
@@ -189,7 +189,6 @@
   }
 
   .e-de-page-setup-dlg-sub-title-header  {
-    color: $de-page-setup-margin-dia-common-label;
     display: block;
     font-size: $de-page-setup-margin-dia-common-font;
     font-weight: normal;
@@ -203,7 +202,6 @@
   }
 
   .e-de-page-setup-dlg-sub-label {
-    color: $de-page-setup-dlg-sub-label-color;
     font-size: $de-page-setup-dlg-sub-label-font-size;
     font-weight: $de-page-setup-dlg-sub-label-font-weight;
   }
@@ -257,7 +255,6 @@
   }
 
   .e-de-dlg-sub-header {
-    color: $de-dlg-heading-font;
     display: block;
     font-size: 12px;
     font-weight: normal;
@@ -278,7 +275,6 @@
   }
 
   .e-de-hyperlink-dlg-title {
-    color: $de-dlg-heading-font;
     font-size: 12px;
     font-weight: 400;
     margin-bottom: $de-hyperlink-dlg-margin-bottom;
@@ -292,7 +288,6 @@
   }
 
   .e-de-font-dlg-header {
-    color: $de-font-dlg-header-color;
     display: flex;
     font-size: 12px;
     font-weight: normal;
@@ -301,7 +296,6 @@
 
   .e-de-font-dlg-header-effects,
   .e-de-font-dlg-header-font-color {
-    color: $de-font-dlg-header-color;
     display: flex;
     font-size: 14px;
     font-weight: normal;
@@ -369,7 +363,6 @@
   }
 
   .e-de-op-nav-btn {
-    color: $de-dlg-heading-font;
     height: $de-op-close-icon-width;
     width: $de-op-close-icon-width;
   }
@@ -411,7 +404,6 @@
   }
 
   .e-de-cell-dia-label-common {
-    color: $de-cell-margin-dia-common-label;
     display: inline-block;
     font-size: $de-cell-margin-dia-common-font;
     font-weight: 400;
@@ -421,40 +413,34 @@
   }
 
   .e-de-cell-dia-options-label {
-    color: $de-cell-margin-dia-options-label;
     font-size: $de-cell-margin-dia-options-font;
     font-weight: $de-para-dlg-heading-font-weight;
   }
 
   .e-de-table-border-heading {
-    color: $de-border-dlg-border-label-fontcolor;
     font-size: $de-border-dlg-border-label-fontsize;
     font-weight: $de-border-dlg-border-label-font-weight;
     padding-bottom: $de-border-dlg-border-label-paddingbottom;
   }
 
   .e-de-table-setting-heading {
-    color: $de-border-dlg-border-label-fontcolor;
     font-size: $de-border-dlg-setting-label-fontsize;
     font-weight: $de-border-dlg-border-label-fontweight;
     padding-bottom: $de-border-dlg-setting-label-paddingbottom;
   }
 
   .e-de-layout-setting-heading {
-    color: $de-border-dlg-border-label-fontcolor;
     font-size: $de-border-dlg-setting-label-fontsize;
     font-weight: $de-border-dlg-border-label-fontweight;
     padding-bottom: $de-border-dlg-setting-label-paddingbottom;
   }
 
   .e-de-table-setting-labels-heading {
-    color: $de-border-dlg-border-label-fontcolor;
     font-size: $de-border-dlg-settinglabels-fontsize;
     font-weight: $de-border-dlg-border-label-fontweight;
   }
 
   .e-de-table-element-subheading {
-    color: $de-border-dlg-border-label-fontcolor;
     font-size: $de-border-dlg-settinglabels-fontsize;
     font-weight: $de-border-dlg-border-label-fontweight;
   }
@@ -476,7 +462,6 @@
   }
 
   .e-de-table-dia-align-label {
-    color: $de-table-alignment-label-color;
     display: inline-block;
     font-size: $de-table-alignment-label-font-size;
     font-weight: normal;
@@ -486,16 +471,18 @@
 
   .e-de-table-dialog-separator-line {
     background-color: $de-table-separator-line-color;
-    bottom: $de-table-separtor-line-top-touch;
     height: $de-table-separator-line-height;
     left: $de-table-separator-line-left;
-    opacity: $de-table-separator-line-opacity;
+    margin-top: $de-table-dlg-seperator-line-top;
     position: absolute;
     width: $de-table-separator-line-width;
   }
 
+  .e-de-table-alignment-active {
+    border: 1px solid $de-table-align-active-color;
+  }
+
   .e-de-table-dialog-options-label {
-    color: $de-table-options-color;
     font-size: $de-table-options-font-size;
     font-weight: $de-table-options-font-weight;
     padding-bottom: $de-table-options-padding-bottom;
@@ -503,7 +490,6 @@
   }
 
   .e-de-list-ddl-header {
-    color: $de-list-dlg-header-color;
     font-size: 14px;
     font-weight: $de-list-dlg-header-font-weight;
     margin-bottom: $de-list-dlg-header-margin-bottom;
@@ -511,7 +497,6 @@
   }
 
   .e-de-list-ddl-header-list-level {
-    color: $de-list-dlg-header-color;
     font-size: 14px;
     font-weight: $de-list-dlg-header-font-weight;
     margin-bottom: $de-list-dlg-header-margin-bottom;
@@ -537,12 +522,10 @@
   .e-de-tbl-dlg-border-btn {
     float: right;
     margin-bottom: $de-tbl-dlg-border-btn-margin-bottom;
-    margin-right: $de-tbl-dlg-border-btn-margin-right;
     margin-top: $de-tbl-dlg-border-btn-margin-top;
   }
 
   .e-de-tbl-dlg-border-btn.e-de-rtl {
-    margin-left: $de-tbl-dlg-border-btn-margin-right;
     margin-right: 0;
   }
 
@@ -557,7 +540,6 @@
   }
 
   .e-de-insert-table-dlg-sub-header {
-    color: $de-dlg-heading-font;
     display: block;
     font-size: 12px;
     font-weight: normal;
@@ -571,7 +553,6 @@
 
   .e-de-list-ddl-subheader,
   .e-de-list-ddl-subheaderbottom {
-    color: $de-list-dlg-subheader-color;
     font-size: 12px;
     font-weight: $de-list-dlg-subheader-font-weight;
     margin-bottom: $de-list-dlg-subheader-margin-bottom;
@@ -922,8 +903,16 @@
   }
 
   .e-bigger {
+    .e-de-font-content-checkbox-label {
+      margin-left: $de-font-content-checkbox-left-bg;
+    }
+
     .e-de-font-content-checkbox-label-rtl {
-      margin-right: $de-font-content-checkbox-touch;
+      margin-right: $de-font-content-checkbox-right-bg;
+    }
+
+    .e-de-font-content-label {
+      width: $de-font-label-width-bg;
     }
   }
 
@@ -1105,7 +1094,7 @@
   }
 
   .e-de-op-dlg-footer .e-btn {
-    height: $de-dlg-btn-height;
+    // height: $de-dlg-btn-height;
     padding-left: 6px;
     padding-right: 6px;
   }
@@ -1240,7 +1229,6 @@
 
   .e-de-style-properties,
   .e-de-style-formatting {
-    color: $de-style-heading-color;
     font-size: $de-style-heading-font-size;
     font-weight: $de-style-heading-font-weight;
   }
@@ -1252,10 +1240,7 @@
   .e-de-style-paragraph-indent-group-button .e-btn,
   .e-de-style-paragraph-group-button .e-btn,
   .e-de-style-font-group-button .e-btn {
-    background-color: $de-style-btn-bg-border-color;
-    border-color: $de-style-btn-bg-border-color;
     box-shadow: none;
-    color: $de-style-btn-text-color;
   }
 
   .e-de-style-paragraph-indent-group-button .e-btn.e-active,
@@ -1370,7 +1355,6 @@
   }
 
   .e-de-style-options-div {
-    background-color: $de-style-options-div-bg-color;
     margin-bottom: $de-style-dialog-option-div-bottom-margin;
     padding: 5px;
   }
@@ -1407,6 +1391,13 @@
   .e-de-op-input-group,
   .e-de-op-replacewith {
     height: $de-op-input-group-height;
+  }
+
+  .e-bigger {
+    .e-de-op-input-group,
+    .e-de-op-replacewith {
+      height: 40px;
+    }
   }
 
   .e-de-hyperlink-bookmark-check {
@@ -1500,11 +1491,6 @@
     float: right;
     margin-right: $de-table-ppty-dlg-cell-tab-measure-label-margin-right;
     margin-top: $de-table-ppty-dlg-cell-tab-measure-label-margin-top;
-  }
-
-  .e-tab .e-tab-header .e-toolbar-item .e-de-table-ppty-dlg-table-header {
-    padding-left: $de-table-ppty-dlg-table-header-padding-left;
-    padding-right: $de-table-ppty-dlg-table-header-padding;
   }
 
   .e-tab .e-tab-header .e-toolbar-item .e-de-table-ppty-dlg-row-header {
@@ -1733,8 +1719,12 @@
   }
 
   .e-de-table-border-fill.e-de-rtl {
-    margin-right: 25px;
-    margin-top: 7px;
+    margin-left: $de-table-border-margin-right;
+  }
+
+  .e-de-table-border-fill:not(.e-de-rtl) {
+    margin-right: $de-table-border-margin-right;
+    margin-top: $de-table-border-margin-top;
   }
 
   .e-de-table-ppty-dlg-tabs {
@@ -1795,10 +1785,6 @@
    }
 
   .e-bigger {
-    .e-de-font-content-checkbox-label {
-      margin-left: 47px;
-    }
-
     .e-de-insert-table {
       height: auto;
       width: auto;

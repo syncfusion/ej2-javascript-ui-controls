@@ -329,11 +329,21 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
-            this.l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            var componentLocale = new L10n(this.getLocaleName(), {}, this.locale);
+            if (componentLocale.getConstant('actionFailureTemplate') !== '') {
+                this.l10n = componentLocale;
+            }
+            else {
+                this.l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
             this.list.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
     };
+    DropDownBase.prototype.getLocaleName = function () {
+        return 'drop-down-base';
+    };
+    
     DropDownBase.prototype.getTextByValue = function (value) {
         var text;
         text = this.checkValueCase(value, false, false, true);
@@ -1058,9 +1068,6 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DropDownBase.prototype, "ignoreAccent", void 0);
     __decorate([
-        Property()
-    ], DropDownBase.prototype, "locale", void 0);
-    __decorate([
         Event()
     ], DropDownBase.prototype, "actionBegin", void 0);
     __decorate([
@@ -1377,6 +1384,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      */
     DropDownList.prototype.getPersistData = function () {
         return this.addOnPersist(['value']);
+    };
+    
+    DropDownList.prototype.getLocaleName = function () {
+        return 'drop-down-list';
     };
     
     DropDownList.prototype.preventTabIndex = function (element) {
@@ -3382,6 +3393,10 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
     ComboBox.prototype.preRender = function () {
         _super.prototype.preRender.call(this);
     };
+    ComboBox.prototype.getLocaleName = function () {
+        return 'combo-box';
+    };
+    
     ComboBox.prototype.wireEvent = function () {
         if (this.getModuleName() === 'combobox') {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.preventBlur, this);
@@ -3785,9 +3800,14 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
     ComboBox.prototype.customValue = function () {
         var value = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
+            var previousValue = this.previousValue;
+            var currentValue = this.value;
             this.setProperties({ value: value });
             if (isNullOrUndefined(this.value)) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+            }
+            if (this.autofill && previousValue === this.value && currentValue !== this.value) {
+                this.onChangeEvent(null);
             }
         }
         else if (this.inputElement.value.trim() !== '') {
@@ -4049,6 +4069,10 @@ var AutoComplete = /** @__PURE__ @class */ (function (_super) {
     AutoComplete.prototype.preRender = function () {
         _super.prototype.preRender.call(this);
     };
+    AutoComplete.prototype.getLocaleName = function () {
+        return 'auto-complete';
+    };
+    
     AutoComplete.prototype.getNgDirective = function () {
         return 'EJS-AUTOCOMPLETE';
     };
@@ -4524,6 +4548,7 @@ var destroy = 'destroy';
 var dropdownIcon = 'e-input-group-icon e-ddl-icon';
 var iconAnimation = 'e-icon-anim';
 var TOTAL_COUNT_WRAPPER = 'e-delim-total';
+var BOX_ELEMENT = 'e-multiselect-box';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -5140,35 +5165,36 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.wrapperClick = function (e) {
         this.setDynValue = false;
-        if (!this.enabled) {
+        if (this.readonly || !this.enabled) {
             return;
         }
         if (e.target === this.overAllClear) {
             e.preventDefault();
             return;
         }
-        if (!this.inputFocus) {
-            this.inputElement.focus();
+        if (!this.inputFocus && this.mode !== 'CheckBox') {
+            this.dispatchEvent(this.inputElement, 'focus');
         }
-        if (!this.readonly) {
-            if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
-                if (this.isPopupOpen()) {
-                    this.refreshPopup();
-                }
-                return;
+        if (!this.inputFocus && this.mode === 'CheckBox') {
+            this.focusIn(e);
+        }
+        if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
+            if (this.isPopupOpen()) {
+                this.refreshPopup();
             }
-            if (!this.isPopupOpen() &&
-                (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
-                this.showPopup();
-            }
-            else {
-                this.hidePopup();
-                if (this.mode === 'CheckBox') {
-                    this.showOverAllClear();
-                    this.inputFocus = true;
-                    if (!this.overAllWrapper.classList.contains(FOCUS)) {
-                        this.overAllWrapper.classList.add(FOCUS);
-                    }
+            return;
+        }
+        if (!this.isPopupOpen() &&
+            (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
+            this.showPopup();
+        }
+        else {
+            this.hidePopup();
+            if (this.mode === 'CheckBox') {
+                this.showOverAllClear();
+                this.inputFocus = true;
+                if (!this.overAllWrapper.classList.contains(FOCUS)) {
+                    this.overAllWrapper.classList.add(FOCUS);
                 }
             }
         }
@@ -5298,7 +5324,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             + ':not(.' + HIDE_LIST + ')') : null;
     };
     MultiSelect.prototype.focusIn = function (e) {
-        if (this.enabled) {
+        if (this.enabled && !this.readonly) {
             this.showOverAllClear();
             this.inputFocus = true;
             if (!this.value) {
@@ -5398,16 +5424,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.setAttribute('aria-activedescendant', focusedItem.id);
         }
     };
-    MultiSelect.prototype.homeNavigation = function (isHome) {
-        this.removeFocus();
-        var scrollEle = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
-            + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
-        if (scrollEle.length > 0) {
-            var element = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
-            element.classList.add(dropDownBaseClasses.focus);
-            this.scrollBottom(element);
-        }
-    };
     MultiSelect.prototype.onKeyDown = function (e) {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
             return;
@@ -5426,9 +5442,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             var activeIndex = void 0;
             switch (e.keyCode) {
                 case 36:
-                case 35:
-                    this.homeNavigation((e.keyCode === 36) ? true : false);
-                    break;
+                case 35: break;
                 case 33:
                     e.preventDefault();
                     if (focusedItem) {
@@ -6341,6 +6355,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.updateDataAttribute(this.htmlAttributes);
         _super.prototype.preRender.call(this);
     };
+    MultiSelect.prototype.getLocaleName = function () {
+        return 'multi-select';
+    };
+    
     MultiSelect.prototype.initializeData = function () {
         this.mainListCollection = [];
         this.beforePopupOpen = false;
@@ -6750,7 +6768,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
-            var l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            var l10n = new L10n(this.getLocaleName(), {}, this.locale);
+            if (l10n.getConstant('actionFailureTemplate') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
             var remainContent = l10n.getConstant('overflowCountTemplate');
             var raminElement = this.createElement('span', {
                 className: REMAIN_WRAPPER
@@ -7172,7 +7193,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.render = function () {
         var _this = this;
         this.setDynValue = this.initStatus = false;
-        this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER });
+        this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER + ' ' + ((this.mode === 'Box') ? BOX_ELEMENT : '') });
         this.viewWrapper = this.createElement('span', { className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER, styles: 'display:none;' });
         this.overAllClear = this.createElement('span', {
             className: CLOSEICON_CLASS, styles: 'display:none;'
@@ -7852,12 +7873,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         }
         if (!this.parent.overAllWrapper.contains(e.target) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            if (Browser.isIE) {
-                this.parent.onBlur();
-            }
-            else {
-                this.parent.inputElement.blur();
-            }
+            this.parent.onBlur(e);
         }
         if (this.filterInput === target) {
             this.filterInput.focus();
@@ -7902,7 +7918,10 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         }
         else {
             var l10nLocale = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
-            var l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
+            var l10n = new L10n(this.parent.getLocaleName(), {}, this.parent.locale);
+            if (l10n.getConstant('selectAllText') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
+            }
             this.selectAllSpan.textContent = unSelect ? l10n.getConstant('unSelectAllText') : l10n.getConstant('selectAllText');
         }
     };

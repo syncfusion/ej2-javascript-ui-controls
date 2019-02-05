@@ -17,7 +17,6 @@ class Dictionary {
     constructor() {
         this.keysInternal = [];
         this.valuesInternal = [];
-        this.item = [];
     }
     /**
      * @private
@@ -29,17 +28,7 @@ class Dictionary {
      * @private
      */
     get keys() {
-        return this.getItem();
-    }
-    /**
-     * @private
-     */
-    getItem() {
-        this.item = [];
-        for (let i = 0; i < this.keysInternal.length; i++) {
-            this.item.push(this.keysInternal[i]);
-        }
-        return this.item;
+        return this.keysInternal;
     }
     /**
      * @private
@@ -840,7 +829,7 @@ class WUniqueFormat {
      */
     cloneItems(format, property, value, uniqueFormatType) {
         let propertyType = WUniqueFormat.getPropertyType(uniqueFormatType, property);
-        let keys = format.propertiesHash.getItem();
+        let keys = format.propertiesHash.keys;
         for (let i = 0; i < keys.length; i++) {
             if (keys[i] === propertyType) {
                 this.propertiesHash.add(propertyType, value);
@@ -3029,7 +3018,7 @@ class WParagraphFormat {
     }
     hasTabStop(position) {
         for (let i = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].deletePosition === position) {
+            if (this.tabs[i].position === position) {
                 return true;
             }
         }
@@ -3153,8 +3142,12 @@ class WParagraphFormat {
     getDefaultValue(property) {
         let propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
         let docParagraphFormat = this.documentParagraphFormat();
-        // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) && docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+        let isInsideBodyWidget = true;
+        if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget;
+        }
+        if (isInsideBodyWidget && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) &&
+            docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
             return docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
         }
         else {
@@ -4096,6 +4089,60 @@ class HelperMethods {
             text = reverseString.join('');
         }
         return text;
+    }
+    /**
+     * @private
+     */
+    static formatClippedString(base64ImageString) {
+        let extension = '';
+        let formatClippedString = '';
+        if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
+            extension = '.bmp';
+            formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
+            extension = '.emf';
+            formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
+            extension = '.exif';
+            formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
+            extension = '.gif';
+            formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
+            extension = '.ico';
+            formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
+            extension = '.jpeg';
+            formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
+            extension = '.jpg';
+            formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
+            extension = '.png';
+            formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
+            extension = '.tif';
+            formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
+            extension = '.wmf';
+            formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
+        }
+        else {
+            extension = '.jpeg';
+        }
+        return { 'extension': extension, 'formatClippedString': formatClippedString };
+    }
+    static startsWith(sourceString, startString) {
+        return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     }
 }
 /**
@@ -6379,6 +6426,10 @@ class BodyWidget extends BlockContainer {
 class HeaderFooterWidget extends BlockContainer {
     constructor(type) {
         super();
+        /**
+         * @private
+         */
+        this.isEmpty = false;
         this.headerFooterType = type;
     }
     /**
@@ -6406,6 +6457,7 @@ class HeaderFooterWidget extends BlockContainer {
             block.index = i;
             block.containerWidget = headerFooter;
         }
+        headerFooter.isEmpty = this.isEmpty;
         headerFooter.x = this.x;
         headerFooter.y = this.y;
         headerFooter.height = 0;
@@ -7074,7 +7126,7 @@ class TableWidget extends BlockWidget {
             //Converts the row grid before width from point to twips point by 15 factor.
             cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, tableWidth, null);
             currOffset += cellWidth;
-            let startOffset = Math.round(currOffset);
+            let startOffset = parseFloat(currOffset.toFixed(2));
             if (tempGrid.indexOf(startOffset) < 0) {
                 tempGrid.push(startOffset);
             }
@@ -7131,21 +7183,21 @@ class TableWidget extends BlockWidget {
                 }
                 // Add start offset of each cell based on its index
                 if (!rowCellInfo.containsKey(cell.cellIndex)) {
-                    rowCellInfo.add(cell.cellIndex, Math.round(currOffset - startOffset));
+                    rowCellInfo.add(cell.cellIndex, parseFloat((currOffset - startOffset).toFixed(2)));
                 }
                 columnSpan += cell.cellFormat.columnSpan;
                 //Converts the cell width from pixel to twips point by 15 factor.
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, null);
                 currOffset += cellWidth;
-                let offset = Math.round(currOffset);
+                let offset = parseFloat(currOffset.toFixed(2));
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
                 }
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfter > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     currOffset += cellWidth;
-                    if (tempGrid.indexOf(Math.round(currOffset)) < 0) {
-                        tempGrid.push(Math.round(currOffset));
+                    if (tempGrid.indexOf(parseFloat(currOffset.toFixed(2))) < 0) {
+                        tempGrid.push(parseFloat(currOffset.toFixed(2)));
                     }
                     columnSpan += rowFormat.gridAfter;
                 }
@@ -7671,12 +7723,10 @@ class TableWidget extends BlockWidget {
         //     this.tableFormat.destroy();
         // }
         this.tableFormat = undefined;
-        // if (this.spannedRowCollection) {
-        //     this.spannedRowCollection.destroy();
-        // }
+        if (this.spannedRowCollection) {
+            this.spannedRowCollection.destroy();
+        }
         this.spannedRowCollection = undefined;
-        this.tableGrids = [];
-        this.tableGrids = undefined;
         // if (this.tableHolder) {
         //     this.tableHolder.destroy();
         // }
@@ -7696,16 +7746,6 @@ class TableWidget extends BlockWidget {
  * @private
  */
 class TableRowWidget extends BlockWidget {
-    constructor() {
-        super();
-        /**
-         * @private
-         */
-        this.spannedRowCollection = [];
-        this.topBorderWidth = 0;
-        this.bottomBorderWidth = 0;
-        this.rowFormat = new WRowFormat(this);
-    }
     /**
      * @private
      */
@@ -7733,6 +7773,12 @@ class TableRowWidget extends BlockWidget {
             return this.ownerTable.childWidgets[index + 1];
         }
         return undefined;
+    }
+    constructor() {
+        super();
+        this.topBorderWidth = 0;
+        this.bottomBorderWidth = 0;
+        this.rowFormat = new WRowFormat(this);
     }
     /**
      * @private
@@ -7823,7 +7869,7 @@ class TableRowWidget extends BlockWidget {
         return gridEndIndex - gridStartIndex;
     }
     getOffsetIndex(tableGrid, offset) {
-        offset = Math.round(offset);
+        offset = parseFloat(offset.toFixed(2));
         let index = 0;
         if (tableGrid.indexOf(offset) >= 0) {
             index = tableGrid.indexOf(offset);
@@ -8018,8 +8064,6 @@ class TableRowWidget extends BlockWidget {
         // }
         this.rowFormat = undefined;
         this.rowFormat = undefined;
-        this.spannedRowCollection = [];
-        this.spannedRowCollection = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
         super.destroy();
@@ -8226,9 +8270,9 @@ class TableCellWidget extends BlockWidget {
      */
     getCellWidth() {
         let ownerTable = this.ownerTable;
-        let containerWidth = ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true));
+        let containerWidth = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         let cellWidth = containerWidth;
-        if (ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
+        if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         }
         else if (this.cellFormat.preferredWidthType === 'Percent') {
@@ -8321,7 +8365,7 @@ class TableCellWidget extends BlockWidget {
         let ownerTable = this.ownerTable;
         //Added null condition check for asynchronous loading.
         if (this.cellFormat !== null && this.cellFormat.borders !== null) {
-            borderWidth = TableCellWidget.getCellLeftBorder(this).getLineWidth();
+            borderWidth = TableCellWidget.getCellRightBorder(this).getLineWidth();
         }
         return borderWidth;
     }
@@ -8382,8 +8426,11 @@ class TableCellWidget extends BlockWidget {
         if ((isNullOrUndefined(previousCell) || (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle === 'None' && !leftBorder.hasNoneStyle)))) {
             if (!isNullOrUndefined(leftBorder) && !(leftBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase).tableFormat.borders);
+                leftBorder = this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousCell)) {
+            return leftBorder;
         }
         else {
             let prevCellRightBorder = undefined;
@@ -8540,8 +8587,11 @@ class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(nextCell) || (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle === 'None' && !rightBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(rightBorder) && !(rightBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
+                rightBorder = this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextCell)) {
+            return rightBorder;
         }
         else {
             let nextCellLeftBorder = undefined;
@@ -8656,8 +8706,11 @@ class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(previousTopCell) || (!isNullOrUndefined(topBorder) && (topBorder.lineStyle === 'None' && !topBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(topBorder) && !(topBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase).tableFormat.borders);
+                topBorder = this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousTopCell)) {
+            return topBorder;
         }
         else {
             let prevTopCellBottomBorder = undefined;
@@ -8743,8 +8796,11 @@ class TableCellWidget extends BlockWidget {
         if (isNullOrUndefined(nextBottomCell) || (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle === 'None' && !bottomBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(bottomBorder) && !(bottomBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase).tableFormat.borders);
+                bottomBorder = this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextBottomCell)) {
+            return bottomBorder;
         }
         else {
             let prevBottomCellTopBorder = undefined;
@@ -10738,7 +10794,6 @@ class ContextMenu$1 {
         if (selection.contextType === 'TableOfContents') {
             updateField.style.display = 'block';
             editField.style.display = 'block';
-            restartAt.nextSibling.style.display = 'block';
         }
         else {
             let start = selection.start;
@@ -11088,6 +11143,10 @@ class Layout {
         let block = section.firstChild;
         let nextBlock;
         do {
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit) {
+                block.calculateGrid();
+            }
             this.viewer.updateClientAreaForBlock(block, true);
             nextBlock = this.layoutBlock(block, index);
             index = 0;
@@ -11201,6 +11260,10 @@ class Layout {
         this.linkFieldInHeaderFooter(widget);
         for (let i = 0; i < widget.childWidgets.length; i++) {
             let block = widget.childWidgets[i];
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit && !block.isGridUpdated) {
+                block.calculateGrid();
+            }
             viewer.updateClientAreaForBlock(block, true);
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
@@ -11493,10 +11556,10 @@ class Layout {
         else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 let currentLine = element.line;
-                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element));
+                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
                 this.moveToNextLine(currentLine);
                 // Recalculates tab width based on new client active area X position
-                element.width = this.getTabWidth(paragraph, this.viewer, index, line, element);
+                element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element);
                 this.addElementToLine(paragraph, element);
             }
             else {
@@ -12793,7 +12856,8 @@ class Layout {
      */
     // tslint:disable-next-line:max-line-length
     getTabWidth(paragraph, viewer, index, lineWidget, element) {
-        let fposition = 0;
+        let elementWidth = element ? this.viewer.textHelper.getTextSize(element, element.characterFormat) : 0;
+        let fPosition = 0;
         let isCustomTab = false;
         let tabs = paragraph.paragraphFormat.getUpdatedTabs();
         //  Calculate hanging width
@@ -12810,41 +12874,46 @@ class Layout {
         else {
             if (tabs.length > 0) {
                 for (let i = 0; i < tabs.length; i++) {
+                    let tabStop = tabs[i];
                     let tabPosition = HelperMethods.convertPointToPixel(tabs[i].position);
-                    if (tabs[i].tabJustification === 'Left' && position < tabPosition) {
-                        fposition = tabPosition;
+                    if ((position + elementWidth) < tabPosition) {
                         isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
-                    }
-                    else if (tabs[i].tabJustification === 'Right' && position < tabPosition) {
-                        let tabwidth = tabPosition - position;
-                        let width = this.getRightTabWidth(index + 1, lineWidget, paragraph);
-                        if (width < tabwidth) {
-                            defaultTabWidth = tabwidth - width;
+                        if (tabStop.tabJustification === 'Left') {
+                            fPosition = tabPosition;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
                         else {
-                            defaultTabWidth = 0;
+                            let tabWidth = tabPosition - position;
+                            let width = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
+                            if (width < tabWidth) {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? tabWidth - width : tabWidth - width / 2;
+                            }
+                            else if (tabStop.tabJustification === 'Center' && (width / 2) < tabWidth) {
+                                defaultTabWidth = tabWidth - width / 2;
+                            }
+                            else {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
+                            }
+                            fPosition = position;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
-                        fposition = position;
-                        isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
                     }
                 }
             }
             if (!isCustomTab) {
                 let diff = ((Math.round(position) * 100) % (Math.round(defaultTabWidth) * 100)) / 100;
                 let cnt = (Math.round(position) - diff) / Math.round(defaultTabWidth);
-                fposition = (cnt + 1) * defaultTabWidth;
+                fPosition = (cnt + 1) * defaultTabWidth;
             }
-            return (fposition - position) > 0 ? fposition - position : defaultTabWidth;
+            return (fPosition - position) > 0 ? fPosition - position : defaultTabWidth;
         }
     }
     /**
@@ -12856,8 +12925,8 @@ class Layout {
     getRightTabWidth(index, lineWidget, paragraph) {
         let width = 0;
         let isFieldCode = false;
-        while (index < lineWidget.children.length) {
-            let elementBox = lineWidget.children[index];
+        let elementBox = lineWidget.children[index];
+        while (elementBox) {
             if ((elementBox instanceof FieldElementBox) || (elementBox instanceof BookmarkElementBox) || isFieldCode) {
                 if (elementBox instanceof FieldElementBox) {
                     if (elementBox.fieldType === 0) {
@@ -12878,7 +12947,7 @@ class Layout {
             else {
                 width = width + elementBox.width;
             }
-            index++;
+            elementBox = elementBox.nextNode;
         }
         return width;
     }
@@ -14753,6 +14822,7 @@ class Layout {
         let currentTable = table.combineWidget(this.viewer);
         let bodyWidget = currentTable.containerWidget;
         if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
+            block.bodyWidget.isEmpty = false;
             bodyWidget.height -= currentTable.height;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(table.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(table), bodyWidget.page);
@@ -14844,6 +14914,7 @@ class Layout {
                     return;
                 }
                 if (bodyWidget instanceof HeaderFooterWidget) {
+                    bodyWidget.isEmpty = false;
                     // tslint:disable-next-line:max-line-length
                     this.viewer.updateHCFClientAreaWithTop(bodyWidget.sectionFormat, bodyWidget.headerFooterType.indexOf('Header') !== -1, bodyWidget.page);
                     curretBlock.containerWidget.height -= curretBlock.height;
@@ -15149,24 +15220,30 @@ class Layout {
         let value = 0;
         for (let i = 0; i < row.childWidgets.length; i++) {
             if (row.childWidgets.length > 0) {
-                let cellFormat = row.childWidgets[i].cellFormat;
+                let cell = row.childWidgets[i];
+                let cellFormat = cell.cellFormat;
                 if (cellFormat.containsMargins()) {
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    let leftMargin = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    let bottomMargin;
+                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
+                        value = leftMargin;
                     }
                     else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.bottomMargin);
+                        // tslint:disable-next-line:no-conditional-assignment 
+                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
                 else {
-                    let tableFormat = row.childWidgets[i].ownerTable.tableFormat;
-                    if (topOrBottom === 0 && HelperMethods.convertPointToPixel(tableFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    let tableFormat = cell.ownerTable.tableFormat;
+                    let topMargin = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    let bottomMargin;
+                    if (topOrBottom === 0 && topMargin > value) {
+                        value = topMargin;
+                        // tslint:disable-next-line:no-conditional-assignment 
                     }
-                    else if (topOrBottom === 1 && HelperMethods.convertPointToPixel(tableFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.bottomMargin);
+                    else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
             }
@@ -15779,6 +15856,7 @@ class Layout {
         let bodyWidget = paragraph.containerWidget;
         bodyWidget.height -= paragraph.height;
         if (this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) {
+            paragraph.bodyWidget.isEmpty = false;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(paragraph.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(paragraph), bodyWidget.page);
         }
@@ -16879,34 +16957,41 @@ class Renderer {
  * @private
  */
 class TextHelper {
+    constructor(viewer) {
+        this.paragraphMarkInfo = {};
+        this.owner = viewer;
+        if (!isNullOrUndefined(viewer)) {
+            this.context = viewer.containerContext;
+        }
+    }
     get paragraphMark() {
         return '¶';
     }
     get lineBreakMark() {
         return '↲';
     }
-    constructor(viewer) {
-        this.owner = viewer;
-        if (!isNullOrUndefined(viewer)) {
-            this.context = viewer.containerContext;
-        }
-    }
     /**
      * @private
      */
     getParagraphMarkWidth(characterFormat) {
-        return this.getWidth(this.paragraphMark, characterFormat);
+        return this.getParagraphMarkSize(characterFormat).Width;
     }
     /**
      * @private
      */
     getParagraphMarkSize(characterFormat) {
+        let format = this.getFormatText(characterFormat);
+        if (this.paragraphMarkInfo[format]) {
+            return this.paragraphMarkInfo[format];
+        }
         // Gets the text element's width;
         let width = this.getWidth(this.paragraphMark, characterFormat);
+        // Calculate the text element's height and baseline offset.
         let textHelper = this.getHeight(characterFormat);
-        return {
+        let textSizeInfo = {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
+        return this.paragraphMarkInfo[format] = textSizeInfo;
     }
     /**
      * @private
@@ -16962,11 +17047,8 @@ class TextHelper {
         let textHeight = 0;
         let baselineOffset = 0;
         let spanElement = document.createElement('span');
-        spanElement.id = 'tempSpan';
-        spanElement.style.whiteSpace = 'nowrap';
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
-        let body = document.getElementsByTagName('body');
         let parentDiv = document.createElement('div');
         parentDiv.style.display = 'inline-block';
         let tempDiv = document.createElement('div');
@@ -17014,10 +17096,11 @@ class TextHelper {
         if (textToRender.length === 0) {
             return '';
         }
-        if ((!this.isRTLText(textToRender) && (bdo === 'RTL')) || (this.isRTLText(textToRender) && (bdo === 'LTR'))) {
+        let isRtlText = isBidi;
+        if ((!isRtlText && (bdo === 'RTL')) || (isRtlText && (bdo === 'LTR'))) {
             textToRender = HelperMethods.ReverseString(textToRender);
         }
-        else if (isRender && this.isRTLText(textToRender) && HelperMethods.endsWith(textToRender)) {
+        else if (isRender && isRtlText && HelperMethods.endsWith(textToRender)) {
             let spaceCount = textToRender.length - HelperMethods.trimEnd(textToRender).length;
             textToRender = HelperMethods.addSpace(spaceCount) + HelperMethods.trimEnd(textToRender);
         }
@@ -17028,20 +17111,22 @@ class TextHelper {
      */
     applyStyle(spanElement, characterFormat) {
         if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
+            let style = 'white-space:nowrap;';
             if (characterFormat.fontFamily !== '') {
-                spanElement.style.fontFamily = characterFormat.fontFamily;
+                style += 'font-family:' + characterFormat.fontFamily + ';';
             }
             let fontSize = characterFormat.fontSize;
             if (fontSize <= 0.5) {
                 fontSize = 0.5;
             }
-            spanElement.style.fontSize = fontSize.toString() + 'pt';
+            style += 'font-size:' + fontSize.toString() + 'pt;';
             if (characterFormat.bold) {
-                spanElement.style.fontWeight = 'bold';
+                style += 'font-weight:bold;';
             }
             if (characterFormat.italic) {
-                spanElement.style.fontStyle = 'italic';
+                style += 'font-style:italic;';
             }
+            spanElement.setAttribute('style', style);
         }
     }
     /**
@@ -17091,7 +17176,7 @@ class TextHelper {
      */
     isRTLText(text) {
         let isRTL = false;
-        if (!isNullOrUndefined(text) && text !== '') {
+        if (!isNullOrUndefined(text)) {
             for (let i = 0; i < text.length; i++) {
                 let temp = text[i];
                 if ((temp >= '\u0590' && temp <= '\u05ff') //Hebrew characters
@@ -17159,6 +17244,8 @@ class TextHelper {
     destroy() {
         this.owner = undefined;
         this.context = undefined;
+        this.paragraphMarkInfo = {};
+        this.paragraphMarkInfo = undefined;
     }
 }
 
@@ -17401,6 +17488,10 @@ class LayoutViewer {
         /**
          * @private
          */
+        this.isTextInput = false;
+        /**
+         * @private
+         */
         this.onTextInput = (event) => {
             if (!this.isComposingIME) {
                 event.preventDefault();
@@ -17579,7 +17670,7 @@ class LayoutViewer {
                         clearTimeout(resizeTimer);
                     }
                 }
-            }, 150);
+            }, 200);
         };
         /**
          * @private
@@ -18954,12 +19045,19 @@ class LayoutViewer {
             headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
             footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
         }
+        let isEmptyWidget = false;
         if (!isNullOrUndefined(page.headerWidget)) {
-            top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            isEmptyWidget = page.headerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            }
         }
         let bottom = 0.667 + bottomMargin;
         if (!isNullOrUndefined(page.footerWidget)) {
-            bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            isEmptyWidget = page.footerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            }
         }
         let width = 0;
         if (!isNullOrUndefined(sectionFormat)) {
@@ -19744,6 +19842,7 @@ class PageLayoutViewer extends LayoutViewer {
             let headerFooter = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
                 headerFooter = this.createHeaderFooterWidget(type);
+                headerFooter.isEmpty = true;
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;
@@ -20341,6 +20440,7 @@ class SfdtReader {
             rowFormat.gridAfterWidthType = data.gridAfterWidthType;
         }
     }
+    // tslint:disable:max-func-body-length
     parseParagraph(data, paragraph, writeInlineFormat) {
         let lineWidget = new LineWidget(paragraph);
         for (let i = 0; i < data.length; i++) {
@@ -20374,7 +20474,15 @@ class SfdtReader {
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
                 lineWidget.children.push(image);
-                image.imageString = inline.imageString;
+                let imageString = HelperMethods.formatClippedString(inline.imageString).formatClippedString;
+                let isValidImage = this.validateImageUrl(imageString);
+                if (!isValidImage) {
+                    // tslint:disable-next-line:max-line-length
+                    image.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
+                }
+                else {
+                    image.imageString = inline.imageString;
+                }
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
@@ -20738,6 +20846,27 @@ class SfdtReader {
             tabStop.tabJustification = wTabs[i].tabJustification;
             tabs.push(tabStop);
         }
+    }
+    validateImageUrl(imagestr) {
+        let keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+        imagestr = imagestr.replace(/[^A-Za-z0-9\+\/\=]/g, '');
+        let totalLength = imagestr.length * 3 / 4;
+        if (imagestr.charAt(imagestr.length - 1) === keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (imagestr.charAt(imagestr.length - 2) === keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (totalLength % 1 !== 0) {
+            // totalLength is not an integer, the length does not match a valid
+            // base64 content. That can happen if:
+            // - the imagestr is not a base64 content
+            // - the imagestr is *almost* a base64 content, with a extra chars at the
+            // beginning or at the end
+            // - the imagestr uses a base64 variant (base64url for example)
+            return false;
+        }
+        return true;
     }
 }
 
@@ -32687,11 +32816,15 @@ class Selection {
     isCursorInHeaderRegion(point, page) {
         let pageTop = this.getPageTop(page);
         let headerHeight = 0;
-        if (page.headerWidget) {
-            headerHeight = (page.headerWidget.y + page.headerWidget.height);
+        let header = page.headerWidget;
+        if (header) {
+            headerHeight = (header.y + header.height);
         }
-        let height = Math.max(headerHeight, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin))
-            * this.viewer.zoomFactor;
+        let isEmpty = header.isEmpty && !this.owner.enableHeaderAndFooter;
+        let topMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+        let pageHeight = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageHeight);
+        let height = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), pageHeight / 100 * 40);
+        height = height * this.viewer.zoomFactor;
         if ((this.viewer.containerTop + point.y) >= pageTop && (this.viewer.containerTop + point.y) <= pageTop + height) {
             return true;
         }
@@ -32709,9 +32842,16 @@ class Selection {
         if (page.footerWidget) {
             footerHeight = page.footerWidget.height;
         }
-        // tslint:disable-next-line:max-line-length
-        let height = (pageRect.height -
-            Math.max(footerHeight + footerDistance, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin))) * this.viewer.zoomFactor;
+        let bottomMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin);
+        let isEmpty = page.footerWidget.isEmpty && !this.owner.enableHeaderAndFooter;
+        let height = pageRect.height;
+        if (isEmpty) {
+            height = (height - bottomMargin) * this.viewer.zoomFactor;
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            height = (height - Math.min(pageRect.height / 100 * 40, Math.max(footerHeight + footerDistance, bottomMargin))) * this.viewer.zoomFactor;
+        }
         if ((this.viewer.containerTop + point.y) <= pageBottom && (this.viewer.containerTop + point.y) >= pageTop + height) {
             return true;
         }
@@ -32723,7 +32863,20 @@ class Selection {
     enableHeadersFootersRegion(widget) {
         this.owner.enableHeaderAndFooter = true;
         this.updateTextPositionForBlockContainer(widget);
+        this.shiftBlockOnHeaderFooterEnableDisable();
         return true;
+    }
+    shiftBlockOnHeaderFooterEnableDisable() {
+        for (let i = 0; i < this.viewer.headersFooters.length; i++) {
+            let headerFooter = this.viewer.headersFooters[i];
+            let sectionFormat = this.owner.editor.getBodyWidgetInternal(i, 0).sectionFormat;
+            for (let key of Object.keys(headerFooter)) {
+                let widget = headerFooter[key];
+                if (widget.isEmpty) {
+                    this.owner.editor.shiftPageContent(widget.headerFooterType, sectionFormat);
+                }
+            }
+        }
     }
     /**
      * @private
@@ -32743,6 +32896,7 @@ class Selection {
         let page = this.getPage(this.start.paragraph);
         this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
         this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
     }
     //#endregion
     /**
@@ -34003,18 +34157,24 @@ class OptionsPane {
          * @private
          */
         this.selectedTabItem = (args) => {
+            let contentParent = this.findTab.getElementsByClassName('e-content').item(0);
             if (args.previousIndex !== args.selectedIndex) {
-                let previousTab = document.querySelector('#e-content_' + args.previousIndex);
-                let nextTab = document.querySelector('#e-content_' + args.selectedIndex);
-                nextTab.insertBefore(previousTab.firstElementChild, nextTab.firstChild);
+                let previousTab = contentParent.children[args.previousIndex];
+                let nextTab = contentParent.children[args.selectedIndex];
+                let element = previousTab.firstElementChild;
+                element.parentElement.removeChild(element);
+                nextTab.appendChild(element);
             }
-            if (args.selectedIndex === 0 && !isNullOrUndefined(document.querySelector('#e-content_' + args.selectedIndex))) {
-                this.isOptionsPane = true;
-                this.onFindPane();
-            }
-            if (args.selectedIndex === 1 && !isNullOrUndefined(document.querySelector('#e-content_' + args.selectedIndex))) {
-                this.isOptionsPane = false;
-                this.onReplacePane();
+            let selectedElement = contentParent.children[args.selectedIndex];
+            if (!isNullOrUndefined(selectedElement)) {
+                if (args.selectedIndex === 0) {
+                    this.isOptionsPane = true;
+                    this.onFindPane();
+                }
+                else {
+                    this.isOptionsPane = false;
+                    this.onReplacePane();
+                }
             }
         };
         this.searchOptionChange = () => {
@@ -34126,7 +34286,9 @@ class OptionsPane {
                 this.resultsListBlock.style.display = 'none';
                 this.messageDiv.innerHTML = this.localeValue.getConstant('No matches');
             }
-            this.resultsListBlock.style.height = this.resultsListBlock.offsetHeight + this.replaceTabContentDiv.offsetHeight + 'px';
+            let height = this.isOptionsPane ? 215 : 292;
+            let resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
+            this.resultsListBlock.style.height = resultsContainerHeight + 'px';
             this.replaceTabContentDiv.style.display = 'none';
             this.findDiv.style.display = 'block';
             this.messageDiv.style.display = 'block';
@@ -34155,7 +34317,9 @@ class OptionsPane {
             this.findDiv.style.display = 'block';
             this.replaceDiv.style.display = 'block';
             this.replaceTabContentDiv.style.display = 'block';
-            this.resultsListBlock.style.height = this.resultsListBlock.offsetHeight - this.replaceTabContentDiv.offsetHeight + 'px';
+            let height = this.isOptionsPane ? 215 : 292;
+            let resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
+            this.resultsListBlock.style.height = resultsContainerHeight + 'px';
             this.isOptionsPane = false;
             if (this.searchInput.value.length !== 0) {
                 this.replaceButton.disabled = false;
@@ -34360,7 +34524,8 @@ class OptionsPane {
             if (this.results != null && this.results.length > 0) {
                 this.navigateSearchResult();
                 this.getMessageDivHeight();
-                let resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - 215;
+                let height = this.isOptionsPane ? 215 : 292;
+                let resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
                 this.resultsListBlock.style.height = resultsContainerHeight + 'px';
             }
             else {
@@ -34612,7 +34777,7 @@ class OptionsPane {
         this.searchTextBoxContainer = createElement('div', { className: 'e-input-group e-de-op-input-group' });
         this.findTabContentDiv.appendChild(this.searchTextBoxContainer);
         // tslint:disable-next-line:max-line-length
-        this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.viewer.owner.containerId + '_option_search_text_box', attrs: { placeholder: localeValue.getConstant('Search for') }, styles: 'font-size:14px;' });
+        this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.viewer.owner.containerId + '_option_search_text_box', attrs: { placeholder: localeValue.getConstant('Search for') } });
         this.searchTextBoxContainer.appendChild(this.searchInput);
         this.searchIcon = createElement('span', {
             className: 'e-de-op-icon e-de-op-search-icon e-input-group-icon e-icon',
@@ -34666,7 +34831,7 @@ class OptionsPane {
         tabContent.appendChild(this.replaceTabContentDiv);
         this.findTabContentDiv.appendChild(this.replaceTabContentDiv);
         this.createReplacePane(isRtl);
-        this.findDiv = createElement('div', { className: 'findDiv', styles: 'height:250px;display:block;' });
+        this.findDiv = createElement('div', { className: 'findDiv', styles: 'display:block;' });
         findTabContent.appendChild(this.findTabContentDiv);
         this.resultContainer = createElement('div', { styles: 'width:85%;display:block;', className: 'e-de-op-result-container' });
         this.findDiv.appendChild(this.resultContainer);
@@ -34703,11 +34868,10 @@ class OptionsPane {
         this.replaceDiv = createElement('div');
         this.replaceTabContentDiv.appendChild(this.replaceDiv);
         this.replaceWith = createElement('input', {
-            className: 'e-de-op-replacewith e-input', styles: 'font-size:14px;',
+            className: 'e-de-op-replacewith e-input',
             attrs: { placeholder: this.localeValue.getConstant('Replace with') }
         });
         this.replaceDiv.appendChild(this.replaceWith);
-        let replaceButtonFont = 'font-size:12px';
         let replaceButtonDivTextAlign;
         let replaceButtonMargin;
         if (isRtl) {
@@ -34722,13 +34886,12 @@ class OptionsPane {
         this.replaceDiv.appendChild(replaceButtonDiv);
         this.replaceButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replace',
-            styles: replaceButtonFont + ';' + replaceButtonMargin,
+            styles: replaceButtonMargin,
             innerHTML: this.localeValue.getConstant(this.replaceButtonText)
         });
         replaceButtonDiv.appendChild(this.replaceButton);
         this.replaceAllButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replaceall',
-            styles: 'font-size:12px;',
             innerHTML: this.localeValue.getConstant(this.replaceAllButtonText)
         });
         replaceButtonDiv.appendChild(this.replaceAllButton);
@@ -34782,7 +34945,8 @@ class OptionsPane {
             this.searchIcon.classList.add('e-de-op-search-close-icon');
             this.searchIcon.classList.remove('e-de-op-search-icon');
         }
-        let resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - 215;
+        let height = this.isOptionsPane ? 215 : 292;
+        let resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
         this.clearSearchResultItems();
         this.viewer.owner.searchModule.clearSearchHighlight();
         let pattern = this.viewer.owner.searchModule.textSearch.stringToRegex(text, this.findOption);
@@ -36885,6 +37049,9 @@ class Editor {
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
         }
+        else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
+            this.viewer.isTextInput = true;
+        }
         paragraphInfo = this.getParagraphInfo(selection.start);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
@@ -36969,33 +37136,24 @@ class Editor {
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
             this.updateEndPosition();
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
+            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
+                && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
                 this.viewer.isListTextSelected) {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            // if (!isNullOrUndefined(selection.currentHistoryInfo) && (selection.currentHistoryInfo.action === 'MultiSelection')) {
-            //     this.updateComplexHistory();
-            // } else {           
             this.reLayout(selection);
-            // }
+            this.viewer.isTextInput = false;
         }
-        else {
-            // selection.selectContent(selection.start, true);
-        }
-        // insertFormat.destroy();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
-            let hyperlinkField = selection.getHyperlinkField();
-            let isSelectionOnHyperlink = !isNullOrUndefined(hyperlinkField);
             let isList = false;
             if (!(text === '\v')) {
                 isList = this.checkAndConvertList(selection, text === '\t');
             }
-            if (isSelectionOnHyperlink) {
-                return;
-            }
             if (!isList) {
+                if (!isNullOrUndefined(selection.getHyperlinkField())) {
+                    return;
+                }
                 //Checks if the previous text is URL, then it is auto formatted to hyperlink.
                 this.checkAndConvertToHyperlink(selection, false);
             }
@@ -39559,7 +39717,8 @@ class Editor {
      */
     updateHeaderFooterWidget() {
         this.updateHeaderFooterWidgetToPage(this.selection.start.paragraph.bodyWidget);
-        this.shiftPageContent(this.selection.start.paragraph.bodyWidget);
+        let headerFooterWidget = this.selection.start.paragraph.bodyWidget;
+        this.shiftPageContent(headerFooterWidget.headerFooterType, headerFooterWidget.sectionFormat);
     }
     /**
      * @private
@@ -39650,53 +39809,80 @@ class Editor {
     /**
      * @private
      */
-    shiftPageContent(headerFooter) {
-        let type = headerFooter.headerFooterType;
+    shiftPageContent(type, sectionFormat) {
+        // let type: HeaderFooterType = headerFooter.headerFooterType;
         let pageIndex;
-        if (type === 'FirstPageHeader' || type === 'FirstPageFooter') {
+        if (type.indexOf('First') !== -1) {
             pageIndex = 0;
         }
-        else if (headerFooter.sectionFormat.differentOddAndEvenPages) {
-            if (headerFooter.sectionFormat.differentFirstPage) {
-                pageIndex = (type === 'EvenHeader' || type === 'EvenFooter') ? 1 : 2;
+        else if (sectionFormat.differentOddAndEvenPages) {
+            let isEven = type.indexOf('Even') !== -1;
+            if (sectionFormat.differentFirstPage) {
+                pageIndex = isEven ? 1 : 2;
             }
             else {
-                pageIndex = (type.indexOf('Even') === -1) ? 0 : 1;
+                pageIndex = !isEven ? 0 : 1;
             }
         }
         else {
-            pageIndex = headerFooter.sectionFormat.differentFirstPage ? 1 : 0;
+            pageIndex = sectionFormat.differentFirstPage ? 1 : 0;
             if (pageIndex === 1 && this.viewer.pages.length === 1) {
                 pageIndex = 0;
             }
         }
-        let page = this.viewer.pages[pageIndex];
-        if (type.indexOf('Header') !== -1) {
-            let firstBlock = page.bodyWidgets[0].firstChild;
-            let top = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.topMargin);
-            let headerDistance = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.headerDistance);
-            top = Math.max(headerDistance + page.headerWidget.height, top);
-            if (firstBlock.y !== top) {
-                this.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
-                firstBlock = firstBlock.combineWidget(this.viewer);
-                let prevWidget = firstBlock.previousRenderedWidget;
-                if (prevWidget) {
-                    this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                    if (firstBlock.containerWidget !== prevWidget.containerWidget) {
-                        // tslint:disable-next-line:max-line-length
-                        this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+        let section = this.viewer.pages[pageIndex].bodyWidgets[0];
+        do {
+            if (type.indexOf('Header') !== -1) {
+                let widget = section.page.headerWidget;
+                let isNotEmpty = !widget.isEmpty || widget.isEmpty && this.owner.enableHeaderAndFooter;
+                let firstBlock = section.firstChild;
+                let top = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                let headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
+                if (isNotEmpty) {
+                    top = Math.max(headerDistance + section.page.headerWidget.height, top);
+                }
+                if (firstBlock.y !== top) {
+                    this.viewer.updateClientArea(section.sectionFormat, section.page);
+                    firstBlock = firstBlock.combineWidget(this.viewer);
+                    let prevWidget = firstBlock.previousRenderedWidget;
+                    if (prevWidget) {
+                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget)) {
+                            this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                            // tslint:disable-next-line:max-line-length
+                            this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+                        }
+                    }
+                    this.viewer.blockToShift = firstBlock;
+                }
+            }
+            else {
+                this.checkAndShiftFromBottom(section.page, section.page.footerWidget);
+            }
+            if (this.viewer.blockToShift) {
+                this.viewer.renderedLists.clear();
+                this.viewer.layout.shiftLayoutedItems();
+            }
+            while (section) {
+                let splittedSection = section.getSplitWidgets();
+                section = splittedSection[splittedSection.length - 1].nextRenderedWidget;
+                if (section) {
+                    if (pageIndex === 0) {
+                        break;
+                    }
+                    else {
+                        if (section.page.index + 1 % 2 === 0 && pageIndex === 1 ||
+                            (section.page.index + 1 % 2 !== 0 && pageIndex === 2)) {
+                            break;
+                        }
+                        let nextPage = section.page.nextPage;
+                        if (nextPage.bodyWidgets[0].equals(section)) {
+                            section = nextPage.bodyWidgets[0];
+                            break;
+                        }
                     }
                 }
-                this.viewer.blockToShift = firstBlock;
             }
-        }
-        else {
-            this.checkAndShiftFromBottom(page, headerFooter);
-        }
-        if (this.viewer.blockToShift) {
-            this.viewer.renderedLists.clear();
-            this.viewer.layout.shiftLayoutedItems();
-        }
+        } while (section);
     }
     /**
      * @private
@@ -40075,7 +40261,7 @@ class Editor {
     }
     getCompleteStyles() {
         let completeStylesString = '{"styles":[';
-        for (let name of this.viewer.preDefinedStyles.getItem()) {
+        for (let name of this.viewer.preDefinedStyles.keys) {
             completeStylesString += (this.viewer.preDefinedStyles.get(name) + ',');
         }
         return completeStylesString.slice(0, -1) + ']}';
@@ -42651,6 +42837,9 @@ class Editor {
                             if (!isCellCleared && editAction !== 2 && this.editorHistory) {
                                 this.editorHistory.currentBaseHistoryInfo = undefined;
                             }
+                            else if (isCellCleared) {
+                                this.viewer.layout.reLayoutTable(containerCell.ownerRow.ownerTable);
+                            }
                         }
                     }
                     else {
@@ -44361,7 +44550,7 @@ class Editor {
      */
     updateListItemsTillEnd(blockAdv, updateNextBlockList) {
         let block = updateNextBlockList ? this.viewer.selection.getNextRenderedBlock(blockAdv) : blockAdv;
-        while (!isNullOrUndefined(block)) {
+        while (!isNullOrUndefined(block) && !this.viewer.isTextInput) {
             //Updates the list value of the rendered paragraph. 
             this.updateRenderedListItems(block);
             block = block.getSplitWidgets().pop().nextRenderedWidget;
@@ -44944,6 +45133,9 @@ class Editor {
             return page.footerWidget;
         }
     }
+    /**
+     * @private
+     */
     getBodyWidgetInternal(sectionIndex, blockIndex) {
         for (let i = 0; i < this.viewer.pages.length; i++) {
             let bodyWidget = this.viewer.pages[i].bodyWidgets[0];
@@ -48327,7 +48519,9 @@ class ImageResizer {
         this.leftValue = isNullOrUndefined(this.leftValue) ? prevX : this.leftValue;
         this.topValue = isNullOrUndefined(this.topValue) ? prevY : this.topValue;
         let points;
-        switch (this.selectedResizeElement.id.split('_')[1]) {
+        let id = this.selectedResizeElement.id.split('_');
+        let currentElementId = id[id.length - 1];
+        switch (currentElementId) {
             case 'TopRightRectParent':
                 points = this.topRightResizing(touchPoint);
                 prevX = points.left;
@@ -48390,10 +48584,10 @@ class ImageResizer {
                 let width = this.currentImageElementBox.width + prevX > 10 ? this.currentImageElementBox.width + prevX : 10;
                 // tslint:disable-next-line:max-line-length 
                 let height = this.currentImageElementBox.height + prevY > 10 ? this.currentImageElementBox.height + prevY : 10;
-                if (this.selectedResizeElement.id.split('_')[1] === 'BottomRightRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'TopRightRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'BottomLeftRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'TopLeftRectParent') {
+                if (currentElementId === 'BottomRightRectParent'
+                    || currentElementId === 'TopRightRectParent'
+                    || currentElementId === 'BottomLeftRectParent'
+                    || currentElementId === 'TopLeftRectParent') {
                     height = this.currentImageElementBox.height / this.currentImageElementBox.width * width;
                     width = this.currentImageElementBox.width / this.currentImageElementBox.height * height;
                 }
@@ -52344,51 +52538,9 @@ class WordExport {
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                 }
                 else {
-                    let extension = '';
-                    let formatClippedString = '';
-                    if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
-                        extension = '.bmp';
-                        formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
-                        extension = '.emf';
-                        formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
-                        extension = '.exif';
-                        formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
-                        extension = '.gif';
-                        formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
-                        extension = '.ico';
-                        formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
-                        extension = '.jpeg';
-                        formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
-                        extension = '.jpg';
-                        formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
-                        extension = '.png';
-                        formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
-                        extension = '.tif';
-                        formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
-                        extension = '.wmf';
-                        formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
-                    }
-                    else {
-                        extension = '.jpeg';
-                    }
+                    let imageInfo = HelperMethods.formatClippedString(base64ImageString);
+                    let extension = imageInfo.extension;
+                    let formatClippedString = imageInfo.formatClippedString;
                     imagePath = this.imagePath + keys[i] + extension;
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                     //if (m_archive.Find(imagePath.Replace('\\', '/')) === -1)
@@ -52975,7 +53127,7 @@ class SfdtExport {
         section.headersFooters.firstPageFooter = this.writeHeaderFooter(hfs[5]);
     }
     writeHeaderFooter(widget) {
-        if (isNullOrUndefined(widget)) {
+        if (isNullOrUndefined(widget) || widget.isEmpty) {
             return undefined;
         }
         let headerFooter = {};
@@ -53900,17 +54052,19 @@ class BookmarkDialog {
      * @private
      */
     constructor(viewer) {
+        /**
+         * @private
+         */
+        this.onKeyUpOnTextBox = (event) => {
+            this.enableOrDisableButton();
+        };
         this.addBookmark = () => {
             this.owner.owner.editorModule.insertBookmark(this.textBoxInput.value);
             this.owner.dialog.hide();
         };
         /* tslint:disable:no-any */
         this.selectHandler = (args) => {
-            this.textBoxInput.value = args.text;
-            /* tslint:disable:no-any */
-            let value = document.getElementById('bookmark_text_box');
-            value.setSelectionRange(0, args.text.length);
-            value.focus();
+            this.focusTextBox(args.text);
         };
         this.gotoBookmark = () => {
             this.owner.selection.selectBookmark(this.textBoxInput.value);
@@ -53946,7 +54100,7 @@ class BookmarkDialog {
         let textBoxDiv = createElement('div', { className: 'e-bookmark-textboxdiv' });
         searchDiv.appendChild(textBoxDiv);
         // tslint:disable-next-line:max-line-length
-        this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box' });
+        this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } });
         this.textBoxInput.setAttribute('type', 'text');
         textBoxDiv.appendChild(this.textBoxInput);
         let listviewDiv = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview' });
@@ -53956,6 +54110,7 @@ class BookmarkDialog {
             dataSource: bookmarks,
             cssClass: 'e-bookmark-listview',
         });
+        let hasNoBookmark = (bookmarks === undefined || bookmarks.length === 0);
         this.listviewInstance.appendTo(listviewDiv);
         this.listviewInstance.addEventListener('select', this.selectHandler);
         let buttonDiv = createElement('div', { className: 'e-bookmark-button' });
@@ -53964,22 +54119,27 @@ class BookmarkDialog {
         buttonDiv.appendChild(addbuttonDiv);
         let addButtonElement = createElement('button', { innerHTML: localValue.getConstant('Add'), id: 'add' });
         addbuttonDiv.appendChild(addButtonElement);
-        let addbutton = new Button({ cssClass: 'e-button-custom' });
-        addbutton.appendTo(addButtonElement);
+        this.addButton = new Button({ cssClass: 'e-button-custom' });
+        this.addButton.disabled = true;
+        this.addButton.appendTo(addButtonElement);
+        this.textBoxInput.addEventListener('input', this.onKeyUpOnTextBox);
+        this.textBoxInput.addEventListener('keyup', this.onKeyUpOnTextBox);
         addButtonElement.addEventListener('click', this.addBookmark);
         let deleteButtonDiv = createElement('div', { className: 'e-bookmark-deletebutton' });
         buttonDiv.appendChild(deleteButtonDiv);
         let deleteButtonElement = createElement('button', { innerHTML: localValue.getConstant('Delete'), id: 'delete' });
         deleteButtonDiv.appendChild(deleteButtonElement);
-        let deletebutton = new Button({ cssClass: 'e-button-custom' });
-        deletebutton.appendTo(deleteButtonElement);
+        this.deleteButton = new Button({ cssClass: 'e-button-custom' });
+        this.deleteButton.disabled = hasNoBookmark;
+        this.deleteButton.appendTo(deleteButtonElement);
         deleteButtonElement.addEventListener('click', this.deleteBookmark);
         let gotoButtonDiv = createElement('div', { className: 'e-bookmark-gotobutton' });
         buttonDiv.appendChild(gotoButtonDiv);
         let gotoButtonElement = createElement('button', { innerHTML: localValue.getConstant('Go To'), id: 'goto' });
         gotoButtonDiv.appendChild(gotoButtonElement);
-        let gotobutton = new Button({ cssClass: 'e-button-custom' });
-        gotobutton.appendTo(gotoButtonElement);
+        this.gotoButton = new Button({ cssClass: 'e-button-custom' });
+        this.gotoButton.disabled = hasNoBookmark;
+        this.gotoButton.appendTo(gotoButtonElement);
         gotoButtonElement.addEventListener('click', this.gotoBookmark);
     }
     /**
@@ -54003,7 +54163,28 @@ class BookmarkDialog {
                 buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
             }];
         this.owner.dialog.dataBind();
+        let hasNoBookmark = (bookmarks === undefined || bookmarks.length === 0);
+        if (!hasNoBookmark) {
+            /* tslint:disable:no-any */
+            let firstItem = bookmarks[0];
+            this.listviewInstance.selectItem(firstItem);
+        }
         this.owner.dialog.show();
+    }
+    enableOrDisableButton() {
+        if (!isNullOrUndefined(this.addButton)) {
+            // tslint:disable-next-line:max-line-length
+            this.addButton.disabled = (this.textBoxInput.value === '');
+        }
+    }
+    /* tslint:disable:no-any */
+    focusTextBox(text) {
+        this.textBoxInput.value = text;
+        /* tslint:disable:no-any */
+        let value = document.getElementById('bookmark_text_box');
+        value.setSelectionRange(0, text.length);
+        value.focus();
+        this.enableOrDisableButton();
     }
     removeObjects() {
         this.owner.dialog.hide();
@@ -54262,7 +54443,6 @@ class TableOfContentsDialog {
         let ownerId = this.owner.owner.containerId;
         let id = ownerId + '_toc_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-toc-dlg-container' });
-        this.owner.owner.element.appendChild(this.target);
         // tslint:disable-next-line:max-line-length
         let generalDiv = createElement('div', { id: 'general_div', className: 'e-de-toc-dlg-sub-container' });
         this.target.appendChild(generalDiv);
@@ -55058,7 +55238,6 @@ class PageSetupDialog {
     initPageSetupDialog(locale, isRtl) {
         let id = this.owner.owner.containerId + '_pagesetup_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-pagesetup-dlg-container' });
-        this.owner.owner.element.appendChild(this.target);
         let ejtabContainer = createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
         this.marginTab = createElement('div', {
@@ -56333,6 +56512,7 @@ class ListDialog {
                 buttonModel: { content: locale.getConstant('Cancel'), cssClass: 'e-flat e-list-dlg' }
             }];
         this.owner.dialog2.dataBind();
+        this.wireAndBindEvent(locale, isRtl);
         this.owner.dialog2.beforeOpen = this.loadListDialog;
         this.owner.dialog2.close = this.closeListDialog;
         this.owner.dialog2.position = { X: 'center', Y: 'top' };
@@ -56343,11 +56523,9 @@ class ListDialog {
      * @private
      */
     initListDialog(locale, isRtl) {
-        let instance = this;
         let containerId = this.owner.owner.containerId;
         let id = containerId + '_insert_list';
         this.target = createElement('div', { id: id, className: 'e-de-list-dlg' });
-        this.owner.owner.element.appendChild(this.target);
         // tslint:disable-next-line:max-line-length
         let listLevelDiv = createElement('div', { innerHTML: '<label id="' + containerId + '_listLevellabel" style="display:block;" class=e-de-list-ddl-header-list-level>' + locale.getConstant('List level') + '</label><label id="' + containerId + '_modifyLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Choose level to modify') + '</label><select style="height:20px;width:43%" id="' + containerId + '_listLevel"><option>' + locale.getConstant('Level') + ' 1' + '</option><option>' + locale.getConstant('Level') + ' 2' + '</option><option>' + locale.getConstant('Level') + ' 3' + '</option><option>' + locale.getConstant('Level') + ' 4' + '</option><option>' + locale.getConstant('Level') + ' 5' + '</option><option>' + locale.getConstant('Level') + ' 6' + '</option><option>' + locale.getConstant('Level') + ' 7' + '</option><option>' + locale.getConstant('Level') + ' 8' + '</option><option>' + locale.getConstant('Level') + ' 9' + '</option></select>' });
         this.target.appendChild(listLevelDiv);
@@ -56363,12 +56541,11 @@ class ListDialog {
         let numberStyleDiv = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_numberFormatLabel" style="display:block;" class=e-de-list-ddl-header>' + locale.getConstant('Number format') + '</label><label id="' + containerId + '_numberStyleLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Number style for this level') + '</label><select style="height:20px;width:100%" id="' + containerId + '_numberStyle"><option>' + locale.getConstant('Arabic') + '</option><option>' + locale.getConstant('UpRoman') + '</option><option>' + locale.getConstant('LowRoman') + '</option><option>' + locale.getConstant('UpLetter') + '</option><option>' + locale.getConstant('LowLetter') + '</option><option>' + locale.getConstant('Number') + '</option><option>' + locale.getConstant('Leading zero') + '</option><option>' + locale.getConstant('Bullet') + '</option><option>' + locale.getConstant('Ordinal') + '</option><option>' + locale.getConstant('Ordinal Text') + '</option><option>' + locale.getConstant('Special') + '</option><option>' + locale.getConstant('For East') + '</option></select><label id="' + containerId + '_startAtLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Start at') + '</label><input type="text" id="' + containerId + '_startAt">' });
         div.appendChild(numberStyleDiv);
         // tslint:disable-next-line:max-line-length
-        let numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
-        div.appendChild(numberFormatDiv);
+        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
+        div.appendChild(this.numberFormatDiv);
         this.target.appendChild(div);
         let indentsDivLabelStyle;
         if (isRtl) {
-            numberFormatDiv.classList.add('e-de-rtl');
             indentsDivLabelStyle = 'display:block;position:relative; ';
         }
         else {
@@ -56377,8 +56554,13 @@ class ListDialog {
         // tslint:disable-next-line:max-line-length
         let indentsDiv = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_IndentsLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-header>' + locale.getConstant('Position') + '</label><label id="' + containerId + '_textIndentLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheader>' + locale.getConstant('Text indent at') + '</label><input type="text" id="' + containerId + '_textIndent"><label id="' + containerId + '_followCharacterLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Follow number with') + '</label><select style="height:20px;width:100%" id="' + containerId + '_followCharacter"><option>' + locale.getConstant('Tab character') + '</option><option>' + locale.getConstant('Space') + '</option><option>' + locale.getConstant('Nothing') + '</option></select></div><div id="e-de-list-dlg-div" class="e-de-list-dlg-div"><label id="' + containerId + '_alignedAtLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Aligned at') + '</label><input type="text" id="' + containerId + '_alignedAt"></div>', });
         this.target.appendChild(indentsDiv);
+    }
+    wireAndBindEvent(locale, isRtl) {
+        let instance = this;
+        let containerId = this.owner.owner.containerId;
         if (isRtl) {
             document.getElementById('e-de-list-dlg-div').classList.add('e-de-rtl');
+            this.numberFormatDiv.classList.add('e-de-rtl');
         }
         let startAtTextBox = document.getElementById(containerId + '_startAt');
         let textIndentAtTextBox = document.getElementById(containerId + '_textIndent');
@@ -57626,7 +57808,6 @@ class BulletsAndNumberingDialog {
         });
         //Render initialized Tab component
         tabObj.appendTo(tabTarget);
-        this.owner.owner.element.appendChild(this.target);
         tabObj.refresh();
     }
     createNumberList(id) {
@@ -58127,7 +58308,6 @@ class FontDialog {
         fontEffectSubDiv2.appendChild(doubleStrikeThroughElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv2);
         this.target.appendChild(fontEffectsDiv);
-        this.owner.owner.element.appendChild(this.target);
         this.colorPicker = new ColorPicker({
             change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.owner.owner.locale
         });
@@ -58690,7 +58870,6 @@ class TablePropertiesDialog {
         this.localValue = localValue;
         let id = this.owner.owner.containerId + '_TablePropertiesDialog';
         this.target = createElement('div', { id: id, className: 'e-de-table-properties-dlg' });
-        this.owner.owner.element.appendChild(this.target);
         let ejtabContainer = createElement('div', { id: this.target.id + '_TabContainer' });
         this.target.appendChild(ejtabContainer);
         this.tableTab = createElement('div', {
@@ -58746,7 +58925,6 @@ class TablePropertiesDialog {
         }
         let tableTabHeader = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0];
         let tableTabHeaderItem = tableTabHeader.getElementsByClassName('e-tab-wrap')[0];
-        tableTabHeaderItem.classList.add('e-de-table-ppty-dlg-table-header');
         let rowTabHeader = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1];
         let rowTabHeaderItem = rowTabHeader.getElementsByClassName('e-tab-wrap')[0];
         rowTabHeaderItem.classList.add('e-de-table-ppty-dlg-row-header');
@@ -59924,7 +60102,6 @@ class BordersAndShadingDialog {
             id: instance.owner.owner.containerId + '_table_border_shadings',
             className: 'e-de-table-border-shading-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         let displayText = createElement('div', {
             innerHTML: localeValue.getConstant('Borders'), styles: 'position: absolute;top: 65px;',
             id: this.target.id + '_border_label', className: 'e-de-table-border-heading'
@@ -60908,7 +61085,6 @@ class TableOptionsDialog {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         let innerDiv = createElement('div', { styles: 'width: 475px;position: relative;height: 180px;' });
         let innerDivLabel = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
@@ -61167,7 +61343,6 @@ class CellOptionsDialog {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         let innerDiv = createElement('div', { styles: 'width: 475px;position: relative;height: 165px;' });
         let innerDivLabel = createElement('Label', {
             className: 'e-de-cell-dia-options-label', id: this.target.id + '_innerDivLabel'
@@ -61350,7 +61525,7 @@ class CellOptionsDialog {
     static getCellMarginDialogElements(dialog, div, locale) {
         if (!isNullOrUndefined(dialog)) {
             let table = createElement('TABLE', { className: 'e-de-cell-margin-top' });
-            let tr1 = createElement('tr', { styles: 'height: 50px;color:black;' });
+            let tr1 = createElement('tr', { styles: 'height: 50px;' });
             let td1 = createElement('td');
             let topLabel = createElement('label', {
                 innerHTML: locale.getConstant('Top'), className: 'e-de-cell-dia-label-common',
@@ -61374,7 +61549,7 @@ class CellOptionsDialog {
             td2.appendChild(leftTextBox);
             tr1.appendChild(td1);
             tr1.appendChild(td2);
-            let tr2 = createElement('tr', { styles: 'height: 50px;color:black;' });
+            let tr2 = createElement('tr', { styles: 'height: 50px;' });
             let td3 = createElement('td', { styles: 'width:40%;' });
             let bottomLabel = createElement('label', {
                 innerHTML: locale.getConstant('Bottom'),
@@ -61604,6 +61779,9 @@ class Toolbar$1 {
          * @private
          */
         this.showPropertiesPaneOnSelection = () => {
+            if (this.container.restrictEditing) {
+                return;
+            }
             let currentContext = this.documentEditor.selection.contextType;
             let isInHeaderFooter = currentContext.indexOf('Header') >= 0
                 || currentContext.indexOf('Footer') >= 0;
@@ -61774,6 +61952,7 @@ class Toolbar$1 {
         let id = this.container.element.id + TOOLBAR_ID;
         let locale = this.container.localObj;
         this.toolbar = new Toolbar({
+            enableRtl: this.container.enableRtl,
             clicked: this.clickHandler.bind(this),
             items: [
                 {
@@ -61920,7 +62099,9 @@ class Toolbar$1 {
                 this.toggleEditing(args.item.id);
                 break;
         }
-        this.container.documentEditor.focusIn();
+        if (args.item.id !== id + FIND_ID) {
+            this.container.documentEditor.focusIn();
+        }
     }
     toggleLocalPaste(id) {
         this.container.enableLocalPaste = !this.container.enableLocalPaste;
@@ -62087,10 +62268,11 @@ class Text {
         this.createHighlightColorSplitButton = (id, width, divElement, toolTipText) => {
             let buttonElement = createElement('button', { id: id });
             // buttonElement.style.width = width + 'px';
-            buttonElement.style.padding = '1px';
+            // buttonElement.style.padding = '1px';
             // buttonElement.style.height = 30 + 'px';
             divElement.appendChild(buttonElement);
             let hgltSplitObj = new SplitButton({
+                cssClass: 'e-de-btn-hghlclr',
                 iconCss: 'e-de-ctnr-hglt-color',
                 target: this.highlightColorElement, close: this.closePopup, beforeOpen: this.openPopup, enableRtl: this.isRtl
             });
@@ -62324,44 +62506,50 @@ class Text {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.textProperties = wholeDiv;
         let element = 'font_properties';
-        let textDiv = this.createDiv(element + '_text', wholeDiv, 'padding:10px;border-bottom:0.5px solid #E0E0E0');
+        let textDiv = this.createDiv(element + '_text', wholeDiv);
+        classList(textDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.innerHTML = this.localObj.getConstant('Text');
         textDiv.appendChild(label);
         let fontDiv = this.createDiv(element + '_sizeStyle', textDiv, 'display:inline-flex;');
-        fontDiv.classList.add('e-de-ctnr-segment');
-        let fontFamilyDivMargin;
+        classList(fontDiv, ['e-de-ctnr-segment'], []);
         if (isRtl) {
-            fontFamilyDivMargin = 'margin-left:9px;';
+            classList(fontDiv, ['e-de-ctnr-segment-rtl'], []);
         }
-        else {
-            fontFamilyDivMargin = 'margin-right:9px;';
-        }
-        let fontFamilyDiv = this.createDiv(element + '_fontFamilyDiv', fontDiv, fontFamilyDivMargin);
+        let fontFamilyDiv = this.createDiv(element + '_fontFamilyDiv', fontDiv);
         let fontFamily = createElement('input', {
             id: element + '_fontFamily',
             /* tslint:disable-next-line:max-line-length */
-            styles: 'font-size: 12px;letter-spacing: 0.05px;padding-left:10px;', className: 'e-prop-font-style'
+            styles: 'font-size: 12px;letter-spacing: 0.05px;', className: 'e-prop-font-style'
         });
         fontFamilyDiv.appendChild(fontFamily);
+        classList(fontFamilyDiv, ['e-de-panel-left-width'], []);
         this.createDropDownListForFamily(fontFamily);
         let fontSizeDiv = this.createDiv(element + '_fontSizeDiv', fontDiv);
+        let divClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
+        if (isRtl) {
+            divClassName = 'e-rtl ' + divClassName;
+        }
         let fontSize = createElement('input', {
             id: element + '_fontSize',
-            styles: 'font-size: 12px;letter-spacing: 0.05px;padding-left:10px', innerHTML: 'type:number',
+            styles: 'font-size: 12px;letter-spacing: 0.05px;', innerHTML: 'type:number',
             className: 'e-prop-font-style',
         });
         fontSizeDiv.appendChild(fontSize);
+        classList(fontSizeDiv, ['e-de-panel-right-width'], []);
         this.createDropDownListForSize(fontSize);
         let propertiesDiv = createElement('div', {
             id: element + '_properties',
             styles: 'display:inline-flex;',
             className: 'e-de-ctnr-segment'
         });
+        if (isRtl) {
+            classList(propertiesDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
         textDiv.appendChild(propertiesDiv);
         let leftDiv = createElement('div', {
             id: element + '_leftDiv',
-            className: 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group', styles: 'display:inline-flex;'
+            className: divClassName, styles: 'display:inline-flex;'
         });
         propertiesDiv.appendChild(leftDiv);
         // tslint:disable-next-line:max-line-length
@@ -62372,15 +62560,12 @@ class Text {
         this.underline = this.createButtonTemplate(element + '_underline', 'e-de-ctnr-underline e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Underline (Ctrl+U)'));
         // tslint:disable-next-line:max-line-length
         this.strikethrough = this.createButtonTemplate(element + '_strikethrough', 'e-de-ctnr-strikethrough e-icons', leftDiv, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Strikethrough'));
-        let rightDivMargin;
+        divClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
-            rightDivMargin = 'margin-right:8px';
-        }
-        else {
-            rightDivMargin = 'margin-left:8px';
+            divClassName = 'e-rtl ' + divClassName;
         }
         // tslint:disable-next-line:max-line-length
-        let rightDiv = createElement('div', { id: element + '_rightDiv', className: 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group', styles: 'display:inline-flex;' + rightDivMargin });
+        let rightDiv = createElement('div', { id: element + '_rightDiv', className: divClassName, styles: 'display:inline-flex;' });
         propertiesDiv.appendChild(rightDiv);
         // tslint:disable-next-line:max-line-length
         this.superscript = this.createButtonTemplate(element + '_superscript', 'e-de-ctnr-superscript e-icons', rightDiv, 'e-de-prop-font-button', '38.5', this.localObj.getConstant('Superscript (Ctrl+Shift++)'));
@@ -62388,6 +62573,9 @@ class Text {
         this.subscript = this.createButtonTemplate(element + '_subscript', 'e-de-ctnr-subscript e-icons', rightDiv, 'e-de-prop-font-last-button', '38.5', this.localObj.getConstant('Subscript (Ctrl+=)'));
         // tslint:disable-next-line:max-line-length
         let leftDiv2 = createElement('div', { id: element + '_color', className: 'e-de-font-clr-picker e-de-ctnr-group-btn', styles: 'display:inline-flex;' });
+        if (isRtl) {
+            classList(leftDiv2, ['e-rtl'], []);
+        }
         textDiv.appendChild(leftDiv2);
         // tslint:disable-next-line:max-line-length
         this.fontColor = this.createFontColorPicker(element + '_textColor', 40.5, leftDiv2, this.localObj.getConstant('Font color'));
@@ -62401,7 +62589,11 @@ class Text {
         this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Clear all formatting'));
     }
     initializeHighlightColorElement() {
-        this.highlightColorElement = createElement('div', { id: 'highlight_color_ppty', styles: 'display:none;width:157px' });
+        this.highlightColorElement = createElement('div', {
+            id: 'highlight_color_ppty',
+            styles: 'display:none;width:157px',
+            className: 'e-de-cntr-highlight-pane'
+        });
         let yellowDiv = this.createHightlighColorPickerDiv('#ffff00', 'yellowDiv');
         let brightGreenDiv = this.createHightlighColorPickerDiv('#00ff00', 'brightGreenDiv');
         let turquoiseDiv = this.createHightlighColorPickerDiv('#00ffff', 'turquoiseDiv');
@@ -62486,7 +62678,6 @@ class Text {
         let fontSize = ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72', '96'];
         this.fontSize = new ComboBox({
             dataSource: fontSize, popupHeight: '180px',
-            popupWidth: '78px', width: '78px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
@@ -62509,7 +62700,6 @@ class Text {
             query: new Query().select(['FontName']),
             fields: { text: 'FontName', value: 'FontName' },
             popupHeight: '150px',
-            popupWidth: '154px', width: '154px',
             cssClass: 'e-de-prop-dropdown',
             itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
             allowCustom: true,
@@ -62553,12 +62743,14 @@ class Text {
             //#region character format
             if (this.documentEditor.selection.characterFormat.fontFamily) {
                 this.fontFamily.value = this.documentEditor.selection.characterFormat.fontFamily;
+                this.fontFamily.dataBind();
             }
             else {
                 this.fontFamily.value = '';
             }
             if (this.documentEditor.selection.characterFormat.fontSize) {
                 this.fontSize.value = this.documentEditor.selection.characterFormat.fontSize.toString();
+                this.fontSize.dataBind();
             }
             else {
                 this.fontSize.value = '';
@@ -62668,6 +62860,7 @@ class Paragraph {
         this.appliedBulletStyle = 'dot';
         this.appliedNumberingStyle = 'arabic';
         this.appliedLineSpacing = '';
+        this.splitButtonClass = 'e-de-prop-splitbutton';
         this.updateSelectedBulletListType = (listText) => {
             switch (listText) {
                 case '\uf0b7':
@@ -62992,24 +63185,35 @@ class Paragraph {
     initializeParagraphPropertiesDiv(wholeDiv, isRtl) {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.isRtl = isRtl;
+        if (this.isRtl) {
+            this.splitButtonClass = 'e-rtl ' + this.splitButtonClass;
+        }
         this.textProperties = wholeDiv;
         let element = 'font_properties';
-        let paragraphDiv = this.createDivElement(element + '_paragraph', wholeDiv, 'padding:10px;');
+        let paragraphDiv = this.createDivElement(element + '_paragraph', wholeDiv, '');
+        classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
         let label = createElement('label', { styles: 'width:26px;', className: 'e-de-ctnr-prop-label' });
         label.innerHTML = this.localObj.getConstant('Paragraph');
         paragraphDiv.appendChild(label);
         let styleDiv = this.createDivElement(element + '_styleDiv', paragraphDiv);
         styleDiv.classList.add('e-de-ctnr-segment');
         // tslint:disable-next-line:max-line-length
-        let styleSelect = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;padding-left:10px;' });
+        let styleSelect = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;' });
         styleDiv.appendChild(styleSelect);
         this.createStyleDropDownList(styleSelect);
         let indentWholeDiv = this.createDivElement(element + '_indentWholeDiv', paragraphDiv);
         indentWholeDiv.style.display = 'flex';
         indentWholeDiv.classList.add('e-de-ctnr-segment');
+        if (isRtl) {
+            classList(indentWholeDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
         // tslint:disable-next-line:max-line-length
         let indentDiv = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
-        indentDiv.className = 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group';
+        let indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
+        if (isRtl) {
+            indentClassName = 'e-rtl ' + indentClassName;
+        }
+        indentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
         this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align left (Ctrl+L)'));
         // tslint:disable-next-line:max-line-length
@@ -63019,29 +63223,25 @@ class Paragraph {
         // tslint:disable-next-line:max-line-length
         this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify (Ctrl+J)'));
         let incDecIndentDiv = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
-        incDecIndentDiv.className = 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group';
+        indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
-            incDecIndentDiv.style.marginRight = '8px';
+            indentClassName = 'e-rtl ' + indentClassName;
         }
-        else {
-            incDecIndentDiv.style.marginLeft = '8px';
-        }
+        incDecIndentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
         this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', 'e-de-ctnr-decreaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
         // tslint:disable-next-line:max-line-length
         this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         let listDiv = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
+        classList(listDiv, ['e-de-ctnr-segment'], []);
+        if (isRtl) {
+            classList(listDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
         let lineHeight = createElement('button', { id: element + '_lineHeight' });
         listDiv.appendChild(lineHeight);
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
         let listDropDown = this.createDivElement(element + '_listDropDiv', listDiv);
         listDropDown.className = 'de-split-button';
-        if (isRtl) {
-            listDropDown.style.paddingRight = '10px';
-        }
-        else {
-            listDropDown.style.paddingLeft = '10px';
-        }
         let bulletButton = createElement('button', { id: element + '_bullet' });
         listDropDown.appendChild(bulletButton);
         let numberingList = createElement('button', { id: element + '_numberingList' });
@@ -63092,7 +63292,7 @@ class Paragraph {
             iconCss: 'e-de-ctnr-linespacing e-icons',
             enableRtl: this.isRtl,
             select: this.lineSpacingAction,
-            cssClass: 'e-de-prop-splitbutton',
+            cssClass: this.splitButtonClass,
             beforeItemRender: (args) => {
                 args.element.innerHTML = '<span></span>' + args.item.text;
                 let span = args.element.children[0];
@@ -63112,7 +63312,7 @@ class Paragraph {
     }
     createNumberListDropButton(iconcss, button) {
         // tslint:disable-next-line:max-line-length
-        let div = createElement('div', { id: 'target', styles: 'width: 213px;height: auto;display:none' });
+        let div = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
         let ulTag = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
@@ -63134,7 +63334,7 @@ class Paragraph {
         let menuOptions = {
             target: div,
             iconCss: iconcss,
-            cssClass: 'e-de-prop-splitbutton',
+            cssClass: this.splitButtonClass,
             beforeOpen: () => {
                 div.style.display = 'block';
                 this.updateSelectedNumberedListType(this.documentEditor.selection.paragraphFormat.listText);
@@ -63153,7 +63353,7 @@ class Paragraph {
     }
     createBulletListDropButton(iconcss, button) {
         // tslint:disable-next-line:max-line-length
-        let div = createElement('div', { id: 'bullet_list', styles: 'width: 198px;height: auto;display:none' });
+        let div = createElement('div', { id: 'bullet_list', styles: 'width: 196px;height: auto;display:none' });
         let ulTag = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
             className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
@@ -63176,7 +63376,7 @@ class Paragraph {
         let menuOptions = {
             target: div,
             iconCss: iconcss,
-            cssClass: 'e-de-prop-splitbutton',
+            cssClass: this.splitButtonClass,
             beforeOpen: () => {
                 div.style.display = 'block';
                 this.updateSelectedBulletListType(this.documentEditor.selection.paragraphFormat.listText);
@@ -63218,7 +63418,7 @@ class Paragraph {
         let innerHTML = '<div class="e-de-list-items-size"><span class="e-de-bullets e-de-list-items-size"' +
             'style="display:table-cell; text-align: center; vertical-align:middle">None</span></div>';
         let liInnerDiv = createElement('div', {
-            className: 'e-de-list-header-presetmenu e-de-list-items-size',
+            className: 'e-de-list-header-presetmenu e-de-list-items-size', styles: 'position:relative;left:11px;top:13px',
             id: 'ui-zlist0', innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
@@ -63243,8 +63443,6 @@ class Paragraph {
             dataSource: [{ StyleName: 'Normal', Class: 'e-icons e-edit-font' }],
             cssClass: 'e-de-prop-dropdown',
             popupHeight: '240px',
-            popupWidth: '240px',
-            width: '240px',
             enableRtl: this.isRtl,
             query: new Query().select(['StyleName', 'Style']),
             fields: { text: 'StyleName', value: 'StyleName' },
@@ -63309,9 +63507,9 @@ class Paragraph {
         if (!isNullOrUndefined(styleObj.characterFormat.italic) && styleObj.characterFormat.italic) {
             domStyle += 'font-style:italic;';
         }
-        if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
-            domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
-        }
+        // if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
+        //     domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
+        // }
         if (textDecoration.length > 1) {
             domStyle += 'text-decoration:' + textDecoration + ';';
         }
@@ -63458,7 +63656,7 @@ class TextProperties {
     }
     initializeTextProperties(id, isTableProperties, isRtl) {
         /* tslint:disable-next-line:max-line-length */
-        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), styles: 'width:269px;' });
+        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-text-pane' });
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
         this.paragraph.updateStyleNames();
@@ -63590,21 +63788,18 @@ class HeaderFooterProperties {
         let elementId = 'header_footer_properties';
         // tslint:disable-next-line:max-line-length
         this.element = createElement('div', { id: this.documentEditor.element.id + elementId, styles: 'width:269px;' });
-        let headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding: 14px;');
+        let headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
+        classList(headerDiv, ['e-de-cntr-pane-padding'], []);
         let headerLabel = createElement('label', { className: 'e-de-prop-header-label' });
         headerLabel.innerHTML = localObj.getConstant('Header & Footer');
         let closeButtonFloat;
-        let optionsLabelDivPadding;
-        let positionLabelDivPadding;
         if (!this.isRtl) {
             closeButtonFloat = 'float:right;';
-            optionsLabelDivPadding = 'padding-left: 14px';
-            positionLabelDivPadding = 'padding-left: 14px;';
+            
         }
         else {
             closeButtonFloat = 'float:left;';
-            optionsLabelDivPadding = 'padding-right: 14px';
-            positionLabelDivPadding = 'padding-right: 14px;';
+            
         }
         let closeIcon = createElement('span', {
             id: '_header_footer_close',
@@ -63614,7 +63809,8 @@ class HeaderFooterProperties {
         closeIcon.addEventListener('click', () => { this.onClose(); });
         headerDiv.appendChild(headerLabel);
         headerDiv.appendChild(closeIcon);
-        let optionsLabelDiv = this.createDivTemplate(elementId + '_options', this.element, optionsLabelDivPadding);
+        let optionsLabelDiv = this.createDivTemplate(elementId + '_options', this.element);
+        classList(optionsLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         let optionsLabel = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
         optionsLabel.innerHTML = localObj.getConstant('Options');
         optionsLabelDiv.appendChild(optionsLabel);
@@ -63635,8 +63831,6 @@ class HeaderFooterProperties {
         this.oddOrEven.appendTo(oddOrEven);
         // tslint:disable-next-line:max-line-length
         oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages.'));
-        let optionsLine = createElement('div', { className: 'e-de-prop-header-line', styles: 'margin-top:7px;' });
-        optionsLabelDiv.appendChild(optionsLine);
         // tslint:disable-next-line:max-line-length
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
         // let autoFieldLabel: HTMLElement = createElement('label', { className: 'e-de-header-prop-label', styles: 'height:20px;' });
@@ -63653,54 +63847,55 @@ class HeaderFooterProperties {
         // pageCountDiv.appendChild(pageCount);
         // this.pageCount = new CheckBox({ label: 'Page Count', change: this.changePageCount });
         // this.pageCount.appendTo(pageCount);
-        // let autoFieldLine: HTMLElement = createElement('div', { className: 'e-de-prop-header-line', styles: 'margin-top:7px;' });
+        // let autoFieldLine: HTMLElement = createElement('div', { className: 'e-de-prop-separator-line', styles: 'margin-top:7px;' });
         // autoFieldLabelDiv.appendChild(autoFieldLine);
         // tslint:disable-next-line:max-line-length
-        let positionLabelDiv = this.createDivTemplate(elementId + '_positionLabelDiv', this.element, 'padding-top:10px;' + positionLabelDivPadding);
+        let positionLabelDiv = this.createDivTemplate(elementId + '_positionLabelDiv', this.element);
+        classList(positionLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         let positionLabel = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
         positionLabel.innerHTML = localObj.getConstant('Position');
         positionLabelDiv.appendChild(positionLabel);
         let positionDiv = this.createDivTemplate(elementId + '_positionDiv', positionLabelDiv);
-        let width;
-        let headerFooterDivMargin;
         if (!this.isRtl) {
-            width = 'width: 128px;';
-            headerFooterDivMargin = 'margin-right:8px;';
+            
         }
         else {
-            width = 'width: 150px;';
-            headerFooterDivMargin = 'margin-left:8px;';
+            
         }
         // tslint:disable-next-line:max-line-length
-        let headerTopDiv = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, headerFooterDivMargin + 'display:inline-flex;margin-bottom:8px;');
+        let headerTopDiv = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:15px;');
         // tslint:disable-next-line:max-line-length
-        let headerTopLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: width + 'margin-top: 10px;' });
+        let headerTopLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);
         // tslint:disable-next-line:max-line-length
         let headerFromTop = createElement('input', { id: 'headerFromTop', className: 'e-de-prop-sub-label' });
         headerTopDiv.appendChild(headerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.headerFromTop = new NumericTextBox({ value: 36, cssClass: 'e-de-prop-header-numeric', width: 85, showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0 });
+        this.headerFromTop = new NumericTextBox({
+            value: 36, cssClass: 'e-de-prop-header-numeric',
+            showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
+        });
         this.headerFromTop.appendTo(headerFromTop);
         // tslint:disable-next-line:max-line-length
         this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header.'));
         // tslint:disable-next-line:max-line-length
-        let footerBottomDiv = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv, headerFooterDivMargin + 'display:inline-flex;');
+        let footerBottomDiv = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv);
         // tslint:disable-next-line:max-line-length
-        let footerBottomLabel = createElement('label', { styles: width + 'margin-top: 10px;', className: 'e-de-prop-sub-label' });
+        let footerBottomLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         footerBottomLabel.innerHTML = localObj.getConstant('Footer from Bottom');
         footerBottomDiv.appendChild(footerBottomLabel);
         // tslint:disable-next-line:max-line-length
         let footerFromTop = createElement('input', { id: 'footerFromTop', className: 'e-de-prop-sub-label' });
         footerBottomDiv.appendChild(footerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.footerFromTop = new NumericTextBox({ value: 36, cssClass: 'e-de-prop-header-numeric', width: 85, showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0 });
+        this.footerFromTop = new NumericTextBox({
+            value: 36, cssClass: 'e-de-prop-header-numeric',
+            showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
+        });
         this.footerFromTop.appendTo(footerFromTop);
         // tslint:disable-next-line:max-line-length
         this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer.'));
-        let positionLine = createElement('div', { className: 'e-de-prop-header-line', styles: 'margin-top:10px;' });
-        positionLabelDiv.appendChild(positionLine);
     }
     createDivTemplate(id, parentDiv, style) {
         let divElement;
@@ -63758,12 +63953,12 @@ class ImageProperties {
         this.initImageProp = () => {
             let localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
             // tslint:disable-next-line:max-line-length
-            let imageDiv = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-property-div-padding', styles: 'border:0px' });
+            let imageDiv = createElement('div', { id: this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding', styles: 'border:0px' });
             this.element.appendChild(imageDiv);
-            let label = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'padding:3px' });
+            let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
             label.textContent = localObj.getConstant('Image');
             imageDiv.appendChild(label);
-            let outerDiv = createElement('div', { styles: 'margin-left:2px;' });
+            let outerDiv = createElement('div');
             imageDiv.appendChild(outerDiv);
             // tslint:disable-next-line:max-line-length
             this.widthElement = this.createImagePropertiesDiv('_widthDiv', outerDiv, '_widthInput', localObj.getConstant('W'), localObj.getConstant('Width'));
@@ -63776,7 +63971,7 @@ class ImageProperties {
             this.heightNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
             this.heightNumericBox.appendTo(this.heightElement);
             // tslint:disable-next-line:max-line-length        
-            let aspectRatioDiv = createElement('div', { id: this.elementId + '_aspectRatioDiv', styles: 'height:14px;margin-left:5px;float:left' });
+            let aspectRatioDiv = createElement('div', { id: this.elementId + '_aspectRatioDiv' });
             aspectRatioDiv.setAttribute('title', localObj.getConstant('Aspect ratio'));
             outerDiv.appendChild(aspectRatioDiv);
             // tslint:disable-next-line:max-line-length
@@ -63787,7 +63982,7 @@ class ImageProperties {
         // tslint:disable-next-line:max-line-length
         this.createImagePropertiesDiv = (id, outerDiv, inputId, spanContent, tooltip) => {
             // tslint:disable-next-line:max-line-length
-            let divElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;margin-right:6px; float:left;margin-bottom: 7px;' });
+            let divElement = createElement('div', { id: this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
             divElement.setAttribute('title', tooltip);
             outerDiv.appendChild(divElement);
             // tslint:disable-next-line:max-line-length
@@ -63919,13 +64114,15 @@ class TocProperties {
         this.initializeTocPane = () => {
             this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
             // tslint:disable-next-line:max-line-length
-            this.element = createElement('div', { id: this.elementId + '_tocProperties', styles: 'padding:9px;width:269px' });
-            this.tocHeaderDiv();
-            this.initTemplates();
-            this.tocOptionsDiv();
-            this.contentStylesDropdown();
-            this.checkboxContent();
-            this.buttonDiv();
+            this.element = createElement('div', { id: this.elementId + '_tocProperties', styles: 'width:270px' });
+            let container = createElement('div', { className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
+            this.tocHeaderDiv(container);
+            this.initTemplates(container);
+            container = createElement('div', { className: 'e-de-cntr-pane-padding' });
+            this.tocOptionsDiv(container);
+            this.contentStylesDropdown(container);
+            this.checkboxContent(container);
+            this.buttonDiv(container);
             this.wireEvents();
             this.updateTocProperties();
             this.container.propertiesPaneContainer.appendChild(this.element);
@@ -63952,25 +64149,23 @@ class TocProperties {
                 this.container.showPropertiesPane = false;
             }
         };
-        this.tocHeaderDiv = () => {
+        this.tocHeaderDiv = (container) => {
             let closeButtonFloat;
-            let headerDivMargin;
             let closeButtonMargin;
             if (!this.isRtl) {
                 closeButtonFloat = 'float:right;';
-                headerDivMargin = 'margin-left:5.5px;';
                 closeButtonMargin = 'margin-right:7px;';
             }
             else {
                 closeButtonFloat = 'float:left;';
-                headerDivMargin = 'margin-right:5.5px;';
                 closeButtonMargin = 'margin-left:7px;';
             }
             let headerDiv = createElement('div', {
                 id: this.elementId + 'toc_id',
-                styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
+                styles: 'display: block;'
             });
-            this.element.appendChild(headerDiv);
+            container.appendChild(headerDiv);
+            this.element.appendChild(container);
             let title = createElement('label', {
                 className: 'e-de-ctnr-prop-label'
             });
@@ -63982,20 +64177,19 @@ class TocProperties {
             });
             headerDiv.appendChild(this.closeButton);
         };
-        this.initTemplates = () => {
-            this.template1();
+        this.initTemplates = (container) => {
+            this.template1(container);
             // tslint:disable-next-line:max-line-length
-            let div = createElement('div', { styles: 'display:block;border-top: 1px solid #E0E0E0;' });
-            this.element.appendChild(div);
+            // let div: HTMLElement = createElement('div', { styles: 'display:block;border-top: 1px solid #E0E0E0;' }); this.element.appendChild(div);
         };
-        this.template1 = () => {
+        this.template1 = (container) => {
             this.template1Div = createElement('div', {
                 className: 'e-de-toc-template1'
             });
             if (this.isRtl) {
                 this.template1Div.classList.add('e-de-rtl');
             }
-            this.element.appendChild(this.template1Div);
+            container.appendChild(this.template1Div);
             let templateContent1 = createElement('div', {
                 className: 'e-de-toc-template1-content1'
             });
@@ -64012,11 +64206,10 @@ class TocProperties {
             templateContent3.textContent = this.localObj.getConstant('HEADING - - - - 3');
             this.template1Div.appendChild(templateContent3);
         };
-        this.tocOptionsDiv = () => {
-            let optionsDiv = createElement('div', {
-                className: 'e-de-toc-optionsdiv'
-            });
-            this.element.appendChild(optionsDiv);
+        this.tocOptionsDiv = (container) => {
+            let optionsDiv = createElement('div');
+            container.appendChild(optionsDiv);
+            this.element.appendChild(container);
             if (this.isRtl) {
                 optionsDiv.classList.add('e-de-rtl');
             }
@@ -64025,52 +64218,49 @@ class TocProperties {
             optionsDiv.appendChild(label);
         };
         /* tslint:disable */
-        this.contentStylesDropdown = () => {
-            let contentStyleElementMargin;
+        this.contentStylesDropdown = (container) => {
             if (!this.isRtl) {
-                contentStyleElementMargin = 'margin-left:5.5px;';
+                
             }
             else {
-                contentStyleElementMargin = 'margin-right:5.5px;';
+                
             }
-            let contentStyleElement = createElement('div', { id: 'contentstyle_div', styles: 'margin-bottom: 10px;' + contentStyleElementMargin });
+            let contentStyleElement = createElement('div', { id: 'contentstyle_div' });
             // tslint:disable-next-line:max-line-length
             contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents.'));
-            this.element.appendChild(contentStyleElement);
+            container.appendChild(contentStyleElement);
             // let items: ItemModel[] = [{ text: '___________', id: 'solid' }];
             // this.borderStyle = this.createDropDownButton(
             //     this.elementId + '_borderStyleDiv',
             //     'width:120px;height:28px;margin-top:8px', contentStyleElement, 'e-de-icon-stroke-size', 'Solid', items
             // );
-            let labelMargin;
             if (!this.isRtl) {
-                labelMargin = 'margin-right:8px;';
+                
             }
             else {
-                labelMargin = 'margin-left:8px';
+                
             }
-            let label = createElement('label', { className: 'e-de-prop-sub-label', styles: labelMargin });
+            let label = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
             label.textContent = this.localObj.getConstant('Levels');
             contentStyleElement.appendChild(label);
-            this.element.appendChild(contentStyleElement);
+            container.appendChild(contentStyleElement);
             let dataSource = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
             this.borderLevelStyle = this.createDropDownButton(this.elementId + '_borderLevelDiv', contentStyleElement, '', dataSource, 2);
             this.borderLevelStyle.change = (args) => {
                 this.borderLevelStyle.value = args.item.value;
             };
-            this.element.appendChild(contentStyleElement);
+            container.appendChild(contentStyleElement);
         };
-        this.checkboxContent = () => {
-            let checkboxElementMargin;
+        this.checkboxContent = (container) => {
             if (!this.isRtl) {
-                checkboxElementMargin = 'margin-left:5.5px;';
+                
             }
             else {
-                checkboxElementMargin = 'margin-right:5.5px;';
+                
             }
             // tslint:disable-next-line:max-line-length
-            let checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' + checkboxElementMargin });
-            this.element.appendChild(checkboxElement);
+            let checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' });
+            container.appendChild(checkboxElement);
             let showPageNumberDiv = createElement('div', { className: 'e-de-toc-checkbox1' });
             showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents.'));
             checkboxElement.appendChild(showPageNumberDiv);
@@ -64105,7 +64295,7 @@ class TocProperties {
             });
             this.hyperlink.appendTo(hyperlinkCheckboxElement);
         };
-        this.buttonDiv = () => {
+        this.buttonDiv = (container) => {
             let footerElementFloat;
             if (!this.isRtl) {
                 footerElementFloat = 'float:right';
@@ -64114,7 +64304,7 @@ class TocProperties {
                 footerElementFloat = 'float:left';
             }
             let footerElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
-            this.element.appendChild(footerElement);
+            container.appendChild(footerElement);
             let updatebuttoncontentStyleElement = createElement('button', { id: 'footerupdatebuttonDiv' });
             footerElement.appendChild(updatebuttoncontentStyleElement);
             this.updateBtn = new Button({
@@ -64190,7 +64380,7 @@ class TocProperties {
         }
         let liInnerDiv = createElement('div', {
             className: 'e-de-list-header-presetmenu',
-            id: 'ui-zlist0', innerHTML: innerHTML
+            innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
         return liTag;
@@ -64200,7 +64390,7 @@ class TocProperties {
         let buttonElement = createElement('input', { id: id });
         parentDiv.appendChild(buttonElement);
         // tslint:disable-next-line:max-line-length  
-        let dropDownBtn = new DropDownList({ index: selectedIndex, dataSource: content, width: '75px', popupWidth: '75px', cssClass: 'e-de-prop-font-button' }, buttonElement);
+        let dropDownBtn = new DropDownList({ index: selectedIndex, dataSource: content, popupHeight: '150px', cssClass: 'e-de-prop-font-button' }, buttonElement);
         return dropDownBtn;
     }
     destroy() {
@@ -64235,9 +64425,10 @@ class TableProperties {
         this.isBottomMarginApply = false;
         this.isLeftMarginApply = false;
         this.borderColor = '#000000';
+        this.groupButtonClass = 'e-de-ctnr-group-btn e-btn-group';
         this.initializeTablePropPane = () => {
             this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-            this.tableProperties = createElement('div', { id: this.elementId + '_tableProperties', styles: 'width:269px;' });
+            this.tableProperties = createElement('div', { id: this.elementId + '_tableProperties' });
             this.initFillColorDiv();
             this.initBorderStylesDiv();
             this.initCellDiv();
@@ -64250,8 +64441,8 @@ class TableProperties {
         };
         this.addTablePropertyTab = () => {
             // tslint:disable-next-line:max-line-length
-            this.parentElement = createElement('div', { styles: 'width:269px;height:100%;overflow:auto;display:none' });
-            this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab', styles: 'width:269px' });
+            this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-table-pane' });
+            this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
             // tslint:disable-next-line:max-line-length
             let items = [{ header: { text: this.localObj.getConstant('Table') }, content: this.tableProperties }, { header: { text: this.localObj.getConstant('Text') }, content: this.tableTextProperties.element }];
             this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection }, this.element);
@@ -64445,10 +64636,14 @@ class TableProperties {
             // tslint:disable-next-line:max-line-length
             let fillDiv = createElement('div', { id: this.elementId + '_fillColorDiv', className: 'e-de-property-div-padding de-tbl-fill-clr' });
             this.tableProperties.appendChild(fillDiv);
-            let label = createElement('label', { className: 'e-de-prop-sub-label', styles: 'margin-left:6px;margin-right:8px' });
+            let label = createElement('label', { className: 'e-de-prop-sub-label' });
+            label.classList.add('e-de-prop-fill-label');
+            if (this.isRtl) {
+                label.classList.add('e-de-rtl');
+            }
             label.textContent = this.localObj.getConstant('Fill');
             fillDiv.appendChild(label);
-            this.shadingBtn = this.createColorPickerTemplate(this.elementId + '_tableShading', fillDiv, this.localObj.getConstant('Fill color'));
+            this.shadingBtn = this.createColorPickerTemplate(this.elementId + '_tableShading', fillDiv, this.localObj.getConstant('Fill color'), false);
             // tslint:disable-next-line:max-line-length
             classList(fillDiv.lastElementChild.lastElementChild.lastElementChild.firstChild, ['e-de-ctnr-cellbg-clr-picker'], ['e-caret']);
         };
@@ -64456,25 +64651,25 @@ class TableProperties {
             let borderStyleDiv = createElement('div', { className: 'e-de-property-div-padding' });
             this.tableProperties.appendChild(borderStyleDiv);
             let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = this.localObj.getConstant('Border Style');
             borderStyleDiv.appendChild(label);
-            let parentDivMargin;
-            if (!this.isRtl) {
-                parentDivMargin = 'margin-right:9px;';
-            }
-            else {
-                parentDivMargin = 'margin-left:9px;';
-            }
             // tslint:disable-next-line:max-line-length
-            let parentDiv = createElement('div', { id: this.elementId + '_borderStyleDiv', styles: 'display:inline-flex;margin-bottom:3px;' + parentDivMargin });
-            let styleDiv = createElement('div', { styles: 'width:120px;' });
-            let div1 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-top' });
+            let parentDiv = createElement('div', { id: this.elementId + '_borderStyleDiv', className: 'e-de-border-style-div', styles: 'display:inline-flex;' });
+            let styleDiv = createElement('div', { styles: 'width:126px;height:126px', className: 'e-de-grp-btn-ctnr' });
+            let div1 = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-top' });
             styleDiv.appendChild(div1);
-            let div2 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-middle' });
+            let div2 = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-middle' });
             styleDiv.appendChild(div2);
-            let div3 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-bottom' });
+            let div3 = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-bottom' });
             styleDiv.appendChild(div3);
-            let btnStyle = 'width:' + 40 + 'px;';
+            if (this.isRtl) {
+                div1.classList.add('e-de-rtl');
+                div3.classList.add('e-de-rtl');
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
+            let btnStyle = '';
             // tslint:disable-next-line:max-line-length
             this.tableOutlineBorder = this.createButtonTemplate(this.elementId + '_tableOutlineBorder', 'e-de-ctnr-outsideborder e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Outside borders'));
             this.tableAllBorder = this.createButtonTemplate(this.elementId + '_tableAllBorder', 'e-de-ctnr-allborders e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('All borders'));
@@ -64490,22 +64685,22 @@ class TableProperties {
             // tslint:disable-next-line:max-line-length
             this.tableBottomBorder = this.createButtonTemplate(this.elementId + '_tableBottomBorder', 'e-de-ctnr-bottomborder e-icons', div3, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Bottom border'));
             parentDiv.appendChild(styleDiv);
-            let styleTypeDivPadding;
+            // tslint:disable-next-line:max-line-length
+            let styleTypeDiv = createElement('div', { className: 'de-tbl-fill-clr' });
             if (!this.isRtl) {
-                styleTypeDivPadding = 'padding-left:12px;';
+                styleTypeDiv.classList.add('e-de-stylediv');
             }
             else {
-                styleTypeDivPadding = 'padding-right:12px;';
+                styleTypeDiv.classList.add('e-de-stylediv-rtl');
             }
             // tslint:disable-next-line:max-line-length
-            let styleTypeDiv = createElement('div', { styles: 'width:120px;' + styleTypeDivPadding, className: 'de-tbl-fill-clr' });
-            this.borderBtn = this.createColorPickerTemplate(this.elementId + '_tableBorderColor', styleTypeDiv, this.localObj.getConstant('Border color'));
+            this.borderBtn = this.createColorPickerTemplate(this.elementId + '_tableBorderColor', styleTypeDiv, this.localObj.getConstant('Border color'), true);
             this.borderBtn.value = '#000000';
             styleTypeDiv.firstElementChild.lastElementChild.lastElementChild.style.width = '30px';
-            styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild.style.width = '60px';
+            styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild.style.width = '100%';
             // tslint:disable-next-line:max-line-length
             classList(styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild, ['e-de-ctnr-highlightcolor'], ['e-caret']);
-            let borderSizeButton = createElement('button', { id: this.elementId + '_tableBorderSize', styles: 'width:100px;height:28px;margin-top:8px;font-size:10px;padding:0px;' });
+            let borderSizeButton = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;' });
             styleTypeDiv.appendChild(borderSizeButton);
             this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', borderSizeButton);
             parentDiv.appendChild(styleTypeDiv);
@@ -64516,9 +64711,15 @@ class TableProperties {
             let cellDiv = createElement('div', { className: 'e-de-property-div-padding' });
             this.tableProperties.appendChild(cellDiv);
             let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = this.localObj.getConstant('Cell');
             cellDiv.appendChild(label);
             let parentDiv = createElement('div', { className: 'e-de-ctnr-group-btn' });
+            parentDiv.classList.add('e-de-cell-div');
+            if (this.isRtl) {
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
             let btnStyle = 'width:' + 38 + 'px;';
             // tslint:disable-next-line:max-line-length
             this.horizontalMerge = this.createButtonTemplate(this.elementId + '_tableOutlineBorder', 'e-de-ctnr-mergecell e-icons', parentDiv, 'e-de-prop-font-button', btnStyle, 'Merge cells');
@@ -64529,12 +64730,21 @@ class TableProperties {
             let tableOperationDiv = createElement('div', { className: 'e-de-property-div-padding' });
             this.tableProperties.appendChild(tableOperationDiv);
             let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = this.localObj.getConstant('Insert / Delete');
             tableOperationDiv.appendChild(label);
-            let parentDiv = createElement('div', { styles: 'display:inline-flex' });
-            let div1 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+            let parentDiv = createElement('div', { className: 'e-de-insert-del-cell', styles: 'display:inline-flex' });
+            let div1 = createElement('div', { className: this.groupButtonClass });
             parentDiv.appendChild(div1);
-            let div2 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+            let div2 = createElement('div', { className: this.groupButtonClass });
+            if (!this.isRtl) {
+                div2.style.marginLeft = '12px';
+            }
+            else {
+                div2.style.marginRight = '12px';
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
             parentDiv.appendChild(div2);
             let btnStyle = 'width:' + 38 + 'px;';
             // tslint:disable-next-line:max-line-length
@@ -64544,7 +64754,7 @@ class TableProperties {
             this.insertRowAbove = this.createButtonTemplate(this.elementId + '_insertRowAbove', 'e-de-ctnr-insertabove e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Insert rows above'));
             this.insertRowBelow = this.createButtonTemplate(this.elementId + '_insertRowBelow', 'e-de-ctnr-insertbelow e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Insert rows below'));
             // tslint:disable-next-line:max-line-length
-            this.deleteRow = this.createButtonTemplate(this.elementId + '_deleteRow', 'e-de-ctnr-deleterows e-icons', div2, 'e-de-prop-font-button', btnStyle + 'margin-left:9px', this.localObj.getConstant('Delete rows'));
+            this.deleteRow = this.createButtonTemplate(this.elementId + '_deleteRow', 'e-de-ctnr-deleterows e-icons', div2, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Delete rows'));
             this.deleteColumn = this.createButtonTemplate(this.elementId + '_deleteColumn', 'e-de-ctnr-deletecolumns e-icons', div2, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Delete columns'));
             tableOperationDiv.appendChild(parentDiv);
         };
@@ -64552,11 +64762,15 @@ class TableProperties {
             let cellMarginDiv = createElement('div', { className: 'e-de-property-div-padding e-de-cellmargin-text' });
             this.tableProperties.appendChild(cellMarginDiv);
             let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = this.localObj.getConstant('Cell Margin');
             cellMarginDiv.appendChild(label);
-            let parentDiv = createElement('div', { styles: 'height: 60px;display:inline-flex' });
-            let textboxDivStyle = 'width:' + 50 + 'px';
-            let textboxParentDivStyle = 'width:' + 50 + 'px;float:left;margin-right:' + 9 + 'px';
+            let parentDiv = createElement('div', { className: 'e-de-cell-margin', styles: 'height: 60px;display:inline-flex' });
+            if (this.isRtl) {
+                label.classList.add('e-de-rtl');
+            }
+            let textboxDivStyle = 'width:' + 48 + 'px';
+            let textboxParentDivStyle = 'width:' + 50 + 'px;float:left;';
             // tslint:disable-next-line:max-line-length
             this.topMargin = this.createCellMarginTextBox(this.localObj.getConstant('Top'), this.elementId + '_topMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, 'Top margin');
             // tslint:disable-next-line:max-line-length
@@ -64571,10 +64785,15 @@ class TableProperties {
             let alignmentDiv = createElement('div', { className: 'e-de-property-div-padding', styles: 'border-bottom-width:0px' });
             this.tableProperties.appendChild(alignmentDiv);
             let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = this.localObj.getConstant('Align Text');
             alignmentDiv.appendChild(label);
-            let parentDiv = createElement('div', { styles: 'margin-bottom: 10px;' });
-            let div = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+            let parentDiv = createElement('div', { className: 'e-de-align-text', styles: 'margin-bottom: 10px;' });
+            if (this.isRtl) {
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
+            let div = createElement('div', { className: this.groupButtonClass });
             parentDiv.appendChild(div);
             let btnStyle = 'width:' + 38 + 'px;';
             // tslint:disable-next-line:max-line-length
@@ -64593,6 +64812,7 @@ class TableProperties {
         // tslint:disable-next-line:max-line-length
         this.createCellMarginTextBox = (textboxLabel, textboxId, parentDiv, styles, parentStyle, maxValue, toolTipText) => {
             let cellMarginParentDiv = createElement('div', { styles: parentStyle });
+            cellMarginParentDiv.classList.add('e-de-cell-text-box');
             let cellMarginLabel = createElement('label', { className: 'e-de-prop-sub-label' });
             cellMarginLabel.textContent = textboxLabel;
             cellMarginParentDiv.appendChild(cellMarginLabel);
@@ -64608,7 +64828,7 @@ class TableProperties {
         this.createBorderSizeDropDown = (iconcss, button) => {
             let div = createElement('div', { id: 'borderSizeTarget', styles: 'display:none' });
             let ulTag = createElement('ul', {
-                styles: 'display: block; outline: 0px; width: 120px; height: auto;',
+                styles: 'display: block; outline: 0px; width: 126px; height: auto;',
                 id: 'borderSizeListMenu'
             });
             div.appendChild(ulTag);
@@ -64653,7 +64873,7 @@ class TableProperties {
         this.createDropdownOption = (ulTag, text) => {
             let liTag = createElement('li', {
                 styles: 'display:block',
-                className: 'ui-wfloating-menuitem ui-wfloating-menuitem-md de-list-items  de-list-item-size'
+                className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
             });
             ulTag.appendChild(liTag);
             let innerHTML;
@@ -64662,15 +64882,15 @@ class TableProperties {
             }
             else if (text === '1.5px') {
                 // tslint:disable-next-line:max-line-length
-                innerHTML = '<div>' + text + '<span class="ui-list-line e-de-border-width"  style="margin-left:10px;border-bottom-width:' + text + ';border-bottom-color:' + this.borderColor + '"' + '></span></div>';
+                innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width"  style="margin-left:10px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
             }
             else {
                 // tslint:disable-next-line:max-line-length
-                innerHTML = '<div>' + text + '<span class="ui-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' + text + ';border-bottom-color:' + this.borderColor + '"' + '></span></div>';
+                innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
             }
             let liInnerDiv = createElement('div', {
-                className: 'ui-list-header-presetmenu',
-                id: 'ui-zlist0', innerHTML: innerHTML
+                className: 'e-de-list-header-presetmenu',
+                innerHTML: innerHTML
             });
             liTag.appendChild(liInnerDiv);
             return liTag;
@@ -64679,8 +64899,12 @@ class TableProperties {
         this.createDropDownButton = (id, styles, parentDiv, iconCss, content, items, target) => {
             let buttonElement = createElement('button', { id: id, styles: styles });
             parentDiv.appendChild(buttonElement);
+            let splitButtonClass = 'e-de-prop-splitbutton';
+            if (this.isRtl) {
+                splitButtonClass = 'e-rtl ' + splitButtonClass;
+            }
             // tslint:disable-next-line:max-line-length
-            let dropDownBtn = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: this.isRtl, cssClass: 'e-de-prop-splitbutton' }, buttonElement);
+            let dropDownBtn = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: this.isRtl, cssClass: splitButtonClass }, buttonElement);
             if (items) {
                 dropDownBtn.items = items;
             }
@@ -64689,11 +64913,15 @@ class TableProperties {
             }
             return dropDownBtn;
         };
-        this.createColorPickerTemplate = (id, divElement, toolTipText) => {
+        this.createColorPickerTemplate = (id, divElement, toolTipText, isBorderWidth) => {
             let inputElement = createElement('input', { id: id });
             divElement.appendChild(inputElement);
+            let cssClass = 'e-de-prop-font-button e-de-prop-font-colorpicker';
+            if (isBorderWidth) {
+                cssClass = cssClass + ' e-de-border-clr-picker';
+            }
             // tslint:disable-next-line:max-line-length
-            let colorPicker = new ColorPicker({ showButtons: true, cssClass: 'e-de-prop-font-button e-de-prop-font-colorpicker', enableRtl: this.isRtl, locale: this.container.locale }, inputElement);
+            let colorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale }, inputElement);
             inputElement.parentElement.setAttribute('title', toolTipText);
             return colorPicker;
         };
@@ -64720,6 +64948,9 @@ class TableProperties {
         };
         this.container = container;
         this.isRtl = isRtl;
+        if (this.isRtl) {
+            this.groupButtonClass = 'e-rtl ' + this.groupButtonClass;
+        }
         this.tableTextProperties = new TextProperties(container, 'textProperties', true, this.isRtl);
         this.imageProperty = imageProperty;
         this.elementId = this.documentEditor.element.id;
@@ -64815,7 +65046,8 @@ class StatusBar {
             }
             this.updatePageNumber();
             div.appendChild(this.editablePageNumber);
-            this.editablePageNumber.setAttribute('title', 'The current page number in the document. Click or tap to navigate specific page.');
+            // tslint:disable-next-line:max-line-length
+            this.editablePageNumber.setAttribute('title', this.localObj.getConstant('The current page number in the document. Click or tap to navigate specific page.'));
             let label1 = createElement('label', { styles: 'width:16px' });
             label1.textContent = ' ' + this.localObj.getConstant('of') + ' ';
             div.appendChild(label1);
@@ -65119,7 +65351,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
                 'Access to system clipboard through script is denied due to browsers security policy. Instead, </br>' +
                 ' 1. You can enable internal clipboard to cut, copy and paste within the component.</br>' +
                 ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
-            'Restrict editing.': 'Restrict editing.'
+            'Restrict editing.': 'Restrict editing.',
+            // tslint:disable-next-line:max-line-length
+            'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.'
         };
     }
     /**
@@ -65226,6 +65460,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             viewChange: this.onViewChange.bind(this),
             locale: this.locale
         });
+        this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
         this.documentEditor.pageOutline = '#E0E0E0';
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);

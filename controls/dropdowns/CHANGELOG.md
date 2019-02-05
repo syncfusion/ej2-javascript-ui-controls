@@ -2,13 +2,33 @@
 
 ## [Unreleased]
 
-## 17.1.1-beta (2019-01-22)
+## 16.4.52 (2019-02-05)
+
+### ComboBox
+
+#### Bug Fixes
+
+- The model value is not updated by selecting a value using tab key with autofill combination issue has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- Blur event prevents other actions issue has been resolved.
+
+## 16.4.48 (2019-01-22)
 
 ### AutoComplete
 
 #### Bug Fixes
 
 - Custom value is not maintain after reload the data issue has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `en-US` locale JSON file not generated issue has been resolved.
 
 ## 16.4.47 (2019-01-16)
 
@@ -25,12 +45,6 @@
 #### Bug Fixes
 
 - Value is updated in reverse while using select all option in checkbox selection issue has been resolved.
-
-### ComboBox
-
-#### Bug Fixes
-
-- Change event is not trigger when focus out the control using tab key issue has been resolved.
 
 ## 16.4.44 (2018-12-24)
 

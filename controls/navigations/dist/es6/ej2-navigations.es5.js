@@ -165,7 +165,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Specifies the value to disable/enable the HScroll component.
-     * When set to `true` , the component will be disabled.
+     * When set to `true`, the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, HScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -638,7 +638,7 @@ var VScroll = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Specifies the value to disable/enable the VScroll component.
-     * When set to `true` , the component will be disabled.
+     * When set to `true`, the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, VScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -11019,6 +11019,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         else {
             this.setMediaQuery();
         }
+        this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
@@ -11028,6 +11029,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             (removeClass([this.element], RTL$2));
     };
     Sidebar.prototype.setTarget = function () {
+        this.sidebarEleCopy = this.element.cloneNode(true);
         if (typeof (this.target) === 'string') {
             this.setProperties({ target: document.querySelector(this.target) }, true);
         }
@@ -11083,11 +11085,24 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
         this.element.classList.add(ROOT$1);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
-        if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
-            addClass([this.element], OPEN);
+        if (this.type === 'Auto' && !Browser.isDevice) {
+            this.show();
+        }
+        else if (!this.isOpen) {
+            this.setProperties({ isOpen: false }, true);
+            addClass([this.element], CLOSE);
+        }
+        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+        this.element.setAttribute('tabindex', this.tabIndex);
+    };
+    Sidebar.prototype.checkType = function (val) {
+        if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
+            this.type = 'Auto';
         }
         else {
-            addClass([this.element], CLOSE);
+            if (!this.element.classList.contains(CLOSE) && !val) {
+                this.hide();
+            }
         }
     };
     Sidebar.prototype.destroyBackDrop = function () {
@@ -11106,14 +11121,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Hide the Sidebar component, if it is in an open state.
      * @returns void
      */
-    Sidebar.prototype.hide = function (e) {
-        var closeArguments = {
-            model: this,
-            element: this.element,
-            cancel: false,
-            isInteracted: !isNullOrUndefined(e),
-            event: (e || null)
-        };
+    Sidebar.prototype.hide = function () {
+        var closeArguments = { model: this, element: this.element, cancel: false };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -11148,14 +11157,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
-    Sidebar.prototype.show = function (e) {
-        var openArguments = {
-            model: this,
-            element: this.element,
-            cancel: false,
-            isInteracted: !isNullOrUndefined(e),
-            event: (e || null)
-        };
+    Sidebar.prototype.show = function () {
+        var openArguments = { model: this, element: this.element, cancel: false };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -11257,7 +11260,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
             return;
         }
-        this.hide(e);
+        this.hide();
     };
     Sidebar.prototype.enableGestureHandler = function (args) {
         if (this.position === 'Left' && args.swipeDirection === 'Right' &&
@@ -11320,9 +11323,11 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                     this.setAnimation();
                     break;
                 case 'type':
+                    this.checkType(false);
                     removeClass([this.element], [VISIBILITY]);
                     this.addClass();
-                    this.setType(this.type);
+                    addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
+                        ['e-push']) : ['e-' + this.type.toLowerCase()]);
                     break;
                 case 'position':
                     this.element.style.transform = '';
@@ -11443,7 +11448,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                     if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
                         this.position === 'Left' ? sibling.style.marginLeft = margin : sibling.style.marginRight = margin;
                     }
-                    this.setProperties({ isOpen: true }, true);
                 }
                 this.createBackDrop();
         }
@@ -11463,6 +11467,8 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         this.element.style.width = '';
         this.element.style.zIndex = '';
         this.element.style.transform = '';
+        (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
+            this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         var sibling = document.querySelector('.e-main-content')
             || this.element.nextElementSibling;
         if (!isNullOrUndefined(sibling)) {

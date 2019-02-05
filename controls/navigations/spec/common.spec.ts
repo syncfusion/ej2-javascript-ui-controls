@@ -1,7 +1,6 @@
 interface Window {
     performance: { memory: any };
 }
-
 declare var window: Window
 
 export const inMB = (n: any) => n / 1000000;

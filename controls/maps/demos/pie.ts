@@ -1,5 +1,4 @@
 import { Maps, Marker, ILoadEventArgs, MapsTheme, Legend, MapAjax } from '../src/index';
-import { world_Map } from './MapData/worldMap';
 
 Maps.Inject(Marker, Legend);
 
@@ -23,7 +22,7 @@ Maps.Inject(Marker, Legend);
         },
         layers: [
             {
-                shapeData: world_Map,
+                shapeData:new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
                 shapeSettings: {
                     fill: '#E5E5E5',
                     colorMapping: [

@@ -8,6 +8,17 @@
 
 ## [Unreleased]
 
+## 16.4.40-beta (2018-12-10)
+
+### TreeMap
+
+#### New Features
+
+- Support has been added for desaturation color mapping.
+- Support has been added to hide specific legend items and bind legend text from data source.
+- Support has been added for highlighting or selecting the legend items along with shapes.
+- Support has been added to bind colors for the items from the data source.
+
 ## 16.2.41 (2018-06-25)
 
 ### TreeMap

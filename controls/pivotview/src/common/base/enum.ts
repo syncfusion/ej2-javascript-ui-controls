@@ -25,13 +25,3 @@ export declare type EditMode =
     'Dialog' |
     /**  Defines EditMode as Batch */
     'Batch';
-
-export declare type SelectionMode =
-    /**  Defines SelectionMode as Cell */
-    'Cell' |
-    /**  Defines SelectionMode as Row */
-    'Row' |
-    /**  Defines SelectionMode as Column */
-    'Column' |
-    /**  Defines SelectionMode for both Row and Column */
-    'Both';

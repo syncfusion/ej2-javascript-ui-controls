@@ -17,7 +17,6 @@ var Dictionary = /** @__PURE__ @class */ (function () {
     function Dictionary() {
         this.keysInternal = [];
         this.valuesInternal = [];
-        this.item = [];
     }
     Object.defineProperty(Dictionary.prototype, "length", {
         /**
@@ -34,21 +33,11 @@ var Dictionary = /** @__PURE__ @class */ (function () {
          * @private
          */
         get: function () {
-            return this.getItem();
+            return this.keysInternal;
         },
         enumerable: true,
         configurable: true
     });
-    /**
-     * @private
-     */
-    Dictionary.prototype.getItem = function () {
-        this.item = [];
-        for (var i = 0; i < this.keysInternal.length; i++) {
-            this.item.push(this.keysInternal[i]);
-        }
-        return this.item;
-    };
     /**
      * @private
      */
@@ -849,7 +838,7 @@ var WUniqueFormat = /** @__PURE__ @class */ (function () {
      */
     WUniqueFormat.prototype.cloneItems = function (format, property, value, uniqueFormatType) {
         var propertyType = WUniqueFormat.getPropertyType(uniqueFormatType, property);
-        var keys = format.propertiesHash.getItem();
+        var keys = format.propertiesHash.keys;
         for (var i = 0; i < keys.length; i++) {
             if (keys[i] === propertyType) {
                 this.propertiesHash.add(propertyType, value);
@@ -3201,7 +3190,7 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
     };
     WParagraphFormat.prototype.hasTabStop = function (position) {
         for (var i = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].deletePosition === position) {
+            if (this.tabs[i].position === position) {
                 return true;
             }
         }
@@ -3365,8 +3354,12 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
     WParagraphFormat.prototype.getDefaultValue = function (property) {
         var propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
         var docParagraphFormat = this.documentParagraphFormat();
-        // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) && docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
+        var isInsideBodyWidget = true;
+        if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
+            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BodyWidget;
+        }
+        if (isInsideBodyWidget && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat) &&
+            docParagraphFormat.uniqueParagraphFormat.propertiesHash.containsKey(propertyType)) {
             return docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
         }
         else {
@@ -4372,6 +4365,60 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
             text = reverseString.join('');
         }
         return text;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.formatClippedString = function (base64ImageString) {
+        var extension = '';
+        var formatClippedString = '';
+        if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
+            extension = '.bmp';
+            formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
+            extension = '.emf';
+            formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
+            extension = '.exif';
+            formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
+            extension = '.gif';
+            formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
+            extension = '.ico';
+            formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
+            extension = '.jpeg';
+            formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
+            extension = '.jpg';
+            formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
+            extension = '.png';
+            formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
+            extension = '.tif';
+            formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
+        }
+        else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
+            extension = '.wmf';
+            formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
+        }
+        else {
+            extension = '.jpeg';
+        }
+        return { 'extension': extension, 'formatClippedString': formatClippedString };
+    };
+    HelperMethods.startsWith = function (sourceString, startString) {
+        return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     };
     /**
      * @private
@@ -6966,6 +7013,10 @@ var HeaderFooterWidget = /** @__PURE__ @class */ (function (_super) {
     __extends$1(HeaderFooterWidget, _super);
     function HeaderFooterWidget(type) {
         var _this = _super.call(this) || this;
+        /**
+         * @private
+         */
+        _this.isEmpty = false;
         _this.headerFooterType = type;
         return _this;
     }
@@ -6994,6 +7045,7 @@ var HeaderFooterWidget = /** @__PURE__ @class */ (function (_super) {
             block.index = i;
             block.containerWidget = headerFooter;
         }
+        headerFooter.isEmpty = this.isEmpty;
         headerFooter.x = this.x;
         headerFooter.y = this.y;
         headerFooter.height = 0;
@@ -7721,7 +7773,7 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
             //Converts the row grid before width from point to twips point by 15 factor.
             cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, tableWidth, null);
             currOffset += cellWidth;
-            var startOffset = Math.round(currOffset);
+            var startOffset = parseFloat(currOffset.toFixed(2));
             if (tempGrid.indexOf(startOffset) < 0) {
                 tempGrid.push(startOffset);
             }
@@ -7778,21 +7830,21 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
                 }
                 // Add start offset of each cell based on its index
                 if (!rowCellInfo.containsKey(cell.cellIndex)) {
-                    rowCellInfo.add(cell.cellIndex, Math.round(currOffset - startOffset));
+                    rowCellInfo.add(cell.cellIndex, parseFloat((currOffset - startOffset).toFixed(2)));
                 }
                 columnSpan += cell.cellFormat.columnSpan;
                 //Converts the cell width from pixel to twips point by 15 factor.
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, null);
                 currOffset += cellWidth;
-                var offset = Math.round(currOffset);
+                var offset = parseFloat(currOffset.toFixed(2));
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
                 }
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfter > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     currOffset += cellWidth;
-                    if (tempGrid.indexOf(Math.round(currOffset)) < 0) {
-                        tempGrid.push(Math.round(currOffset));
+                    if (tempGrid.indexOf(parseFloat(currOffset.toFixed(2))) < 0) {
+                        tempGrid.push(parseFloat(currOffset.toFixed(2)));
                     }
                     columnSpan += rowFormat.gridAfter;
                 }
@@ -8318,12 +8370,10 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
         //     this.tableFormat.destroy();
         // }
         this.tableFormat = undefined;
-        // if (this.spannedRowCollection) {
-        //     this.spannedRowCollection.destroy();
-        // }
+        if (this.spannedRowCollection) {
+            this.spannedRowCollection.destroy();
+        }
         this.spannedRowCollection = undefined;
-        this.tableGrids = [];
-        this.tableGrids = undefined;
         // if (this.tableHolder) {
         //     this.tableHolder.destroy();
         // }
@@ -8347,10 +8397,6 @@ var TableRowWidget = /** @__PURE__ @class */ (function (_super) {
     __extends$1(TableRowWidget, _super);
     function TableRowWidget() {
         var _this = _super.call(this) || this;
-        /**
-         * @private
-         */
-        _this.spannedRowCollection = [];
         _this.topBorderWidth = 0;
         _this.bottomBorderWidth = 0;
         _this.rowFormat = new WRowFormat(_this);
@@ -8485,7 +8531,7 @@ var TableRowWidget = /** @__PURE__ @class */ (function (_super) {
         return gridEndIndex - gridStartIndex;
     };
     TableRowWidget.prototype.getOffsetIndex = function (tableGrid, offset) {
-        offset = Math.round(offset);
+        offset = parseFloat(offset.toFixed(2));
         var index = 0;
         if (tableGrid.indexOf(offset) >= 0) {
             index = tableGrid.indexOf(offset);
@@ -8680,8 +8726,6 @@ var TableRowWidget = /** @__PURE__ @class */ (function (_super) {
         // }
         this.rowFormat = undefined;
         this.rowFormat = undefined;
-        this.spannedRowCollection = [];
-        this.spannedRowCollection = undefined;
         this.topBorderWidth = undefined;
         this.bottomBorderWidth = undefined;
         _super.prototype.destroy.call(this);
@@ -8927,9 +8971,9 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
      */
     TableCellWidget.prototype.getCellWidth = function () {
         var ownerTable = this.ownerTable;
-        var containerWidth = ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true));
+        var containerWidth = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         var cellWidth = containerWidth;
-        if (ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
+        if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         }
         else if (this.cellFormat.preferredWidthType === 'Percent') {
@@ -9022,7 +9066,7 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         var ownerTable = this.ownerTable;
         //Added null condition check for asynchronous loading.
         if (this.cellFormat !== null && this.cellFormat.borders !== null) {
-            borderWidth = TableCellWidget.getCellLeftBorder(this).getLineWidth();
+            borderWidth = TableCellWidget.getCellRightBorder(this).getLineWidth();
         }
         return borderWidth;
     };
@@ -9083,8 +9127,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if ((isNullOrUndefined(previousCell) || (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle === 'None' && !leftBorder.hasNoneStyle)))) {
             if (!isNullOrUndefined(leftBorder) && !(leftBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase).tableFormat.borders);
+                leftBorder = this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousCell)) {
+            return leftBorder;
         }
         else {
             var prevCellRightBorder = undefined;
@@ -9241,8 +9288,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(nextCell) || (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle === 'None' && !rightBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(rightBorder) && !(rightBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
+                rightBorder = this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextCell)) {
+            return rightBorder;
         }
         else {
             var nextCellLeftBorder = undefined;
@@ -9357,8 +9407,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(previousTopCell) || (!isNullOrUndefined(topBorder) && (topBorder.lineStyle === 'None' && !topBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(topBorder) && !(topBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase).tableFormat.borders);
+                topBorder = this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(previousTopCell)) {
+            return topBorder;
         }
         else {
             var prevTopCellBottomBorder = undefined;
@@ -9444,8 +9497,11 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(nextBottomCell) || (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle === 'None' && !bottomBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(bottomBorder) && !(bottomBorder.ownerBase.ownerBase instanceof WTableFormat)) {
                 // tslint:disable-next-line:max-line-length
-                return this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase).tableFormat.borders);
+                bottomBorder = this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase).tableFormat.borders);
             }
+        }
+        if (isNullOrUndefined(nextBottomCell)) {
+            return bottomBorder;
         }
         else {
             var prevBottomCellTopBorder = undefined;
@@ -11581,7 +11637,6 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         if (selection.contextType === 'TableOfContents') {
             updateField.style.display = 'block';
             editField.style.display = 'block';
-            restartAt.nextSibling.style.display = 'block';
         }
         else {
             var start = selection.start;
@@ -11959,6 +12014,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         var block = section.firstChild;
         var nextBlock;
         do {
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit) {
+                block.calculateGrid();
+            }
             this.viewer.updateClientAreaForBlock(block, true);
             nextBlock = this.layoutBlock(block, index);
             index = 0;
@@ -12072,6 +12131,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         this.linkFieldInHeaderFooter(widget);
         for (var i = 0; i < widget.childWidgets.length; i++) {
             var block = widget.childWidgets[i];
+            if (block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Auto'
+                && !block.tableFormat.allowAutoFit && !block.isGridUpdated) {
+                block.calculateGrid();
+            }
             viewer.updateClientAreaForBlock(block, true);
             this.layoutBlock(block, 0);
             viewer.updateClientAreaForBlock(block, false);
@@ -12364,10 +12427,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         else if (element instanceof TextElementBox) {
             if (element.text === '\t') {
                 var currentLine = element.line;
-                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element));
+                this.addSplittedLineWidget(currentLine, currentLine.children.indexOf(element) - 1);
                 this.moveToNextLine(currentLine);
                 // Recalculates tab width based on new client active area X position
-                element.width = this.getTabWidth(paragraph, this.viewer, index, line, element);
+                element.width = this.getTabWidth(paragraph, this.viewer, index, element.line, element);
                 this.addElementToLine(paragraph, element);
             }
             else {
@@ -13664,7 +13727,8 @@ var Layout = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable-next-line:max-line-length
     Layout.prototype.getTabWidth = function (paragraph, viewer, index, lineWidget, element) {
-        var fposition = 0;
+        var elementWidth = element ? this.viewer.textHelper.getTextSize(element, element.characterFormat) : 0;
+        var fPosition = 0;
         var isCustomTab = false;
         var tabs = paragraph.paragraphFormat.getUpdatedTabs();
         //  Calculate hanging width
@@ -13681,41 +13745,46 @@ var Layout = /** @__PURE__ @class */ (function () {
         else {
             if (tabs.length > 0) {
                 for (var i = 0; i < tabs.length; i++) {
+                    var tabStop = tabs[i];
                     var tabPosition = HelperMethods.convertPointToPixel(tabs[i].position);
-                    if (tabs[i].tabJustification === 'Left' && position < tabPosition) {
-                        fposition = tabPosition;
+                    if ((position + elementWidth) < tabPosition) {
                         isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
-                    }
-                    else if (tabs[i].tabJustification === 'Right' && position < tabPosition) {
-                        var tabwidth = tabPosition - position;
-                        var width = this.getRightTabWidth(index + 1, lineWidget, paragraph);
-                        if (width < tabwidth) {
-                            defaultTabWidth = tabwidth - width;
+                        if (tabStop.tabJustification === 'Left') {
+                            fPosition = tabPosition;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
                         else {
-                            defaultTabWidth = 0;
+                            var tabWidth = tabPosition - position;
+                            var width = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
+                            if (width < tabWidth) {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? tabWidth - width : tabWidth - width / 2;
+                            }
+                            else if (tabStop.tabJustification === 'Center' && (width / 2) < tabWidth) {
+                                defaultTabWidth = tabWidth - width / 2;
+                            }
+                            else {
+                                defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
+                            }
+                            fPosition = position;
+                            if (!isNullOrUndefined(element)) {
+                                element.tabLeader = tabs[i].tabLeader;
+                                element.tabText = '';
+                            }
+                            break;
                         }
-                        fposition = position;
-                        isCustomTab = true;
-                        if (!isNullOrUndefined(element)) {
-                            element.tabLeader = tabs[i].tabLeader;
-                            element.tabText = '';
-                        }
-                        break;
                     }
                 }
             }
             if (!isCustomTab) {
                 var diff = ((Math.round(position) * 100) % (Math.round(defaultTabWidth) * 100)) / 100;
                 var cnt = (Math.round(position) - diff) / Math.round(defaultTabWidth);
-                fposition = (cnt + 1) * defaultTabWidth;
+                fPosition = (cnt + 1) * defaultTabWidth;
             }
-            return (fposition - position) > 0 ? fposition - position : defaultTabWidth;
+            return (fPosition - position) > 0 ? fPosition - position : defaultTabWidth;
         }
     };
     /**
@@ -13727,8 +13796,8 @@ var Layout = /** @__PURE__ @class */ (function () {
     Layout.prototype.getRightTabWidth = function (index, lineWidget, paragraph) {
         var width = 0;
         var isFieldCode = false;
-        while (index < lineWidget.children.length) {
-            var elementBox = lineWidget.children[index];
+        var elementBox = lineWidget.children[index];
+        while (elementBox) {
             if ((elementBox instanceof FieldElementBox) || (elementBox instanceof BookmarkElementBox) || isFieldCode) {
                 if (elementBox instanceof FieldElementBox) {
                     if (elementBox.fieldType === 0) {
@@ -13749,7 +13818,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             else {
                 width = width + elementBox.width;
             }
-            index++;
+            elementBox = elementBox.nextNode;
         }
         return width;
     };
@@ -15624,6 +15693,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         var currentTable = table.combineWidget(this.viewer);
         var bodyWidget = currentTable.containerWidget;
         if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
+            block.bodyWidget.isEmpty = false;
             bodyWidget.height -= currentTable.height;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(table.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(table), bodyWidget.page);
@@ -15715,6 +15785,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                     return;
                 }
                 if (bodyWidget instanceof HeaderFooterWidget) {
+                    bodyWidget.isEmpty = false;
                     // tslint:disable-next-line:max-line-length
                     this.viewer.updateHCFClientAreaWithTop(bodyWidget.sectionFormat, bodyWidget.headerFooterType.indexOf('Header') !== -1, bodyWidget.page);
                     curretBlock.containerWidget.height -= curretBlock.height;
@@ -16020,24 +16091,30 @@ var Layout = /** @__PURE__ @class */ (function () {
         var value = 0;
         for (var i = 0; i < row.childWidgets.length; i++) {
             if (row.childWidgets.length > 0) {
-                var cellFormat = row.childWidgets[i].cellFormat;
+                var cell = row.childWidgets[i];
+                var cellFormat = cell.cellFormat;
                 if (cellFormat.containsMargins()) {
-                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    var leftMargin = HelperMethods.convertPointToPixel(cellFormat.topMargin);
+                    var bottomMargin = void 0;
+                    if (topOrBottom === 0 && !isNullOrUndefined(cellFormat.topMargin) && leftMargin > value) {
+                        value = leftMargin;
                     }
                     else if (topOrBottom === 1 && !isNullOrUndefined(cellFormat.bottomMargin) &&
-                        HelperMethods.convertPointToPixel(cellFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(cellFormat.bottomMargin);
+                        // tslint:disable-next-line:no-conditional-assignment 
+                        (bottomMargin = HelperMethods.convertPointToPixel(cellFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
                 else {
-                    var tableFormat = row.childWidgets[i].ownerTable.tableFormat;
-                    if (topOrBottom === 0 && HelperMethods.convertPointToPixel(tableFormat.topMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    var tableFormat = cell.ownerTable.tableFormat;
+                    var topMargin = HelperMethods.convertPointToPixel(tableFormat.topMargin);
+                    var bottomMargin = void 0;
+                    if (topOrBottom === 0 && topMargin > value) {
+                        value = topMargin;
+                        // tslint:disable-next-line:no-conditional-assignment 
                     }
-                    else if (topOrBottom === 1 && HelperMethods.convertPointToPixel(tableFormat.bottomMargin) > value) {
-                        value = HelperMethods.convertPointToPixel(tableFormat.bottomMargin);
+                    else if (topOrBottom === 1 && (bottomMargin = HelperMethods.convertPointToPixel(tableFormat.bottomMargin)) > value) {
+                        value = bottomMargin;
                     }
                 }
             }
@@ -16650,6 +16727,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         var bodyWidget = paragraph.containerWidget;
         bodyWidget.height -= paragraph.height;
         if (this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) {
+            paragraph.bodyWidget.isEmpty = false;
             // tslint:disable-next-line:max-line-length
             this.viewer.updateHCFClientAreaWithTop(paragraph.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(paragraph), bodyWidget.page);
         }
@@ -17769,6 +17847,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
  */
 var TextHelper = /** @__PURE__ @class */ (function () {
     function TextHelper(viewer) {
+        this.paragraphMarkInfo = {};
         this.owner = viewer;
         if (!isNullOrUndefined(viewer)) {
             this.context = viewer.containerContext;
@@ -17792,18 +17871,24 @@ var TextHelper = /** @__PURE__ @class */ (function () {
      * @private
      */
     TextHelper.prototype.getParagraphMarkWidth = function (characterFormat) {
-        return this.getWidth(this.paragraphMark, characterFormat);
+        return this.getParagraphMarkSize(characterFormat).Width;
     };
     /**
      * @private
      */
     TextHelper.prototype.getParagraphMarkSize = function (characterFormat) {
+        var format = this.getFormatText(characterFormat);
+        if (this.paragraphMarkInfo[format]) {
+            return this.paragraphMarkInfo[format];
+        }
         // Gets the text element's width;
         var width = this.getWidth(this.paragraphMark, characterFormat);
+        // Calculate the text element's height and baseline offset.
         var textHelper = this.getHeight(characterFormat);
-        return {
+        var textSizeInfo = {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
+        return this.paragraphMarkInfo[format] = textSizeInfo;
     };
     /**
      * @private
@@ -17859,11 +17944,8 @@ var TextHelper = /** @__PURE__ @class */ (function () {
         var textHeight = 0;
         var baselineOffset = 0;
         var spanElement = document.createElement('span');
-        spanElement.id = 'tempSpan';
-        spanElement.style.whiteSpace = 'nowrap';
         spanElement.innerText = 'm';
         this.applyStyle(spanElement, characterFormat);
-        var body = document.getElementsByTagName('body');
         var parentDiv = document.createElement('div');
         parentDiv.style.display = 'inline-block';
         var tempDiv = document.createElement('div');
@@ -17911,10 +17993,11 @@ var TextHelper = /** @__PURE__ @class */ (function () {
         if (textToRender.length === 0) {
             return '';
         }
-        if ((!this.isRTLText(textToRender) && (bdo === 'RTL')) || (this.isRTLText(textToRender) && (bdo === 'LTR'))) {
+        var isRtlText = isBidi;
+        if ((!isRtlText && (bdo === 'RTL')) || (isRtlText && (bdo === 'LTR'))) {
             textToRender = HelperMethods.ReverseString(textToRender);
         }
-        else if (isRender && this.isRTLText(textToRender) && HelperMethods.endsWith(textToRender)) {
+        else if (isRender && isRtlText && HelperMethods.endsWith(textToRender)) {
             var spaceCount = textToRender.length - HelperMethods.trimEnd(textToRender).length;
             textToRender = HelperMethods.addSpace(spaceCount) + HelperMethods.trimEnd(textToRender);
         }
@@ -17925,20 +18008,22 @@ var TextHelper = /** @__PURE__ @class */ (function () {
      */
     TextHelper.prototype.applyStyle = function (spanElement, characterFormat) {
         if (!isNullOrUndefined(spanElement) && !isNullOrUndefined(characterFormat)) {
+            var style = 'white-space:nowrap;';
             if (characterFormat.fontFamily !== '') {
-                spanElement.style.fontFamily = characterFormat.fontFamily;
+                style += 'font-family:' + characterFormat.fontFamily + ';';
             }
             var fontSize = characterFormat.fontSize;
             if (fontSize <= 0.5) {
                 fontSize = 0.5;
             }
-            spanElement.style.fontSize = fontSize.toString() + 'pt';
+            style += 'font-size:' + fontSize.toString() + 'pt;';
             if (characterFormat.bold) {
-                spanElement.style.fontWeight = 'bold';
+                style += 'font-weight:bold;';
             }
             if (characterFormat.italic) {
-                spanElement.style.fontStyle = 'italic';
+                style += 'font-style:italic;';
             }
+            spanElement.setAttribute('style', style);
         }
     };
     /**
@@ -17988,7 +18073,7 @@ var TextHelper = /** @__PURE__ @class */ (function () {
      */
     TextHelper.prototype.isRTLText = function (text) {
         var isRTL = false;
-        if (!isNullOrUndefined(text) && text !== '') {
+        if (!isNullOrUndefined(text)) {
             for (var i = 0; i < text.length; i++) {
                 var temp = text[i];
                 if ((temp >= '\u0590' && temp <= '\u05ff') //Hebrew characters
@@ -18056,6 +18141,8 @@ var TextHelper = /** @__PURE__ @class */ (function () {
     TextHelper.prototype.destroy = function () {
         this.owner = undefined;
         this.context = undefined;
+        this.paragraphMarkInfo = {};
+        this.paragraphMarkInfo = undefined;
     };
     return TextHelper;
 }());
@@ -18315,6 +18402,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         /**
          * @private
          */
+        this.isTextInput = false;
+        /**
+         * @private
+         */
         this.onTextInput = function (event) {
             if (!_this.isComposingIME) {
                 event.preventDefault();
@@ -18493,7 +18584,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                         clearTimeout(resizeTimer);
                     }
                 }
-            }, 150);
+            }, 200);
         };
         /**
          * @private
@@ -19920,12 +20011,19 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
             footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
         }
+        var isEmptyWidget = false;
         if (!isNullOrUndefined(page.headerWidget)) {
-            top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            isEmptyWidget = page.headerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+            }
         }
         var bottom = 0.667 + bottomMargin;
         if (!isNullOrUndefined(page.footerWidget)) {
-            bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            isEmptyWidget = page.footerWidget.isEmpty;
+            if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
+                bottom = 0.667 + Math.min(pageHeight / 100 * 40, Math.max(footerDistance + page.footerWidget.height, bottomMargin));
+            }
         }
         var width = 0;
         if (!isNullOrUndefined(sectionFormat)) {
@@ -20713,6 +20811,7 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
             var headerFooter = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
                 headerFooter = this.createHeaderFooterWidget(type);
+                headerFooter.isEmpty = true;
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;
@@ -21315,6 +21414,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             rowFormat.gridAfterWidthType = data.gridAfterWidthType;
         }
     };
+    // tslint:disable:max-func-body-length
     SfdtReader.prototype.parseParagraph = function (data, paragraph, writeInlineFormat) {
         var lineWidget = new LineWidget(paragraph);
         for (var i = 0; i < data.length; i++) {
@@ -21348,7 +21448,15 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 image.characterFormat = new WCharacterFormat(image);
                 image.line = lineWidget;
                 lineWidget.children.push(image);
-                image.imageString = inline.imageString;
+                var imageString = HelperMethods.formatClippedString(inline.imageString).formatClippedString;
+                var isValidImage = this.validateImageUrl(imageString);
+                if (!isValidImage) {
+                    // tslint:disable-next-line:max-line-length
+                    image.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
+                }
+                else {
+                    image.imageString = inline.imageString;
+                }
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
@@ -21712,6 +21820,27 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             tabStop.tabJustification = wTabs[i].tabJustification;
             tabs.push(tabStop);
         }
+    };
+    SfdtReader.prototype.validateImageUrl = function (imagestr) {
+        var keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+        imagestr = imagestr.replace(/[^A-Za-z0-9\+\/\=]/g, '');
+        var totalLength = imagestr.length * 3 / 4;
+        if (imagestr.charAt(imagestr.length - 1) === keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (imagestr.charAt(imagestr.length - 2) === keyStr.charAt(64)) {
+            totalLength--;
+        }
+        if (totalLength % 1 !== 0) {
+            // totalLength is not an integer, the length does not match a valid
+            // base64 content. That can happen if:
+            // - the imagestr is not a base64 content
+            // - the imagestr is *almost* a base64 content, with a extra chars at the
+            // beginning or at the end
+            // - the imagestr uses a base64 variant (base64url for example)
+            return false;
+        }
+        return true;
     };
     return SfdtReader;
 }());
@@ -34013,11 +34142,15 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.isCursorInHeaderRegion = function (point, page) {
         var pageTop = this.getPageTop(page);
         var headerHeight = 0;
-        if (page.headerWidget) {
-            headerHeight = (page.headerWidget.y + page.headerWidget.height);
+        var header = page.headerWidget;
+        if (header) {
+            headerHeight = (header.y + header.height);
         }
-        var height = Math.max(headerHeight, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin))
-            * this.viewer.zoomFactor;
+        var isEmpty = header.isEmpty && !this.owner.enableHeaderAndFooter;
+        var topMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
+        var pageHeight = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageHeight);
+        var height = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), pageHeight / 100 * 40);
+        height = height * this.viewer.zoomFactor;
         if ((this.viewer.containerTop + point.y) >= pageTop && (this.viewer.containerTop + point.y) <= pageTop + height) {
             return true;
         }
@@ -34035,9 +34168,16 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (page.footerWidget) {
             footerHeight = page.footerWidget.height;
         }
-        // tslint:disable-next-line:max-line-length
-        var height = (pageRect.height -
-            Math.max(footerHeight + footerDistance, HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin))) * this.viewer.zoomFactor;
+        var bottomMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.bottomMargin);
+        var isEmpty = page.footerWidget.isEmpty && !this.owner.enableHeaderAndFooter;
+        var height = pageRect.height;
+        if (isEmpty) {
+            height = (height - bottomMargin) * this.viewer.zoomFactor;
+        }
+        else {
+            // tslint:disable-next-line:max-line-length
+            height = (height - Math.min(pageRect.height / 100 * 40, Math.max(footerHeight + footerDistance, bottomMargin))) * this.viewer.zoomFactor;
+        }
         if ((this.viewer.containerTop + point.y) <= pageBottom && (this.viewer.containerTop + point.y) >= pageTop + height) {
             return true;
         }
@@ -34049,7 +34189,21 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.enableHeadersFootersRegion = function (widget) {
         this.owner.enableHeaderAndFooter = true;
         this.updateTextPositionForBlockContainer(widget);
+        this.shiftBlockOnHeaderFooterEnableDisable();
         return true;
+    };
+    Selection.prototype.shiftBlockOnHeaderFooterEnableDisable = function () {
+        for (var i = 0; i < this.viewer.headersFooters.length; i++) {
+            var headerFooter = this.viewer.headersFooters[i];
+            var sectionFormat = this.owner.editor.getBodyWidgetInternal(i, 0).sectionFormat;
+            for (var _i = 0, _a = Object.keys(headerFooter); _i < _a.length; _i++) {
+                var key = _a[_i];
+                var widget = headerFooter[key];
+                if (widget.isEmpty) {
+                    this.owner.editor.shiftPageContent(widget.headerFooterType, sectionFormat);
+                }
+            }
+        }
     };
     /**
      * @private
@@ -34069,6 +34223,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var page = this.getPage(this.start.paragraph);
         this.updateTextPositionForBlockContainer(page.bodyWidgets[0]);
         this.owner.enableHeaderAndFooter = false;
+        this.shiftBlockOnHeaderFooterEnableDisable();
     };
     //#endregion
     /**
@@ -35389,18 +35544,24 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.selectedTabItem = function (args) {
+            var contentParent = _this.findTab.getElementsByClassName('e-content').item(0);
             if (args.previousIndex !== args.selectedIndex) {
-                var previousTab = document.querySelector('#e-content_' + args.previousIndex);
-                var nextTab = document.querySelector('#e-content_' + args.selectedIndex);
-                nextTab.insertBefore(previousTab.firstElementChild, nextTab.firstChild);
+                var previousTab = contentParent.children[args.previousIndex];
+                var nextTab = contentParent.children[args.selectedIndex];
+                var element = previousTab.firstElementChild;
+                element.parentElement.removeChild(element);
+                nextTab.appendChild(element);
             }
-            if (args.selectedIndex === 0 && !isNullOrUndefined(document.querySelector('#e-content_' + args.selectedIndex))) {
-                _this.isOptionsPane = true;
-                _this.onFindPane();
-            }
-            if (args.selectedIndex === 1 && !isNullOrUndefined(document.querySelector('#e-content_' + args.selectedIndex))) {
-                _this.isOptionsPane = false;
-                _this.onReplacePane();
+            var selectedElement = contentParent.children[args.selectedIndex];
+            if (!isNullOrUndefined(selectedElement)) {
+                if (args.selectedIndex === 0) {
+                    _this.isOptionsPane = true;
+                    _this.onFindPane();
+                }
+                else {
+                    _this.isOptionsPane = false;
+                    _this.onReplacePane();
+                }
             }
         };
         this.searchOptionChange = function () {
@@ -35512,7 +35673,9 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
                 _this.resultsListBlock.style.display = 'none';
                 _this.messageDiv.innerHTML = _this.localeValue.getConstant('No matches');
             }
-            _this.resultsListBlock.style.height = _this.resultsListBlock.offsetHeight + _this.replaceTabContentDiv.offsetHeight + 'px';
+            var height = _this.isOptionsPane ? 215 : 292;
+            var resultsContainerHeight = _this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
+            _this.resultsListBlock.style.height = resultsContainerHeight + 'px';
             _this.replaceTabContentDiv.style.display = 'none';
             _this.findDiv.style.display = 'block';
             _this.messageDiv.style.display = 'block';
@@ -35541,7 +35704,9 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
             _this.findDiv.style.display = 'block';
             _this.replaceDiv.style.display = 'block';
             _this.replaceTabContentDiv.style.display = 'block';
-            _this.resultsListBlock.style.height = _this.resultsListBlock.offsetHeight - _this.replaceTabContentDiv.offsetHeight + 'px';
+            var height = _this.isOptionsPane ? 215 : 292;
+            var resultsContainerHeight = _this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
+            _this.resultsListBlock.style.height = resultsContainerHeight + 'px';
             _this.isOptionsPane = false;
             if (_this.searchInput.value.length !== 0) {
                 _this.replaceButton.disabled = false;
@@ -35746,7 +35911,8 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
             if (_this.results != null && _this.results.length > 0) {
                 _this.navigateSearchResult();
                 _this.getMessageDivHeight();
-                var resultsContainerHeight = _this.viewer.owner.getDocumentEditorElement().offsetHeight - 215;
+                var height = _this.isOptionsPane ? 215 : 292;
+                var resultsContainerHeight = _this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
                 _this.resultsListBlock.style.height = resultsContainerHeight + 'px';
             }
             else {
@@ -35998,7 +36164,7 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.searchTextBoxContainer = createElement('div', { className: 'e-input-group e-de-op-input-group' });
         this.findTabContentDiv.appendChild(this.searchTextBoxContainer);
         // tslint:disable-next-line:max-line-length
-        this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.viewer.owner.containerId + '_option_search_text_box', attrs: { placeholder: localeValue.getConstant('Search for') }, styles: 'font-size:14px;' });
+        this.searchInput = createElement('input', { className: 'e-input e-de-search-input', id: this.viewer.owner.containerId + '_option_search_text_box', attrs: { placeholder: localeValue.getConstant('Search for') } });
         this.searchTextBoxContainer.appendChild(this.searchInput);
         this.searchIcon = createElement('span', {
             className: 'e-de-op-icon e-de-op-search-icon e-input-group-icon e-icon',
@@ -36052,7 +36218,7 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         tabContent.appendChild(this.replaceTabContentDiv);
         this.findTabContentDiv.appendChild(this.replaceTabContentDiv);
         this.createReplacePane(isRtl);
-        this.findDiv = createElement('div', { className: 'findDiv', styles: 'height:250px;display:block;' });
+        this.findDiv = createElement('div', { className: 'findDiv', styles: 'display:block;' });
         findTabContent.appendChild(this.findTabContentDiv);
         this.resultContainer = createElement('div', { styles: 'width:85%;display:block;', className: 'e-de-op-result-container' });
         this.findDiv.appendChild(this.resultContainer);
@@ -36089,11 +36255,10 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.replaceDiv = createElement('div');
         this.replaceTabContentDiv.appendChild(this.replaceDiv);
         this.replaceWith = createElement('input', {
-            className: 'e-de-op-replacewith e-input', styles: 'font-size:14px;',
+            className: 'e-de-op-replacewith e-input',
             attrs: { placeholder: this.localeValue.getConstant('Replace with') }
         });
         this.replaceDiv.appendChild(this.replaceWith);
-        var replaceButtonFont = 'font-size:12px';
         var replaceButtonDivTextAlign;
         var replaceButtonMargin;
         if (isRtl) {
@@ -36108,13 +36273,12 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.replaceDiv.appendChild(replaceButtonDiv);
         this.replaceButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replace',
-            styles: replaceButtonFont + ';' + replaceButtonMargin,
+            styles: replaceButtonMargin,
             innerHTML: this.localeValue.getConstant(this.replaceButtonText)
         });
         replaceButtonDiv.appendChild(this.replaceButton);
         this.replaceAllButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replaceall',
-            styles: 'font-size:12px;',
             innerHTML: this.localeValue.getConstant(this.replaceAllButtonText)
         });
         replaceButtonDiv.appendChild(this.replaceAllButton);
@@ -36168,7 +36332,8 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
             this.searchIcon.classList.add('e-de-op-search-close-icon');
             this.searchIcon.classList.remove('e-de-op-search-icon');
         }
-        var resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - 215;
+        var height = this.isOptionsPane ? 215 : 292;
+        var resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
         this.clearSearchResultItems();
         this.viewer.owner.searchModule.clearSearchHighlight();
         var pattern = this.viewer.owner.searchModule.textSearch.stringToRegex(text, this.findOption);
@@ -38291,6 +38456,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
         }
+        else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
+            this.viewer.isTextInput = true;
+        }
         paragraphInfo = this.getParagraphInfo(selection.start);
         if (isRemoved) {
             selection.owner.isShiftingEnabled = true;
@@ -38375,33 +38543,24 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
             this.updateEndPosition();
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
+            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
+                && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
                 this.viewer.isListTextSelected) {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            // if (!isNullOrUndefined(selection.currentHistoryInfo) && (selection.currentHistoryInfo.action === 'MultiSelection')) {
-            //     this.updateComplexHistory();
-            // } else {           
             this.reLayout(selection);
-            // }
+            this.viewer.isTextInput = false;
         }
-        else {
-            // selection.selectContent(selection.start, true);
-        }
-        // insertFormat.destroy();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
-            var hyperlinkField = selection.getHyperlinkField();
-            var isSelectionOnHyperlink = !isNullOrUndefined(hyperlinkField);
             var isList = false;
             if (!(text === '\v')) {
                 isList = this.checkAndConvertList(selection, text === '\t');
             }
-            if (isSelectionOnHyperlink) {
-                return;
-            }
             if (!isList) {
+                if (!isNullOrUndefined(selection.getHyperlinkField())) {
+                    return;
+                }
                 //Checks if the previous text is URL, then it is auto formatted to hyperlink.
                 this.checkAndConvertToHyperlink(selection, false);
             }
@@ -40965,7 +41124,8 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.updateHeaderFooterWidget = function () {
         this.updateHeaderFooterWidgetToPage(this.selection.start.paragraph.bodyWidget);
-        this.shiftPageContent(this.selection.start.paragraph.bodyWidget);
+        var headerFooterWidget = this.selection.start.paragraph.bodyWidget;
+        this.shiftPageContent(headerFooterWidget.headerFooterType, headerFooterWidget.sectionFormat);
     };
     /**
      * @private
@@ -41056,53 +41216,80 @@ var Editor = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Editor.prototype.shiftPageContent = function (headerFooter) {
-        var type = headerFooter.headerFooterType;
+    Editor.prototype.shiftPageContent = function (type, sectionFormat) {
+        // let type: HeaderFooterType = headerFooter.headerFooterType;
         var pageIndex;
-        if (type === 'FirstPageHeader' || type === 'FirstPageFooter') {
+        if (type.indexOf('First') !== -1) {
             pageIndex = 0;
         }
-        else if (headerFooter.sectionFormat.differentOddAndEvenPages) {
-            if (headerFooter.sectionFormat.differentFirstPage) {
-                pageIndex = (type === 'EvenHeader' || type === 'EvenFooter') ? 1 : 2;
+        else if (sectionFormat.differentOddAndEvenPages) {
+            var isEven = type.indexOf('Even') !== -1;
+            if (sectionFormat.differentFirstPage) {
+                pageIndex = isEven ? 1 : 2;
             }
             else {
-                pageIndex = (type.indexOf('Even') === -1) ? 0 : 1;
+                pageIndex = !isEven ? 0 : 1;
             }
         }
         else {
-            pageIndex = headerFooter.sectionFormat.differentFirstPage ? 1 : 0;
+            pageIndex = sectionFormat.differentFirstPage ? 1 : 0;
             if (pageIndex === 1 && this.viewer.pages.length === 1) {
                 pageIndex = 0;
             }
         }
-        var page = this.viewer.pages[pageIndex];
-        if (type.indexOf('Header') !== -1) {
-            var firstBlock = page.bodyWidgets[0].firstChild;
-            var top_1 = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.topMargin);
-            var headerDistance = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.headerDistance);
-            top_1 = Math.max(headerDistance + page.headerWidget.height, top_1);
-            if (firstBlock.y !== top_1) {
-                this.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
-                firstBlock = firstBlock.combineWidget(this.viewer);
-                var prevWidget = firstBlock.previousRenderedWidget;
-                if (prevWidget) {
-                    this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                    if (firstBlock.containerWidget !== prevWidget.containerWidget) {
-                        // tslint:disable-next-line:max-line-length
-                        this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+        var section = this.viewer.pages[pageIndex].bodyWidgets[0];
+        do {
+            if (type.indexOf('Header') !== -1) {
+                var widget = section.page.headerWidget;
+                var isNotEmpty = !widget.isEmpty || widget.isEmpty && this.owner.enableHeaderAndFooter;
+                var firstBlock = section.firstChild;
+                var top_1 = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                var headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
+                if (isNotEmpty) {
+                    top_1 = Math.max(headerDistance + section.page.headerWidget.height, top_1);
+                }
+                if (firstBlock.y !== top_1) {
+                    this.viewer.updateClientArea(section.sectionFormat, section.page);
+                    firstBlock = firstBlock.combineWidget(this.viewer);
+                    var prevWidget = firstBlock.previousRenderedWidget;
+                    if (prevWidget) {
+                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget)) {
+                            this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                            // tslint:disable-next-line:max-line-length
+                            this.viewer.layout.updateContainerWidget(firstBlock, prevWidget.containerWidget, prevWidget.indexInOwner + 1, false);
+                        }
+                    }
+                    this.viewer.blockToShift = firstBlock;
+                }
+            }
+            else {
+                this.checkAndShiftFromBottom(section.page, section.page.footerWidget);
+            }
+            if (this.viewer.blockToShift) {
+                this.viewer.renderedLists.clear();
+                this.viewer.layout.shiftLayoutedItems();
+            }
+            while (section) {
+                var splittedSection = section.getSplitWidgets();
+                section = splittedSection[splittedSection.length - 1].nextRenderedWidget;
+                if (section) {
+                    if (pageIndex === 0) {
+                        break;
+                    }
+                    else {
+                        if (section.page.index + 1 % 2 === 0 && pageIndex === 1 ||
+                            (section.page.index + 1 % 2 !== 0 && pageIndex === 2)) {
+                            break;
+                        }
+                        var nextPage = section.page.nextPage;
+                        if (nextPage.bodyWidgets[0].equals(section)) {
+                            section = nextPage.bodyWidgets[0];
+                            break;
+                        }
                     }
                 }
-                this.viewer.blockToShift = firstBlock;
             }
-        }
-        else {
-            this.checkAndShiftFromBottom(page, headerFooter);
-        }
-        if (this.viewer.blockToShift) {
-            this.viewer.renderedLists.clear();
-            this.viewer.layout.shiftLayoutedItems();
-        }
+        } while (section);
     };
     /**
      * @private
@@ -41481,7 +41668,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     Editor.prototype.getCompleteStyles = function () {
         var completeStylesString = '{"styles":[';
-        for (var _i = 0, _a = this.viewer.preDefinedStyles.getItem(); _i < _a.length; _i++) {
+        for (var _i = 0, _a = this.viewer.preDefinedStyles.keys; _i < _a.length; _i++) {
             var name_1 = _a[_i];
             completeStylesString += (this.viewer.preDefinedStyles.get(name_1) + ',');
         }
@@ -44059,6 +44246,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                             if (!isCellCleared && editAction !== 2 && this.editorHistory) {
                                 this.editorHistory.currentBaseHistoryInfo = undefined;
                             }
+                            else if (isCellCleared) {
+                                this.viewer.layout.reLayoutTable(containerCell.ownerRow.ownerTable);
+                            }
                         }
                     }
                     else {
@@ -45769,7 +45959,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.updateListItemsTillEnd = function (blockAdv, updateNextBlockList) {
         var block = updateNextBlockList ? this.viewer.selection.getNextRenderedBlock(blockAdv) : blockAdv;
-        while (!isNullOrUndefined(block)) {
+        while (!isNullOrUndefined(block) && !this.viewer.isTextInput) {
             //Updates the list value of the rendered paragraph. 
             this.updateRenderedListItems(block);
             block = block.getSplitWidgets().pop().nextRenderedWidget;
@@ -46352,6 +46542,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             return page.footerWidget;
         }
     };
+    /**
+     * @private
+     */
     Editor.prototype.getBodyWidgetInternal = function (sectionIndex, blockIndex) {
         for (var i = 0; i < this.viewer.pages.length; i++) {
             var bodyWidget = this.viewer.pages[i].bodyWidgets[0];
@@ -49808,7 +50001,9 @@ var ImageResizer = /** @__PURE__ @class */ (function () {
         this.leftValue = isNullOrUndefined(this.leftValue) ? prevX : this.leftValue;
         this.topValue = isNullOrUndefined(this.topValue) ? prevY : this.topValue;
         var points;
-        switch (this.selectedResizeElement.id.split('_')[1]) {
+        var id = this.selectedResizeElement.id.split('_');
+        var currentElementId = id[id.length - 1];
+        switch (currentElementId) {
             case 'TopRightRectParent':
                 points = this.topRightResizing(touchPoint);
                 prevX = points.left;
@@ -49871,10 +50066,10 @@ var ImageResizer = /** @__PURE__ @class */ (function () {
                 var width = this.currentImageElementBox.width + prevX > 10 ? this.currentImageElementBox.width + prevX : 10;
                 // tslint:disable-next-line:max-line-length 
                 var height = this.currentImageElementBox.height + prevY > 10 ? this.currentImageElementBox.height + prevY : 10;
-                if (this.selectedResizeElement.id.split('_')[1] === 'BottomRightRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'TopRightRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'BottomLeftRectParent'
-                    || this.selectedResizeElement.id.split('_')[1] === 'TopLeftRectParent') {
+                if (currentElementId === 'BottomRightRectParent'
+                    || currentElementId === 'TopRightRectParent'
+                    || currentElementId === 'BottomLeftRectParent'
+                    || currentElementId === 'TopLeftRectParent') {
                     height = this.currentImageElementBox.height / this.currentImageElementBox.width * width;
                     width = this.currentImageElementBox.width / this.currentImageElementBox.height * height;
                 }
@@ -53898,51 +54093,9 @@ var WordExport = /** @__PURE__ @class */ (function () {
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                 }
                 else {
-                    var extension = '';
-                    var formatClippedString = '';
-                    if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
-                        extension = '.bmp';
-                        formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
-                        extension = '.emf';
-                        formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
-                        extension = '.exif';
-                        formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
-                        extension = '.gif';
-                        formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
-                        extension = '.ico';
-                        formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
-                        extension = '.jpeg';
-                        formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
-                        extension = '.jpg';
-                        formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
-                        extension = '.png';
-                        formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
-                        extension = '.tif';
-                        formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
-                    }
-                    else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
-                        extension = '.wmf';
-                        formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
-                    }
-                    else {
-                        extension = '.jpeg';
-                    }
+                    var imageInfo = HelperMethods.formatClippedString(base64ImageString);
+                    var extension = imageInfo.extension;
+                    var formatClippedString = imageInfo.formatClippedString;
                     imagePath = this.imagePath + keys[i] + extension;
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                     //if (m_archive.Find(imagePath.Replace('\\', '/')) === -1)
@@ -54531,7 +54684,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         section.headersFooters.firstPageFooter = this.writeHeaderFooter(hfs[5]);
     };
     SfdtExport.prototype.writeHeaderFooter = function (widget) {
-        if (isNullOrUndefined(widget)) {
+        if (isNullOrUndefined(widget) || widget.isEmpty) {
             return undefined;
         }
         var headerFooter = {};
@@ -55462,17 +55615,19 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
      */
     function BookmarkDialog(viewer) {
         var _this = this;
+        /**
+         * @private
+         */
+        this.onKeyUpOnTextBox = function (event) {
+            _this.enableOrDisableButton();
+        };
         this.addBookmark = function () {
             _this.owner.owner.editorModule.insertBookmark(_this.textBoxInput.value);
             _this.owner.dialog.hide();
         };
         /* tslint:disable:no-any */
         this.selectHandler = function (args) {
-            _this.textBoxInput.value = args.text;
-            /* tslint:disable:no-any */
-            var value = document.getElementById('bookmark_text_box');
-            value.setSelectionRange(0, args.text.length);
-            value.focus();
+            _this.focusTextBox(args.text);
         };
         this.gotoBookmark = function () {
             _this.owner.selection.selectBookmark(_this.textBoxInput.value);
@@ -55508,7 +55663,7 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
         var textBoxDiv = createElement('div', { className: 'e-bookmark-textboxdiv' });
         searchDiv.appendChild(textBoxDiv);
         // tslint:disable-next-line:max-line-length
-        this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box' });
+        this.textBoxInput = createElement('input', { className: 'e-input e-bookmark-textbox-input', id: 'bookmark_text_box', attrs: { autofocus: 'true' } });
         this.textBoxInput.setAttribute('type', 'text');
         textBoxDiv.appendChild(this.textBoxInput);
         var listviewDiv = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview' });
@@ -55518,6 +55673,7 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
             dataSource: bookmarks,
             cssClass: 'e-bookmark-listview',
         });
+        var hasNoBookmark = (bookmarks === undefined || bookmarks.length === 0);
         this.listviewInstance.appendTo(listviewDiv);
         this.listviewInstance.addEventListener('select', this.selectHandler);
         var buttonDiv = createElement('div', { className: 'e-bookmark-button' });
@@ -55526,22 +55682,27 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
         buttonDiv.appendChild(addbuttonDiv);
         var addButtonElement = createElement('button', { innerHTML: localValue.getConstant('Add'), id: 'add' });
         addbuttonDiv.appendChild(addButtonElement);
-        var addbutton = new Button({ cssClass: 'e-button-custom' });
-        addbutton.appendTo(addButtonElement);
+        this.addButton = new Button({ cssClass: 'e-button-custom' });
+        this.addButton.disabled = true;
+        this.addButton.appendTo(addButtonElement);
+        this.textBoxInput.addEventListener('input', this.onKeyUpOnTextBox);
+        this.textBoxInput.addEventListener('keyup', this.onKeyUpOnTextBox);
         addButtonElement.addEventListener('click', this.addBookmark);
         var deleteButtonDiv = createElement('div', { className: 'e-bookmark-deletebutton' });
         buttonDiv.appendChild(deleteButtonDiv);
         var deleteButtonElement = createElement('button', { innerHTML: localValue.getConstant('Delete'), id: 'delete' });
         deleteButtonDiv.appendChild(deleteButtonElement);
-        var deletebutton = new Button({ cssClass: 'e-button-custom' });
-        deletebutton.appendTo(deleteButtonElement);
+        this.deleteButton = new Button({ cssClass: 'e-button-custom' });
+        this.deleteButton.disabled = hasNoBookmark;
+        this.deleteButton.appendTo(deleteButtonElement);
         deleteButtonElement.addEventListener('click', this.deleteBookmark);
         var gotoButtonDiv = createElement('div', { className: 'e-bookmark-gotobutton' });
         buttonDiv.appendChild(gotoButtonDiv);
         var gotoButtonElement = createElement('button', { innerHTML: localValue.getConstant('Go To'), id: 'goto' });
         gotoButtonDiv.appendChild(gotoButtonElement);
-        var gotobutton = new Button({ cssClass: 'e-button-custom' });
-        gotobutton.appendTo(gotoButtonElement);
+        this.gotoButton = new Button({ cssClass: 'e-button-custom' });
+        this.gotoButton.disabled = hasNoBookmark;
+        this.gotoButton.appendTo(gotoButtonElement);
         gotoButtonElement.addEventListener('click', this.gotoBookmark);
     };
     /**
@@ -55565,7 +55726,28 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
                 buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
             }];
         this.owner.dialog.dataBind();
+        var hasNoBookmark = (bookmarks === undefined || bookmarks.length === 0);
+        if (!hasNoBookmark) {
+            /* tslint:disable:no-any */
+            var firstItem = bookmarks[0];
+            this.listviewInstance.selectItem(firstItem);
+        }
         this.owner.dialog.show();
+    };
+    BookmarkDialog.prototype.enableOrDisableButton = function () {
+        if (!isNullOrUndefined(this.addButton)) {
+            // tslint:disable-next-line:max-line-length
+            this.addButton.disabled = (this.textBoxInput.value === '');
+        }
+    };
+    /* tslint:disable:no-any */
+    BookmarkDialog.prototype.focusTextBox = function (text) {
+        this.textBoxInput.value = text;
+        /* tslint:disable:no-any */
+        var value = document.getElementById('bookmark_text_box');
+        value.setSelectionRange(0, text.length);
+        value.focus();
+        this.enableOrDisableButton();
     };
     BookmarkDialog.prototype.removeObjects = function () {
         this.owner.dialog.hide();
@@ -55826,7 +56008,6 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
         var ownerId = this.owner.owner.containerId;
         var id = ownerId + '_toc_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-toc-dlg-container' });
-        this.owner.owner.element.appendChild(this.target);
         // tslint:disable-next-line:max-line-length
         var generalDiv = createElement('div', { id: 'general_div', className: 'e-de-toc-dlg-sub-container' });
         this.target.appendChild(generalDiv);
@@ -56624,7 +56805,6 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
     PageSetupDialog.prototype.initPageSetupDialog = function (locale, isRtl) {
         var id = this.owner.owner.containerId + '_pagesetup_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-pagesetup-dlg-container' });
-        this.owner.owner.element.appendChild(this.target);
         var ejtabContainer = createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
         this.marginTab = createElement('div', {
@@ -57936,6 +58116,7 @@ var ListDialog = /** @__PURE__ @class */ (function () {
                 buttonModel: { content: locale.getConstant('Cancel'), cssClass: 'e-flat e-list-dlg' }
             }];
         this.owner.dialog2.dataBind();
+        this.wireAndBindEvent(locale, isRtl);
         this.owner.dialog2.beforeOpen = this.loadListDialog;
         this.owner.dialog2.close = this.closeListDialog;
         this.owner.dialog2.position = { X: 'center', Y: 'top' };
@@ -57946,11 +58127,9 @@ var ListDialog = /** @__PURE__ @class */ (function () {
      * @private
      */
     ListDialog.prototype.initListDialog = function (locale, isRtl) {
-        var instance = this;
         var containerId = this.owner.owner.containerId;
         var id = containerId + '_insert_list';
         this.target = createElement('div', { id: id, className: 'e-de-list-dlg' });
-        this.owner.owner.element.appendChild(this.target);
         // tslint:disable-next-line:max-line-length
         var listLevelDiv = createElement('div', { innerHTML: '<label id="' + containerId + '_listLevellabel" style="display:block;" class=e-de-list-ddl-header-list-level>' + locale.getConstant('List level') + '</label><label id="' + containerId + '_modifyLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Choose level to modify') + '</label><select style="height:20px;width:43%" id="' + containerId + '_listLevel"><option>' + locale.getConstant('Level') + ' 1' + '</option><option>' + locale.getConstant('Level') + ' 2' + '</option><option>' + locale.getConstant('Level') + ' 3' + '</option><option>' + locale.getConstant('Level') + ' 4' + '</option><option>' + locale.getConstant('Level') + ' 5' + '</option><option>' + locale.getConstant('Level') + ' 6' + '</option><option>' + locale.getConstant('Level') + ' 7' + '</option><option>' + locale.getConstant('Level') + ' 8' + '</option><option>' + locale.getConstant('Level') + ' 9' + '</option></select>' });
         this.target.appendChild(listLevelDiv);
@@ -57966,12 +58145,11 @@ var ListDialog = /** @__PURE__ @class */ (function () {
         var numberStyleDiv = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_numberFormatLabel" style="display:block;" class=e-de-list-ddl-header>' + locale.getConstant('Number format') + '</label><label id="' + containerId + '_numberStyleLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Number style for this level') + '</label><select style="height:20px;width:100%" id="' + containerId + '_numberStyle"><option>' + locale.getConstant('Arabic') + '</option><option>' + locale.getConstant('UpRoman') + '</option><option>' + locale.getConstant('LowRoman') + '</option><option>' + locale.getConstant('UpLetter') + '</option><option>' + locale.getConstant('LowLetter') + '</option><option>' + locale.getConstant('Number') + '</option><option>' + locale.getConstant('Leading zero') + '</option><option>' + locale.getConstant('Bullet') + '</option><option>' + locale.getConstant('Ordinal') + '</option><option>' + locale.getConstant('Ordinal Text') + '</option><option>' + locale.getConstant('Special') + '</option><option>' + locale.getConstant('For East') + '</option></select><label id="' + containerId + '_startAtLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Start at') + '</label><input type="text" id="' + containerId + '_startAt">' });
         div.appendChild(numberStyleDiv);
         // tslint:disable-next-line:max-line-length
-        var numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
-        div.appendChild(numberFormatDiv);
+        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
+        div.appendChild(this.numberFormatDiv);
         this.target.appendChild(div);
         var indentsDivLabelStyle;
         if (isRtl) {
-            numberFormatDiv.classList.add('e-de-rtl');
             indentsDivLabelStyle = 'display:block;position:relative; ';
         }
         else {
@@ -57980,8 +58158,13 @@ var ListDialog = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         var indentsDiv = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_IndentsLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-header>' + locale.getConstant('Position') + '</label><label id="' + containerId + '_textIndentLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheader>' + locale.getConstant('Text indent at') + '</label><input type="text" id="' + containerId + '_textIndent"><label id="' + containerId + '_followCharacterLabel" style=' + indentsDivLabelStyle + 'class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Follow number with') + '</label><select style="height:20px;width:100%" id="' + containerId + '_followCharacter"><option>' + locale.getConstant('Tab character') + '</option><option>' + locale.getConstant('Space') + '</option><option>' + locale.getConstant('Nothing') + '</option></select></div><div id="e-de-list-dlg-div" class="e-de-list-dlg-div"><label id="' + containerId + '_alignedAtLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Aligned at') + '</label><input type="text" id="' + containerId + '_alignedAt"></div>', });
         this.target.appendChild(indentsDiv);
+    };
+    ListDialog.prototype.wireAndBindEvent = function (locale, isRtl) {
+        var instance = this;
+        var containerId = this.owner.owner.containerId;
         if (isRtl) {
             document.getElementById('e-de-list-dlg-div').classList.add('e-de-rtl');
+            this.numberFormatDiv.classList.add('e-de-rtl');
         }
         var startAtTextBox = document.getElementById(containerId + '_startAt');
         var textIndentAtTextBox = document.getElementById(containerId + '_textIndent');
@@ -59236,7 +59419,6 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
         });
         //Render initialized Tab component
         tabObj.appendTo(tabTarget);
-        this.owner.owner.element.appendChild(this.target);
         tabObj.refresh();
     };
     BulletsAndNumberingDialog.prototype.createNumberList = function (id) {
@@ -59744,7 +59926,6 @@ var FontDialog = /** @__PURE__ @class */ (function () {
         fontEffectSubDiv2.appendChild(doubleStrikeThroughElement);
         fontEffectsDiv.appendChild(fontEffectSubDiv2);
         this.target.appendChild(fontEffectsDiv);
-        this.owner.owner.element.appendChild(this.target);
         this.colorPicker = new ColorPicker({
             change: this.fontColorUpdate, value: '#000000', enableRtl: isRtl, locale: this.owner.owner.locale
         });
@@ -60322,7 +60503,6 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         this.localValue = localValue;
         var id = this.owner.owner.containerId + '_TablePropertiesDialog';
         this.target = createElement('div', { id: id, className: 'e-de-table-properties-dlg' });
-        this.owner.owner.element.appendChild(this.target);
         var ejtabContainer = createElement('div', { id: this.target.id + '_TabContainer' });
         this.target.appendChild(ejtabContainer);
         this.tableTab = createElement('div', {
@@ -60378,7 +60558,6 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         }
         var tableTabHeader = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0];
         var tableTabHeaderItem = tableTabHeader.getElementsByClassName('e-tab-wrap')[0];
-        tableTabHeaderItem.classList.add('e-de-table-ppty-dlg-table-header');
         var rowTabHeader = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1];
         var rowTabHeaderItem = rowTabHeader.getElementsByClassName('e-tab-wrap')[0];
         rowTabHeaderItem.classList.add('e-de-table-ppty-dlg-row-header');
@@ -61558,7 +61737,6 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
             id: instance.owner.owner.containerId + '_table_border_shadings',
             className: 'e-de-table-border-shading-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         var displayText = createElement('div', {
             innerHTML: localeValue.getConstant('Borders'), styles: 'position: absolute;top: 65px;',
             id: this.target.id + '_border_label', className: 'e-de-table-border-heading'
@@ -62548,7 +62726,6 @@ var TableOptionsDialog = /** @__PURE__ @class */ (function () {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         var innerDiv = createElement('div', { styles: 'width: 475px;position: relative;height: 180px;' });
         var innerDivLabel = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
@@ -62813,7 +62990,6 @@ var CellOptionsDialog = /** @__PURE__ @class */ (function () {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         var innerDiv = createElement('div', { styles: 'width: 475px;position: relative;height: 165px;' });
         var innerDivLabel = createElement('Label', {
             className: 'e-de-cell-dia-options-label', id: this.target.id + '_innerDivLabel'
@@ -62996,7 +63172,7 @@ var CellOptionsDialog = /** @__PURE__ @class */ (function () {
     CellOptionsDialog.getCellMarginDialogElements = function (dialog, div, locale) {
         if (!isNullOrUndefined(dialog)) {
             var table = createElement('TABLE', { className: 'e-de-cell-margin-top' });
-            var tr1 = createElement('tr', { styles: 'height: 50px;color:black;' });
+            var tr1 = createElement('tr', { styles: 'height: 50px;' });
             var td1 = createElement('td');
             var topLabel = createElement('label', {
                 innerHTML: locale.getConstant('Top'), className: 'e-de-cell-dia-label-common',
@@ -63020,7 +63196,7 @@ var CellOptionsDialog = /** @__PURE__ @class */ (function () {
             td2.appendChild(leftTextBox);
             tr1.appendChild(td1);
             tr1.appendChild(td2);
-            var tr2 = createElement('tr', { styles: 'height: 50px;color:black;' });
+            var tr2 = createElement('tr', { styles: 'height: 50px;' });
             var td3 = createElement('td', { styles: 'width:40%;' });
             var bottomLabel = createElement('label', {
                 innerHTML: locale.getConstant('Bottom'),
@@ -63254,6 +63430,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.showPropertiesPaneOnSelection = function () {
+            if (_this.container.restrictEditing) {
+                return;
+            }
             var currentContext = _this.documentEditor.selection.contextType;
             var isInHeaderFooter = currentContext.indexOf('Header') >= 0
                 || currentContext.indexOf('Footer') >= 0;
@@ -63428,6 +63607,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         var id = this.container.element.id + TOOLBAR_ID;
         var locale = this.container.localObj;
         this.toolbar = new Toolbar({
+            enableRtl: this.container.enableRtl,
             clicked: this.clickHandler.bind(this),
             items: [
                 {
@@ -63574,7 +63754,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 this.toggleEditing(args.item.id);
                 break;
         }
-        this.container.documentEditor.focusIn();
+        if (args.item.id !== id + FIND_ID) {
+            this.container.documentEditor.focusIn();
+        }
     };
     Toolbar$$1.prototype.toggleLocalPaste = function (id) {
         this.container.enableLocalPaste = !this.container.enableLocalPaste;
@@ -63747,10 +63929,11 @@ var Text = /** @__PURE__ @class */ (function () {
         this.createHighlightColorSplitButton = function (id, width, divElement, toolTipText) {
             var buttonElement = createElement('button', { id: id });
             // buttonElement.style.width = width + 'px';
-            buttonElement.style.padding = '1px';
+            // buttonElement.style.padding = '1px';
             // buttonElement.style.height = 30 + 'px';
             divElement.appendChild(buttonElement);
             var hgltSplitObj = new SplitButton({
+                cssClass: 'e-de-btn-hghlclr',
                 iconCss: 'e-de-ctnr-hglt-color',
                 target: _this.highlightColorElement, close: _this.closePopup, beforeOpen: _this.openPopup, enableRtl: _this.isRtl
             });
@@ -63988,44 +64171,50 @@ var Text = /** @__PURE__ @class */ (function () {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.textProperties = wholeDiv;
         var element = 'font_properties';
-        var textDiv = this.createDiv(element + '_text', wholeDiv, 'padding:10px;border-bottom:0.5px solid #E0E0E0');
+        var textDiv = this.createDiv(element + '_text', wholeDiv);
+        classList(textDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         var label = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.innerHTML = this.localObj.getConstant('Text');
         textDiv.appendChild(label);
         var fontDiv = this.createDiv(element + '_sizeStyle', textDiv, 'display:inline-flex;');
-        fontDiv.classList.add('e-de-ctnr-segment');
-        var fontFamilyDivMargin;
+        classList(fontDiv, ['e-de-ctnr-segment'], []);
         if (isRtl) {
-            fontFamilyDivMargin = 'margin-left:9px;';
+            classList(fontDiv, ['e-de-ctnr-segment-rtl'], []);
         }
-        else {
-            fontFamilyDivMargin = 'margin-right:9px;';
-        }
-        var fontFamilyDiv = this.createDiv(element + '_fontFamilyDiv', fontDiv, fontFamilyDivMargin);
+        var fontFamilyDiv = this.createDiv(element + '_fontFamilyDiv', fontDiv);
         var fontFamily = createElement('input', {
             id: element + '_fontFamily',
             /* tslint:disable-next-line:max-line-length */
-            styles: 'font-size: 12px;letter-spacing: 0.05px;padding-left:10px;', className: 'e-prop-font-style'
+            styles: 'font-size: 12px;letter-spacing: 0.05px;', className: 'e-prop-font-style'
         });
         fontFamilyDiv.appendChild(fontFamily);
+        classList(fontFamilyDiv, ['e-de-panel-left-width'], []);
         this.createDropDownListForFamily(fontFamily);
         var fontSizeDiv = this.createDiv(element + '_fontSizeDiv', fontDiv);
+        var divClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
+        if (isRtl) {
+            divClassName = 'e-rtl ' + divClassName;
+        }
         var fontSize = createElement('input', {
             id: element + '_fontSize',
-            styles: 'font-size: 12px;letter-spacing: 0.05px;padding-left:10px', innerHTML: 'type:number',
+            styles: 'font-size: 12px;letter-spacing: 0.05px;', innerHTML: 'type:number',
             className: 'e-prop-font-style',
         });
         fontSizeDiv.appendChild(fontSize);
+        classList(fontSizeDiv, ['e-de-panel-right-width'], []);
         this.createDropDownListForSize(fontSize);
         var propertiesDiv = createElement('div', {
             id: element + '_properties',
             styles: 'display:inline-flex;',
             className: 'e-de-ctnr-segment'
         });
+        if (isRtl) {
+            classList(propertiesDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
         textDiv.appendChild(propertiesDiv);
         var leftDiv = createElement('div', {
             id: element + '_leftDiv',
-            className: 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group', styles: 'display:inline-flex;'
+            className: divClassName, styles: 'display:inline-flex;'
         });
         propertiesDiv.appendChild(leftDiv);
         // tslint:disable-next-line:max-line-length
@@ -64036,15 +64225,12 @@ var Text = /** @__PURE__ @class */ (function () {
         this.underline = this.createButtonTemplate(element + '_underline', 'e-de-ctnr-underline e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Underline (Ctrl+U)'));
         // tslint:disable-next-line:max-line-length
         this.strikethrough = this.createButtonTemplate(element + '_strikethrough', 'e-de-ctnr-strikethrough e-icons', leftDiv, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Strikethrough'));
-        var rightDivMargin;
+        divClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
-            rightDivMargin = 'margin-right:8px';
-        }
-        else {
-            rightDivMargin = 'margin-left:8px';
+            divClassName = 'e-rtl ' + divClassName;
         }
         // tslint:disable-next-line:max-line-length
-        var rightDiv = createElement('div', { id: element + '_rightDiv', className: 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group', styles: 'display:inline-flex;' + rightDivMargin });
+        var rightDiv = createElement('div', { id: element + '_rightDiv', className: divClassName, styles: 'display:inline-flex;' });
         propertiesDiv.appendChild(rightDiv);
         // tslint:disable-next-line:max-line-length
         this.superscript = this.createButtonTemplate(element + '_superscript', 'e-de-ctnr-superscript e-icons', rightDiv, 'e-de-prop-font-button', '38.5', this.localObj.getConstant('Superscript (Ctrl+Shift++)'));
@@ -64052,6 +64238,9 @@ var Text = /** @__PURE__ @class */ (function () {
         this.subscript = this.createButtonTemplate(element + '_subscript', 'e-de-ctnr-subscript e-icons', rightDiv, 'e-de-prop-font-last-button', '38.5', this.localObj.getConstant('Subscript (Ctrl+=)'));
         // tslint:disable-next-line:max-line-length
         var leftDiv2 = createElement('div', { id: element + '_color', className: 'e-de-font-clr-picker e-de-ctnr-group-btn', styles: 'display:inline-flex;' });
+        if (isRtl) {
+            classList(leftDiv2, ['e-rtl'], []);
+        }
         textDiv.appendChild(leftDiv2);
         // tslint:disable-next-line:max-line-length
         this.fontColor = this.createFontColorPicker(element + '_textColor', 40.5, leftDiv2, this.localObj.getConstant('Font color'));
@@ -64065,7 +64254,11 @@ var Text = /** @__PURE__ @class */ (function () {
         this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Clear all formatting'));
     };
     Text.prototype.initializeHighlightColorElement = function () {
-        this.highlightColorElement = createElement('div', { id: 'highlight_color_ppty', styles: 'display:none;width:157px' });
+        this.highlightColorElement = createElement('div', {
+            id: 'highlight_color_ppty',
+            styles: 'display:none;width:157px',
+            className: 'e-de-cntr-highlight-pane'
+        });
         var yellowDiv = this.createHightlighColorPickerDiv('#ffff00', 'yellowDiv');
         var brightGreenDiv = this.createHightlighColorPickerDiv('#00ff00', 'brightGreenDiv');
         var turquoiseDiv = this.createHightlighColorPickerDiv('#00ffff', 'turquoiseDiv');
@@ -64151,7 +64344,6 @@ var Text = /** @__PURE__ @class */ (function () {
         var fontSize = ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72', '96'];
         this.fontSize = new ComboBox({
             dataSource: fontSize, popupHeight: '180px',
-            popupWidth: '78px', width: '78px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
@@ -64175,7 +64367,6 @@ var Text = /** @__PURE__ @class */ (function () {
             query: new Query().select(['FontName']),
             fields: { text: 'FontName', value: 'FontName' },
             popupHeight: '150px',
-            popupWidth: '154px', width: '154px',
             cssClass: 'e-de-prop-dropdown',
             itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
             allowCustom: true,
@@ -64220,12 +64411,14 @@ var Text = /** @__PURE__ @class */ (function () {
             //#region character format
             if (this.documentEditor.selection.characterFormat.fontFamily) {
                 this.fontFamily.value = this.documentEditor.selection.characterFormat.fontFamily;
+                this.fontFamily.dataBind();
             }
             else {
                 this.fontFamily.value = '';
             }
             if (this.documentEditor.selection.characterFormat.fontSize) {
                 this.fontSize.value = this.documentEditor.selection.characterFormat.fontSize.toString();
+                this.fontSize.dataBind();
             }
             else {
                 this.fontSize.value = '';
@@ -64337,6 +64530,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         this.appliedBulletStyle = 'dot';
         this.appliedNumberingStyle = 'arabic';
         this.appliedLineSpacing = '';
+        this.splitButtonClass = 'e-de-prop-splitbutton';
         this.updateSelectedBulletListType = function (listText) {
             switch (listText) {
                 case '\uf0b7':
@@ -64665,24 +64859,35 @@ var Paragraph = /** @__PURE__ @class */ (function () {
     Paragraph.prototype.initializeParagraphPropertiesDiv = function (wholeDiv, isRtl) {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.isRtl = isRtl;
+        if (this.isRtl) {
+            this.splitButtonClass = 'e-rtl ' + this.splitButtonClass;
+        }
         this.textProperties = wholeDiv;
         var element = 'font_properties';
-        var paragraphDiv = this.createDivElement(element + '_paragraph', wholeDiv, 'padding:10px;');
+        var paragraphDiv = this.createDivElement(element + '_paragraph', wholeDiv, '');
+        classList(paragraphDiv, ['e-de-cntr-pane-padding'], []);
         var label = createElement('label', { styles: 'width:26px;', className: 'e-de-ctnr-prop-label' });
         label.innerHTML = this.localObj.getConstant('Paragraph');
         paragraphDiv.appendChild(label);
         var styleDiv = this.createDivElement(element + '_styleDiv', paragraphDiv);
         styleDiv.classList.add('e-de-ctnr-segment');
         // tslint:disable-next-line:max-line-length
-        var styleSelect = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;padding-left:10px;' });
+        var styleSelect = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;' });
         styleDiv.appendChild(styleSelect);
         this.createStyleDropDownList(styleSelect);
         var indentWholeDiv = this.createDivElement(element + '_indentWholeDiv', paragraphDiv);
         indentWholeDiv.style.display = 'flex';
         indentWholeDiv.classList.add('e-de-ctnr-segment');
+        if (isRtl) {
+            classList(indentWholeDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
         // tslint:disable-next-line:max-line-length
         var indentDiv = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
-        indentDiv.className = 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group';
+        var indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
+        if (isRtl) {
+            indentClassName = 'e-rtl ' + indentClassName;
+        }
+        indentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
         this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align left (Ctrl+L)'));
         // tslint:disable-next-line:max-line-length
@@ -64692,29 +64897,25 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify (Ctrl+J)'));
         var incDecIndentDiv = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
-        incDecIndentDiv.className = 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group';
+        indentClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
-            incDecIndentDiv.style.marginRight = '8px';
+            indentClassName = 'e-rtl ' + indentClassName;
         }
-        else {
-            incDecIndentDiv.style.marginLeft = '8px';
-        }
+        incDecIndentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
         this.decreaseIndent = this.createButtonTemplate(element + '_decreaseIndent', 'e-de-ctnr-decreaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-button', '37', this.localObj.getConstant('Decrease indent'));
         // tslint:disable-next-line:max-line-length
         this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         var listDiv = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
+        classList(listDiv, ['e-de-ctnr-segment'], []);
+        if (isRtl) {
+            classList(listDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
         var lineHeight = createElement('button', { id: element + '_lineHeight' });
         listDiv.appendChild(lineHeight);
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
         var listDropDown = this.createDivElement(element + '_listDropDiv', listDiv);
         listDropDown.className = 'de-split-button';
-        if (isRtl) {
-            listDropDown.style.paddingRight = '10px';
-        }
-        else {
-            listDropDown.style.paddingLeft = '10px';
-        }
         var bulletButton = createElement('button', { id: element + '_bullet' });
         listDropDown.appendChild(bulletButton);
         var numberingList = createElement('button', { id: element + '_numberingList' });
@@ -64766,7 +64967,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
             iconCss: 'e-de-ctnr-linespacing e-icons',
             enableRtl: this.isRtl,
             select: this.lineSpacingAction,
-            cssClass: 'e-de-prop-splitbutton',
+            cssClass: this.splitButtonClass,
             beforeItemRender: function (args) {
                 args.element.innerHTML = '<span></span>' + args.item.text;
                 var span = args.element.children[0];
@@ -64787,7 +64988,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
     Paragraph.prototype.createNumberListDropButton = function (iconcss, button) {
         var _this = this;
         // tslint:disable-next-line:max-line-length
-        var div = createElement('div', { id: 'target', styles: 'width: 213px;height: auto;display:none' });
+        var div = createElement('div', { id: 'target', styles: 'width: 211px;height: auto;display:none' });
         var ulTag = createElement('ul', {
             styles: 'display: block; outline: 0px;',
             id: 'listMenu',
@@ -64809,7 +65010,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         var menuOptions = {
             target: div,
             iconCss: iconcss,
-            cssClass: 'e-de-prop-splitbutton',
+            cssClass: this.splitButtonClass,
             beforeOpen: function () {
                 div.style.display = 'block';
                 _this.updateSelectedNumberedListType(_this.documentEditor.selection.paragraphFormat.listText);
@@ -64829,7 +65030,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
     Paragraph.prototype.createBulletListDropButton = function (iconcss, button) {
         var _this = this;
         // tslint:disable-next-line:max-line-length
-        var div = createElement('div', { id: 'bullet_list', styles: 'width: 198px;height: auto;display:none' });
+        var div = createElement('div', { id: 'bullet_list', styles: 'width: 196px;height: auto;display:none' });
         var ulTag = createElement('ul', {
             styles: 'display: block; outline: 0px;', id: 'listMenu',
             className: 'e-de-floating-menu e-de-bullets-menu e-de-list-container e-de-list-thumbnail'
@@ -64852,7 +65053,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         var menuOptions = {
             target: div,
             iconCss: iconcss,
-            cssClass: 'e-de-prop-splitbutton',
+            cssClass: this.splitButtonClass,
             beforeOpen: function () {
                 div.style.display = 'block';
                 _this.updateSelectedBulletListType(_this.documentEditor.selection.paragraphFormat.listText);
@@ -64894,7 +65095,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         var innerHTML = '<div class="e-de-list-items-size"><span class="e-de-bullets e-de-list-items-size"' +
             'style="display:table-cell; text-align: center; vertical-align:middle">None</span></div>';
         var liInnerDiv = createElement('div', {
-            className: 'e-de-list-header-presetmenu e-de-list-items-size',
+            className: 'e-de-list-header-presetmenu e-de-list-items-size', styles: 'position:relative;left:11px;top:13px',
             id: 'ui-zlist0', innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
@@ -64919,8 +65120,6 @@ var Paragraph = /** @__PURE__ @class */ (function () {
             dataSource: [{ StyleName: 'Normal', Class: 'e-icons e-edit-font' }],
             cssClass: 'e-de-prop-dropdown',
             popupHeight: '240px',
-            popupWidth: '240px',
-            width: '240px',
             enableRtl: this.isRtl,
             query: new Query().select(['StyleName', 'Style']),
             fields: { text: 'StyleName', value: 'StyleName' },
@@ -64986,9 +65185,9 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(styleObj.characterFormat.italic) && styleObj.characterFormat.italic) {
             domStyle += 'font-style:italic;';
         }
-        if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
-            domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
-        }
+        // if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
+        //     domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
+        // }
         if (textDecoration.length > 1) {
             domStyle += 'text-decoration:' + textDecoration + ';';
         }
@@ -65154,7 +65353,7 @@ var TextProperties = /** @__PURE__ @class */ (function () {
     });
     TextProperties.prototype.initializeTextProperties = function (id, isTableProperties, isRtl) {
         /* tslint:disable-next-line:max-line-length */
-        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), styles: 'width:269px;' });
+        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-text-pane' });
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
         this.paragraph.updateStyleNames();
@@ -65297,21 +65496,18 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         var elementId = 'header_footer_properties';
         // tslint:disable-next-line:max-line-length
         this.element = createElement('div', { id: this.documentEditor.element.id + elementId, styles: 'width:269px;' });
-        var headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding: 14px;');
+        var headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
+        classList(headerDiv, ['e-de-cntr-pane-padding'], []);
         var headerLabel = createElement('label', { className: 'e-de-prop-header-label' });
         headerLabel.innerHTML = localObj.getConstant('Header & Footer');
         var closeButtonFloat;
-        var optionsLabelDivPadding;
-        var positionLabelDivPadding;
         if (!this.isRtl) {
             closeButtonFloat = 'float:right;';
-            optionsLabelDivPadding = 'padding-left: 14px';
-            positionLabelDivPadding = 'padding-left: 14px;';
+            
         }
         else {
             closeButtonFloat = 'float:left;';
-            optionsLabelDivPadding = 'padding-right: 14px';
-            positionLabelDivPadding = 'padding-right: 14px;';
+            
         }
         var closeIcon = createElement('span', {
             id: '_header_footer_close',
@@ -65321,7 +65517,8 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         closeIcon.addEventListener('click', function () { _this.onClose(); });
         headerDiv.appendChild(headerLabel);
         headerDiv.appendChild(closeIcon);
-        var optionsLabelDiv = this.createDivTemplate(elementId + '_options', this.element, optionsLabelDivPadding);
+        var optionsLabelDiv = this.createDivTemplate(elementId + '_options', this.element);
+        classList(optionsLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         var optionsLabel = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
         optionsLabel.innerHTML = localObj.getConstant('Options');
         optionsLabelDiv.appendChild(optionsLabel);
@@ -65342,8 +65539,6 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         this.oddOrEven.appendTo(oddOrEven);
         // tslint:disable-next-line:max-line-length
         oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages.'));
-        var optionsLine = createElement('div', { className: 'e-de-prop-header-line', styles: 'margin-top:7px;' });
-        optionsLabelDiv.appendChild(optionsLine);
         // tslint:disable-next-line:max-line-length
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
         // let autoFieldLabel: HTMLElement = createElement('label', { className: 'e-de-header-prop-label', styles: 'height:20px;' });
@@ -65360,54 +65555,55 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         // pageCountDiv.appendChild(pageCount);
         // this.pageCount = new CheckBox({ label: 'Page Count', change: this.changePageCount });
         // this.pageCount.appendTo(pageCount);
-        // let autoFieldLine: HTMLElement = createElement('div', { className: 'e-de-prop-header-line', styles: 'margin-top:7px;' });
+        // let autoFieldLine: HTMLElement = createElement('div', { className: 'e-de-prop-separator-line', styles: 'margin-top:7px;' });
         // autoFieldLabelDiv.appendChild(autoFieldLine);
         // tslint:disable-next-line:max-line-length
-        var positionLabelDiv = this.createDivTemplate(elementId + '_positionLabelDiv', this.element, 'padding-top:10px;' + positionLabelDivPadding);
+        var positionLabelDiv = this.createDivTemplate(elementId + '_positionLabelDiv', this.element);
+        classList(positionLabelDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         var positionLabel = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'height:20px;' });
         positionLabel.innerHTML = localObj.getConstant('Position');
         positionLabelDiv.appendChild(positionLabel);
         var positionDiv = this.createDivTemplate(elementId + '_positionDiv', positionLabelDiv);
-        var width;
-        var headerFooterDivMargin;
         if (!this.isRtl) {
-            width = 'width: 128px;';
-            headerFooterDivMargin = 'margin-right:8px;';
+            
         }
         else {
-            width = 'width: 150px;';
-            headerFooterDivMargin = 'margin-left:8px;';
+            
         }
         // tslint:disable-next-line:max-line-length
-        var headerTopDiv = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, headerFooterDivMargin + 'display:inline-flex;margin-bottom:8px;');
+        var headerTopDiv = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:15px;');
         // tslint:disable-next-line:max-line-length
-        var headerTopLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: width + 'margin-top: 10px;' });
+        var headerTopLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);
         // tslint:disable-next-line:max-line-length
         var headerFromTop = createElement('input', { id: 'headerFromTop', className: 'e-de-prop-sub-label' });
         headerTopDiv.appendChild(headerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.headerFromTop = new NumericTextBox({ value: 36, cssClass: 'e-de-prop-header-numeric', width: 85, showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0 });
+        this.headerFromTop = new NumericTextBox({
+            value: 36, cssClass: 'e-de-prop-header-numeric',
+            showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
+        });
         this.headerFromTop.appendTo(headerFromTop);
         // tslint:disable-next-line:max-line-length
         this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header.'));
         // tslint:disable-next-line:max-line-length
-        var footerBottomDiv = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv, headerFooterDivMargin + 'display:inline-flex;');
+        var footerBottomDiv = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv);
         // tslint:disable-next-line:max-line-length
-        var footerBottomLabel = createElement('label', { styles: width + 'margin-top: 10px;', className: 'e-de-prop-sub-label' });
+        var footerBottomLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         footerBottomLabel.innerHTML = localObj.getConstant('Footer from Bottom');
         footerBottomDiv.appendChild(footerBottomLabel);
         // tslint:disable-next-line:max-line-length
         var footerFromTop = createElement('input', { id: 'footerFromTop', className: 'e-de-prop-sub-label' });
         footerBottomDiv.appendChild(footerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.footerFromTop = new NumericTextBox({ value: 36, cssClass: 'e-de-prop-header-numeric', width: 85, showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0 });
+        this.footerFromTop = new NumericTextBox({
+            value: 36, cssClass: 'e-de-prop-header-numeric',
+            showSpinButton: false, format: 'n0', decimals: 2, max: 1584, min: 0, enableRtl: this.isRtl
+        });
         this.footerFromTop.appendTo(footerFromTop);
         // tslint:disable-next-line:max-line-length
         this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer.'));
-        var positionLine = createElement('div', { className: 'e-de-prop-header-line', styles: 'margin-top:10px;' });
-        positionLabelDiv.appendChild(positionLine);
     };
     HeaderFooterProperties.prototype.createDivTemplate = function (id, parentDiv, style) {
         var divElement;
@@ -65467,12 +65663,12 @@ var ImageProperties = /** @__PURE__ @class */ (function () {
         this.initImageProp = function () {
             var localObj = new L10n('documenteditorcontainer', _this.container.defaultLocale, _this.container.locale);
             // tslint:disable-next-line:max-line-length
-            var imageDiv = createElement('div', { id: _this.elementId + '_imageDiv', className: 'e-de-property-div-padding', styles: 'border:0px' });
+            var imageDiv = createElement('div', { id: _this.elementId + '_imageDiv', className: 'e-de-cntr-pane-padding', styles: 'border:0px' });
             _this.element.appendChild(imageDiv);
-            var label = createElement('label', { className: 'e-de-ctnr-prop-label', styles: 'padding:3px' });
+            var label = createElement('label', { className: 'e-de-ctnr-prop-label' });
             label.textContent = localObj.getConstant('Image');
             imageDiv.appendChild(label);
-            var outerDiv = createElement('div', { styles: 'margin-left:2px;' });
+            var outerDiv = createElement('div');
             imageDiv.appendChild(outerDiv);
             // tslint:disable-next-line:max-line-length
             _this.widthElement = _this.createImagePropertiesDiv('_widthDiv', outerDiv, '_widthInput', localObj.getConstant('W'), localObj.getConstant('Width'));
@@ -65485,7 +65681,7 @@ var ImageProperties = /** @__PURE__ @class */ (function () {
             _this.heightNumericBox = new NumericTextBox({ min: 0, max: 23500, cssClass: 'e-de-image-property', showSpinButton: false, format: 'n0', decimals: 2 });
             _this.heightNumericBox.appendTo(_this.heightElement);
             // tslint:disable-next-line:max-line-length        
-            var aspectRatioDiv = createElement('div', { id: _this.elementId + '_aspectRatioDiv', styles: 'height:14px;margin-left:5px;float:left' });
+            var aspectRatioDiv = createElement('div', { id: _this.elementId + '_aspectRatioDiv' });
             aspectRatioDiv.setAttribute('title', localObj.getConstant('Aspect ratio'));
             outerDiv.appendChild(aspectRatioDiv);
             // tslint:disable-next-line:max-line-length
@@ -65496,7 +65692,7 @@ var ImageProperties = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.createImagePropertiesDiv = function (id, outerDiv, inputId, spanContent, tooltip) {
             // tslint:disable-next-line:max-line-length
-            var divElement = createElement('div', { id: _this.elementId + id, styles: 'position: relative;width: 100%;margin-right:6px; float:left;margin-bottom: 7px;' });
+            var divElement = createElement('div', { id: _this.elementId + id, styles: 'position: relative;width: 100%;', className: 'e-de-ctnr-segment' });
             divElement.setAttribute('title', tooltip);
             outerDiv.appendChild(divElement);
             // tslint:disable-next-line:max-line-length
@@ -65634,13 +65830,15 @@ var TocProperties = /** @__PURE__ @class */ (function () {
         this.initializeTocPane = function () {
             _this.localObj = new L10n('documenteditorcontainer', _this.container.defaultLocale, _this.container.locale);
             // tslint:disable-next-line:max-line-length
-            _this.element = createElement('div', { id: _this.elementId + '_tocProperties', styles: 'padding:9px;width:269px' });
-            _this.tocHeaderDiv();
-            _this.initTemplates();
-            _this.tocOptionsDiv();
-            _this.contentStylesDropdown();
-            _this.checkboxContent();
-            _this.buttonDiv();
+            _this.element = createElement('div', { id: _this.elementId + '_tocProperties', styles: 'width:270px' });
+            var container = createElement('div', { className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
+            _this.tocHeaderDiv(container);
+            _this.initTemplates(container);
+            container = createElement('div', { className: 'e-de-cntr-pane-padding' });
+            _this.tocOptionsDiv(container);
+            _this.contentStylesDropdown(container);
+            _this.checkboxContent(container);
+            _this.buttonDiv(container);
             _this.wireEvents();
             _this.updateTocProperties();
             _this.container.propertiesPaneContainer.appendChild(_this.element);
@@ -65667,25 +65865,23 @@ var TocProperties = /** @__PURE__ @class */ (function () {
                 _this.container.showPropertiesPane = false;
             }
         };
-        this.tocHeaderDiv = function () {
+        this.tocHeaderDiv = function (container) {
             var closeButtonFloat;
-            var headerDivMargin;
             var closeButtonMargin;
             if (!_this.isRtl) {
                 closeButtonFloat = 'float:right;';
-                headerDivMargin = 'margin-left:5.5px;';
                 closeButtonMargin = 'margin-right:7px;';
             }
             else {
                 closeButtonFloat = 'float:left;';
-                headerDivMargin = 'margin-right:5.5px;';
                 closeButtonMargin = 'margin-left:7px;';
             }
             var headerDiv = createElement('div', {
                 id: _this.elementId + 'toc_id',
-                styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
+                styles: 'display: block;'
             });
-            _this.element.appendChild(headerDiv);
+            container.appendChild(headerDiv);
+            _this.element.appendChild(container);
             var title = createElement('label', {
                 className: 'e-de-ctnr-prop-label'
             });
@@ -65697,20 +65893,19 @@ var TocProperties = /** @__PURE__ @class */ (function () {
             });
             headerDiv.appendChild(_this.closeButton);
         };
-        this.initTemplates = function () {
-            _this.template1();
+        this.initTemplates = function (container) {
+            _this.template1(container);
             // tslint:disable-next-line:max-line-length
-            var div = createElement('div', { styles: 'display:block;border-top: 1px solid #E0E0E0;' });
-            _this.element.appendChild(div);
+            // let div: HTMLElement = createElement('div', { styles: 'display:block;border-top: 1px solid #E0E0E0;' }); this.element.appendChild(div);
         };
-        this.template1 = function () {
+        this.template1 = function (container) {
             _this.template1Div = createElement('div', {
                 className: 'e-de-toc-template1'
             });
             if (_this.isRtl) {
                 _this.template1Div.classList.add('e-de-rtl');
             }
-            _this.element.appendChild(_this.template1Div);
+            container.appendChild(_this.template1Div);
             var templateContent1 = createElement('div', {
                 className: 'e-de-toc-template1-content1'
             });
@@ -65727,11 +65922,10 @@ var TocProperties = /** @__PURE__ @class */ (function () {
             templateContent3.textContent = _this.localObj.getConstant('HEADING - - - - 3');
             _this.template1Div.appendChild(templateContent3);
         };
-        this.tocOptionsDiv = function () {
-            var optionsDiv = createElement('div', {
-                className: 'e-de-toc-optionsdiv'
-            });
-            _this.element.appendChild(optionsDiv);
+        this.tocOptionsDiv = function (container) {
+            var optionsDiv = createElement('div');
+            container.appendChild(optionsDiv);
+            _this.element.appendChild(container);
             if (_this.isRtl) {
                 optionsDiv.classList.add('e-de-rtl');
             }
@@ -65740,52 +65934,49 @@ var TocProperties = /** @__PURE__ @class */ (function () {
             optionsDiv.appendChild(label);
         };
         /* tslint:disable */
-        this.contentStylesDropdown = function () {
-            var contentStyleElementMargin;
+        this.contentStylesDropdown = function (container) {
             if (!_this.isRtl) {
-                contentStyleElementMargin = 'margin-left:5.5px;';
+                
             }
             else {
-                contentStyleElementMargin = 'margin-right:5.5px;';
+                
             }
-            var contentStyleElement = createElement('div', { id: 'contentstyle_div', styles: 'margin-bottom: 10px;' + contentStyleElementMargin });
+            var contentStyleElement = createElement('div', { id: 'contentstyle_div' });
             // tslint:disable-next-line:max-line-length
             contentStyleElement.setAttribute('title', _this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents.'));
-            _this.element.appendChild(contentStyleElement);
+            container.appendChild(contentStyleElement);
             // let items: ItemModel[] = [{ text: '___________', id: 'solid' }];
             // this.borderStyle = this.createDropDownButton(
             //     this.elementId + '_borderStyleDiv',
             //     'width:120px;height:28px;margin-top:8px', contentStyleElement, 'e-de-icon-stroke-size', 'Solid', items
             // );
-            var labelMargin;
             if (!_this.isRtl) {
-                labelMargin = 'margin-right:8px;';
+                
             }
             else {
-                labelMargin = 'margin-left:8px';
+                
             }
-            var label = createElement('label', { className: 'e-de-prop-sub-label', styles: labelMargin });
+            var label = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
             label.textContent = _this.localObj.getConstant('Levels');
             contentStyleElement.appendChild(label);
-            _this.element.appendChild(contentStyleElement);
+            container.appendChild(contentStyleElement);
             var dataSource = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
             _this.borderLevelStyle = _this.createDropDownButton(_this.elementId + '_borderLevelDiv', contentStyleElement, '', dataSource, 2);
             _this.borderLevelStyle.change = function (args) {
                 _this.borderLevelStyle.value = args.item.value;
             };
-            _this.element.appendChild(contentStyleElement);
+            container.appendChild(contentStyleElement);
         };
-        this.checkboxContent = function () {
-            var checkboxElementMargin;
+        this.checkboxContent = function (container) {
             if (!_this.isRtl) {
-                checkboxElementMargin = 'margin-left:5.5px;';
+                
             }
             else {
-                checkboxElementMargin = 'margin-right:5.5px;';
+                
             }
             // tslint:disable-next-line:max-line-length
-            var checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' + checkboxElementMargin });
-            _this.element.appendChild(checkboxElement);
+            var checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' });
+            container.appendChild(checkboxElement);
             var showPageNumberDiv = createElement('div', { className: 'e-de-toc-checkbox1' });
             showPageNumberDiv.setAttribute('title', _this.localObj.getConstant('Show page numbers in table of contents.'));
             checkboxElement.appendChild(showPageNumberDiv);
@@ -65820,7 +66011,7 @@ var TocProperties = /** @__PURE__ @class */ (function () {
             });
             _this.hyperlink.appendTo(hyperlinkCheckboxElement);
         };
-        this.buttonDiv = function () {
+        this.buttonDiv = function (container) {
             var footerElementFloat;
             if (!_this.isRtl) {
                 footerElementFloat = 'float:right';
@@ -65829,7 +66020,7 @@ var TocProperties = /** @__PURE__ @class */ (function () {
                 footerElementFloat = 'float:left';
             }
             var footerElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
-            _this.element.appendChild(footerElement);
+            container.appendChild(footerElement);
             var updatebuttoncontentStyleElement = createElement('button', { id: 'footerupdatebuttonDiv' });
             footerElement.appendChild(updatebuttoncontentStyleElement);
             _this.updateBtn = new Button({
@@ -65913,7 +66104,7 @@ var TocProperties = /** @__PURE__ @class */ (function () {
         }
         var liInnerDiv = createElement('div', {
             className: 'e-de-list-header-presetmenu',
-            id: 'ui-zlist0', innerHTML: innerHTML
+            innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
         return liTag;
@@ -65923,7 +66114,7 @@ var TocProperties = /** @__PURE__ @class */ (function () {
         var buttonElement = createElement('input', { id: id });
         parentDiv.appendChild(buttonElement);
         // tslint:disable-next-line:max-line-length  
-        var dropDownBtn = new DropDownList({ index: selectedIndex, dataSource: content, width: '75px', popupWidth: '75px', cssClass: 'e-de-prop-font-button' }, buttonElement);
+        var dropDownBtn = new DropDownList({ index: selectedIndex, dataSource: content, popupHeight: '150px', cssClass: 'e-de-prop-font-button' }, buttonElement);
         return dropDownBtn;
     };
     TocProperties.prototype.destroy = function () {
@@ -65960,9 +66151,10 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         this.isBottomMarginApply = false;
         this.isLeftMarginApply = false;
         this.borderColor = '#000000';
+        this.groupButtonClass = 'e-de-ctnr-group-btn e-btn-group';
         this.initializeTablePropPane = function () {
             _this.localObj = new L10n('documenteditorcontainer', _this.container.defaultLocale, _this.container.locale);
-            _this.tableProperties = createElement('div', { id: _this.elementId + '_tableProperties', styles: 'width:269px;' });
+            _this.tableProperties = createElement('div', { id: _this.elementId + '_tableProperties' });
             _this.initFillColorDiv();
             _this.initBorderStylesDiv();
             _this.initCellDiv();
@@ -65975,8 +66167,8 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         };
         this.addTablePropertyTab = function () {
             // tslint:disable-next-line:max-line-length
-            _this.parentElement = createElement('div', { styles: 'width:269px;height:100%;overflow:auto;display:none' });
-            _this.element = createElement('div', { id: _this.elementId + '_propertyTabDiv', className: 'e-de-property-tab', styles: 'width:269px' });
+            _this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-table-pane' });
+            _this.element = createElement('div', { id: _this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
             // tslint:disable-next-line:max-line-length
             var items = [{ header: { text: _this.localObj.getConstant('Table') }, content: _this.tableProperties }, { header: { text: _this.localObj.getConstant('Text') }, content: _this.tableTextProperties.element }];
             _this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: _this.onTabSelection }, _this.element);
@@ -66170,10 +66362,14 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             var fillDiv = createElement('div', { id: _this.elementId + '_fillColorDiv', className: 'e-de-property-div-padding de-tbl-fill-clr' });
             _this.tableProperties.appendChild(fillDiv);
-            var label = createElement('label', { className: 'e-de-prop-sub-label', styles: 'margin-left:6px;margin-right:8px' });
+            var label = createElement('label', { className: 'e-de-prop-sub-label' });
+            label.classList.add('e-de-prop-fill-label');
+            if (_this.isRtl) {
+                label.classList.add('e-de-rtl');
+            }
             label.textContent = _this.localObj.getConstant('Fill');
             fillDiv.appendChild(label);
-            _this.shadingBtn = _this.createColorPickerTemplate(_this.elementId + '_tableShading', fillDiv, _this.localObj.getConstant('Fill color'));
+            _this.shadingBtn = _this.createColorPickerTemplate(_this.elementId + '_tableShading', fillDiv, _this.localObj.getConstant('Fill color'), false);
             // tslint:disable-next-line:max-line-length
             classList(fillDiv.lastElementChild.lastElementChild.lastElementChild.firstChild, ['e-de-ctnr-cellbg-clr-picker'], ['e-caret']);
         };
@@ -66181,25 +66377,25 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             var borderStyleDiv = createElement('div', { className: 'e-de-property-div-padding' });
             _this.tableProperties.appendChild(borderStyleDiv);
             var label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = _this.localObj.getConstant('Border Style');
             borderStyleDiv.appendChild(label);
-            var parentDivMargin;
-            if (!_this.isRtl) {
-                parentDivMargin = 'margin-right:9px;';
-            }
-            else {
-                parentDivMargin = 'margin-left:9px;';
-            }
             // tslint:disable-next-line:max-line-length
-            var parentDiv = createElement('div', { id: _this.elementId + '_borderStyleDiv', styles: 'display:inline-flex;margin-bottom:3px;' + parentDivMargin });
-            var styleDiv = createElement('div', { styles: 'width:120px;' });
-            var div1 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-top' });
+            var parentDiv = createElement('div', { id: _this.elementId + '_borderStyleDiv', className: 'e-de-border-style-div', styles: 'display:inline-flex;' });
+            var styleDiv = createElement('div', { styles: 'width:126px;height:126px', className: 'e-de-grp-btn-ctnr' });
+            var div1 = createElement('div', { className: _this.groupButtonClass + ' e-de-ctnr-group-btn-top' });
             styleDiv.appendChild(div1);
-            var div2 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-middle' });
+            var div2 = createElement('div', { className: _this.groupButtonClass + ' e-de-ctnr-group-btn-middle' });
             styleDiv.appendChild(div2);
-            var div3 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-bottom' });
+            var div3 = createElement('div', { className: _this.groupButtonClass + ' e-de-ctnr-group-btn-bottom' });
             styleDiv.appendChild(div3);
-            var btnStyle = 'width:' + 40 + 'px;';
+            if (_this.isRtl) {
+                div1.classList.add('e-de-rtl');
+                div3.classList.add('e-de-rtl');
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
+            var btnStyle = '';
             // tslint:disable-next-line:max-line-length
             _this.tableOutlineBorder = _this.createButtonTemplate(_this.elementId + '_tableOutlineBorder', 'e-de-ctnr-outsideborder e-icons', div1, 'e-de-prop-font-button', btnStyle, _this.localObj.getConstant('Outside borders'));
             _this.tableAllBorder = _this.createButtonTemplate(_this.elementId + '_tableAllBorder', 'e-de-ctnr-allborders e-icons', div1, 'e-de-prop-font-button', btnStyle, _this.localObj.getConstant('All borders'));
@@ -66215,22 +66411,22 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             _this.tableBottomBorder = _this.createButtonTemplate(_this.elementId + '_tableBottomBorder', 'e-de-ctnr-bottomborder e-icons', div3, 'e-de-prop-font-button', btnStyle, _this.localObj.getConstant('Bottom border'));
             parentDiv.appendChild(styleDiv);
-            var styleTypeDivPadding;
+            // tslint:disable-next-line:max-line-length
+            var styleTypeDiv = createElement('div', { className: 'de-tbl-fill-clr' });
             if (!_this.isRtl) {
-                styleTypeDivPadding = 'padding-left:12px;';
+                styleTypeDiv.classList.add('e-de-stylediv');
             }
             else {
-                styleTypeDivPadding = 'padding-right:12px;';
+                styleTypeDiv.classList.add('e-de-stylediv-rtl');
             }
             // tslint:disable-next-line:max-line-length
-            var styleTypeDiv = createElement('div', { styles: 'width:120px;' + styleTypeDivPadding, className: 'de-tbl-fill-clr' });
-            _this.borderBtn = _this.createColorPickerTemplate(_this.elementId + '_tableBorderColor', styleTypeDiv, _this.localObj.getConstant('Border color'));
+            _this.borderBtn = _this.createColorPickerTemplate(_this.elementId + '_tableBorderColor', styleTypeDiv, _this.localObj.getConstant('Border color'), true);
             _this.borderBtn.value = '#000000';
             styleTypeDiv.firstElementChild.lastElementChild.lastElementChild.style.width = '30px';
-            styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild.style.width = '60px';
+            styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild.style.width = '100%';
             // tslint:disable-next-line:max-line-length
             classList(styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild, ['e-de-ctnr-highlightcolor'], ['e-caret']);
-            var borderSizeButton = createElement('button', { id: _this.elementId + '_tableBorderSize', styles: 'width:100px;height:28px;margin-top:8px;font-size:10px;padding:0px;' });
+            var borderSizeButton = createElement('button', { id: _this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;' });
             styleTypeDiv.appendChild(borderSizeButton);
             _this.borderSize = _this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', borderSizeButton);
             parentDiv.appendChild(styleTypeDiv);
@@ -66241,9 +66437,15 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             var cellDiv = createElement('div', { className: 'e-de-property-div-padding' });
             _this.tableProperties.appendChild(cellDiv);
             var label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = _this.localObj.getConstant('Cell');
             cellDiv.appendChild(label);
             var parentDiv = createElement('div', { className: 'e-de-ctnr-group-btn' });
+            parentDiv.classList.add('e-de-cell-div');
+            if (_this.isRtl) {
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
             var btnStyle = 'width:' + 38 + 'px;';
             // tslint:disable-next-line:max-line-length
             _this.horizontalMerge = _this.createButtonTemplate(_this.elementId + '_tableOutlineBorder', 'e-de-ctnr-mergecell e-icons', parentDiv, 'e-de-prop-font-button', btnStyle, 'Merge cells');
@@ -66254,12 +66456,21 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             var tableOperationDiv = createElement('div', { className: 'e-de-property-div-padding' });
             _this.tableProperties.appendChild(tableOperationDiv);
             var label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = _this.localObj.getConstant('Insert / Delete');
             tableOperationDiv.appendChild(label);
-            var parentDiv = createElement('div', { styles: 'display:inline-flex' });
-            var div1 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+            var parentDiv = createElement('div', { className: 'e-de-insert-del-cell', styles: 'display:inline-flex' });
+            var div1 = createElement('div', { className: _this.groupButtonClass });
             parentDiv.appendChild(div1);
-            var div2 = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+            var div2 = createElement('div', { className: _this.groupButtonClass });
+            if (!_this.isRtl) {
+                div2.style.marginLeft = '12px';
+            }
+            else {
+                div2.style.marginRight = '12px';
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
             parentDiv.appendChild(div2);
             var btnStyle = 'width:' + 38 + 'px;';
             // tslint:disable-next-line:max-line-length
@@ -66269,7 +66480,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             _this.insertRowAbove = _this.createButtonTemplate(_this.elementId + '_insertRowAbove', 'e-de-ctnr-insertabove e-icons', div1, 'e-de-prop-font-button', btnStyle, _this.localObj.getConstant('Insert rows above'));
             _this.insertRowBelow = _this.createButtonTemplate(_this.elementId + '_insertRowBelow', 'e-de-ctnr-insertbelow e-icons', div1, 'e-de-prop-font-button', btnStyle, _this.localObj.getConstant('Insert rows below'));
             // tslint:disable-next-line:max-line-length
-            _this.deleteRow = _this.createButtonTemplate(_this.elementId + '_deleteRow', 'e-de-ctnr-deleterows e-icons', div2, 'e-de-prop-font-button', btnStyle + 'margin-left:9px', _this.localObj.getConstant('Delete rows'));
+            _this.deleteRow = _this.createButtonTemplate(_this.elementId + '_deleteRow', 'e-de-ctnr-deleterows e-icons', div2, 'e-de-prop-font-button', btnStyle, _this.localObj.getConstant('Delete rows'));
             _this.deleteColumn = _this.createButtonTemplate(_this.elementId + '_deleteColumn', 'e-de-ctnr-deletecolumns e-icons', div2, 'e-de-prop-font-button', btnStyle, _this.localObj.getConstant('Delete columns'));
             tableOperationDiv.appendChild(parentDiv);
         };
@@ -66277,11 +66488,15 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             var cellMarginDiv = createElement('div', { className: 'e-de-property-div-padding e-de-cellmargin-text' });
             _this.tableProperties.appendChild(cellMarginDiv);
             var label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = _this.localObj.getConstant('Cell Margin');
             cellMarginDiv.appendChild(label);
-            var parentDiv = createElement('div', { styles: 'height: 60px;display:inline-flex' });
-            var textboxDivStyle = 'width:' + 50 + 'px';
-            var textboxParentDivStyle = 'width:' + 50 + 'px;float:left;margin-right:' + 9 + 'px';
+            var parentDiv = createElement('div', { className: 'e-de-cell-margin', styles: 'height: 60px;display:inline-flex' });
+            if (_this.isRtl) {
+                label.classList.add('e-de-rtl');
+            }
+            var textboxDivStyle = 'width:' + 48 + 'px';
+            var textboxParentDivStyle = 'width:' + 50 + 'px;float:left;';
             // tslint:disable-next-line:max-line-length
             _this.topMargin = _this.createCellMarginTextBox(_this.localObj.getConstant('Top'), _this.elementId + '_topMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, 'Top margin');
             // tslint:disable-next-line:max-line-length
@@ -66296,10 +66511,15 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             var alignmentDiv = createElement('div', { className: 'e-de-property-div-padding', styles: 'border-bottom-width:0px' });
             _this.tableProperties.appendChild(alignmentDiv);
             var label = createElement('label', { className: 'e-de-ctnr-prop-label' });
+            label.classList.add('e-de-table-prop-label');
             label.textContent = _this.localObj.getConstant('Align Text');
             alignmentDiv.appendChild(label);
-            var parentDiv = createElement('div', { styles: 'margin-bottom: 10px;' });
-            var div = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+            var parentDiv = createElement('div', { className: 'e-de-align-text', styles: 'margin-bottom: 10px;' });
+            if (_this.isRtl) {
+                parentDiv.classList.add('e-de-rtl');
+                label.classList.add('e-de-rtl');
+            }
+            var div = createElement('div', { className: _this.groupButtonClass });
             parentDiv.appendChild(div);
             var btnStyle = 'width:' + 38 + 'px;';
             // tslint:disable-next-line:max-line-length
@@ -66318,6 +66538,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.createCellMarginTextBox = function (textboxLabel, textboxId, parentDiv, styles, parentStyle, maxValue, toolTipText) {
             var cellMarginParentDiv = createElement('div', { styles: parentStyle });
+            cellMarginParentDiv.classList.add('e-de-cell-text-box');
             var cellMarginLabel = createElement('label', { className: 'e-de-prop-sub-label' });
             cellMarginLabel.textContent = textboxLabel;
             cellMarginParentDiv.appendChild(cellMarginLabel);
@@ -66333,7 +66554,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         this.createBorderSizeDropDown = function (iconcss, button) {
             var div = createElement('div', { id: 'borderSizeTarget', styles: 'display:none' });
             var ulTag = createElement('ul', {
-                styles: 'display: block; outline: 0px; width: 120px; height: auto;',
+                styles: 'display: block; outline: 0px; width: 126px; height: auto;',
                 id: 'borderSizeListMenu'
             });
             div.appendChild(ulTag);
@@ -66378,7 +66599,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         this.createDropdownOption = function (ulTag, text) {
             var liTag = createElement('li', {
                 styles: 'display:block',
-                className: 'ui-wfloating-menuitem ui-wfloating-menuitem-md de-list-items  de-list-item-size'
+                className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
             });
             ulTag.appendChild(liTag);
             var innerHTML;
@@ -66387,15 +66608,15 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             }
             else if (text === '1.5px') {
                 // tslint:disable-next-line:max-line-length
-                innerHTML = '<div>' + text + '<span class="ui-list-line e-de-border-width"  style="margin-left:10px;border-bottom-width:' + text + ';border-bottom-color:' + _this.borderColor + '"' + '></span></div>';
+                innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width"  style="margin-left:10px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
             }
             else {
                 // tslint:disable-next-line:max-line-length
-                innerHTML = '<div>' + text + '<span class="ui-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' + text + ';border-bottom-color:' + _this.borderColor + '"' + '></span></div>';
+                innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
             }
             var liInnerDiv = createElement('div', {
-                className: 'ui-list-header-presetmenu',
-                id: 'ui-zlist0', innerHTML: innerHTML
+                className: 'e-de-list-header-presetmenu',
+                innerHTML: innerHTML
             });
             liTag.appendChild(liInnerDiv);
             return liTag;
@@ -66404,8 +66625,12 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         this.createDropDownButton = function (id, styles, parentDiv, iconCss, content, items, target) {
             var buttonElement = createElement('button', { id: id, styles: styles });
             parentDiv.appendChild(buttonElement);
+            var splitButtonClass = 'e-de-prop-splitbutton';
+            if (_this.isRtl) {
+                splitButtonClass = 'e-rtl ' + splitButtonClass;
+            }
             // tslint:disable-next-line:max-line-length
-            var dropDownBtn = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: _this.isRtl, cssClass: 'e-de-prop-splitbutton' }, buttonElement);
+            var dropDownBtn = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: _this.isRtl, cssClass: splitButtonClass }, buttonElement);
             if (items) {
                 dropDownBtn.items = items;
             }
@@ -66414,11 +66639,15 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             }
             return dropDownBtn;
         };
-        this.createColorPickerTemplate = function (id, divElement, toolTipText) {
+        this.createColorPickerTemplate = function (id, divElement, toolTipText, isBorderWidth) {
             var inputElement = createElement('input', { id: id });
             divElement.appendChild(inputElement);
+            var cssClass = 'e-de-prop-font-button e-de-prop-font-colorpicker';
+            if (isBorderWidth) {
+                cssClass = cssClass + ' e-de-border-clr-picker';
+            }
             // tslint:disable-next-line:max-line-length
-            var colorPicker = new ColorPicker({ showButtons: true, cssClass: 'e-de-prop-font-button e-de-prop-font-colorpicker', enableRtl: _this.isRtl, locale: _this.container.locale }, inputElement);
+            var colorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: _this.isRtl, locale: _this.container.locale }, inputElement);
             inputElement.parentElement.setAttribute('title', toolTipText);
             return colorPicker;
         };
@@ -66445,6 +66674,9 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         };
         this.container = container;
         this.isRtl = isRtl;
+        if (this.isRtl) {
+            this.groupButtonClass = 'e-rtl ' + this.groupButtonClass;
+        }
         this.tableTextProperties = new TextProperties(container, 'textProperties', true, this.isRtl);
         this.imageProperty = imageProperty;
         this.elementId = this.documentEditor.element.id;
@@ -66546,7 +66778,8 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             }
             _this.updatePageNumber();
             div.appendChild(_this.editablePageNumber);
-            _this.editablePageNumber.setAttribute('title', 'The current page number in the document. Click or tap to navigate specific page.');
+            // tslint:disable-next-line:max-line-length
+            _this.editablePageNumber.setAttribute('title', _this.localObj.getConstant('The current page number in the document. Click or tap to navigate specific page.'));
             var label1 = createElement('label', { styles: 'width:16px' });
             label1.textContent = ' ' + _this.localObj.getConstant('of') + ' ';
             div.appendChild(label1);
@@ -66873,7 +67106,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                 'Access to system clipboard through script is denied due to browsers security policy. Instead, </br>' +
                 ' 1. You can enable internal clipboard to cut, copy and paste within the component.</br>' +
                 ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
-            'Restrict editing.': 'Restrict editing.'
+            'Restrict editing.': 'Restrict editing.',
+            // tslint:disable-next-line:max-line-length
+            'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.'
         };
         return _this;
     }
@@ -66982,6 +67217,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             viewChange: this.onViewChange.bind(this),
             locale: this.locale
         });
+        this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
         this.documentEditor.pageOutline = '#E0E0E0';
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);

@@ -3,15 +3,15 @@
  */
 import { Maps, MapsTooltip, Legend, ITooltipRenderEventArgs, ILoadEventArgs, MapsTheme, MapAjax} from '../src/index';
 import { world_cup } from './MapData/SouthAmerica_Countries';
-import { world_Map } from './MapData/worldMap';
+
 Maps.Inject(MapsTooltip, Legend);
 
     let maps: Maps = new Maps({
         tooltipRender: (args: ITooltipRenderEventArgs) => {
-            if (!args.options['data']) {
-                args.cancel = true;
+            if (args.content.toString().indexOf('undefined') > -1) {
+            args.cancel = true;
             }
-        },
+            },
         titleSettings: {
             text: 'Finalist in Cricket World Cup',
             textStyle: {
@@ -31,7 +31,7 @@ Maps.Inject(MapsTooltip, Legend);
         },
         layers: [
             {
-                shapeData: world_Map,
+                shapeData:new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
                 shapePropertyPath: 'name',
                 shapeDataPath: 'name',
                 dataSource: world_cup,

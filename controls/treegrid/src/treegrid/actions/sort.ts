@@ -15,6 +15,7 @@ export class Sort {
   private storedIndex: number;
   private parent: TreeGrid;
   private isSelfReference: boolean;
+  private rootIndex: number;
 
   constructor(grid: TreeGrid) {
     Grid.Inject(GridSort);
@@ -22,6 +23,7 @@ export class Sort {
     this.taskIds = [];
     this.flatSortedData = [];
     this.storedIndex = -1;
+    this.rootIndex = -1;
     this.isSelfReference = !isNullOrUndefined(this.parent.parentIdMapping);
     this.addEventListener();
   }
@@ -60,7 +62,7 @@ export class Sort {
 
   private createSortRecords(data: Object): void {
     let sortData: Object = getObject('modifiedData', data); let parentRecords: ITreeData = getObject('parentRecords', data);
-    let filteredResult: Object[] = getObject('filteredResult', data);
+    let parentIndex: number = getObject('parentIndex', data); let filteredResult: Object[] = getObject('filteredResult', data);
     let dataLength: number = Object.keys(sortData).length;
     for (let i: number = 0, len: number = dataLength; i < len; i++) {
       let currentSortData: ITreeData = sortData[i];
@@ -83,8 +85,14 @@ export class Sort {
         currentSortData.parentItem = parentData;
         currentSortData.parentUniqueID = parentData.uniqueID;
         level = parentRecords.level + 1;
+        currentSortData.parentIndex = parentIndex;
       }
       currentSortData.level = level;
+      if (isNullOrUndefined(currentSortData.parentIndex)) {
+        this.rootIndex = currentSortData.index;
+      } else {
+        currentSortData.rootIndex = this.rootIndex;
+      }
       if (
         isNullOrUndefined(currentSortData[this.parent.parentIdMapping]) ||
         currentSortData.parentItem
@@ -93,7 +101,7 @@ export class Sort {
       }
       if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
         this.createSortRecords({ modifiedData: currentSortData[this.parent.childMapping], parentRecords: currentSortData,
-          filteredResult: filteredResult });
+          parentIndex: this.storedIndex, filteredResult: filteredResult });
       }
     }
     this.parent.notify('Sorting', {sortedData: this.flatSortedData, filteredData: filteredResult});

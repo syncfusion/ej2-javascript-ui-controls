@@ -99,5 +99,5 @@ Check the license detail [here](https://github.com/syncfusion/ej2-base/blob/mast
 
 Check the changelog [here](https://ej2.syncfusion.com/documentation/release-notes?utm_source=npm&utm_campaign=ej2-base)
 
-    © Copyright 2018 Syncfusion, Inc. All Rights Reserved.
+    © Copyright 2019 Syncfusion, Inc. All Rights Reserved.
     The Syncfusion Essential Studio license and copyright applies to this distribution.

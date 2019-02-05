@@ -6,7 +6,6 @@ import { TextStyleModel, MarginModel } from '../../../src/diagram/core/appearanc
 import { HorizontalAlignment, VerticalAlignment, NodeConstraints } from '../../../src/diagram/enum/enum';
 import { ConnectorModel, BpmnFlowModel } from '../../../src/diagram/objects/connector-model';
 import { BpmnFlow } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 Diagram.Inject(BpmnDiagrams);
 
@@ -19,12 +18,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn2' });
             document.body.appendChild(ele);
             //gateway
@@ -147,19 +140,13 @@ describe('Diagram Control', () => {
             expect(((diagram.nodes[6] as NodeModel).shape as BpmnShapeModel).dataObject.type === 'None' &&
                 ((diagram.nodes[6] as NodeModel).shape as BpmnShapeModel).dataObject.collection === false).toBe(true); done();
         });
-     });
+    });
 
     describe('Property Change - BPMN Shape - events', () => {
         let diagram: Diagram; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn3' });
             document.body.appendChild(ele);
             //event- event and trigger
@@ -251,19 +238,13 @@ describe('Diagram Control', () => {
 
             expect(((diagram.nodes[0] as NodeModel).shape as BpmnShapeModel).event.event === 'Intermediate').toBe(true); done();
         });
-       });
+    });
 
     describe('Property Change - BPMN Shape - task and loop', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn4' });
             document.body.appendChild(ele);
             let node0: NodeModel = {
@@ -373,19 +354,14 @@ describe('Diagram Control', () => {
                 (((diagram.nodes[0] as NodeModel).shape as BpmnShapeModel).activity.task.loop === 'SequenceMultiInstance'
                 )).toBe(true); done();
         });
-      });
+
+    });
 
     describe('Property Change - BPMN Shape - adhoc and boundary', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn5' });
             document.body.appendChild(ele);   //activity- subprocess -  adhoc
             let node1: NodeModel = {
@@ -481,19 +457,14 @@ describe('Diagram Control', () => {
 
             expect(((diagram.nodes[0] as NodeModel).shape as BpmnShapeModel).activity.subProcess.adhoc === false).toBe(true); done();
         });
-         });
+
+    });
 
     describe('Property Change - BPMN Shape - loop, collapsed, compensation', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn6' });
             document.body.appendChild(ele);   //activity- subprocess -  loop
             let node1: NodeModel = {
@@ -583,19 +554,13 @@ describe('Diagram Control', () => {
 
             expect(((diagram.nodes[0] as NodeModel).shape as BpmnShapeModel).activity.subProcess.loop === 'SequenceMultiInstance').toBe(true); done();
         });
-      });
+    });
 
     describe('Property Change - BPMN Shape', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn7' });
             document.body.appendChild(ele);
             //activity- annotations
@@ -679,19 +644,15 @@ describe('Diagram Control', () => {
             expect((((diagram.nodes[0] as NodeModel).shape as BpmnShapeModel).activity.subProcess.events[0].annotations[0].content) === 'Link'
             ).toBe(true); done();
         });
-         });
+
+
+    });
 
     describe('Property Change - BPMN Shape - width and height, event, offset', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn8' });
             document.body.appendChild(ele);
             //activity- width and height
@@ -779,7 +740,8 @@ describe('Diagram Control', () => {
             ).toBe(true);
             done();
         });
-       });
+
+    });
 
     describe('Property Change - BPMN Shape - margin and Alignmnet', () => {
         let diagram: Diagram;
@@ -787,12 +749,6 @@ describe('Diagram Control', () => {
         let subeventMargin: MarginModel = { left: 10, top: 10 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn8' });
             document.body.appendChild(ele);
             //activity- margin
@@ -869,19 +825,14 @@ describe('Diagram Control', () => {
                 (((diagram.nodes[0] as NodeModel).shape as BpmnShapeModel).activity.subProcess.events[0].margin.top === 25)
             ).toBe(true); done();
         });
-        });
+
+    });
 
     describe('Property Change - BPMN Shape -toggle - task subprocess', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn18' });
             document.body.appendChild(ele);
             //activity- subprocess
@@ -958,27 +909,12 @@ describe('Diagram Control', () => {
                 (((diagram.nodes[0] as NodeModel).shape as BpmnShapeModel).activity.task.loop === 'ParallelMultiInstance')
             ).toBe(true); done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 
     describe('Property Change - BPMN Shape connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn5conn' });
             document.body.appendChild(ele);
             let connector1: ConnectorModel = {
@@ -1102,12 +1038,6 @@ describe('Diagram Control', () => {
         let subeventMargin: MarginModel = { left: 10, top: 10 };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'bpmn8' });
             document.body.appendChild(ele);
 

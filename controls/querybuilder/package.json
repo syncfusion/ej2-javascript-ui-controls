@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-querybuilder",
-	"version": "16.4.42",
+	"version": "16.4.47",
 	"description": "Essential JS 2 QueryBuilder",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -51,6 +51,12 @@
 		"query-builder",
 		"ej2-query-builder",
 		"ej2-querybuilder",
+		"js querybuilder",
+		"js query builder",
+		"query builder js",
+		"query builder",
+		"javascript querybuilder",
+		"typescript querybuilder",
 		"querybuilder"
 	],
 	"repository": {

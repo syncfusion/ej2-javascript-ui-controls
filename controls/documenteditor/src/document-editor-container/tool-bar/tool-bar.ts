@@ -187,6 +187,7 @@ export class Toolbar {
         let id: string = this.container.element.id + TOOLBAR_ID;
         let locale: L10n = this.container.localObj;
         this.toolbar = new EJ2Toolbar({
+            enableRtl: this.container.enableRtl,
             clicked: this.clickHandler.bind(this),
             items: [
                 {
@@ -334,7 +335,9 @@ export class Toolbar {
                 this.toggleEditing(args.item.id);
                 break;
         }
-        this.container.documentEditor.focusIn();
+        if (args.item.id !== id + FIND_ID) {
+            this.container.documentEditor.focusIn();
+        }
     }
     private toggleLocalPaste(id: string): void {
         this.container.enableLocalPaste = !this.container.enableLocalPaste;
@@ -469,6 +472,9 @@ export class Toolbar {
      * @private
      */
     public showPropertiesPaneOnSelection = (): void => {
+        if (this.container.restrictEditing) {
+            return;
+        }
         let currentContext: string = this.documentEditor.selection.contextType;
         let isInHeaderFooter: boolean = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;

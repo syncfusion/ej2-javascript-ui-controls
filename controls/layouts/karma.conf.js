@@ -16,13 +16,10 @@ module.exports = function (config) {
       // list of files / patterns to load in the browser
       files: [
         "test-main.js",
-        "node_modules/@syncfusion/ej2-base/styles/material.css",
-        "styles/material.css",
         { pattern: "src/**/*.js", included: false },     
         { pattern: "spec/**/*.spec.js", included: false },
-        { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false },
-        { pattern: "node_modules/es6-promise/dist/es6-promise.js", included: false }
-      
+        { pattern: "node_modules/@syncfusion/ej2-base/**/*.js", included: false } 
+        // Add dependent package's script files here              
       ],
   
       // Avoid complete failure on no test case scenario

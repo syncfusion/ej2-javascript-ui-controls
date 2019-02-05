@@ -1,3 +1,4 @@
+
 import { DatePicker, PopupObjectArgs } from "../../src/datepicker/datepicker";
 import { Component, EventHandler, Property, Event, CreateBuilder, Internationalization, setCulture, Ajax } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -240,6 +241,48 @@ describe('Datepicker', () => {
             expect(datepicker.element.value).toBe("hgfnfhg");
             expect(datepicker.value).toBe(null)
         });
+        it('invalid string type with value less than six integers test case', () => {
+            datepicker = new DatePicker({ value: <any>"2019" });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe("2019");
+            expect(datepicker.value).toBe(null)
+        });
+        it('change event for invalid string type  with test case', () => {
+            datepicker = new DatePicker({
+                value: <any>'1/1/2019',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+            });
+            datepicker.appendTo('#date');
+            datepicker.value = "2019";
+            datepicker.dataBind();
+            expect(datepicker.value).toBe(null)
+        });
+        it('change event for invalid string type  with empty string', () => {
+            datepicker = new DatePicker({
+                value: <any>'1/1/2019',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+            });
+            datepicker.appendTo('#date');
+            datepicker.value = "";
+            datepicker.dataBind();
+            expect(datepicker.value).toBe(null)
+        });
+        it('invalid string type with test case', () => {
+            datepicker = new DatePicker({
+                value: <any>'1/1/2019',
+                change: function (args) {
+                    expect(args.value).toBe(null);
+                }
+            });
+            datepicker.appendTo('#date');
+            datepicker.value = "2019";
+            datepicker.dataBind();
+            expect(datepicker.value).toBe(null)
+        });
         it('invalid number type with value test case ', () => {
             datepicker = new DatePicker({ value: <any>12243 });
             datepicker.appendTo('#date');
@@ -247,28 +290,16 @@ describe('Datepicker', () => {
             expect(datepicker.value).toBe(null)
         });
         it('invalid string type with value test case and strictMode true ', () => {
-            datepicker = new DatePicker({ value: <any>"hgfnfhg", strictMode:true });
+            datepicker = new DatePicker({ value: <any>"hgfnfhg", strictMode: true });
             datepicker.appendTo('#date');
             expect(datepicker.element.value).toBe("");
             expect(datepicker.value).toBe(null)
         });
-        it('invalid number type with value test case and strictMode true', () => {
-            datepicker = new DatePicker({ value: <any>12243, strictMode:true });
+        it('invalid string type with ISO string value test case', () => {
+            datepicker = new DatePicker({ value: <any>"2019-01-01T06:00:00.000Z" });
             datepicker.appendTo('#date');
-            expect(datepicker.element.value).toBe("");
-            expect(datepicker.value).toBe(null)
-        });
-        it('invalid number type with value test case and strictMode conditions', () => {
-            datepicker = new DatePicker({ value: <any>12243, strictMode:true });
-            datepicker.appendTo('#date');
-            expect(datepicker.element.value).toBe("");
-            datepicker.strictMode = false;
-            datepicker.value = <any>"avdsaghd";
-            datepicker.dataBind();
-            expect(datepicker.element.value).toBe("avdsaghd");
-            expect(datepicker.value).toBe(null)
-            datepicker.value = <any>12345;
-            datepicker.dataBind();
+            expect(datepicker.element.value).toBe("1/1/2019");
+            expect(datepicker.invalidValueString).toBe(null);
         });
         it('string type value with onproperty test case ', () => {
             datepicker = new DatePicker({ value: <any>'2/2/2017' });
@@ -384,6 +415,28 @@ describe('Datepicker', () => {
             expect(document.getElementById('date').getAttribute('aria-disabled')).toBe("true");
         });
         /**
+         * tabIndex
+         */
+        it('tab index of focus element', () => {
+            datepicker = new DatePicker({ });
+            datepicker.appendTo('#date');
+            expect(datepicker.inputWrapper.container.children[0].getAttribute('tabindex') === '0').toBe(true);
+        });
+        it('while give tab index to the datepicker element', () => {
+            datepicker = new DatePicker({ });
+            datepicker.appendTo('#date');
+            datepicker.element.tabIndex = '4';
+            expect(datepicker.inputWrapper.container.children[0].getAttribute('tabindex') === '4').toBe(true);
+        });
+        it('tab index of focus element in disable state ', () => {
+            datepicker = new DatePicker({ enabled: false });
+            datepicker.appendTo('#date');
+            expect(datepicker.inputWrapper.container.children[0].tabIndex === -1).toBe(true);
+            datepicker.enabled = true;
+            datepicker.dataBind();
+        });
+
+        /**
          * value test case
          */
         it('value with null type test case ', () => {
@@ -406,8 +459,8 @@ describe('Datepicker', () => {
             datepicker.appendTo('#date');
             datepicker.value = '5/5';
             datepicker.dataBind();
-            expect(+datepicker.value).toBe(+new Date('5/5/2001'));
-            expect(datepicker.element.value).toBe('5/5/2001');
+            expect(datepicker.value).toBe(null);
+            expect(datepicker.element.value).toBe('5/5');
         });
         it('string value worst test case with format ', () => {
             datepicker = new DatePicker({ format: 'd/M' });
@@ -462,7 +515,7 @@ describe('Datepicker', () => {
             datepicker.inputBlurHandler();
             dateString(datepicker, '3/3/2017');
             expect(datepicker.element.value).toBe('3/3/2017');
-            
+
         });
         it('Input with different format value with test case ', () => {
             datepicker = new DatePicker({ value: new Date('3/3/2017') });
@@ -554,38 +607,6 @@ describe('Datepicker', () => {
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(datepicker.value.valueOf()).toBe(new Date('3/3/2017').valueOf());
             expect(datepicker.element.value).toBe('3/MarchWWW/2017');
-        });
-        it('object type format test case', () => {
-            datepicker = new DatePicker({ format: { skeleton:'full'}, value: new Date("12/12/2016") });
-            datepicker.appendTo('#date');
-            expect(datepicker.element.value == 'Monday, December 12, 2016').toBe(true);
-        });
-        it('object type format onproperty Change test case', () => {
-            datepicker = new DatePicker({value: new Date("12/12/2016") });
-            datepicker.appendTo('#date');
-            datepicker.format = {skeleton:'full'};
-            datepicker.dataBind();
-            expect(datepicker.element.value == 'Monday, December 12, 2016').toBe(true);
-        });
-        it('valid value entering when popup is in the open state', function () {
-            datepicker = new DatePicker({});
-            datepicker.appendTo('#date');
-            datepicker.show();
-            datepicker.value = new Date('1/1/2019');
-            datepicker.dataBind();
-            datepicker.focusOut();
-            expect(datepicker.element.value).toBe('1/1/2019');
-            expect(document.getElementsByClassName('e-input-group')[0].classList.contains('e-error')).toBe(false);
-        });
-        it('invalid value entering when popup is in the open state', function () {
-            datepicker = new DatePicker({});
-            datepicker.appendTo('#date');
-            datepicker.show();
-            datepicker.element.value = 'fdsgjsg';
-            datepicker.inputBlurHandler();
-            expect(datepicker.value).toBe(null);
-            expect(datepicker.element.value).toBe('fdsgjsg');
-            expect(document.getElementsByClassName('e-input-group')[0].classList.contains('e-error')).toBe(true);
         });
         /**
          * strictMode true test  case 
@@ -1171,9 +1192,9 @@ describe('Datepicker', () => {
         it('floatLabelType onproperty test case', () => {
             let ele = document.getElementById('date');
             datepicker = new DatePicker({ placeholder: 'Select a date' });
-            datepicker.appendTo('#date');            
+            datepicker.appendTo('#date');
             datepicker.floatLabelType = "Auto";
-            datepicker.dataBind();            
+            datepicker.dataBind();
         });
         /**
          * Attribute testing  
@@ -1629,7 +1650,7 @@ describe('Datepicker', () => {
             datepicker.showClearButton = false;
             datepicker.dataBind();
             datepicker.destroy();
-            expect(datepicker.inputWrapper.clearButton===null).toBe(true);
+            expect(datepicker.inputWrapper.clearButton === null).toBe(true);
             datepicker = null;
         });
         it('Clear button Setmodel', () => {
@@ -1645,173 +1666,6 @@ describe('Datepicker', () => {
             (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
             datepicker.resetHandler(mouseEventArgs);
             expect(datepicker.element.value).toBe("");
-        });
-    });
-
-    describe('close prevented events', () => {
-        let datePicker: any;
-        let keyEventArgs: any = {
-            preventDefault: (): void => { /** NO Code */ },
-            stopPropagation: ():void=>{/** NO Code */},
-            action: 'altDownArrow'
-        };
-        beforeEach(() => {
-            let ele: HTMLElement = createElement('input', { id: 'date' });
-            document.body.appendChild(ele);
-        });
-        afterEach(() => {
-            if (datePicker) {
-                datePicker.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-
-	it('click on clear button with popup close disabled', function () {
-	    datePicker = new DatePicker({ 
-            value: new Date("12/12/2016"), 
-            close:function(e){ e.preventDefault()},
-            showClearButton: true 
-        });
-            datePicker.appendTo('#date');
-            expect((document.querySelectorAll('.e-selected')).length != 0);
-            (<HTMLElement>document.getElementsByClassName(' e-clear-icon')[0]).dispatchEvent(clickEvent);
-            expect(datePicker.value).toBe(null);
-            expect(document.querySelector('.e-selected')).toBe(null);
-            expect((datePicker.popupObj) !== null).toBe(true);
-        });
-        it('enter key after clearing value when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value='';	  
-            keyEventArgs.action = 'enter';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            expect(datePicker.value).toBe(null);
-            expect(document.querySelector('.e-selected')).toBe(null);
-            expect((datePicker.popupObj) !== null).toBe(true);
-        });
-        it('enter key after new value when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value=new Date('12/12/2016');	  
-            keyEventArgs.action = 'enter';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            expect(datePicker.value.valueOf()).toBe(new Date('12/12/2016').valueOf());
-            expect((document.querySelectorAll('.e-selected')).length != 0);
-            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-selected')))).toBe(new Date('12/12/2016').valueOf());
-            expect((datePicker.popupObj) !== null).toBe(true);
-            keyEventArgs.action = 'moveLeft';
-            datePicker.keyActionHandle(keyEventArgs);
-            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-selected')))).toBe(new Date('12/12/2016').valueOf());
-            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-focused-date')))).toBe(new Date('12/11/2016').valueOf());
-        });
-        it('enter key after value higher than max when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value=new Date('12/12/2116');	  
-            keyEventArgs.action = 'enter';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            expect(datePicker.value.valueOf()).toBe(new Date('12/12/2116').valueOf());
-            expect((document.querySelectorAll('.e-selected')).length == 0);
-            expect((datePicker.popupObj) !== null).toBe(true);
-        });
-        it('tab key after clearing value when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value='';	  
-            keyEventArgs.action = 'tab';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            expect(datePicker.value).toBe(null);
-            expect(document.querySelector('.e-selected')).toBe(null);
-            expect((datePicker.popupObj) !== null).toBe(true);
-        });
-        it('tab key after new value when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value=new Date('12/12/2016');	  
-            keyEventArgs.action = 'tab';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            expect(datePicker.value.valueOf()).toBe(new Date('12/12/2016').valueOf());
-            expect((document.querySelectorAll('.e-selected')).length != 0);
-            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-selected')))).toBe(new Date('12/12/2016').valueOf());
-            expect((datePicker.popupObj) !== null).toBe(true);
-            keyEventArgs.action = 'moveLeft';
-            datePicker.keyActionHandle(keyEventArgs);
-            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-selected')))).toBe(new Date('12/12/2016').valueOf());
-            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-focused-date')))).toBe(new Date('12/11/2016').valueOf());
-        });
-        it('tab key after value higher than max when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value=new Date('12/12/2116');	  
-            keyEventArgs.action = 'tab';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            expect(datePicker.value.valueOf()).toBe(new Date('12/12/2116').valueOf());
-            expect((document.querySelectorAll('.e-selected')).length == 0);
-            expect((datePicker.popupObj) !== null).toBe(true);
-        });
-        it('inputblur after clearing value when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value='';	  
-            datePicker.inputBlurHandler();
-            expect(datePicker.value).toBe(null);
-            expect(document.querySelector('.e-selected')).toBe(null);
-            expect((datePicker.popupObj) !== null).toBe(true);
-        });
-        it('inputblur after new value when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value=new Date('12/12/2016');	  
-            datePicker.inputBlurHandler();
-            expect(datePicker.value.valueOf()).toBe(new Date('12/12/2016').valueOf());
-            expect((document.querySelectorAll('.e-selected')).length != 0);
-            expect((getIdValue(datePicker.tableBodyElement.querySelector('tr td.e-selected')))).toBe(new Date('12/12/2016').valueOf());
-            expect((datePicker.popupObj) !== null).toBe(true);
-        });
-        it('inputblur after value higher than max when popup open test case', function () {
-            datePicker = new DatePicker({
-                close:function(e){ e.preventDefault()},
-                value: new Date('2/2/2017')
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value=new Date('12/12/2116');	  
-            datePicker.inputBlurHandler();
-            expect(datePicker.value.valueOf()).toBe(new Date('12/12/2116').valueOf());
-            expect((document.querySelectorAll('.e-selected')).length == 0);
-            expect((datePicker.popupObj) !== null).toBe(true);
         });
     });
 
@@ -1957,7 +1811,7 @@ describe('Datepicker', () => {
         let datePicker: any;
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
-            stopPropagation:(): void=>{},
+            stopPropagation: (): void => { },
             action: 'altDownArrow'
         };
         beforeEach(() => {

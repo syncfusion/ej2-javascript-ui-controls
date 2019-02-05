@@ -50,7 +50,6 @@ export class Selection implements IAction {
     private prevRowIndex: number;
     private prevCIdxs: IIndex;
     private prevECIdxs: IIndex;
-    private selectedRowIndex: number;
     private isMultiShiftRequest: boolean = false;
     private isMultiCtrlRequest: boolean = false;
     private enableSelectMultiTouch: boolean = false;
@@ -358,12 +357,11 @@ export class Selection implements IAction {
             return;
         }
         let args: Object;
-        let checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
         for (let rowIndex of rowIndexes) {
             let rowObj: Row<Column> = this.getRowObj(rowIndex);
             let isUnSelected: boolean = this.selectedRowIndexes.indexOf(rowIndex) > -1;
             this.selectRowIndex(rowIndex);
-            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
+            if (isUnSelected) {
                 this.rowDeselect(events.rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
@@ -2064,9 +2062,9 @@ export class Selection implements IAction {
     private rowCellSelectionHandler(rowIndex: number, cellIndex: number): void {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
-                this.selectRow(rowIndex, this.selectionSettings.enableToggle);
+                this.selectRow(rowIndex, true);
             }
-            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
+            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
             if (this.selectedRowCellIndexes.length) {
                 this.updateAutoFillPosition();
             }
@@ -2389,10 +2387,8 @@ export class Selection implements IAction {
             this.refreshPersistSelection();
         }
     }
-
     private selectRowIndex(index: number): void {
         this.parent.isSelectedRowIndexUpdating = true;
         this.parent.selectedRowIndex = index;
     }
-
 }

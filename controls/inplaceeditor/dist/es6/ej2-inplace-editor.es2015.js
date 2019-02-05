@@ -1,5 +1,5 @@
 import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, select, setStyleAttribute } from '@syncfusion/ej2-base';
-import { DataManager, ODataV4Adaptor, Query, UrlAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { ColorPicker, FormValidator, MaskedTextBox, NumericTextBox, Slider, TextBox } from '@syncfusion/ej2-inputs';
@@ -431,6 +431,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             case 'UrlAdaptor':
                 this.dataAdaptor = new UrlAdaptor;
                 break;
+            case 'WebApiAdaptor':
+                this.dataAdaptor = new WebApiAdaptor;
+                break;
             case 'ODataV4Adaptor':
                 this.dataAdaptor = new ODataV4Adaptor;
                 break;
@@ -612,7 +615,13 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.trigger('actionBegin', eventArgs);
         if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey)) {
             this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
-            this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+            if (this.adaptor === 'UrlAdaptor') {
+                this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+            }
+            else {
+                let crud = this.dataManager.insert(eventArgs.data);
+                crud.then((e) => this.successHandler(e)).catch((e) => this.failureHandler(e));
+            }
         }
         else {
             let eventArg = { data: {}, value: eventArgs.data.value };

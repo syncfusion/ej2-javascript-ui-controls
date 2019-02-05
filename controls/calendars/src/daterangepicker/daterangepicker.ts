@@ -140,9 +140,6 @@ export interface RangePopupEventArgs {
     appendTo?: HTMLElement;
 }
 
-export interface RangeFormatObject {
-    skeleton?: string;
-}
 
 /**
  * Represents the DateRangePicker component that allows user to select the date range from the calendar
@@ -227,7 +224,7 @@ export class DateRangePicker extends CalendarBase {
     private openEventArgs: RangePopupEventArgs;
     private controlDown: KeyboardEventArgs;
     private formElement: Element;
-    private formatString: string;
+    protected tabIndex: string;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -272,8 +269,6 @@ export class DateRangePicker extends CalendarBase {
     public locale: string;
     /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
-     * > For more details about firstDayOfWeek refer to 
-     * [`First day of week`](../daterangepicker/customization#first-day-of-week) documentation.
      * @default null
      */
     @Property(null)
@@ -281,8 +276,6 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Determines whether the week number of the Calendar is to be displayed or not.
      * The week number is displayed in every week row.
-     * > For more details about weekNumber refer to 
-     * [`Calendar with week number`](../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
      * @default false
      */
     @Property(false)
@@ -338,8 +331,6 @@ export class DateRangePicker extends CalendarBase {
     public endDate: Date;
     /**
      * Set the predefined ranges which let the user pick required range easily in a component.
-     * > For more details refer to 
-     * [`Preset Ranges`](../daterangepicker/customization#preset-ranges) documentation.
      * @default null
      */
     @Collection<PresetsModel>([{}], Presets)
@@ -403,39 +394,28 @@ export class DateRangePicker extends CalendarBase {
     public separator: string;
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
-     * > For more details refer to 
-     * [`Range Span`] (../daterangepicker/range-restriction#range-span) documentation.
      * @default null    
-     * @aspType int    
      */
     @Property(null)
     public minDays: number;
     /**
      *  Specifies the maximum span of days that can be allowed in a date range selection.
-     * > For more details refer to 
-     * [`Range Span`](../daterangepicker/range-restriction#range-span) documentation.
      * @default null
-     * @aspType int
      */
     @Property(null)
     public maxDays: number;
     /**
      * Specifies the component to act as strict which allows entering only a valid date range in a DateRangePicker.
-     * > For more details refer to 
-     * [`Strict Mode`](../daterangepicker/range-restriction#strict-mode)documentation.
      * @default false
      */
     @Property(false)
     public strictMode: boolean;
     /**
      * Sets or gets the required date format to the start and end date string.
-     * > For more details refer to 
-     * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
-     * @aspType string
      * @default null
      */
     @Property(null)
-    public format: string | RangeFormatObject;
+    public format: string;
     /**
      * Specifies the component to be disabled which prevents the DateRangePicker from user interactions. 
      * @default true
@@ -574,6 +554,8 @@ export class DateRangePicker extends CalendarBase {
             if (this.angularTag !== null) { attributes(this.inputElement, { 'id': this.element.id + '_input' }); }
         }
         this.initProperty();
+        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+        this.element.removeAttribute('tabindex');
         super.preRender();
         this.navNextFunction = this.navNextMonth.bind(this);
         this.navPrevFunction = this.navPrevMonth.bind(this);
@@ -650,25 +632,10 @@ export class DateRangePicker extends CalendarBase {
     }
     private initProperty(): void {
         this.globalize = new Internationalization(this.locale);
-        this.checkFormat();
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: this.globalize.getFirstDayOfWeek() }, true);
         }
         this.updateValue();
-    }
-    protected checkFormat(): void {
-        if (this.format) {
-            if (typeof this.format === 'string') {
-                this.formatString = this.format;
-            } else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
-                let skeletonString: string = this.format.skeleton;
-                this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
-            } else {
-                this.formatString = null;
-            }
-        } else {
-            this.formatString = null;
-        }
     }
     private initialize(): void {
         if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
@@ -753,6 +720,7 @@ export class DateRangePicker extends CalendarBase {
             if (this.formElement) {
                 EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
             }
+            this.inputElement.setAttribute('tabindex', this.tabIndex);
         } else {
             EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.rangeIconHandler);
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
@@ -769,6 +737,7 @@ export class DateRangePicker extends CalendarBase {
             if (this.formElement) {
                 EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
             }
+            this.inputElement.tabIndex = -1;
         }
     }
     private updateHiddenInput(): void {
@@ -840,7 +809,7 @@ export class DateRangePicker extends CalendarBase {
 
     private rangeIconHandler(e: MouseEvent): void {
         if (this.isMobile) {
-            this.element.setAttribute('readonly', 'readonly');
+            this.element.setAttribute('readonly', '');
         }
         e.preventDefault();
         this.targetElement = null;
@@ -865,7 +834,7 @@ export class DateRangePicker extends CalendarBase {
         let attributes: string[];
         attributes = ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled',
             'readonly', 'style', 'name', 'placeholder', 'type'];
-        let format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let format: Object = { format: this.format, type: 'date', skeleton: 'yMd' };
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
@@ -1131,7 +1100,7 @@ export class DateRangePicker extends CalendarBase {
             if (!isNullOrUndefined(value) && value.trim() !== '') {
                 let range: string[] = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
-                    let dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+                    let dateOptions: object = { format: this.format, type: 'date', skeleton: 'yMd' };
                     let startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
                     let endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -1656,9 +1625,9 @@ export class DateRangePicker extends CalendarBase {
         let inputValue: string;
         let range: number;
         let startDate: string = !isNullOrUndefined(this.startValue) ?
-            this.globalize.formatDate(this.startValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.startValue, { format: this.format, type: 'date', skeleton: 'yMd' }) : null;
         let endDate: string = !isNullOrUndefined(this.endValue) ?
-            this.globalize.formatDate(this.endValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.endValue, { format: this.format, type: 'date', skeleton: 'yMd' }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
             range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -2029,7 +1998,7 @@ export class DateRangePicker extends CalendarBase {
         }
         if (this.popupObj.element.querySelector('#custom_range')) {
             this.popupObj.element.querySelector('#custom_range').textContent =
-                this.l10.getConstant('customRange') !== '' ? this.l10.getConstant('customRange') : 'Custom Range';
+                this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange') : 'Custom Range';
         }
     }
     private removeSelection(): void {
@@ -2744,6 +2713,11 @@ export class DateRangePicker extends CalendarBase {
             attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
+            let customElement: HTMLElement = this.presetElement.querySelector('#custom_range');
+            if (!isNullOrUndefined(customElement)) {
+                customElement.textContent = this.l10n.getConstant('customRange') !== '' ? this.l10n.getConstant('customRange')
+                    : 'Custom Range';
+            }
             this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.presetElement.querySelectorAll('.' + LISTCLASS);
             this.wireListEvents();
             if (this.isMobile) {
@@ -3192,9 +3166,8 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateInput(): void {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let formatingOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-            let startDate: string = this.globalize.formatDate(this.startValue, formatingOptions);
-            let endDate: string = this.globalize.formatDate(this.endValue, formatingOptions);
+            let startDate: string = this.globalize.formatDate(this.startValue, { format: this.format, type: 'date', skeleton: 'yMd' });
+            let endDate: string = this.globalize.formatDate(this.endValue, { format: this.format, type: 'date', skeleton: 'yMd' });
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
@@ -3358,6 +3331,8 @@ export class DateRangePicker extends CalendarBase {
             removeClass([this.inputElement], [ROOT]);
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             Input.removeAttributes(<{ [key: string]: string }>ariaAttrs, this.inputElement);
+            (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) ?
+            this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
             this.ensureInputAttribute();
             this.inputElement.classList.remove('e-input');
             if (!isNullOrUndefined(this.inputWrapper)) {
@@ -3547,7 +3522,7 @@ export class DateRangePicker extends CalendarBase {
             }
         }
         this.updateHiddenInput();
-        if (this.isMobile) {
+        if (this.isMobile && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
     }
@@ -3619,7 +3594,7 @@ export class DateRangePicker extends CalendarBase {
      */
     // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: DateRangePickerModel, oldProp: DateRangePickerModel): void {
-        let format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let format: Object = { format: this.format, type: 'date', skeleton: 'yMd' };
         for (let prop of Object.keys(newProp)) {
             this.hide(null);
             switch (prop) {
@@ -3662,7 +3637,6 @@ export class DateRangePicker extends CalendarBase {
                     break;
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);
-                    this.checkFormat();
                     this.updateInput();
                     this.changeTrigger();
                     break;

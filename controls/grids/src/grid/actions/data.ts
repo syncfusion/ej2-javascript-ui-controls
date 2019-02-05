@@ -176,7 +176,7 @@ export class Data implements IDataProcessor {
 
     protected searchQuery(query: Query): Query {
         let sSettings: SearchSettingsModel = this.parent.searchSettings;
-        let fields: string[] = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
+        let fields: string[] = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f: Column) => f.field);
         let predicateList: Predicate[] = [];
         let needForeignKeySearch: boolean = false;
         if (this.parent.searchSettings.key.length) {
@@ -479,6 +479,9 @@ export class Data implements IDataProcessor {
                 this.parent.trigger(events.dataSourceChanged, editArgs);
                 deff.promise.then((e: ReturnType) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
+                    if (editArgs.requestType === 'save') {
+                        this.parent.notify(events.recordAdded, editArgs);
+                    }
                     this.parent.trigger(events.dataStateChange, state);
                 });
             } else {
@@ -492,18 +495,4 @@ export class Data implements IDataProcessor {
         return def;
     }
 
-     /**
-      * Gets the columns where searching needs to be performed from the Grid.
-      * @return {string[]}
-      */
-     private getSearchColumnFieldNames(): string[] {
-        let colFieldNames: string[] = [];
-        let columns: Column[] = this.parent.getColumns();
-        for (let col of columns) {
-            if (col.allowSearching) {
-                colFieldNames.push(col.field);
-            }
-        }
-        return colFieldNames;
-    }
 }

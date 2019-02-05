@@ -6,7 +6,6 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { DiagramModel } from '../../../src/diagram/index';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 describe('Diagram Control', () => {
 
@@ -26,12 +25,6 @@ describe('Diagram Control', () => {
         let element11: PathElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram33' });
             document.body.appendChild(ele);
             let nodes: PathElement[];
@@ -139,7 +132,7 @@ describe('Diagram Control', () => {
 
         it('Checking stack panel without children', (done: Function) => {
             expect(element1.absolutePath === "M 0 0 Q 9.55 3.13 17.27 25 T 50 50" &&
-                (element2.absolutePath === 'M 50 50 H 0 A 50 49.999994913737495 0 1 0 50 0 Z' || element2.absolutePath === "M 50 50 H 0 A 50 50 0 1 0 50 0 Z") &&
+            (element2.absolutePath === 'M 50 50 H 0 A 50 49.999994913737495 0 1 0 50 0 Z' || element2.absolutePath ==="M 50 50 H 0 A 50 50 0 1 0 50 0 Z") &&
                 element3.absolutePath === "M 70.49 50 L 45.44 100 L 45.44 0 L 70.49 50 Z M 45.44 50 L 0 50 M 70.49 99.28 L 70.49 0.72 M 70.49 50 L 100 50" &&
                 element4.absolutePath === "M 0 50 C 0 -16.67 50 -16.67 50 50 S 100 116.67 100 50" &&
                 element5.absolutePath === "M 91.01 64.56 C 84.28 26.83 67.13 0 47.03 0 C 21.06 0 0 44.77 0 100 L 9.41 100 C 9.41 55.81 26.25 20 47.03 20 C 61.82 20 74.62 38.15 80.77 64.56 L 73.43 64.56 L 80.07 82.27 L 86.71 100 L 93.36 82.27 L 100 64.56 L 91.01 64.56 Z" &&
@@ -164,12 +157,6 @@ describe('Diagram Control', () => {
         let element6: PathElement;
         let element7: PathElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram34' });
             document.body.appendChild(ele);
             let nodes: PathElement[];
@@ -233,7 +220,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking stack panel without children', (done: Function) => {
-
+            
             console.log(element1.absolutePath);
             console.log(element2.absolutePath);
             console.log(element3.absolutePath);
@@ -241,7 +228,7 @@ describe('Diagram Control', () => {
             console.log(element5.absolutePath);
             console.log(element6.absolutePath);
             console.log(element7.absolutePath);
-
+            
 
             expect(element1.absolutePath === "M 0 0 L 100 0 M 100 0 L 100 100 M 100 100 L 0 100 M 0 100 L 0 0 Z" &&
                 element2.absolutePath === "M 150 150 H 0 A 150 150 0 1 0 150 0 Z" &&
@@ -252,15 +239,6 @@ describe('Diagram Control', () => {
                 element7.absolutePath === "").toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 
 });

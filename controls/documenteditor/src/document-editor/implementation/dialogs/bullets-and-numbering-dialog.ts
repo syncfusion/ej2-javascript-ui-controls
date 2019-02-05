@@ -63,7 +63,6 @@ export class BulletsAndNumberingDialog {
         });
         //Render initialized Tab component
         tabObj.appendTo(tabTarget);
-        this.owner.owner.element.appendChild(this.target);
         tabObj.refresh();
     }
     private createNumberList(id: string): void {

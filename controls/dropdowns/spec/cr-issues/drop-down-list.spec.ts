@@ -584,7 +584,7 @@ describe('DropDownList', () => {
                 fields: { text: 'Name', value: 'Eimg' },
                 popupHeight: "200px",
                 // set the template content for list items
-                itemTemplate: '<div class ="ename" style="color:red;"> ${Name}</div>',
+                itemTemplate: '<div class ="ename" style="color:red;">${Name}</div>',
             });
             listObj.appendTo(element);
         });

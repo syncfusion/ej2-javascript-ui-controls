@@ -3,7 +3,7 @@
  */
 
 import {
-    Diagram, NodeModel, StackPanel, PortVisibility, AnnotationModel, ShapeAnnotationModel, Node, TextElement, ConnectorModel, Orientation, VerticalAlignment, Port, PointPort, PortModel, PointPortModel, DiagramElement, AnnotationConstraints
+    Diagram, NodeModel, StackPanel, PortVisibility, AnnotationModel, ShapeAnnotationModel, Node, TextElement, ConnectorModel, Orientation, VerticalAlignment, Port, PointPort, PortModel, PointPortModel, DiagramElement, AnnotationConstraints, PortConstraints
 } from '../../src/diagram/index';
 import { MouseEvents } from '../../spec/diagram/interaction/mouseevents.spec';
 
@@ -14,6 +14,12 @@ var newnode: NodeModel = {
     offsetY: 250,
     width: 100,
     height: 100,
+        ports: [
+            { id: 'node8In', height: 10, width: 10, offset: { x: 1, y: 0.5 },
+            visibility: PortVisibility.Visible,
+        style:{fill:'red'}
+        }
+    ],
     shape: {
         type: "Basic",
         shape: "Triangle"
@@ -26,7 +32,7 @@ var newnode: NodeModel = {
         {
             content: "ssss",
             constraints: AnnotationConstraints.Interaction,
-            style: { fill: "transparent" }
+            style: { fill: "red" }
         }
     ]
 };
@@ -122,3 +128,10 @@ testcases2.onclick = function () {
     var node = diagram.nodes[5];
     var element = document.getElementById(node.id + '_content_groupElement');
 };
+var ChangeportColor = document.getElementById('ChangeportColor');
+    ChangeportColor.onclick = function () {
+        var portnode = diagram.nodes[3].ports[0];
+        portnode.style.fill = 'green'
+        
+    };
+    

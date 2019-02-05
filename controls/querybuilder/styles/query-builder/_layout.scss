@@ -1,6 +1,7 @@
 @include export-module('querybuilder-layout') {
   .e-query-builder {
     border: $qrybldr-brdr;
+    border-radius: $qrybldr-brdr-radius;
     height: $qrybldr-height;
     width: $qrybldr-width;
 
@@ -172,6 +173,7 @@
 
     & .e-rule-container {
       border: $qrybldr-rule-border;
+      border-radius: $qrybldr-brdr-radius;
     }
 
     & .e-rule-list > .e-group-container {
@@ -194,9 +196,13 @@
 
         &.e-prev-joined-rule {
           border-bottom: 0;
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
         }
 
         &.e-joined-rule {
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
           border-top-style: $qrybldr-rule-list-border-style;
           border-top-width: 2px;
           margin-top: 0;
@@ -305,33 +311,34 @@
       }
 
     & .e-edit-rule {
-      margin-bottom:  $qrybldr-edit-rule-mrginbtm;
-      margin-left: $qrybldr-edit-rule-width;
-      margin-top: $qrybldr-edit-rule-mrgin;
-      padding-right: $device-rulecon-right-padding;
       right: 0;
     }
 
-    & .e-collapse-rule .e-collapse-icon::before {
-      content: $qrybldr-collaspse-icon;
-     }
-
     & .e-collapse-rule {
-      box-shadow: none;
-      margin-right: $qrybldr-clspe-margin;
+      border: $qrybldr-brdr;
+      border-right: 0;
+      border-top: 0;
+      box-shadow: $qrybldr-collapse-box-shadow;
+      font-size: $qrybldr-collapse-font-size;
+      padding: $qrybldr-collapse-padding;
       position: $qrybldr-clspe-rule-pos;
       right: 0;
+      top: 0;
         }
 
     & .e-summary-text {
       border-style: none;
+      line-height: 1.5em;
+      padding: $qrybldr-summary-padding;
       resize: none;
       width: $qrybldr-summary-text-width;
         }
 
-    & .e-summary-content {
-      padding: $qrybldr-summary-padding;
+    & .e-summary-btndiv {
+      padding: $qrybldr-summary-btn-padding;
+      text-align: $qrybldr-rulelist-grcon-float;
         }
+
 
     & .e-rule-list .e-rule-container.e-vertical-mode,
     &.e-device .e-rule-list .e-rule-container {
@@ -377,10 +384,6 @@
   .e-bigger .e-query-builder {
     & .e-group-container  {
       padding: $device-rulecon-padding;
-    }
-
-    & .e-collapse-rule.e-btn.e-small {
-      padding: 0 14px;
     }
 
     & .e-rule-list > .e-group-container {
@@ -462,6 +465,17 @@
             }
         }
       }
+
+    & .e-summary-text {
+      line-height: $qrybldr-summary-line-height;
+      padding: $qrybldr-bigger-summary-padding;
+    }
+
+    & .e-summary-btndiv {
+      padding: $qrybldr-bigger-summary-btn-padding;
+      text-align: $qrybldr-rulelist-grcon-float;
+    }
+
     }
 
   &.e-device .e-rule-value {

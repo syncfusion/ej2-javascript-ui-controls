@@ -10,7 +10,6 @@ import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
 import { MouseEvents } from './mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { SnapConstraints, BasicShapeModel, DiagramConstraints } from '../../../src/diagram/index';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams, DiagramContextMenu, UndoRedo);
 describe('Diagram Control', () => {
     describe('Auto Scroll left and right', () => {
@@ -67,6 +66,8 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseUpEvent(diagramCanvas, center.x + 50 + 25 + 10 + 10, center.y + 50 + 25 + 10 + 10);
             }, 110);
         });
+
+
     });
 
     describe('Auto Scroll top and bottom', () => {
@@ -271,10 +272,11 @@ describe('Diagram Control', () => {
             var selecelement2 = document.getElementById('borderRect');
             var xvalue2 = selecelement2.getAttribute("x");
             var yvalue2 = selecelement2.getAttribute("y");
-
+  
             expect(xvalue2 === '72.95' && yvalue2 === '92.95').toBe(true);
             done();
         });
+
     });
     describe('Virtualization in SVG mode', () => {
         let diagram: Diagram;
@@ -383,15 +385,6 @@ describe('Diagram Control', () => {
                 }, 200)
             }, 1550);
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
 
     });
 });

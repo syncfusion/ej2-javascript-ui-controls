@@ -1,7 +1,7 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -114,8 +114,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         return 'query-builder';
     }
     initialize() {
-        if (this.dataSource.length) {
-            let columnKeys = Object.keys(this.dataSource[0]);
+        if (this.dataColl.length) {
+            let columnKeys = Object.keys(this.dataColl[0]);
             let cols = [];
             let type;
             let isDate = false;
@@ -127,7 +127,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 for (let i = 0, len = columns.length; i < len; i++) {
                     if (!columns[i].type) {
                         if (columnKeys.indexOf(columns[i].field) > -1) {
-                            value = this.dataSource[0][columns[i].field];
+                            value = this.dataColl[0][columns[i].field];
                             type = typeof value;
                             if (type === 'string') {
                                 isDate = !isNaN(Date.parse(value));
@@ -148,7 +148,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             else {
                 for (let i = 0, len = columnKeys.length; i < len; i++) {
-                    value = this.dataSource[0][columnKeys[i]];
+                    value = this.dataColl[0][columnKeys[i]];
                     type = typeof value;
                     if (type === 'string') {
                         isDate = !isNaN(Date.parse(value));
@@ -171,6 +171,17 @@ let QueryBuilder = class QueryBuilder extends Component {
         if (target.tagName === 'SPAN') {
             target = target.parentElement;
         }
+        if (target.className.indexOf('e-collapse-rule') > -1) {
+            let animation = new Animation({ duration: 1000, delay: 0 });
+            let summaryElem = document.getElementById(this.element.id + '_summary_content');
+            let txtareaElem = summaryElem.querySelector('.e-summary-text');
+            animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
+            let groupElem = this.element.querySelector('.e-group-container');
+            groupElem.style.display = 'none';
+            txtareaElem.textContent = this.getSqlFromRules(this.rule);
+            summaryElem.style.display = 'block';
+            txtareaElem.style.height = txtareaElem.scrollHeight + 'px';
+        }
         if (target.tagName === 'BUTTON') {
             if (target.className.indexOf('e-removerule') > -1) {
                 if (target.className.indexOf('e-tooltip') > -1) {
@@ -183,6 +194,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                 this.deleteGroup(closest(target, '.e-group-container'));
             }
             else if (target.className.indexOf('e-edit-rule') > -1) {
+                let animation = new Animation({ duration: 1000, delay: 0 });
+                animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
                 document.getElementById(this.element.id + '_summary_content').style.display = 'none';
                 if (this.element.querySelectorAll('.e-group-container').length < 1) {
                     this.addGroupElement(false, this.element, this.rule.condition);
@@ -197,12 +210,6 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                     groupElem.style.display = 'block';
                 }
-            }
-            else if (target.className.indexOf('e-collapse-rule') > -1) {
-                let groupElem = this.element.querySelector('.e-group-container');
-                groupElem.style.display = 'none';
-                this.element.querySelector('.e-summary-text').textContent = this.getSqlFromRules(this.rule);
-                document.getElementById(this.element.id + '_summary_content').style.display = 'block';
             }
         }
         else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
@@ -249,6 +256,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         let height;
         if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
             element.textContent = this.l10n.getConstant('Remove');
+            addClass([element], 'e-flat');
+            addClass([element], 'e-primary');
         }
         else {
             addClass([element], 'e-round');
@@ -414,11 +423,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl' }, innerHTML: 'AND' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl e-small' }, innerHTML: 'AND' });
         glueElem.appendChild(labelElem);
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-or', value: 'OR' } });
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl' }, innerHTML: 'OR' });
+        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl e-small' }, innerHTML: 'OR' });
         glueElem.appendChild(labelElem);
         groupHdrElem.appendChild(glueElem);
         grpActElem = this.createElement('div', { attrs: { class: 'e-group-action' } });
@@ -758,7 +767,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         return result;
     }
     renderMultiSelect(rule, parentId, i, selectedValue) {
-        let ds = this.getDistinctValues(this.dataSource, rule.field);
+        let ds = this.getDistinctValues(this.dataColl, rule.field);
         let multiSelectObj = new MultiSelect({
             dataSource: new DataManager(ds),
             query: new Query([rule.field]),
@@ -792,7 +801,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     renderStringValue(parentId, rule, operator, idx, ruleValElem) {
         let selectedVal;
         let selectedValue = this.isImportRules ? rule.value : '';
-        if ((operator === 'in' || operator === 'notin') && this.dataSource.length > 0) {
+        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
             selectedVal = this.isImportRules ? rule.value : [];
             this.renderMultiSelect(rule, parentId, idx, selectedVal);
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
@@ -820,7 +829,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     renderNumberValue(parentId, rule, operator, idx, ruleValElem, itemData, length) {
         let selectedValue = this.isImportRules ? rule.value : 0;
         let selectedVal;
-        if ((operator === 'in' || operator === 'notin') && this.dataSource.length > 0) {
+        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
             selectedVal = this.isImportRules ? rule.value : [];
             this.renderMultiSelect(rule, parentId, idx, selectedVal);
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
@@ -1334,21 +1343,23 @@ let QueryBuilder = class QueryBuilder extends Component {
                 id: this.element.id + '_summary_content'
             }
         });
-        let textElem = this.createElement('textarea', { attrs: { class: 'e-summary-text', readonly: 'true' } });
-        let editElem = this.createElement('button', { attrs: { class: 'e-edit-rule e-css e-btn e-small' } });
+        let textElem = this.createElement('textarea', { attrs: { class: 'e-summary-text', readonly: 'true' }, styles: 'max-height:500px' });
+        let editElem = this.createElement('button', { attrs: { class: 'e-edit-rule e-css e-btn e-small e-flat e-primary' } });
+        let divElem = this.createElement('div', { attrs: { class: 'e-summary-btndiv' } });
         contentElem.appendChild(textElem);
         textElem.textContent = this.getSqlFromRules(this.rule);
         editElem.textContent = this.l10n.getConstant('Edit');
-        contentElem.appendChild(editElem);
+        divElem.appendChild(editElem);
+        contentElem.appendChild(divElem);
         this.element.appendChild(contentElem);
     }
     renderSummaryCollapse() {
-        let collapseElem = this.createElement('button', {
+        let collapseElem = this.createElement('div', {
             attrs: {
-                class: 'e-collapse-rule e-css e-btn e-small'
+                class: 'e-collapse-rule e-icons',
+                title: this.l10n.getConstant('SummaryViewTitle')
             }
         });
-        collapseElem.appendChild(this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-collapse-icon' } }));
         this.element.querySelector('.e-group-header').appendChild(collapseElem);
     }
     columnSort() {
@@ -1472,11 +1483,8 @@ let QueryBuilder = class QueryBuilder extends Component {
             GreaterThanOrEqual: 'Greater Than Or Equal',
             Between: 'Between',
             NotBetween: 'Not Between',
-            Empty: 'Empty',
-            NotEmpty: 'Not Empty',
             In: 'In',
             NotIn: 'Not In',
-            NotContains: 'Not Contains',
             Remove: 'REMOVE',
             SelectField: 'Select a field',
             SelectOperator: 'Select operator',
@@ -1485,7 +1493,8 @@ let QueryBuilder = class QueryBuilder extends Component {
             AddGroup: 'Add Group',
             AddCondition: 'Add Condition',
             Edit: 'EDIT',
-            ValidationMessage: 'This field is required'
+            ValidationMessage: 'This field is required',
+            SummaryViewTitle: 'Summary View'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization();
@@ -1535,7 +1544,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         };
         this.operatorValue = {
             equal: 'Equal', greaterthan: 'GreaterThan', greaterthanorequal: 'GreaterThanOrEqual',
-            lessthan: 'LessThan', lessthanorequal: 'LessThanOrEqual', notequal: 'NotEqual', empty: 'Empty', notempty: 'NotEmpty',
+            lessthan: 'LessThan', lessthanorequal: 'LessThanOrEqual', notequal: 'NotEqual',
             between: 'Between', in: 'in', notin: 'NotIn', notbetween: 'NotBetween', startswith: 'StartsWith', endswith: 'EndsWith',
             contains: 'Contains'
         };
@@ -1554,6 +1563,27 @@ let QueryBuilder = class QueryBuilder extends Component {
         ];
         this.ruleElem = this.ruleTemplate();
         this.groupElem = this.groupTemplate();
+        if (this.dataSource instanceof DataManager) {
+            this.dataManager = this.dataSource;
+            this.executeDataManager(new Query());
+        }
+        else {
+            this.dataManager = new DataManager(this.dataSource);
+            this.dataColl = this.dataManager.executeLocal(new Query());
+            this.initControl();
+        }
+    }
+    executeDataManager(query) {
+        let data = this.dataManager.executeQuery(query);
+        let deferred = new Deferred();
+        data.then((e) => {
+            this.dataColl = e.result;
+            this.initControl();
+        }).catch((e) => {
+            deferred.reject(e);
+        });
+    }
+    initControl() {
         this.initialize();
         this.initWrapper();
         this.wireEvents();

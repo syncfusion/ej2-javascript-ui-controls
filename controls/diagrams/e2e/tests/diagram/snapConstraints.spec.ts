@@ -73,15 +73,15 @@ describe('Diagram Snapping', () => {
         executeClickEvent('SnapResizeWidth-node');
         browser.compareScreen(element(By.id('diagram')), 'AllSnapEnable');
     });
-    // it('EnableDiagramBoundaryConstraintsConnector', () => {
-    //     browser.load('/demos/constraints/snapping.html');
-    //     executeSelectionOption('ShowLines');
-    //     executeSelectionOption1('Diagram');
-    //     executeClickEvent('SetDiagramSize');
-    //     executeClickEvent('AddConnector');
-    //     executeClickEvent('DragConnector');
-    //     browser.compareScreen(element(By.id('diagram')), 'EnableDiagramBoundaryConstraintsConnector');
-    // });
+    it('EnableDiagramBoundaryConstraintsConnector', () => {
+        browser.load('/demos/constraints/snapping.html');
+        executeSelectionOption('ShowLines');
+        executeSelectionOption1('Diagram');
+        executeClickEvent('SetDiagramSize');
+        executeClickEvent('AddConnector');
+        executeClickEvent('DragConnector');
+        browser.compareScreen(element(By.id('diagram')), 'EnableDiagramBoundaryConstraintsConnector');
+    });
     it('DisableDiagramBoundaryConstraintsConnector', () => {
         browser.load('/demos/constraints/snapping.html');
         executeSelectionOption('ShowLines');
@@ -90,14 +90,14 @@ describe('Diagram Snapping', () => {
         executeClickEvent('DragConnector');
         browser.compareScreen(element(By.id('diagram')), 'DisableDiagramBoundaryConstraintsConnector');
     });
-    // it('EnableDiagramBoundaryConstraintsNode', () => {
-    //     browser.load('/demos/constraints/snapping.html');
-    //     executeSelectionOption('ShowLines');
-    //     executeSelectionOption1('Diagram');
-    //     executeClickEvent('SetDiagramSize');
-    //     executeClickEvent('NodeConstraints-Drag');
-    //     browser.compareScreen(element(By.id('diagram')), 'EnableDiagramBoundaryConstraintsNode');
-    // });
+    it('EnableDiagramBoundaryConstraintsNode', () => {
+        browser.load('/demos/constraints/snapping.html');
+        executeSelectionOption('ShowLines');
+        executeSelectionOption1('Diagram');
+        executeClickEvent('SetDiagramSize');
+        executeClickEvent('NodeConstraints-Drag');
+        browser.compareScreen(element(By.id('diagram')), 'EnableDiagramBoundaryConstraintsNode');
+    });
     it('DisableDiagramBoundaryConstraintsNode', () => {
         browser.load('/demos/constraints/snapping.html');
         executeSelectionOption('ShowLines');
@@ -105,14 +105,14 @@ describe('Diagram Snapping', () => {
         executeClickEvent('NodeConstraints-Drag');
         browser.compareScreen(element(By.id('diagram')), 'DisableDiagramBoundaryConstraintsNode');
     });
-    // it('EnablePageBoundaryConstraintsNode', () => {
-    //     browser.load('/demos/constraints/snapping.html');
-    //     executeSelectionOption('ShowLines');
-    //     executeSelectionOption1('Page');
-    //     executeClickEvent('SetPageSetting');
-    //     executeClickEvent('NodeConstraints-Drag');
-    //     browser.compareScreen(element(By.id('diagram')), 'EnablePageBoundaryConstraintsNode');
-    // });
+    it('EnablePageBoundaryConstraintsNode', () => {
+        browser.load('/demos/constraints/snapping.html');
+        executeSelectionOption('ShowLines');
+        executeSelectionOption1('Page');
+        executeClickEvent('SetPageSetting');
+        executeClickEvent('NodeConstraints-Drag');
+        browser.compareScreen(element(By.id('diagram')), 'EnablePageBoundaryConstraintsNode');
+    });
     it('DisablePageBoundaryConstraintsNode', () => {
         browser.load('/demos/constraints/snapping.html');
         executeSelectionOption('ShowLines');
@@ -120,15 +120,15 @@ describe('Diagram Snapping', () => {
         executeClickEvent('NodeConstraints-Drag');
         browser.compareScreen(element(By.id('diagram')), 'DisablePageBoundaryConstraintsNode');
     });
-    // it('EnablePageBoundaryConstraintsConnector', () => {
-    //     browser.load('/demos/constraints/snapping.html');
-    //     executeSelectionOption('ShowLines');
-    //     executeSelectionOption1('Page');
-    //     executeClickEvent('SetPageSetting');
-    //     executeClickEvent('AddConnector');
-    //     executeClickEvent('DragConnector');
-    //     browser.compareScreen(element(By.id('diagram')), 'EnablePageBoundaryConstraintsConnector');
-    // });
+    it('EnablePageBoundaryConstraintsConnector', () => {
+        browser.load('/demos/constraints/snapping.html');
+        executeSelectionOption('ShowLines');
+        executeSelectionOption1('Page');
+        executeClickEvent('SetPageSetting');
+        executeClickEvent('AddConnector');
+        executeClickEvent('DragConnector');
+        browser.compareScreen(element(By.id('diagram')), 'EnablePageBoundaryConstraintsConnector');
+    });
     it('DisableDiagramBoundaryConstraintsConnector', () => {
         browser.load('/demos/constraints/snapping.html');
         executeSelectionOption('ShowLines');

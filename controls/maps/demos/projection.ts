@@ -4,7 +4,7 @@
 
 import { Maps, Zoom, Legend, ProjectionType, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { unCountries } from './MapData/UNOCountries';
-import { world_Map } from './MapData/worldMap';
+
 Maps.Inject(Zoom, Legend, MapsTooltip);
 
 let maps: Maps = new Maps({
@@ -26,7 +26,7 @@ let maps: Maps = new Maps({
     },
     layers: [
         {
-            shapeData: world_Map,
+            shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
             shapeDataPath: 'Country',
             shapePropertyPath: 'name',
             dataSource : unCountries,

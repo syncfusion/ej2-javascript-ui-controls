@@ -295,19 +295,6 @@ var AxisLabelBorder = /** @__PURE__ @class */ (function (_super) {
     ], AxisLabelBorder.prototype, "type", void 0);
     return AxisLabelBorder;
 }(ChildProperty));
-var BubbleSize = /** @__PURE__ @class */ (function (_super) {
-    __extends$3(BubbleSize, _super);
-    function BubbleSize() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$2([
-        Property('0%')
-    ], BubbleSize.prototype, "minimum", void 0);
-    __decorate$2([
-        Property('100%')
-    ], BubbleSize.prototype, "maximum", void 0);
-    return BubbleSize;
-}(ChildProperty));
 /**
  * categories for multi level labels
  */
@@ -2977,9 +2964,6 @@ var CellSettings = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], CellSettings.prototype, "enableCellHighlighting", void 0);
     __decorate$4([
-        Complex({}, BubbleSize)
-    ], CellSettings.prototype, "bubbleSize", void 0);
-    __decorate$4([
         Complex({}, Border)
     ], CellSettings.prototype, "border", void 0);
     __decorate$4([
@@ -3007,11 +2991,10 @@ var Series = /** @__PURE__ @class */ (function () {
      * @return {void}
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
+    //tslint:disable:max-line-length
     Series.prototype.renderRectSeries = function () {
         this.createSeriesGroup();
         var heatMap = this.heatMap;
-        var isValueInRange = false;
         heatMap.xLength = heatMap.axisCollections[0].axisLabelSize;
         heatMap.yLength = heatMap.axisCollections[1].axisLabelSize; // Series Part
         var tempX = Math.round(heatMap.initialClipRect.x * 100) / 100;
@@ -3081,16 +3064,12 @@ var Series = /** @__PURE__ @class */ (function () {
                 }
             }
             tempRectPosition.push(rectPosition);
-            if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
-                isValueInRange = this.isCellValueInRange(dataXIndex, dataYIndex);
-                rectPosition.visible = isValueInRange;
-            }
             if (cellSetting.showLabel && this.checkLabelYDisplay && this.checkLabelXDisplay) {
                 var themeCellTextStyle = cellSetting.textStyle;
                 var options = new TextOption(heatMap.element.id + '_HeatMapRectLabels_' + x, new TextBasic(Math.round((tempX + tempWidth / 2) * 100) / 100, Math.round((tempY + tempHeight / 2) * 100) / 100, 'middle', displayText, null, null, 'middle'), themeCellTextStyle, themeCellTextStyle.color || this.getSaturatedColor(this.color));
                 rectPosition.textId = options.id;
                 if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
-                    options.fill = isValueInRange ? options.fill : this.heatMap.themeStyle.toggledColor;
+                    this.toggleCellTextColor(rectPosition, options, dataXIndex, dataYIndex);
                 }
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     options.dy = this.heatMap.cellSettings.tileType === 'Bubble' ? '0.5ex' : '1ex';
@@ -3127,8 +3106,7 @@ var Series = /** @__PURE__ @class */ (function () {
     /**
      * To toggle the cell text color based on legend selection.
      */
-    Series.prototype.isCellValueInRange = function (dataXIndex, dataYIndex) {
-        var isValueInRange = false;
+    Series.prototype.toggleCellTextColor = function (rectPosition, options, dataXIndex, dataYIndex) {
         for (var i = 0; i < this.heatMap.toggleValue.length; i++) {
             var minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
             var maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
@@ -3139,18 +3117,18 @@ var Series = /** @__PURE__ @class */ (function () {
                 clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '';
             var text = this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
                 bubbleText : this.text;
-            if (!isNullOrUndefined(text) && text >= minValue && text <= maxValue) {
+            if (text && text >= minValue && text <= maxValue) {
                 if (!this.heatMap.toggleValue[i].visible) {
-                    isValueInRange = false;
+                    options.fill = this.heatMap.themeStyle.toggledColor;
+                    rectPosition.visible = false;
                     break;
                 }
                 else {
-                    isValueInRange = true;
+                    options.fill = options.fill;
                     break;
                 }
             }
         }
-        return isValueInRange;
     };
     /**
      * To customize the cell.
@@ -3376,25 +3354,13 @@ var Series = /** @__PURE__ @class */ (function () {
      * @private
      */
     Series.prototype.getRadiusBypercentage = function (text, min, max, radius) {
-        var minimum = parseInt(this.heatMap.cellSettings.bubbleSize.minimum, 10);
-        var maximum = parseInt(this.heatMap.cellSettings.bubbleSize.maximum, 10);
-        if (minimum < 0 || minimum > 100 || isNaN(minimum)) {
-            minimum = 0;
-        }
-        if (maximum < 0 || maximum > 100 || isNaN(maximum)) {
-            maximum = 100;
-        }
         var valueInPrecentage = ((text - min) /
             (max - min)) * 100;
         valueInPrecentage = isNaN(valueInPrecentage) ? 100 : valueInPrecentage;
-        if ((this.heatMap.bubbleSizeWithColor ||
-            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))) {
-            if (this.heatMap.cellSettings.isInversedBubbleSize) {
-                valueInPrecentage = 100 - valueInPrecentage;
-            }
-            valueInPrecentage = ((valueInPrecentage * (maximum - minimum)) / 100) + minimum;
-        }
-        radius = radius * (valueInPrecentage / 100);
+        radius = ((this.heatMap.bubbleSizeWithColor ||
+            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))
+            && this.heatMap.cellSettings.isInversedBubbleSize) ? radius - (radius * (valueInPrecentage / 100))
+            : radius * (valueInPrecentage / 100);
         return (Math.round(radius * 100) / 100) < 0 ? 0 : (Math.round(radius * 100) / 100);
     };
     /**
@@ -5147,13 +5113,19 @@ var Legend = /** @__PURE__ @class */ (function () {
      * update visibility collections of legend and series
      * @private
      */
-    Legend.prototype.updateLegendRangeCollections = function () {
-        var heatMap = this.heatMap;
-        heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
-        this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
-        heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
-        this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
-        this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
+    Legend.prototype.updateLegendRangeCollections = function (load) {
+        if (load) {
+            var heatMap = this.heatMap;
+            heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
+            this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
+            heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
+            this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
+            this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
+        }
+        else {
+            this.legendRange = [];
+            this.legendTextRange = [];
+        }
     };
     return Legend;
 }());
@@ -5325,7 +5297,6 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         }
     };
     HeatMap.prototype.renderElements = function () {
-        this.tooltipCollection = [];
         this.renderSecondaryElement();
         this.renderBorder();
         this.renderTitle();
@@ -5372,7 +5343,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     if (this.legendModule && ((newProp.cellSettings.tileType !==
                         oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -5385,7 +5356,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.reRenderDatasource();
                     renderer = true;
@@ -5401,7 +5372,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(false);
                     }
                     else {
                         this.legendOnLoad = false;
@@ -5413,7 +5384,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -5422,7 +5393,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.cellColor.getColorCollection();
                     this.calculateBounds();
@@ -5636,7 +5607,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
             (targetId.indexOf(this.element.id + '_YAxis_MultiLevel') !== -1)) {
             var tooltipText = getTooltipText(this.tooltipCollection, x, y);
             if (tooltipText) {
-                showTooltip(tooltipText, x, y, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
+                showTooltip(tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
             }
             else {
                 removeElement(this.element.id + '_axis_Tooltip');
@@ -5759,13 +5730,6 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
     HeatMap.prototype.heatMapResize = function (e) {
         var _this = this;
         this.resizing = true;
-        var argData = {
-            heatmap: this,
-            cancel: false,
-            name: 'resized',
-            currentSize: new Size(0, 0),
-            previousSize: new Size(this.availableSize.width, this.availableSize.height),
-        };
         this.clearSelection();
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
@@ -5776,11 +5740,8 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             _this.createSvg();
-            argData.currentSize = _this.availableSize;
-            _this.trigger('resized', argData);
             _this.refreshBound();
             _this.appendSvgObject();
-            _this.trigger('loaded', { heatmap: _this });
             _this.resizing = false;
         }, 500);
         return false;
@@ -5952,7 +5913,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                 tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) ||
                     (this.legendModule && tooltipRect && getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY));
                 if (tooltipText) {
-                    showTooltip(tooltipText, pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
+                    showTooltip(tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
                 }
                 else {
                     removeElement(this.element.id + '_canvas_Tooltip');
@@ -5965,8 +5926,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
      * Triggering cell selection
      */
     HeatMap.prototype.cellSelectionOnMouseMove = function (e, currentRect, pageX, pageY, isshowTooltip) {
-        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart' ||
-            e.type === 'pointerdown') && this.allowSelection) {
+        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart') && this.allowSelection) {
             this.previousRect = currentRect;
             this.multiSelection = true;
             this.rectSelected = true;
@@ -6093,7 +6053,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                             textElement.setAttribute('opacity', '0.3');
                         }
                     }
-                    this.removeSvgClass(rectElement, elementClassName);
+                    this.removeSvgClass(rectElement, textElement, elementClassName);
                 }
             }
         }
@@ -6166,7 +6126,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
      * To remove class for unselected cells
      * @private
      */
-    HeatMap.prototype.removeSvgClass = function (rectElement, className) {
+    HeatMap.prototype.removeSvgClass = function (rectElement, textElement, className) {
         if (className) {
             rectElement.setAttribute('class', className.replace(className, ''));
         }
@@ -6179,13 +6139,13 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
             var rect = document.getElementById(this.element.id + '_Container_RectGroup');
             var text = document.getElementById(this.element.id + '_Container_TextGroup');
             for (var i = 0; i < rect.childNodes.length; i++) {
-                var elementClassName = rect.childNodes[i].getAttribute('class');
+                var elementClassName = rect.children[i].getAttribute('class');
                 if (elementClassName === this.element.id + '_selected') {
-                    this.removeSvgClass(rect.childNodes[i], elementClassName);
+                    this.removeSvgClass(rect.children[i], text.children[i], elementClassName);
                 }
-                rect.childNodes[i].setAttribute('opacity', '1');
-                if (this.cellSettings.showLabel && text && text.childNodes[i]) {
-                    text.childNodes[i].setAttribute('opacity', '1');
+                rect.children[i].setAttribute('opacity', '1');
+                if (this.cellSettings.showLabel && text && text.children[i]) {
+                    text.children[i].setAttribute('opacity', '1');
                 }
             }
         }
@@ -6250,23 +6210,23 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.allowSelection && this.multiSelection) {
             this.multiSelection = false;
-            if (e.type === 'mouseup' || e.type === 'touchend' || e.type === 'pointerup') {
+            if (e.type === 'mouseup' || e.type === 'touchend') {
                 if (!this.enableCanvasRendering) {
                     this.tempMultiCellCollection.push(this.multiCellCollection);
                     var containerRect = document.getElementById(this.element.id + '_Container_RectGroup');
                     var containerText = document.getElementById(this.element.id + '_Container_TextGroup');
                     for (var i = 0; i < containerRect.childNodes.length; i++) {
-                        var elementClassName = containerRect.childNodes[i].getAttribute('class');
+                        var elementClassName = containerRect.children[i].getAttribute('class');
                         if (elementClassName !== this.element.id + '_selected') {
-                            containerRect.childNodes[i].setAttribute('opacity', '0.3');
-                            if (this.cellSettings.showLabel && containerText.childNodes[i]) {
-                                containerText.childNodes[i].setAttribute('opacity', '0.3');
+                            containerRect.children[i].setAttribute('opacity', '0.3');
+                            if (this.cellSettings.showLabel && containerText.children[i]) {
+                                containerText.children[i].setAttribute('opacity', '0.3');
                             }
                         }
                         else {
-                            containerRect.childNodes[i].setAttribute('opacity', '1');
-                            if (this.cellSettings.showLabel && containerText.childNodes[i]) {
-                                containerText.childNodes[i].setAttribute('opacity', '1');
+                            containerRect.children[i].setAttribute('opacity', '1');
+                            if (this.cellSettings.showLabel && containerText.children[i]) {
+                                containerText.children[i].setAttribute('opacity', '1');
                             }
                         }
                     }
@@ -6380,12 +6340,6 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], HeatMap.prototype, "tooltipRender", void 0);
-    __decorate([
-        Event()
-    ], HeatMap.prototype, "resized", void 0);
-    __decorate([
-        Event()
-    ], HeatMap.prototype, "loaded", void 0);
     __decorate([
         Event()
     ], HeatMap.prototype, "cellRender", void 0);
@@ -6880,5 +6834,5 @@ var Adaptor = /** @__PURE__ @class */ (function () {
  * HeatMap index file
  */
 
-export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, BubbleSize, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
+export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
 //# sourceMappingURL=ej2-heatmap.es5.js.map

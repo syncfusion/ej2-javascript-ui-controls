@@ -61,6 +61,7 @@ export class TableProperties {
     private parentElement: HTMLElement;
     public localObj: L10n;
     private isRtl: boolean;
+    private groupButtonClass: string = 'e-de-ctnr-group-btn e-btn-group';
 
 
     get documentEditor(): DocumentEditor {
@@ -69,6 +70,9 @@ export class TableProperties {
     constructor(container: DocumentEditorContainer, imageProperty: ImageProperties, textProperties: TextProperties, isRtl?: boolean) {
         this.container = container;
         this.isRtl = isRtl;
+        if (this.isRtl) {
+            this.groupButtonClass = 'e-rtl ' + this.groupButtonClass;
+        }
         this.tableTextProperties = new TextProperties(container, 'textProperties', true, this.isRtl);
         this.imageProperty = imageProperty;
         this.elementId = this.documentEditor.element.id;
@@ -78,7 +82,7 @@ export class TableProperties {
     }
     private initializeTablePropPane = (): void => {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
-        this.tableProperties = createElement('div', { id: this.elementId + '_tableProperties', styles: 'width:269px;' });
+        this.tableProperties = createElement('div', { id: this.elementId + '_tableProperties' });
         this.initFillColorDiv();
         this.initBorderStylesDiv();
         this.initCellDiv();
@@ -91,8 +95,8 @@ export class TableProperties {
     }
     private addTablePropertyTab = (): void => {
         // tslint:disable-next-line:max-line-length
-        this.parentElement = createElement('div', { styles: 'width:269px;height:100%;overflow:auto;display:none' });
-        this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab', styles: 'width:269px' });
+        this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-table-pane' });
+        this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
         // tslint:disable-next-line:max-line-length
         let items: TabItemModel[] = [{ header: { text: this.localObj.getConstant('Table') }, content: this.tableProperties }, { header: { text: this.localObj.getConstant('Text') }, content: this.tableTextProperties.element }] as TabItemModel[];
         this.propertiesTab = new Tab({ items: items, animation: { previous: { effect: 'None' }, next: { effect: 'None' } }, selected: this.onTabSelection }, this.element);
@@ -285,12 +289,16 @@ export class TableProperties {
         // tslint:disable-next-line:max-line-length
         let fillDiv: HTMLElement = createElement('div', { id: this.elementId + '_fillColorDiv', className: 'e-de-property-div-padding de-tbl-fill-clr' });
         this.tableProperties.appendChild(fillDiv);
-        let label: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'margin-left:6px;margin-right:8px' });
+        let label: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label' });
+        label.classList.add('e-de-prop-fill-label');
+        if (this.isRtl) {
+            label.classList.add('e-de-rtl');
+        }
         label.textContent = this.localObj.getConstant('Fill');
         fillDiv.appendChild(label);
         let buttonStyle: string = 'width:92px;display:inline-flex;padding:3px';
         // tslint:disable-next-line:max-line-length
-        this.shadingBtn = this.createColorPickerTemplate(this.elementId + '_tableShading', fillDiv, this.localObj.getConstant('Fill color'));
+        this.shadingBtn = this.createColorPickerTemplate(this.elementId + '_tableShading', fillDiv, this.localObj.getConstant('Fill color'), false);
         // tslint:disable-next-line:max-line-length
         classList((fillDiv.lastElementChild.lastElementChild.lastElementChild.firstChild as HTMLElement), ['e-de-ctnr-cellbg-clr-picker'], ['e-caret']);
     }
@@ -298,24 +306,25 @@ export class TableProperties {
         let borderStyleDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
         this.tableProperties.appendChild(borderStyleDiv);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Border Style');
         borderStyleDiv.appendChild(label);
-        let parentDivMargin: string;
-        if (!this.isRtl) {
-            parentDivMargin = 'margin-right:9px;';
-        } else {
-            parentDivMargin = 'margin-left:9px;';
-        }
         // tslint:disable-next-line:max-line-length
-        let parentDiv: HTMLElement = createElement('div', { id: this.elementId + '_borderStyleDiv', styles: 'display:inline-flex;margin-bottom:3px;' + parentDivMargin });
-        let styleDiv: HTMLElement = createElement('div', { styles: 'width:120px;' });
-        let div1: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-top' });
+        let parentDiv: HTMLElement = createElement('div', { id: this.elementId + '_borderStyleDiv', className: 'e-de-border-style-div', styles: 'display:inline-flex;' });
+        let styleDiv: HTMLElement = createElement('div', { styles: 'width:126px;height:126px', className: 'e-de-grp-btn-ctnr' });
+        let div1: HTMLElement = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-top' });
         styleDiv.appendChild(div1);
-        let div2: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-middle' });
+        let div2: HTMLElement = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-middle' });
         styleDiv.appendChild(div2);
-        let div3: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group e-de-ctnr-group-btn-bottom' });
+        let div3: HTMLElement = createElement('div', { className: this.groupButtonClass + ' e-de-ctnr-group-btn-bottom' });
         styleDiv.appendChild(div3);
-        let btnStyle: string = 'width:' + 40 + 'px;';
+        if (this.isRtl) {
+            div1.classList.add('e-de-rtl');
+            div3.classList.add('e-de-rtl');
+            parentDiv.classList.add('e-de-rtl');
+            label.classList.add('e-de-rtl');
+        }
+        let btnStyle: string = '';
         // tslint:disable-next-line:max-line-length
         this.tableOutlineBorder = this.createButtonTemplate(this.elementId + '_tableOutlineBorder', 'e-de-ctnr-outsideborder e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Outside borders'));
         this.tableAllBorder = this.createButtonTemplate(this.elementId + '_tableAllBorder', 'e-de-ctnr-allborders e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('All borders'));
@@ -331,21 +340,21 @@ export class TableProperties {
         // tslint:disable-next-line:max-line-length
         this.tableBottomBorder = this.createButtonTemplate(this.elementId + '_tableBottomBorder', 'e-de-ctnr-bottomborder e-icons', div3, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Bottom border'));
         parentDiv.appendChild(styleDiv);
-        let styleTypeDivPadding: string;
+        // tslint:disable-next-line:max-line-length
+        let styleTypeDiv: HTMLElement = createElement('div', { className: 'de-tbl-fill-clr' });
         if (!this.isRtl) {
-            styleTypeDivPadding = 'padding-left:12px;';
+            styleTypeDiv.classList.add('e-de-stylediv');
         } else {
-            styleTypeDivPadding = 'padding-right:12px;';
+            styleTypeDiv.classList.add('e-de-stylediv-rtl');
         }
         // tslint:disable-next-line:max-line-length
-        let styleTypeDiv: HTMLElement = createElement('div', { styles: 'width:120px;' + styleTypeDivPadding, className: 'de-tbl-fill-clr' });
-        this.borderBtn = this.createColorPickerTemplate(this.elementId + '_tableBorderColor', styleTypeDiv, this.localObj.getConstant('Border color'));
+        this.borderBtn = this.createColorPickerTemplate(this.elementId + '_tableBorderColor', styleTypeDiv, this.localObj.getConstant('Border color'), true);
         this.borderBtn.value = '#000000';
         (styleTypeDiv.firstElementChild.lastElementChild.lastElementChild as HTMLElement).style.width = '30px';
-        (styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild as HTMLElement).style.width = '60px';
+        (styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild as HTMLElement).style.width = '100%';
         // tslint:disable-next-line:max-line-length
         classList((styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild as HTMLElement), ['e-de-ctnr-highlightcolor'], ['e-caret']);
-        let borderSizeButton: HTMLElement = createElement('button', { id: this.elementId + '_tableBorderSize', styles: 'width:100px;height:28px;margin-top:8px;font-size:10px;padding:0px;' });
+        let borderSizeButton: HTMLElement = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;' });
         styleTypeDiv.appendChild(borderSizeButton);
         this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', borderSizeButton);
         parentDiv.appendChild(styleTypeDiv);
@@ -356,9 +365,15 @@ export class TableProperties {
         let cellDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
         this.tableProperties.appendChild(cellDiv);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Cell');
         cellDiv.appendChild(label);
         let parentDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn' });
+        parentDiv.classList.add('e-de-cell-div');
+        if (this.isRtl) {
+            parentDiv.classList.add('e-de-rtl');
+            label.classList.add('e-de-rtl');
+        }
         let btnStyle: string = 'width:' + 38 + 'px;';
         // tslint:disable-next-line:max-line-length
         this.horizontalMerge = this.createButtonTemplate(this.elementId + '_tableOutlineBorder', 'e-de-ctnr-mergecell e-icons', parentDiv, 'e-de-prop-font-button', btnStyle, 'Merge cells');
@@ -369,12 +384,20 @@ export class TableProperties {
         let tableOperationDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
         this.tableProperties.appendChild(tableOperationDiv);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Insert / Delete');
         tableOperationDiv.appendChild(label);
-        let parentDiv: HTMLElement = createElement('div', { styles: 'display:inline-flex' });
-        let div1: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+        let parentDiv: HTMLElement = createElement('div', { className: 'e-de-insert-del-cell', styles: 'display:inline-flex' });
+        let div1: HTMLElement = createElement('div', { className: this.groupButtonClass });
         parentDiv.appendChild(div1);
-        let div2: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+        let div2: HTMLElement = createElement('div', { className: this.groupButtonClass });
+        if (!this.isRtl) {
+            div2.style.marginLeft = '12px';
+        } else {
+            div2.style.marginRight = '12px';
+            parentDiv.classList.add('e-de-rtl');
+            label.classList.add('e-de-rtl');
+        }
         parentDiv.appendChild(div2);
         let btnStyle: string = 'width:' + 38 + 'px;';
         // tslint:disable-next-line:max-line-length
@@ -384,7 +407,7 @@ export class TableProperties {
         this.insertRowAbove = this.createButtonTemplate(this.elementId + '_insertRowAbove', 'e-de-ctnr-insertabove e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Insert rows above'));
         this.insertRowBelow = this.createButtonTemplate(this.elementId + '_insertRowBelow', 'e-de-ctnr-insertbelow e-icons', div1, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Insert rows below'));
         // tslint:disable-next-line:max-line-length
-        this.deleteRow = this.createButtonTemplate(this.elementId + '_deleteRow', 'e-de-ctnr-deleterows e-icons', div2, 'e-de-prop-font-button', btnStyle + 'margin-left:9px', this.localObj.getConstant('Delete rows'));
+        this.deleteRow = this.createButtonTemplate(this.elementId + '_deleteRow', 'e-de-ctnr-deleterows e-icons', div2, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Delete rows'));
         this.deleteColumn = this.createButtonTemplate(this.elementId + '_deleteColumn', 'e-de-ctnr-deletecolumns e-icons', div2, 'e-de-prop-font-button', btnStyle, this.localObj.getConstant('Delete columns'));
         tableOperationDiv.appendChild(parentDiv);
     }
@@ -392,11 +415,15 @@ export class TableProperties {
         let cellMarginDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding e-de-cellmargin-text' });
         this.tableProperties.appendChild(cellMarginDiv);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Cell Margin');
         cellMarginDiv.appendChild(label);
-        let parentDiv: HTMLElement = createElement('div', { styles: 'height: 60px;display:inline-flex' });
-        let textboxDivStyle: string = 'width:' + 50 + 'px';
-        let textboxParentDivStyle: string = 'width:' + 50 + 'px;float:left;margin-right:' + 9 + 'px';
+        let parentDiv: HTMLElement = createElement('div', { className: 'e-de-cell-margin', styles: 'height: 60px;display:inline-flex' });
+        if (this.isRtl) {
+            label.classList.add('e-de-rtl');
+        }
+        let textboxDivStyle: string = 'width:' + 48 + 'px';
+        let textboxParentDivStyle: string = 'width:' + 50 + 'px;float:left;';
         // tslint:disable-next-line:max-line-length
         this.topMargin = this.createCellMarginTextBox(this.localObj.getConstant('Top'), this.elementId + '_topMargin', parentDiv, textboxDivStyle, textboxParentDivStyle, 500, 'Top margin');
         // tslint:disable-next-line:max-line-length
@@ -411,10 +438,15 @@ export class TableProperties {
         let alignmentDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding', styles: 'border-bottom-width:0px' });
         this.tableProperties.appendChild(alignmentDiv);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
+        label.classList.add('e-de-table-prop-label');
         label.textContent = this.localObj.getConstant('Align Text');
         alignmentDiv.appendChild(label);
-        let parentDiv: HTMLElement = createElement('div', { styles: 'margin-bottom: 10px;' });
-        let div: HTMLElement = createElement('div', { className: 'e-de-ctnr-group-btn e-btn-group' });
+        let parentDiv: HTMLElement = createElement('div', { className: 'e-de-align-text', styles: 'margin-bottom: 10px;' });
+        if (this.isRtl) {
+            parentDiv.classList.add('e-de-rtl');
+            label.classList.add('e-de-rtl');
+        }
+        let div: HTMLElement = createElement('div', { className: this.groupButtonClass });
         parentDiv.appendChild(div);
         let btnStyle: string = 'width:' + 38 + 'px;';
         // tslint:disable-next-line:max-line-length
@@ -433,6 +465,7 @@ export class TableProperties {
     // tslint:disable-next-line:max-line-length
     private createCellMarginTextBox = (textboxLabel: string, textboxId: string, parentDiv: HTMLElement, styles: string, parentStyle: string, maxValue: number, toolTipText: string): NumericTextBox => {
         let cellMarginParentDiv: HTMLElement = createElement('div', { styles: parentStyle });
+        cellMarginParentDiv.classList.add('e-de-cell-text-box');
         let cellMarginLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label' });
         cellMarginLabel.textContent = textboxLabel;
         cellMarginParentDiv.appendChild(cellMarginLabel);
@@ -448,7 +481,7 @@ export class TableProperties {
     private createBorderSizeDropDown = (iconcss: string, button: HTMLElement): DropDownButton => {
         let div: HTMLElement = createElement('div', { id: 'borderSizeTarget', styles: 'display:none' });
         let ulTag: HTMLElement = createElement('ul', {
-            styles: 'display: block; outline: 0px; width: 120px; height: auto;',
+            styles: 'display: block; outline: 0px; width: 126px; height: auto;',
             id: 'borderSizeListMenu'
         });
         div.appendChild(ulTag);
@@ -493,7 +526,7 @@ export class TableProperties {
     private createDropdownOption = (ulTag: HTMLElement, text: string): HTMLElement => {
         let liTag: HTMLElement = createElement('li', {
             styles: 'display:block',
-            className: 'ui-wfloating-menuitem ui-wfloating-menuitem-md de-list-items  de-list-item-size'
+            className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
         });
         ulTag.appendChild(liTag);
         let innerHTML: string;
@@ -501,14 +534,14 @@ export class TableProperties {
             innerHTML = '<div>' + text + '</div>';
         } else if (text === '1.5px') {
             // tslint:disable-next-line:max-line-length
-            innerHTML = '<div>' + text + '<span class="ui-list-line e-de-border-width"  style="margin-left:10px;border-bottom-width:' + text + ';border-bottom-color:' + this.borderColor + '"' + '></span></div>';
+            innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width"  style="margin-left:10px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
         } else {
             // tslint:disable-next-line:max-line-length
-            innerHTML = '<div>' + text + '<span class="ui-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' + text + ';border-bottom-color:' + this.borderColor + '"' + '></span></div>';
+            innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
         }
         let liInnerDiv: HTMLElement = createElement('div', {
-            className: 'ui-list-header-presetmenu',
-            id: 'ui-zlist0', innerHTML: innerHTML
+            className: 'e-de-list-header-presetmenu',
+            innerHTML: innerHTML
         });
         liTag.appendChild(liInnerDiv);
         return liTag;
@@ -517,8 +550,12 @@ export class TableProperties {
     public createDropDownButton = (id: string, styles: string, parentDiv: HTMLElement, iconCss: string, content: string, items?: ItemModel[], target?: HTMLElement): DropDownButton => {
         let buttonElement: HTMLButtonElement = createElement('button', { id: id, styles: styles }) as HTMLButtonElement;
         parentDiv.appendChild(buttonElement);
+        let splitButtonClass: string = 'e-de-prop-splitbutton';
+        if (this.isRtl) {
+            splitButtonClass = 'e-rtl ' + splitButtonClass;
+        }
         // tslint:disable-next-line:max-line-length
-        let dropDownBtn: DropDownButton = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: this.isRtl, cssClass: 'e-de-prop-splitbutton' }, buttonElement);
+        let dropDownBtn: DropDownButton = new DropDownButton({ iconCss: iconCss, content: content, enableRtl: this.isRtl, cssClass: splitButtonClass }, buttonElement);
         if (items) {
             dropDownBtn.items = items;
         }
@@ -539,11 +576,15 @@ export class TableProperties {
         buttonElement.setAttribute('title', toolTipText);
         return btn;
     }
-    private createColorPickerTemplate = (id: string, divElement: HTMLElement, toolTipText: string): ColorPicker => {
+    private createColorPickerTemplate = (id: string, divElement: HTMLElement, toolTipText: string, isBorderWidth: boolean): ColorPicker => {
         let inputElement: HTMLInputElement = createElement('input', { id: id }) as HTMLInputElement;
         divElement.appendChild(inputElement);
+        let cssClass: string = 'e-de-prop-font-button e-de-prop-font-colorpicker';
+        if (isBorderWidth) {
+            cssClass = cssClass + ' e-de-border-clr-picker';
+        }
         // tslint:disable-next-line:max-line-length
-        let colorPicker: ColorPicker = new ColorPicker({ showButtons: true, cssClass: 'e-de-prop-font-button e-de-prop-font-colorpicker', enableRtl: this.isRtl, locale: this.container.locale }, inputElement);
+        let colorPicker: ColorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale }, inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
         return colorPicker;
     }

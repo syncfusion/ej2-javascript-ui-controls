@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.1.1-beta (2019-01-22)
+## 16.4.46 (2019-01-08)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- Item text overflow issue fixed.
+
+## 16.4.40-beta (2018-12-10)
 
 ### ProgressButton
 

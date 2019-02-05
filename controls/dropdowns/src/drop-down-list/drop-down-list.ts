@@ -563,6 +563,10 @@ export class DropDownList extends DropDownBase implements IInput {
         return this.addOnPersist(['value']);
     };
 
+    protected getLocaleName(): string {
+        return 'drop-down-list';
+    };
+
     private preventTabIndex(element: HTMLElement): void {
         if (this.getModuleName() === 'dropdownlist') {
             element.tabIndex = -1;

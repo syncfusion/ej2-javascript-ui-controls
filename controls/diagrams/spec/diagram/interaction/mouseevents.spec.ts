@@ -75,7 +75,7 @@ export class MouseEvents {
         element.dispatchEvent(focus);
     }
 
-    public keyDownEvent(element: HTMLElement | Document, key: string, controlKey?: boolean, shiftKey?: boolean, altKey?: boolean): void {
+    public keyDownEvent(element: HTMLElement, key: string, controlKey?: boolean, shiftKey?: boolean, altKey?: boolean): void {
         let keyDown: KeyboardEvent = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: key, ctrlKey: controlKey, shiftKey: shiftKey, altKey: altKey });
         element.dispatchEvent(keyDown);
     }
@@ -147,7 +147,7 @@ export class MouseEvents {
             { pageX: x1, pageY: y1, clientX: x1, clientY: y1 }
         ];
         if (x2 && y2) {
-            touches.push({ pageX: x2, pageY: y2, clientX: x2, clientY: y2 });
+            touches.push({ pageX: x2, pageY: y2, clientX: x2, clientY: y2 })
         }
         return {
             target: elem,

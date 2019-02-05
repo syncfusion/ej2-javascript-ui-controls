@@ -363,15 +363,10 @@ describe('DateTimePicker', () => {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
                 expect(datetimepicker.popupWrapper.style.zIndex).toEqual('1500');
             });
-            it('Element created with string Format property', () => {
+            it('Element created with Format property', () => {
                 datetimepicker = new DateTimePicker({ format: 'MM/dd/yyyy hh:mm a', value: new Date('04/06/2018 10:30 AM') });
                 datetimepicker.appendTo('#dateTime');
                 expect(datetimepicker.inputElement.value == '04/06/2018 10:30 AM').toBe(true);
-            });
-            it('Element created with object Format property', () => {
-                datetimepicker = new DateTimePicker({ format: {skeleton:'short'}, value: new Date("12/12/2016 10:15 AM") });
-                datetimepicker.appendTo('#dateTime');
-                expect(datetimepicker.inputElement.value == '12/12/16, 10:15 AM').toBe(true);
             });
             it('Element created with Format property', () => {
                 datetimepicker = new DateTimePicker();
@@ -444,6 +439,27 @@ describe('DateTimePicker', () => {
                 datetimepicker = new DateTimePicker();
                 datetimepicker.appendTo('#dateTime');
                 expect(datetimepicker.element.getAttribute('autocomplete') == 'off').toBe(true);
+            });
+            /**
+           * tabIndex
+            */
+            it('tab index of focus element', () => {
+                datetimepicker = new DateTimePicker({});
+                datetimepicker.appendTo('#dateTime');
+                expect(datetimepicker.inputWrapper.container.children[0].getAttribute('tabindex') === '0').toBe(true);
+            });
+            it('while give tab index to the datetimepicker element', () => {
+                datetimepicker = new DateTimePicker({});
+                datetimepicker.appendTo('#dateTime');
+                datetimepicker.element.tabIndex = '4';
+                expect(datetimepicker.inputWrapper.container.children[0].getAttribute('tabindex') === '4').toBe(true);
+            });
+            it('tab index of focus element in disable state ', () => {
+                datetimepicker = new DateTimePicker({ enabled: false });
+                datetimepicker.appendTo('#dateTime');
+                expect(datetimepicker.inputWrapper.container.children[0].tabIndex === -1).toBe(true);
+                datetimepicker.enabled = true;
+                datetimepicker.dataBind();
             });
         });
     });
@@ -560,16 +576,6 @@ describe('DOM Wrapper Testing with default value ', () => {
     it('readonly testing', () => {
         expect(datetimepicker.inputElement.getAttribute('readonly')).toEqual(null);
     });
-    it('valid value entering when popup is in the open state', function () {
-        datetimepicker = new DateTimePicker({});
-        datetimepicker.appendTo('#dateTime');
-        datetimepicker.show();
-        datetimepicker.value = new Date('1/1/2019 1:00 AM');
-        datetimepicker.dataBind();
-        datetimepicker.focusOut();
-        expect(datetimepicker.element.value).toBe('1/1/2019 1:00 AM');
-        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
-    });
 });
 describe('DOM Wrapper Testing with basic properites', () => {
     let datetimepicker: any;
@@ -673,7 +679,6 @@ describe('DOM Wrapper Testing with basic properites', () => {
         let dateTimeFormat: any = datetimepicker.cldrDateTimeFormat();
         expect(dateTimeFormat).toBe("M/d/y h:mm a");
         datetimepicker.format = "MM/dd/yyyy hh:mm a";
-        datetimepicker.dataBind();
         let dateTimeFormat1: any = datetimepicker.cldrDateTimeFormat();
         expect(dateTimeFormat1).toBe("MM/dd/yyyy hh:mm a");
     });
@@ -1201,21 +1206,14 @@ describe('document strict mode testing', () => {
         datetimepicker.dataBind();
         expect(datetimepicker.floatLabelType).toBe('Always');
     })
-    it('onproperty change string format testing', () => {
+    it('onproperty change format testing', () => {
         datetimepicker = new DateTimePicker();
         datetimepicker.appendTo('#dateTime');
         datetimepicker.value = new Date('3/3/2017 11:00 AM');
         datetimepicker.dataBind();
-        expect(datetimepicker.inputElement.value).toBe('3/3/2017 11:00 AM');
-    })
-    it('onproperty change object format testing', () => {
-        datetimepicker = new DateTimePicker();
-        datetimepicker.appendTo('#dateTime');
-        datetimepicker.value = new Date("12/12/2016 10:15 AM");
+        datetimepicker.format = 'dd/MM/yyyy HH:mm';
         datetimepicker.dataBind();
-        datetimepicker.format = {skeleton:'short'};
-        datetimepicker.dataBind();
-        expect(datetimepicker.inputElement.value).toBe('12/12/16, 10:15 AM');
+        expect(datetimepicker.inputElement.value).toBe('03/03/2017 11:00');
     })
     it('onproperty change cssClass during time popup open time testing', (done) => {
         datetimepicker = new DateTimePicker({
@@ -2237,63 +2235,3 @@ describe('Islamic ', () => {
     //     datetimepicker.appendTo('#dateTime');
     // });
 });
-
-describe('SetScrollTo testing', () => {
-    let datetimepicker: any;
-    beforeEach(() => {
-        let ele: HTMLElement = createElement('input', { id: 'datetimepickerscroll' });
-        document.body.appendChild(ele);
-        datetimepicker = new DateTimePicker();
-        datetimepicker.appendTo('#datetimepickerscroll');
-    });
-    afterEach(() => {
-        if (datetimepicker) {
-            datetimepicker.destroy();
-        }
-        document.body.innerHTML = '';
-    });
-    it('scrollTo intermediate value testing', (done) => {
-        datetimepicker.show('time');
-        datetimepicker.hide();
-        datetimepicker.scrollTo = new Date("11/11/2011 2:00 PM");
-        datetimepicker.dataBind();
-        setTimeout(function () {
-            datetimepicker.show('time');
-            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
-            done();
-        }, 450);
-    });
-    it('scrollTo initial value testing', (done) => {
-        datetimepicker.scrollTo = new Date("11/11/2011 12:00 AM");
-        datetimepicker.dataBind();
-        datetimepicker.show('time');
-        setTimeout(function () {
-            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
-            done();
-        }, 450);
-    });
-    it('scrollTo last value testing', (done) => {
-        datetimepicker.scrollTo = new Date("11/11/2011 11:00 AM");
-        datetimepicker.dataBind();
-        datetimepicker.show('time');
-        setTimeout(function () {
-            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
-            done();
-        }, 450);
-    });
-    it('scrollTo false testing', (done) => {
-        datetimepicker.scrollTo = null;
-        datetimepicker.dataBind();
-        datetimepicker.show('time');
-        setTimeout(function () {
-            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
-            done();
-        }, 450);
-    });
-    it('scrollTo invalid date testing', () => {
-        datetimepicker.scrollTo = new Date('');
-        datetimepicker.dataBind();
-        expect(datetimepicker.scrollTo).toBe(null);
-    });
-});
-

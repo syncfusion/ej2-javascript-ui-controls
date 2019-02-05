@@ -57,5 +57,5 @@ export interface IMulitSelect extends Component<HTMLElement> {
     onBlur(eve?: MouseEvent): void;
     keyAction?: boolean;
     removeFocus?(): void;
-
+    getLocaleName?(): string;
 }

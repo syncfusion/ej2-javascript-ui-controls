@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, Property, Event, EmitType } from '@syncfusion/ej2-base';
 import { PdfViewerModel } from './pdfviewer-model';
 import { ToolbarSettingsModel } from './pdfviewer-model';
 import { ServerActionSettingsModel } from './pdfviewer-model';
@@ -20,6 +20,7 @@ import { IUnloadEventArgs, ILoadEventArgs, ILoadFailedEventArgs, IAjaxRequestFai
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
+ * @hidden
  */
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
@@ -37,6 +38,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of PDF viewer.
+ * @hidden
  */
 export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
     /**
@@ -130,14 +132,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Defines the scrollable height of the PdfViewer control.
-     * @default 'auto'
+     * @default auto
      */
     @Property('auto')
     public height: string | number;
 
     /**
      * Defines the scrollable width of the PdfViewer control.
-     * @default 'auto'
+     * @default auto
      */
     @Property('auto')
     public width: string | number;
@@ -483,8 +485,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public defaultLocale: Object = {
         'PdfViewer': 'PDF Viewer',
         'Cancel' : 'Cancel',
-        'Download file' : 'Download file',
-        'Download': 'Download',
+        'Download' : 'Download file',
         'Enter Password' : 'This document is password protected. Please enter a password.',
         'File Corrupted' : 'File Corrupted',
         'File Corrupted Content' : 'The file is corrupted and cannot be opened.',
@@ -512,19 +513,135 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Text Search': 'Find text',
         'Find in document': 'Find in document',
         'Match case': 'Match case',
-        'Apply': 'Apply',
-        'GoToPage': 'Go to Page',
          // tslint:disable-next-line:max-line-length
         'No matches': 'Viewer has finished searching the document. No more matches were found',
-        'No Text Found': 'No Text Found',
         // tslint:disable-next-line:max-line-length
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.'
     };
 
+    // /**
+    //  * Shows /hides the toolbar in the PdfViewer
+    //  * @param  {boolean} enableToolbar
+    //  * @returns void
+    //  */
+    // public showToolbar(enableToolbar: boolean): void {
+    //     this.toolbarModule.showToolbar(enableToolbar);
+    // }
+
+    // /**
+    //  * Shows /hides the the toolbar items in the PdfViewer
+    //  * @param  {string[]} items
+    //  * @param  {boolean} isVisible
+    //  * @returns void
+    //  */
+    // public showToolbarItem(items: ToolbarItem[], isVisible: boolean): void {
+    //     if (this.toolbarModule) {
+    //         this.toolbarModule.showToolbarItem(items, isVisible);
+    //     }
+    // }
+
+    // /**
+    //  * Enables /disables the the toolbar items in the PdfViewer
+    //  * @param  {string[]} items
+    //  * @param  {boolean} isEnable
+    //  * @returns void
+    //  */
+    // public enableToolbarItem(items: ToolbarItem[], isEnable: boolean): void {
+    //     if (this.toolbarModule) {
+    //         this.toolbarModule.enableToolbarItem(items, isEnable);
+    //     }
+    // }
+
+    // /**
+    //  * Navigate to given Page number
+    //  * Note : In case if we have provided incorrect page number as argument it will retain the existing page
+    //  * @param  {number} pageNumber
+    //  * @returns void
+    //  */
+    // public goToPage(pageNumber: number): void {
+    //     this.navigationModule.goToPage(pageNumber);
+    // }
+
+    // /**
+    //  * Navigate to First page of the PDF document
+    //  * @returns void
+    //  */
+    // public goToFirstPage(): void {
+    //     this.navigationModule.goToFirstPage();
+    // }
+
+    // /**
+    //  * Navigate to Previous page of the PDF document
+    //  * @returns void
+    //  */
+    // public goToPreviousPage(): void {
+    //     this.navigationModule.goToPreviousPage();
+    // }
+
+    // /**
+    //  * Navigate to Next page of the PDF document
+    //  * @returns void
+    //  */
+    // public goToNextPage(): void {
+    //     this.navigationModule.goToNextPage();
+    // }
+
+    // /**
+    //  * Navigate to Last page of the PDF document
+    //  * @returns void
+    //  */
+    // public goToLastPage(): void {
+    //     this.navigationModule.goToLastPage();
+    // }
+
+    // /**
+    //  * Zoom the PDF document to the given zoom value
+    //  * @param  {number} zoomValue
+    //  * @returns void
+    //  */
+    // public zoomTo(zoomValue: number): void {
+    //     if (this.viewerBase.pageCount !== 0) {
+    //         this.magnificationModule.zoomTo(zoomValue);
+    //     }
+    // }
+
+    // /**
+    //  * Magnifies the page to the next value in the zoom drop down list.
+    //  * @returns void
+    //  */
+    // public zoomIn(): void {
+    //     this.magnificationModule.zoomIn();
+    // }
+
+    // /**
+    //  * Magnifies the page to the previous value in the zoom drop down list.
+    //  * @returns void
+    //  */
+    // public zoomOut(): void {
+    //     this.magnificationModule.zoomOut();
+    // }
+
+    // /**
+    //  * Scales the page to fit the page in the container in the control.
+    //  * @param  {number} zoomValue
+    //  * @returns void
+    //  */
+    // public fitToPage(): void {
+    //     this.magnificationModule.fitToPage();
+    // }
+
+    // /**
+    //  * Scales the page to fit the page width to the width of the container in the control.
+    //  * @returns void
+    //  */
+    // public fitToWidth(): void {
+    //     this.magnificationModule.fitToWidth();
+    // }
+
     /**
      * Loads the given PDF document in the PDF viewer control
-     * @param  {string} document - Specifies the document name for load
-     * @param  {string} password - Specifies the Given document password
+     * @param  {string} document
+     * @param  {string} password
      * @returns void
      */
     public load(document: string, password: string): void {
@@ -541,6 +658,26 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.viewerBase.initiatePageRender(document, password);
     }
 
+    // /**
+    //  * Display Bookmarks the PDF Document being loaded in the ejPdfViewer control
+    //  * @returns any
+    //  */
+    // // tslint:disable-next-line
+    // public getBookmarks(): any {
+    //     if (this.enableBookmark) {
+    //         // tslint:disable-next-line:max-line-length
+    //         return { bookmarks: this.bookmarkViewModule.bookmarks , bookmarksDestination: this.bookmarkViewModule.bookmarksDestination };
+    //     }
+    // }
+
+    // /**
+    //  * Navigate To current Bookmark Location the PDF document being loaded in the ejPdfViewer control.
+    //  * @returns void
+    //  */
+    // public navigateBookmark(pageIndex: number, Y: number): void {
+    //     this.bookmarkViewModule.navigateTo(pageIndex, Y);
+    // }
+
     /**
      * Downloads the PDF document being loaded in the ejPdfViewer control.
      * @returns void
@@ -550,6 +687,58 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.viewerBase.download();
         }
     }
+
+    // /**
+    //  * Print the PDF document being loaded in the ejPdfViewer control.
+    //  * @returns void
+    //  */
+    // public print(): void {
+    //     if (this.enablePrint) {
+    //         this.printModule.print();
+    //     }
+    // }
+
+    // /**
+    //  * Searches the target text in the PDF document and highlights the occurrences in the pages
+    //  * @param  {string} searchText
+    //  * @param  {boolean} isMatchCase
+    //  * @returns void
+    //  */
+    // public searchText(searchText: string, isMatchCase: boolean): void {
+    //     if (this.textSearchModule) {
+    //         this.textSearchModule.searchText(searchText, isMatchCase);
+    //     }
+    // }
+
+    // /**
+    //  * Searches the next occurrence of the searched text from the current occurrence of the PdfViewer. 
+    //  * @returns void
+    //  */
+    // public searchNext(): void {
+    //     if (this.textSearchModule) {
+    //         this.textSearchModule.searchNext();
+    //     }
+    // }
+
+    // /**
+    //  * Searches the previous occurrence of the searched text from the current occurrence of the PdfViewer. 
+    //  * @returns void
+    //  */
+    // public searchPrevious(): void {
+    //     if (this.textSearchModule) {
+    //         this.textSearchModule.searchPrevious();
+    //     }
+    // }
+
+    // /**
+    //  * Cancels the text search of the PdfViewer. 
+    //  * @returns void
+    //  */
+    // public cancelTextSearch(): void {
+    //     if (this.textSearchModule) {
+    //         this.textSearchModule.cancelTextSearch();
+    //     }
+    // }
 
     /**
      * Unloads the PDF document being displayed in the PDF viewer.
@@ -567,12 +756,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public destroy(): void {
         super.destroy();
+        this.element.classList.remove('e-pdfviewer');
         if (this.toolbarModule) {
         this.toolbarModule.destroy();
         }
-        if (!isNullOrUndefined(this.element)) {
-            this.element.classList.remove('e-pdfviewer');
-            this.element.innerHTML = '';
+        while (this.element.hasChildNodes()) {
+            this.element.removeChild(this.element.lastChild);
         }
         this.viewerBase.destroy();
     }

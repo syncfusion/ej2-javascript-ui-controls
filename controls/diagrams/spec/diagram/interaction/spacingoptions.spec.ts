@@ -2,7 +2,6 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 
 /**
@@ -15,12 +14,6 @@ describe('SpacingOptions Commands', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
@@ -68,12 +61,6 @@ describe('SpacingOptions Commands', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -115,12 +102,6 @@ describe('SpacingOptions Commands', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -162,12 +143,6 @@ describe('SpacingOptions Commands', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -209,12 +184,6 @@ describe('SpacingOptions Commands', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -261,12 +230,6 @@ describe('SpacingOptions Commands', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -309,12 +272,6 @@ describe('SpacingOptions Commands', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -351,27 +308,12 @@ describe('SpacingOptions Commands', () => {
                 (diagram.connectors[0].targetPoint.x === 200 && diagram.connectors[0].targetPoint.y === 312.5)).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
     describe('Nodes with SpacingOptions Default', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             let node: NodeModel = {

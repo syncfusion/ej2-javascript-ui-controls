@@ -301,23 +301,6 @@ export class Reorder implements IAction {
         }
     }
 
-    private moveTargetColumn(column: Column, toIndex: number) : void {
-        if (toIndex > -1) {
-            this.moveColumns(toIndex, column, true);
-        }
-    }
-
-    private reorderSingleColumnByTarget(fieldName: string, toIndex: number): void {
-        let column: Column = this.parent.getColumnByField(fieldName);
-        this.moveTargetColumn(column, toIndex);
-    }
-
-    private reorderMultipleColumnByTarget(fieldName: string[], toIndex: number): void {
-        for (let i: number = 0; i < fieldName.length; i++) {
-            this.reorderSingleColumnByTarget(fieldName[i], toIndex);
-        }
-    }
-
     /** 
      * Changes the position of the Grid columns by field names. 
      * @param  {string | string[]} fromFName - Defines the origin field names. 
@@ -326,28 +309,6 @@ export class Reorder implements IAction {
      */
     public reorderColumns(fromFName: string | string[], toFName: string): void {
         typeof fromFName === 'string' ? this.reorderSingleColumn(fromFName, toFName) : this.reorderMultipleColumns(fromFName, toFName);
-    }
-
-    /** 
-     * Changes the position of the Grid columns by field index. 
-     * @param  {number} fromIndex - Defines the origin field index. 
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void} 
-     */
-    public reorderColumnByIndex(fromIndex: number, toIndex: number): void {
-        let column: Column = this.parent.getColumnByIndex(fromIndex);
-        this.moveTargetColumn(column, toIndex);
-    }
-
-    /** 
-     * Changes the position of the Grid columns by field index. 
-     * @param  {string | string[]} fieldName - Defines the field name. 
-     * @param  {number} toIndex - Defines the destination field index.
-     * @return {void} 
-     */
-    public reorderColumnByTargetIndex(fieldName: string | string[], toIndex: number): void {
-        typeof fieldName === 'string' ? this.reorderSingleColumnByTarget(fieldName, toIndex) :
-        this.reorderMultipleColumnByTarget(fieldName, toIndex);
     }
 
     private enableAfterRender(e: NotifyArgs): void {

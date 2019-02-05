@@ -220,25 +220,9 @@ export class CanvasRenderer implements IRenderer {
         ctx.beginPath();
         let pivotY: number = options.y + options.height * options.pivotY;
         let pivotX: number = options.x + options.width * options.pivotX;
-        if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
-            ctx.translate(options.x + options.width / 2, options.y + options.height / 2);
-            ctx.rotate(-options.angle * Math.PI / 180);
-            ctx.translate(-options.x - options.width / 2, -options.y - options.height / 2);
-        } else {
-            this.rotateContext(canvas, options.angle, pivotX, pivotY);
-        }
+        this.rotateContext(canvas, options.angle, pivotX, pivotY);
         this.setStyle(canvas, options as StyleAttributes);
         ctx.translate(options.x, options.y);
-        if (options.flip === 'Horizontal') {
-            ctx.scale(-1, 1);
-            ctx.translate(options.width * -1, 0);
-        } else if (options.flip === 'Vertical') {
-            ctx.scale(1, -1);
-            ctx.translate(0, options.height * -1);
-        } else if (options.flip === 'Both') {
-            ctx.scale(-1, -1);
-            ctx.translate(options.width * -1, options.height * -1);
-        }
         this.renderPath(canvas, options, collection);
         ctx.fill();
         ctx.translate(-options.x, -options.y);
@@ -520,22 +504,6 @@ export class CanvasRenderer implements IRenderer {
             } else {
                 ctx.drawImage(image, x, y, width, height);
             }
-        } else if (alignOptions.flip !== 'None') {
-            let scaleX: number = 1;
-            let scaleY: number = 1;
-            if (alignOptions.flip === 'Horizontal' || alignOptions.flip === 'Both') {
-                x = -x;
-                width = -width;
-                scaleX = -1;
-            }
-            if (alignOptions.flip === 'Vertical' || alignOptions.flip === 'Both') {
-                y = -y;
-                height = -height;
-                scaleY = -1;
-            }
-            ctx.scale(scaleX, scaleY);
-            ctx.drawImage(image, x, y, width, height);
-
         } else {
             ctx.drawImage(image, x, y, width, height);
         }

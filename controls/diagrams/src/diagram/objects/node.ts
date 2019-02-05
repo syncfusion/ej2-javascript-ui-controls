@@ -5,7 +5,7 @@ import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearanc
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
-import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction } from '../enum/enum';
+import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status } from '../enum/enum';
 import { IElement } from './interface/IElement';
 import { Container } from '../core/containers/container';
 import { Canvas } from '../core/containers/canvas';
@@ -31,7 +31,7 @@ import { BpmnTaskModel, BpmnSubProcessModel, BpmnGatewayModel } from './node-mod
 import { ShapeModel, BasicShapeModel, FlowShapeModel, ImageModel, PathModel, BpmnShapeModel, BpmnDataObjectModel } from './node-model';
 import { TextModel, NativeModel, HtmlModel } from './node-model';
 import { LayoutModel } from '../layout/layout-base-model';
-import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';
+import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes } from './../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { NodeBase } from './node-base';
 import { canShadow } from './../utility/constraints-util';
@@ -1790,7 +1790,6 @@ export class Node extends NodeBase implements IElement {
             case 'Bpmn':
                 if (diagram.bpmnModule) {
                     content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
-                    this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
                     let subProcess: BpmnSubProcessModel = (this.shape as BpmnShape).activity.subProcess;
                     if (subProcess.processes && subProcess.processes.length) {
                         let children: string[] = (this.shape as BpmnShape).activity.subProcess.processes;
@@ -1871,9 +1870,6 @@ export class Node extends NodeBase implements IElement {
                 content.style = this.style;
             }
         }
-        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {
-            content.flip = this.flip;
-        }
         return content;
     }
     /* tslint:enable */
@@ -1924,7 +1920,6 @@ export class Node extends NodeBase implements IElement {
         canvas.maxWidth = this.maxWidth;
         canvas.pivot = this.pivot;
         canvas.margin = this.margin as Margin;
-        canvas.flip = this.flip;
         this.wrapper = canvas;
         return canvas;
     }
@@ -1936,7 +1931,6 @@ export class Node extends NodeBase implements IElement {
 
         for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
             port = this.initPortWrapper(this.ports[i] as Port);
-            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
             // tslint:disable-next-line:no-any
             let wrapperContent: any;
             let contentAccessibility: Function = getFunction(accessibilityContent);
@@ -2032,7 +2026,7 @@ export class Node extends NodeBase implements IElement {
         };
         portContent.horizontalAlignment = ports.horizontalAlignment;
         portContent.verticalAlignment = ports.verticalAlignment;
-        portContent = updatePortEdges(portContent, this.flip, ports);
+        portContent.setOffsetWithRespectToBounds((ports as PointPort).offset.x, (ports as PointPort).offset.y, 'Fraction');
         if (this.width !== undefined || this.height !== undefined) {
             portContent.float = true;
         }

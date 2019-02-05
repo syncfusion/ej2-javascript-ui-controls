@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.52 (2019-02-05)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided `Summary view` support.
+
 ## 16.4.44 (2018-12-24)
 
 ### QueryBuilder

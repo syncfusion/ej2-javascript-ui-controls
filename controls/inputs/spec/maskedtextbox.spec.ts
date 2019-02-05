@@ -17,7 +17,7 @@ function eventObject(eventType: string, eventName: string): Object {
 
 describe('MaskedTextBox Component', () => {
     describe('MaskedTextBox creation', () => {
-        beforeAll(() => {
+		beforeAll(() => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
@@ -824,31 +824,6 @@ describe('MaskedTextBox Component', () => {
             EventHandler.trigger(input, 'keydown', event);
             expect(input.value.length === 8 && input.value[2].trim() === '').toEqual(true);
             expect(input.selectionStart === 0).toEqual(true);
-        });
-         it('Edit values in MaskedTextBox - floatLabelType Never', () => {
-            maskBox = new MaskedTextBox({
-                mask: '00',
-                placeholder: 'Time(10PM - 10AM)',
-                floatLabelType: 'Never'
-            });
-            maskBox.appendTo('#mask1');
-            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            let event: any = eventObject('KeyboardEvent', 'keypress');
-            event.key = "1";
-            EventHandler.trigger(input, 'keypress', event);
-            event.key = "2";
-            EventHandler.trigger(input, 'keypress', event);
-            expect(input.value === '12').toEqual(true);
-            let event1: any = eventObject('KeyboardEvent', 'keydown');
-            event1.key = 'Backspace';
-            event1.keyCode = 8;
-            EventHandler.trigger(input, 'keydown', event1);
-            EventHandler.trigger(input, 'keydown', event1);
-            event.key = "4";
-            EventHandler.trigger(input, 'keypress', event);
-            event.key = "5";
-            EventHandler.trigger(input, 'keypress', event);
-            expect(input.value === '45').toEqual(true);
         });
     });
     describe('Edit values in MaskedTextBox-- Custom Characters', () => {
@@ -2256,7 +2231,7 @@ describe('MaskedTextBox Component', () => {
             expect(containerValue).toEqual(1);
         });
     });
-    it('memory leak testing', () => {
+	it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

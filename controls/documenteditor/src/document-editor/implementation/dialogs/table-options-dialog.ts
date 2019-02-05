@@ -76,7 +76,6 @@ export class TableOptionsDialog {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px;position: relative;height: 180px;' });
         let innerDivLabel: HTMLElement = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',

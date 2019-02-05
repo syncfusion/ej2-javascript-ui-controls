@@ -11,7 +11,6 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { MouseEvents } from './mouseevents.spec';
 import { SelectorConstraints } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(Snapping);
 
 /**
@@ -33,12 +32,6 @@ describe('SnapSettings', () => {
         };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -1415,18 +1408,13 @@ describe('SnapSettings', () => {
             expect(node.attributes[6].value === 'rotate(0,100.5,100.5)').toBe(true);
             done();
         });
-      });
+
+    });
     describe('Snap lines - Multiple selection', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents = new MouseEvents();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'SnapLinesMultipleSelection' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -1475,14 +1463,5 @@ describe('SnapSettings', () => {
             expect(document.getElementById('_SnappingLines') && document.getElementById('_SnappingLines').children.length == 0).toBe(true);
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

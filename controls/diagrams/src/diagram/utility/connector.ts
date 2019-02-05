@@ -626,39 +626,19 @@ function connectToOneEnd(element: Connector, source: End, target: End): void {
         source.point = nodeConnectingPoint;
         if (element.sourcePortWrapper) {
             source.point = { x: sourcePort.offsetX, y: sourcePort.offsetY };
-            if (element.sourcePadding) {
-                source.point = addPaddingToConnector(element, source, target, false);
-            }
         }
     } else {
         target.direction = target.direction || nodeDirection;
         target.point = nodeConnectingPoint;
         if (element.targetPortWrapper) {
             target.point = { x: targetPort.offsetX, y: targetPort.offsetY };
-            if (element.targetPadding) {
-                target.point = addPaddingToConnector(element, source, target, true);
-            }
         }
     }
+
 }
-function addPaddingToConnector(element: Connector, source: End, target: End, isTarget: boolean): PointModel {
-    let sourcePort: DiagramElement = element.sourcePortWrapper;
-    let targetPort: DiagramElement = element.targetPortWrapper;
-    let padding: number = (isTarget) ? element.targetPadding : element.sourcePadding;
-    let paddingPort: DiagramElement = (isTarget) ? targetPort : sourcePort;
-    let rect: Rect = new Rect(
-        paddingPort.bounds.x - padding, paddingPort.bounds.y - padding,
-        paddingPort.actualSize.width + 2 * padding, paddingPort.actualSize.height + 2 * padding);
-    let segmentPoints: PointModel[] = [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft];
-    segmentPoints[segmentPoints.length] = segmentPoints[0];
-    let length: number = segmentPoints.length;
-    let thisSegment: Segment = { x1: source.point.x, y1: source.point.y, x2: target.point.x, y2: target.point.y };
-    let point: PointModel = (isTarget) ? target.point : source.point;
-    return getIntersectionPoints(thisSegment, segmentPoints, true, point) || point;
-}
-function checkSourceAndTargetIntersect(sourceWrapper: DiagramElement, targetWrapper: DiagramElement, connector?: Connector): boolean {
-    let sourceSegment: Segment[] = createSegmentsCollection(sourceWrapper, connector.sourcePadding);
-    let targetSegment: Segment[] = createSegmentsCollection(targetWrapper, connector.targetPadding);
+function checkSourceAndTargetIntersect(sourceWrapper: DiagramElement, targetWrapper: DiagramElement): boolean {
+    let sourceSegment: Segment[] = createSegmentsCollection(sourceWrapper);
+    let targetSegment: Segment[] = createSegmentsCollection(targetWrapper);
     for (let i: number = 0; i < sourceSegment.length - 1; i++) {
         let srcSegment: Segment = sourceSegment[i];
         for (let j: number = 0; j < targetSegment.length - 1; j++) {
@@ -670,9 +650,9 @@ function checkSourceAndTargetIntersect(sourceWrapper: DiagramElement, targetWrap
     }
     return false;
 }
-function createSegmentsCollection(sourceWrapper: DiagramElement, padding: number): Segment[] {
+function createSegmentsCollection(sourceWrapper: DiagramElement): Segment[] {
     let segments: Segment[] = [];
-    let points: PointModel[] = getPoints(sourceWrapper, sourceWrapper.corners, padding);
+    let points: PointModel[] = getPoints(sourceWrapper, sourceWrapper.corners);
     points.push(points[0]);
     for (let i: number = 0; i < points.length - 1; i++) {
         segments.push(createLineSegment(points[i], points[i + 1]));
@@ -738,7 +718,7 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
     let tarBounds: Corners = swapBounds(targetEle, tarCor, ele.targetWrapper.bounds);
     let isInterSect: boolean = false;
     if (ele.sourceWrapper && ele.targetWrapper) {
-        isInterSect = checkSourceAndTargetIntersect(ele.sourceWrapper, ele.targetWrapper, ele);
+        isInterSect = checkSourceAndTargetIntersect(ele.sourceWrapper, ele.targetWrapper);
     }
     if (srcPort !== undefined) {
         source.point = { x: srcPort.offsetX, y: srcPort.offsetY };
@@ -751,15 +731,6 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
             case 'Right':
                 source.point.x = source.point.x;
                 break;
-        }
-        if (ele.sourcePadding && !isInterSect) {
-            if (tarPort) {
-                target.point = {
-                    x: tarPort.offsetX,
-                    y: tarPort.offsetY
-                };
-            }
-            source.point = addPaddingToConnector(ele, source, target, false);
         }
     } else {
         if (ele.type === 'Orthogonal') {
@@ -786,9 +757,6 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
                 target.point.x = target.point.x;
                 break;
         }
-        if (ele.targetPadding && !isInterSect) {
-            target.point = addPaddingToConnector(ele, source, target, true);
-        }
     } else {
         if (ele.type === 'Orthogonal') {
             target.point = findPoint(tarBounds, target.direction);
@@ -812,6 +780,7 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
                 let value: number = Math.max(source.corners.width, source.corners.height);
                 tarPoint = Point.transform(source.point, (ele.segments[0] as BezierSegment).vector1.angle, value / 2);
             }
+
             source.point = isInterSect ? ele.sourceWrapper.bounds.center : getIntersection(ele, sourceEle, source.point, tarPoint, false);
         }
         if (ele.targetPortWrapper === undefined) {
@@ -1258,8 +1227,6 @@ export function getIntersection(ele: Connector, bounds: DiagramElement, sPt: Poi
     tPt = { x: tPt.x, y: tPt.y };
     let angle: number = Point.findAngle(tPt, sPt); let child: PathElement; let intersection: PointModel;
     let wrapper: DiagramElement = isTar ? ele.targetWrapper : ele.sourceWrapper;
-    let padding: number = (isTar ? ele.targetPadding : ele.sourcePadding);
-    let rect: Rect;
     let segmentPoints: PointModel[];
     let point: PointModel = isTar || ele.type === 'Orthogonal' ? sPt : tPt;
     let sourcePoint: PointModel = Point.transform(sPt, angle, Math.max(wrapper.actualSize.height / 2, wrapper.actualSize.width / 2));
@@ -1299,12 +1266,7 @@ export function getIntersection(ele: Connector, bounds: DiagramElement, sPt: Poi
             segmentPoints[segmentPoints.length] = segmentPoints[0];
         }
     } else {
-        if ((ele.sourcePadding || ele.targetPadding)) {
-            rect = new Rect(
-                wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding,
-                wrapper.actualSize.height + 2 * padding);
-        }
-        segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : getPoints(wrapper, wrapper.corners);
+        segmentPoints = getPoints(wrapper, wrapper.corners);
         segmentPoints[segmentPoints.length] = segmentPoints[0];
     }
     let length: number = segmentPoints.length;

@@ -2,9 +2,9 @@
  * MultiSelect spec document
  */
 import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs } from '../../src/multi-select/multi-select';
-import { Browser, isNullOrUndefined, EmitType } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, L10n } from '@syncfusion/ej2-base';
-import { dropDownBaseClasses, FilteringEventArgs, PopupEventArgs, FocusEventArgs } from '../../src/drop-down-base/drop-down-base';
+import { dropDownBaseClasses, FilteringEventArgs, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DataManager, ODataV4Adaptor, Query, ODataAdaptor } from '@syncfusion/ej2-data';
 import { MultiSelectModel, ISelectAllEventArgs } from '../../src/index';
 
@@ -141,6 +141,8 @@ describe('MultiSelect', () => {
                 if (wrapper.firstChild.nextSibling) {
                     //Input Wrapper structure validation.
                     expect(wrapper.firstChild.nextSibling.nodeName).toEqual("SPAN");//6
+                    expect(wrapper.firstElementChild.nextElementSibling.classList.contains('e-multiselect-box')).toEqual(true);
+                    wrapper.firstElementChild.nextElementSibling.classList.remove('e-multiselect-box');
                     expect(wrapper.firstElementChild.nextElementSibling.classList.toString()).toEqual(multiSelectData.inputContainer);//7
                     if (wrapper.firstChild.nextSibling.nextSibling) {
                         //wrapper element validation.
@@ -1798,7 +1800,7 @@ describe('MultiSelect', () => {
             expect(listObj.value.length).toBe(1);
             keyboardEventArgs.keyCode = 35;
             (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[elem.length - 1]);
+            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
             keyboardEventArgs.keyCode = 36;
             (<any>listObj).onKeyDown(keyboardEventArgs);
             expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
@@ -4824,108 +4826,6 @@ describe('MultiSelect', () => {
             listObj.enabled = true;
             listObj.dataBind();
             expect((listObj).htmlAttributes['aria-disabled']).toEqual('false');
-        });
-    });
-    describe('EJ2-13165 - Multiselect readonly behavior changes', () => {
-        let listObj: MultiSelect;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
-        let datasource: { [key: string]: Object }[] = [
-            { Id: 1, item: 'Fruits and Vegetables' },
-            { Id: 2, item: 'Beverages' },
-            { Id: 3, item: 'Beauty and Hygiene' },
-            
-        ];
-        let focusCount: number = 0;
-        let blurCount: number = 0;
-        beforeAll(() => {
-            document.body.appendChild(element);
-            listObj = new MultiSelect({
-                dataSource: datasource,
-                fields: { text: "item", value: "Id" },
-                readonly: true,
-                mode: 'CheckBox'
-            });
-            listObj.appendTo(element);
-            listObj.dataBind();
-        });
-        afterAll(() => {
-            if (element) {
-                listObj.destroy();
-                element.remove();
-            }
-        });
-
-        it('Check focus event', (done) => {
-            listObj.focus = (args: FocusEventArgs): void => {
-                focusCount++;
-                expect(args.event.type).toBe('focus');
-                setTimeout((): void => {
-                    expect(focusCount).toBe(1);
-                    done();
-                }, 200);
-            }
-            (<any>listObj).inputElement.focus();
-        });
-        it('Check blur event', (done) => {
-            listObj.blur = (): void => {
-                blurCount++;
-                setTimeout((): void => {
-                    expect(blurCount).toBe(1);
-                    done();
-                }, 200);
-            }
-            (<any>listObj).inputElement.focus();
-            (<any>listObj).inputElement.blur();
-        });
-    });
-    describe('EJ2-13148 - Multiselect key navigation is not working with Home , Endkeys', () => {
-        let listObj: MultiSelect;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
-        let datasource: { [key: string]: Object }[] =  [
-                { id: 'list1', text: 'JAVA' },
-                { id: 'list2', text: 'C#' },
-                { id: 'list3', text: 'C++' },
-                { id: 'list4', text: '.NET' },
-                { id: 'list5', text: 'Oracle' },
-                { id: 'list6', text: 'GO' },
-                { id: 'list7', text: 'Haskell' },
-                { id: 'list8', text: 'Racket' },
-                { id: 'list8', text: 'F#' }];
-        let originalTimeout: number;
-        beforeAll(() => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
-            document.body.appendChild(element);
-        });
-        afterAll(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            if (element) {
-                listObj.destroy();
-                element.remove();
-            }
-        });
-
-        it('Check End key Navigation', (done) => {
-            listObj = new MultiSelect({
-                dataSource: datasource,
-                fields: { text: "text", value: "id" },
-                popupHeight: 50,
-                change: (): void => {
-                    (<any>listObj).onKeyDown({ keyCode: 35, preventDefault: function () { }});
-                    let ele: HTMLElement = listObj.ulElement.querySelector('.e-item-focus');
-                    expect(ele.innerText).toBe('F#');
-                    (<any>listObj).onKeyDown({ keyCode: 36, preventDefault: function () { }});
-                    ele = listObj.ulElement.querySelector('.e-item-focus');
-                    expect(ele.innerText).toBe('JAVA');
-                    done();
-                },
-                open: (): void => {
-                    listObj.text = 'GO';
-                }
-            });
-            listObj.appendTo(element);
-            listObj.dataBind();
-            listObj.showPopup();
         });
     });
 });

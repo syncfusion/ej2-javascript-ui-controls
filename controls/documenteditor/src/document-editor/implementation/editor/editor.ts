@@ -811,6 +811,8 @@ export class Editor {
             isRemoved = this.removeSelectedContents(selection);
             selection.skipFormatRetrieval = false;
             selection.isSkipLayouting = false;
+        } else if (selection.isEmpty && !this.viewer.isListTextSelected && !isReplace) {
+            this.viewer.isTextInput = true;
         }
         paragraphInfo = this.getParagraphInfo(selection.start);
         if (isRemoved) {
@@ -891,32 +893,24 @@ export class Editor {
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
             this.updateEndPosition();
-            // tslint:disable-next-line:max-line-length
-            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
+            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
+                && (this.editorHistory.currentHistoryInfo.action === 'ListSelect') &&
                 this.viewer.isListTextSelected) {
                 this.editorHistory.updateHistory();
                 this.editorHistory.updateComplexHistory();
             }
-            // if (!isNullOrUndefined(selection.currentHistoryInfo) && (selection.currentHistoryInfo.action === 'MultiSelection')) {
-            //     this.updateComplexHistory();
-            // } else {           
             this.reLayout(selection);
-            // }
-        } else {
-            // selection.selectContent(selection.start, true);
+            this.viewer.isTextInput = false;
         }
-        // insertFormat.destroy();
         if (!isReplace && isRemoved && (text === ' ' || text === '\t' || text === '\v')) {
-            let hyperlinkField: FieldElementBox = selection.getHyperlinkField();
-            let isSelectionOnHyperlink: boolean = !isNullOrUndefined(hyperlinkField);
             let isList: boolean = false;
             if (!(text === '\v')) {
                 isList = this.checkAndConvertList(selection, text === '\t');
             }
-            if (isSelectionOnHyperlink) {
-                return;
-            }
             if (!isList) {
+                if (!isNullOrUndefined(selection.getHyperlinkField())) {
+                    return;
+                }
                 //Checks if the previous text is URL, then it is auto formatted to hyperlink.
                 this.checkAndConvertToHyperlink(selection, false);
             }
@@ -3422,7 +3416,8 @@ export class Editor {
      */
     public updateHeaderFooterWidget(): void {
         this.updateHeaderFooterWidgetToPage(this.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
-        this.shiftPageContent(this.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
+        let headerFooterWidget: HeaderFooterWidget = this.selection.start.paragraph.bodyWidget as HeaderFooterWidget;
+        this.shiftPageContent(headerFooterWidget.headerFooterType, headerFooterWidget.sectionFormat);
     }
     /**
      * @private
@@ -3509,49 +3504,77 @@ export class Editor {
     /**
      * @private
      */
-    public shiftPageContent(headerFooter: HeaderFooterWidget): void {
-        let type: HeaderFooterType = headerFooter.headerFooterType;
+    public shiftPageContent(type: HeaderFooterType, sectionFormat: WSectionFormat): void {
+        // let type: HeaderFooterType = headerFooter.headerFooterType;
         let pageIndex: number;
-        if (type === 'FirstPageHeader' || type === 'FirstPageFooter') {
+        if (type.indexOf('First') !== -1) {
             pageIndex = 0;
-        } else if (headerFooter.sectionFormat.differentOddAndEvenPages) {
-            if (headerFooter.sectionFormat.differentFirstPage) {
-                pageIndex = (type === 'EvenHeader' || type === 'EvenFooter') ? 1 : 2;
+        } else if (sectionFormat.differentOddAndEvenPages) {
+            let isEven: boolean = type.indexOf('Even') !== -1;
+            if (sectionFormat.differentFirstPage) {
+                pageIndex = isEven ? 1 : 2;
             } else {
-                pageIndex = (type.indexOf('Even') === -1) ? 0 : 1;
+                pageIndex = !isEven ? 0 : 1;
             }
         } else {
-            pageIndex = headerFooter.sectionFormat.differentFirstPage ? 1 : 0;
+            pageIndex = sectionFormat.differentFirstPage ? 1 : 0;
             if (pageIndex === 1 && this.viewer.pages.length === 1) {
                 pageIndex = 0;
             }
         }
-        let page: Page = this.viewer.pages[pageIndex];
-        if (type.indexOf('Header') !== -1) {
-            let firstBlock: BlockWidget = (page.bodyWidgets[0].firstChild as BlockWidget);
-            let top: number = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.topMargin);
-            let headerDistance: number = HelperMethods.convertPointToPixel(headerFooter.sectionFormat.headerDistance);
-            top = Math.max(headerDistance + page.headerWidget.height, top);
-            if (firstBlock.y !== top) {
-                this.viewer.updateClientArea(page.bodyWidgets[0].sectionFormat, page);
-                firstBlock = firstBlock.combineWidget(this.viewer) as BlockWidget;
-                let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
-                if (prevWidget) {
-                    this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
-                    if (firstBlock.containerWidget !== prevWidget.containerWidget) {
-                        // tslint:disable-next-line:max-line-length
-                        this.viewer.layout.updateContainerWidget(firstBlock as Widget, prevWidget.containerWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
+        let section: BodyWidget = this.viewer.pages[pageIndex].bodyWidgets[0];
+        do {
+            if (type.indexOf('Header') !== -1) {
+                let widget: HeaderFooterWidget = section.page.headerWidget;
+                let isNotEmpty: boolean = !widget.isEmpty || widget.isEmpty && this.owner.enableHeaderAndFooter;
+                let firstBlock: BlockWidget = (section.firstChild as BlockWidget);
+                let top: number = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+                let headerDistance: number = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
+                if (isNotEmpty) {
+                    top = Math.max(headerDistance + section.page.headerWidget.height, top);
+                }
+                if (firstBlock.y !== top) {
+                    this.viewer.updateClientArea(section.sectionFormat, section.page);
+                    firstBlock = firstBlock.combineWidget(this.viewer) as BlockWidget;
+                    let prevWidget: BlockWidget = firstBlock.previousRenderedWidget as BlockWidget;
+                    if (prevWidget) {
+                        if (firstBlock.containerWidget.equals(prevWidget.containerWidget)) {
+                            this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
+                            // tslint:disable-next-line:max-line-length
+                            this.viewer.layout.updateContainerWidget(firstBlock as Widget, prevWidget.containerWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
+                        }
+                    }
+                    this.viewer.blockToShift = firstBlock;
+                }
+            } else {
+                this.checkAndShiftFromBottom(section.page, section.page.footerWidget);
+            }
+            if (this.viewer.blockToShift) {
+                this.viewer.renderedLists.clear();
+                this.viewer.layout.shiftLayoutedItems();
+            }
+            while (section) {
+                let splittedSection: BodyWidget[] = section.getSplitWidgets() as BodyWidget[];
+                section = splittedSection[splittedSection.length - 1].nextRenderedWidget as BodyWidget;
+                if (section) {
+                    if (pageIndex === 0) {
+                        break;
+                    } else {
+                        if (section.page.index + 1 % 2 === 0 && pageIndex === 1 ||
+                            (section.page.index + 1 % 2 !== 0 && pageIndex === 2)) {
+                            break;
+                        }
+                        let nextPage: Page = section.page.nextPage;
+                        if (nextPage.bodyWidgets[0].equals(section)) {
+                            section = nextPage.bodyWidgets[0];
+                            break;
+                        }
                     }
                 }
-                this.viewer.blockToShift = firstBlock;
             }
-        } else {
-            this.checkAndShiftFromBottom(page, headerFooter);
-        }
-        if (this.viewer.blockToShift) {
-            this.viewer.renderedLists.clear();
-            this.viewer.layout.shiftLayoutedItems();
-        }
+
+        } while (section);
+
     }
     /**
      * @private
@@ -3926,7 +3949,7 @@ export class Editor {
     }
     private getCompleteStyles(): string {
         let completeStylesString: string = '{"styles":[';
-        for (let name of this.viewer.preDefinedStyles.getItem()) {
+        for (let name of this.viewer.preDefinedStyles.keys) {
             completeStylesString += (this.viewer.preDefinedStyles.get(name) + ',');
         }
         return completeStylesString.slice(0, -1) + ']}';
@@ -6407,6 +6430,8 @@ export class Editor {
                             let isCellCleared: boolean = this.deleteCell(containerCell, selection, editAction, true);
                             if (!isCellCleared && editAction !== 2 && this.editorHistory) {
                                 this.editorHistory.currentBaseHistoryInfo = undefined;
+                            } else if (isCellCleared) {
+                                this.viewer.layout.reLayoutTable(containerCell.ownerRow.ownerTable);
                             }
                         }
                     } else {
@@ -8045,7 +8070,7 @@ export class Editor {
      */
     public updateListItemsTillEnd(blockAdv: BlockWidget, updateNextBlockList: boolean): void {
         let block: BlockWidget = updateNextBlockList ? this.viewer.selection.getNextRenderedBlock(blockAdv) : blockAdv;
-        while (!isNullOrUndefined(block)) {
+        while (!isNullOrUndefined(block) && !this.viewer.isTextInput) {
             //Updates the list value of the rendered paragraph. 
             this.updateRenderedListItems(block);
             block = block.getSplitWidgets().pop().nextRenderedWidget as BlockWidget;
@@ -8626,7 +8651,10 @@ export class Editor {
             return page.footerWidget;
         }
     }
-    private getBodyWidgetInternal(sectionIndex: number, blockIndex: number): BodyWidget {
+    /**
+     * @private
+     */
+    public getBodyWidgetInternal(sectionIndex: number, blockIndex: number): BodyWidget {
         for (let i: number = 0; i < this.viewer.pages.length; i++) {
             let bodyWidget: BodyWidget = this.viewer.pages[i].bodyWidgets[0];
             if (bodyWidget.index === sectionIndex) {

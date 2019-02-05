@@ -5,7 +5,6 @@ import { ShapeAnnotationModel } from '../../../src/diagram/objects/annotation-mo
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { TextStyleModel } from '../../../src/diagram/core/appearance-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 /**
  * Annotations - Changing Margin
@@ -25,12 +24,6 @@ describe('Diagram Control', () => {
             'L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram48' });
             document.body.appendChild(ele);
 
@@ -147,14 +140,5 @@ describe('Diagram Control', () => {
             expect(temp.children[1].childElementCount === 4 || temp.children[1].childElementCount === 5).toBe(true);
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

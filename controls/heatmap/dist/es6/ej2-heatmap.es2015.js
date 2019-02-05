@@ -242,14 +242,6 @@ __decorate$2([
 __decorate$2([
     Property('Rectangle')
 ], AxisLabelBorder.prototype, "type", void 0);
-class BubbleSize extends ChildProperty {
-}
-__decorate$2([
-    Property('0%')
-], BubbleSize.prototype, "minimum", void 0);
-__decorate$2([
-    Property('100%')
-], BubbleSize.prototype, "maximum", void 0);
 /**
  * categories for multi level labels
  */
@@ -2798,9 +2790,6 @@ __decorate$4([
     Property(true)
 ], CellSettings.prototype, "enableCellHighlighting", void 0);
 __decorate$4([
-    Complex({}, BubbleSize)
-], CellSettings.prototype, "bubbleSize", void 0);
-__decorate$4([
     Complex({}, Border)
 ], CellSettings.prototype, "border", void 0);
 __decorate$4([
@@ -2826,11 +2815,10 @@ class Series {
      * @return {void}
      * @private
      */
-    // tslint:disable-next-line:max-func-body-length
+    //tslint:disable:max-line-length
     renderRectSeries() {
         this.createSeriesGroup();
         let heatMap = this.heatMap;
-        let isValueInRange = false;
         heatMap.xLength = heatMap.axisCollections[0].axisLabelSize;
         heatMap.yLength = heatMap.axisCollections[1].axisLabelSize; // Series Part
         let tempX = Math.round(heatMap.initialClipRect.x * 100) / 100;
@@ -2900,16 +2888,12 @@ class Series {
                 }
             }
             tempRectPosition.push(rectPosition);
-            if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
-                isValueInRange = this.isCellValueInRange(dataXIndex, dataYIndex);
-                rectPosition.visible = isValueInRange;
-            }
             if (cellSetting.showLabel && this.checkLabelYDisplay && this.checkLabelXDisplay) {
                 let themeCellTextStyle = cellSetting.textStyle;
                 let options = new TextOption(heatMap.element.id + '_HeatMapRectLabels_' + x, new TextBasic(Math.round((tempX + tempWidth / 2) * 100) / 100, Math.round((tempY + tempHeight / 2) * 100) / 100, 'middle', displayText, null, null, 'middle'), themeCellTextStyle, themeCellTextStyle.color || this.getSaturatedColor(this.color));
                 rectPosition.textId = options.id;
                 if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
-                    options.fill = isValueInRange ? options.fill : this.heatMap.themeStyle.toggledColor;
+                    this.toggleCellTextColor(rectPosition, options, dataXIndex, dataYIndex);
                 }
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     options.dy = this.heatMap.cellSettings.tileType === 'Bubble' ? '0.5ex' : '1ex';
@@ -2946,8 +2930,7 @@ class Series {
     /**
      * To toggle the cell text color based on legend selection.
      */
-    isCellValueInRange(dataXIndex, dataYIndex) {
-        let isValueInRange = false;
+    toggleCellTextColor(rectPosition, options, dataXIndex, dataYIndex) {
         for (let i = 0; i < this.heatMap.toggleValue.length; i++) {
             let minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
             let maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
@@ -2958,18 +2941,18 @@ class Series {
                 clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '';
             let text = this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
                 bubbleText : this.text;
-            if (!isNullOrUndefined(text) && text >= minValue && text <= maxValue) {
+            if (text && text >= minValue && text <= maxValue) {
                 if (!this.heatMap.toggleValue[i].visible) {
-                    isValueInRange = false;
+                    options.fill = this.heatMap.themeStyle.toggledColor;
+                    rectPosition.visible = false;
                     break;
                 }
                 else {
-                    isValueInRange = true;
+                    options.fill = options.fill;
                     break;
                 }
             }
         }
-        return isValueInRange;
     }
     /**
      * To customize the cell.
@@ -3195,25 +3178,13 @@ class Series {
      * @private
      */
     getRadiusBypercentage(text, min, max, radius) {
-        let minimum = parseInt(this.heatMap.cellSettings.bubbleSize.minimum, 10);
-        let maximum = parseInt(this.heatMap.cellSettings.bubbleSize.maximum, 10);
-        if (minimum < 0 || minimum > 100 || isNaN(minimum)) {
-            minimum = 0;
-        }
-        if (maximum < 0 || maximum > 100 || isNaN(maximum)) {
-            maximum = 100;
-        }
         let valueInPrecentage = ((text - min) /
             (max - min)) * 100;
         valueInPrecentage = isNaN(valueInPrecentage) ? 100 : valueInPrecentage;
-        if ((this.heatMap.bubbleSizeWithColor ||
-            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))) {
-            if (this.heatMap.cellSettings.isInversedBubbleSize) {
-                valueInPrecentage = 100 - valueInPrecentage;
-            }
-            valueInPrecentage = ((valueInPrecentage * (maximum - minimum)) / 100) + minimum;
-        }
-        radius = radius * (valueInPrecentage / 100);
+        radius = ((this.heatMap.bubbleSizeWithColor ||
+            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))
+            && this.heatMap.cellSettings.isInversedBubbleSize) ? radius - (radius * (valueInPrecentage / 100))
+            : radius * (valueInPrecentage / 100);
         return (Math.round(radius * 100) / 100) < 0 ? 0 : (Math.round(radius * 100) / 100);
     }
     /**
@@ -4927,13 +4898,19 @@ class Legend {
      * update visibility collections of legend and series
      * @private
      */
-    updateLegendRangeCollections() {
-        let heatMap = this.heatMap;
-        heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
-        this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
-        heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
-        this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
-        this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
+    updateLegendRangeCollections(load) {
+        if (load) {
+            let heatMap = this.heatMap;
+            heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
+            this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
+            heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
+            this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
+            this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
+        }
+        else {
+            this.legendRange = [];
+            this.legendTextRange = [];
+        }
     }
 }
 
@@ -5089,7 +5066,6 @@ let HeatMap = class HeatMap extends Component {
         }
     }
     renderElements() {
-        this.tooltipCollection = [];
         this.renderSecondaryElement();
         this.renderBorder();
         this.renderTitle();
@@ -5135,7 +5111,7 @@ let HeatMap = class HeatMap extends Component {
                     if (this.legendModule && ((newProp.cellSettings.tileType !==
                         oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -5148,7 +5124,7 @@ let HeatMap = class HeatMap extends Component {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.reRenderDatasource();
                     renderer = true;
@@ -5164,7 +5140,7 @@ let HeatMap = class HeatMap extends Component {
                     if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(false);
                     }
                     else {
                         this.legendOnLoad = false;
@@ -5176,7 +5152,7 @@ let HeatMap = class HeatMap extends Component {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -5185,7 +5161,7 @@ let HeatMap = class HeatMap extends Component {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
+                        this.legendModule.updateLegendRangeCollections(true);
                     }
                     this.cellColor.getColorCollection();
                     this.calculateBounds();
@@ -5399,7 +5375,7 @@ let HeatMap = class HeatMap extends Component {
             (targetId.indexOf(this.element.id + '_YAxis_MultiLevel') !== -1)) {
             let tooltipText = getTooltipText(this.tooltipCollection, x, y);
             if (tooltipText) {
-                showTooltip(tooltipText, x, y, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
+                showTooltip(tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
             }
             else {
                 removeElement(this.element.id + '_axis_Tooltip');
@@ -5521,13 +5497,6 @@ let HeatMap = class HeatMap extends Component {
      */
     heatMapResize(e) {
         this.resizing = true;
-        let argData = {
-            heatmap: this,
-            cancel: false,
-            name: 'resized',
-            currentSize: new Size(0, 0),
-            previousSize: new Size(this.availableSize.width, this.availableSize.height),
-        };
         this.clearSelection();
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
@@ -5538,11 +5507,8 @@ let HeatMap = class HeatMap extends Component {
                 return;
             }
             this.createSvg();
-            argData.currentSize = this.availableSize;
-            this.trigger('resized', argData);
             this.refreshBound();
             this.appendSvgObject();
-            this.trigger('loaded', { heatmap: this });
             this.resizing = false;
         }, 500);
         return false;
@@ -5714,7 +5680,7 @@ let HeatMap = class HeatMap extends Component {
                 tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) ||
                     (this.legendModule && tooltipRect && getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY));
                 if (tooltipText) {
-                    showTooltip(tooltipText, pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
+                    showTooltip(tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
                 }
                 else {
                     removeElement(this.element.id + '_canvas_Tooltip');
@@ -5727,8 +5693,7 @@ let HeatMap = class HeatMap extends Component {
      * Triggering cell selection
      */
     cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip) {
-        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart' ||
-            e.type === 'pointerdown') && this.allowSelection) {
+        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart') && this.allowSelection) {
             this.previousRect = currentRect;
             this.multiSelection = true;
             this.rectSelected = true;
@@ -5854,7 +5819,7 @@ let HeatMap = class HeatMap extends Component {
                             textElement.setAttribute('opacity', '0.3');
                         }
                     }
-                    this.removeSvgClass(rectElement, elementClassName);
+                    this.removeSvgClass(rectElement, textElement, elementClassName);
                 }
             }
         }
@@ -5927,7 +5892,7 @@ let HeatMap = class HeatMap extends Component {
      * To remove class for unselected cells
      * @private
      */
-    removeSvgClass(rectElement, className) {
+    removeSvgClass(rectElement, textElement, className) {
         if (className) {
             rectElement.setAttribute('class', className.replace(className, ''));
         }
@@ -5940,13 +5905,13 @@ let HeatMap = class HeatMap extends Component {
             let rect = document.getElementById(this.element.id + '_Container_RectGroup');
             let text = document.getElementById(this.element.id + '_Container_TextGroup');
             for (let i = 0; i < rect.childNodes.length; i++) {
-                let elementClassName = rect.childNodes[i].getAttribute('class');
+                let elementClassName = rect.children[i].getAttribute('class');
                 if (elementClassName === this.element.id + '_selected') {
-                    this.removeSvgClass(rect.childNodes[i], elementClassName);
+                    this.removeSvgClass(rect.children[i], text.children[i], elementClassName);
                 }
-                rect.childNodes[i].setAttribute('opacity', '1');
-                if (this.cellSettings.showLabel && text && text.childNodes[i]) {
-                    text.childNodes[i].setAttribute('opacity', '1');
+                rect.children[i].setAttribute('opacity', '1');
+                if (this.cellSettings.showLabel && text && text.children[i]) {
+                    text.children[i].setAttribute('opacity', '1');
                 }
             }
         }
@@ -6010,23 +5975,23 @@ let HeatMap = class HeatMap extends Component {
         }
         if (this.allowSelection && this.multiSelection) {
             this.multiSelection = false;
-            if (e.type === 'mouseup' || e.type === 'touchend' || e.type === 'pointerup') {
+            if (e.type === 'mouseup' || e.type === 'touchend') {
                 if (!this.enableCanvasRendering) {
                     this.tempMultiCellCollection.push(this.multiCellCollection);
                     let containerRect = document.getElementById(this.element.id + '_Container_RectGroup');
                     let containerText = document.getElementById(this.element.id + '_Container_TextGroup');
                     for (let i = 0; i < containerRect.childNodes.length; i++) {
-                        let elementClassName = containerRect.childNodes[i].getAttribute('class');
+                        let elementClassName = containerRect.children[i].getAttribute('class');
                         if (elementClassName !== this.element.id + '_selected') {
-                            containerRect.childNodes[i].setAttribute('opacity', '0.3');
-                            if (this.cellSettings.showLabel && containerText.childNodes[i]) {
-                                containerText.childNodes[i].setAttribute('opacity', '0.3');
+                            containerRect.children[i].setAttribute('opacity', '0.3');
+                            if (this.cellSettings.showLabel && containerText.children[i]) {
+                                containerText.children[i].setAttribute('opacity', '0.3');
                             }
                         }
                         else {
-                            containerRect.childNodes[i].setAttribute('opacity', '1');
-                            if (this.cellSettings.showLabel && containerText.childNodes[i]) {
-                                containerText.childNodes[i].setAttribute('opacity', '1');
+                            containerRect.children[i].setAttribute('opacity', '1');
+                            if (this.cellSettings.showLabel && containerText.children[i]) {
+                                containerText.children[i].setAttribute('opacity', '1');
                             }
                         }
                     }
@@ -6141,12 +6106,6 @@ __decorate([
 __decorate([
     Event()
 ], HeatMap.prototype, "tooltipRender", void 0);
-__decorate([
-    Event()
-], HeatMap.prototype, "resized", void 0);
-__decorate([
-    Event()
-], HeatMap.prototype, "loaded", void 0);
 __decorate([
     Event()
 ], HeatMap.prototype, "cellRender", void 0);
@@ -6617,5 +6576,5 @@ class Adaptor {
  * HeatMap index file
  */
 
-export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, BubbleSize, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
+export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
 //# sourceMappingURL=ej2-heatmap.es2015.js.map

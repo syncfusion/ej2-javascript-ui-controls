@@ -179,8 +179,18 @@ export class GroupingBar implements IAction {
         setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
         setStyleAttribute(this.rightAxisPanel, { width: rightAxisWidth });
         if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
+            let element: HTMLElement = this.parent.pivotFieldListModule.element;
             clearTimeout(this.timeOutObj);
-            this.timeOutObj = setTimeout(this.alignIcon.bind(this));
+            this.timeOutObj = setTimeout(() => {
+                let actWidth: number = this.parent.grid.element.offsetWidth < 400 ? 400 : this.parent.grid.element.offsetWidth;
+                setStyleAttribute(element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
+                    left: formatUnit(this.parent.enableRtl ?
+                        -Math.abs((actWidth) -
+                            (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
+                        (actWidth) -
+                        (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
+                });
+            });
         }
         if (!this.parent.grid.element.querySelector('.e-group-row')) {
             let emptyRowHeader: HTMLElement =
@@ -217,18 +227,6 @@ export class GroupingBar implements IAction {
                 }
             }
         }
-    }
-
-    private alignIcon(): void {
-        let element: HTMLElement = this.parent.pivotFieldListModule.element;
-        let actWidth: number = this.parent.grid.element.offsetWidth < 400 ? 400 : this.parent.grid.element.offsetWidth;
-        setStyleAttribute(element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
-            left: formatUnit(this.parent.enableRtl ?
-                -Math.abs((actWidth) -
-                    (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
-                (actWidth) -
-                (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
-        });
     }
     /**
      * @hidden

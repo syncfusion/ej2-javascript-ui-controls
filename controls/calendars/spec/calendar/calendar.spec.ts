@@ -582,6 +582,20 @@ describe('Calendar', () => {
             expect(calendar.value).toBe(null);
         });
         /**
+         * tabIndex
+         */
+        it('tab index of focus element', () => {
+            calendar = new Calendar({ });
+            calendar.appendTo('#calendar');
+            expect(calendar.element.getAttribute('tabindex') === '0').toBe(true);
+        });
+        it('while give tab index to the calendar element', () => {
+            calendar = new Calendar({ });
+            calendar.appendTo('#calendar');
+            calendar.element.tabIndex = '4';
+            expect(calendar.element.getAttribute('tabindex') === '4').toBe(true);
+        });
+         /**
          * min and max test case
          */
         it('min and max  with undefined type test case', () => {
@@ -2845,16 +2859,6 @@ describe('Calendar', () => {
             expect(+calendarObj.values[1]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[2]));
             expect(+calendarObj.values[2]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[3]));
             expect(+calendarObj.values[3]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[0]));
-        });
-        it('Check focus date class is present in last value of multiselection', () => {
-            calendarObj = new Calendar({
-                isMultiSelection: true,
-                values: [new Date('5/3/2018'), new Date('5/6/2018'), new Date('5/9/2018')]
-            });
-            calendarObj.appendTo('#calendar');
-            let length: number = calendarObj.values.length - 1;
-            expect(calendarObj.element.querySelectorAll(".e-selected")[length].classList.contains(".e-focused-date")).toBe(false);
-
         });
         it('setmodel values Property', () => {
             calendarObj = new Calendar({

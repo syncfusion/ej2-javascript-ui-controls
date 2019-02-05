@@ -2,21 +2,6 @@
 
 ## [Unreleased]
 
-## 17.1.1-beta (2019-01-22)
-
-### Sparkline
-
-#### New Features
-
-- Provided right to left rendering support for Sparkline.
-
-### Chart
-
-#### New Features
-
-- Stacking Line series type has been added to the chart.
-- 100% Stacking Line series type has been added to the chart.
-
 ## 16.4.48 (2019-01-22)
 
 ### Chart

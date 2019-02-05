@@ -1,5 +1,5 @@
 import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType, BlurEventArgs, FocusEventArgs } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar } from '../calendar/calendar';
-import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
+import {PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
 /**
@@ -25,17 +25,14 @@ export interface DatePickerModel extends CalendarModel{
      * will resets to previous value. By default, strictMode is in false.
      * it allows invalid or out-of-range date value with highlighted error class.
      * @default false
-     * > For more details refer to 
-     * [`Strict Mode`](../datepicker/strict-mode/) documentation.
      */
     strictMode?: boolean;
 
     /**
      * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture.
      * @default null
-     * @aspType string
      */
-    format?: string | FormatObject;
+    format?: string;
 
     /**
      * Specifies the component to be disabled or not.

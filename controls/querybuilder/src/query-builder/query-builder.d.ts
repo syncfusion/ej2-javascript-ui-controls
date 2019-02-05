@@ -5,7 +5,7 @@ import { Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { ChildProperty } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RulesModel, RuleModel } from './query-builder-model';
 import { EmitType } from '@syncfusion/ej2-base';
-import { Query, Predicate } from '@syncfusion/ej2-data';
+import { Query, Predicate, DataManager } from '@syncfusion/ej2-data';
 export declare class Columns extends ChildProperty<Columns> {
     /**
      * Specifies the fields in columns.
@@ -159,6 +159,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private operatorValue;
     private ruleElem;
     private groupElem;
+    private dataColl;
+    private dataManager;
     /**
      * Triggers when the component is created.
      * @event
@@ -256,7 +258,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * The `dataSource` is an array of JavaScript objects.
      * @default []
      */
-    dataSource: Object[];
+    dataSource: Object[] | Object | DataManager;
     /**
      * Specifies the displayMode as Horizontal or Vertical.
      * @default 'Horizontal'
@@ -364,6 +366,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     onPropertyChanged(newProp: QueryBuilderModel, oldProp: QueryBuilderModel): void;
     protected preRender(): void;
     protected render(): void;
+    private executeDataManager;
+    private initControl;
     protected wireEvents(): void;
     protected unWireEvents(): void;
     private getGroup;

@@ -4,9 +4,21 @@
 import { createInstance, setValue, getValue, deleteObject } from './util';
 const MODULE_SUFFIX: string = 'Module';
 
+/**
+ * Interface for module declaration.
+ */
 export interface ModuleDeclaration {
+    /**
+     * Specifies the args for module declaration.
+     */
     args: Object[];
+    /**
+     * Specifies the member for module declaration.
+     */
     member: string;
+    /**
+     * Specifies whether it is a property or not.
+     */
     isProperty?: boolean;
 }
 export interface IParent {

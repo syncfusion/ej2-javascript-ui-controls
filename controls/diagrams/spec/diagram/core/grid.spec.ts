@@ -12,7 +12,6 @@ import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { Selector } from '../../../src/diagram/interaction/selector';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 function resize(diagram: Diagram, direction: string): void {
     if ((diagram.selectedItems as Selector).nodes.length) {
@@ -52,12 +51,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram16' });
             document.body.appendChild(ele);
             let grid: GridPanel = new GridPanel();
@@ -84,12 +77,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram17' });
             document.body.appendChild(ele);
             let grid: GridPanel = new GridPanel();
@@ -145,12 +132,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram18' });
             document.body.appendChild(ele);
             let grid: GridPanel = new GridPanel();
@@ -213,12 +194,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram20' });
             document.body.appendChild(ele);
             let grid: GridPanel = new GridPanel();
@@ -292,12 +267,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram21' });
             document.body.appendChild(ele);
             let grid: GridPanel = new GridPanel();
@@ -371,12 +340,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramGridPanel' });
             document.body.appendChild(ele);
             let grid: GridPanel = new GridPanel();
@@ -524,12 +487,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram22' });
             document.body.appendChild(ele);
             let grid: GridPanel = new GridPanel();
@@ -639,12 +596,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let grid: GridPanel = new GridPanel();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramGrid4' });
             document.body.appendChild(ele);
 
@@ -820,12 +771,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let grid: GridPanel = new GridPanel();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramGrid10' });
             document.body.appendChild(ele);
 
@@ -935,12 +880,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let grid: GridPanel = new GridPanel();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramGrid11' });
             document.body.appendChild(ele);
 
@@ -1049,12 +988,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let grid: GridPanel = new GridPanel();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramGrid12' });
             document.body.appendChild(ele);
 
@@ -1128,12 +1061,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let grid: GridPanel = new GridPanel();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramGrid13' });
             document.body.appendChild(ele);
             grid.offsetX = 300;
@@ -1207,18 +1134,13 @@ describe('Diagram Control', () => {
                 (diagram.basicElements[0] as GridPanel).height == 400).toBe(true);
             done();
         });
+
     });
     describe('Simple Grid container', () => {
         let diagram: Diagram;
         let ele: HTMLElement; let diagramCanvas: HTMLElement;
         let mouseevents = new MouseEvents();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramGridContainer' });
             document.body.appendChild(ele);
             let rowDefns: RowDefinition[] = [];
@@ -1328,14 +1250,5 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[9].offsetX == 397.5 && diagram.nodes[9].offsetY == 315 && diagram.nodes[9].wrapper.actualSize.width == 245 && diagram.nodes[9].wrapper.actualSize.height == 230).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

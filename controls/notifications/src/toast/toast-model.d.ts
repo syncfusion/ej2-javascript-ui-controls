@@ -43,7 +43,7 @@ export interface ButtonModelPropsModel {
    * toast.appendTo('#element');
    * ```
    *  
-   * @default null
+   * @default 'null'
    */
     model?: ButtonModel;
 
@@ -62,20 +62,20 @@ export interface ToastAnimationsModel {
 
     /**
    * Specifies the type of animation.
-   * @default 'FadeIn'
+   * @default : 'FadeIn'
    * @aspType string
    */
     effect?: Effect;
 
     /**
    * Specifies the duration to animate.
-   * @default 600
+   * @default : 600
    */
     duration?: number;
 
     /**
    * Specifies the animation timing function.
-   * @default 'ease'
+   * @default : 'ease'
    */
     easing?: string;
 
@@ -195,7 +195,7 @@ export interface ToastModel extends ComponentModel{
      * until the old Toast messages removed.
      * X values are: Left , Right ,Center
      * Y values are: Top , Bottom
-     * @default { X: "Left", Y: "Top" }
+     * @default { X: "Left", Y: "Top"}
      */
     position?: ToastPositionModel;
 
@@ -209,8 +209,7 @@ export interface ToastModel extends ComponentModel{
     /**
      * Specifies the target container where the Toast to be displayed.
      * Based on the target, the positions such as `Left`, `Top` will be applied to the Toast.
-     * The default value is null, which refers the `document.body` element.
-     * @default null
+     * @default document.body
      * @aspType string
      */
     target?: HTMLElement | Element | string;

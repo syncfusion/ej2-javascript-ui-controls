@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { PointPortModel } from './port-model';import { MarginModel } from '../core/appearance-model';import { DiagramTooltipModel } from './tooltip-model';import { IconShape } from './icon';import { IconShapeModel } from './icon-model';import { DiagramTooltip } from './tooltip';import { PointPort } from './port';import { FlipDirection } from '../enum/enum';
+import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { PointPortModel } from './port-model';import { MarginModel } from '../core/appearance-model';import { DiagramTooltipModel } from './tooltip-model';import { IconShape } from './icon';import { IconShapeModel } from './icon-model';import { DiagramTooltip } from './tooltip';import { PointPort } from './port';
 
 /**
  * Interface for a class NodeBase
@@ -72,12 +72,5 @@ export interface NodeBaseModel {
      * @default undefined
      */
     addInfo?: Object;
-
-    /**
-     * Flip the element in Horizontal/Vertical directions
-     * @aspDefaultValueIgnore
-     * @default None
-     */
-    flip?: FlipDirection;
 
 }

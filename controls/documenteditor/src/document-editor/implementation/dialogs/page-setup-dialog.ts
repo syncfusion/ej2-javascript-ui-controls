@@ -75,7 +75,6 @@ export class PageSetupDialog {
     public initPageSetupDialog(locale: L10n, isRtl?: boolean): void {
         let id: string = this.owner.owner.containerId + '_pagesetup_dialog';
         this.target = createElement('div', { id: id, className: 'e-de-pagesetup-dlg-container' });
-        this.owner.owner.element.appendChild(this.target);
         let ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
         this.marginTab = <HTMLDivElement>createElement('div', {

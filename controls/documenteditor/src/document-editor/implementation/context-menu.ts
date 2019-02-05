@@ -455,7 +455,6 @@ export class ContextMenu {
         if (selection.contextType === 'TableOfContents') {
             updateField.style.display = 'block';
             editField.style.display = 'block';
-            (restartAt.nextSibling as HTMLElement).style.display = 'block';
         } else {
             let start: TextPosition = selection.start;
             let end: TextPosition = selection.end;

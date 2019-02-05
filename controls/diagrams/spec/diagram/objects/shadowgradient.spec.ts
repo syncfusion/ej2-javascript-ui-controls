@@ -4,7 +4,6 @@ import { DiagramElement } from '../../../src/diagram/core/elements/diagram-eleme
 import { NodeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { ShadowModel, RadialGradientModel, StopModel, LinearGradientModel, GradientModel } from '../../../src/diagram/core/appearance-model';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
  * Shadow & Gradient
  */
@@ -14,12 +13,6 @@ describe('Diagram Control for shadow properties', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramg' });
             document.body.appendChild(ele);
             let shape1: PathModel = { type: 'Path', data: 'M370.9702,194.9961L359.5112,159.7291L389.5112,137.9341L419.5112,159.7291L408.0522,194.9961L370.9702,194.9961z' }
@@ -93,12 +86,6 @@ describe('Diagram Control for shadow properties', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramh' });
             document.body.appendChild(ele);
 
@@ -170,12 +157,6 @@ describe('Diagram Control for shadow properties', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramh' });
             document.body.appendChild(ele);
 
@@ -257,12 +238,6 @@ describe('Diagram Control for shadow properties', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagrami' });
             document.body.appendChild(ele);
 
@@ -326,15 +301,6 @@ describe('Diagram Control for shadow properties', () => {
                 }
             }
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 
     describe('Gradient', () => {
@@ -342,12 +308,6 @@ describe('Diagram Control for shadow properties', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramh' });
             document.body.appendChild(ele);
 

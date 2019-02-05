@@ -1824,8 +1824,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.destroyScroll();
             let multirowele: HTEle = ele.querySelector('.' + CLS_ITEMS);
             if (!isNOU(multirowele)) {
-                this.remove(multirowele, CLS_MULTIROWPOS);
-                if (this.tbarAlign) { this.add(multirowele, CLS_TBARPOS); }
+            this.remove(multirowele, CLS_MULTIROWPOS);
+            if (this.tbarAlign) { this.add(multirowele, CLS_TBARPOS); }
             }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) { return; }

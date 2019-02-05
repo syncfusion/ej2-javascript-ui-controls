@@ -6,7 +6,6 @@ import { Segments } from '../../../src/diagram/enum/enum';
 import { Point } from '../../../src/diagram/primitives/point';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Connector } from '../../../src/diagram/index';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
  * Node to port docking
  */
@@ -49,12 +48,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram63' });
             document.body.appendChild(ele);
 
@@ -130,12 +123,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram63' });
             document.body.appendChild(ele);
 
@@ -215,12 +202,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'NodeToPortDockingIssue' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -248,27 +229,12 @@ describe('Diagram Control', () => {
                 point[3].x == 250 && point[3].y == 100).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
     describe('Node to port docking issue(Left to Top)', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'NodeToPortDockingLeftToTopIssue' });
             document.body.appendChild(ele);
             diagram = new Diagram({

@@ -11,7 +11,6 @@ import { KeyModifiers, Keys } from '../../../src/diagram/enum/enum';
 import { CommandManager } from '../../../src/diagram/diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel } from '../../../src/diagram/diagram/keyboard-commands-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 
 describe('Diagram Control', () => {
@@ -20,12 +19,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram_command2' });
             document.body.appendChild(ele);
             let selArray: (NodeModel)[] = [];
@@ -250,12 +243,6 @@ describe('Diagram Control', () => {
     let ele: HTMLElement;
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
         ele = createElement('div', { id: 'diagram_command3' });
         document.body.appendChild(ele);
         let selArray: (NodeModel)[] = [];
@@ -309,23 +296,4 @@ describe('Diagram Control', () => {
 
         done();
     });
-    it('add commands at run time', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        diagram.commandManager = {
-            commands: []
-        }
-        diagram.dataBind();
-        expect(diagram.commandManager.commands.length === 0).toBe(true);
-
-        done();
-    });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

@@ -20,6 +20,7 @@ export class DataManipulation {
   private zerothLevelData: BeforeDataBoundArgs;
   private storedIndex: number;
   private parent: TreeGrid;
+  private rootIndex: number;
   private dataResults: ReturnOption;
   private sortedData: Object[];
   private hierarchyData: Object[];
@@ -30,6 +31,7 @@ export class DataManipulation {
     this.parentItems = [];
     this.taskIds = [];
     this.hierarchyData = [];
+    this.rootIndex = -1;
     this.storedIndex = -1;
     this.sortedData = [];
     this.isSortAction = false;
@@ -107,9 +109,9 @@ public isRemote(): boolean {
              if (req === 0) {
                setValue('grid.contentModule.isLoaded', true, this).parent;
                if (!isNullOrUndefined(this.zerothLevelData)) {
-                setValue('cancel', false, this.zerothLevelData);
-                getValue('grid.renderModule', this.parent).dataManagerSuccess(this.zerothLevelData);
-                this.zerothLevelData = null;
+                  setValue('cancel', false, this.zerothLevelData);
+                  getValue('grid.renderModule', this.parent).dataManagerSuccess(this.zerothLevelData);
+                  this.zerothLevelData = null;
                }
                this.parent.grid.hideSpinner();
              }
@@ -241,6 +243,7 @@ public isRemote(): boolean {
           result[r].level = rowDetails.record.level + 1;
           result[r].index = Math.ceil(Math.random() * 1000);
           result[r].parentItem = rowDetails.record;
+          result[r].parentIndex = rowDetails.record.index;
           if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
              && !(haveChild && !haveChild[r])) {
             result[r].hasChildRecords = true;
@@ -261,7 +264,7 @@ public isRemote(): boolean {
   private beginSorting(): void {
     this.isSortAction = true;
   }
-  private createRecords(data: Object, parentRecords?: ITreeData): void {
+  private createRecords(data: Object, parentRecords?: ITreeData, parentIndex?: number): void {
     for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++) {
       let currentData: ITreeData = data[i];
       let level: number = 0;
@@ -285,13 +288,19 @@ public isRemote(): boolean {
         currentData.parentItem = parentData;
         currentData.parentUniqueID = parentData.uniqueID;
         level = parentRecords.level + 1;
+        currentData.parentIndex = parentIndex;
       }
       currentData.level = level;
+      if (isNullOrUndefined(currentData.parentIndex)) {
+        this.rootIndex = currentData.index;
+      } else {
+        currentData.rootIndex = this.rootIndex;
+      }
       if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
         this.parent.flatData.push(currentData);
       }
       if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
-        this.createRecords(currentData[this.parent.childMapping], currentData);
+        this.createRecords(currentData[this.parent.childMapping], currentData, this.storedIndex);
       }
     }
     if (!Object.keys(data).length) {
@@ -391,7 +400,7 @@ public isRemote(): boolean {
         this.parent.notify('createSort', { modifiedData: <Object[]>modifiedData, parent: this.parent, srtQry: srtQry });
         this.parent.notify('createSortRecords', {
           modifiedData: <Object[]>modifiedData,
-          parentRecords: null, filteredResult: results
+          parentRecords: null, parentIndex: null, filteredResult: results
         });
       }
       results = this.sortedData;

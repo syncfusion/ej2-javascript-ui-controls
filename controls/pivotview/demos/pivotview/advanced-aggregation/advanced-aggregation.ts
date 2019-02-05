@@ -18,7 +18,6 @@ let pivotGridObj: PivotView = new PivotView({
         data: excel_data as IDataSet[],
         expandAll: false,
         enableSorting: true,
-        emptyCellsTextContent: '*',
         rows: [{ name: 'Product' }],
         columns: [{ name: 'Date' }],
         values: [{ name: 'Qty 1', type: 'Sum', baseField: 'Product', baseItem: 'Staplers' }, { name: 'Qty 2' }],

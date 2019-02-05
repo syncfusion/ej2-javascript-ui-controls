@@ -180,6 +180,7 @@
 
       .e-rte-toolbar {
         border: 0;
+        border-bottom: $rte-expand-tb-border-bottom;
 
         &.e-extended-toolbar,
         .e-toolbar-extended {

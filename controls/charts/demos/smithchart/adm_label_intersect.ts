@@ -2,7 +2,7 @@
  * Default sample for smith chart
  */
 import { Smithchart } from '../../src/smithchart/smithchart';
-import { SmithchartLabelIntersectAction } from '../../src';
+import { LabelAlignment, LabelPosition, AxisLabelPosition, LabelIntersectAction, SmithchartLabelIntersectAction } from '../../src';
 
 let smithchart: Smithchart = new Smithchart({
     title: {

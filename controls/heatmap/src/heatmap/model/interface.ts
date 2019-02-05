@@ -2,7 +2,6 @@ import { HeatMap, SelectedCellDetails } from '..';
 import { TextOverflow } from '../utils/enum';
 import { PaletteCollectionModel } from '../model/base-model';
 import { BubbleTooltipData } from '../model/base';
-import { Size} from '../utils/helper';
 /** @private */
 export interface IFontMapping {
     size?: string;
@@ -97,12 +96,4 @@ export interface ISelectedEventArgs extends IHeatMapEventArgs {
     heatmap: HeatMap;
     /** Defines details of a cell */
     data: SelectedCellDetails[];
-}
-export interface IResizeEventArgs extends IHeatMapEventArgs  {
-    /** Defines the previous size of the heatmap */
-    previousSize: Size;
-    /** Defines the current size of the heatmap */
-    currentSize: Size;
-    /** Defines the current HeatMap instance */
-    heatmap: HeatMap;
 }

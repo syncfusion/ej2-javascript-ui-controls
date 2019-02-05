@@ -336,21 +336,17 @@ export class ThumbnailView {
         this.startIndex = 0;
         this.thumbnailLimit = 0;
         this.isThumbnailCompleted = false;
-        if (this.pdfViewerBase.navigationPane) {
-            if (this.pdfViewerBase.navigationPane.sideBarContentContainer) {
-                this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
-                this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = 0;
-                this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'none';
-            }
+        if (this.pdfViewerBase.navigationPane.sideBarContentContainer) {
+            this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
+            this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = 0;
+            this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'none';
         }
         if (this.thumbnailView) {
             while (this.thumbnailView.hasChildNodes()) {
                 this.thumbnailView.removeChild(this.thumbnailView.lastChild);
             }
         }
-        if (this.pdfViewerBase.navigationPane) {
-            this.pdfViewerBase.navigationPane.resetThumbnailView();
-        }
+        this.pdfViewerBase.navigationPane.resetThumbnailView();
         this.unwireUpEvents();
     }
 

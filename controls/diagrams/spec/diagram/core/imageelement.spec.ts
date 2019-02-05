@@ -8,7 +8,6 @@ import { ShadowModel } from '../../../src/diagram/core/appearance-model';
 import { ImageElement } from '../../../src/diagram/core/elements/image-element';
 import { Stretch } from '../../../src/diagram/enum/enum';
 import { NodeModel } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 //issue in image element without size
 describe('Diagram Control', () => {
@@ -16,12 +15,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram23' });
             document.body.appendChild(ele);
 
@@ -50,18 +43,12 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Image Element without width and height', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram24' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -85,18 +72,12 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Image Element ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram25' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -120,18 +101,12 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-     });
+    });
 
     describe('Checking with width and height and Stretch.stretch', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram26' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -158,18 +133,12 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-     });
+    });
 
     describe('Image Element with width and height and Stretch.Meet', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram27' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -195,18 +164,12 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-     });
+    });
 
     describe('Image Element with width and height and Stretch.Slice', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram28' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -232,18 +195,12 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Image Element with width and height and Stretch.None', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram29' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -270,18 +227,12 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Image Element without width and height with Meet', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram30' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -305,18 +256,12 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-         });
+    });
 
     describe('Image Element without width and height with Slice', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram31' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -338,18 +283,12 @@ describe('Diagram Control', () => {
 
             done();
         });
-      });
+    });
 
     describe('Image Element without width and height with Stretch.none ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram32' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -374,17 +313,12 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-       });
+
+    });
     describe('change of image element at run time', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram33' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -411,15 +345,6 @@ describe('Diagram Control', () => {
             expect(image.attributes[9].nodeValue === 'https://www.w3schools.com/images/w3schools_green.jpg').toBe(true);
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
 
 
     });

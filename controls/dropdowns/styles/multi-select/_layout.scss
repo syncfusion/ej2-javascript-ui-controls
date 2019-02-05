@@ -43,7 +43,7 @@
     padding: $ddl-chip-selected-padding;
   }
 
-  .e-searcher.e-zero-size {
+  .e-searcher.e-zero-size:not(.e-multiselect-box) {
     width: 0;
 
     input[type='text'] {
@@ -74,7 +74,6 @@
 .e-multi-select-wrapper .e-multi-hidden {
   border: 0;
   height: 0;
-  position: absolute;
   visibility: hidden;
   width: 0;
 }
@@ -230,7 +229,6 @@
   height: $ddl-chip-sel-mobile-height;
   left: $ddl-chip-mob-left;
   margin: $ddl-chip-sel-mobile-close-margin;
-  margin-left: auto;
   position: relative;
   top: $ddl-chip-close-mob-top;
   width: $ddl-chip-sel-mobile-height;

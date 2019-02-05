@@ -112,7 +112,7 @@ buttonElem = queryBldrObj.createElement('Button', { attrs: {type: 'button', clas
 buttonElem.textContent = 'DeleteRule';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('deleterule').onclick = (): void => {
-    queryBldrObj.deleteRules(['querybuilder_e_group0_e_rule0']);
+    queryBldrObj.deleteRules(['querybuilder_e_group4_e_rule9']);
 };
 
 //deleteGroup
@@ -120,7 +120,7 @@ buttonElem = queryBldrObj.createElement('Button',{ attrs: {type: 'button', class
 buttonElem.textContent = 'DeleteGroup';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('deletegroup').onclick = (): void => {
-    queryBldrObj.deleteGroups(['querybuilder_e_group1']);
+    queryBldrObj.deleteGroups(['querybuilder_e_group4']);
 };
 
 //reset rules

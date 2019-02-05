@@ -38,7 +38,6 @@ import { ParetoSeries } from './series/pareto-series';
 import { StackingColumnSeries } from './series/stacking-column-series';
 import { StackingBarSeries } from './series/stacking-bar-series';
 import { StackingAreaSeries } from './series/stacking-area-series';
-import { StackingLineSeries } from './series/stacking-line-series';
 import { ScatterSeries } from './series/scatter-series';
 import { SplineSeries } from './series/spline-series';
 import { SplineAreaSeries } from './series/spline-area-series';
@@ -293,10 +292,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `stackingAreaSeriesModule` is used to add stacking area series to the chart.
      */
     public stackingAreaSeriesModule: StackingAreaSeries;
-    /**
-     * `stackingLineSeriesModule` is used to add stacking line series to the chart.
-     */
-    public stackingLineSeriesModule: StackingLineSeries;
     /**
      * 'CandleSeriesModule' is used to add candle series in the chart.
      */
@@ -2636,6 +2631,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         return null;
     }
+
+    /**
+     * Clear visible Axis labels
+     */
+    private clearVisibleAxisLabels(): void {
+        let axes: AxisModel[] = [this.primaryXAxis, this.primaryYAxis];
+        axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
+        for (let i: number = 0, len: number = axes.length; i < len; i++) {
+            (axes[i] as Axis).labels = [];
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      * @private
@@ -2721,6 +2728,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             }
                         }
                         if (seriesRefresh) {
+                            this.clearVisibleAxisLabels();
                             this.processData(false);
                             refreshBounds = true;
                         }

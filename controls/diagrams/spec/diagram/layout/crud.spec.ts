@@ -12,7 +12,6 @@ import {
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 Diagram.Inject(DataBinding, HierarchicalTree);
 
@@ -284,7 +283,6 @@ describe('Crud Diagram', () => {
         ).toBe(true);
         done();
     });
-
 });
 
 describe('Crud Datasource', () => {
@@ -375,7 +373,6 @@ describe('Crud Datasource', () => {
         expect(diagram.nodes.length === 12).toBe(true);
         done();
     });
-
 });
 
 describe('Crud read Node datasource', () => {
@@ -442,7 +439,6 @@ describe('Crud read Node datasource', () => {
         expect(nodes.length > 0).toBe(true);
         done();
     });
-
 });
 
 describe('Crud read Connector datasource', () => {
@@ -501,13 +497,4 @@ describe('Crud read Connector datasource', () => {
         expect(nodes.length == 0 && connectors.length == 0).toBe(true);
         done();
     });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

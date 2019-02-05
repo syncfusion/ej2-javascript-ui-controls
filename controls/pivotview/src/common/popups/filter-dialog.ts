@@ -1,8 +1,8 @@
-import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
+import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute, EmitType } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
-import { Dialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -51,7 +51,6 @@ export class FilterDialog {
             attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
             styles: 'visibility:hidden;'
         });
-        let filterCaption: string = this.parent.engineModule.fieldList[fieldName].caption;
         let headerTemplate: string = this.parent.localeObj.getConstant('filter') + ' ' +
             '"' + fieldCaption + '"' + ' ' + this.parent.localeObj.getConstant('by');
         this.filterObject = this.getFilterObject(fieldName);
@@ -60,7 +59,7 @@ export class FilterDialog {
         this.dialogPopUp = new Dialog({
             animationSettings: { effect: (this.allowExcelLikeFilter ? 'None' : 'Fade') },
             allowDragging: false,
-            header: (this.allowExcelLikeFilter ? headerTemplate : filterCaption),
+            header: (this.allowExcelLikeFilter ? headerTemplate : fieldCaption),
             content: (this.allowExcelLikeFilter ? '' : this.createTreeView(treeData, fieldCaption, fieldName)),
             isModal: this.parent.renderMode === 'Popup' ? true : this.parent.isAdaptive ? true : false,
             visible: true,
@@ -91,7 +90,11 @@ export class FilterDialog {
             target: target,
             close: this.removeFilterDialog.bind(this),
             /* tslint:disable-next-line:typedef */
-            open: this.dialogOpen.bind(this)
+            open: function (args: EmitType<Object>) {
+                if (this.element.querySelector('.e-editor-label-wrapper')) {
+                    this.element.querySelector('.e-editor-label-wrapper').style.width = this.element.offsetWidth + 'px';
+                }
+            }
         });
         this.dialogPopUp.appendTo(editorDialog);
         if (this.allowExcelLikeFilter) {
@@ -108,12 +111,6 @@ export class FilterDialog {
             return;
         }
     }
-    private dialogOpen(args: BeforeOpenEventArgs): void {
-        if (args.element.querySelector('.e-editor-label-wrapper')) {
-            (args.element.querySelector('.e-editor-label-wrapper') as HTMLElement).style.width =
-            (args.element as HTMLElement).offsetWidth + 'px';
-        }
-    }
     private createTreeView(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName?: string): HTMLElement {
         let editorTreeWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + 'EditorDiv',
@@ -123,7 +120,6 @@ export class FilterDialog {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
             className: cls.EDITOR_SEARCH_WRAPPER_CLASS
         });
-        let filterCaption: string = this.parent.engineModule.fieldList[fieldName].caption;
         let editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
         let labelWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_LabelDiv', attrs: { 'tabindex': '-1' },
@@ -151,7 +147,7 @@ export class FilterDialog {
         editorTreeWrapper.appendChild(selectAllWrapper);
         editorTreeWrapper.appendChild(promptDiv);
         this.editorSearch = new MaskedTextBox({
-            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + filterCaption + '"',
+            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + fieldCaption + '"',
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
             showClearButton: true,

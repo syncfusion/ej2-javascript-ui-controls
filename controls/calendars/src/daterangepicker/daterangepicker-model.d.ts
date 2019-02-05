@@ -1,5 +1,5 @@
 import { Property, EventHandler, Internationalization, NotifyPropertyChanges, detach, getUniqueID } from '@syncfusion/ej2-base';import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Browser, L10n, ChildProperty } from '@syncfusion/ej2-base';import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';import { Popup } from '@syncfusion/ej2-popups';import { Button } from '@syncfusion/ej2-buttons';import { Input, InputObject, FloatLabelType, FocusEventArgs, BlurEventArgs } from '@syncfusion/ej2-inputs';import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
-import {DateRange,RangeEventArgs,RangeFormatObject} from "./daterangepicker";
+import {DateRange,RangeEventArgs} from "./daterangepicker";
 import {CalendarBaseModel} from "../calendar/calendar-model";
 
 /**
@@ -70,8 +70,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
 
     /**
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
-     * > For more details about firstDayOfWeek refer to 
-     * [`First day of week`](../daterangepicker/customization#first-day-of-week) documentation.
      * @default null
      */
     firstDayOfWeek?: number;
@@ -79,8 +77,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Determines whether the week number of the Calendar is to be displayed or not.
      * The week number is displayed in every week row.
-     * > For more details about weekNumber refer to 
-     * [`Calendar with week number`](../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
      * @default false
      */
     weekNumber?: boolean;
@@ -136,8 +132,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
 
     /**
      * Set the predefined ranges which let the user pick required range easily in a component.
-     * > For more details refer to 
-     * [`Preset Ranges`](../daterangepicker/customization#preset-ranges) documentation.
      * @default null
      */
     presets?: PresetsModel[];
@@ -198,38 +192,27 @@ export interface DateRangePickerModel extends CalendarBaseModel{
 
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
-     * > For more details refer to 
-     * [`Range Span`] (../daterangepicker/range-restriction#range-span) documentation.
      * @default null    
-     * @aspType int    
      */
     minDays?: number;
 
     /**
      *  Specifies the maximum span of days that can be allowed in a date range selection.
-     * > For more details refer to 
-     * [`Range Span`](../daterangepicker/range-restriction#range-span) documentation.
      * @default null
-     * @aspType int
      */
     maxDays?: number;
 
     /**
      * Specifies the component to act as strict which allows entering only a valid date range in a DateRangePicker.
-     * > For more details refer to 
-     * [`Strict Mode`](../daterangepicker/range-restriction#strict-mode)documentation.
      * @default false
      */
     strictMode?: boolean;
 
     /**
      * Sets or gets the required date format to the start and end date string.
-     * > For more details refer to 
-     * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
-     * @aspType string
      * @default null
      */
-    format?: string | RangeFormatObject;
+    format?: string;
 
     /**
      * Specifies the component to be disabled which prevents the DateRangePicker from user interactions. 

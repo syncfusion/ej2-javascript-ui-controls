@@ -17,8 +17,8 @@ import { Gridlines } from '../../diagram/diagram/grid-lines';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
-import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection } from '../enum/enum';
-import { ThumbsConstraints, SelectorConstraints, ElementAction } from '../enum/enum';
+import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction } from '../enum/enum';
+import { ThumbsConstraints, SelectorConstraints } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { SelectorModel } from '../interaction/selector-model';
 import { IRenderer } from './../rendering/IRenderer';
@@ -32,7 +32,7 @@ import { BezierSegment, StraightSegment, OrthogonalSegment } from '../objects/co
 import { Point } from '../primitives/point';
 import { RulerSettingsModel } from '../diagram/ruler-settings-model';
 import { RulerModel, Ruler } from '../../ruler';
-import { canDrawThumbs, avoidDrawSelector } from '../utility/constraints-util';
+import { avoidDrawSelector } from '../utility/constraints-util';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -290,7 +290,7 @@ export class DiagramRenderer {
         let top: number = element.offsetY - element.actualSize.height * element.pivot.y;
         let height: number = element.actualSize.height;
         let width: number = element.actualSize.width;
-        if (constraints & ThumbsConstraints.Rotate && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
+        if (constraints & ThumbsConstraints.Rotate && (!avoidDrawSelector(this.rendererActions))) {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
         }
@@ -298,7 +298,7 @@ export class DiagramRenderer {
             element, canvas, transform, enableNode, nodeConstraints);
         let nodeWidth: number = element.actualSize.width * currentZoom;
         let nodeHeight: number = element.actualSize.height * currentZoom;
-        if (!nodeConstraints && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
+        if (!nodeConstraints && (!avoidDrawSelector(this.rendererActions))) {
             if (nodeWidth >= 40 && nodeHeight >= 40) {
                 //Hide corners when the size is less than 40
                 if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
@@ -579,7 +579,6 @@ export class DiagramRenderer {
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
         options.id = 'borderRect';
-        options.id =  (this.rendererActions & RendererAction.DrawSelectorBorder) ? 'borderRect_symbol' : 'borderRect';
         if (!enableNode) {
             options.class += ' e-disabled';
         }
@@ -703,15 +702,9 @@ export class DiagramRenderer {
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
         void {
         let options: BaseAttributes = this.getBaseAttributes(element, transform);
-        let pathAngle: number = (options.flip === 'Horizontal' || options.flip === 'Vertical') ? -options.angle : options.angle;
-        options.angle = pathAngle;
         (options as PathAttributes).data = element.absolutePath;
         (options as PathAttributes).data = element.absolutePath;
         let ariaLabel: Object = element.description ? element.description : element.id;
-        if (!this.isSvgMode) {
-            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
-            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
-        }
         this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
     }
 
@@ -963,8 +956,6 @@ export class DiagramRenderer {
         let nativeSvg: SVGSVGElement = this.getParentSvg(element, undefined, canvas) || parentSvg;
         let nativeLayer: HTMLCanvasElement | SVGElement = this.getParentElement(element, canvas, nativeSvg).g || canvas;
         let options: BaseAttributes = this.getBaseAttributes(element, transform);
-        let nativEAngle: number = (options.flip === 'Horizontal' || options.flip === 'Vertical') ? -options.angle : options.angle;
-        options.angle = nativEAngle;
         (options as RectAttributes).fill = 'transparent';
         (options as RectAttributes).cornerRadius = element.cornerRadius;
         (options as RectAttributes).stroke = 'transparent';
@@ -1002,9 +993,6 @@ export class DiagramRenderer {
         element: DiagramHtmlElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
         let options: BaseAttributes = this.getBaseAttributes(element, transform);
-        if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
-            options.angle = -options.angle;
-        }
         (options as RectAttributes).fill = 'transparent';
         (options as RectAttributes).cornerRadius = element.cornerRadius;
         (options as RectAttributes).stroke = 'transparent';
@@ -1021,8 +1009,6 @@ export class DiagramRenderer {
         transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean):
         void {
         let options: BaseAttributes = this.getBaseAttributes(element, transform);
-        let imageAngle: number = (options.flip === 'Horizontal' || options.flip === 'Vertical') ? -options.angle : options.angle;
-        options.angle = imageAngle;
         (options as RectAttributes).cornerRadius = 0;
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         // let sx: number; let sy: number;
@@ -1109,7 +1095,6 @@ export class DiagramRenderer {
         if (group.hasChildren()) {
             let parentG: HTMLCanvasElement | SVGElement;
             let svgParent: SvgParent;
-            let flip: FlipDirection;
             for (let child of group.children) {
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children) || child) || parentSvg;
                 if (this.isSvgMode) {
@@ -1119,53 +1104,8 @@ export class DiagramRenderer {
                         parentSvg = svgParent.svg;
                     }
                 }
-                if (!this.isSvgMode) {
-                    child.flip = group.flip;
-                }
                 this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette);
-                if (child instanceof TextElement && parentG) {
-                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
-                    this.renderFlipElement(child, parentG, flip);
-                }
-                if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
-                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
-                    this.renderFlipElement(group, parentG, flip);
-                }
             }
-            this.renderFlipElement(group, canvas, group.flip);
-        }
-    }
-
-    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection): void {
-        let attr: object = {};
-        let scaleX: number = 1;
-        let scaleY: number = 1;
-        let posX: number = 0; let posY: number = 0; let offsetX: number = 0;
-        let offsetY: number = 0;
-        if (flip !== 'None') {
-            if (flip === 'Horizontal' || flip === 'Both') {
-                posX = element.bounds.center.x;
-                offsetX = -element.bounds.center.x;
-                scaleX = -1;
-            }
-            if (flip === 'Vertical' || flip === 'Both') {
-                posY = element.bounds.center.y;
-                offsetY = -element.bounds.center.y;
-                scaleY = -1;
-            }
-            attr = {
-                'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
-                    + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
-            };
-        } else {
-            attr = {
-                'transform': 'translate(' + 0 + ',' + 0 + ')'
-
-            };
-        }
-
-        if (attr) {
-            setAttributeSvg(canvas as SVGElement, attr);
         }
     }
 
@@ -1209,9 +1149,6 @@ export class DiagramRenderer {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
-        if (element.flip) {
-            options.flip = element.flip;
-        }
         if (transform) {
             options.x += transform.tx;
             options.y += transform.ty;
@@ -1220,7 +1157,7 @@ export class DiagramRenderer {
     }
 
     /**   @private  */
-    public static renderSvgBackGroundImage (
+    public static renderSvgBackGroundImage(
         background: BackgroundModel, diagramElement: HTMLElement, x: number, y: number, width: number, height: number
     ): void {
         if (background.source) {

@@ -1,5 +1,5 @@
 import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import {ActionCompleteEventArgs,RenderingEventArgs,SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
+import {ActionCompleteEventArgs,RenderingEventArgs,FileListRenderingEventArgs,SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -239,11 +239,18 @@ export interface UploaderModel extends ComponentModel{
     actionComplete?: EmitType<ActionCompleteEventArgs>;
 
     /**
-     * Triggers before rendering each file item from the file list in a page.
+     * DEPRECATED-Triggers before rendering each file item from the file list in a page.
      * It helps to customize specific file item structure.
      * @event
      */
     rendering?: EmitType<RenderingEventArgs>;
+
+    /**
+     * Triggers before rendering each file item from the file list in a page.
+     * It helps to customize specific file item structure.
+     * @event
+     */
+    fileListRendering?: EmitType<FileListRenderingEventArgs>;
 
     /**
      * Triggers after selecting or dropping the files by adding the files in upload queue.

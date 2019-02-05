@@ -60,7 +60,7 @@ export function getTemplateFunction(templateString: string): Function {
 }
 
 export function convertElementFromLabel(element: Element,  labelId: string,
-                                        data: Object, index: number, smithchart: Smithchart): HTMLElement {
+                                        data: object, index: number, smithchart: Smithchart): HTMLElement {
     let labelEle: Element = element[0];
     let templateHtml: string = labelEle.outerHTML;
     let properties: Object[] = Object.keys(data);

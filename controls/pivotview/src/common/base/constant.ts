@@ -53,8 +53,6 @@ export const cellDeselected: string = 'cellDeselected';
 export const rowSelected: string = 'rowSelected';
 /** @hidden */
 export const rowDeselected: string = 'rowDeselected';
-/** @hidden */
-export const beginDrillThrough: string = 'beginDrillThrough';
 
 
 /** 

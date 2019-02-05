@@ -426,21 +426,40 @@ export class CalculatedField implements IAction {
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
-                    click: this.applyFormula.bind(this),
+                    'click': () => this.applyFormula(),
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('ok'),
                         isPrimary: true
                     }
                 },
                 {
-                    click: this.cancelClick.bind(this),
+                    'click': () => {
+                        this.dialog.close();
+                        this.isEdit = false;
+                    },
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('cancel')
                     }
                 }
             ],
-            close: this.closeDialog.bind(this),
-            beforeOpen: this.beforeOpen.bind(this),
+            close: (args: Object) => {
+                if (this.parent.getModuleName() === 'pivotfieldlist') {
+                    this.parent.axisFieldModule.render();
+                    if ((this.parent as PivotFieldList).renderMode !== 'Fixed') {
+                        addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
+                        (this.parent as PivotFieldList).dialogRenderer.fieldListDialog.show();
+                    }
+                }
+                this.treeObj.destroy();
+                this.dialog.destroy();
+                this.newFields = null;
+                remove(document.getElementById(this.parentID + 'calculateddialog'));
+                remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
+            },
+            beforeOpen: (args: BeforeOpenEventArgs) => {
+                this.dialog.element.querySelector('.e-dlg-header').
+                    setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
+            },
             animationSettings: { effect: 'Zoom' },
             width: '25%',
             isModal: false,
@@ -451,31 +470,6 @@ export class CalculatedField implements IAction {
             target: document.body
         });
         this.dialog.appendTo('#' + this.parentID + 'calculateddialog');
-    }
-
-    private cancelClick(): void {
-        this.dialog.close();
-        this.isEdit = false;
-    }
-
-    private beforeOpen(args: BeforeOpenEventArgs): void {
-        this.dialog.element.querySelector('.e-dlg-header').
-            setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
-    }
-
-    private closeDialog(args: Object): void {
-        if (this.parent.getModuleName() === 'pivotfieldlist') {
-            this.parent.axisFieldModule.render();
-            if ((this.parent as PivotFieldList).renderMode !== 'Fixed') {
-                addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
-                (this.parent as PivotFieldList).dialogRenderer.fieldListDialog.show();
-            }
-        }
-        this.treeObj.destroy();
-        this.dialog.destroy();
-        this.newFields = null;
-        remove(document.getElementById(this.parentID + 'calculateddialog'));
-        remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
     }
 
     /**
@@ -570,29 +564,25 @@ export class CalculatedField implements IAction {
             fields: { dataSource: this.getFieldListData(this.parent), id: 'formula', text: 'name', iconCss: 'icon' },
             allowDragAndDrop: true,
             enableRtl: this.parent.enableRtl,
-            nodeCollapsing: this.nodeCollapsing.bind(this),
-            nodeDragStart: this.dragStart.bind(this),
+            nodeCollapsing: (args: NodeExpandEventArgs) => {
+                args.cancel = true;
+            },
+            nodeDragStart: (args: DragAndDropEventArgs) => {
+                if ((args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS)) {
+                    let dragItem: HTMLElement = document.querySelector('.e-drag-item.e-treeview') as HTMLElement;
+                    addClass([dragItem], cls.PIVOTCALC);
+                    dragItem.style.zIndex = (this.dialog.zIndex + 1).toString();
+                    dragItem.style.display = 'inline';
+                } else {
+                    args.cancel = true;
+                }
+            },
             nodeClicked: this.fieldClickHandler.bind(this),
             nodeDragStop: this.fieldDropped.bind(this),
             drawNode: this.drawTreeNode.bind(this),
             sortOrder: 'Ascending'
         });
         this.treeObj.appendTo('#' + this.parentID + 'tree');
-    }
-
-    private nodeCollapsing(args: NodeExpandEventArgs): void {
-        args.cancel = true;
-    }
-
-    private dragStart(args: DragAndDropEventArgs): void {
-        if ((args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS)) {
-            let dragItem: HTMLElement = document.querySelector('.e-drag-item.e-treeview') as HTMLElement;
-            addClass([dragItem], cls.PIVOTCALC);
-            dragItem.style.zIndex = (this.dialog.zIndex + 1).toString();
-            dragItem.style.display = 'inline';
-        } else {
-            args.cancel = true;
-        }
     }
 
     /**
@@ -702,66 +692,60 @@ export class CalculatedField implements IAction {
             let accordion: Accordion = new Accordion({
                 items: this.getAccordionData(this.parent),
                 enableRtl: this.parent.enableRtl,
-                expanding: this.accordionExpand.bind(this),
+                expanding: (args: ExpandEventArgs) => {
+                    if (args.element.querySelectorAll('.e-radio-wrapper').length === 0) {
+                        Object.keys(this.parent.engineModule.fieldList).forEach((key: string) => {
+                            let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+                            let radiobutton: RadioButton;
+                            if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
+                                for (let i: number = 0; i < type.length; i++) {
+                                    radiobutton = new RadioButton({
+                                        label: type[i],
+                                        name: AGRTYPE + key,
+                                        change: (args: ChangeArgs) => {
+                                            let type: string =
+                                                ((args.event.target as HTMLElement).parentElement.querySelector('.e-label') as HTMLElement).
+                                                    innerText;
+                                            let field: string = (args.event.target as HTMLElement).closest('.e-acrdn-item').
+                                                querySelector('[data-field').getAttribute('data-caption');
+                                            ((args.event.target as HTMLElement).
+                                                closest('.e-acrdn-item').querySelector('.e-label') as HTMLElement).
+                                                innerText = field + ' (' + type + ')';
+                                            (args.event.target as HTMLElement).closest('.e-acrdn-item').
+                                                querySelector('[data-type').setAttribute('data-type', type);
+                                        },
+                                    });
+                                    radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
+                                }
+                            }
+                        });
+                    }
+                },
             });
             let addBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true });
             addBtn.appendTo('#' + this.parentID + 'addBtn');
             accordion.appendTo('#' + this.parentID + 'accordDiv');
-            Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
+            Object.keys(this.parent.engineModule.fieldList).forEach((key: string, index: number) => {
+                let type: string = null;
+                if (this.parent.engineModule.fieldList[key].type === 'string' ||
+                    this.parent.engineModule.fieldList[key].type === 'include' ||
+                    this.parent.engineModule.fieldList[key].type === 'exclude') {
+                    type = COUNT;
+                } else {
+                    type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
+                        this.parent.engineModule.fieldList[key].aggregateType : SUM;
+                }
+                let checkbox: CheckBox = new CheckBox({
+                    label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
+                });
+                checkbox.appendTo('#' + this.parentID + '_' + index);
+                document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
+                document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
+            });
             if (addBtn.element) {
                 addBtn.element.onclick = this.addBtnClick.bind(this);
             }
         }
-    }
-
-    private accordionExpand(args: ExpandEventArgs): void {
-        if (args.element.querySelectorAll('.e-radio-wrapper').length === 0) {
-            Object.keys(this.parent.engineModule.fieldList).forEach((key: string) => {
-                let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
-                let radiobutton: RadioButton;
-                if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
-                    for (let i: number = 0; i < type.length; i++) {
-                        radiobutton = new RadioButton({
-                            label: type[i],
-                            name: AGRTYPE + key,
-                            change: this.onChange.bind(this),
-                        });
-                        radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
-                    }
-                }
-            });
-        }
-    }
-
-    private onChange(args: ChangeArgs): void {
-        let type: string =
-            ((args.event.target as HTMLElement).parentElement.querySelector('.e-label') as HTMLElement).
-                innerText;
-        let field: string = (args.event.target as HTMLElement).closest('.e-acrdn-item').
-            querySelector('[data-field').getAttribute('data-caption');
-        ((args.event.target as HTMLElement).
-            closest('.e-acrdn-item').querySelector('.e-label') as HTMLElement).
-            innerText = field + ' (' + type + ')';
-        (args.event.target as HTMLElement).closest('.e-acrdn-item').
-            querySelector('[data-type').setAttribute('data-type', type);
-    }
-
-    private updateType(key: string, index: number): void {
-        let type: string = null;
-        if (this.parent.engineModule.fieldList[key].type === 'string' ||
-            this.parent.engineModule.fieldList[key].type === 'include' ||
-            this.parent.engineModule.fieldList[key].type === 'exclude') {
-            type = COUNT;
-        } else {
-            type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
-                this.parent.engineModule.fieldList[key].aggregateType : SUM;
-        }
-        let checkbox: CheckBox = new CheckBox({
-            label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
-        });
-        checkbox.appendTo('#' + this.parentID + '_' + index);
-        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
-        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
     }
 
     /**

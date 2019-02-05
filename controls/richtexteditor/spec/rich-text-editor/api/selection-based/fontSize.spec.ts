@@ -83,7 +83,7 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
                 },
             });
             rteObj.fontSize = {
-                default: '8 pt',
+                default: '8pt',
                 width: '150px',
                 items: [
                     { text: '8 pt', value: '8pt' },

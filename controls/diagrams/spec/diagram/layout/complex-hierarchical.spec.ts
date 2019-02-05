@@ -4,13 +4,12 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { SpatialSearch } from '../../../src/diagram/interaction/spatial-search/spatial-search';
+import{SpatialSearch} from '../../../src/diagram/interaction/spatial-search/spatial-search';
 import {
     ConnectorModel, Node,
     DataBinding, PointModel, GraphLayoutManager, Layout, IConnector,
     HierarchicalTree, NodeModel, Rect, BasicShapeModel, ComplexHierarchicalTree, ShapeModel,
 } from '../../../src/diagram/index';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(ComplexHierarchicalTree);
 
 let data: object[] = [{ 'Name': 'Customer Support', 'fillColor': '#0f688d' },
@@ -74,28 +73,28 @@ describe('Diagram Control', () => {
             diagram.layout.verticalSpacing = 40;
             diagram.spatialSearch = new SpatialSearch(diagram.nameTable);
             diagram.dataBind();
-            expect((diagram.nodes[0].offsetX == 1.1238696756863291 || diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 70).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291 && diagram.nodes[0].offsetY == 70)).toBe(true);
             done();
         });
         it('Checking BottomToTop complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'BottomToTop';
             diagram.dataBind();
-            expect((diagram.nodes[0].offsetX == 1.1238696756863291 || diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 470).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291 && diagram.nodes[0].offsetY == 470)).toBe(true);
             done();
         });
         it('Checking LeftToRight complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'LeftToRight';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 200 && (diagram.nodes[0].offsetY == 57.02686734040091 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
+            expect(diagram.nodes[0].offsetX == 200 && (diagram.nodes[0].offsetY == 57.02686734040091)).toBe(true);
             done();
         });
         it('Checking RightToLeft complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'RightToLeft';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 900 && (diagram.nodes[0].offsetY == 57.02686734040091 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
+            expect(diagram.nodes[0].offsetX == 900 && (diagram.nodes[0].offsetY == 57.02686734040091)).toBe(true);
             done();
         });
         it('Checking Margin layout', (done: Function) => {
@@ -282,7 +281,7 @@ describe('Diagram Control', () => {
                         height: 10
                     },
                 },
-
+            
             ];
             let connector: ConnectorModel[] = [
                 {
@@ -317,7 +316,7 @@ describe('Diagram Control', () => {
                 {
                     id: 'node9_4', sourceID: 'Node9', targetID: 'Node4',
                 },
-
+               
                 {
                     id: 'node9_5', sourceID: 'Node9', targetID: 'Node5',
                 },
@@ -346,6 +345,7 @@ describe('Diagram Control', () => {
                 var node = diagram.nodes[4];
                 expect(node.visible).toBe(true);
                 done();
+
             },
                 0);
         });
@@ -355,7 +355,7 @@ describe('Diagram Control', () => {
             setTimeout(() => {
                 var node1 = diagram.nodes[9];
                 expect(node1.visible).toBe(true)
-                done();
+                 done();
             },
                 0);
         });
@@ -512,7 +512,7 @@ describe('Diagram Control', () => {
                     parent: ['0']
                 }
             ];
-            function getConnectorDefaults(connector: ConnectorModel) {
+            function getConnectorDefaults(connector:ConnectorModel) {
                 connector.id = connector.sourceID + '_' + connector.targetID;
                 connector.type = 'Orthogonal';
                 connector.cornerRadius = 7;
@@ -521,7 +521,7 @@ describe('Diagram Control', () => {
                 connector.style.strokeColor = '#6d6d6d';
                 return connector;
             }
-            function getNodeDefaults(node: NodeModel, diagram: Diagram) {
+            function getNodeDefaults(node:NodeModel, diagram:Diagram) {
                 var obj = {
                     width: 75,
                     height: 75,
@@ -546,12 +546,10 @@ describe('Diagram Control', () => {
                 width: '1000px', height: '500px', dataSourceSettings: {
                     id: 'id', parentId: 'parent', dataManager: new DataManager(data),
                 },
-                layout: {
-                    type: 'ComplexHierarchicalTree', horizontalSpacing: 20, verticalSpacing: 20,
-                    // enableAnimation: true,
-                    margin: { left: 10, right: 0, top: 50, bottom: 0 }
-                },
-                getNodeDefaults: getNodeDefaults, getConnectorDefaults: getConnectorDefaults
+                layout: { type: 'ComplexHierarchicalTree' ,horizontalSpacing:20, verticalSpacing: 20,
+                // enableAnimation: true,
+                 margin: { left: 10, right: 0, top: 50, bottom: 0 }},
+                 getNodeDefaults: getNodeDefaults, getConnectorDefaults: getConnectorDefaults
             });
             diagram.appendTo('#diagram');
         });
@@ -563,6 +561,11 @@ describe('Diagram Control', () => {
         it('checking the node which have multiple parent', (done: Function) => {
             var nodes = diagram.nodes
             expect(nodes.length === 33).toBe(true);
+            expect(nodes[0].offsetX === 462.5 && nodes[0].offsetY === 87.5 && nodes[1].offsetX === 510 && nodes[1].offsetY === 182.5).toBe(true);
+            expect(nodes[10].offsetX === 415 && nodes[10].offsetY === 562.5 && nodes[13].offsetX === 605 && nodes[13].offsetY === 562.5).toBe(true);
+            expect(nodes[16].offsetX === 605 && nodes[16].offsetY === 467.5 && nodes[18].offsetX === 605 && nodes[18].offsetY === 277.5).toBe(true);
+            expect(nodes[20].offsetX === 587.5 && nodes[20].offsetY === 372.5 && nodes[22].offsetX === 510 && nodes[22].offsetY === 277.5).toBe(true);
+            expect(nodes[27].offsetX === 892.5 && nodes[27].offsetY === 372.5 && nodes[30].offsetX === 1082.5 && nodes[30].offsetY === 372.5).toBe(true);
             done();
         });
     });
@@ -646,14 +649,5 @@ describe('Diagram Control', () => {
             expect((child.getAttribute('x') === '450.5') && (child.getAttribute('y') === '200.5')).toBe(true)
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

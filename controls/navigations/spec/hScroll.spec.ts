@@ -5,7 +5,6 @@ import { ScrollEventArgs, TouchEventArgs, Browser } from '@syncfusion/ej2-base';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { HScroll } from '../src/common/h-scroll';
 import { isNullOrUndefined} from '@syncfusion/ej2-base';
-import { profile, inMB, getMemoryProfile } from './common.spec';
 
 const CLS_DISABLE: string = 'e-overlay';
 const CLS_OVERLAY: string = 'e-scroll-overlay';
@@ -30,15 +29,6 @@ let iosChromeUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X
     'AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1';
 
 describe('Horizontal scroll bar Base items', () => {
-    beforeAll(() => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-    });
-
    let css: string = " button {font-family:Arial; font-size: 14px; padding: 1px 6px;} .e-rtl { direction: rtl; } ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -817,14 +807,4 @@ describe('Horizontal scroll bar Base items', () => {
                 Browser.userAgent = '';
             });
         });
-
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })    
     });

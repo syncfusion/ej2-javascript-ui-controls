@@ -5,7 +5,6 @@ import { ILoadedEventArgs } from '../../src/heatmap/model/interface';
 import { Legend } from '../../src/heatmap/legend/legend';
 import { Tooltip } from '../../src/heatmap/utils/tooltip';
 import { MouseEvents } from '../base/event.spec'
-import { profile , inMB, getMemoryProfile } from '../../spec/common.spec';
 HeatMap.Inject(Legend, Tooltip);
 
 // export class MouseEvents {
@@ -17,14 +16,6 @@ HeatMap.Inject(Legend, Tooltip);
 // }
 
 describe('Heatmap Control', () => {
-    beforeAll(() => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-    });
     describe('Heatmap Legend', () => {
         let heatmap: HeatMap;
         let legend: Legend = new Legend(heatmap);
@@ -430,13 +421,4 @@ describe('Heatmap Control', () => {
             expect(heatmap.legendModule.visibilityCollections[4]).toBe(false);
     });
     });
-    it('memory leak', () => {     
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

@@ -5,19 +5,9 @@ import { Browser, createElement, closest, DomElements, L10n, isVisible, isNullOr
 import { Tab, SelectingEventArgs } from '../src/tab/tab';
 import { TabActionSettingsModel, TabAnimationSettingsModel } from '../src/tab/tab-model';
 import { Toolbar } from '../src/toolbar/toolbar';
-import { profile, inMB, getMemoryProfile } from './common.spec';
 import '../node_modules/es6-promise/dist/es6-promise';
 
 describe('Tab Control', () => {
-     beforeAll(() => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-    });
-
     let commonCss: string = ".e-toolbar { display: block; white-space: nowrap; position: relative; } .e-separator { border-right:1px solid; height: 15px; margin: 7.5px 3px} .e-hor-nav { height: 30px; } .e-toolbar .e-toolbar-items .e-toolbar-item.e-separator + .e-separator { display:none } .e-toolbar-items { display: inline-block; } .e-toolbar-items.e-hscroll { width:inherit; }  .e-toolbar .e-fix-width {width : 0px !important; } .e-toolbar .e-tbarpop  { position: fixed; } .e-toolbar-items .e-toolbar-item, .e-toolbar-left, .e-toolbar-center, .e-toolbar-right { display: inline-block; } .e-toolbar .e-hor-nav { float:right; width:30px; }  .e-toolbar .e-toolbar-pop { position: fixed;} .e-popup-open { display:block } .e-popup-close { display: none } button {font-family:Arial; font-size: 14px; padding: 1px 6px}";
     let commonCss2: string = ".e-vertical.e-toolbar { display: block; } .e-vscroll { height: inherit; } .e-vscroll > * { height: inherit; } .e-toolbar-items { display: block; } .e-vertical .e-toolbar-item { display: block !important; } .e-vertical .e-scroll-nav { height: 0px }";
 
@@ -9920,14 +9910,4 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
         });
     });
-    
-    it('memory leak', () => {     
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

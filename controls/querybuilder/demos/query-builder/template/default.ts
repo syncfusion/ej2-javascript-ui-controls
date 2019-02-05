@@ -3,7 +3,6 @@
  */
 import { QueryBuilder , RuleModel, ColumnsModel} from './../../../src/query-builder/index';
 import { getComponent} from '@syncfusion/ej2-base';
-import { Dialog } from '@syncfusion/ej2-popups';
 import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { Slider, SliderTickEventArgs } from '@syncfusion/ej2-inputs';
 MultiSelect.Inject(CheckBoxSelection);

@@ -111,15 +111,13 @@ export class TreeViewRenderer implements IAction {
             }],
             closeOnEscape: true,
             target: this.parentElement.parentElement,
-            close: this.dialogClose.bind(this)
+            close: () => {
+                if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
+                    remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
+                }
+            }
         });
         this.fieldDialog.appendTo(fieldListDialog);
-    }
-
-    private dialogClose(): void {
-        if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
-            remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
-        }
     }
 
     private createTreeView(treeData: { [key: string]: Object }[]): HTMLElement {
@@ -139,7 +137,9 @@ export class TreeViewRenderer implements IAction {
             placeholder: this.parent.localeObj.getConstant('search'),
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
-            change: this.textChange.bind(this)
+            change: (e: MaskChangeEventArgs) => {
+                this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
+            }
         });
         this.editorSearch.appendTo(editorSearch);
         editorTreeWrapper.appendChild(treeViewContainer);
@@ -152,10 +152,6 @@ export class TreeViewRenderer implements IAction {
         });
         this.fieldTable.appendTo(treeViewContainer);
         return editorTreeWrapper;
-    }
-
-    private textChange(e: MaskChangeEventArgs): void {
-        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
     }
 
     private dragStart(args: DragAndDropEventArgs): void {

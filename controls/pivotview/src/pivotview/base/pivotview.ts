@@ -1,7 +1,7 @@
 import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, setCurrencyCode } from '@syncfusion/ej2-base';
 import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
-import { removeClass, addClass, Event, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { removeClass, addClass, Event } from '@syncfusion/ej2-base';
 import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IDataSet, IPageSettings } from '../../base/engine';
 import { IConditionalFormatSettings } from '../../base/engine';
 import { PivotViewModel, GroupingBarSettingsModel, CellEditSettingsModel } from './pivotview-model';
@@ -13,7 +13,7 @@ import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
 import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn } from '../../common/base/interface';
 import { ResizeInfo, ScrollInfo, BeforeColumnRenderEventArgs, PivotCellSelectedEventArgs } from '../../common/base/interface';
 import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs } from '../../common/base/interface';
-import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs } from '../../common/base/interface';
+import { BeforeExportEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
 import { Render } from '../renderer/render';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { Common } from '../../common/actions/common';
@@ -24,9 +24,9 @@ import { GridSettings } from '../model/gridsettings';
 import { GridSettingsModel } from '../model/gridsettings-model';
 import { PivotButton } from '../../common/actions/pivot-button';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
-import { Grid, Column, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, SelectionType } from '@syncfusion/ej2-grids';
-import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
-import { EditSettingsModel, HeaderCellInfoEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, Column, QueryCellInfoEventArgs, HeaderCellInfoEventArgs, ColumnModel, Reorder, Resize } from '@syncfusion/ej2-grids';
+import { CellSelectEventArgs, CellDeselectEventArgs, RowSelectEventArgs, ResizeArgs, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
+import { EditSettingsModel } from '@syncfusion/ej2-grids';
 import { PdfExportProperties, ExcelExportProperties, ExcelQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExport } from '../actions/excel-export';
@@ -311,16 +311,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /* tslint:disable-next-line:no-any */
     private timeOutObj: any;
     private isEmptyGrid: boolean;
-    private shiftLockedPos: string[] = [];
-    private savedSelectedCellsPos: { rowIndex: string, colIndex: string }[] = [];
-    private isPopupClicked: boolean = false;
-    private isMouseDown: boolean = false;
-    private isMouseUp: boolean = false;
-    private lastSelectedElement: HTMLElement;
-    private isCellBoxMultiSelection: boolean = false;
-    /** @hidden */
-    public rowRangeSelection: { enable: boolean, startIndex: number, endIndex: number } =
-        { enable: false, startIndex: 0, endIndex: 0 };
     /** @hidden */
     public pageSettings: IPageSettings;
     /** @hidden */
@@ -636,13 +626,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public drillThrough: EmitType<DrillThroughEventArgs>;
 
     /** 
-     * Triggers when value cell is clicked in the Pivot widget on Editing.
-     * @event 
-     */
-    @Event()
-    public beginDrillThrough: EmitType<BeginDrillThroughEventArgs>;
-
-    /** 
      * Triggers when hyperlink cell is clicked in the Pivot widget.
      * @event 
      */
@@ -774,8 +757,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             dragField: 'Drag field to formula',
             clearFilter: 'Clear',
             by: 'by',
-            all: 'All',
-            multipleItems: 'Multiple items',
             /* tslint:disable */
             member: 'Member',
             label: 'Label',
@@ -924,9 +905,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 PivotView.Inject(DrillThrough);
             }
         }
-        this.isCellBoxMultiSelection = this.gridSettings.allowSelection &&
-            this.gridSettings.selectionSettings.cellSelectionMode === 'Box' &&
-            this.gridSettings.selectionSettings.mode === 'Cell' && this.gridSettings.selectionSettings.type === 'Multiple';
     }
 
     /**
@@ -1026,9 +1004,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     break;
                 case 'gridSettings':
                     this.renderModule.updateGridSettings();
-                    this.isCellBoxMultiSelection = this.gridSettings.allowSelection &&
-                        this.gridSettings.selectionSettings.cellSelectionMode === 'Box' &&
-                        this.gridSettings.selectionSettings.mode === 'Cell' && this.gridSettings.selectionSettings.type === 'Multiple';
                     break;
                 case 'locale':
                 case 'currencyCode':
@@ -1230,7 +1205,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private onContentReady(): void {
-        this.isPopupClicked = false;
         if (this.showFieldList) {
             hideSpinner(this.pivotFieldListModule.fieldListSpinnerElement as HTMLElement);
         } else if (this.fieldListSpinnerElement) {
@@ -1363,57 +1337,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     private wireEvents(): void {
         EventHandler.add(this.element, this.isAdaptive ? 'touchend' : 'click', this.mouseClickHandler, this);
-        EventHandler.add(this.element, 'mousedown', this.mouseDownHandler, this);
-        EventHandler.add(this.element.querySelector('.' + cls.GRID_HEADER), 'mousemove', this.mouseMoveHandler, this);
-        EventHandler.add(this.element, 'mouseup', this.mouseUpHandler, this);
         window.addEventListener('resize', this.onWindowResize.bind(this), true);
-    }
-
-    private mouseDownHandler(e: MouseEvent): void {
-        if (this.isCellBoxMultiSelection) {
-            this.isMouseDown = true;
-            this.isMouseUp = false;
-            let parent: HTMLElement = this.parentAt(e.target as HTMLElement, 'TH');
-            this.clearSelection(parent, e, Number(parent.getAttribute('aria-colindex')), Number(parent.getAttribute('index')));
-            this.lastSelectedElement = undefined;
-        }
-    }
-
-    private mouseMoveHandler(e: MouseEvent): void {
-        if (this.isCellBoxMultiSelection) {
-            e.preventDefault();
-            if (this.isMouseDown && e.target) {
-                let ele: HTMLElement = e.target as HTMLElement;
-                let parentElement: HTMLElement = this.parentAt(ele, 'TH');
-                if (this.lastSelectedElement && this.lastSelectedElement !== parentElement &&
-                    parentElement.classList.contains(cls.SELECTED_BGCOLOR)) {
-                    this.lastSelectedElement.classList.remove(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-                    this.lastSelectedElement = parentElement;
-                } else {
-                    this.lastSelectedElement = parentElement;
-                    parentElement.classList.add(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-                }
-                this.renderModule.selected();
-            }
-        }
-    }
-
-    private mouseUpHandler(e: MouseEvent): void {
-        if (this.isCellBoxMultiSelection) {
-            this.isMouseDown = false;
-            this.isMouseUp = true;
-        }
-    }
-
-    private parentAt(target: HTMLElement, tagName: string): HTMLElement {
-        while (target.tagName !== tagName) {
-            if (target.parentElement) {
-                target = target.parentElement;
-            } else {
-                break;
-            }
-        }
-        return target;
     }
 
     private mouseClickHandler(e: MouseEvent): void {
@@ -1436,16 +1360,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } else if (target.classList.contains('e-headertext')) {
                 ele = target.parentElement.parentElement;
             }
-            this.CellClicked(target, e);
+            this.CellClicked(target);
             if ((ele.parentElement.parentElement.parentElement.parentElement.classList.contains('e-movableheader')
                 && this.dataSource.valueAxis === 'column') || (ele.parentElement.classList.contains('e-row') &&
                     this.dataSource.valueAxis === 'row')) {
                 /* tslint:disable */
                 let colIndex: number = Number(ele.getAttribute('aria-colindex'));
                 let rowIndex: number = Number(ele.getAttribute('index'));
-                if (this.dataSource.valueAxis === 'row' && (this.dataSource.values.length > 1 || this.dataSource.alwaysShowValueHeader)) {
+                if (this.dataSource.valueAxis === 'row' && this.dataSource.values.length > 1) {
                     rowIndex = (this.pivotValues[rowIndex][colIndex] as IAxisSet).type === 'value' ? rowIndex : (rowIndex + 1);
-                } else if (this.dataSource.valueAxis === 'column' && (this.dataSource.values.length > 1 || this.dataSource.alwaysShowValueHeader)) {
+                } else if (this.dataSource.valueAxis === 'column' && this.dataSource.values.length > 1) {
                     colIndex = (Number(ele.getAttribute('aria-colindex')) + Number(ele.getAttribute('aria-colspan')) - 1);
                     rowIndex = this.engineModule.headerContent.length - 1;
                 }
@@ -1471,7 +1395,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else if (target.classList.contains(cls.COLLAPSE) || target.classList.contains(cls.EXPAND)) {
             this.onDrill(target);
         } else {
-            this.CellClicked(target, e);
+            this.CellClicked(target);
             return;
         }
     }
@@ -1575,7 +1499,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.setCommonColumnsWidth(this.grid.columns as ColumnModel[], colWidth);
                 this.posCount = 0;
-                this.getSelectedCellsPos();
                 if (!this.showGroupingBar) {
                     this.setGridColumns(this.grid.columns as ColumnModel[]);
                 }
@@ -1583,13 +1506,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.setGridRowWidth();
                 }
-                this.setSavedSelectedCells();
             }
         }, 500);
         /* tslint:enable */
     }
 
-    private CellClicked(target: Element, e: MouseEvent): void {
+    private CellClicked(target: Element): void {
         let ele: Element = null;
         if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
             ele = target;
@@ -1598,191 +1520,19 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             ele = target.parentElement;
         } else if (target.classList.contains('e-headertext')) {
             ele = target.parentElement.parentElement;
-        } else if (target.classList.contains(cls.ROW_SELECT)) {
-            if (target.classList.contains(cls.SPAN_CLICKED)) {
-                this.isPopupClicked = false;
-            } else {
-                this.isPopupClicked = true;
-            }
         }
-        /* tslint:disable */
         if (ele) {
-            let colIndex: number = Number(ele.getAttribute('aria-colindex'));
-            let rowIndex: number = Number(ele.getAttribute('index'));
-            let colSpan: number = Number(ele.getAttribute('aria-colspan'));
             if (this.cellClick) {
                 this.trigger(events.cellClick, {
                     currentCell: ele,
-                    data: this.pivotValues[rowIndex][colIndex]
+                    data: this.pivotValues[Number(ele.getAttribute('index'))][Number(ele.getAttribute('aria-colindex'))]
                 });
             }
-            if (this.gridSettings.allowSelection) {
-                if (this.gridSettings.selectionSettings.mode === 'Both' ? !ele.classList.contains(cls.ROW_CELL_CLASS) :
-                    this.gridSettings.selectionSettings.mode !== 'Row') {
-                    this.clearSelection(ele, e, colIndex, rowIndex);
-                    this.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
-                } else {
-                    this.clearSelection(ele, e, colIndex, rowIndex);
-                }
-                if (this.gridSettings.selectionSettings.type === 'Multiple' &&
-                    (this.gridSettings.selectionSettings.mode === 'Row' || this.gridSettings.selectionSettings.mode === 'Both')) {
-                    this.applyRowSelection(0, rowIndex);
-                }
-            }
         }
     }
-
-    /** @hidden */
-    public clearSelection(ele: Element, e: MouseEvent | KeyboardEventArgs, colIndex: number, rowIndex: number) {
-        if ((!e.shiftKey && !e.ctrlKey) || this.gridSettings.selectionSettings.type === 'Single') {
-            if (this.gridSettings.selectionSettings.mode === 'Cell') {
-                if (ele.classList.contains(cls.COLUMNSHEADER)) {
-                    this.element.querySelectorAll(('.' + cls.ROW_CELL_CLASS + '.') + cls.CELL_SELECTED_BGCOLOR).forEach(function
-                        (ele: HTMLElement) {
-                        ele.classList.remove(cls.CELL_SELECTED_BGCOLOR);
-                    });
-                } else {
-                    this.element.querySelectorAll(('.' + cls.COLUMNSHEADER + '.') + cls.CELL_ACTIVE_BGCOLOR).forEach(function
-                        (ele: HTMLElement) {
-                        ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-                    });
-                }
-            } else if (this.gridSettings.selectionSettings.mode === 'Both') {
-                if (ele.classList.contains(cls.ROW_CELL_CLASS)) {
-                    this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR).forEach(function
-                        (ele: HTMLElement) {
-                        if (Number((ele as HTMLElement).getAttribute('index')) !== rowIndex) {
-                            ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-                        }
-                    })
-                } else {
-                    this.element.querySelectorAll('.' + cls.ROWSHEADER + '.' + cls.CELL_SELECTED_BGCOLOR).forEach(function
-                        (ele: HTMLElement) {
-                        ele.classList.remove(cls.CELL_SELECTED_BGCOLOR);
-                    })
-                }
-            }
-        }
-    }
-
-    /** @hidden */
-    public applyRowSelection(colIndex: number, rowIndex: number): void {
-        let pivotValue: IAxisSet = this.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet;
-        if (pivotValue && pivotValue.isDrilled) {
-            let parentLevel: number = pivotValue.level;
-            let rCount: number = rowIndex;
-            do {
-                rCount++;
-                pivotValue = this.engineModule.pivotValues[rCount][colIndex] as IAxisSet;
-            } while (pivotValue && parentLevel < pivotValue.level);
-            let _this: PivotView = this;
-            if (this.isAdaptive) {
-                this.rowRangeSelection = {
-                    enable: true,
-                    startIndex: rowIndex - _this.renderModule.rowStartPos,
-                    endIndex: rCount - (1 + _this.renderModule.rowStartPos)
-                }
-            } else {
-                _this.grid.selectionModule.selectRowsByRange(rowIndex -
-                    _this.renderModule.rowStartPos, rCount - (1 + _this.renderModule.rowStartPos));
-            }
-        }
-    }
-
-    /** @hidden */
-    public applyColumnSelection(e: MouseEvent | KeyboardEventArgs, target: Element, colStart: number, colEnd: number, rowStart: number): void {
-        if (!target.classList.contains(cls.ROWSHEADER) &&
-            (this.gridSettings.selectionSettings.mode === 'Cell' ? target.classList.contains(cls.COLUMNSHEADER) : true)) {
-            let isCtrl: boolean = e.ctrlKey;
-            if (this.isAdaptive && this.gridSettings.selectionSettings.type === 'Multiple') {
-                (this.grid.selectionModule as any).showPopup(e);
-                if (this.isPopupClicked) {
-                    this.element.querySelector('.' + cls.ROW_SELECT).classList.add(cls.SPAN_CLICKED);
-                    isCtrl = true;
-                } else {
-                    this.element.querySelector('.' + cls.ROW_SELECT).classList.remove(cls.SPAN_CLICKED);
-                    isCtrl = false;
-                }
-            }
-            let queryStringArray: string[] = [];
-            let type: SelectionType = this.gridSettings.selectionSettings.type;
-            let isToggle: boolean = target.classList.contains(cls.CELL_ACTIVE_BGCOLOR);
-            let activeColumns: string[] = [];
-            let actColPos: { [Key: number]: number } = {};
-            for (let cCnt = colStart; cCnt <= colEnd; cCnt++) {
-                activeColumns.push(cCnt.toString());
-            }
-            if (!isCtrl || type === 'Single') {
-                this.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR).forEach(function (ele: HTMLElement) {
-                    ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-                    if (activeColumns.indexOf(ele.getAttribute('aria-colindex')) === -1) {
-                        isToggle = false;
-                    }
-                    let colIndex: number = Number(ele.getAttribute('aria-colindex'));
-                    actColPos[colIndex] = colIndex;
-                });
-                /* tslint:disable-next-line:no-any */
-                activeColumns = Object.keys(actColPos).length > 0 ? Object.keys(actColPos).sort(function (a: any, b: any) {
-                    return a - b
-                }) : activeColumns;
-            } else {
-                isToggle = false;
-            }
-            if (type === 'Multiple' && e.shiftKey) {
-                this.shiftLockedPos = this.shiftLockedPos.length === 0 ? activeColumns : this.shiftLockedPos;
-                if (Number(this.shiftLockedPos[0]) <= colStart) {
-                    colStart = Number(this.shiftLockedPos[0]);
-                } else {
-                    colEnd = colEnd < Number(this.shiftLockedPos[this.shiftLockedPos.length - 1]) ?
-                        Number(this.shiftLockedPos[this.shiftLockedPos.length - 1]) : colEnd;
-                }
-            } else {
-                this.shiftLockedPos = [];
-            }
-            let count: number = colStart;
-            while (count <= colEnd) {
-                queryStringArray.push('[aria-colindex="' + count + '"]' + (this.gridSettings.selectionSettings.mode === 'Cell' ?
-                    '[index="' + rowStart + '"]' : "") + '');
-                count++;
-            }
-            if (!isToggle) {
-                rowStart = target.classList.contains('e-headercell') ? rowStart : (this.renderModule.rowStartPos - 1);
-                this.element.querySelectorAll(queryStringArray.toString()).forEach(function (ele: HTMLElement) {
-                    if (Number(ele.getAttribute('index')) >= rowStart) {
-                        if (ele.classList.contains(cls.CELL_ACTIVE_BGCOLOR) && isCtrl) {
-                            ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-                        } else {
-                            ele.classList.add(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-                        }
-                    }
-                });
-            }
-            this.renderModule.selected();
-        }
-    }
-
-    private getSelectedCellsPos(): void {
-        let control: PivotView = this;
-        control.savedSelectedCellsPos = [];
-        this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR).forEach(function (ele: HTMLElement) {
-            control.savedSelectedCellsPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('aria-colindex') });
-        })
-    }
-
-    private setSavedSelectedCells(): void {
-        let control: PivotView = this;
-        this.savedSelectedCellsPos.forEach(function (item: { rowIndex: string, colIndex: string }) {
-            let query: string = '[aria-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
-            control.element.querySelector(query).classList.add(cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR);
-        });
-    }
-    /* tslint:enable */
 
     private unwireEvents(): void {
         EventHandler.remove(this.element, this.isAdaptive ? 'touchend' : 'click', this.mouseClickHandler);
-        EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
-        EventHandler.remove(this.element.querySelector('.' + cls.GRID_HEADER), 'mousemove', this.mouseMoveHandler);
-        EventHandler.remove(this.element, 'mouseup', this.mouseUpHandler);
         window.removeEventListener('resize', this.onWindowResize.bind(this), true);
     }
 

@@ -8,12 +8,14 @@ export class MarkdownRender implements IRenderer {
     private contentPanel: Element;
     protected parent: IRichTextEditor;
     protected editableElement: Element;
+    private rteID: string;
 
     /**
      * Constructor for content renderer module
      */
     constructor(parent?: IRichTextEditor) {
         this.parent = parent;
+        this.rteID = this.parent.element.id;
     }
 
     /**
@@ -21,10 +23,10 @@ export class MarkdownRender implements IRenderer {
      */
     public renderPanel(): void {
         let rteObj: IRichTextEditor = this.parent;
-        let div: HTMLElement = this.parent.createElement('div', { id: this.parent.getID() + '_view', className: 'e-rte-content' });
+        let div: HTMLElement = this.parent.createElement('div', { id: this.rteID + '_view', className: 'e-rte-content' });
         this.editableElement = this.parent.createElement('textarea', {
             className: 'e-content',
-            id: this.parent.getID() + '_editable-content'
+            id: this.rteID + '_editable-content'
         });
         div.appendChild(this.editableElement);
         this.setPanel(div);

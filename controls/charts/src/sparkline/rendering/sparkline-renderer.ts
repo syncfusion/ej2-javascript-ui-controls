@@ -85,11 +85,11 @@ export class SparklineRenderer {
         data: Object[] = this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
         let temp: Object[] = [];
         let xValues: string[] = [];
-        data.forEach((value: Object, index: number) => {
+        data.forEach((value: object, index: number) => {
             if (xValues.indexOf(value[x]) === -1) {
                 xValues.push(value[x]);
             }
-            let currentData: Object = {};
+            let currentData: object = {};
             currentData[this.sparkline.xName] = xValues.indexOf(value[x]);
             currentData[this.sparkline.yName] = value[y];
             temp.push(currentData);
@@ -102,8 +102,8 @@ export class SparklineRenderer {
     private processDateTime(
         data: Object[] = this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
         let temp: Object[] = [];
-        data.forEach((value: Object, index: number) => {
-            let currentData: Object = {};
+        data.forEach((value: object, index: number) => {
+            let currentData: object = {};
             currentData[x] = value[x].getTime();
             currentData[y] = value[y];
             temp.push(currentData);
@@ -594,7 +594,7 @@ export class SparklineRenderer {
     /**
      * To format text
      */
-    private formatter(format: string, data: Object): string {
+    private formatter(format: string, data: object): string {
         if (isNullOrUndefined(format)) {
             return null;
         }
@@ -618,14 +618,14 @@ export class SparklineRenderer {
         let x1: number = data[0][x];
         let x2: number = isNullOrUndefined(data[1]) ? undefined : data[1][x];
         if (!isNullOrUndefined(x1) && !isNullOrUndefined(x2)) {
-            let temp: Object[] = extend([], data) as Object[];
-            let validData: Object[] = [];
-            temp.forEach((value: Object) => {
+            let temp: object[] = extend([], data) as Object[];
+            let validData: object[] = [];
+            temp.forEach((value: object) => {
                 if (!isNullOrUndefined(value[x])) {
                     validData.push(value);
                 }
             });
-            validData.sort((a: Object, b: Object) => {
+            validData.sort((a: object, b: object) => {
                 if (isNullOrUndefined(a[x]) || isNullOrUndefined(b[x])) {
                     return 0;
                 }
@@ -644,7 +644,7 @@ export class SparklineRenderer {
         let model: Sparkline = this.sparkline;
         let max: number; let min: number; let minX: number; let maxX: number;
         let maxPointsLength: number = data.length;
-        let temp: Object[];
+        let temp: object[];
         let sumofValues: number = 0;
         let isNumericArray: boolean = Array.isArray(data) && typeof data[0] !== 'object';
         if (isNumericArray) {
@@ -665,16 +665,16 @@ export class SparklineRenderer {
                 }
             } else {
                 if (isNullOrUndefined(data[0][model.xName])) {
-                    let x: number[] = data.map((z: Object) => { return z[model.yName]; });
+                    let x: number[] = data.map((z: object) => { return z[model.yName]; });
                     max = Math.max.apply(null, x); min = Math.min.apply(null, x);
                 } else {
                     temp = extend([], data) as Object[];
-                    temp = temp.sort((a: Object, b: Object) => { return a[model.yName] - b[model.yName]; });
+                    temp = temp.sort((a: object, b: object) => { return a[model.yName] - b[model.yName]; });
                     max = temp[temp.length - 1][model.yName];
                     min = temp[0][model.yName];
                 }
                 if (!isNullOrUndefined(data[0][model.xName])) {
-                    temp = temp.sort((a: Object, b: Object) => { return a[model.xName] - b[model.xName]; });
+                    temp = temp.sort((a: object, b: object) => { return a[model.xName] - b[model.xName]; });
                     temp = (this.sparkline.enableRtl) ? temp.reverse() : temp;
                     maxX = temp[temp.length - 1][model.xName];
                     minX = temp[0][model.xName];
@@ -795,7 +795,7 @@ export class SparklineRenderer {
         let spark: Sparkline = this.sparkline;
         let height: number = this.axisHeight;
         if ((spark.type !== 'WinLoss') && (spark.type !== 'Pie') && spark.axisSettings.lineSettings.visible) {
-            let xAxis: Object = {
+            let xAxis: object = {
                 'id': spark.element.id + '_Sparkline_XAxis',
                 'x1': spark.padding.left, 'y1': height,
                 'x2': spark.availableSize.width - spark.padding.right, 'y2': height,

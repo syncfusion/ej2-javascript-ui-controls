@@ -569,7 +569,7 @@ describe('Uploader Control', () => {
         let select: EmitType<Object> = jasmine.createSpy('selected');
         let clear: EmitType<Object> = jasmine.createSpy('clearing');
         let remove: EmitType<Object> = jasmine.createSpy('removing');
-        let onRendering: EmitType<Object> = jasmine.createSpy('rendering');
+        let onfileListRendering: EmitType<Object> = jasmine.createSpy('fileListRendering');
         let originalTimeout: number;
         beforeAll((): void => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
@@ -578,7 +578,7 @@ describe('Uploader Control', () => {
             document.body.appendChild(element);
             element.setAttribute('type', 'file');
             uploadObj = new Uploader({
-                selected: select, multiple: true, clearing: clear, removing: remove, rendering: onRendering, autoUpload: false,
+                selected: select, multiple: true, clearing: clear, removing: remove, fileListRendering: onfileListRendering, autoUpload: false,
                 asyncSettings: {
                     saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                     removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
@@ -617,7 +617,7 @@ describe('Uploader Control', () => {
             var fileObj = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "overide/mimetype" });
             var fileObj1 = new File(["2nd File"], "demo.txt", { lastModified: 0, type: "overide/mimetype" });
             var eventArgs = { type: 'click', target: { files: [fileObj, fileObj1] }, preventDefault: function () { } };
-            expect(onRendering).toHaveBeenCalled();
+            expect(onfileListRendering).toHaveBeenCalled();
             uploadObj.onSelectFiles(eventArgs);
         });
     });

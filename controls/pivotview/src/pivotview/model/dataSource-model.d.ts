@@ -428,12 +428,6 @@ export interface DataSourceModel {
     showColumnGrandTotals?: boolean;
 
     /**
-     * It allows enable/disable single measure headers in pivot table.
-     * @default false
-     */
-    alwaysShowValueHeader?: boolean;
-
-    /**
      * It allows to set the settings of number formatting.
      * @default []
      */
@@ -461,10 +455,5 @@ export interface DataSourceModel {
      * @default []
      */
     conditionalFormatSettings?: ConditionalFormatSettingsModel[];
-
-    /**
-     * It allows to set the custom values to empty value cells .
-     */
-    emptyCellsTextContent?: string;
 
 }

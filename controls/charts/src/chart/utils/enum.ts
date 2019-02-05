@@ -110,12 +110,10 @@ export type sizeType =
  * * bar - Renders the stacking column series
  * * histogram - Renders the histogram series
  * * stackingColumn - Renders the stacking column series.
- * * stackingArea - Renders the stacking area series.
- * * stackingLine - Renders the stacking line series.
+ * * stackingArea - Renders the stacking area series
  * * stackingBar - Renders the stacking bar series.
  * * StackingColumn100 - Renders the stacking column series.
  * * StackingArea100 - Renders the stacking area 100 percent series
- * * stackingLine100 - Renders the stacking line 100 percent series.
  * * StackingBar100 - Renders the stacking bar 100 percent series.
  * * stepLine -  Renders the step line series.
  * * stepArea -  Renders the step area series.
@@ -143,8 +141,6 @@ export type ChartSeriesType =
     'StackingColumn' |
     /**  Define the StackingArea series. */
     'StackingArea' |
-    /**  Define the StackingLine series. */
-    'StackingLine' |
     /**  Define the StackingBar series. */
     'StackingBar' |
     /**  Define the Stepline series. */
@@ -161,8 +157,6 @@ export type ChartSeriesType =
     'StackingColumn100' |
     /** Define the StackingBar100 series */
     'StackingBar100' |
-    /** Define the StackingLine100 series */
-    'StackingLine100' |
     /** Define the StackingArea100 series */
     'StackingArea100' |
     /** Define the RangeColumn Series */
@@ -222,9 +216,7 @@ export type ChartDrawType =
     /** Define the Spline Area series */
     'SplineArea' |
     /** Define the spline series */
-    'StackingArea' |
-    /** Define the Stacking line series */
-    'StackingLine';
+    'StackingArea';
 
 /**
  * Defines the Edge Label Placement for an axis. They are

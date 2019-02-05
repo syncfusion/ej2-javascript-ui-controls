@@ -10,7 +10,6 @@ import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
 import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPortModel, Connector } from '../../../src/diagram/index';
 import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo, DiagramContextMenu, Snapping);
 /**
  * Groups Spec
@@ -24,12 +23,6 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -167,6 +160,7 @@ describe('Group', () => {
             expect(Object.keys(diagram.nameTable).length).toBe(13);
             done();
         });
+
     });
     describe('Group With context Menu', () => {
         let diagram: Diagram;
@@ -180,12 +174,6 @@ describe('Group', () => {
         };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
@@ -356,6 +344,8 @@ describe('Group', () => {
             expect((diagram.nameTable['group1'] as Node).children.length).toBe(2);
             done();
         });
+
+        //ungroup internal group
     });
     describe('Diagram with element pass as parameter', () => {
         let diagram: Diagram;
@@ -369,12 +359,6 @@ describe('Group', () => {
         };
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
@@ -434,12 +418,6 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -515,12 +493,6 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -581,6 +553,7 @@ describe('Group', () => {
             expect(element.attributes[2].value === 'rotate(0,550.5,500.5)translate(544.5,494.5)').toBe(true);
             done()
         });
+
     });
     describe('Group - width and height', () => {
         let diagram: Diagram;
@@ -589,12 +562,6 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram_group_width_height' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -639,7 +606,7 @@ describe('Group', () => {
         });
         it('group property issue and save and load isse', (done: Function) => {
             let element: HTMLElement = document.getElementById("group_groupElement");
-            let group: HTMLElement = element.childNodes[0] as HTMLElement;
+            let group:HTMLElement = element.childNodes[0] as HTMLElement;
             expect(group.attributes[14].value === "gray" && group.attributes[11].value === "black").toBe(true);
             let savedata = diagram.saveDiagram();
             var group1 = diagram.nodes[2];
@@ -679,12 +646,6 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram_group_group_width_height' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -707,7 +668,7 @@ describe('Group', () => {
 
             diagram = new Diagram({
                 width: '800px', height: '600px', nodes: nodes,
-                scrollSettings: { verticalOffset: 20 },
+                scrollSettings:{verticalOffset:20},
                 snapSettings: { constraints: 0 }, contextMenuSettings: { show: true }
             });
             diagram.appendTo('#diagram_group_group_width_height');
@@ -729,19 +690,20 @@ describe('Group', () => {
             done();
         });
         it('Checking group have width and height in rendering', (done: Function) => {
-            let data
+            let data 
             let selArray = [];
             selArray.push(diagram.nodes[3]);
             diagram.select(selArray);
             let selectorElement = document.getElementById('diagram_group_group_width_height_SelectorElement');
-            var children = selectorElement.children[3] as HTMLElement
-            expect(children.getAttribute('cx') === '699.9966666666667').toBe(true)
+            var children =selectorElement.children[3] as HTMLElement
+            expect(children.getAttribute('cx') ==='699.9966666666667').toBe(true)
             data = diagram.selectedItems.nodes;
             diagram.paste(data);
-
-            expect(diagram.nodes.length === 8).toBe(true);
+            
+            expect(diagram.nodes.length===8).toBe(true);
             done();
         });
+
     });
     describe('Performance Fix break issue', () => {
         let diagram: Diagram;
@@ -859,26 +821,17 @@ describe('Group', () => {
         });
         it('copy and paste group issue', (done: Function) => {
             let offsetX = diagram.nodes[2].offsetX;
-        let offsetY = diagram.nodes[2].offsetY;
-        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-        var mouseEvents = new MouseEvents();
-        mouseEvents.clickEvent(diagramCanvas, offsetX, offsetY);
-        diagram.copy();
-        diagram.paste();
-        var node =diagram.nodes[5];
-        var element = document.getElementById((node as Node).id+'_content_groupElement')
-        expect(element.children[0].getAttribute('fill')==='white'&&element.children[0].getAttribute('stroke')==='black').toBe(true);
+            let offsetY = diagram.nodes[2].offsetY;
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            var mouseEvents = new MouseEvents();
+            mouseEvents.clickEvent(diagramCanvas, offsetX, offsetY);
+            diagram.copy();
+            diagram.paste();
+            var node = diagram.nodes[5];
+            var element = document.getElementById((node as Node).id + '_content_groupElement')
+            expect(element.children[0].getAttribute('fill') === 'white' && element.children[0].getAttribute('stroke') === 'black').toBe(true);
             done();
-         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
+        });
 
     });
 });

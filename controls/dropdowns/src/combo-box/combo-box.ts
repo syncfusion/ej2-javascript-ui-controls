@@ -163,6 +163,10 @@ export class ComboBox extends DropDownList {
         super.preRender();
     }
 
+    protected getLocaleName(): string {
+        return 'combo-box';
+    };
+
     protected wireEvent(): void {
         if (this.getModuleName() === 'combobox') {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.preventBlur, this);
@@ -570,9 +574,14 @@ export class ComboBox extends DropDownList {
     private customValue(): void {
         let value: string | number | boolean = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
+            let previousValue: string | number | boolean = this.previousValue;
+            let currentValue: string | number | boolean = this.value;
             this.setProperties({ value: value });
             if (isNullOrUndefined(this.value)) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+            }
+            if (this.autofill && previousValue === this.value && currentValue !== this.value) {
+                this.onChangeEvent(null);
             }
         } else if (this.inputElement.value.trim() !== '') {
             let previousValue: string | number | boolean = this.value;

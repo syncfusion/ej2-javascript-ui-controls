@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 16.4.44 (2018-12-24)
+
+### ListView
+
+#### Bug Fixes
+
+- Fixed multiple CSS class not added properly while using `template` property in `UI Virtualization`.
+
+- Fixed height calculation in `UI Virtualization` with sample level border inclusion.
+
 ## 16.3.33 (2018-11-20)
 
 ### ListView

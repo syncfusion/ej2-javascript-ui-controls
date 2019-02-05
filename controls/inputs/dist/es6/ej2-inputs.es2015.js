@@ -7777,7 +7777,14 @@ let Uploader = class Uploader extends Component {
                 index: index,
                 isPreload: this.isPreLoadFile(listItem)
             };
+            let eventsArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
+            };
             this.trigger('rendering', eventArgs);
+            this.trigger('fileListRendering', eventsArgs);
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
@@ -7848,7 +7855,14 @@ let Uploader = class Uploader extends Component {
                     index: index,
                     isPreload: this.isPreLoadFile(listItem)
                 };
+                let eventsArgs = {
+                    element: liElement,
+                    fileInfo: listItem,
+                    index: index,
+                    isPreload: this.isPreLoadFile(listItem)
+                };
                 this.trigger('rendering', eventArgs);
+                this.trigger('fileListRendering', eventsArgs);
                 this.listParent.appendChild(liElement);
                 this.fileList.push(liElement);
                 this.truncateName(textElement);
@@ -9120,6 +9134,9 @@ __decorate$4([
 __decorate$4([
     Event()
 ], Uploader.prototype, "rendering", void 0);
+__decorate$4([
+    Event()
+], Uploader.prototype, "fileListRendering", void 0);
 __decorate$4([
     Event()
 ], Uploader.prototype, "selected", void 0);

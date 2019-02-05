@@ -8,7 +8,6 @@ import { DiagramElement } from '../../../src/diagram/core/elements/diagram-eleme
 import { Container } from '../../../src/diagram/core/containers/container';
 import { DiagramModel, NodeModel, NodeConstraints } from '../../../src/diagram/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec'
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 describe('Diagram Control', () => {
     let mouseEvents: MouseEvents = new MouseEvents();
@@ -18,12 +17,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -112,7 +105,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 700, 100);
             mouseEvents.mouseUpEvent(diagramCanvas, 700, 100);
             expect(diagram.nameTable['node4'].parentId !== 'group').toBe(true);
-
+          
 
             done();
         });
@@ -134,12 +127,6 @@ describe('Diagram Control', () => {
     describe('Simple stack panel without children - Horizontal', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -187,12 +174,6 @@ describe('Diagram Control', () => {
     describe('Simple stack panel without children height and width- Vertical', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -249,17 +230,12 @@ describe('Diagram Control', () => {
             done();
 
         });
+
     });
 
     describe('Simple stack panel without children - Vertical', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -300,14 +276,5 @@ describe('Diagram Control', () => {
                 && diagram.nameTable['node1'].wrapper.bounds.width == 50).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

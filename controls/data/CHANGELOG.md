@@ -2,6 +2,42 @@
 
 ## [Unreleased]
 
+## 16.4.52 (2019-02-05)
+
+### DataManager
+
+#### Bug Fixes
+
+- Provided `addParams` CRUD support in `RemoteSaveAdaptor`.
+- Need to parse the server response data in `UrlAdaptor` is resolved.
+- Provided option in `DataManger` to define CRUD url in `OdataV4Adaptor` in Grid all edit modes.
+- Additional parameters should be send in `params` property is fixed.
+
+## 16.4.48 (2019-01-22)
+
+### DataManager
+
+#### Bug Fixes
+
+- Provided `addParams` CRUD support in `RemoteSaveAdaptor`.
+- Need to parse the server response data in `UrlAdaptor` is resolved.
+
+## 16.4.47 (2019-01-16)
+
+### DataManager
+
+#### Bug Fixes
+
+- Provided option in `DataManger` to define CRUD url in `OdataV4Adaptor` in Grid all edit modes.
+
+## 16.4.45 (2019-01-02)
+
+### DataManager
+
+#### Bug Fixes
+
+- Additional parameters should be send in `params` property is fixed.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### DataManager

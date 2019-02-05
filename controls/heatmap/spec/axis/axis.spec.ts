@@ -3,17 +3,8 @@ import { HeatMap } from '../../src/heatmap/heatmap';
 import { Title } from '../../src/heatmap/model/base';
 import { ILoadedEventArgs } from '../../src/heatmap/model/interface'
 import { MouseEvents } from '../base/event.spec';
-import { profile , inMB, getMemoryProfile } from '../../spec/common.spec';
 
 describe('Heatmap Control', () => {
-    beforeAll(() => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-    });
     describe('Axis properties and behavior', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
@@ -461,7 +452,7 @@ describe('Heatmap Control', () => {
             let region: ClientRect = Element.getBoundingClientRect();
             trigger.mousemoveEvent(Element, 0, 0, region.left + 5, region.top + 5);
             let tooltip: HTMLElement = document.getElementById('container_axis_Tooltip');
-            expect(tooltip.style.top === '352px' || tooltip.style.top === '355px' ).toBe(true);
+            expect(tooltip.style.top === '344px' || tooltip.style.top === '347px' ).toBe(true);
         });
         it('Checking x-axis border type -brace ', function () {
             heatmap.width = '400px';
@@ -680,13 +671,4 @@ describe('Heatmap Control', () => {
             expect(text.textContent == "Testing 3").toBe(true);
         });
     });
-    it('memory leak', () => {     
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

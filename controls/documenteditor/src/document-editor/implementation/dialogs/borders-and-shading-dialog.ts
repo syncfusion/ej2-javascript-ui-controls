@@ -90,7 +90,6 @@ export class BordersAndShadingDialog {
             id: instance.owner.owner.containerId + '_table_border_shadings',
             className: 'e-de-table-border-shading-dlg'
         });
-        this.owner.owner.element.appendChild(this.target);
         let displayText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Borders'), styles: 'position: absolute;top: 65px;',
             id: this.target.id + '_border_label', className: 'e-de-table-border-heading'

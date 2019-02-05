@@ -62,6 +62,7 @@ const minutesMilliSeconds: number = 60000;
 export class CalendarBase extends Component<HTMLElement> implements INotifyPropertyChanged {
     protected headerElement: HTMLElement;
     protected contentElement: HTMLElement;
+    private calendarEleCopy: HTMLElement;
     protected table: HTMLElement;
     protected tableHeadElement: HTMLElement;
     protected tableBodyElement: Element;
@@ -84,6 +85,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected navigateNextHandler: Function;
     protected l10: L10n;
     protected todayDisabled: boolean;
+    protected tabIndex: string;
     protected todayDate: Date;
     //this.element clone
     protected calendarElement: HTMLElement;
@@ -125,8 +127,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      * @default 0
      * @aspType int
-     * > For more details about firstDayOfWeek refer to 
-     * [`First day of week`](../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
     @Property(null)
     public firstDayOfWeek: number;
@@ -160,8 +160,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Calendar view shows the years of the decade.<br/></td></tr>
      * </table>
      * 
-     * > For more details about start refer to 
-     * [`calendarView`](../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public start: CalendarView;
@@ -189,16 +187,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Calendar view shows up to the years of the decade.<br/></td></tr> 
      * </table> 
      * 
-     * > For more details about depth refer to 
-     *  [`calendarView`](../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public depth: CalendarView;
     /**
      * Determines whether the week number of the year is to be displayed in the calendar or not.
      * @default false
-     * > For more details about weekNumber refer to 
-     * [`Calendar with week number`](../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
      */
     @Property(false)
     public weekNumber: boolean;
@@ -261,6 +255,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @private
      */
     protected render(): void {
+        this.calendarEleCopy = <HTMLElement>this.element.cloneNode(true);
         if (this.calendarMode === 'Islamic') {
             if (+(this.min.setSeconds(0)) === +new Date(1900, 0, 1, 0, 0, 0)) {
                 this.min = new Date(1944, 2, 18);
@@ -284,6 +279,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             attributes(this.element, <{ [key: string]: string }>{
                 'data-role': 'calendar'
             });
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            this.element.setAttribute('tabindex', this.tabIndex);
         } else {
             this.calendarElement = this.createElement('div');
             this.calendarElement.classList.add(ROOT);
@@ -468,9 +465,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (this.showTodayButton) {
             let minimum: Date = new Date(+this.min);
             let maximum: Date = new Date(+this.max);
-            let l10nLocale: object = { today: 'Today' };
-            this.globalize = new Internationalization(this.locale);
-            this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
             this.todayElement = this.createElement('button');
             rippleEffect(this.todayElement);
             this.updateFooter();
@@ -687,6 +681,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @private
      */
     protected preRender(value?: Date): void {
+        this.globalize = new Internationalization(this.locale);
+        let l10nLocale: object = { today: 'Today' };
+        this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
         this.navigateHandler = (e: MouseEvent): void => {
@@ -817,10 +814,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     let formatOptions: object = { type: 'date', skeleton: 'short', calendar: type };
                     let localDateString: string = this.globalize.formatDate(localDate, formatOptions);
                     let tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
-                    if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
-                    || (this.getDateVal(localDate, value))) {
+                    if (localDateString === tempDateString && this.getDateVal(localDate, values[tempValue])) {
                         addClass([tdEle], SELECTED);
-                    }  else {
+                    } else {
                         this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
                     }
                 }
@@ -1363,6 +1359,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.nextIconHandler(true);
             this.keyboardModule.destroy();
             this.element.removeAttribute('data-role');
+            (!isNullOrUndefined(this.calendarEleCopy.getAttribute('tabindex'))) ?
+            this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         }
         this.element.innerHTML = '';
         super.destroy();

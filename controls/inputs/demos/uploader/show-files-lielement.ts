@@ -18,7 +18,7 @@ let uploadObj: Uploader = new Uploader({
     removing: onFileRemove,
     dropArea: dropElement,
     autoUpload: false,
-    rendering: onLiElementCreated
+    fileListRendering: onLiElementCreated
 });
 uploadObj.appendTo('#fileupload');
 

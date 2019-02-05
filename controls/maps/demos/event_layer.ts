@@ -4,7 +4,6 @@
 
 import { Maps, Zoom, Legend, ProjectionType, ILayerRenderingEventArgs, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { unCountries } from './MapData/UNOCountries';
-import { world_Map } from './MapData/worldMap';
 
 Maps.Inject(Zoom, Legend, MapsTooltip);
 
@@ -30,7 +29,7 @@ let maps: Maps = new Maps({
     },
     layers: [
         {
-            shapeData: world_Map,
+            shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
             shapeDataPath: 'Country',
             shapePropertyPath: 'name',
             dataSource : unCountries,
@@ -56,3 +55,10 @@ let maps: Maps = new Maps({
     ]
 });
 maps.appendTo('#container');
+
+document.getElementById('projectiontype').addEventListener('change', changeProjection);
+function changeProjection(): void {
+     let type:any= (document.getElementById('projectiontype') as HTMLSelectElement).value;
+     maps.projectionType=type;
+     maps.refresh();
+}

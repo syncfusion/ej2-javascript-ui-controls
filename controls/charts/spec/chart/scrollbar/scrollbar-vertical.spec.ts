@@ -623,6 +623,7 @@ describe('Scrollbar Chart', () => {
                 expect(backRectEle.getAttribute('width') === '328.25' || backRectEle.getAttribute('width') === '335.25').toBe(true);
                 expect(backRectEle.getAttribute('rx') === '0').toBe(true);
                 expect(backRectEle.id === 'container_scrollBarBackRect_primaryXAxis').toBe(true);
+                console.log(svgChildEle.getAttribute('transform') + "," + backRectEle.getAttribute('width') +","+backRectEle.getAttribute('height')); 
                 done();
             };
             chartObj.loaded = loaded;
@@ -672,6 +673,7 @@ describe('Scrollbar Chart', () => {
                     expect(thumbEle.getAttribute('x') === '8').toBe(true);
                     expect(thumbEle.getAttribute('width') === '318.75' || thumbEle.getAttribute('width') === '321.75').toBe(true);
                     chartObj.axisCollections[1].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 150, 380)));
+                    console.log(thumbEle.getAttribute('x') + "," + thumbEle.getAttribute('width'));
                     done();
                 };
                 chartObj.loaded = loaded;

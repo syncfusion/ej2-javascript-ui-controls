@@ -9,7 +9,6 @@ import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec'
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { KeyModifiers, Keys } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 /**
  * Connector Docking
@@ -22,13 +21,6 @@ describe('Diagram Control', () => {
         let pathData: string = 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,' +
             '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
         beforeAll((): void => {
-
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram63' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -748,7 +740,7 @@ describe('Diagram Control', () => {
             done();
             diagram.clear();
         });
-       });
+    });
 
 
     describe('Deleting dependent connectors ', () => {
@@ -757,12 +749,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
 
             ele = createElement('div', { id: 'diagramconnectors' });
             document.body.appendChild(ele);
@@ -992,18 +978,13 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             done()
         });
-   });
+
+    });
 
     describe('Node to Node connection ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagramTargetNodeOverlap' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -1102,15 +1083,6 @@ describe('Diagram Control', () => {
                 (diagram.connectors[2] as Connector).intermediatePoints[5].x == 525 && (diagram.connectors[2] as Connector).intermediatePoints[5].y == 300).toBe(true);
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 
 });

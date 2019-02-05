@@ -2,7 +2,7 @@
  * Seat Selection sample
  */
 import { Maps, ISelectionEventArgs, Selection, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
-import { seat } from './MapData/seat';
+
 let seatInfo: HTMLDivElement = <HTMLDivElement>document.getElementById('selectedseats');
     Maps.Inject(Selection);
     interface SeatInfo {
@@ -46,7 +46,7 @@ let seatInfo: HTMLDivElement = <HTMLDivElement>document.getElementById('selected
         layers: [
             {
                 geometryType: 'Normal',
-                shapeData: seat,
+                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Seat.json'),
                 shapeSettings: {
                     colorValuePath: 'fill'
                 },

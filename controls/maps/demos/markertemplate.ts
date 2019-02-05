@@ -2,9 +2,7 @@
  * Marker template sample
  */
 import { Maps, Marker, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
-import { australia } from './MapData/australia';
 Maps.Inject(Marker);
-
 //tslint:disable:max-func-body-length
     let maps: Maps = new Maps({
         zoomSettings: {
@@ -18,7 +16,7 @@ Maps.Inject(Marker);
         },
         layers: [
             {
-                shapeData: australia,
+                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Australia.json'),
                 shapeDataPath: 'STATE_NAME',
                 markerSettings: [
                     {

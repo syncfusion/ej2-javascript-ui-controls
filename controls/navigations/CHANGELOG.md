@@ -2,13 +2,59 @@
 
 ## [Unreleased]
 
-## 17.1.1-beta (2019-01-22)
+## 16.4.52 (2019-02-05)
+
+### Sidebar
+
+#### Bug Fixes
+
+- Tabindex support has been provided.
+
+#### Breaking Changes
+
+- Sidebar with type `Auto` will always expand on initial rendering, irrespective of `enableDock` and `isOpen` properties.
 
 ### Menu
 
 #### Bug Fixes
 
 - Popup not opened properly when two menu rendered side by side issue fixed.
+
+### TreeView
+
+#### Bug Fixes
+
+- The issue with, “When disabling the TreeView parent nodes, the child nodes also appear in a disabled state” has been fixed.
+
+## 16.4.45 (2019-01-02)
+
+### Toolbar
+
+#### Bug Fixes
+
+- While resizing, Toolbar items are not moving from popup to toolbar in `extended` overflow mode issue is fixed.
+
+### Menu
+
+#### Bug Fixes
+
+- Getting custom properties from menu items in `beforeItemRender` event issue fixed.
+
+### Sidebar
+
+#### Bug Fixes
+
+- Fixed the issue with rendering the Sidebar using `isOpen` property and type `Auto`.
+
+## 16.4.44 (2018-12-24)
+
+### Accordion
+
+#### Bug Fixes
+
+- Parent accordion collapsing issue is fixed when Tab renders within it.
+
+## 16.4.40-beta (2018-12-10)
 
 ### Tab
 

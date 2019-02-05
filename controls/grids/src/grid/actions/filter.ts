@@ -944,7 +944,6 @@ export class Filter implements IAction {
 
     private updateFilter(): void {
         let cols: PredicateModel[] = this.filterSettings.columns;
-        this.actualPredicate = {};
         for (let i: number = 0; i < cols.length; i++) {
             this.column = this.parent.getColumnByField(cols[i].field) ||
                 getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns());
@@ -959,8 +958,7 @@ export class Filter implements IAction {
 
     /* tslint:disable-next-line:max-line-length */
     private refreshFilterIcon(fieldName: string, operator: string, value: string | number | Date | boolean, type?: string, predicate?: string, matchCase?: boolean, ignoreAccent?: boolean): void {
-        let obj: Object;
-        obj = {
+        this.actualPredicate[fieldName] = [{
             field: fieldName,
             predicate: predicate,
             matchCase: matchCase,
@@ -968,8 +966,7 @@ export class Filter implements IAction {
             operator: operator,
             value: value,
             type: type
-            };
-        this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
+        }];
         this.addFilteredClass(fieldName);
     }
 

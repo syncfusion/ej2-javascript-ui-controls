@@ -5,10 +5,12 @@ import { QueryBuilder , RuleModel, ColumnsModel, Validation} from './../../../sr
 import { getComponent } from '@syncfusion/ej2-base';
 import { orderData } from '../data-source';
 import { DropDownList, MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
 MultiSelect.Inject(CheckBoxSelection);
 let elem: HTMLElement;
 let dropDownObj: DropDownList;
 let multiSelectObj: MultiSelect;
+let inOperators: string [] = ['in', 'notin'];
 let filter: ColumnsModel [] = [
     { field: 'EmployeeID', label: 'EmployeeID', type: 'number', template: {
         create: () => {
@@ -17,19 +19,39 @@ let filter: ColumnsModel [] = [
             return elem;
         },
         destroy: (args: {elementId: string}) => {
-            (getComponent(document.getElementById(args.elementId), 'multiselect') as MultiSelect).destroy();
+            let multiSelect: MultiSelect = (getComponent(document.getElementById(args.elementId), 'multiselect') as MultiSelect);
+            if (multiSelect) {
+                multiSelect.destroy();
+            }
+            let textBox: NumericTextBox = (getComponent(document.getElementById(args.elementId), 'numerictextbox') as NumericTextBox);
+            if (textBox) {
+                textBox.destroy();
+            }
         },
-        write: (args: {elements: Element, values: string[]}) => {
+        write: (args: {elements: Element, values: string[] | string | number,  operator: string }) => {
+            if (inOperators.indexOf(args.operator) > -1) {
             multiSelectObj = new MultiSelect({
                 dataSource: [1, 2, 3, 4, 5],
-                value: args.values,
+                value: args.values as string [],
                 mode: 'Box',
                 change: (e: any) => {
                     qbObj.notifyChange(e.value, e.element);
                 }
             });
             multiSelectObj.appendTo('#' + args.elements.id);
+        } else {
+            let inputobj: NumericTextBox = new NumericTextBox({
+                placeholder: 'Value',
+                value: args.values as number,
+                change: (e: any) => {
+                    qbObj.notifyChange(e.value, inputobj.element);
+                }
+            });
+            inputobj.appendTo('#' + args.elements.id);
+            inputobj.value = args.values as number;
+            inputobj.dataBind()
         }
+    }
     }},
     { field: 'CustomerID', label: 'CustomerID', type: 'string', template: {
         create: () => {

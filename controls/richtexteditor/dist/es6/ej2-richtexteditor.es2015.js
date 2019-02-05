@@ -1149,8 +1149,7 @@ function setToolbarStatus(e, isPopToolbar) {
                     let result = '';
                     switch (key) {
                         case 'formats':
-                            if (isNullOrUndefined(dropDown.formatDropDown) || isPopToolbar ||
-                                (!isNullOrUndefined(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) {
+                            if (isNullOrUndefined(dropDown.formatDropDown) || isPopToolbar) {
                                 return;
                             }
                             let formatItems = e.parent.format.types;
@@ -1163,8 +1162,7 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.formatDropDown.dataBind();
                             break;
                         case 'alignments':
-                            if (isNullOrUndefined(dropDown.alignDropDown) ||
-                                (!isNullOrUndefined(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) {
+                            if (isNullOrUndefined(dropDown.alignDropDown)) {
                                 return;
                             }
                             let alignItems = alignmentItems;
@@ -1173,8 +1171,7 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.alignDropDown.dataBind();
                             break;
                         case 'fontname':
-                            if (isNullOrUndefined(dropDown.fontNameDropDown) || isPopToolbar ||
-                                (!isNullOrUndefined(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) {
+                            if (isNullOrUndefined(dropDown.fontNameDropDown) || isPopToolbar) {
                                 return;
                             }
                             let fontNameItems = e.parent.fontFamily.items;
@@ -1188,8 +1185,7 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.fontNameDropDown.dataBind();
                             break;
                         case 'fontsize':
-                            if (isNullOrUndefined(dropDown.fontSizeDropDown) ||
-                                (!isNullOrUndefined(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) {
+                            if (isNullOrUndefined(dropDown.fontSizeDropDown)) {
                                 return;
                             }
                             let fontSizeItems = e.parent.fontSize.items;
@@ -1269,18 +1265,6 @@ function parseHtml(value) {
     else {
         return document.createRange().createContextualFragment(value);
     }
-}
-function getTextNodesUnder(docElement, node) {
-    let nodes = [];
-    for (node = node.firstChild; node; node = node.nextSibling) {
-        if (node.nodeType === 3) {
-            nodes.push(node);
-        }
-        else {
-            nodes = nodes.concat(getTextNodesUnder(docElement, node));
-        }
-    }
-    return nodes;
 }
 function toObjectLowerCase(obj) {
     let convertedValue = {};
@@ -1798,7 +1782,7 @@ class DropDownButtons {
                 switch (item) {
                     case 'formats':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_Formats', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         let formatItem = this.parent.format.types.slice();
@@ -1818,7 +1802,7 @@ class DropDownButtons {
                         break;
                     case 'fontname':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_FontName', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         let fontItem = this.parent.fontFamily.items.slice();
@@ -1838,7 +1822,7 @@ class DropDownButtons {
                         break;
                     case 'fontsize':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_FontSize', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         let fontsize = this.parent.fontSize.items.slice();
@@ -1857,7 +1841,7 @@ class DropDownButtons {
                         break;
                     case 'alignments':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_Alignments', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         this.alignDropDown = this.toolbarRenderer.renderDropDownButton({
@@ -2694,24 +2678,6 @@ class Toolbar$1 {
      * @hidden
      */
     onPropertyChanged(e) {
-        if (!isNullOrUndefined(e.newProp.inlineMode)) {
-            for (let prop of Object.keys(e.newProp.inlineMode)) {
-                switch (prop) {
-                    case 'enable':
-                        if (e.newProp.inlineMode.enable) {
-                            this.parent.off(scroll, this.scrollHandler);
-                            this.parent.off(bindOnEnd, this.toolbarBindEvent);
-                            this.parent.off(toolbarUpdated, this.updateToolbarStatus);
-                        }
-                        else {
-                            this.parent.on(scroll, this.scrollHandler, this);
-                            this.parent.on(bindOnEnd, this.toolbarBindEvent, this);
-                            this.parent.on(toolbarUpdated, this.updateToolbarStatus, this);
-                        }
-                        break;
-                }
-            }
-        }
         if (e.module !== this.getModuleName()) {
             return;
         }
@@ -3398,29 +3364,8 @@ class BaseQuickToolbar {
             return;
         }
         this.parent.on(destroy, this.destroy, this);
-        this.parent.on(modelChanged, this.onPropertyChanged, this);
         if (this.parent.inlineMode.enable) {
             this.parent.on(toolbarUpdated, this.updateStatus, this);
-        }
-    }
-    /**
-     * Called internally if any of the property value changed.
-     * @hidden
-     */
-    onPropertyChanged(e) {
-        if (!isNullOrUndefined(e.newProp.inlineMode)) {
-            for (let prop of Object.keys(e.newProp.inlineMode)) {
-                switch (prop) {
-                    case 'enable':
-                        if (e.newProp.inlineMode.enable) {
-                            this.parent.on(toolbarUpdated, this.updateStatus, this);
-                        }
-                        else {
-                            this.parent.off(toolbarUpdated, this.updateStatus);
-                        }
-                        break;
-                }
-            }
         }
     }
     removeEventListener() {
@@ -3428,7 +3373,6 @@ class BaseQuickToolbar {
             return;
         }
         this.parent.off(destroy, this.destroy);
-        this.parent.off(modelChanged, this.onPropertyChanged);
         if (this.parent.inlineMode.enable) {
             this.parent.off(toolbarUpdated, this.updateStatus);
         }
@@ -3614,8 +3558,6 @@ class QuickToolbar {
                 this.showInlineQTBar(this.offsetX, this.offsetY, target);
             }
             else {
-                let closestAnchor = closest(target, 'a');
-                target = closestAnchor ? closestAnchor : target;
                 if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
                     if (this.parent.inlineMode.onSelection && range.collapsed) {
                         return;
@@ -3790,10 +3732,10 @@ class QuickToolbar {
             removeClass([this.parent.element], [CLS_INLINE]);
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
-        }
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            addClass([this.parent.element], [CLS_INLINE]);
-            this.wireInlineQTBarEvents();
+            if (this.parent.inlineMode.enable && !Browser.isDevice) {
+                addClass([this.parent.element], [CLS_INLINE]);
+                this.wireInlineQTBarEvents();
+            }
         }
     }
     /**
@@ -5419,8 +5361,8 @@ class MDTable {
      * Constructor for creating the Formats plugin
      * @hidden
      */
-    constructor(options) {
-        extend(this, this, options, true);
+    constructor(parent) {
+        this.parent = parent;
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
     }
@@ -5434,25 +5376,26 @@ class MDTable {
         this.removeEventListener();
     }
     createTable(e) {
-        this.element = this.parent.element;
-        let start = this.element.selectionStart;
-        let end = this.element.selectionEnd;
+        let dummy = document;
+        let textArea = this.parent.element;
+        textArea.focus();
+        let start = textArea.selectionStart;
+        let end = textArea.selectionEnd;
+        let end3;
+        let text = this.selection.getSelectedText(textArea);
+        let end1;
+        let textEmpty;
         let textAreaInitial;
-        textAreaInitial = this.element.value;
-        this.locale = e;
-        this.selection.save(start, end);
-        this.restore(this.element.selectionStart, this.element.selectionEnd, e);
-        this.insertTable(start, end, textAreaInitial, e);
-    }
-    getTable() {
-        let table = '';
-        table += this.textNonEmpty();
-        table += this.tableHeader(this.locale);
-        table += this.tableCell(this.locale);
-        return table;
-    }
-    tableHeader(e) {
-        let text = '';
+        if (start !== end) { // It will check start !== end and will clear the text selected.
+            textEmpty = text.replace(text, '');
+            end1 = end;
+            end3 = start;
+            text = textEmpty;
+        }
+        else {
+            end3 = end;
+        }
+        text += this.textUnEmpty(start, end3, dummy, text, end1, textArea);
         for (let i = 1; i <= 2; i++) {
             text += '|';
             for (let j = 1; j <= 2; j++) {
@@ -5463,117 +5406,251 @@ class MDTable {
                     text += '---------|';
                 }
             }
-            text += this.insertLine();
+            let dummyElement = dummy.createElement('div');
+            dummyElement.innerHTML = '\n';
+            let text1 = dummyElement.textContent;
+            text += text1;
         }
-        return text;
-    }
-    tableCell(e) {
-        let text = '';
         for (let i = 1; i <= 2; i++) {
             text += '|';
             for (let j = 1; j <= 2; j++) {
                 text += e.item.colText + ' ' + this.convertToLetters(i) + j + '|';
             }
-            text += this.insertLine();
+            let dummyElement = dummy.createElement('div');
+            dummyElement.innerHTML = '\n';
+            let text1 = dummyElement.textContent;
+            text += text1;
         }
-        text += this.insertLine();
-        return text;
-    }
-    insertLine() {
-        let dummyElement = document.createElement('div');
-        dummyElement.innerHTML = '\n';
-        return dummyElement.textContent;
-    }
-    insertTable(start, end, textAreaInitial, e) {
-        let parentText = this.selection.getSelectedParentPoints(this.element);
-        let lastLineSplit = parentText[parentText.length - 1].text.split(' ', 2);
-        let syntaxArr = this.getFormatTag();
-        if (lastLineSplit.length < 2) {
-            this.element.value = this.updateValue(this.getTable());
-            this.makeSelection(textAreaInitial, start, end);
+        text = this.textUnEmpty(start, end3, dummy, text, end1, textArea);
+        textAreaInitial = textArea.value;
+        if (start !== end) {
+            this.startNotEqualEnd(start, end, text, textArea, textAreaInitial, e);
+        }
+        else if (start === 0 && end === 0) {
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+            if (textAreaInitial.length) {
+                this.restore(textArea, start + 3, end + 12, e);
+            }
+            else {
+                this.restore(textArea, start + 1, end + 10, e);
+            }
         }
         else {
-            if (this.ensureFormatApply(parentText[parentText.length - 1].text)) {
-                this.checkValid(start, end, this.getTable(), textAreaInitial, e, lastLineSplit, parentText, syntaxArr);
+            this.startEqualEnd(start, end, text, textArea, textAreaInitial, e);
+        }
+    }
+    startEqualEnd(start, end, text, textArea, textAreaInitial, e) {
+        let parentText = this.selection.getSelectedParentPoints(textArea);
+        let selectedLine = parentText.length - 1;
+        let formatSplit;
+        formatSplit = parentText[selectedLine].text.split(' ', 2);
+        let textApplyFormat;
+        let parentTextLength;
+        if (formatSplit.length > 1) {
+            parentTextLength = formatSplit[0].length + formatSplit[1].length + 1;
+        }
+        textApplyFormat = textArea.value.substring(end, textArea.value.length);
+        if (start === parentTextLength) {
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+            this.callRestore(textArea, start, end, e, textAreaInitial);
+        }
+        else if (textArea.value[start] === '2' && textArea.value[start + 1] === '.') {
+            text = '';
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        }
+        else if (!(textArea.value[start] === '#' || textArea.value[start - 1] === '#' ||
+            textArea.value[start - 2] === '#' || textArea.value[start] === '2.' ||
+            textArea.value[start - 1] === '2.' || textArea.value[start - 2] === '2.' || (textArea.value[start - 1] === '2' &&
+            textArea.value[start] === '.') || (textArea.value[start - 1] === '.' && textArea.value[start] === ' ') ||
+            (textArea.value[start - 1] === ' ' &&
+                textArea.value[start - 2] === '.' && textArea.value[start - 3] === '2') ||
+            textArea.value[start] === '>' || textArea.value[start - 1] === '>' || textArea.value[start - 2] === '>' ||
+            textArea.value[start] === '+' || textArea.value[start - 1] === '+' || textArea.value[start - 2] === '+')) {
+            if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
+                parentText[0].text.match('2.'))) {
+                formatSplit[0] = '';
             }
-            else {
-                this.element.value = this.updateValue(this.getTable());
-                this.makeSelection(textAreaInitial, start, end);
+            text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+            textArea.value = textArea.value.substr(0, start)
+                + text;
+            this.callRestore(textArea, start, end, e, textAreaInitial);
+        }
+        else {
+            text = '';
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        }
+    }
+    startNotEqualEnd(start, end, text, textArea, textAreaInitial, e) {
+        let parentText = this.selection.getSelectedParentPoints(textArea);
+        let textApplyFormat;
+        textApplyFormat = textArea.value.substring(end, textArea.value.length);
+        if (parentText.length < 2) {
+            this.singleLine(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
+        }
+        else {
+            this.multipleLines(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
+        }
+    }
+    singleLine(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e) {
+        let formatSplit;
+        formatSplit = parentText[0].text.split(' ', 2);
+        let selectedText;
+        selectedText = this.selection.getSelectedText(textArea);
+        let selectedTextSplit;
+        selectedTextSplit = selectedText.split(' ', 2);
+        if (selectedTextSplit.length === 2) {
+            this.selectedSplitText(start, end, text, textArea, selectedText, parentText, formatSplit, textApplyFormat, e, textAreaInitial, selectedTextSplit);
+        }
+        else {
+            if (textArea.value[start - 1] === ' ' && (textArea.value[start - 2] === '.' || textArea.value[start - 2] === '#' ||
+                textArea.value[start - 2] === '>' || textArea.value[start - 2] === '+')) {
+                text = '';
+                start += selectedText.length;
+                textArea.value = textArea.value.substr(0, start)
+                    + text + textArea.value.substr(end, textArea.value.length);
             }
-        }
-        this.restore(this.element.selectionStart, this.element.selectionEnd, e);
-    }
-    makeSelection(textAreaInitial, start, end) {
-        end = start + (textAreaInitial.length > 0 ? 12 : 10); //end is added 12 or 10 because to make the table heading selected
-        start += textAreaInitial.length > 0 ? 3 : 1; // Start is added 3 or 1 because new lines are added when inserting table
-        this.selection.setSelection(this.element, start, end);
-    }
-    getFormatTag() {
-        let syntaxFormatKey = Object.keys(this.syntaxTag.Formats);
-        let syntaxListKey = Object.keys(this.syntaxTag.List);
-        let syntaxArr = [];
-        for (let i = 0; i < syntaxFormatKey.length; i++) {
-            syntaxArr.push(this.syntaxTag.Formats[syntaxFormatKey[i]]);
-        }
-        for (let j = 0; j < syntaxListKey.length; j++) {
-            syntaxArr.push(this.syntaxTag.List[syntaxListKey[j]]);
-        }
-        return syntaxArr;
-    }
-    ensureFormatApply(line) {
-        let formatTags = this.getFormatTag();
-        let formatSplitZero = line.split(' ', 2)[0] + ' ';
-        for (let i = 0; i < formatTags.length; i++) {
-            if (formatSplitZero === formatTags[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
-    ensureStartValid(firstLine, parentText) {
-        let firstLineSplit = parentText[0].text.split(' ', 2);
-        for (let i = firstLine + 1; i <= firstLine + firstLineSplit[0].length + 1; i++) {
-            if (this.element.selectionStart === i || this.element.selectionEnd === i) {
-                return false;
-            }
-        }
-        return true;
-    }
-    ensureEndValid(lastLine, formatSplitLength) {
-        for (let i = lastLine + 1; i <= lastLine + formatSplitLength + 1; i++) {
-            if (this.element.selectionEnd === i) {
-                return false;
-            }
-        }
-        return true;
-    }
-    updateValueWithFormat(formatSplit, text) {
-        let textApplyFormat = this.element.value.substring(this.element.selectionEnd, this.element.value.length);
-        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-        return this.element.value.substr(0, this.element.selectionStart) + text;
-    }
-    updateValue(text) {
-        return this.element.value.substr(0, this.element.selectionStart) + text +
-            this.element.value.substr(this.element.selectionEnd, this.element.value.length);
-    }
-    checkValid(start, end, text, textAreaInitial, e, formatSplit, parentText, syntaxArr) {
-        if (this.ensureStartValid(parentText[0].start, parentText) &&
-            this.ensureEndValid(parentText[parentText.length - 1].start, formatSplit[0].length)) {
-            if (start === parentText[0].start) {
-                if (start !== end && end !== (parentText[parentText.length - 1].end - 1)) {
-                    this.element.value = this.updateValueWithFormat(formatSplit, text);
+            else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
+                textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
+                if (textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '2' ||
+                    textArea.value[end - 1] === '#' || (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') ||
+                    (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
+                        textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+'))) {
+                    text = '';
+                    start += selectedText.length;
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
                 }
                 else {
-                    this.element.value = this.updateValue(text);
+                    if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
+                        parentText[0].text.match('2.'))) {
+                        formatSplit[0] = '';
+                    }
+                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                    textArea.value = textArea.value.substr(0, start)
+                        + text;
+                    this.callRestore(textArea, start, end, e, textAreaInitial);
                 }
             }
-            else if (end === parentText[parentText.length - 1].end - 1) {
-                this.element.value = this.updateValue(text);
+            else {
+                if (end === formatSplit[0].length + formatSplit[1].length + 1) {
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
+                    this.callRestore(textArea, start, end, e, textAreaInitial);
+                }
+                else {
+                    if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
+                        parentText[0].text.match('2.'))) {
+                        formatSplit[0] = '';
+                    }
+                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                    textArea.value = textArea.value.substr(0, start)
+                        + text;
+                    this.callRestore(textArea, start, end, e, textAreaInitial);
+                }
+            }
+        }
+    }
+    selectedSplitText(start, end, text, textArea, selectedText, parentText, formatSplit, textApplyFormat, e, textAreaInitial, selectedTextSplit) {
+        if (selectedTextSplit[0] === '') {
+            if (textArea.value[start - 1] === '#' || textArea.value[start - 1] === '.' ||
+                textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+') {
+                text = '';
+                start += selectedText.length;
+                textArea.value = textArea.value.substr(0, start)
+                    + text + textArea.value.substr(end, textArea.value.length);
             }
             else {
-                this.element.value = this.updateValueWithFormat(formatSplit, text);
+                if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
+                    parentText[0].text.match('2.'))) {
+                    formatSplit[0] = '';
+                }
+                text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                textArea.value = textArea.value.substr(0, start)
+                    + text;
+                this.callRestore(textArea, start, end, e, textAreaInitial);
             }
-            this.makeSelection(textAreaInitial, start, end);
+        }
+        else {
+            if (textArea.value[start] === '>' || textArea.value[start] === '+' || textArea.value[start] === '#' ||
+                textArea.value[start] === '2' || (textArea.value[start] === '.' && textArea.value[start - 1] === '2')) {
+                if (selectedText.length === (formatSplit[0].length + formatSplit[1].length + 1)) {
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
+                }
+                else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
+                    textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
+                    if (!(textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '#' ||
+                        (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') || (textArea.value[end - 1] === ' ' &&
+                        (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' || textArea.value[end - 2] === '>' ||
+                            textArea.value[end - 2] === '+')))) {
+                        if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
+                            parentText[0].text.match('2.'))) {
+                            formatSplit[0] = '';
+                        }
+                        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+                        textArea.value = textArea.value.substr(0, start)
+                            + text;
+                        this.callRestore(textArea, start, end, e, textAreaInitial);
+                    }
+                    else {
+                        text = '';
+                        start += selectedText.length;
+                        textArea.value = textArea.value.substr(0, start)
+                            + text + textArea.value.substr(end, textArea.value.length);
+                    }
+                }
+                else {
+                    text = '';
+                    start += selectedText.length;
+                    textArea.value = textArea.value.substr(0, start)
+                        + text + textArea.value.substr(end, textArea.value.length);
+                }
+            }
+        }
+    }
+    multipleLines(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e) {
+        let lastSelectedLineIndex = parentText.length - 1;
+        let formatLastLine;
+        formatLastLine = parentText[lastSelectedLineIndex].text.split(' ', 2);
+        let formatFirstLine;
+        formatFirstLine = parentText[0].text.split(' ', 2);
+        let selectedText;
+        selectedText = this.selection.getSelectedText(textArea);
+        if (textArea.value[start - 1] === '#' || (textArea.value[start - 1] === '.' && textArea.value[start - 2] === '2') ||
+            textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+' ||
+            textArea.value[start - 1] === '2' || (textArea.value[start - 1] === ' ' &&
+            (textArea.value[start - 2] === '#' || textArea.value[start - 2] === '>' ||
+                textArea.value[start - 2] === '+' || textArea.value[start - 2] === '.'))) {
+            text = '';
+            start += selectedText.length;
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        }
+        else if (textArea.value[end] === '#' || textArea.value[end] === '>' || textArea.value[end] === '+' ||
+            textArea.value[end] === '2' || (textArea.value[end] === '.' && textArea.value[end - 1] === '2') ||
+            (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
+                textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+')) || (textArea.value[end] === ' ' &&
+            (textArea.value[end - 1] === '#' || textArea.value[end - 1] === '>' || textArea.value[end - 1] === '+' ||
+                textArea.value[end - 1] === '.'))) {
+            text = '';
+            start += selectedText.length;
+            textArea.value = textArea.value.substr(0, start)
+                + text + textArea.value.substr(end, textArea.value.length);
+        }
+        else {
+            if (!(parentText[lastSelectedLineIndex].text.match('#') ||
+                parentText[lastSelectedLineIndex].text.match('>') ||
+                parentText[lastSelectedLineIndex].text.match('2.'))) {
+                formatLastLine[0] = '';
+            }
+            text += textApplyFormat.replace(textApplyFormat, (formatLastLine[0] + ' ' + textApplyFormat));
+            textArea.value = textArea.value.substr(0, start)
+                + text;
+            this.callRestore(textArea, start, end, e, textAreaInitial);
         }
     }
     convertToLetters(rowNumber) {
@@ -5586,29 +5663,42 @@ class MDTable {
         } while (rowNumber > 0);
         return letters;
     }
-    textNonEmpty() {
-        let emptyText = '';
-        if (this.isCursorBased() || this.isSelectionBased()) {
-            if (this.element.value.length > 0) {
-                emptyText += this.insertLine();
-                emptyText += this.insertLine(); // to append two new line when textarea having content.               
+    textUnEmpty(start, end, dummy, text, end1, textArea) {
+        if (start === end && ((start !== 0 && end !== 0) || end1 !== 0)) {
+            let dummyElement = dummy.createElement('div');
+            if (!(text.length > 0)) {
+                if (textArea.value.length > 0) {
+                    dummyElement.innerHTML = '\n\n';
+                }
+                else {
+                    dummyElement.innerHTML = '';
+                }
             }
+            else {
+                dummyElement.innerHTML = '\n';
+            }
+            let text1 = dummyElement.textContent;
+            return text += text1;
         }
-        return emptyText;
+        else {
+            return text;
+        }
     }
-    isCursorBased() {
-        return this.element.selectionStart === this.element.selectionEnd;
+    callRestore(textArea, start, end, e, textAreaInitial) {
+        if (textAreaInitial.length) {
+            this.restore(textArea, start + 3, start + 12, e);
+        }
+        else {
+            this.restore(textArea, start + 1, end + 10, e);
+        }
     }
-    isSelectionBased() {
-        return this.element.selectionStart !== this.element.selectionEnd;
-    }
-    restore(start, end, event) {
+    restore(textArea, start, end, event) {
         this.selection.save(start, end);
-        this.selection.restore(this.element);
+        this.selection.restore(textArea);
         if (event && event.callBack) {
             event.callBack({
                 requestType: event.subCommand,
-                selectedText: this.selection.getSelectedText(this.element),
+                selectedText: this.selection.getSelectedText(textArea),
                 editorMode: 'Markdown',
                 event: event.event
             });
@@ -5737,7 +5827,7 @@ class MarkdownParser {
         this.undoRedoManager = new UndoRedoCommands(this, options.options);
         this.mdSelectionFormats = new MDSelectionFormats({ parent: this, syntax: this.selectionTags });
         this.linkObj = new MDLink(this);
-        this.tableObj = new MDTable({ parent: this, syntaxTag: ({ Formats: this.formatTags, List: this.listTags }) });
+        this.tableObj = new MDTable(this);
         this.clearObj = new ClearFormat(this);
         this.wireEvents();
     }
@@ -5841,16 +5931,17 @@ class MarkdownRender {
      */
     constructor(parent) {
         this.parent = parent;
+        this.rteID = this.parent.element.id;
     }
     /**
      * The function is used to render RichTextEditor content div
      */
     renderPanel() {
         let rteObj = this.parent;
-        let div = this.parent.createElement('div', { id: this.parent.getID() + '_view', className: 'e-rte-content' });
+        let div = this.parent.createElement('div', { id: this.rteID + '_view', className: 'e-rte-content' });
         this.editableElement = this.parent.createElement('textarea', {
             className: 'e-content',
-            id: this.parent.getID() + '_editable-content'
+            id: this.rteID + '_editable-content'
         });
         div.appendChild(this.editableElement);
         this.setPanel(div);
@@ -7537,12 +7628,9 @@ class LinkCommand {
         }
     }
     createLink(e) {
-        let closestAnchor = (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) &&
-            closest(e.item.selectParent[0], 'a');
-        closestAnchor = !isNullOrUndefined(closestAnchor) ? closestAnchor :
-            (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) : null;
-        if (!isNullOrUndefined(closestAnchor) && closestAnchor.tagName === 'A') {
-            let anchorEle = closestAnchor;
+        if (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0 &&
+            e.item.selectParent[0].tagName === 'A') {
+            let anchorEle = e.item.selectParent[0];
             anchorEle.setAttribute('href', e.item.url);
             anchorEle.setAttribute('title', e.item.title);
             anchorEle.innerHTML = e.item.text;
@@ -7553,7 +7641,7 @@ class LinkCommand {
             let anchor = createElement('a', {
                 className: 'e-rte-anchor', attrs: {
                     href: e.item.url,
-                    title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
+                    title: e.item.title === '' ? e.item.url : e.item.title
                 }
             });
             if (!isNullOrUndefined(e.item.target)) {
@@ -7596,20 +7684,16 @@ class LinkCommand {
         this.callBack(e);
     }
     removeLink(e) {
-        this.parent.domNode.setMarker(e.item.selection);
-        let closestAnchor = closest(e.item.selectParent[0], 'a');
-        let selectParent = closestAnchor ? closestAnchor : e.item.selectParent[0];
-        let parent = selectParent.parentNode;
+        let parent = e.item.selectParent[0].parentNode;
         let child = [];
-        for (; selectParent.firstChild; null) {
-            child.push(parent.insertBefore(selectParent.firstChild, selectParent));
+        for (; e.item.selectParent[0].firstChild; null) {
+            child.push(parent.insertBefore(e.item.selectParent[0].firstChild, e.item.selectParent[0]));
         }
-        parent.removeChild(selectParent);
+        parent.removeChild(e.item.selectParent[0]);
         if (child && child.length === 1) {
             e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
             e.item.selection.endContainer = e.item.selection.startContainer;
         }
-        e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         e.item.selection.restore();
         this.callBack(e);
     }
@@ -10029,8 +10113,8 @@ class HtmlEditor {
      * @private
      */
     selectAll() {
-        let nodes = getTextNodesUnder(this.parent.contentModule.getDocument(), this.parent.contentModule.getEditPanel());
-        this.parent.formatter.editorManager.nodeSelection.setSelectionText(this.parent.contentModule.getDocument(), nodes[0], nodes[nodes.length - 1], 0, nodes[nodes.length - 1].textContent.length);
+        this.parent.contentModule.getEditPanel().focus();
+        this.parent.contentModule.getDocument().execCommand('selectAll', false, null);
     }
     /**
      * For selecting all content in RTE
@@ -10231,7 +10315,6 @@ class Link {
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target = args.target;
-            target = this.getAnchorNode(target);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             let isPopupOpen = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && !target.contains(target.querySelector('img'))) {
@@ -10461,25 +10544,20 @@ class Link {
         this.hideLinkQuickToolbar();
     }
     openLink(e) {
-        let selectParentEle = this.getAnchorNode(e.selectParent[0]);
-        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
+        if (e.selectParent[0].classList.contains('e-rte-anchor') || e.selectParent[0].tagName === 'A') {
             this.parent.formatter.process(this.parent, e.args, e.args, {
-                url: selectParentEle.href,
-                target: selectParentEle.target === '' ? '_self' : '_blank', selectNode: e.selectNode,
+                url: e.selectParent[0].href,
+                target: e.selectParent[0].target === '' ? '_self' : '_blank', selectNode: e.selectNode,
                 subCommand: e.args.item.subCommand
             });
         }
     }
-    getAnchorNode(element) {
-        let selectParent = closest(element, 'a');
-        return (selectParent ? selectParent : element);
-    }
     editLink(e) {
-        let selectParentEle = this.getAnchorNode(e.selectParent[0]);
-        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
+        if (e.selectParent[0].classList.contains('e-rte-anchor') || e.selectParent[0].tagName === 'A') {
+            let selectParentEle = e.selectParent[0];
             let linkUpdate = this.i10n.getConstant('dialogUpdate');
             let inputDetails = {
-                url: selectParentEle.href, text: selectParentEle.innerText,
+                url: selectParentEle.href, text: selectParentEle.innerHTML,
                 title: selectParentEle.title, target: selectParentEle.target,
                 header: 'Edit Link', btnText: linkUpdate
             };
@@ -10550,7 +10628,6 @@ class Image {
         this.parent.on(dropDownSelect, this.alignmentSelect, this);
         this.parent.on(initialEnd, this.afterRender, this);
         this.parent.on(paste, this.imagePaste, this);
-        this.parent.on(destroy, this.removeEventListener, this);
     }
     removeEventListener() {
         if (this.parent.isDestroyed) {
@@ -10570,7 +10647,6 @@ class Image {
         this.parent.off(dropDownSelect, this.alignmentSelect);
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(paste, this.imagePaste);
-        this.parent.off(destroy, this.removeEventListener);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(checkUndo, this.undoStack);
@@ -13614,9 +13690,6 @@ let RichTextEditor = class RichTextEditor extends Component {
          */
         this.isBlur = true;
         this.needsID = true;
-        this.onBlurHandler = this.blurHandler.bind(this);
-        this.onFocusHandler = this.focusHandler.bind(this);
-        this.onResizeHandler = this.resizeHandler.bind(this);
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -13945,10 +14018,6 @@ let RichTextEditor = class RichTextEditor extends Component {
     destroy() {
         this.notify(destroy, {});
         this.destroyDependentModules();
-        if (!isNullOrUndefined(this.timeInterval)) {
-            clearInterval(this.timeInterval);
-            this.timeInterval = null;
-        }
         this.unWireEvents();
         if (this.originalElement.tagName === 'TEXTAREA') {
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
@@ -14060,10 +14129,6 @@ let RichTextEditor = class RichTextEditor extends Component {
                     break;
                 case 'width':
                     this.setWidth(newProp[prop]);
-                    if (this.toolbarSettings.enable) {
-                        this.toolbarModule.refreshToolbarOverflow();
-                        this.resizeHandler();
-                    }
                     break;
                 case 'height':
                     this.setHeight(newProp[prop]);
@@ -14550,11 +14615,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
     }
     resizeHandler() {
-        let isExpand = false;
-        if (this.toolbarSettings.enable && !this.inlineMode.enable) {
-            this.toolbarModule.refreshToolbarOverflow();
-            isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(CLS_EXPAND_OPEN);
-        }
+        let isExpand = (this.toolbarSettings.type === ToolbarType.Expand) ? true : false;
         this.setContentHeight('', isExpand);
     }
     scrollHandler(e) {
@@ -14637,7 +14698,6 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.trigger('blur', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
             if (!isNullOrUndefined(this.timeInterval)) {
                 clearInterval(this.timeInterval);
-                this.timeInterval = null;
             }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         }
@@ -14699,8 +14759,8 @@ let RichTextEditor = class RichTextEditor extends Component {
         element.style.overflow = 'hidden';
     }
     wireEvents() {
-        this.element.addEventListener('focusin', this.onFocusHandler, true);
-        this.element.addEventListener('focusout', this.onBlurHandler, true);
+        this.element.addEventListener('focusin', this.focusHandler.bind(this), true);
+        this.element.addEventListener('focusout', this.blurHandler.bind(this), true);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -14719,7 +14779,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
         this.formatter.editorManager.observer.on(KEY_DOWN_HANDLER, this.editorKeyDown, this);
-        this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
+        window.addEventListener('resize', this.resizeHandler.bind(this), true);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
@@ -14749,8 +14809,8 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
     }
     unWireEvents() {
-        this.element.removeEventListener('focusin', this.onFocusHandler, true);
-        this.element.removeEventListener('focusout', this.onBlurHandler, true);
+        this.element.removeEventListener('focusin', this.focusHandler.bind(this), false);
+        this.element.removeEventListener('focusout', this.blurHandler.bind(this), false);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -14771,7 +14831,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.formatter) {
             this.formatter.editorManager.observer.off(KEY_DOWN_HANDLER, this.editorKeyDown);
         }
-        this.element.ownerDocument.defaultView.removeEventListener('resize', this.onResizeHandler, true);
+        window.removeEventListener('resize', this.resizeHandler.bind(this), false);
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);

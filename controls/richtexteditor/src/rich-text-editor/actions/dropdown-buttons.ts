@@ -64,7 +64,7 @@ export class DropDownButtons {
                 switch (item) {
                     case 'formats':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_Formats', tbElement);
-                        if (isNullOrUndefined(targetElement) ||  targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+                        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
                         let formatItem: IDropDownItemModel[] = this.parent.format.types.slice();
                         formatItem.forEach((item: IDropDownItemModel): void => {
                             Object.defineProperties((item as object), {
@@ -85,7 +85,7 @@ export class DropDownButtons {
                         break;
                     case 'fontname':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_FontName', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+                        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
                         let fontItem: IDropDownItemModel[] = this.parent.fontFamily.items.slice();
                         fontItem.forEach((item: IDropDownItemModel): void => {
                             Object.defineProperties((item as object), {
@@ -106,7 +106,7 @@ export class DropDownButtons {
                         break;
                     case 'fontsize':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_FontSize', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+                        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
                         let fontsize: IDropDownItemModel[] = this.parent.fontSize.items.slice();
                         fontsize.forEach((item: IDropDownItemModel): void => {
                             Object.defineProperties((item as object), {
@@ -127,7 +127,7 @@ export class DropDownButtons {
                         break;
                     case 'alignments':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_Alignments', tbElement);
-                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+                        if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
                         this.alignDropDown = this.toolbarRenderer.renderDropDownButton({
                             iconCss: 'e-justify-left e-icons',
                             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS,

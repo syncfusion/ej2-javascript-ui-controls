@@ -45,33 +45,37 @@ export class Text {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         this.textProperties = wholeDiv;
         let element: string = 'font_properties';
-        let textDiv: HTMLElement = this.createDiv(element + '_text', wholeDiv, 'padding:10px;border-bottom:0.5px solid #E0E0E0');
+        let textDiv: HTMLElement = this.createDiv(element + '_text', wholeDiv);
+        classList(textDiv, ['e-de-cntr-pane-padding', 'e-de-prop-separator-line'], []);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.innerHTML = this.localObj.getConstant('Text');
         textDiv.appendChild(label);
         let fontDiv: HTMLElement = this.createDiv(element + '_sizeStyle', textDiv, 'display:inline-flex;');
-        fontDiv.classList.add('e-de-ctnr-segment');
-        let fontFamilyDivMargin: string;
+        classList(fontDiv, ['e-de-ctnr-segment'], []);
         if (isRtl) {
-            fontFamilyDivMargin = 'margin-left:9px;';
-        } else {
-            fontFamilyDivMargin = 'margin-right:9px;';
+            classList(fontDiv, ['e-de-ctnr-segment-rtl'], []);
         }
-        let fontFamilyDiv: HTMLElement = this.createDiv(element + '_fontFamilyDiv', fontDiv, fontFamilyDivMargin);
+        let fontFamilyDiv: HTMLElement = this.createDiv(element + '_fontFamilyDiv', fontDiv);
         let fontFamily: HTMLElement = createElement('input', {
             id: element + '_fontFamily',
             /* tslint:disable-next-line:max-line-length */
-            styles: 'font-size: 12px;letter-spacing: 0.05px;padding-left:10px;', className: 'e-prop-font-style'
+            styles: 'font-size: 12px;letter-spacing: 0.05px;', className: 'e-prop-font-style'
         });
         fontFamilyDiv.appendChild(fontFamily);
+        classList(fontFamilyDiv, ['e-de-panel-left-width'], []);
         this.createDropDownListForFamily(fontFamily);
         let fontSizeDiv: HTMLElement = this.createDiv(element + '_fontSizeDiv', fontDiv);
+        let divClassName: string = 'e-de-ctnr-group-btn e-de-char-fmt-btn-left e-btn-group';
+        if (isRtl) {
+            divClassName = 'e-rtl ' + divClassName;
+        }
         let fontSize: HTMLInputElement = createElement('input', {
             id: element + '_fontSize',
-            styles: 'font-size: 12px;letter-spacing: 0.05px;padding-left:10px', innerHTML: 'type:number',
+            styles: 'font-size: 12px;letter-spacing: 0.05px;', innerHTML: 'type:number',
             className: 'e-prop-font-style',
         }) as HTMLInputElement;
         fontSizeDiv.appendChild(fontSize);
+        classList(fontSizeDiv, ['e-de-panel-right-width'], []);
         this.createDropDownListForSize(fontSize);
 
         let propertiesDiv: HTMLElement = createElement('div', {
@@ -79,10 +83,13 @@ export class Text {
             styles: 'display:inline-flex;',
             className: 'e-de-ctnr-segment'
         });
+        if (isRtl) {
+            classList(propertiesDiv, ['e-de-ctnr-segment-rtl'], []);
+        }
         textDiv.appendChild(propertiesDiv);
         let leftDiv: HTMLElement = createElement('div', {
             id: element + '_leftDiv',
-            className: 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group', styles: 'display:inline-flex;'
+            className: divClassName, styles: 'display:inline-flex;'
         });
         propertiesDiv.appendChild(leftDiv);
         // tslint:disable-next-line:max-line-length
@@ -93,14 +100,12 @@ export class Text {
         this.underline = this.createButtonTemplate(element + '_underline', 'e-de-ctnr-underline e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Underline (Ctrl+U)'));
         // tslint:disable-next-line:max-line-length
         this.strikethrough = this.createButtonTemplate(element + '_strikethrough', 'e-de-ctnr-strikethrough e-icons', leftDiv, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Strikethrough'));
-        let rightDivMargin: string;
+        divClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
         if (isRtl) {
-            rightDivMargin = 'margin-right:8px';
-        } else {
-            rightDivMargin = 'margin-left:8px';
+            divClassName = 'e-rtl ' + divClassName;
         }
         // tslint:disable-next-line:max-line-length
-        let rightDiv: HTMLElement = createElement('div', { id: element + '_rightDiv', className: 'e-de-ctnr-group-btn e-de-char-fmt-btn e-btn-group', styles: 'display:inline-flex;' + rightDivMargin });
+        let rightDiv: HTMLElement = createElement('div', { id: element + '_rightDiv', className: divClassName, styles: 'display:inline-flex;' });
         propertiesDiv.appendChild(rightDiv);
         // tslint:disable-next-line:max-line-length
         this.superscript = this.createButtonTemplate(element + '_superscript', 'e-de-ctnr-superscript e-icons', rightDiv, 'e-de-prop-font-button', '38.5', this.localObj.getConstant('Superscript (Ctrl+Shift++)'));
@@ -108,6 +113,9 @@ export class Text {
         this.subscript = this.createButtonTemplate(element + '_subscript', 'e-de-ctnr-subscript e-icons', rightDiv, 'e-de-prop-font-last-button', '38.5', this.localObj.getConstant('Subscript (Ctrl+=)'));
         // tslint:disable-next-line:max-line-length
         let leftDiv2: HTMLElement = createElement('div', { id: element + '_color', className: 'e-de-font-clr-picker e-de-ctnr-group-btn', styles: 'display:inline-flex;' });
+        if (isRtl) {
+            classList(leftDiv2, ['e-rtl'], []);
+        }
         textDiv.appendChild(leftDiv2);
         // tslint:disable-next-line:max-line-length
         this.fontColor = this.createFontColorPicker(element + '_textColor', 40.5, leftDiv2, this.localObj.getConstant('Font color'));
@@ -123,10 +131,11 @@ export class Text {
     private createHighlightColorSplitButton = (id: string, width: number, divElement: HTMLElement, toolTipText: string): SplitButton => {
         let buttonElement: HTMLButtonElement = createElement('button', { id: id }) as HTMLButtonElement;
         // buttonElement.style.width = width + 'px';
-        buttonElement.style.padding = '1px';
+        // buttonElement.style.padding = '1px';
         // buttonElement.style.height = 30 + 'px';
         divElement.appendChild(buttonElement);
         let hgltSplitObj: SplitButton = new SplitButton({
+            cssClass: 'e-de-btn-hghlclr',
             iconCss: 'e-de-ctnr-hglt-color',
             target: this.highlightColorElement, close: this.closePopup, beforeOpen: this.openPopup, enableRtl: this.isRtl
         });
@@ -145,7 +154,11 @@ export class Text {
         this.highlightColorElement.style.display = 'none';
     }
     private initializeHighlightColorElement(): void {
-        this.highlightColorElement = createElement('div', { id: 'highlight_color_ppty', styles: 'display:none;width:157px' });
+        this.highlightColorElement = createElement('div', {
+            id: 'highlight_color_ppty',
+            styles: 'display:none;width:157px',
+            className: 'e-de-cntr-highlight-pane'
+        });
         let yellowDiv: HTMLDivElement = this.createHightlighColorPickerDiv('#ffff00', 'yellowDiv');
         let brightGreenDiv: HTMLDivElement = this.createHightlighColorPickerDiv('#00ff00', 'brightGreenDiv');
         let turquoiseDiv: HTMLDivElement = this.createHightlighColorPickerDiv('#00ffff', 'turquoiseDiv');
@@ -340,7 +353,6 @@ export class Text {
         let fontSize: string[] = ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72', '96'];
         this.fontSize = new ComboBox({
             dataSource: fontSize, popupHeight: '180px',
-            popupWidth: '78px', width: '78px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
@@ -364,7 +376,6 @@ export class Text {
             query: new Query().select(['FontName']),
             fields: { text: 'FontName', value: 'FontName' },
             popupHeight: '150px',
-            popupWidth: '154px', width: '154px',
             cssClass: 'e-de-prop-dropdown',
             itemTemplate: '<span style="font-family: ${FontName};">${FontName}</span>',
             allowCustom: true,
@@ -489,11 +500,13 @@ export class Text {
             //#region character format
             if (this.documentEditor.selection.characterFormat.fontFamily) {
                 this.fontFamily.value = this.documentEditor.selection.characterFormat.fontFamily;
+                this.fontFamily.dataBind();
             } else {
                 this.fontFamily.value = '';
             }
             if (this.documentEditor.selection.characterFormat.fontSize) {
                 this.fontSize.value = this.documentEditor.selection.characterFormat.fontSize.toString();
+                this.fontSize.dataBind();
             } else {
                 this.fontSize.value = '';
             }

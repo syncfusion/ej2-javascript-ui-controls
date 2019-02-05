@@ -5,7 +5,6 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { Scale, ImageAlignment } from '../../../src/diagram/enum/enum';
 import { BackgroundModel } from '../../../src/diagram/diagram/page-settings-model';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
  * Path
  */
@@ -14,16 +13,9 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagrama' });
             document.body.appendChild(ele);
-            diagram = new Diagram({
-                mode: 'Canvas',
+            diagram = new Diagram({ mode:'Canvas',
                 width: 1000, height: 1000
             });
             diagram.appendTo('#diagrama');
@@ -41,17 +33,10 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramb' });
             document.body.appendChild(ele);
             let background: BackgroundModel = { source: 'https://www.w3schools.com/images/w3schools_green.jpg', scale: 'Slice' };
-            diagram = new Diagram({
-                mode: 'Canvas',
+            diagram = new Diagram({ mode:'Canvas',
                 width: 1000, height: 1000, pageSettings: { background: background }
             });
             diagram.appendTo('#diagramb');
@@ -82,17 +67,10 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let background: BackgroundModel = { source: 'https://www.w3schools.com/images/w3schools_green.jpg', };
-            diagram = new Diagram({
-                mode: 'Canvas',
+            diagram = new Diagram({ mode:'Canvas',
                 width: '1000px', height: '1000px', pageSettings: { background: background }
             });
             diagram.appendTo('#diagram');
@@ -287,15 +265,6 @@ describe('Diagram Control', () => {
             expect(element.getAttribute('preserveAspectRatio').toString() === val).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 
 

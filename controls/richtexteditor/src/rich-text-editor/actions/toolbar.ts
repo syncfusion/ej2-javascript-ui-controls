@@ -17,7 +17,6 @@ import { BaseToolbar } from './base-toolbar';
 import { DropDownButtons } from './dropdown-buttons';
 import { ToolbarAction } from './toolbar-action';
 import { IToolbarStatus } from '../../common/interface';
-import { RichTextEditorModel } from '../base/rich-text-editor-model';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -501,24 +500,7 @@ export class Toolbar {
      * Called internally if any of the property value changed.
      * @hidden
      */
-    protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
-        if (!isNullOrUndefined(e.newProp.inlineMode)) {
-            for (let prop of Object.keys(e.newProp.inlineMode)) {
-                switch (prop) {
-                    case 'enable':
-                        if (e.newProp.inlineMode.enable) {
-                            this.parent.off(events.scroll, this.scrollHandler);
-                            this.parent.off(events.bindOnEnd, this.toolbarBindEvent);
-                            this.parent.off(events.toolbarUpdated, this.updateToolbarStatus);
-                        } else {
-                            this.parent.on(events.scroll, this.scrollHandler, this);
-                            this.parent.on(events.bindOnEnd, this.toolbarBindEvent, this);
-                            this.parent.on(events.toolbarUpdated, this.updateToolbarStatus, this);
-                        }
-                        break;
-                }
-            }
-        }
+    protected onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName()) { return; }
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();

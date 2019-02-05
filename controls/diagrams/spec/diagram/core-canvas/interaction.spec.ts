@@ -10,7 +10,6 @@ import { rotatePoint } from '../../../src/diagram/utility/base-util';
 // import { MouseEvents } from './mouseevents.spec';
 import { MouseEvents } from './../interaction/mouseevents.spec'
 import { SnapConstraints, SelectorConstraints } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams);
 /**
  * Interaction Specification Document
@@ -67,12 +66,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram12' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -199,7 +192,7 @@ describe('Diagram Control', () => {
                 diagram.selectedItems.nodes.length == 0).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Diagram Control', () => {
         describe('Testing z-order based Selection', () => {
@@ -208,12 +201,6 @@ describe('Diagram Control', () => {
 
             let mouseEvents: MouseEvents = new MouseEvents();
             beforeAll((): void => {
-                const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
                 ele = createElement('div', { id: 'diagram2' });
                 document.body.appendChild(ele);
                 let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -262,12 +249,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -401,7 +382,7 @@ describe('Diagram Control', () => {
                 && offsetY - diagram.selectedItems.connectors[0].wrapper.offsetY == 200).toBe(true);
             done();
         });
-         });
+    });
 
 
     describe('Testing Rotation (50) Resizing', () => {
@@ -411,12 +392,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
 
@@ -773,7 +748,7 @@ describe('Diagram Control', () => {
                 Math.round(diagram.nodes[0].height) == Math.round(resize260[corner].height)).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Testing Resizing', () => {
         let diagram: Diagram;
@@ -782,12 +757,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -1047,7 +1016,8 @@ describe('Diagram Control', () => {
                 Math.round(diagram.nodes[0].width) == 120 && Math.round(diagram.nodes[0].height) == 120).toBe(true);
             done();
         });
-      });
+
+    });
 
     describe('Testing Rotation - Multiple selection', () => {
         let diagram: Diagram;
@@ -1056,12 +1026,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram10' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -1109,7 +1073,7 @@ describe('Diagram Control', () => {
             expect(Math.round(diagram.nodes[0].rotateAngle) == 320).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Testing Resizing - Multiple selection', () => {
         let diagram: Diagram;
@@ -1118,12 +1082,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram11' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -1171,7 +1129,7 @@ describe('Diagram Control', () => {
             done();
 
         });
-         });
+    });
 
     describe('Connector End Dragging', () => {
         let diagram: Diagram;
@@ -1180,12 +1138,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagrambab' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -1217,7 +1169,7 @@ describe('Diagram Control', () => {
                 && diagram.selectedItems.connectors[0].targetPoint.y == 300).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Connector End Dragging', () => {
         let diagram: Diagram;
@@ -1226,12 +1178,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagrambac' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -1264,7 +1210,7 @@ describe('Diagram Control', () => {
             done();
 
         });
-         });
+    });
 
     describe('Aborting Interaction', () => {
         let diagram: Diagram;
@@ -1273,12 +1219,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -1374,7 +1314,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.connectors.length == 1).toBe(true);
             done();
         });
-         });
+    });
     describe('Remove Node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1382,12 +1322,6 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagramremoveElement' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -1420,14 +1354,5 @@ describe('Diagram Control', () => {
             expect(diagram.nodes.length == 0).toBe(true);
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

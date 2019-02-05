@@ -2,7 +2,7 @@
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { XmlWriter } from '@syncfusion/ej2-file-utils';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { LayoutViewer } from '../index';
+import { LayoutViewer, ImageInfo, HelperMethods } from '../index';
 import { Dictionary, TabJustification, TabLeader } from '../../index';
 import { WCharacterFormat, WParagraphFormat, WTabStop } from '../index';
 
@@ -2993,41 +2993,9 @@ export class WordExport {
                     imagePath = this.imagePath + '/0.jpeg';
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
                 } else {
-                    let extension: string = '';
-                    let formatClippedString: string = '';
-                    if (this.startsWith(base64ImageString, 'data:image/bmp;base64,')) {
-                        extension = '.bmp';
-                        formatClippedString = base64ImageString.replace('data:image/bmp;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/x-emf;base64,')) {
-                        extension = '.emf';
-                        formatClippedString = base64ImageString.replace('data:image/x-emf;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/exif;base64,')) {
-                        extension = '.exif';
-                        formatClippedString = base64ImageString.replace('data:image/exif;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/gif;base64,')) {
-                        extension = '.gif';
-                        formatClippedString = base64ImageString.replace('data:image/gif;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/icon;base64,')) {
-                        extension = '.ico';
-                        formatClippedString = base64ImageString.replace('data:image/icon;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/jpeg;base64,')) {
-                        extension = '.jpeg';
-                        formatClippedString = base64ImageString.replace('data:image/jpeg;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/jpg;base64,')) {
-                        extension = '.jpg';
-                        formatClippedString = base64ImageString.replace('data:image/jpg;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/png;base64,')) {
-                        extension = '.png';
-                        formatClippedString = base64ImageString.replace('data:image/png;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/tiff;base64,')) {
-                        extension = '.tif';
-                        formatClippedString = base64ImageString.replace('data:image/tiff;base64,', '');
-                    } else if (this.startsWith(base64ImageString, 'data:image/x-wmf;base64,')) {
-                        extension = '.wmf';
-                        formatClippedString = base64ImageString.replace('data:image/x-wmf;base64,', '');
-                    } else {
-                        extension = '.jpeg';
-                    }
+                    let imageInfo: ImageInfo = HelperMethods.formatClippedString(base64ImageString);
+                    let extension: string = imageInfo.extension;
+                    let formatClippedString: string = imageInfo.formatClippedString;
                     imagePath = this.imagePath + keys[i] + extension;
 
                     this.serializeRelationShip(writer, keys[i], this.imageRelType, imagePath.replace('word/', ''));
@@ -3049,6 +3017,7 @@ export class WordExport {
             }
         }
     }
+
     /**
      * @private
      */

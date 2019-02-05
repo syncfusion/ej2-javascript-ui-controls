@@ -8,7 +8,7 @@ import { Connector } from './connector';
 import { ConnectorModel } from '../objects/connector-model';
 import { DiagramAction } from '../enum/enum';
 import { removeItem, getObjectType } from '../utility/diagram-util';
-import { cloneObject, getFunction } from '../utility/base-util';
+import { cloneObject } from '../utility/base-util';
 import { IElement, StackEntryObject } from '../objects/interface/IElement';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { PointPortModel } from '../objects/port-model';
@@ -144,16 +144,13 @@ export class UndoRedo {
 
     private undoEntry(entry: HistoryEntry, diagram: Diagram): void {
         let obj: SelectorModel;
-        let nodeObject: SelectorModel | Node;
         if (entry.type !== 'PropertyChanged' && entry.type !== 'CollectionChanged' && entry.type !== 'LabelCollectionChanged') {
             obj = (entry.undoObject) as SelectorModel;
-            nodeObject = (entry.undoObject) as SelectorModel;
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
             if (diagram.historyManager.undoStack.length > 0) {
                 let addObject: HistoryEntry[] = diagram.historyManager.undoStack.splice(0, 1);
                 diagram.historyManager.redoStack.splice(0, 0, addObject[0]);
-                nodeObject = (entry.undoObject) as SelectorModel;
             }
         }
         diagram.protectPropertyChange(true);
@@ -217,41 +214,6 @@ export class UndoRedo {
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
         diagram.historyChangeTrigger(entry);
-        if (nodeObject) {
-            let object: NodeModel | ConnectorModel = this.checkNodeObject(nodeObject, diagram);
-            if (object) {
-                let getnodeDefaults: Function = getFunction(diagram.updateSelection);
-                if (getnodeDefaults) {
-                    getnodeDefaults(object, diagram);
-                }
-            }
-        }
-    }
-
-    private checkNodeObject(value: SelectorModel | Node, diagram: Diagram): NodeModel | ConnectorModel {
-        let object: NodeModel | ConnectorModel;
-        if (!(value as Node).id) {
-            if (((value as SelectorModel).nodes && (value as SelectorModel).nodes.length > 0) ||
-                ((value as SelectorModel).connectors && (value as SelectorModel).connectors.length > 0)) {
-                let undoNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes.length > 0 ?
-                    (value as SelectorModel).nodes : (value as SelectorModel).connectors;
-                for (object of undoNode) {
-                    object = diagram.nameTable[object.id];
-                }
-            } else {
-                let knownNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes ?
-                    (value as SelectorModel).nodes : (value as SelectorModel).connectors;
-                if (knownNode) {
-                    for (let key of Object.keys(knownNode)) {
-                        let index: number = Number(key);
-                        object = (value as SelectorModel).nodes ? diagram.nodes[index] as Node : diagram.connectors[index];
-                    }
-                }
-            }
-        } else {
-            object = diagram.nameTable[(value as Node).id];
-        }
-        return object;
     }
 
     private group(historyEntry: HistoryEntry, diagram: Diagram): void {
@@ -699,17 +661,14 @@ export class UndoRedo {
 
     private redoEntry(historyEntry: HistoryEntry, diagram: Diagram): void {
         let redoObject: SelectorModel;
-        let redovalue: SelectorModel | Node;
         if (historyEntry.type !== 'PropertyChanged' && historyEntry.type !== 'CollectionChanged') {
             redoObject = (historyEntry.redoObject) as SelectorModel;
-            redovalue = (historyEntry.redoObject) as SelectorModel;
         }
         diagram.diagramActions |= DiagramAction.UndoRedo;
         if (historyEntry.type !== 'StartGroup' && historyEntry.type !== 'EndGroup') {
             if (diagram.historyManager.redoStack.length > 0) {
                 let addObject: HistoryEntry[] = diagram.historyManager.redoStack.splice(0, 1);
                 diagram.historyManager.undoStack.splice(0, 0, addObject[0]);
-                redovalue = (historyEntry.redoObject) as SelectorModel;
             }
         }
         diagram.protectPropertyChange(true);
@@ -767,15 +726,6 @@ export class UndoRedo {
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.historyChangeTrigger(historyEntry);
 
-        if (redovalue) {
-            let value: NodeModel | ConnectorModel = this.checkNodeObject(redovalue, diagram);
-            if (value) {
-                let getnodeDefaults: Function = getFunction(diagram.updateSelection);
-                if (getnodeDefaults) {
-                    getnodeDefaults(value, diagram);
-                }
-            }
-        }
     }
 
     private getUndoEntry(diagram: Diagram): HistoryEntry {

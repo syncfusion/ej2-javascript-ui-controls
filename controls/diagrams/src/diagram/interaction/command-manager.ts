@@ -1674,9 +1674,6 @@ export class CommandHandler {
         if (hasSelection(this.diagram)) {
             let selectormodel: SelectorModel = this.diagram.selectedItems;
             let arrayNodes: (NodeModel | ConnectorModel)[] = this.getSelectedObject();
-            if (this.diagram.currentSymbol) {
-                this.diagram.previousSelectedObject = arrayNodes;
-            }
             let arg: ISelectionChangeEventArgs = {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false

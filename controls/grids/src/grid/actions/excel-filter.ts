@@ -202,10 +202,10 @@ export class ExcelFilter extends CheckBoxFilter {
         let selectedMenu: string;
         let predicates: PredicateModel[] = this.existingPredicate[this.options.field];
         if (predicates && predicates.length === 2) {
-            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
-                selectedMenu = 'between';
+            if (predicates[0].operator === 'greaterThanOrEqual' && predicates[1].operator === 'lessThanOrEqual') {
+                selectedMenu = 'Between';
             } else {
-                selectedMenu = 'customfilter';
+                selectedMenu = 'CustomFilter';
             }
         } else {
             if (predicates && predicates.length === 1) {

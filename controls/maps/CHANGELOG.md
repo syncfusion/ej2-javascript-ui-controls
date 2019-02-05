@@ -8,6 +8,71 @@
 
 ## [Unreleased]
 
+## 16.4.40-beta (2018-12-10)
+
+### Maps
+
+#### New Features
+
+- Support has been added for desaturation color mapping.
+- Support has been added to hide specific legend items and bind legend text from data source.
+- Support has been added for highlighting or selecting the legend items along with shapes.
+- Support has been added to specify multiple fields in the data source for **shapePropertyPath**.
+- Events has been added for zoom-in and zoom-out.
+
+## 16.3.33 (2018-11-20)
+
+### Maps
+
+#### Bug Fixes
+
+- Now map is rendering properly in universal applications
+- Now panning works properly without freezing
+
+## 16.3.22 (2018-09-25)
+
+### Maps
+
+#### Bug Fixes
+
+- Now the data labels are rendering properly with numeric values.
+
+## 16.3.17 (2018-09-12)
+
+### Maps
+
+#### Breaking Changes
+
+- The maps tooltip has been replaced with `EJ2 SVG Tooltip`, so now it is mandatory to include `ej2-svg-base.umd.min.js` in system.js configuration if you are using system.js module loader. Update the system.js configuration while using this version and above.
+
+#### Bug Fixes
+
+- Tooltip is now working properly for marker in OSM map.
+
+## 16.2.49 (2018-08-21)
+
+### Maps
+
+#### Bug Fixes
+
+- Shape selection is now working fine with touch events
+
+## 16.2.45 (2018-07-17)
+
+### Maps
+
+#### Bug Fixes
+
+- Marker click event is now working fine with OSM layer
+
+## 16.2.44 (2018-07-10)
+
+### Maps
+
+#### Bug Fixes
+
+- Bing map type is changed as AerialWithLabels and now it is rendering properly with labels.
+
 ## 16.2.41 (2018-06-25)
 
 ### Maps

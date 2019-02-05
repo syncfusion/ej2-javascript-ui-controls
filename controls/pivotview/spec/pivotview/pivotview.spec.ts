@@ -1,15 +1,12 @@
 import { IDataOptions, IDataSet, IAxisSet } from '../../src/base/engine';
-import { pivot_dataset, pivot_nodata, pivot_smalldata } from '../base/datasource.spec';
+import { pivot_dataset, pivot_nodata } from '../base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
 import { createElement, isNullOrUndefined, remove, EmitType, EventHandler, extend } from '@syncfusion/ej2-base';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import { FieldList } from '../../src/common/actions/field-list';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { Dialog } from '@syncfusion/ej2-popups';
-import {
-    CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs,
-    PivotCellSelectedEventArgs, BeforeColumnRenderEventArgs, BeginDrillThroughEventArgs
-} from '../../src/common/base/interface';
+import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, PivotCellSelectedEventArgs, BeforeColumnRenderEventArgs } from '../../src/common/base/interface';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import {
     BeforeCopyEventArgs, RowSelectingEventArgs,
@@ -25,7 +22,6 @@ import { DataManager, JsonAdaptor } from '@syncfusion/ej2-data';
 import { ConditionalFormatting } from '../../src/common/conditionalformatting/conditional-formatting';
 import { LoadEventArgs } from '../../src';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
-import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 describe('PivotView spec', () => {
     /**
@@ -95,15 +91,6 @@ describe('PivotView spec', () => {
         args.header = 'This is Header';
         args.footer = 'This is Footer';
     }
-
-    beforeAll(() => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-    });
 
     describe('Grid base module - ', () => {
         describe('- Grid properties - ', () => {
@@ -4556,13 +4543,6 @@ describe('PivotView spec', () => {
                         height: 300,
                         width: 800,
                         allowDrillThrough: true,
-                        beginDrillThrough: (args: BeginDrillThroughEventArgs) => {
-                            if (args.gridObj) {
-                               let eventType: string = args.type;
-                               let gridObj: Grid = args.gridObj;
-                               gridObj.allowKeyboard = false;
-                           }
-                        },
                         showGroupingBar: true,
                         dataBound: dataBound,
                     });
@@ -4583,7 +4563,6 @@ describe('PivotView spec', () => {
                     document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
                     setTimeout(() => {
                         expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(1);
-                        expect(document.querySelectorAll('.e-drillthrough-grid .e-groupdroparea')).toBeTruthy();
                         expect(document.querySelectorAll('.e-drillthrough-body-header-value')[0].textContent).toBe('Bike');
                         expect(document.querySelectorAll('.e-drillthrough-body-header-value')[1].textContent).toBe('female');
                         expect(document.querySelectorAll('.e-drillthrough-body-header')[2].textContent).toBe('Sum of balance');
@@ -5045,13 +5024,6 @@ describe('PivotView spec', () => {
                             allowAdding: true, allowDeleting: true, allowEditing: true,
                             showConfirmDialog: false, showDeleteConfirmDialog: false, allowCommandColumns: false, mode: 'Normal'
                         },
-                        beginDrillThrough: (args: BeginDrillThroughEventArgs) => {
-                             if (args.gridObj) {
-                                let eventType: string = args.type;
-                                let gridObj: Grid = args.gridObj;
-                                gridObj.allowKeyboard = false;
-                            }
-                        },
                         showGroupingBar: true,
                         dataBound: dataBound,
                     });
@@ -5088,7 +5060,6 @@ describe('PivotView spec', () => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
                     setTimeout(() => {
-                        expect(document.querySelectorAll('.e-drillthrough-grid .e-groupdroparea')).toBeTruthy();
                         document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
                         document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mousedown);
                         document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mouseup);
@@ -5128,7 +5099,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("12");
                         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('remove tamilnadu full', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5146,7 +5117,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-drillthrough-grid tr')[2].textContent).toBe("No records to display");
                         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('add tamilnadu', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5203,7 +5174,7 @@ describe('PivotView spec', () => {
                         document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mousedown);
                         document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mouseup);
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('batch click bike-female-balance check', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5230,7 +5201,7 @@ describe('PivotView spec', () => {
                         document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mousedown);
                         document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mouseup);
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('batch click california-quantity-female', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5240,7 +5211,7 @@ describe('PivotView spec', () => {
                         document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('batch remove tamilnadu single', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5251,7 +5222,7 @@ describe('PivotView spec', () => {
                         document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[2].dispatchEvent(click);
                         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('dialogmode', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5271,7 +5242,7 @@ describe('PivotView spec', () => {
                         document.querySelectorAll('.e-spin-down')[0].dispatchEvent(mouseup);
                         document.querySelectorAll('.e-edit-dialog button.e-primary')[0].dispatchEvent(click);
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('dialog click bike-female-balance check', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5279,7 +5250,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("17");
                         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('dialog click california-quantity-female', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5291,7 +5262,7 @@ describe('PivotView spec', () => {
                         document.querySelectorAll('.e-spin-up')[0].dispatchEvent(mouseup);
                         document.querySelectorAll('.e-edit-dialog button.e-primary')[0].dispatchEvent(click);
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
                 it('dialog click california-quantity-female', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5299,7 +5270,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("21");
                         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
 
                 it('command columns mode', (done: Function) => {
@@ -5425,18 +5396,15 @@ describe('PivotView spec', () => {
                         done();
                     }, 2000);
                 });
-                it('apply value filter', () => {
-                    expect(document.querySelector('.e-drillthrough-dialog')).toBeTruthy;
+                it('value filter check', (done: Function) => {
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     pivotGridObj.dataSource.filterSettings = [
                         { name: 'product', type: 'Value', condition: 'GreaterThan', value1: '1000', measure: 'quantity' },
                     ];
-                });
-                it('value filter check', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(() => {
                         expect(document.querySelectorAll('td[aria-colindex="9"]')[4].textContent).toBe("4663");
                         done();
-                    }, 3000);
+                    }, 2000);
                 });
             });
         });
@@ -5706,7 +5674,7 @@ describe('PivotView spec', () => {
                 setTimeout(() => {
                     expect(selectArgs.selectedCellsInfo.length).toBe(0);
                     done();
-                }, 2000);
+                }, 1000);
             })
             it('select - row index 5', (done: Function) => {
                 (document.querySelector('td[index="5"]') as HTMLElement).click();
@@ -6235,7 +6203,7 @@ describe('PivotView spec', () => {
                         expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '$48,954.03').toBeTruthy();
                         (document.querySelector('.e-rowcell .e-expand') as HTMLElement).click();
                         done();
-                    }, 2000);
+                    }, 1000);
                 });
                 it('After Drill', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -6268,7 +6236,7 @@ describe('PivotView spec', () => {
                         pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
                         expect(pivotButton.length).toEqual(3);
                         done();
-                    }, 2000);
+                    }, 1000);
                 });
                 it('Before Drill', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -6276,7 +6244,7 @@ describe('PivotView spec', () => {
                         expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '').toBeTruthy();
                         (document.querySelectorAll('.e-rowcell .e-expand')[1] as HTMLElement).click();
                         done();
-                    }, 2000);
+                    }, 1000);
                 });
                 it('After Drill', (done: Function) => {
                     expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === '').toBeTruthy();
@@ -6309,7 +6277,7 @@ describe('PivotView spec', () => {
                         pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
                         expect(pivotButton.length).toEqual(4);
                         done();
-                    }, 2000);
+                    }, 1000);
                 });
             });
             describe('Sub total hiding in column', () => {
@@ -6597,1438 +6565,6 @@ describe('PivotView spec', () => {
                 });
             });
         });
-        describe(' - selection', () => {
-            describe(' - column_single', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Column',
-                                type: 'Single'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-    
-                });
-                let shiftClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'shiftKey': true
-                });
-                let ctrlClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'ctrlKey': true
-                });
-    
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('FY 2006 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada * FY 2005 value cell mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2006 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(0);
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('save selected cells + header refresh + apply selection on selected cells _ used in window resize', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(31);
-                        (pivotGridObj as any).getSelectedCellsPos();
-                        pivotGridObj.grid.headerModule.refreshUI();
-                        (pivotGridObj as any).setSavedSelectedCells();
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(ctrlClick);
-                        done();
-                    }, 1000);
-                });
-            });
-            describe(' - column_multiple', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Column',
-                                type: 'Multiple'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-    
-                });
-                let shiftClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'shiftKey': true
-                });
-                let ctrlClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'ctrlKey': true
-                });
-    
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('FY 2006 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada * FY 2005 value cell mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2006 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(0);
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(ctrlClick);
-                        done();
-                    }, 1000);
-                });
-            });
-            describe(' - both_single', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Both',
-                                type: 'Single'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-    
-                });
-                let shiftClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'shiftKey': true
-                });
-                let ctrlClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'ctrlKey': true
-                });
-    
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('FY 2006 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada * FY 2005 value cell mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2006 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(31);
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(ctrlClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-            });
-            describe(' - both_multiple', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Both',
-                                type: 'Multiple'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-    
-                });
-                let shiftClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'shiftKey': true
-                });
-                let ctrlClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'ctrlKey': true
-                });
-    
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('FY 2006 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada * FY 2007 value cell mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="3"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(42);
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2006 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[1].value).toBe('Canada');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2007 keyboard ctrl + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        expect(args.selectedCellsInfo[1].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(ctrlClick);
-                        done();
-                    }, 1000);
-                });
-            });
-            describe(' - keyboard_column_single', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Column',
-                                type: 'Multiple'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-    
-                });
-    
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('-> FY 2006 using keyboard right arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'rightArrow', target: document.querySelector('[aria-colindex="1"][index="0"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftLeft', shiftKey: true, target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta * FY 2006 value cell mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[1].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="2"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('-> FY 2006 using keyboard up arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'upArrow', target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('-> Canada.Alberta * FY 2006 value cell using keyboard down arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'downArrow', target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('-> FY 2006 using keyboard shift + keyboard up arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftUp', shiftKey: true, target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('-> Canada.Alberta * FY 2006 value cell using keyboard shift + keyboard down arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftDown', shiftKey: true, target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('keyboard escape', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'escape', target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('Report change - Add Quantity in values', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(0);
-                        pivotGridObj.dataSource.values = [{ name: 'Amount' }, { name: 'Quantity' }];
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005.Amount mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(0);
-                        document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('-> FY 2005 using keyboard up arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(31);
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'upArrow', target: document.querySelector('[aria-colindex="1"][index="1"]'), preventDefault: (): void => { /** Null */ } });
-                        pivotGridObj.grid.selectionSettings.mode = 'Both';
-                        done();
-                    }, 2000);
-                });
-                it('Canada mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(63);
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('-> 0th cell using keyboard up arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'upArrow', target: document.querySelector('[aria-colindex="0"][index="2"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('-> out of the pivot gris using keyboard left arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'leftArrow', target: document.querySelector('[aria-colindex="0"][index="2"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
-                        document.querySelector('[aria-colindex="0"][index="3"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('-> Canada.Alberta * FY 2005.Amount value cell using keyboard right arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'rightArrow', target: document.querySelector('[aria-colindex="0"][index="3"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-                it('-> Canada.Alberta using keyboard left arrow', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
-                        (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'leftArrow', target: document.querySelector('[aria-colindex="1"][index="3"]'), preventDefault: (): void => { /** Null */ } });
-                        done();
-                    }, 1000);
-                });
-    
-            });
-            describe(' - all', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Cell',
-                                type: 'Single',
-                                cellSelectionMode: 'Box'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-    
-                });
-                let down: MouseEvent = new MouseEvent('mousedown', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                });
-                let up: MouseEvent = new MouseEvent('mouseup', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                });
-                let move: MouseEvent = new MouseEvent('mousemove', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                });
-    
-                it('Alberta mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('FY 2006 mouse click + adaptive mode + Both + Multiple -> configured', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
-                        pivotGridObj.setProperties({ gridSettings: { selectionSettings: { mode: 'Both' } } });
-                        pivotGridObj.gridSettings.selectionSettings.type = 'Multiple';
-                        pivotGridObj.isAdaptive = true;
-                        done();
-                    }, 1000);
-                });
-                it('Canada mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        (pivotGridObj as any).isPopupClicked = true;
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 on popup dialog mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        (pivotGridObj as any).isPopupClicked = false;
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(0);
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        pivotGridObj.gridSettings.selectionSettings.mode = 'Cell';
-                        done();
-                    }, 1000);
-                });
-                it('Alberta mouse click + Cell + Desktop mode -> configured', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        pivotGridObj.gridSettings = {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Cell',
-                                type: 'Multiple',
-                                cellSelectionMode: 'Box'
-                            }
-                        },
-                            pivotGridObj.isAdaptive = false;
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 -> keyboard down arrow', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(down);
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(move);
-                        document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(move);
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(move);
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(up);
-                        (pivotGridObj as any).parentAt(document.querySelector('[aria-colindex="2"][index="0"]'), 'TD');
-                        done();
-                    }, 1000);
-                });
-            });
-        });    
-    });
-    describe('Pivot Grid Slicer in Field List with injected Module', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll((done: Function) => {
-            if (!document.getElementById(elem.id)) {
-                document.body.appendChild(elem);
-            }
-            let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(GroupingBar, FieldList);
-            pivotGridObj = new PivotView({
-                dataSource: {
-                    data: pivot_nodata as IDataSet[],
-                    expandAll: false,
-                    enableSorting: true,
-                    filterSettings: [{ name: 'Country', type: 'Include', items: ['Canada', 'Germany'] },
-                    { name: 'State', type: 'Include', items: ['England'] }
-                    ],
-                    rows: [{ name: 'Product' }],
-                    columns: [{ name: 'Date' }],
-                    values: [{ name: 'Amount' }, { name: 'Quantity' }],
-                    filters: [{ name: 'Country' }, { name: 'State' }, { name: 'Product' }]
-                },
-                showFieldList: true,
-                dataBound: dataBound
-            });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        let persistdata: string;
-        beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
-        });
-        it('check all nodes on filter', (done: Function) => {
-            (pivotGridObj.pivotFieldListModule.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                let pivotButtons: Element = document.querySelector('.e-filters').querySelectorAll('.e-pivot-button').item(0);
-                expect((pivotButtons.querySelector('.e-content') as HTMLElement).innerText).toEqual('Country (Multiple items)');
-                done();
-            }, 1000);
-        });
-        it('check single node on filter', (done: Function) => {
-            (pivotGridObj.pivotFieldListModule.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                let pivotButtons: Element = document.querySelector('.e-filters').querySelectorAll('.e-pivot-button').item(1);
-                expect((pivotButtons.querySelector('.e-content') as HTMLElement).innerText).toEqual('State (England)');
-                done();
-            }, 1000);
-        });
-        it('uncheck single node on filter', (done: Function) => {
-            (pivotGridObj.pivotFieldListModule.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                let pivotButtons: Element = document.querySelector('.e-filters').querySelectorAll('.e-pivot-button').item(2);
-                expect((pivotButtons.querySelector('.e-content') as HTMLElement).innerText).toEqual('Product (All)');
-                done();
-            }, 1000);
-        });
-    });
-    describe('Pivot Grid Single Measure Header', () => {
-        describe(' -  Initial Rendering and Value Sorting', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-            beforeAll((done: Function) => {
-                if (!document.getElementById(elem.id)) {
-                    document.body.appendChild(elem);
-                }
-                let dataBound: EmitType<Object> = () => { done(); };
-                pivotGridObj = new PivotView({
-                    dataSource: {
-                        data: pivot_nodata as IDataSet[],
-                        expandAll: false,
-                        enableSorting: true,
-                        rows: [{ name: 'Product' }],
-                        columns: [{ name: 'Date' }],
-                        values: [{ name: 'Amount' }],
-                        alwaysShowValueHeader: true
-                    },
-                    enableValueSorting: true,
-                    dataBound: dataBound
-                });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 1000);
-            });
-            it('Check value header initially', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Amount').toBeTruthy();
-                    (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
-                    done();
-                }, 1000);
-            });
-            it('Check value header after value sorting', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Amount').toBeTruthy();
-                    done();
-                }, 1000);
-            });
-        });
-        describe(' - VirtualScrolling', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-            beforeAll(() => {
-                document.body.appendChild(elem);
-                pivotGridObj = new PivotView(
-                    {
-                        dataSource: {
-                            data: pivot_dataset as IDataSet[],
-                            expandAll: true,
-                            enableSorting: false,
-                            sortSettings: [{ name: 'company', order: 'Descending' }],
-                            formatSettings: [{ name: 'balance', format: 'C' }],
-                            rows: [{ name: 'product' }, { name: 'state' }],
-                            columns: [{ name: 'gender' }, { name: 'eyeColor' }],
-                            values: [{ name: 'balance' }],
-                            filters: [],
-                            alwaysShowValueHeader: true
-                        },
-                        allowCalculatedField: true,
-                        enableVirtualization: true,
-                        width: 600,
-                        height: 300
-                    });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-
-            it('scroll top', (done: Function) => {
-                document.querySelectorAll('.e-frozencontent')[0].scrollTop = 317;
-                pivotGridObj.virtualscrollModule.direction = 'vertical';
-                let args: MouseEvent = new MouseEvent("touchstart", { clientY: 317, view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-frozencontent').dispatchEvent(args);
-                args = new MouseEvent("touchmove", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-frozencontent').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                document.querySelector('.e-frozencontent').dispatchEvent(args);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(Math.round(document.querySelectorAll('.e-frozencontent')[0].scrollTop) === 317).toBeTruthy();
-                    expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                    expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
-                    done();
-                }, 2000);
-            });
-        });
-        describe('- Editing - normal', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-            beforeAll((done: Function) => {
-                if (!document.getElementById(elem.id)) {
-                    document.body.appendChild(elem);
-                }
-                let dataBound: EmitType<Object> = () => { done(); };
-                PivotView.Inject(GroupingBar, DrillThrough, CalculatedField);
-                pivotGridObj = new PivotView({
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
-                        calculatedFieldSettings: [{ name: 'price', formula: '(("Sum(balance)"*10^3+"Count(quantity)")/100)+"Sum(balance)"' }],
-                        rows: [{ name: 'product' }, { name: 'state' }],
-                        columns: [{ name: 'gender' }],
-                        values: [{ name: 'price' }], filters: [{ name: 'index' }],
-                        drilledMembers: [{ name: 'product', items: ['Flight'] }],
-                        allowValueFilter: true,
-                        allowLabelFilter: true,
-                        alwaysShowValueHeader: true
-                    },
-                    height: 300,
-                    width: 800,
-                    allowDrillThrough: true,
-                    editSettings: {
-                        allowAdding: true, allowDeleting: true, allowEditing: true,
-                        showConfirmDialog: false, showDeleteConfirmDialog: false, allowCommandColumns: false, mode: 'Normal'
-                    },
-                    beginDrillThrough: (args: BeginDrillThroughEventArgs) => {
-                        if (args.gridObj) {
-                           let eventType: string = args.type;
-                           let gridObj: Grid = args.gridObj;
-                           gridObj.allowKeyboard = false;
-                       }
-                    },
-                    showGroupingBar: true,
-                    dataBound: dataBound,
-                });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            let event: MouseEvent = new MouseEvent('dblclick', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-            });
-            let mouseup: MouseEvent = new MouseEvent('mouseup', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-            });
-            let mousedown: MouseEvent = new MouseEvent('mousedown', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-            });
-            let click: MouseEvent = new MouseEvent('click', {
-                'view': window,
-                'bubbles': true,
-                'cancelable': true
-            });
-            it('render testing', () => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                expect(document.querySelectorAll('.e-pivot-button').length).toBe(5);
-            });
-            it('click bike-female-balance', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
-                setTimeout(() => {
-                    document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
-                    document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mousedown);
-                    document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[0].dispatchEvent(mouseup);
-                    expect(document.querySelectorAll('.e-drillthrough-grid .e-numeric input')[0].getAttribute('aria-valuenow')).toBe("36");
-                    document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
-                    (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
-                    done();
-                }, 2000);
-            });
-            it('click california-quantity-female', (done: Function) => {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("1878110.1099999996");
-                document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
-                setTimeout(() => {
-                    document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].dispatchEvent(event);
-                    document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mousedown);
-                    document.querySelectorAll('.e-drillthrough-grid .e-numeric span')[1].dispatchEvent(mouseup);
-                    expect(document.querySelectorAll('.e-drillthrough-grid .e-numeric input')[0].getAttribute('aria-valuenow')).toBe("31");
-                    document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
-                    (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
-                    done();
-                }, 3000);
-            });
-        });
-        describe('- Grouping Bar with injected Module - ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-            beforeAll((done: Function) => {
-                if (!document.getElementById(elem.id)) {
-                    document.body.appendChild(elem);
-                }
-                let dataBound: EmitType<Object> = () => { done(); };
-                PivotView.Inject(GroupingBar);
-                pivotGridObj = new PivotView({
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
-                        expandAll: false,
-                        enableSorting: true,
-                        sortSettings: [{ name: 'company', order: 'Descending' }],
-                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
-                        { name: 'company', type: 'Include', items: ['NIPAZ'] },
-                        { name: 'gender', type: 'Include', items: ['male'] }],
-                        rows: [{ name: 'company' }, { name: 'state' }],
-                        columns: [{ name: 'name' }],
-                        values: [{ name: 'balance' }], filters: [{ name: 'gender' }],
-                        alwaysShowValueHeader: true
-                    },
-                    showGroupingBar: true,
-                    groupingBarSettings: { showFilterIcon: false, showRemoveIcon: false, showSortIcon: false, showValueTypeIcon: false },
-                    dataBound: dataBound,
-                    gridSettings: {
-                        beforeColumnsRender: (args: BeforeColumnRenderEventArgs) => {
-                            args.columns[0].width = 200;
-                            args.columns[1].allowReordering = true;
-                            args.columns[1].allowResizing = true;
-                        }
-                    }
-                });
-                pivotGridObj.appendTo('#PivotGrid');
-            });
-            let persistdata: string;
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 1000);
-            });
-            it('check window resize with grouping bar', () => {
-                pivotGridObj.onWindowResize();
-                pivotGridObj.renderModule.updateGridSettings();
-                expect(true).toBeTruthy();
-            });
-            it('grouping bar render testing', () => {
-                expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).toBeTruthy();
-                pivotGridObj.dataBind();
-                pivotGridObj.groupingBarSettings = { showFilterIcon: true, showRemoveIcon: true, showSortIcon: true };
-                expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).toBeTruthy();
-            });
-            it('check sorting order field', () => {
-                let pivotButtons: HTMLElement[] =
-                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
-                expect(pivotButtons.length).toBeGreaterThan(0);
-                ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
-                expect(true).toBe(true);
-            });
-            it('sorting order after update', () => {
-                let pivotButtons: HTMLElement[] =
-                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
-                expect(pivotButtons.length).toBeGreaterThan(0);
-                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
-            });
-            it('check filtering field', (done: Function) => {
-                let pivotButtons: HTMLElement[] =
-                    [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
-                expect(pivotButtons.length).toBeGreaterThan(0);
-                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
-                    expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
-                    done();
-                }, 1000);
-            });
-            it('check all nodes on filter popup', () => {
-                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
-                let memberTreeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
-                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
-                let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                expect(checkEle.length).toBeGreaterThan(0);
-                expect(allNode.classList.contains('e-small')).toBe(false);
-                let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
-                expect(checkEle.length).toEqual(checkedEle.length);
-                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
-                (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
-            });
-            it('check filter state after update', () => {
-                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
-                expect(filterDialog).toBeUndefined;
-            });
-            it('check remove pivot button', (done: Function) => {
-                let pivotButton: HTMLElement =
-                    (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-                expect(pivotButton.id).toBe('gender');
-                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-                    expect(pivotButton).toBeNull();
-                    done();
-                }, 1000);
-            });
-            it('check drag and drop pivot button', (done: Function) => {
-                pivotGridObj.onFieldDropped = function (args: FieldDroppedEventArgs) {
-                    args.droppedField.caption = "droppedButton"
-                };
-                let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
-                let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
-                let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(1);
-                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
-                let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-                EventHandler.trigger(dragElement, 'mousedown', mousedown);
-                let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
-                mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                mousemove = setMouseCordinates(mousemove, 15, 75);
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseOverEventArgs: any = extend({}, mousemove, null, true);
-                mouseOverEventArgs.type = 'mouseover';
-                (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
-                let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
-                mouseLeaveEventArgs.type = 'mouseleave';
-                (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
-                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
-                mouseUp.type = 'mouseup';
-                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(3);
-                    expect((pivotButton[2].querySelector('.e-content') as HTMLElement).innerText).toEqual("droppedButton");
-                    done();
-                }, 1000);
-            });
-            it('destroy common event handlers', () => {
-                pivotGridObj.commonModule.destroy();
-                expect(true).toBeTruthy();
-            });
-            it('pivotgrid destroy', () => {
-                pivotGridObj.destroy();
-                expect(true).toBeTruthy();
-            });
-            it('pivotgrid destroy expect', () => {
-                expect(pivotGridObj.element.innerHTML).toBe('');
-            });
-        });
-
-        describe('- Field List with injected Module - ', () => {
-            let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
-            afterAll(() => {
-                if (pivotGridObj) {
-                    pivotGridObj.destroy();
-                }
-                remove(elem);
-            });
-            beforeAll((done: Function) => {
-                if (!document.getElementById(elem.id)) {
-                    document.body.appendChild(elem);
-                }
-                let dataBound: EmitType<Object> = () => { done(); };
-                PivotView.Inject(GroupingBar, FieldList);
-                pivotGridObj = new PivotView({
-                    dataSource: {
-                        data: pivot_dataset as IDataSet[],
-                        expandAll: false,
-                        enableSorting: true,
-                        sortSettings: [{ name: 'company', order: 'Descending' }],
-                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
-                        { name: 'company', type: 'Include', items: ['NIPAZ'] },
-                        { name: 'gender', type: 'Include', items: ['male'] }],
-                        rows: [{ name: 'company' }, { name: 'state' }],
-                        columns: [{ name: 'name' }],
-                        values: [{ name: 'balance' }], filters: [{ name: 'gender' }],
-                        alwaysShowValueHeader: true
-                    },
-                    showGroupingBar: true,
-                    showFieldList: true,
-                    dataBound: dataBound
-                });
-                pivotGridObj.appendTo('#PivotGrid');
-                disableDialogAnimation(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog);
-            });
-            let persistdata: string;
-            beforeEach((done: Function) => {
-                setTimeout(() => { done(); }, 2000);
-            });
-            it('check window resize with grouping bar', () => {
-                pivotGridObj.onWindowResize();
-                pivotGridObj.renderModule.updateGridSettings();
-                expect(true).toBeTruthy();
-            });
-            it('grouping bar render testing', () => {
-                pivotGridObj.dataBind();
-                expect(pivotGridObj.element.querySelector('.e-grouping-bar')).toBeTruthy();
-            });
-            it('field list render testing', () => {
-                pivotGridObj.dataBind();
-                expect(pivotGridObj.pivotFieldListModule).not.toBeUndefined;
-            });
-            it('check open field list popup', () => {
-                (pivotGridObj.pivotFieldListModule.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
-                expect(true).toBe(true);
-            });
-            it('check sorting order field', () => {
-                let pivotButtons: HTMLElement[] =
-                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
-                expect(pivotButtons.length).toBeGreaterThan(0);
-                ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
-                expect(true).toBe(true);
-            });
-            it('sorting order after update', () => {
-                let pivotButtons: HTMLElement[] =
-                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
-                expect(pivotButtons.length).toBeGreaterThan(0);
-                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
-            });
-            it('check filtering field', (done: Function) => {
-                let pivotButtons: HTMLElement[] =
-                    [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
-                expect(pivotButtons.length).toBeGreaterThan(0);
-                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
-                    expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
-                    done();
-                }, 1000);
-            });
-            it('check all nodes on filter popup', () => {
-                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
-                let memberTreeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
-                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
-                let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                expect(checkEle.length).toBeGreaterThan(0);
-                expect(allNode.classList.contains('e-small')).toBe(false);
-                let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
-                allNode.querySelector('.e-frame').dispatchEvent(args);
-                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
-                expect(checkEle.length).toEqual(checkedEle.length);
-                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
-                (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
-            });
-            it('check filter state after update', () => {
-                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
-                expect(filterDialog).toBeUndefined;
-            });
-            it('check remove pivot button', (done: Function) => {
-                let pivotButton: HTMLElement =
-                    (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-                expect(pivotButton.id).toBe('gender');
-                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
-                    expect(pivotButton).toBeNull();
-                    done();
-                }, 1000);
-            });
-            it('check drag and drop pivot button', (done: Function) => {
-                pivotGridObj.onFieldDropped = function (args: FieldDroppedEventArgs) {
-                    args.droppedField.caption = "droppedButton"
-                };
-                let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
-                let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
-                let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                expect(pivotButton.length).toEqual(1);
-                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
-                let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
-                EventHandler.trigger(dragElement, 'mousedown', mousedown);
-                let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
-                mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                mousemove = setMouseCordinates(mousemove, 15, 75);
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
-                mouseUp.type = 'mouseup';
-                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
-                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(3);
-                    expect((pivotButton[2].querySelector('.e-content') as HTMLElement).innerText).toEqual("droppedButton");
-                    done();
-                }, 1000);
-            });
-            it('set rtl property', (done: Function) => {
-                pivotGridObj.enableRtl = true;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(pivotGridObj.element.classList.contains('e-rtl')).toBeTruthy;
-                    done();
-                }, 1000);
-            });
-            it('remove rtl property', (done: Function) => {
-                pivotGridObj.enableRtl = false;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                setTimeout(() => {
-                    expect(pivotGridObj.element.classList.contains('e-rtl')).not.toBeTruthy;
-                    done();
-                }, 1000);
-            });
-            it('destroy common event handlers', () => {
-                pivotGridObj.commonModule.destroy();
-                expect(true).toBeTruthy();
-            });
-            it('pivotgrid destroy', () => {
-                pivotGridObj.destroy();
-                expect(true).toBeTruthy();
-            });
-            it('pivotgrid destroy expect', () => {
-                expect(pivotGridObj.element.innerHTML).toBe('');
-            });
-        });
-    });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
-        //expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });
 

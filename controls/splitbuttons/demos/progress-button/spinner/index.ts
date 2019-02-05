@@ -1,5 +1,8 @@
 import { ProgressButton } from '../../../src/progress-button/index';
 import { enableRipple } from '@syncfusion/ej2-base';
+import { createTable } from '../../common/common';
+
+createTable();
 
 new ProgressButton({ content: 'Spin Left' }, '#spinleft');
 new ProgressButton({ content: 'Spin Right', spinSettings: { position: 'Right' }, isPrimary: true }, '#spinright');
@@ -53,6 +56,27 @@ document.getElementById('bootstrap').onclick = (e: Event) => {
 document.getElementById('highcontrast').onclick = (e: Event) => {
     enableRipple(false);
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+    refresh();
+};
+document.getElementById('material-dark').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+    refresh();
+};
+document.getElementById('fabric-dark').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
+    document.body.style.backgroundColor = 'black';
+    document.body.style.color = 'white';
+    refresh();
+};
+document.getElementById('bootstrap-dark').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
     document.body.style.backgroundColor = 'black';
     document.body.style.color = 'white';
     refresh();

@@ -344,6 +344,25 @@ export interface RenderingEventArgs {
     isPreload: boolean;
 }
 
+export interface FileListRenderingEventArgs {
+    /**
+     * Return the current file item element.
+     */
+    element: HTMLElement;
+    /**
+     * Return the current rendering file item data as File object.
+     */
+    fileInfo: FileInfo;
+    /**
+     * Return the index of the file item in the file list.
+     */
+    index: number;
+    /**
+     * Return whether the file is preloaded
+     */
+    isPreload: boolean;
+}
+
 interface InitialAttr {
     accept: string;
     multiple: boolean;
@@ -552,12 +571,20 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public actionComplete: EmitType<ActionCompleteEventArgs>;
 
     /**
-     * Triggers before rendering each file item from the file list in a page.
+     * DEPRECATED-Triggers before rendering each file item from the file list in a page.
      * It helps to customize specific file item structure.
      * @event
      */
     @Event()
     public rendering: EmitType<RenderingEventArgs>;
+
+    /**
+     * Triggers before rendering each file item from the file list in a page.
+     * It helps to customize specific file item structure.
+     * @event
+     */
+    @Event()
+    public fileListRendering: EmitType<FileListRenderingEventArgs>;
 
     /**
      * Triggers after selecting or dropping the files by adding the files in upload queue.
@@ -1876,7 +1903,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 index: index,
                 isPreload: this.isPreLoadFile(listItem)
             };
+            let eventsArgs: FileListRenderingEventArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
+            };
             this.trigger('rendering', eventArgs);
+            this.trigger('fileListRendering', eventsArgs);
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
@@ -1944,7 +1978,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     index: index,
                     isPreload: this.isPreLoadFile(listItem)
                 };
+                let eventsArgs: FileListRenderingEventArgs = {
+                    element: liElement,
+                    fileInfo: listItem,
+                    index: index,
+                    isPreload: this.isPreLoadFile(listItem)
+                };
                 this.trigger('rendering', eventArgs);
+                this.trigger('fileListRendering', eventsArgs);
                 this.listParent.appendChild(liElement);
                 this.fileList.push(liElement);
                 this.truncateName(textElement);

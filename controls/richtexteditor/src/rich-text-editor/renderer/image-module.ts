@@ -60,7 +60,6 @@ export class Image {
         this.parent.on(events.dropDownSelect, this.alignmentSelect, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
         this.parent.on(events.paste, this.imagePaste, this);
-        this.parent.on(events.destroy, this.removeEventListener, this);
     }
 
     protected removeEventListener(): void {
@@ -79,7 +78,6 @@ export class Image {
         this.parent.off(events.dropDownSelect, this.alignmentSelect);
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
-        this.parent.off(events.destroy, this.removeEventListener);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);

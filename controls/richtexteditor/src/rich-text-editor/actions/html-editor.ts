@@ -13,7 +13,6 @@ import { ColorPickerInput } from './color-picker';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
-import { getTextNodesUnder } from '../base/util';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -307,15 +306,8 @@ export class HtmlEditor {
      * @private
      */
     private selectAll(): void {
-        let nodes: Node[] = getTextNodesUnder(
-            this.parent.contentModule.getDocument(),
-            (this.parent.contentModule.getEditPanel() as HTMLElement));
-        this.parent.formatter.editorManager.nodeSelection.setSelectionText(
-            this.parent.contentModule.getDocument(),
-            nodes[0],
-            nodes[nodes.length - 1],
-            0,
-            nodes[nodes.length - 1].textContent.length);
+        (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
+        this.parent.contentModule.getDocument().execCommand('selectAll', false, null);
     }
 
     /**

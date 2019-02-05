@@ -8,7 +8,7 @@ import { StrokeStyle, LinearGradient, RadialGradient } from './../core/appearanc
 import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
 import { PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityShapes, PortConstraints } from './../enum/enum';
-import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, ElementAction } from './../enum/enum';
+import { FlowShapes, SelectorConstraints, ThumbsConstraints } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
 import { PathElement } from './../core/elements/path-element';
 import { DiagramNativeElement } from './../core/elements/native-element';
@@ -312,18 +312,12 @@ export function getLineSegment(x1: number, y1: number, x2: number, y2: number): 
     return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
 }
 /** @private */
-export function getPoints(element: DiagramElement, corners: Corners, padding?: number): PointModel[] {
+export function getPoints(element: DiagramElement, corners: Corners): PointModel[] {
     let line: PointModel[] = [];
-    padding = padding || 0;
-    let left: PointModel = { x: corners.topLeft.x - padding, y: corners.topLeft.y };
-    let right: PointModel = { x: corners.topRight.x + padding, y: corners.topRight.y };
-    let top: PointModel = { x: corners.bottomRight.x, y: corners.bottomRight.y - padding };
-    let bottom: PointModel = { x: corners.bottomLeft.x, y: corners.bottomLeft.y + padding };
-
-    line.push(left);
-    line.push(right);
-    line.push(top);
-    line.push(bottom);
+    line.push(corners.topLeft);
+    line.push(corners.topRight);
+    line.push(corners.bottomRight);
+    line.push(corners.bottomLeft);
     return line;
 }
 
@@ -528,19 +522,6 @@ export function getBezierDirection(src: PointModel, tar: PointModel): string {
     }
 }
 
-/** @private */
-export function removeChildNodes(node: NodeModel, diagram: Diagram): void {
-    if (node instanceof Node && node.children) {
-        for (let i: number = 0; i < node.children.length; i++) {
-            if (diagram.nameTable[node.children[i]].children) {
-                removeChildNodes(node, diagram);
-            }
-            diagram.removeFromAQuad(diagram.nameTable[node.children[i]]);
-            diagram.removeObjectsFromLayer(diagram.nameTable[node.children[i]]);
-            delete diagram.nameTable[node.children[i]];
-        }
-    }
-}
 
 /** @private */
 export function serialize(model: Diagram): string {
@@ -993,7 +974,7 @@ export function getUMLActivityShapes(umlActivityShape: PathElement, content: Dia
 }
 
 /**   @private  */
-export function removeGradient(svgId: string): void {
+export  function removeGradient(svgId: string): void {
     removeElement(svgId + '_linear');
     removeElement(svgId + '_radial');
 }
@@ -1238,7 +1219,7 @@ export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, dro
         node = nameTable[child[i]];
         if (node) {
             if (node.children) {
-                arrangeChild(node, x, y, nameTable, drop, diagram);
+                this.arrangeChild(node, x, y, nameTable, drop, diagram);
             } else {
                 node.offsetX -= x;
                 node.offsetY -= y;
@@ -1416,68 +1397,4 @@ export let getObjectType: Function = (obj: Object): Object => {
         }
     }
     return obj;
-};
-
-/** @private */
-export let flipConnector: Function = (connector: Connector): void => {
-    if (!connector.sourceID || !connector.targetID) {
-        let source: PointModel = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
-        let target: PointModel = { x: connector.targetPoint.x, y: connector.targetPoint.y };
-        if (connector.flip === 'Horizontal') {
-            connector.sourcePoint.x = target.x;
-            connector.targetPoint.x = source.x;
-        } else if (connector.flip === 'Vertical') {
-            connector.sourcePoint.y = target.y;
-            connector.targetPoint.y = source.y;
-        } else if (connector.flip === 'Both') {
-            connector.sourcePoint = target;
-            connector.targetPoint = source;
-        } else {
-            connector.sourcePoint = source;
-            connector.targetPoint = target;
-        }
-    }
-};
-
-/** @private */
-export let updatePortEdges: Function = (portContent: DiagramElement, flip: FlipDirection, port: PointPortModel): DiagramElement => {
-    let offsetX: number = port.offset.x;
-    let offsetY: number = port.offset.y;
-    if (flip === 'Horizontal') {
-        offsetX = 1 - port.offset.x;
-        offsetY = port.offset.y;
-    } else if (flip === 'Vertical') {
-        offsetX = port.offset.x;
-        offsetY = 1 - port.offset.y;
-    } else if (flip === 'Both') {
-        offsetX = 1 - port.offset.x;
-        offsetY = 1 - port.offset.y;
-    }
-    portContent.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
-    return portContent;
-};
-
-/** @private */
-export let alignElement: Function = (element: Container, offsetX: number, offsetY: number, flip: FlipDirection): void => {
-    if (element.hasChildren()) {
-        for (let child of element.children) {
-            if (child instanceof TextElement || (child.elementActions && ElementAction.ElementIsPort)) {
-                child.flip = flip;
-            }
-            if (!(child instanceof Canvas) && !(child instanceof Container) && !(child.elementActions && ElementAction.ElementIsPort)) {
-                let childX: number = ((offsetX - child.offsetX) + offsetX);
-                let childY: number = ((offsetY - child.offsetY) + offsetY);
-                if (flip === 'Horizontal') {
-                    child.flipOffset.x = childX - child.actualSize.width / 2;
-                } else if (flip === 'Vertical') {
-                    child.flipOffset.y = childY - child.actualSize.height / 2;
-                } else if (flip === 'Both') {
-                    child.flipOffset.x = childX - child.actualSize.width / 2;
-                    child.flipOffset.y = childY - child.actualSize.height / 2;
-                }
-            } else if (child instanceof Canvas || child instanceof Container) {
-                alignElement(child as Container, offsetX, offsetY, flip);
-            }
-        }
-    }
 };

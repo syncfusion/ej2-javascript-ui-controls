@@ -3,7 +3,6 @@
  */
 import { Maps, MapsTooltip, ISelectionEventArgs, Selection, Highlight, Legend, ILoadEventArgs, MapsTheme, MapAjax} from '../src/index';
 import { electionData } from './MapData/ElectionData';
-import { usa } from './MapData/USA';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 Maps.Inject(MapsTooltip, Selection, Highlight, Legend);
@@ -73,7 +72,7 @@ interface PopulationData {
         },
         layers: [
             {
-                shapeData: usa,
+                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/USA.json'),
                 shapePropertyPath:  'name',
                 shapeDataPath:  'State',
                 dataSource : electionData,

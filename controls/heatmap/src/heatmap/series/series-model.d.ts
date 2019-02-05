@@ -1,4 +1,4 @@
-import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas } from '../utils/helper';import { convertHexToColor, colorNameToHex, formatValue } from '../utils/helper';import { CellColor, RgbColor } from '../utils/colorMapping';import { BorderModel, FontModel, BubbleSizeModel } from '../model/base-model';import { Border, Font, BubbleTooltipData, BubbleSize } from '../model/base';import { IThemeStyle, ICellEventArgs } from '../model/interface';import { Theme } from '../model/theme';import { CellType, BubbleType } from '../utils/enum';import { DataModel } from '../datasource/adaptor-model';import { Axis } from '../axis/axis';
+import { Property, ChildProperty, extend, merge, Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas } from '../utils/helper';import { convertHexToColor, colorNameToHex, formatValue } from '../utils/helper';import { CellColor, RgbColor } from '../utils/colorMapping';import { BorderModel, FontModel } from '../model/base-model';import { Border, Font, BubbleTooltipData } from '../model/base';import { IThemeStyle, ICellEventArgs } from '../model/interface';import { Theme } from '../model/theme';import { CellType, BubbleType } from '../utils/enum';import { DataModel } from '../datasource/adaptor-model';import { Axis } from '../axis/axis';
 
 /**
  * Interface for a class CellSettings
@@ -24,12 +24,6 @@ export interface CellSettingsModel {
      * @default true
      */
     enableCellHighlighting?: Boolean;
-
-    /**
-     * Specifies the minimum and maximum radius value of the cell in percentage.
-     * @default ''
-     */
-    bubbleSize?: BubbleSizeModel;
 
     /**
      * Specifies the cell border style. 

@@ -6,7 +6,6 @@ import { Diagram } from '../../src/diagram/diagram';
 import { Ruler, TickAlignment } from '../../src/ruler/index';
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { IArrangeTickOptions } from '../../src/ruler/objects/interface/interfaces';
-import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 
 let mouseEvents: MouseEvents = new MouseEvents();
@@ -55,6 +54,7 @@ describe('Ruler component', () => {
             expect(rulerObj !== undefined).toBe(true);
             done();
         });
+
     });
 });
 
@@ -301,14 +301,5 @@ describe('Ruler', () => {
             expect(hMarker === null && vMarker === null).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

@@ -307,11 +307,21 @@ let DropDownBase = class DropDownBase extends Component {
         }
         else {
             let l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
-            this.l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            let componentLocale = new L10n(this.getLocaleName(), {}, this.locale);
+            if (componentLocale.getConstant('actionFailureTemplate') !== '') {
+                this.l10n = componentLocale;
+            }
+            else {
+                this.l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
             this.list.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
     }
+    getLocaleName() {
+        return 'drop-down-base';
+    }
+    ;
     getTextByValue(value) {
         let text;
         text = this.checkValueCase(value, false, false, true);
@@ -1031,9 +1041,6 @@ __decorate([
     Property(false)
 ], DropDownBase.prototype, "ignoreAccent", void 0);
 __decorate([
-    Property()
-], DropDownBase.prototype, "locale", void 0);
-__decorate([
     Event()
 ], DropDownBase.prototype, "actionBegin", void 0);
 __decorate([
@@ -1332,6 +1339,10 @@ let DropDownList = class DropDownList extends DropDownBase {
      */
     getPersistData() {
         return this.addOnPersist(['value']);
+    }
+    ;
+    getLocaleName() {
+        return 'drop-down-list';
     }
     ;
     preventTabIndex(element) {
@@ -3310,6 +3321,10 @@ let ComboBox = class ComboBox extends DropDownList {
     preRender() {
         super.preRender();
     }
+    getLocaleName() {
+        return 'combo-box';
+    }
+    ;
     wireEvent() {
         if (this.getModuleName() === 'combobox') {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.preventBlur, this);
@@ -3713,9 +3728,14 @@ let ComboBox = class ComboBox extends DropDownList {
     customValue() {
         let value = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
+            let previousValue = this.previousValue;
+            let currentValue = this.value;
             this.setProperties({ value: value });
             if (isNullOrUndefined(this.value)) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+            }
+            if (this.autofill && previousValue === this.value && currentValue !== this.value) {
+                this.onChangeEvent(null);
             }
         }
         else if (this.inputElement.value.trim() !== '') {
@@ -3960,6 +3980,10 @@ let AutoComplete = class AutoComplete extends ComboBox {
     preRender() {
         super.preRender();
     }
+    getLocaleName() {
+        return 'auto-complete';
+    }
+    ;
     getNgDirective() {
         return 'EJS-AUTOCOMPLETE';
     }
@@ -4418,6 +4442,7 @@ const destroy = 'destroy';
 const dropdownIcon = 'e-input-group-icon e-ddl-icon';
 const iconAnimation = 'e-icon-anim';
 const TOTAL_COUNT_WRAPPER = 'e-delim-total';
+const BOX_ELEMENT = 'e-multiselect-box';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -5030,35 +5055,36 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     wrapperClick(e) {
         this.setDynValue = false;
-        if (!this.enabled) {
+        if (this.readonly || !this.enabled) {
             return;
         }
         if (e.target === this.overAllClear) {
             e.preventDefault();
             return;
         }
-        if (!this.inputFocus) {
-            this.inputElement.focus();
+        if (!this.inputFocus && this.mode !== 'CheckBox') {
+            this.dispatchEvent(this.inputElement, 'focus');
         }
-        if (!this.readonly) {
-            if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
-                if (this.isPopupOpen()) {
-                    this.refreshPopup();
-                }
-                return;
+        if (!this.inputFocus && this.mode === 'CheckBox') {
+            this.focusIn(e);
+        }
+        if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
+            if (this.isPopupOpen()) {
+                this.refreshPopup();
             }
-            if (!this.isPopupOpen() &&
-                (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
-                this.showPopup();
-            }
-            else {
-                this.hidePopup();
-                if (this.mode === 'CheckBox') {
-                    this.showOverAllClear();
-                    this.inputFocus = true;
-                    if (!this.overAllWrapper.classList.contains(FOCUS)) {
-                        this.overAllWrapper.classList.add(FOCUS);
-                    }
+            return;
+        }
+        if (!this.isPopupOpen() &&
+            (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
+            this.showPopup();
+        }
+        else {
+            this.hidePopup();
+            if (this.mode === 'CheckBox') {
+                this.showOverAllClear();
+                this.inputFocus = true;
+                if (!this.overAllWrapper.classList.contains(FOCUS)) {
+                    this.overAllWrapper.classList.add(FOCUS);
                 }
             }
         }
@@ -5188,7 +5214,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             + ':not(.' + HIDE_LIST + ')') : null;
     }
     focusIn(e) {
-        if (this.enabled) {
+        if (this.enabled && !this.readonly) {
             this.showOverAllClear();
             this.inputFocus = true;
             if (!this.value) {
@@ -5288,16 +5314,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.inputElement.setAttribute('aria-activedescendant', focusedItem.id);
         }
     }
-    homeNavigation(isHome) {
-        this.removeFocus();
-        let scrollEle = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
-            + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
-        if (scrollEle.length > 0) {
-            let element = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
-            element.classList.add(dropDownBaseClasses.focus);
-            this.scrollBottom(element);
-        }
-    }
     onKeyDown(e) {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
             return;
@@ -5316,9 +5332,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let activeIndex;
             switch (e.keyCode) {
                 case 36:
-                case 35:
-                    this.homeNavigation((e.keyCode === 36) ? true : false);
-                    break;
+                case 35: break;
                 case 33:
                     e.preventDefault();
                     if (focusedItem) {
@@ -6229,6 +6243,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.updateDataAttribute(this.htmlAttributes);
         super.preRender();
     }
+    getLocaleName() {
+        return 'multi-select';
+    }
+    ;
     initializeData() {
         this.mainListCollection = [];
         this.beforePopupOpen = false;
@@ -6638,7 +6656,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 overflowCountTemplate: '+${count} more..',
                 totalCountTemplate: '${count} selected'
             };
-            let l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            let l10n = new L10n(this.getLocaleName(), {}, this.locale);
+            if (l10n.getConstant('actionFailureTemplate') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.locale);
+            }
             let remainContent = l10n.getConstant('overflowCountTemplate');
             let raminElement = this.createElement('span', {
                 className: REMAIN_WRAPPER
@@ -7057,7 +7078,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
      */
     render() {
         this.setDynValue = this.initStatus = false;
-        this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER });
+        this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER + ' ' + ((this.mode === 'Box') ? BOX_ELEMENT : '') });
         this.viewWrapper = this.createElement('span', { className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER, styles: 'display:none;' });
         this.overAllClear = this.createElement('span', {
             className: CLOSEICON_CLASS, styles: 'display:none;'
@@ -7735,12 +7756,7 @@ class CheckBoxSelection {
         }
         if (!this.parent.overAllWrapper.contains(e.target) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            if (Browser.isIE) {
-                this.parent.onBlur();
-            }
-            else {
-                this.parent.inputElement.blur();
-            }
+            this.parent.onBlur(e);
         }
         if (this.filterInput === target) {
             this.filterInput.focus();
@@ -7784,7 +7800,10 @@ class CheckBoxSelection {
         }
         else {
             let l10nLocale = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
-            let l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
+            let l10n = new L10n(this.parent.getLocaleName(), {}, this.parent.locale);
+            if (l10n.getConstant('selectAllText') === '') {
+                l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
+            }
             this.selectAllSpan.textContent = unSelect ? l10n.getConstant('unSelectAllText') : l10n.getConstant('selectAllText');
         }
     }

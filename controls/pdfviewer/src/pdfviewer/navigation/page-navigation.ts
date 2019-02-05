@@ -43,7 +43,7 @@ export class Navigation {
     /**
      * Navigate to given Page number
      * Note : In case if we have provided incorrect page number as argument it will retain the existing page
-     * @param  {number} pageNumber - Defines the page number to navigate
+     * @param  {number} pageNumber
      * @returns void
      */
     public goToPage(pageNumber: number): void {

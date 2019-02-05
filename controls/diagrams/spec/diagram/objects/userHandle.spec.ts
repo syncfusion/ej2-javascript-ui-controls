@@ -6,7 +6,6 @@ import { UserHandleModel } from '../../../src/diagram/interaction/selector-model
 import { HorizontalAlignment, Side, VerticalAlignment, DiagramTools } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Canvas, ToolBase, MouseEventArgs, IElement, cloneObject, randomId, SelectorConstraints, PathModel, MoveTool } from '../../../src/index';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /*
  * Node spec
@@ -101,12 +100,6 @@ describe('Diagram Control', () => {
         });
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
@@ -241,6 +234,8 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.nodes.length === 0).toBe(true);
             done();
         });
+
+
     });
     describe('Basic Shapes Without Size', () => {
         let diagram: Diagram;
@@ -253,12 +248,6 @@ describe('Diagram Control', () => {
         });
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
@@ -299,6 +288,7 @@ describe('Diagram Control', () => {
             expect(action !== 'handle1').toBe(true);
             done();
         });
+
     });
 
     describe('Basic Shapes Without Size', () => {
@@ -311,12 +301,6 @@ describe('Diagram Control', () => {
         });
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
 
@@ -397,12 +381,6 @@ describe('Diagram Control', () => {
         });
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramba' });
             document.body.appendChild(ele);
 
@@ -489,12 +467,6 @@ describe('Diagram Control', () => {
         });
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramZoomPanAndSingleSelect' });
             document.body.appendChild(ele);
 
@@ -531,14 +503,5 @@ describe('Diagram Control', () => {
             expect(diagram.scroller.horizontalOffset == 0 && diagram.scroller.verticalOffset == -75).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });    

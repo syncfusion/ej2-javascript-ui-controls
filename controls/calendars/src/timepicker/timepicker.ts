@@ -73,31 +73,22 @@ export interface MeridianText {
     pm: string;
 }
 
-export interface TimeFormatObject {
-    skeleton?: string;
-}
-
 export interface PopupEventArgs {
     /** Specifies the name of the event  */
     name?: string;
     /**
      * Illustrates whether the current action needs to be prevented or not.
      */
-
     cancel?: boolean;
-
     /** Defines the TimePicker popup object. */
     popup?: Popup;
-
     /**
      * Specifies the original event arguments.
      */
-
     event?: MouseEvent | KeyboardEvent | FocusEvent | Event;
     /**
      * Specifies the node to which the popup element to be appended.
      */
-
     appendTo?: HTMLElement;
 }
 
@@ -171,7 +162,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private initValue: Date;
     private initMin: Date;
     private initMax: Date;
-    private formatString: string;
+    protected tabIndex: string;
     private formElement: Element;
     private invalidValueString: string = null;
     private openPopupEventArgs: PopupEventArgs;
@@ -193,8 +184,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Specifies the component to act as strict so that, it allows to enter only a valid time value within a specified range or else 
      * resets to previous value. By default, strictMode is in false.
-     * > For more details refer to 
-     * [`Strict Mode`](https://ej2.syncfusion.com/documentation/timepicker/strict-mode?lang=typescript) documentation.
      * @default false
      */
     @Property(false)
@@ -202,13 +191,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Specifies the format of value that is to be displayed in component. By default, the format is
      * based on the culture. 
-     * > For more details refer to 
-     * [`Format`](../timepicker/getting-started#setting-the-time-format) documentation.
-     * @aspType string
      * @default null
      */
     @Property(null)
-    public format: string | TimeFormatObject;
+    public format: string;
     /**
      * Specifies whether the component to be disabled or not.
      * @default true
@@ -261,8 +247,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     public showClearButton: boolean;
     /**
      * Specifies the time interval between the two adjacent time values in the popup list. 
-     * > For more details refer to 
-     * [`Format`](../timepicker/getting-started#setting-the-time-format)documentation.
      * @default 30
      * 
      */
@@ -271,8 +255,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Specifies the scroll bar position if there is no value is selected in the popup list or
      *  the given value is not present in the popup list.
-     * > For more details refer to 
-     * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
      * @default null
      */
     @Property(null)
@@ -285,16 +267,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     public value: Date;
     /**
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
-     * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     @Property(null)
     public min: Date;
     /**
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
-     * > For more details refer to 
-     * [`Time Range`](https://ej2.syncfusion.com/documentation/timepicker/time-range?lang=typescript) documentation.
      * @default 00:00
      */
     @Property(null)
@@ -397,6 +375,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.inputElement = <HTMLInputElement>this.createElement('input');
             this.element.appendChild(this.inputElement);
         }
+        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+        this.element.removeAttribute('tabindex');
         this.openPopupEventArgs = {
             appendTo: document.body
         };
@@ -456,7 +436,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private initialize(): void {
         this.globalize = new Internationalization(this.locale);
         this.defaultCulture = new Internationalization('en');
-        this.checkTimeFormat();
         this.checkInvalidValue(this.value);
         // persist the value property.
         this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true);
@@ -481,20 +460,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
         if (isNullOrUndefined(this.inputElement.getAttribute('name'))) {
             attributes(this.inputElement, { 'name': this.element.id });
-        }
-    }
-    protected checkTimeFormat(): void {
-        if (this.format) {
-            if (typeof this.format === 'string') {
-                this.formatString = this.format;
-            } else if (!isNullOrUndefined(this.format.skeleton) && this.format.skeleton !== '') {
-                let skeletonString: string = this.format.skeleton;
-                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: skeletonString });
-            } else {
-                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: 'short' });
-            }
-        } else {
-            this.formatString = null;
         }
     }
     private checkDateValue(value: Date): Date {
@@ -532,10 +497,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         let culture: Internationalization = new Internationalization(this.locale);
         let cldrTime: string;
         let dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.formatString)) {
+        if (this.isNullOrEmpty(this.format)) {
             cldrTime = dateFormat + ' ' + this.CldrFormat('time');
         } else {
-            cldrTime = this.formatString;
+            cldrTime = this.format;
         }
         return cldrTime;
     }
@@ -554,7 +519,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
+                                format: this.format, type: 'dateTime', skeleton: 'yMd'
                             }));
                         }
                     }
@@ -602,6 +567,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             if (this.angularTag === null) {
                 this.inputWrapper.container.parentElement.appendChild(this.inputElement);
             }
+            (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) ?
+            this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
             this.ensureInputAttribute();
             this.enableElement([this.inputElement]);
             this.inputElement.classList.remove('e-input');
@@ -850,14 +817,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
     private cldrTimeFormat(): string {
         let cldrTime: string;
-        if (this.isNullOrEmpty(this.formatString)) {
+        if (this.isNullOrEmpty(this.format)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
                 cldrTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
             } else {
                 cldrTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
             }
         } else {
-            cldrTime = this.formatString;
+            cldrTime = this.format;
         }
         return cldrTime;
     }
@@ -1758,10 +1725,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (this.enabled) {
             removeClass([this.inputWrapper.container], DISABLED);
             attributes(this.inputElement, { 'aria-disabled': 'false' });
+            this.inputElement.setAttribute('tabindex', this.tabIndex);
         } else {
             this.hide();
             addClass([this.inputWrapper.container], DISABLED);
             attributes(this.inputElement, { 'aria-disabled': 'true' });
+            this.inputElement.tabIndex = -1;
         }
     }
 
@@ -1946,6 +1915,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         }
     }
+
     /**
      * Gets the properties to be maintained upon browser refresh.     
      * @returns string
@@ -2021,7 +1991,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     break;
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);
-                    this.checkTimeFormat();
                     this.setValue(this.value);
                     break;
                 case 'value':

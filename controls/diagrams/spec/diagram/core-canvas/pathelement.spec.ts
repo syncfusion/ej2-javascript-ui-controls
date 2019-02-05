@@ -6,7 +6,6 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { ShadowModel, RadialGradientModel, StopModel, LinearGradientModel, GradientModel } from '../../../src/diagram/core/appearance-model';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 describe('Diagram Control', () => {
 
@@ -26,12 +25,6 @@ describe('Diagram Control', () => {
         let element11: PathElement;
 
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram33' });
             document.body.appendChild(ele);
             let nodes: PathElement[];
@@ -159,7 +152,7 @@ describe('Diagram Control', () => {
             ).toBe(true);
             done();
         });
-       });
+    });
     describe('render path element without size', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -172,12 +165,6 @@ describe('Diagram Control', () => {
         let element6: PathElement;
         let element7: PathElement;
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
             ele = createElement('div', { id: 'diagram34' });
             document.body.appendChild(ele);
             let nodes: PathElement[];
@@ -255,15 +242,6 @@ describe('Diagram Control', () => {
                 element7.absolutePath === "").toBe(true);
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
 
     });
 

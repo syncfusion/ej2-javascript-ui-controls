@@ -14,7 +14,6 @@ import {
 } from '../../../src/symbol-palette/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { ActivityFlow } from '../../../src/diagram/objects/connector';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
  * umlActivityShapes spec
  */
@@ -25,12 +24,6 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { id: 'diagramuml' });
             document.body.appendChild(ele);
             let node: NodeModel[] = [{
@@ -425,7 +418,6 @@ describe('Diagram Control', () => {
             expect(diagram.connectors.length === 5).toBe(true);
             done();
         });
-
     });
 
 
@@ -465,12 +457,6 @@ describe('Diagram Control', () => {
             },
         ];
         beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
             ele.appendChild(createElement('div', { id: 'umlActivitySymbolPalette', styles: 'width:25%;float:left;' }));
             ele.appendChild(createElement('div', { id: 'umlActivityDiagram', styles: 'width:74%;height:500px;float:left;' }));
@@ -528,14 +514,5 @@ describe('Diagram Control', () => {
             expect(node.offsetX === 13.5 && node.offsetY === 13.5).toBe(true);
             done();
         });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
     });
 });

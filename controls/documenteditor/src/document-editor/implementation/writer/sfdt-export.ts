@@ -158,7 +158,7 @@ export class SfdtExport {
         section.headersFooters.firstPageFooter = this.writeHeaderFooter(hfs[5]);
     }
     private writeHeaderFooter(widget: HeaderFooterWidget): any {
-        if (isNullOrUndefined(widget)) {
+        if (isNullOrUndefined(widget) || widget.isEmpty) {
             return undefined;
         }
         let headerFooter: any = {};

@@ -7,7 +7,6 @@ import {
     ConnectorModel, Node, TextModel, Connector,
     DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo
 } from '../../../src/diagram/index';
-import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree);
 Diagram.Inject(LayoutAnimation);
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
@@ -1075,7 +1074,6 @@ describe('Tree Layout', () => {
         expect(gElement == null).toBe(true);
         done();
     });
-
 });
 
 describe('Organization chart', () => {
@@ -1128,7 +1126,7 @@ describe('Organization chart', () => {
     });
 
     it('Checking organizational chart- orientation (Bottom to Top), type (Left) and the offset value is negative', (done: Function) => {
-
+        
         expect(diagram.connectors[3].sourcePoint.x == (diagram.connectors[3] as Connector).sourceWrapper.bounds.topCenter.x &&
             diagram.connectors[3].sourcePoint.y == (diagram.connectors[3] as Connector).sourceWrapper.bounds.topCenter.y &&
             diagram.connectors[3].targetPoint.x == (diagram.connectors[3] as Connector).targetWrapper.bounds.middleRight.x &&
@@ -1239,7 +1237,6 @@ describe('Organization chart', () => {
             diagram.connectors[3].targetPoint.y == (diagram.connectors[3] as Connector).targetWrapper.bounds.bottomCenter.y).toBe(true);
         done();
     });
-
 });
 
 describe('Tree Layout', () => {
@@ -1352,7 +1349,6 @@ describe('Tree Layout', () => {
             && Math.ceil(nodes3.wrapper.children[2].offsetY) === 295).toBe(true);
         done();
     })
-
 });
 
 describe('Tree Layout', () => {
@@ -1451,7 +1447,6 @@ describe('Tree Layout', () => {
         expect((Math.round(nodes.offsetX) == 625 || Math.round(nodes.offsetX) == 624) && Math.round(nodes.offsetY) == 116).toBe(true);
         done();
     });
-
 });
 
 
@@ -1569,7 +1564,6 @@ describe('Tree Layout', () => {
         done();
     });
 
-
 });
 
 describe('Tree Layout', () => {
@@ -1670,7 +1664,6 @@ describe('Tree Layout', () => {
             done();
         }, 200);
     });
-
 });
 describe('Connector Update in Layout Issue', () => {
     let diagram: Diagram;
@@ -1716,13 +1709,4 @@ describe('Connector Update in Layout Issue', () => {
         expect(x == '433.5' && y == '74.9').toBe(true);
         done();
     });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

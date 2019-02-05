@@ -84,7 +84,7 @@ describe('InPlace-Editor Control', () => {
                 url: 'http://www.google.com',
                 mode: 'Inline',
                 adaptor: 'ODataV4Adaptor',
-                type: 'AutoComplete',
+                type: 'DropDownList',
                 editableOn: 'DblClick',
                 actionOnBlur: 'Cancel',
                 enableRtl: true,
@@ -107,7 +107,7 @@ describe('InPlace-Editor Control', () => {
             expect(editorObj.url).toEqual('http://www.google.com');
             expect(editorObj.mode).toEqual('Inline');
             expect(editorObj.adaptor).toEqual('ODataV4Adaptor');
-            expect(editorObj.type).toEqual('AutoComplete');
+            expect(editorObj.type).toEqual('DropDownList');
             expect(editorObj.editableOn).toEqual('DblClick');
             expect(editorObj.actionOnBlur).toEqual('Cancel');
             expect(editorObj.enableRtl).toEqual(true);
@@ -120,7 +120,7 @@ describe('InPlace-Editor Control', () => {
             expect(editorObj.model).toEqual({ cssClass: "e-editable-elements", enableRtl: true, value: 'MyText', showClearButton: true });
             expect(editorObj.saveButton).toEqual({ iconCss: 'e-icons e-save-icon' });
             expect(editorObj.cancelButton).toEqual({ iconCss: 'e-icons e-reset-icon' });
-            expect(editorObj.validationRules).toEqual({ Game: { required: true } });
+            expect(editorObj.validationRules).toEqual({ Game: { required: true } });       
         });
     });
     describe('Value element testing', () => {
@@ -2096,14 +2096,14 @@ describe('InPlace-Editor Control', () => {
                 done();
             }, 4000);
         });
-        it('primaryKey as "number" with success testing', (done: Function) => {
+        it('Success with data modify testing', (done: Function) => {
             editorObj = renderEditor({
-                primaryKey: 2,
+                primaryKey: 'text',
                 mode: 'Inline',
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/ModifyData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2113,7 +2113,31 @@ describe('InPlace-Editor Control', () => {
             valueEle.click();
             editorObj.save();
             setTimeout(() => {
-                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 2, value: 'Syncfusion' }, name: "actionBegin" });
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['data']['result'][0]["Value"]).toEqual('Modified Syncfusion');
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 4000);
+        });
+        it('Url null with Success testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'UrlAdaptor',
+                actionBegin: begin,
+                actionSuccess: success,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['data']).toEqual({});
                 expect(successArgs['name']).toEqual('actionSuccess');
                 expect(successArgs['value']).toEqual('Syncfusion');
                 done();
@@ -2141,15 +2165,93 @@ describe('InPlace-Editor Control', () => {
                 done();
             }, 2000);
         });
-        it('primaryKey as "number" with failure testing', (done: Function) => {
+        it('Json adaptor with custom data testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/CustomData',
+                actionBegin: function(e: any): void {
+                    e.data['custom'] = 'Syncfusion Custom Data';
+                    beginArgs = e;
+                },
+                actionSuccess: success
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion', custom: 'Syncfusion Custom Data' }, name: "actionBegin" });
+                expect(successArgs['data'].result[0]["Custom"]).toEqual('Syncfusion Custom Data');
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 4000);
+        });
+        it('WebApi adaptor with custom data testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'WebApiAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/CustomData',
+                actionBegin: function(e: any): void {
+                    e.data['custom'] = 'Syncfusion Custom Data';
+                    beginArgs = e;
+                },
+                actionSuccess: success
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion', custom: 'Syncfusion Custom Data' }, name: "actionBegin" });
+                expect(successArgs['data'][0]["Custom"]).toEqual('Syncfusion Custom Data');
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 4000);
+        });
+        it('Type - Date with pass and get with success testing', (done: Function) => {
+            let date: Date = new Date('02/02/2019 10:30 AM');
+            editorObj = renderEditor({
+                primaryKey: 3,
+                name: 'Game',
+                type: 'DateTime',
+                value: date,
+                mode: 'Inline',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/DateData',
+                actionBegin: begin,
+                actionSuccess: success,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 3, value: date.toISOString() }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual(date.toISOString());
+                done();
+            }, 4000);
+        });
+        it('primaryKey as "number" with success testing', (done: Function) => {
             editorObj = renderEditor({
                 primaryKey: 3,
                 name: 'Game',
                 mode: 'Inline',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/PrimaryKeyData',
                 actionBegin: begin,
+                actionSuccess: success,
                 actionFailure: fail
             });
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
@@ -2158,10 +2260,11 @@ describe('InPlace-Editor Control', () => {
             editorObj.save();
             setTimeout(() => {
                 expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 3, value: 'Syncfusion' }, name: "actionBegin" });
-                expect(failArgs['name']).toEqual('actionFailure');
-                expect(failArgs['value']).toEqual('Syncfusion');
+                expect(successArgs['data'].result[0]["Value"]).toEqual('Syncfusion');
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 2000);
+            }, 4000);
         });
         it('Failure with popup testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2183,6 +2286,78 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
             }, 2000);
+        });
+        it('UrlAdaptor with value submit testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
+                actionBegin: begin,
+                actionSuccess: success,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['data'].result[0]["Value"]).toEqual('Syncfusion');
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 4000);
+        });
+        it('WebApiAdaptor with value submit testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'WebApiAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
+                actionBegin: begin,
+                actionSuccess: success,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['data'][0]["Value"]).toEqual('Syncfusion');
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 4000);
+        });
+        it('ODataV4Adaptor with value submit testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                value: 'Syncfusion',
+                adaptor: 'ODataV4Adaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/odata/EditData',
+                actionBegin: begin,
+                actionSuccess: success,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['data'][0]["value"]).toEqual('Modified Syncfusion');
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 4000);
         });
     });
     describe('Button keyboard action testing', () => {

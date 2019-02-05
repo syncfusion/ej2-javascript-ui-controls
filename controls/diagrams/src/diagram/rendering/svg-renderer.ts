@@ -41,8 +41,8 @@ export class SvgRenderer implements IRenderer {
             'id': canvas.id + '_shadow', 'fill': options.shadow.color, 'stroke': options.shadow.color,
             'opacity': options.shadow.opacity.toString(),
             'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
-            + (options.y + options.height * options.pivotY) + ')' +
-            'translate(' + (options.x + point.x) + ',' + (options.y + point.y) + ')'
+                + (options.y + options.height * options.pivotY) + ')' +
+                'translate(' + (options.x + point.x) + ',' + (options.y + point.y) + ')'
 
         };
         if (parentSvg) {
@@ -100,7 +100,7 @@ export class SvgRenderer implements IRenderer {
             'id': id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
             'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
             'transform': 'rotate(' + options.angle + ','
-            + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
+                + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
             'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity,
             'aria-label': ariaLabel ? ariaLabel : ''
         };
@@ -123,7 +123,7 @@ export class SvgRenderer implements IRenderer {
         attr = {
             'id': options.id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
             'height': options.height.toString(), 'transform': 'rotate(' + options.angle + ','
-            + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
+                + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
             class: 'e-diagram-selected-region'
         };
         if (!rect) {
@@ -216,7 +216,7 @@ export class SvgRenderer implements IRenderer {
         this.renderPath(path, options, collection);
         let attr: Object = {
             'id': options.id, 'transform': 'rotate(' + options.angle + ',' + (options.x + options.width * options.pivotX) + ','
-            + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + ')',
+                + (options.y + options.height * options.pivotY) + ')' + 'translate(' + (options.x) + ',' + (options.y) + ')',
             'visibility': options.visible ? 'visible' : 'hidden', 'opacity': options.opacity,
             'aria-label': ariaLabel ? ariaLabel : ''
         };
@@ -335,8 +335,8 @@ export class SvgRenderer implements IRenderer {
             let attr: Object = {
                 'id': options.id + '_text', 'fill': options.color, 'visibility': options.visible ? 'visible' : 'hidden',
                 'text-decoration': options.textDecoration, 'transform': 'rotate(' + options.angle + ','
-                + (pivotX) + ',' + (pivotY) + ')'
-                + 'translate(' + (options.x) + ',' + (options.y) + ')', 'opacity': options.opacity,
+                    + (pivotX) + ',' + (pivotY) + ')'
+                    + 'translate(' + (options.x) + ',' + (options.y) + ')', 'opacity': options.opacity,
                 'aria-label': ariaLabel ? ariaLabel : ''
             };
             setAttributeSvg(text, attr);
@@ -365,7 +365,7 @@ export class SvgRenderer implements IRenderer {
         }
         let attr: Object = {
             'id': obj.id + 'image', 'x': obj.x.toString(), 'y': obj.y.toString(), 'transform': 'rotate(' + obj.angle + ','
-            + (obj.x + obj.width * obj.pivotX) + ',' + (obj.y + obj.height * obj.pivotY) + ')',
+                + (obj.x + obj.width * obj.pivotX) + ',' + (obj.y + obj.height * obj.pivotY) + ')',
             'width': obj.width.toString(), 'visibility': obj.visible ? 'visible' : 'hidden',
             'height': obj.height.toString(), 'preserveAspectRatio': aspectRatio, 'opacity': (obj.opacity || 1).toString()
         };
@@ -432,13 +432,11 @@ export class SvgRenderer implements IRenderer {
     }
 
     private setNativTransform(element: DiagramNativeElement, nativeElement: SVGElement, height: number, width: number): void {
-        let angle: number;
         let contentWidth: number = element.contentSize.width !== 0 ? element.contentSize.width : 1;
         let contentHeight: number = element.contentSize.height !== 0 ? element.contentSize.height : 1;
         let x: number = element.templatePosition.x * width / contentWidth;
         let y: number = element.templatePosition.y * height / contentHeight;
-        angle = (element.flip === 'Horizontal' || element.flip === 'Vertical') ? -element.parentTransform : element.parentTransform;
-        nativeElement.setAttribute('transform', 'rotate(' + angle + ',' + element.offsetX + ',' + element.offsetY +
+        nativeElement.setAttribute('transform', 'rotate(' + element.parentTransform + ',' + element.offsetX + ',' + element.offsetY +
             ') translate(' + (element.offsetX - x - width * element.pivot.x) + ',' + (element.offsetY - y - height * element.pivot.y) +
             ') scale(' + (width / contentWidth) + ',' + (height / contentHeight) + ')'
         );

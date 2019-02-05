@@ -3,7 +3,6 @@
  */
 import { Maps, Marker, ILoadEventArgs, MapsTheme, MapsTooltip, DataLabel, ZoomSettings, Zoom, MapAjax, NavigationLine } from '../src/index';
 import{ India } from './MapData/India';
-import { world_Map } from './MapData/worldMap';
 Maps.Inject(Marker, MapsTooltip, DataLabel,Zoom, NavigationLine);
 //tslint:disable:max-func-body-length
     let maps: Maps = new Maps({
@@ -19,7 +18,7 @@ Maps.Inject(Marker, MapsTooltip, DataLabel,Zoom, NavigationLine);
         },
         layers: [
             {
-                shapeData: world_Map,
+                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
                 shapeSettings: {
                     fill: '#E5E5E5',
                     border: {

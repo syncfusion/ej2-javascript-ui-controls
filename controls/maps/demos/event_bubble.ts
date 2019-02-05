@@ -2,7 +2,6 @@
  * Bubble sample
  */
 import { population, internetUsers } from './MapData/Populationdata';
-import { world_Map } from './MapData/worldMap';
 import { Maps, Bubble, IBubbleRenderingEventArgs, MapsTooltip, MapsTheme, ILoadEventArgs, Zoom, MapAjax } from  '../src/index';
 Maps.Inject(Bubble, MapsTooltip, Zoom);
 export interface Data {
@@ -30,7 +29,7 @@ export interface Data {
             {
                 shapeDataPath: 'name',
                 shapePropertyPath: 'name',
-                shapeData: world_Map,
+                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
                 shapeSettings: {
                     fill: '#E5E5E5'
                 },
