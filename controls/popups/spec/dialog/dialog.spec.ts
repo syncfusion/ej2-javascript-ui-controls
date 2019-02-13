@@ -776,6 +776,8 @@ describe('Dialog Control', () => {
             dlgcontent1.className = "samplecontent";
             dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
             expect(dialog1.getButtons().length).toBe(2);
+            expect(dialog1.getButtons(0).element.type).toEqual('button');
+            expect(dialog1.getButtons(1).element.type).toEqual('button');
         });
 
         it('dialog button type testing', () => {
@@ -2265,3 +2267,44 @@ describe('Testing resize Events', () => {
         done()
     });
 });
+
+describe('Testing resizing option', () => {
+    let dialog: any;
+    let computedHeaderHeight: string;
+    let headerHeight: number;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+
+        dialog = new Dialog({
+            header:'Demo', 
+            target: document.body, isModal: true, content:'First demo content', 
+            enableResize: true,
+            open: function() {
+                computedHeaderHeight = getComputedStyle(dialog.headerContent).height;
+                headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
+                expect(isNullOrUndefined(headerHeight)).toBe(false);
+                expect(isNaN(headerHeight)).toBe(false);
+            }
+         });
+        dialog.appendTo('#dialog1');
+    });
+
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Check the minHeight issue', () => {
+        dialog.hide();
+        dialog.refresh();
+        dialog.show();
+        computedHeaderHeight = getComputedStyle(dialog.headerContent).height;
+        headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
+        expect(isNullOrUndefined(headerHeight)).toBe(false);
+        expect(isNaN(headerHeight)).toBe(false);
+    });
+})

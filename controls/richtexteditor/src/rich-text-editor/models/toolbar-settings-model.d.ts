@@ -208,7 +208,7 @@ export interface FontFamilyModel {
 
     /**
      * Specifies default font family selection
-     * @default 0
+     * @default 'null'
      */
     default?: string;
 
@@ -233,7 +233,7 @@ export interface FontSizeModel {
 
     /**
      * Specifies default font size selection
-     * @default 0
+     * @default 'null'
      */
     default?: string;
 
@@ -258,7 +258,7 @@ export interface FormatModel {
 
     /**
      * Specifies default format
-     * @default 'Paragraph'
+     * @default 'null'
      */
     default?: string;
 

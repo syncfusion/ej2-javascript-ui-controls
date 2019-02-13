@@ -95,7 +95,7 @@ export class TableProperties {
     }
     private addTablePropertyTab = (): void => {
         // tslint:disable-next-line:max-line-length
-        this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-table-pane' });
+        this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
         this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
         // tslint:disable-next-line:max-line-length
         let items: TabItemModel[] = [{ header: { text: this.localObj.getConstant('Table') }, content: this.tableProperties }, { header: { text: this.localObj.getConstant('Text') }, content: this.tableTextProperties.element }] as TabItemModel[];

@@ -138,7 +138,7 @@ export class Toolbar {
         this.isTransformChild = false;
         let transformElements: HTMLElement[] = <HTMLElement[]>selectAll('[style*="transform"]', document);
         for (let i: number = 0; i < transformElements.length; i++) {
-            if (transformElements[i].contains(this.parent.element)) {
+            if (!isNullOrUndefined(transformElements[i].contains) && transformElements[i].contains(this.parent.element)) {
                 this.isTransformChild = true;
                 break;
             }

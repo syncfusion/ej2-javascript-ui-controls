@@ -7,6 +7,7 @@ import { IconShape } from './icon';
 import { IconShapeModel } from './icon-model';
 import { DiagramTooltip } from './tooltip';
 import { PointPort } from './port';
+import { FlipDirection } from '../enum/enum';
 
 
 /**
@@ -92,5 +93,14 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      */
     @Property()
     public addInfo: Object;
+
+    /**
+     * Flip the element in Horizontal/Vertical directions
+     * @aspDefaultValueIgnore
+     * @default None
+     */
+    @Property('None')
+    public flip: FlipDirection;
+
 }
 

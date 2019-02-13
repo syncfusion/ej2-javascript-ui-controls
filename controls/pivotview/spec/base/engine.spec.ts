@@ -635,7 +635,7 @@ describe('PivotView spec', () => {
             };
             let pivotEngine: PivotEngine = new PivotEngine(dataSource);
             it('Date/time/date-time format', () => {
-                expect(((pivotEngine.pivotValues[2][0] as IDataSet).actualText.toString()).indexOf('1970/01/01/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[2][0] as IDataSet).dateText.toString()).indexOf('1970/01/01/')).toBeGreaterThanOrEqual(0);
             });
             it('Percentage format', () => {
                 dataSource.rows = [{ name: 'state' }];
@@ -949,7 +949,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length).toBe(29);
                 expect(pivotEngine.pivotValues[0].length).toBe(53);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
-                expect(((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).indexOf('2000/02/16/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2000/02/16/')).toBeGreaterThanOrEqual(0);
             });
             it('With label filters', () => {
                 dataSource.filterSettings.push({ name: 'company', type: 'Label', condition: 'BeginWith', value1: 'a' });
@@ -958,7 +958,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length).toBe(5);
                 expect(pivotEngine.pivotValues[0].length).toBe(5);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
-                expect(((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
             });
             it('With Include filter', () => {
                 dataSource.filterSettings.push({ name: 'isActive', type: 'Include', items: ['true'] });
@@ -976,7 +976,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length).toBe(5);
                 expect(pivotEngine.pivotValues[0].length).toBe(5);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
-                expect(((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
             });
             it('With sorting enabled', () => {
                 dataSource.filterSettings.pop();
@@ -988,7 +988,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length).toBe(5);
                 expect(pivotEngine.pivotValues[0].length).toBe(5);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
-                expect(((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
             });
             it('With valuesorting enabled', () => {
                 dataSource.valueSortSettings = {
@@ -1000,7 +1000,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length).toBe(5);
                 expect(pivotEngine.pivotValues[0].length).toBe(5);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
-                expect(((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
             });
             it('With ExpandAll enabled', () => {
                 dataSource.expandAll = true;
@@ -1008,7 +1008,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length).toBe(5);
                 expect(pivotEngine.pivotValues[0].length).toBe(7);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
-                expect(((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
             });
             it('With Drilled members', () => {
                 dataSource.drilledMembers = [{ name: 'company', items: ['ACRUEX'] }];
@@ -1016,7 +1016,7 @@ describe('PivotView spec', () => {
                 expect(pivotEngine.pivotValues.length).toBe(5);
                 expect(pivotEngine.pivotValues[0].length).toBe(5);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACRUEX');
-                expect(((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
+                expect(((pivotEngine.pivotValues[3][0] as IDataSet).dateText.toString()).indexOf('2001/08/31/')).toBeGreaterThanOrEqual(0);
             });
             it('With Format Settings', () => {
                 dataSource.formatSettings = [{ name: 'balance', format: 'C' }];

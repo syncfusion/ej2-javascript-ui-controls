@@ -221,6 +221,7 @@ describe('RadioButton', () => {
         });
     });
 
+
     describe('Methods', () => {
         it('Destroy method', () => {
             radio = new RadioButton({}, '#radio');
@@ -271,6 +272,66 @@ describe('RadioButton', () => {
             radio = new RadioButton({}, document.body.appendChild(createElement('input')) as HTMLInputElement);
             expect(radio.element.id).toContain('e-radio');
             expect(radio.element.type).toEqual('radio');
+        });
+    });
+
+    describe('RadioButton in HTML5 forms', () => {
+        let input: HTMLFormElement;
+        let input1: HTMLFormElement;
+        let formElement: HTMLFormElement;
+        let radio: RadioButton;
+        let radio1: RadioButton;
+
+        beforeEach(() => {
+
+            formElement = createElement('form', {
+                id: 'form'
+            }) as HTMLFormElement;
+
+            input = createElement('input', { id: 'radio1' }) as HTMLFormElement;
+            input.setAttribute('type', 'radio');
+
+            input1 = createElement('input', { id: 'radio2' }) as HTMLFormElement;
+            input1.setAttribute('type', 'radio');
+
+            formElement.appendChild(input);
+            formElement.appendChild(input1);
+
+            document.body.appendChild(formElement);
+        })
+
+        afterEach(() => {
+            radio.destroy();
+            radio1.destroy();
+            formElement.remove();
+        })
+
+        it('form reset should make radiobutton to its initial value', () => {
+            radio = new RadioButton({
+                name: 'radiogroup',
+                checked: true
+            }, '#radio1');
+            radio1 = new RadioButton({
+                name: 'radiogroup',
+            }, '#radio2');
+            radio1.checked = true;
+            radio1.dataBind();
+            expect(radio1.checked).toBeTruthy();
+            expect(radio.checked).toBeFalsy();
+            formElement.reset();
+            expect(radio.checked).toBeTruthy();
+            expect(radio1.checked).toBeFalsy();
+        });
+
+        it('form reset should make radiobutton to its default value', () => {
+            radio = new RadioButton({ name: 'radiogroup' }, '#radio1');
+            radio1 = new RadioButton({ name: 'radiogroup' }, '#radio2');
+            radio.checked = true;
+            expect(radio.checked).toBeTruthy();
+            expect(radio1.checked).toBeFalsy();
+            formElement.reset();
+            expect(radio.checked).toBeFalsy();
+            expect(radio.checked).toBeFalsy();
         });
     });
 

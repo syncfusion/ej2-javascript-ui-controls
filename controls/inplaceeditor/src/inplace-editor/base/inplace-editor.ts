@@ -920,6 +920,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         if (this.type === 'RTE') {
             this.rteModule.refresh();
+            this.setAttribute(<HTMLElement>select('.e-richtexteditor textarea', this.containerEle), ['name']);
         } else if (this.type === 'Slider') {
             this.sliderModule.refresh();
             this.setAttribute(<HTMLElement>select('.e-slider-input', this.containerEle), ['name']);

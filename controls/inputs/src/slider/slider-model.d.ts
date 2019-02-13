@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex, classList } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
+import { Component, EventHandler, Property, Event, EmitType, Complex } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import {Placement,TooltipPlacement,TooltipShowOn,SliderType,SliderOrientation,SliderTooltipEventArgs} from "./slider";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -158,7 +158,7 @@ export interface SliderModel extends ComponentModel{
     /**
      * It is used to denote the step value of Slider component which is the amount of Slider value change
      *  when increase / decrease button is clicked or press arrow keys or drag the thumb.
-     *  Refer the documentation [here](./ticks.html#step)
+     *  Refer the documentation [here](../../slider/ticks#step)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="slider/step-api/index.ts" %}{% endcodeBlock %}
@@ -199,7 +199,7 @@ export interface SliderModel extends ComponentModel{
 
     /**
      * It is used to render the slider ticks options such as placement and step values.
-     * Refer the documentation [here](./ticks.html)
+     * Refer the documentation [here](../../slider/ticks)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="slider/ticks-api/index.ts" %}{% endcodeBlock %}
@@ -209,7 +209,7 @@ export interface SliderModel extends ComponentModel{
 
     /**
      * It is used to limit the slider movement within certain limits.
-     * Refer the documentation [here](./limits.html)
+     * Refer the documentation [here](../../slider/limits)
      *  to know more about this property with demo
      *
      * {% codeBlock src="slider/limits-api/index.ts" %}{% endcodeBlock %}
@@ -240,7 +240,7 @@ export interface SliderModel extends ComponentModel{
     /**
      * It is used to show or hide the increase and decrease button of Slider Component,
      *  which is used to change the slider value.
-     * Refer the documentation [here](./getting-started.html#buttons)
+     * Refer the documentation [here](../../slider/getting-started#buttons)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="slider/showButtons-api/index.ts" %}{% endcodeBlock %}
@@ -256,7 +256,7 @@ export interface SliderModel extends ComponentModel{
 
     /**
      * It is used to render Slider in either horizontal or vertical orientation.
-     *  Refer the documentation [here](./getting-started.html#orientation)
+     *  Refer the documentation [here](../../slider/getting-started#orientation)
      *  to know more about this property with demo.
      * @default 'Horizontal'
      */

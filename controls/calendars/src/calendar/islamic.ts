@@ -26,6 +26,8 @@ const TODAY: string = 'e-today';
 const LINK: string = 'e-day';
 const CELL: string = 'e-cell';
 const dayMilliSeconds: number = 86400000;
+const minDecade: number = 2060;
+const maxDecade: number = 2069;
 export class Islamic {
     constructor(instance: Calendar) {
         this.calendarInstance = instance;
@@ -144,13 +146,13 @@ export class Islamic {
                 EventHandler.add(tdEle, 'click', this.calendarInstance.clickHandler, this.calendarInstance);
             }
             if (this.calendarInstance.isMultiSelection && !isNullOrUndefined(this.calendarInstance.values) &&
-            !otherMnthBool && !disabledCls) {
+                !otherMnthBool && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < this.calendarInstance.values.length; tempValue++) {
                     /* tslint:disable-next-line:max-line-length */
                     let localDateString: string = this.calendarInstance.globalize.formatDate(localDate, { type: 'date', skeleton: 'short', calendar: 'islamic' });
                     let tempDateString: string = this.calendarInstance.globalize.formatDate(this.calendarInstance.values[tempValue], { type: 'date', skeleton: 'short', calendar: 'islamic' });
                     if (localDateString === tempDateString &&
-                         this.calendarInstance.getDateVal(localDate, this.calendarInstance.values[tempValue])) {
+                        this.calendarInstance.getDateVal(localDate, this.calendarInstance.values[tempValue])) {
                         addClass([tdEle], SELECTED);
                     } else {
                         this.calendarInstance.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
@@ -461,7 +463,10 @@ export class Islamic {
         }
         if (hijriStart.year > end) {
             result = 1;
-        } else if (hijriStart.year < start) {
+        } else if ((this.calendarInstance.currentView() === 'Decade') && hijriStart.year < start &&
+            !((startDate.getFullYear() >= minDecade && startDate.getFullYear() <= maxDecade))) {
+            result = -1;
+        } else if (hijriStart.year < start && (this.calendarInstance.currentView() === 'Year')) {
             result = -1;
         }
         return result;

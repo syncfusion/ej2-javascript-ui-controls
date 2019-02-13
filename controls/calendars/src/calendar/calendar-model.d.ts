@@ -24,6 +24,8 @@ export interface CalendarBaseModel extends ComponentModel{
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      * @default 0
      * @aspType int
+     * > For more details about firstDayOfWeek refer to 
+     * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
     firstDayOfWeek?: number;
 
@@ -56,7 +58,9 @@ export interface CalendarBaseModel extends ComponentModel{
      * Decade<br/></td><td colSpan=1 rowSpan=1>
      * Calendar view shows the years of the decade.<br/></td></tr>
      * </table>
-     * 
+     *
+     * > For more details about start refer to 
+     * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation. 
      */
     start?: CalendarView;
 
@@ -84,12 +88,16 @@ export interface CalendarBaseModel extends ComponentModel{
      * Calendar view shows up to the years of the decade.<br/></td></tr> 
      * </table> 
      * 
+     *  > For more details about depth refer to 
+     *  [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     depth?: CalendarView;
 
     /**
      * Determines whether the week number of the year is to be displayed in the calendar or not.
      * @default false
+     * > For more details about weekNumber refer to 
+     * [`Calendar with week number`](../../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
      */
     weekNumber?: boolean;
 

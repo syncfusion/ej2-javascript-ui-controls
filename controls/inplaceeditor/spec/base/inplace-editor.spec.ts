@@ -2163,7 +2163,7 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['name']).toEqual('actionFailure');
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 2000);
+            }, 4000);
         });
         it('Json adaptor with custom data testing', (done: Function) => {
             editorObj = renderEditor({
@@ -2285,7 +2285,7 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['name']).toEqual('actionFailure');
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
-            }, 2000);
+            }, 4000);
         });
         it('UrlAdaptor with value submit testing', (done: Function) => {
             editorObj = renderEditor({

@@ -261,7 +261,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
     private setAria(): void {
         attributes(this.element, {
-            'role': 'listbox', 'aria-expanded': 'false', 'aria-haspopup': 'true',
+            'aria-expanded': 'false', 'aria-haspopup': 'true',
             'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': (this.secondaryBtnObj as SplitButton).dropDown.element.id
         });
     }
@@ -296,7 +296,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
                 removeClass([this.wrapper], this.cssClass.split(' '));
             } else {
                 removeClass([this.element], classList);
-                ['role', 'aria-label', 'aria-haspopup', 'aria-expanded',
+                ['aria-label', 'aria-haspopup', 'aria-expanded',
                 'aria-owns', 'type'].forEach((key: string) => {
                     this.element.removeAttribute(key);
                 });

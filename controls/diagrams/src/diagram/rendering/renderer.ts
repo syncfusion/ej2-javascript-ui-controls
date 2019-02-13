@@ -17,8 +17,8 @@ import { Gridlines } from '../../diagram/diagram/grid-lines';
 import { BackgroundModel } from '../../diagram/diagram/page-settings-model';
 import { PathAttributes, TextAttributes, LineAttributes, CircleAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
-import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction } from '../enum/enum';
-import { ThumbsConstraints, SelectorConstraints } from '../enum/enum';
+import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection } from '../enum/enum';
+import { ThumbsConstraints, SelectorConstraints, ElementAction } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { SelectorModel } from '../interaction/selector-model';
 import { IRenderer } from './../rendering/IRenderer';
@@ -705,6 +705,10 @@ export class DiagramRenderer {
         (options as PathAttributes).data = element.absolutePath;
         (options as PathAttributes).data = element.absolutePath;
         let ariaLabel: Object = element.description ? element.description : element.id;
+        if (!this.isSvgMode) {
+            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
+            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
+        }
         this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
     }
 
@@ -1095,6 +1099,7 @@ export class DiagramRenderer {
         if (group.hasChildren()) {
             let parentG: HTMLCanvasElement | SVGElement;
             let svgParent: SvgParent;
+            let flip: FlipDirection;
             for (let child of group.children) {
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children) || child) || parentSvg;
                 if (this.isSvgMode) {
@@ -1104,8 +1109,59 @@ export class DiagramRenderer {
                         parentSvg = svgParent.svg;
                     }
                 }
+                if (!this.isSvgMode) {
+                    child.flip = group.flip;
+                }
                 this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette);
+                if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
+                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
+                    this.renderFlipElement(child, parentG, flip);
+                }
+                if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
+                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
+                    this.renderFlipElement(group, parentG, flip);
+                }
+                if (!(child instanceof TextElement) && group.flip !== 'None' &&
+                    (group.elementActions & ElementAction.ElementIsGroup)) {
+                    this.renderFlipElement(child, parentG || canvas, group.flip);
+                }
             }
+            if (!(group.elementActions & ElementAction.ElementIsGroup)) {
+                this.renderFlipElement(group, canvas, group.flip);
+            }
+        }
+    }
+
+    public renderFlipElement(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement, flip: FlipDirection): void {
+        let attr: object = {};
+        let scaleX: number = 1;
+        let scaleY: number = 1;
+        let posX: number = 0; let posY: number = 0; let offsetX: number = 0;
+        let offsetY: number = 0;
+        if (flip !== 'None') {
+            if (flip === 'Horizontal' || flip === 'Both') {
+                posX = element.bounds.center.x;
+                offsetX = -element.bounds.center.x;
+                scaleX = -1;
+            }
+            if (flip === 'Vertical' || flip === 'Both') {
+                posY = element.bounds.center.y;
+                offsetY = -element.bounds.center.y;
+                scaleY = -1;
+            }
+            attr = {
+                'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
+                    + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
+            };
+        } else {
+            attr = {
+                'transform': 'translate(' + 0 + ',' + 0 + ')'
+
+            };
+        }
+
+        if (attr) {
+            setAttributeSvg(canvas as SVGElement, attr);
         }
     }
 
@@ -1149,6 +1205,9 @@ export class DiagramRenderer {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
+        if (element.flip) {
+            options.flip = element.flip;
+        }
         if (transform) {
             options.x += transform.tx;
             options.y += transform.ty;

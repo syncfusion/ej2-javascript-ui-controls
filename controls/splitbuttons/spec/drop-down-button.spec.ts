@@ -293,6 +293,7 @@ describe('DropDownButton', () => {
             drpButton.toggle();
             expect(element.classList.contains('e-active')).toBeTruthy();
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
+            expect(drpButton.getULElement().getAttribute('role')).toEqual('menu');
             drpButton.toggle();
             expect(element.classList.contains('e-active')).toBeFalsy();
             expect(drpButton.dropDown.element.classList.contains('e-popup-close')).toBeTruthy();

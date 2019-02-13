@@ -9,7 +9,7 @@ import {
     HierarchicalTree, SnapConstraints, SnapSettingsModel, TextModel, LayoutOrientation
 } from '@syncfusion/ej2-diagrams';
 import { DataManager } from '@syncfusion/ej2-data';
-import { hierarchicalTree } from './diagram-data';
+import { hierarchicalTree } from './assets/diagram-data';
 Diagram.Inject(DataBinding, HierarchicalTree, LayoutAnimation);
 
 export interface EmployeeInfo {

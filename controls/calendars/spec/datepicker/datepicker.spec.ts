@@ -608,6 +608,38 @@ describe('Datepicker', () => {
             expect(datepicker.value.valueOf()).toBe(new Date('3/3/2017').valueOf());
             expect(datepicker.element.value).toBe('3/MarchWWW/2017');
         });
+        it('object type format test case', () => {
+            datepicker = new DatePicker({ format: { skeleton:'full'}, value: new Date("12/12/2016") });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value == 'Monday, December 12, 2016').toBe(true);
+        });
+        it('object type format onproperty Change test case', () => {
+            datepicker = new DatePicker({value: new Date("12/12/2016") });
+            datepicker.appendTo('#date');
+            datepicker.format = {skeleton:'full'};
+            datepicker.dataBind();
+            expect(datepicker.element.value == 'Monday, December 12, 2016').toBe(true);
+        });
+        it('valid value entering when popup is in the open state', function () {
+            datepicker = new DatePicker({});
+            datepicker.appendTo('#date');
+            datepicker.show();
+            datepicker.value = new Date('1/1/2019');
+            datepicker.dataBind();
+            datepicker.focusOut();
+            expect(datepicker.element.value).toBe('1/1/2019');
+            expect(document.getElementsByClassName('e-input-group')[0].classList.contains('e-error')).toBe(false);
+        });
+        it('invalid value entering when popup is in the open state', function () {
+            datepicker = new DatePicker({});
+            datepicker.appendTo('#date');
+            datepicker.show();
+            datepicker.element.value = 'fdsgjsg';
+            datepicker.inputBlurHandler();
+            expect(datepicker.value).toBe(null);
+            expect(datepicker.element.value).toBe('fdsgjsg');
+            expect(document.getElementsByClassName('e-input-group')[0].classList.contains('e-error')).toBe(true);
+        });
         /**
          * strictMode true test  case 
          */

@@ -28,7 +28,7 @@ export class SeriesRender {
     private dataLabel: DataLabel = new DataLabel();
 
     private processData(series: SmithchartSeriesModel): void {
-        let dataArray: object[] = <object[]>series.dataSource;
+        let dataArray: Object[] = <Object[]>series.dataSource;
         let resistance: string = series.resistance;
         let reactance: string = series.reactance;
         series.points = [];

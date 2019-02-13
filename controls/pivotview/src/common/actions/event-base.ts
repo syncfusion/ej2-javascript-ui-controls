@@ -186,7 +186,7 @@ export class EventBase {
         this.parent.currentTreeItemsPos = {};
         this.parent.savedTreeFilterPos = {};
         this.parent.isDateField = this.parent.engineModule.formatFields[fieldName] &&
-            this.parent.engineModule.formatFields[fieldName].type === 'date';
+            ((['date', 'dateTime', 'time']).indexOf(this.parent.engineModule.formatFields[fieldName].type) > -1);
         let list: { [key: string]: Object }[] = [];
         let memberCount: number = 1;
         let filterObj: { [key: string]: string } = {};

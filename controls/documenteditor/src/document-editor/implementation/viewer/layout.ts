@@ -3596,11 +3596,8 @@ export class Layout {
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(currentWidget.y + currentWidget.height, 2))) {
                 if (!isNullOrUndefined(viewer.blockToShift)) {
                     viewer.blockToShift = block;
-                    break;
                 }
-                if (isNullOrUndefined(nextWidget.nextWidget)) {
-                    break;
-                }
+                break;
             }
             updateNextBlockList = true;
             if (viewer.owner.isShiftingEnabled && viewer.fieldStacks.length === 0) {

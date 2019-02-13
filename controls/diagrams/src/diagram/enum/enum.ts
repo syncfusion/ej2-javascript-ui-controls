@@ -63,7 +63,30 @@ export type VerticalAlignment =
     'Auto';
 
 
-
+/**
+ * Defines how the diagram elements have to be flipped with respect to its immediate parent
+ * * FlipHorizontal - Translate the diagram element throughout its immediate parent
+ * * FlipVertical - Rotate the diagram element throughout its immediate parent
+ * * Both - Rotate  and Translate the diagram element throughout its immediate parent
+ * * None - Set the flip Direction as None
+ */
+export type FlipDirection =
+    /**
+     * FlipHorizontal - Translate the diagram element throughout its immediate parent
+     */
+    'Horizontal' |
+    /**
+     * FlipVertical - Rotate the diagram element throughout its immediate parent
+     */
+    'Vertical' |
+    /**
+     * Both - Rotate  and Translate the diagram element throughout its immediate parent
+     */
+    'Both' |
+    /**
+     * None - Set the flip Direction as None
+     */
+    'None';
 
 
 /**
@@ -844,6 +867,21 @@ export enum NodeConstraints {
     Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 6 | 1 << 7 | 1 << 8 |
     1 << 9 | 1 << 10 | 1 << 5 | 1 << 12 | 1 << 13 |
     1 << 14 | 1 << 15 | 1 << 16 | 1 << 17 | 1 << 18 | 1 << 19 | 1 << 22
+}
+
+/** Enables/Disables The element actions
+ * None - Diables all element actions are none
+ * ElementIsPort - Enable element action is port
+ * ElementIsGroup - Enable element action as Group 
+ * @private
+ */
+export enum ElementAction {
+    /** Disables all element actions are none  */
+    None = 0,
+    /** Enable the element action is Port  */
+    ElementIsPort = 1 << 1,
+    /** Enable the element action as Group  */
+    ElementIsGroup = 1 << 2,
 }
 
 /** Enables/Disables the handles of the selector

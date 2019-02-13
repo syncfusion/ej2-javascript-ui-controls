@@ -15,7 +15,8 @@ export interface ButtonPropsModel {
     /**
      * Specify the type of the button.
      * Possible values are Button, Submit and Reset.
-     * @event
+     * @default 'Button'
+     * @aspType string
      */
     type?: ButtonType | string;
 

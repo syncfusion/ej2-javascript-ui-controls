@@ -2,9 +2,9 @@
  * MultiSelect spec document
  */
 import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs } from '../../src/multi-select/multi-select';
-import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, EmitType } from '@syncfusion/ej2-base';
 import { createElement, L10n } from '@syncfusion/ej2-base';
-import { dropDownBaseClasses, FilteringEventArgs, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
+import { dropDownBaseClasses, FilteringEventArgs, PopupEventArgs, FocusEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DataManager, ODataV4Adaptor, Query, ODataAdaptor } from '@syncfusion/ej2-data';
 import { MultiSelectModel, ISelectAllEventArgs } from '../../src/index';
 
@@ -4826,6 +4826,73 @@ describe('MultiSelect', () => {
             listObj.enabled = true;
             listObj.dataBind();
             expect((listObj).htmlAttributes['aria-disabled']).toEqual('false');
+        });
+    });
+    describe('EJ2-19524 - UI breaking when use lengthy place holder', () => {
+    let listObj: MultiSelect;
+    let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+    let datasource: { [key: string]: Object }[] =  [
+            { id: 'list1', text: 'JAVA' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' },
+            { id: 'list8', text: 'Racket' },
+            { id: 'list8', text: 'F#' }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                placeholder: 'My placeholder 12345566789',
+                width: 100,
+                showDropDownIcon: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Check Element length', () => {
+            expect((<any>listObj).inputElement.offsetWidth < (<any>listObj).componentWrapper.offsetWidth).toBe(true);
+        });
+    });
+    describe('EJ2-22723 - Multiselect selected value not updated', () => {
+        let listObj: MultiSelect;
+        let element: HTMLSelectElement = <HTMLSelectElement>createElement('select', { id: 'license', attrs: {multiple: 'multiple'}});
+        element.innerHTML = `<option value="">Choose Option</option>
+        <option selected="selected" value="1">Some 1</option>
+        <option selected="selected" value="2">Some 2</option>
+        <option value="3">SSS</option>
+        <option value="4">SHS</option>
+        <option selected="selected" value="5">Yachtmaster Offshore</option>`;
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Value selection', (done) => {
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                mode: "Box",
+                created: (): void => {
+                    expect(listObj.value.length).toBe(3);
+                    expect(listObj.text).toBe('Some 1,Some 2,Yachtmaster Offshore');
+                    done();
+                }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
         });
     });
 });

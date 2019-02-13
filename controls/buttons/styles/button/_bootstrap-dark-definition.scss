@@ -194,6 +194,7 @@ $btn-flat-primary-active-border-color: $btn-primary-active-border-color !default
 $btn-flat-primary-focus-border-color: $btn-primary-focus-border-color !default;
 $btn-flat-primary-disabled-border-color: $btn-disabled-border-color !default;
 $btn-flat-primary-focus-bgcolor: $btn-flat-primary-hover-bgcolor !default;
+$btn-flat-disabled-color: rgba($btn-flat-color, .4) !default;
 $btn-flat-primary-disabled-color: rgba($btn-flat-color, .4) !default;
 $btn-flat-primary-bgcolor: $btn-primary-bgcolor !default;
 $btn-flat-primary-color: $btn-primary-color !default;
@@ -339,4 +340,9 @@ $btn-icon-padding: 0 8px !default;
 $btn-small-icon-padding: 0 6px !default;
 $btn-bigger-icon-padding: 0 10px !default;
 $btn-bigger-small-icon-padding: 0 9px !default;
+$btn-flat-primary-disabled-bgcolor: $btn-primary-disabled-bgcolor !default;
+$btn-flat-success-disabled-bgcolor: $btn-success-disabled-bgcolor !default;
+$btn-flat-info-disabled-bgcolor: $btn-info-disabled-bgcolor !default;
+$btn-flat-warning-disabled-bgcolor: $btn-warning-disabled-bgcolor !default;
+$btn-flat-danger-disabled-bgcolor: $btn-danger-disabled-bgcolor !default;
 //endsize

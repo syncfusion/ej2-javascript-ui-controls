@@ -1098,6 +1098,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private chartid: number = 57723;
     /** @private */
     public svgId: string;
+    /**
+     * Touch object to unwire the touch event from element
+     */
+    private touchObject: Touch;
 
     /**
      * Constructor for creating the widget
@@ -1217,9 +1221,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.renderAreaBorder();
 
-        let axisElement: Element = this.renderAxes();
-
-        this.renderSeriesElements(axisElement);
+        this.renderSeriesElements(this.renderAxes());
 
         this.renderLegend();
 
@@ -1873,6 +1875,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.chartResize
         );
 
+        /**
+         * To fix memory issue 
+         */
+        if (this.touchObject) {
+            this.touchObject.destroy();
+        }
+
     }
 
 
@@ -1895,7 +1904,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         );
 
         this.longPress = this.longPress.bind(this);
-        new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
+        this.touchObject = new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
 
         /*! Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
@@ -2722,13 +2731,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         for (let i: number = 0; i < len; i++) {
                             series = newProp.series[i];
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close)) {
+                                series.high || series.low || series.open || series.close || series.fill || series.name)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                         }
                         if (seriesRefresh) {
-                            this.clearVisibleAxisLabels();
+                            this.calculateVisibleSeries();
+                            this.initTechnicalIndicators();
+                            this.initTrendLines();
+                            this.refreshDefinition(<Column[]>this.columns);
+                            this.refreshDefinition(<Row[]>this.rows);
+                            this.calculateVisibleAxis();
                             this.processData(false);
                             refreshBounds = true;
                         }

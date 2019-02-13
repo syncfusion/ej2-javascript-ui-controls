@@ -1550,19 +1550,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
-    private setPanelValue(): void {
+    private getUpdatedValue(): string {
+        let value: string;
         if (this.editorMode === 'HTML') {
-            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+            value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
                 this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         } else {
-            this.value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
+            value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                 (this.inputElement as HTMLTextAreaElement).value;
         }
-        this.valueContainer.value = this.value;
+        return value;
     }
 
     private updateIntervalValue(): void {
-        this.setPanelValue();
+        this.setProperties({ value: this.getUpdatedValue() }, true);
+        this.valueContainer.value = this.value;
         this.invokeChangeEvent();
     }
 
@@ -1593,7 +1595,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.isBlur && isNOU(trg)) {
             removeClass([this.element], [classes.CLS_FOCUS]);
             this.notify(events.focusChange, {});
-            this.setPanelValue();
+            let value: string = this.getUpdatedValue();
+            this.setProperties({ value: value });
             this.notify(events.toolbarRefresh, { args: e, documentNode: document });
             this.invokeChangeEvent();
             this.isFocusOut = true;

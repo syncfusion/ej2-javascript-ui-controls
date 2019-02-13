@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### Card
+
+#### Bug Fixes
+
+- The issue with white background for the Card control has been fixed in Material theme.
+
 ## 16.4.47 (2019-01-16)
 
 ### Splitter

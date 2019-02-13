@@ -1,4 +1,4 @@
-import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid} from '@syncfusion/ej2-grids';
+import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid, getObject} from '@syncfusion/ej2-grids';
 import { BatchCancelArgs, Column, RecordDoubleClickEventArgs } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
@@ -111,10 +111,15 @@ export class Edit {
                  target.classList.contains('e-treegridcollapse'))) {
         this.isOnBatch = true;
         this.parent.grid.setProperties({selectedRowIndex: args.rowIndex}, true);
-        this.parent.grid.editSettings.mode = 'Batch';
-        this.parent.grid.dataBind();
+        this.updateGridEditMode('Batch');
       }
     }
+  private updateGridEditMode(mode: string): void {
+    this.parent.grid.setProperties({editSettings: {mode: mode}}, true);
+    let updateMethod: Function = getObject('updateEditObj', this.parent.grid.editModule) as Function;
+    updateMethod.apply(this.parent.grid.editModule);
+    this.parent.grid.isEdit = false;
+  }
   private keyPressed(args: KeyboardEventArgs): void {
     if (this.isOnBatch) {
       this.keyPress = args.action;
@@ -157,8 +162,7 @@ export class Edit {
             cell: (<HTMLTableRowElement>this.parent.grid.getSelectedRows()[0]).cells[this.parent.treeColumnIndex],
             column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
           });
-      this.parent.grid.editSettings.mode = 'Normal';
-      this.parent.grid.dataBind();
+      this.updateGridEditMode('Normal');
       this.isOnBatch = false;
     }
     // this.batchRecords = [];
@@ -196,16 +200,18 @@ export class Edit {
           }
           row = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
           this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+          if (this.parent.grid.aggregateModule) {
+            this.parent.grid.aggregateModule.refresh(args.rowData);
+          }
           this.parent.grid.editModule.formObj.destroy();
           if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-            this.parent.grid.editSettings.mode = 'Normal';
-            this.parent.grid.dataBind();
+            this.updateGridEditMode('Normal');
             this.isOnBatch = false;
           }
           this.enableToolbarItems('save');
           removeClass([row], ['e-editedrow', 'e-batchrow']);
           removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-          this.editAction({ value: <ITreeData>args.rowData, action: 'edit' });
+          this.editAction({ value: <ITreeData>args.rowData, action: 'edit' }, args.columnName);
           let saveArgs: CellSaveEventArgs = {
             type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
             previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
@@ -403,7 +409,7 @@ export class Edit {
         }
         return { value: value, isSkip: isSkip };
     }
-    private editAction(details: {value: ITreeData, action: string}): void {
+    private editAction(details: {value: ITreeData, action: string}, columnName?: string): void {
         let value: ITreeData = details.value;
         let action: string = details.action;
         if (action === 'save') {
@@ -457,7 +463,7 @@ export class Edit {
               } else {
                 if (action === 'edit') {
                   for (j = 0; j < keys.length; j++) {
-                    if (treeData[i].hasOwnProperty(keys[j])) {
+                    if (treeData[i].hasOwnProperty(keys[j]) && (this.parent.editSettings.mode !== 'Cell' || keys[j] === columnName)) {
                       treeData[i][keys[j]] = modifiedData[k][keys[j]];
                     }
                   }
@@ -486,7 +492,7 @@ export class Edit {
                 break;
               }
             } else if (!isNullOrUndefined(treeData[i][this.parent.childMapping])) {
-              if (this.removeChildRecords(treeData[i][this.parent.childMapping], modifiedData[k], action, key, originalData)) {
+              if (this.removeChildRecords(treeData[i][this.parent.childMapping], modifiedData[k], action, key, originalData, columnName)) {
                 this.updateParentRow(key, treeData[i], action);
               }
             }
@@ -494,7 +500,8 @@ export class Edit {
         }
         }
       }
-      private removeChildRecords(childRecords: ITreeData[], modifiedData: object, action: string, key: string, originalData?: ITreeData)
+      private removeChildRecords(childRecords: ITreeData[], modifiedData: object, action: string, key: string, originalData?: ITreeData,
+                                 columnName?: string)
         : boolean {
         let isChildAll: boolean = false;
         let j: number = childRecords.length;
@@ -504,7 +511,7 @@ export class Edit {
             if (action === 'edit') {
               let keys: string[] = Object.keys(modifiedData);
               for (let i: number = 0; i < keys.length; i++) {
-                if (childRecords[j].hasOwnProperty(keys[i])) {
+                if (childRecords[j].hasOwnProperty(keys[i]) && (this.parent.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
                   childRecords[j][keys[i]] = modifiedData[keys[i]];
                 }
               }
@@ -535,7 +542,7 @@ export class Edit {
               }
             }
           } else if (!isNullOrUndefined(childRecords[j][this.parent.childMapping])) {
-            if (this.removeChildRecords(childRecords[j][this.parent.childMapping], modifiedData, action, key, originalData)) {
+            if (this.removeChildRecords(childRecords[j][this.parent.childMapping], modifiedData, action, key, originalData, columnName)) {
               this.updateParentRow(key, childRecords[j], action);
             }
           }

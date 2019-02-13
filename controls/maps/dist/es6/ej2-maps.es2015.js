@@ -3102,11 +3102,11 @@ class LayerPanel {
         }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center);
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
-        if (panel.mapObject.markerModule) {
-            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
-        }
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex));
+        }
+        if (panel.mapObject.markerModule) {
+            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
         }
         panel.translateLayerElements(panel.layerObject, layerIndex);
         panel.layerGroup.appendChild(panel.layerObject);
@@ -4175,12 +4175,13 @@ let Maps = class Maps extends Component {
         this.element.appendChild(this.svgObject);
         if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
             let svg = this.svgObject.getBoundingClientRect();
+            let element = document.getElementById(this.element.id);
             let tile = document.getElementById(this.element.id + '_tile_parent').getBoundingClientRect();
-            let bottom = svg.bottom - tile.bottom;
-            let left = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left);
+            let bottom = svg.bottom - tile.bottom - element.offsetTop;
+            let left = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left) + element.offsetTop;
             document.getElementById(this.element.id + '_tile_parent').style.left = (tile.left < this.element.getBoundingClientRect().left ?
-                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : 0) + 'px';
-            let top = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top);
+                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : left) + 'px';
+            let top = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top) + element.offsetTop;
             let value = (bottom <= 10) ? top : (top * 2);
             document.getElementById(this.element.id + '_tile_parent').style.top = value + 'px';
         }
@@ -7795,7 +7796,12 @@ class Zoom {
                             && (!(currentEle.id.indexOf('_dataLableIndex_Group') > -1))) {
                             if (this.maps.isTileMap && (currentEle.id.indexOf('_line_Group') > -1)) {
                                 currentEle.remove();
-                                layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index));
+                                if (layerElement.children.length > 0 && layerElement.children[0]) {
+                                    layerElement.insertBefore(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index), layerElement.children[0]);
+                                }
+                                else {
+                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index));
+                                }
                             }
                             else {
                                 changeBorderWidth(currentEle, index, scale, this.maps);

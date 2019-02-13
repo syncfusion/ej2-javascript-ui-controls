@@ -11552,7 +11552,7 @@ class Resize extends ActionBase {
             }
             else {
                 let cellWidth = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth : 0;
+                    this.actionObj.cellWidth : this.actionObj.cellWidth - this.actionObj.interval;
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -11642,7 +11642,7 @@ class Resize extends ActionBase {
     getLeftRightStyles(e, isLeft) {
         let styles = {};
         let isTimelineView = this.parent.activeView.isTimelineView();
-        let isTimeViews = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > 0 &&
+        let isTimeViews = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
             this.parent.activeViewOptions.timeScale.enable;
         let slotInterval = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
         let pageWidth = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);

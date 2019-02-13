@@ -5,7 +5,7 @@ import {
     SubTreeOrientation, SubTreeAlignments, DiagramTools, Node, DataBinding, HierarchicalTree, SnapConstraints
 } from '@syncfusion/ej2-angular-diagrams';
 import { DataManager } from '@syncfusion/ej2-data';
-import { localBindData } from './../diagram-data';
+import { localBindData } from './assets/diagram-data';
 Diagram.Inject(DataBinding, HierarchicalTree, LayoutAnimation);
 
 export interface EmployeeInfo {

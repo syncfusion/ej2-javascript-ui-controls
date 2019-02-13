@@ -19,6 +19,7 @@ export class SfdtReader {
     /* tslint:disable:no-any */
     private viewer: LayoutViewer = undefined;
     private fieldSeparator: FieldElementBox;
+    private isPageBreakInsideTable: boolean = false;
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
     }
@@ -342,10 +343,13 @@ export class SfdtReader {
                     cell.containerWidget = row;
                     cell.index = j;
                     cell.rowIndex = i;
+                    cell.columnIndex = j;
                     if (block.rows[i].cells[j].hasOwnProperty('cellFormat')) {
                         this.parseCellFormat(block.rows[i].cells[j].cellFormat, cell.cellFormat);
                     }
+                    this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell);
+                    this.isPageBreakInsideTable = false;
                 }
             }
             table.childWidgets.push(row);
@@ -389,6 +393,8 @@ export class SfdtReader {
                 } else if (inline.text === '\t') {
                     textElement = new TabElementBox();
 
+                } else if (inline.text === '\f' && this.isPageBreakInsideTable) {
+                    continue;
                 } else {
                     textElement = new TextElementBox();
                 }

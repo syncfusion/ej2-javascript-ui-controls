@@ -1661,6 +1661,8 @@ export interface DataSourceChangedEventArgs {
     index?: number;
     /** Defines the end of editing function. */
     endEdit?: Function;
+    /** Defines the Cancel of editing process */
+    cancelEdit?: Function;
     /** Defines the changes made in batch editing */
     changes?: Object;
     /** Defines the query */

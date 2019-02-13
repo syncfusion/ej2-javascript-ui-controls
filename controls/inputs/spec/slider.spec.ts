@@ -1191,6 +1191,121 @@ describe('Slider Control', () => {
             expect(document.getElementsByClassName('e-tick-pos') !== null).toBe(true);
         });
     })
+
+    describe('Slider in HTML5 forms testing:', () => {
+        let slider: Slider;
+        let container: HTMLDivElement;
+        let targetElement: HTMLDivElement;
+        let formElement: HTMLFormElement;
+
+        beforeEach(() => {
+            container = createElement('div', {
+                id: "container"
+            }) as HTMLDivElement;
+
+            formElement = createElement('form', {
+                id: 'form'
+            }) as HTMLFormElement;
+
+            targetElement = createElement('div', {
+                id: "slider"
+            }) as HTMLDivElement;
+
+            formElement.appendChild(targetElement);
+
+            container.appendChild(formElement);
+
+            document.body.appendChild(container);
+        })
+
+        afterEach(() => {
+            slider.destroy();
+            slider = null;
+            document.getElementById('container').remove();
+        })
+
+        it('form reset method should make default slider to go back to it default value', () => {
+            slider = new Slider({
+                value: 50
+            });
+            slider.appendTo(targetElement);
+
+            slider.value = 70;
+            expect((targetElement as any).ej2_instances[0].value).toBe(70);
+            formElement.reset();
+            expect((targetElement as any).ej2_instances[0].value).toBe(50);
+        });
+
+        it('form reset method should make min-range slider to go back to it default value', () => {
+            slider = new Slider({
+                value: 50,
+                type: "MinRange"
+            });
+            slider.appendTo(targetElement);
+
+            slider.value = 70;
+            expect((targetElement as any).ej2_instances[0].value).toBe(70);
+            formElement.reset();
+            expect((targetElement as any).ej2_instances[0].value).toBe(50);
+        });
+
+        it('form reset method should make range slider to go back to it default value', () => {
+            slider = new Slider({
+                value: [20, 80],
+                type: "Range"
+            });
+            slider.appendTo(targetElement);
+
+            expect((targetElement as any).ej2_instances[0].value[0]).toBe(20);
+            expect((targetElement as any).ej2_instances[0].value[1]).toBe(80);
+            slider.value = [40, 60];
+            slider.dataBind();
+            expect((targetElement as any).ej2_instances[0].value[0]).toBe(40);
+            expect((targetElement as any).ej2_instances[0].value[1]).toBe(60);
+            formElement.reset();
+            expect((targetElement as any).ej2_instances[0].value[0]).toBe(20);
+            expect((targetElement as any).ej2_instances[0].value[1]).toBe(80);
+        });
+
+        it('slider refresh method and form reset method should move slider to its initial default value', () => {
+            slider = new Slider({
+                value: 50
+            });
+            slider.appendTo(targetElement);
+
+            slider.value = 70;
+            expect((targetElement as any).ej2_instances[0].value).toBe(70);
+            slider.refresh();
+            expect((targetElement as any).ej2_instances[0].value).toBe(50);
+            slider.value = 70;
+            expect((targetElement as any).ej2_instances[0].value).toBe(70);
+            formElement.reset();
+            expect((targetElement as any).ej2_instances[0].value).toBe(50);
+        });
+
+        it('internal form reset value should take min value as its value' +
+            ' when value property is null for default slider', () => {
+                slider = new Slider({
+                    value: null
+                });
+                slider.appendTo(targetElement);
+
+                expect((targetElement as any).ej2_instances[0].value).toBe(0);
+            });
+
+        it('internal form reset value should take min and max value as its value' +
+            ' when value property is null for range slider', () => {
+                slider = new Slider({
+                    value: null,
+                    type: "Range"
+                });
+                slider.appendTo(targetElement);
+
+                expect((targetElement as any).ej2_instances[0].value[0]).toBe(0);
+                expect((targetElement as any).ej2_instances[0].value[1]).toBe(100);
+            });
+    });
+
     describe('Slide related events testing with tooltip with mobile useragent', () => {
         let slider: Slider;
         let dragEle: HTMLElement;

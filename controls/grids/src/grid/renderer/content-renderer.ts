@@ -125,6 +125,9 @@ export class ContentRender implements IRenderer {
      */
     public createContentTable(id: String): Element {
         let innerDiv: Element = <Element>this.getPanel().firstChild;
+        if (this.getTable()) {
+            remove(this.getTable());
+        }
         let table: Element = this.parent.createElement('table', {
             className: 'e-table', attrs: {
                 cellspacing: '0.25px', role: 'grid',

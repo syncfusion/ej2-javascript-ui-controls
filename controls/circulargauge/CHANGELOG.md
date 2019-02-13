@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- Range bar pointer drag is working fine now.
+
 ## 17.1.1-beta (2019-01-29)
 
 ### CircularGauge

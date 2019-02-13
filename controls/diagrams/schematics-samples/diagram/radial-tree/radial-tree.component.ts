@@ -5,7 +5,7 @@ import {
     NodeConstraints, DataBinding, RadialTree, SnapConstraints, ZoomOptions
 } from '@syncfusion/ej2-diagrams';
 import { DataManager } from '@syncfusion/ej2-data';
-import { radialTree, DataInfo } from './../diagram-data';
+import { radialTree, DataInfo } from './assets/diagram-data';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 Diagram.Inject(DataBinding, RadialTree);
 

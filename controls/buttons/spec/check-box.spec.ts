@@ -362,6 +362,77 @@ describe('CheckBox', () => {
         });
     });
 
+    describe('CheckBox in HTML5 forms', () => {
+        let input: HTMLFormElement;
+        let input1: HTMLFormElement;
+        let formElement: HTMLFormElement;
+        let cbox: CheckBox;
+        let cbox1: CheckBox;
+
+        beforeEach(() => {
+
+            formElement = createElement('form', {
+                id: 'form'
+            }) as HTMLFormElement;
+
+            input = createElement('input', { id: 'checkbox1' }) as HTMLFormElement;
+            input.setAttribute('type', 'checkbox');
+
+            input1 = createElement('input', { id: 'checkbox2' }) as HTMLFormElement;
+            input1.setAttribute('type', 'checkbox');
+
+            formElement.appendChild(input);
+            formElement.appendChild(input1);
+
+            document.body.appendChild(formElement);
+        })
+
+        afterEach(() => {
+            cbox.destroy();
+            cbox1.destroy();
+            formElement.remove();
+        })
+
+        it('form reset should make checkbox to its initial value', () => {
+            cbox = new CheckBox({
+                checked: true
+            }, '#checkbox1');
+            cbox1 = new CheckBox({
+                checked: false
+            }, '#checkbox2');
+            cbox.checked = false;
+            expect(cbox.checked).toBeFalsy();
+            expect(cbox1.checked).toBeFalsy();
+            formElement.reset();
+            expect(cbox.checked).toBeTruthy();
+            expect(cbox1.checked).toBeFalsy();
+        });
+
+        it('form reset should make checkbox to its default value', () => {
+            cbox = new CheckBox({}, '#checkbox1');
+            cbox1 = new CheckBox({}, '#checkbox2');
+            cbox.checked = true;
+            cbox1.checked = true;
+            expect(cbox.checked).toBeTruthy();
+            expect(cbox1.checked).toBeTruthy();
+            formElement.reset();
+            expect(cbox.checked).toBeFalsy();
+            expect(cbox1.checked).toBeFalsy();
+        });
+
+        it('form reset with initial value and default value', () => {
+            cbox = new CheckBox({}, '#checkbox1');
+            cbox1 = new CheckBox({ checked: false }, '#checkbox2');
+            cbox.checked = true;
+            cbox1.checked = false;
+            expect(cbox.checked).toBeTruthy();
+            expect(cbox1.checked).toBeFalsy();
+            formElement.reset();
+            expect(cbox.checked).toBeFalsy();
+            expect(cbox1.checked).toBeFalsy();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

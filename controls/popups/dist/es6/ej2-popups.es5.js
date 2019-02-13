@@ -1895,7 +1895,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     element: _this.element,
                     target: _this.target
                 };
-                if (_this.enableResize && _this.animationSettings.effect !== 'None') {
+                if (_this.enableResize) {
                     _this.getMinHeight();
                 }
                 _this.trigger('open', eventArgs);
@@ -3397,9 +3397,13 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         };
         this.trigger('beforeCollision', this.tooltipEventArgs);
         if (elePos.position !== newpos) {
-            var pos = calculatePosition(target, this.tooltipPositionX, elePos.vertical);
+            var pos = calculatePosition(target, elePos.horizontal, elePos.vertical);
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
             var offsetPos = this.calculateTooltipOffset(newpos);
+            offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+                ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
+            offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+                ('RightLeft'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetX) : 0;
             elePos.position = newpos;
             elePos.left = pos.left + offsetPos.left;
             elePos.top = pos.top + offsetPos.top;

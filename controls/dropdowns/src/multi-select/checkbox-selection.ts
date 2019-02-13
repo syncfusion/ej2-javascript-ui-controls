@@ -288,6 +288,7 @@ export class CheckBoxSelection {
     private clickOnBackIcon(e: EventHandler): void {
         this.parent.hidePopup();
         removeClass([document.body, this.parent.popupObj.element], popupFullScreen);
+        this.parent.inputElement.focus();
     }
     private clearText(e: MouseEvent): void {
         (this.parent.targetInputElement as HTMLInputElement).value = '';

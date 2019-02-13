@@ -14,7 +14,11 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { wheel } from '../../chart/user-interaction/zooming.spec';
 import { ILoadedEventArgs } from '../../../src/common/model/interface';
-Chart.Inject(LineSeries, Zoom, ColumnSeries, DataLabel);
+import {  Legend, Category } from '../../../src/index';
+import { categoryData } from './data.spec';
+import { Query } from '@syncfusion/ej2-data';
+
+Chart.Inject(LineSeries, Zoom, ColumnSeries, DataLabel, Legend, Category);
 
 
 
@@ -485,6 +489,77 @@ describe('Chart Control', () => {
                 done();
             };
             chart.loaded = loaded;
+            chart.refresh();
+        });
+    });
+
+    describe('Customer issue: series DataBind', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'seriesData' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal' },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [{ dataSource: categoryData, xName: 'x', yName: 'y', name: 'Gold', fill: 'red', animation: { enable: false }, type: 'Column' }],
+                    height: '400', width: '900',
+                    legendSettings: { visible: true, position: 'Right' }
+                });
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('checking default fill property', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesData_Series_0_Point_1');
+                expect(element.getAttribute('fill')).toEqual('red');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo(ele);
+        });
+        it('checking with changing fill', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesData_Series_0_Point_1');
+                expect(element.getAttribute('fill')).toEqual('blue');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].fill = 'blue';
+            chart.dataBind();
+        });
+        it('checking before the legend name chage', () => {
+            element = document.getElementById('seriesData_chart_legend_element');
+            expect(element.getAttribute('x') === '832' || element.getAttribute('x') === '833').toBe(true);
+            element = document.getElementById('seriesData_chart_legend_text_0');
+            expect(element.textContent).toEqual('Gold');
+        });
+        it('checking with changing name', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesData_chart_legend_element');
+                expect(element.getAttribute('x') === '743' || element.getAttribute('x') === '752').toBe(true);
+                element = document.getElementById('seriesData_chart_legend_text_0');
+                expect(element.textContent).toEqual('Olymbic gold medal');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].name = 'Olymbic gold medal';
+            chart.dataBind();
+        });
+        it('checking with local dataSource with query', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesDataSeriesGroup0');
+                expect(element.childElementCount).toEqual(3);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].query = new Query().take(2);
             chart.refresh();
         });
     });

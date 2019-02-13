@@ -1438,6 +1438,45 @@ describe('ColorPicker', () => {
                 expect(colorPicker.value).toEqual('');
             });
         });
+
+        describe('ColorPicker in HTML5 form', () => {
+            let formElement: HTMLFormElement;
+            beforeEach(() => {
+                formElement = createElement('form', {
+                    id: 'form'
+                }) as HTMLFormElement;
+                formElement.appendChild(element);
+                document.body.appendChild(formElement);
+            })
+            afterEach(() => {
+                colorPicker.destroy();
+                document.body.innerHTML = '';
+            });
+            it('Form reset should reset the form to default value when the value is not set', () => {
+                colorPicker = new ColorPicker({}, '#color-picker');
+                colorPicker.value = '#3f1379';
+                expect(colorPicker.value).toBe('#3f1379');
+                formElement.reset();
+                expect(colorPicker.value).toBe('#008000');
+            });
+            it('Form reset on refresh', () => {
+                colorPicker = new ColorPicker({}, '#color-picker');
+                colorPicker.value = '#3f1379';
+                expect(colorPicker.value).toBe('#3f1379');
+                colorPicker.refresh();
+                expect(colorPicker.value).toBe('#3f1379ff');
+                formElement.reset();
+                expect(colorPicker.value).toBe('#008000');
+            });
+            it('Form reset should reset the form to initial value', () => {
+                colorPicker = new ColorPicker({ value: '#fff' }, '#color-picker');
+                expect(colorPicker.value).toBe('#ffffffff');
+                colorPicker.value = '#538186';
+                expect(colorPicker.value).toBe('#538186');
+                formElement.reset();
+                expect(colorPicker.value).toBe('#ffffff');
+            });
+        });
     });
 
     it('memory leak', () => {

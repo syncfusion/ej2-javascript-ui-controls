@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### Diagram
+
+#### New Features
+
+- Support to flip the node/connector in both horizontal and vertical direction has been added.
+
 ## 16.4.52 (2019-02-05)
 
 ### Diagram
@@ -9,6 +17,7 @@
 #### Bug Fixes
 
 - Exception thrown while enable zoom and pan tool dynamically is now working fine.
+- Exception thrown while build the diagram component with production mode is now working fine.
 
 ## 16.4.48 (2019-01-22)
 

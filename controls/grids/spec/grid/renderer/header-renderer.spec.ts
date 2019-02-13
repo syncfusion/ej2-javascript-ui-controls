@@ -8,7 +8,7 @@ import { Grid } from '../../../src/grid/base/grid';
 import { CellType } from '../../../src/grid/base/enum';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { HeaderCellRenderer } from '../../../src/grid/renderer/header-cell-renderer';
-import { data } from '../base/datasource.spec';
+import { data, customerData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 describe('header renderer module', () => {
@@ -115,6 +115,44 @@ describe('EJ2-6660-Header template', () => {
 
         it('Template column shows sorting option in context menu', () => {
             expect(gridObj.element.querySelectorAll('.e-columnmenu').length).toBe(2);
+
+        });
+
+        afterAll(() => {
+            destroy(gridObj)
+        });
+    });
+    describe('Autogenerate columns', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data, allowPaging: true,
+                    allowGrouping: true,
+                    showColumnMenu: true,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+
+                    ],
+                },
+                done
+            );
+
+        });
+
+        it('Changing the dataSource and columns', () => {
+            gridObj.columns = [];
+            gridObj.dataSource = customerData;
+
+        });
+
+        it('Checking the header and content table', () => {
+            expect(gridObj.element.querySelector('.e-gridheader').querySelectorAll('table').length).toBe(1);
+            expect(gridObj.element.querySelector('.e-gridcontent').querySelectorAll('table').length).toBe(1);
 
         });
 

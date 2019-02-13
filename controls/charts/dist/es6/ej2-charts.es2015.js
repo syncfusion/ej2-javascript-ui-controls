@@ -4124,9 +4124,8 @@ class CartesianAxisLayoutPanel {
                     minorGird = minorGird.concat('M' + ' ' + coor + ' ' + (this.seriesClipRect.y)
                         + 'L ' + coor + ' ' + (this.seriesClipRect.y + this.seriesClipRect.height));
                     coor = (Math.floor(position + rect.x));
-                    let scrollBarHeight = 16;
                     minorTick = minorTick.concat('M' + ' ' + coor + ' ' + (rect.y)
-                        + 'L ' + coor + ' ' + (ticksX + scrollBarHeight));
+                        + 'L ' + coor + ' ' + (ticksX + axis.scrollBarHeight));
                 }
             }
         }
@@ -4140,7 +4139,8 @@ class CartesianAxisLayoutPanel {
                     minorGird = minorGird.concat('M' + ' ' + (this.seriesClipRect.x) + ' ' + coor
                         + 'L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + coor + ' ');
                     coor = (Math.floor(position + rect.y + rect.height));
-                    minorTick = minorTick.concat('M' + ' ' + rect.x + ' ' + coor + 'L ' + ticksY + ' ' + coor + ' ');
+                    minorTick = minorTick.concat('M' + ' ' + rect.x + ' ' + coor + 'L ' + (ticksY - axis.scrollBarHeight) +
+                        ' ' + coor + ' ');
                 }
                 logPosition += logInterval;
             }
@@ -5092,7 +5092,7 @@ class SeriesBase extends ChildProperty {
     refreshDataManager(chart) {
         this.chart = chart;
         let dateSource = this.dataSource || chart.dataSource;
-        if (!(dateSource instanceof DataManager) && !isNullOrUndefined(dateSource)) {
+        if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
             this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, chart, false);
             return;
         }
@@ -5177,7 +5177,7 @@ __decorate$4([
     Property('')
 ], SeriesBase.prototype, "dataSource", void 0);
 __decorate$4([
-    Property({})
+    Property()
 ], SeriesBase.prototype, "query", void 0);
 __decorate$4([
     Collection([], ChartSegment)
@@ -6864,8 +6864,7 @@ let Chart = class Chart extends Component {
         this.renderBorder();
         this.renderTitle();
         this.renderAreaBorder();
-        let axisElement = this.renderAxes();
-        this.renderSeriesElements(axisElement);
+        this.renderSeriesElements(this.renderAxes());
         this.renderLegend();
         this.applyZoomkit();
         this.performSelection();
@@ -7423,6 +7422,12 @@ let Chart = class Chart extends Component {
         EventHandler.remove(this.element, 'contextmenu', this.chartRightClick);
         EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize);
+        /**
+         * To fix memory issue
+         */
+        if (this.touchObject) {
+            this.touchObject.destroy();
+        }
     }
     wireEvents() {
         /*! Find the Events type */
@@ -7436,7 +7441,7 @@ let Chart = class Chart extends Component {
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize.bind(this));
         this.longPress = this.longPress.bind(this);
-        new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
+        this.touchObject = new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
         /*! Apply the style for chart */
         this.setStyle(this.element);
     }
@@ -8225,13 +8230,18 @@ let Chart = class Chart extends Component {
                         for (let i = 0; i < len; i++) {
                             series = newProp.series[i];
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close)) {
+                                series.high || series.low || series.open || series.close || series.fill || series.name)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                         }
                         if (seriesRefresh) {
-                            this.clearVisibleAxisLabels();
+                            this.calculateVisibleSeries();
+                            this.initTechnicalIndicators();
+                            this.initTrendLines();
+                            this.refreshDefinition(this.columns);
+                            this.refreshDefinition(this.rows);
+                            this.calculateVisibleAxis();
                             this.processData(false);
                             refreshBounds = true;
                         }
@@ -20181,20 +20191,14 @@ class ScrollBar {
         }
         else if (this.isExist(id, 'scrollBarBackRect_')) {
             let currentX = this.moveLength(this.previousXY, this.previousRectX);
-            if (this.animateDuration && !this.isLazyLoad) {
-                currentX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
-                this.performAnimation(elem.thumbRectX, currentX);
-            }
-            else {
-                elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
-                this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
-                this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
-                if (this.isLazyLoad) {
-                    let thumbMove = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
-                    let args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
-                    if (args) {
-                        this.component.trigger(scrollEnd, args);
-                    }
+            elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
+            this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
+            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
+            if (this.isLazyLoad) {
+                let thumbMove = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
+                let args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
+                if (args) {
+                    this.component.trigger(scrollEnd, args);
                 }
             }
         }
@@ -20270,7 +20274,7 @@ class ScrollBar {
         let zoomFactor = this.zoomFactor;
         if (this.isThumbDrag) {
             this.svgObject.style.cursor = '-webkit-grabbing';
-            mouseXY = this.isLazyLoad ? ((this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY) : mouseXY;
+            mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
             let currentX = elem.thumbRectX + (mouseXY - this.previousXY);
             if (mouseXY >= 0 && mouseXY <= currentX + elem.thumbRectWidth) {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
@@ -20627,7 +20631,8 @@ class ScrollBar {
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
         this.height = 16;
         let currentX = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
-        this.scrollElements.thumbRectX = currentX > circleRadius ? currentX : circleRadius;
+        let minThumbX = (this.width - minThumbWidth - circleRadius);
+        this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ? circleRadius : currentX;
         this.scrollElements.thumbRectWidth = ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
             ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
     }
@@ -20697,37 +20702,6 @@ class ScrollBar {
      */
     injectTo(axis, component) {
         axis.zoomingScrollBar = new ScrollBar(component, axis);
-    }
-    /**
-     * Animation Calculation for scrollbar
-     * @param previous
-     * @param current
-     */
-    performAnimation(previous, current) {
-        let currentX;
-        let width = this.scrollElements.thumbRectWidth;
-        let range = this.axis.visibleRange;
-        let zoomPosition = this.zoomPosition;
-        let zoomFactor = this.zoomFactor;
-        new Animation({}).animate(createElement('div'), {
-            duration: this.animateDuration,
-            progress: (args) => {
-                currentX = linear(args.timeStamp, 0, current - previous, args.duration) + previous;
-                this.positionThumb(currentX, width);
-                range = this.axis.visibleRange;
-                zoomPosition = this.zoomPosition;
-                zoomFactor = this.zoomFactor;
-                this.setZoomFactorPosition(currentX, width);
-                this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
-            },
-            end: () => {
-                this.scrollElements.thumbRectX = current;
-                this.startX = current;
-                this.positionThumb(current, width);
-                this.setZoomFactorPosition(current, width);
-                this.component.trigger(scrollEnd, this.getArgs(scrollEnd, range, zoomPosition, zoomFactor));
-            }
-        });
     }
     /**
      * Method to destroy scrollbar
@@ -21064,7 +21038,7 @@ class AccumulationSeries extends ChildProperty {
     /** @private To refresh the Datamanager for series */
     refreshDataManager(accumulation, render) {
         let dateSource = this.dataSource || accumulation.dataSource;
-        if (!(dateSource instanceof DataManager)) {
+        if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
             this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, accumulation, render);
             return;
         }
@@ -21307,7 +21281,7 @@ __decorate$8([
     Property('')
 ], AccumulationSeries.prototype, "dataSource", void 0);
 __decorate$8([
-    Property({})
+    Property()
 ], AccumulationSeries.prototype, "query", void 0);
 __decorate$8([
     Property('')
@@ -25023,7 +24997,7 @@ class RangeSeries extends NiceInterval {
         }
     }
     processDataSource(dataSource, query, control, series) {
-        if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource)) {
+        if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource) && isNullOrUndefined(query)) {
             this.dataManagerSuccess({ result: dataSource, count: dataSource.length }, control, series);
             return;
         }
@@ -25725,7 +25699,7 @@ __decorate$11([
     Property(null)
 ], RangeNavigatorSeries.prototype, "yName", void 0);
 __decorate$11([
-    Property({})
+    Property()
 ], RangeNavigatorSeries.prototype, "query", void 0);
 __decorate$11([
     Property('Line')
@@ -26741,7 +26715,7 @@ __decorate$10([
     Property(null)
 ], RangeNavigator.prototype, "yName", void 0);
 __decorate$10([
-    Property({})
+    Property()
 ], RangeNavigator.prototype, "query", void 0);
 __decorate$10([
     Collection([], RangeNavigatorSeries)
@@ -28247,7 +28221,7 @@ __decorate$12([
     Property('')
 ], StockSeries.prototype, "dataSource", void 0);
 __decorate$12([
-    Property({})
+    Property()
 ], StockSeries.prototype, "query", void 0);
 __decorate$12([
     Property('#e74c3d')
@@ -28402,7 +28376,7 @@ __decorate$12([
     Property(1)
 ], StockChartIndicator.prototype, "width", void 0);
 __decorate$12([
-    Property({})
+    Property()
 ], StockChartIndicator.prototype, "query", void 0);
 __decorate$12([
     Property('')

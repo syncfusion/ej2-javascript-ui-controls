@@ -35,7 +35,7 @@ export class ImageProperties {
 
     private initializeImageProperties = (): void => {
         // tslint:disable-next-line:max-line-length
-        this.element = createElement('div', { id: this.elementId + '_imageProperties', styles: 'width:269px;' });
+        this.element = createElement('div', { id: this.elementId + '_imageProperties', className: 'e-de-prop-pane' });
         this.element.style.display = 'none';
         this.container.propertiesPaneContainer.appendChild(this.element);
         this.initImageProp();

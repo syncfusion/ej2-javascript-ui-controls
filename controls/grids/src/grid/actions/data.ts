@@ -379,7 +379,7 @@ export class Data implements IDataProcessor {
                 promise = this.dataManager.update(key, args.data, query.fromTable, query, args.previousData) as Promise<Object>;
                 break;
         }
-        args[pr] = promise;
+        args[pr] = args[pr] ? args[pr] :  promise;
         this.parent.notify(events.crudAction, args);
     }
 
@@ -473,9 +473,12 @@ export class Data implements IDataProcessor {
             if (args.requestType === 'save' || args.requestType === 'delete') {
                 let editArgs: DataSourceChangedEventArgs = args;
                 editArgs.key = key;
+                let promise: string = 'promise';
+                editArgs[promise] = deff.promise;
                 editArgs.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;
+                dataArgs.cancelEdit = deff.reject;
                 this.parent.trigger(events.dataSourceChanged, editArgs);
                 deff.promise.then((e: ReturnType) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
@@ -483,7 +486,8 @@ export class Data implements IDataProcessor {
                         this.parent.notify(events.recordAdded, editArgs);
                     }
                     this.parent.trigger(events.dataStateChange, state);
-                });
+                })
+                .catch(() => void 0);
             } else {
                 this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
                 this.parent.trigger(events.dataStateChange, state);

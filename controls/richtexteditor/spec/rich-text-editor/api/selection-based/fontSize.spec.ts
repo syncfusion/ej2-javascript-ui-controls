@@ -23,7 +23,7 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
             done();
         })
         it(' Test the default value ', () => {
-            expect(rteObj.fontSize.default === '10 pt').toBe(true);
+            expect(rteObj.fontSize.default === null).toBe(true);
         });
         it(' Test the default value of width ', () => {
             expect(rteObj.fontSize.width === "35px").toBe(true);

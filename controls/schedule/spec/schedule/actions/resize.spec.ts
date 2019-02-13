@@ -9,6 +9,46 @@ import * as util from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth, Resize);
 
+describe('Timeline view events resizing with interval 10 mins', () => {
+    describe('Default schedule events', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                width: '500px', height: '500px', selectedDate: new Date(2018, 4, 1),
+                views: ['TimelineDay']
+            };
+            schObj = util.createSchedule(schOptions, timelineData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('left resizing', (done: Function) => {
+            schObj.resizeStart = (args: ResizeEventArgs) => args.interval = 10;
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-resize-clone').length).toEqual(0);
+                let event: { [key: string]: Object } = schObj.eventsData[0] as { [key: string]: Object };
+                expect((event.StartTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 10, 40).getTime());
+                expect((event.EndTime as Date).getTime()).toEqual(new Date(2018, 4, 1, 12, 30).getTime());
+                expect((<HTMLElement>schObj.element.querySelector('[data-id="Appointment_1"]')).offsetWidth).toEqual(183);
+                done();
+            };
+            let resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resizeElement.offsetWidth).toEqual(250);
+            let resizeHandler: HTMLElement = resizeElement.querySelector('.e-left-handler') as HTMLElement;
+            triggerMouseEvent(resizeHandler, 'mousedown');
+            triggerMouseEvent(resizeHandler, 'mousemove', 20, 0);
+            let cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(cloneElement.offsetHeight).toEqual(38);
+            expect(cloneElement.offsetTop).toEqual(202);
+            triggerMouseEvent(resizeHandler, 'mousemove', 30, 0);
+            triggerMouseEvent(resizeHandler, 'mousemove', 80, 0);
+            triggerMouseEvent(resizeHandler, 'mouseup');
+        });
+    });
+});
+
+
 xdescribe('Vertical view events resizing', () => {
     describe('Default schedule events', () => {
         let schObj: Schedule;

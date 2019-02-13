@@ -23,14 +23,7 @@ describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
             done();
         })
         it(' Test the default value ', () => {
-            expect(rteObj.format.default === 'Paragraph').toBe(true);
-        });
-        it(' Test the default value of width ', () => {
-            expect(rteObj.format.width === "65px").toBe(true);
-        });
-
-        it(' Test the default value of items ', () => {
-            expect(rteObj.format.types.length === 7).toBe(true);
+            expect(rteObj.undoRedoSteps === 30).toBe(true);
         });
     });
 

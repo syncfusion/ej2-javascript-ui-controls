@@ -305,7 +305,7 @@
           background-color: $btn-flat-bgcolor;
           border-color: $btn-flat-disabled-border-color;
           box-shadow: $btn-flat-box-shadow;
-          color: $btn-flat-primary-disabled-color;
+          color: $btn-flat-disabled-color;
         }
 
         & .e-ripple-element {
@@ -337,7 +337,7 @@
           }
 
           &:disabled {
-            background-color: $btn-disabled-bgcolor;
+            background-color: $btn-flat-primary-disabled-bgcolor;
             border-color: $btn-flat-primary-disabled-border-color;
             box-shadow: $btn-flat-box-shadow;
             color: $btn-flat-primary-disabled-color;
@@ -376,7 +376,7 @@
           }
 
           &:disabled {
-            background-color: $btn-disabled-bgcolor;
+            background-color: $btn-flat-success-disabled-bgcolor;
             border-color: $btn-flat-success-disabled-border-color;
             color: $btn-flat-success-disabled-color;
           }
@@ -414,7 +414,7 @@
           }
 
           &:disabled {
-            background-color: $btn-disabled-bgcolor;
+            background-color: $btn-flat-info-disabled-bgcolor;
             border-color: $btn-flat-info-disabled-border-color;
             color: $btn-flat-info-disabled-color;
           }
@@ -452,7 +452,7 @@
           }
 
           &:disabled {
-            background-color: $btn-disabled-bgcolor;
+            background-color: $btn-flat-warning-disabled-bgcolor;
             border-color: $btn-flat-warning-disabled-border-color;
             color: $btn-flat-warning-disabled-color;
           }
@@ -490,7 +490,7 @@
           }
 
           &:disabled {
-            background-color: $btn-disabled-bgcolor;
+            background-color: $btn-flat-danger-disabled-bgcolor;
             border-color: $btn-flat-danger-disabled-border-color;
             color: $btn-flat-danger-disabled-color;
           }

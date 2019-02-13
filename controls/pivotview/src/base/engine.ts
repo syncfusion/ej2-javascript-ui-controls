@@ -360,8 +360,8 @@ export class PivotEngine {
                 if (!isNullOrUndefined(mkey)) {
                     if (!isDataAvail) {
                         let fKey: string = mkey;
-                        let formattedValue: IAxisSet = (this.pageSettings &&
-                            !(this.formatFields[key] && this.formatFields[key].type === 'date')) ? ({
+                        let formattedValue: IAxisSet = (this.pageSettings && !(this.formatFields[key] &&
+                            (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
                                 formattedText: isNullOrUndefined(mkey) ? mkey : mkey.toString(),
                                 actualText: mkey
                             }) : this.getFormattedValue(mkey, key);
@@ -374,7 +374,8 @@ export class PivotEngine {
                                 index: [dl], ordinal: membersCnt,
                                 isDrilled: this.isExpandAll ? true : false
                             };
-                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: formattedValue.actualText });
+                            /* tslint:disable-next-line:max-line-length */
+                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
                             //sort.push(mkey);
                         } else {
                             members[mkey].index.push(dl);
@@ -733,7 +734,8 @@ export class PivotEngine {
             field.filter = filter;
             field.filterType = type;
             field.isExcelFilter = isLabelFilter;
-            let members: IMembers = (this.formatFields[name] && this.formatFields[name].type === 'date') ?
+            let members: IMembers = (this.formatFields[name] &&
+                (['date', 'dateTime', 'time'].indexOf(this.formatFields[name].type) > -1)) ?
                 field.formattedMembers : field.members;
             let allowFil: boolean = isInclude;
             let final: IIterator = {};
@@ -1346,6 +1348,8 @@ export class PivotEngine {
             let childrens: IField = this.fieldList[fieldName];
             let index: { [key: number]: number[] } = {};
             let isNoData: boolean = false;
+            let isDateType: boolean = (this.formatFields[fieldName] &&
+                (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1));
             let showNoDataItems: boolean = (position.length < 1 && keyInd > 0) || field.showNoDataItems;
             let savedMembers: IStringIndex = {};
             if (showNoDataItems) {
@@ -1380,10 +1384,13 @@ export class PivotEngine {
                     continue;
                 }
                 member.isDrilled = member.hasChild ? childrens.members[headerValue].isDrilled : false;
-                let formattedValue: IAxisSet = (this.formatFields[fieldName] && this.formatFields[fieldName].type === 'date') ?
+                let formattedValue: IAxisSet = isDateType ?
                     this.getFormattedValue(headerValue, fieldName) : { formattedText: headerValue.toString(), actualText: headerValue };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
+                if (isDateType) {
+                    member.dateText = formattedValue.dateText;
+                }
                 let availData: boolean = showNoDataItems ? (this.filterPosObj[position[pos]] !== undefined &&
                     !isNoData ? true : false) : true;
                 //member.name = members[memInd];
@@ -1461,10 +1468,16 @@ export class PivotEngine {
             }
             /* tslint:disable:typedef */
             if (this.enableSort) {
-                //return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
-                return childrens.sort === 'Ascending' ?
-                    (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                    (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)));
+                // return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
+                if (isDateType) {
+                    return childrens.sort === 'Ascending' ?
+                        (hierarchy.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
+                        (hierarchy.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0)));
+                } else {
+                    return childrens.sort === 'Ascending' ?
+                        (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                        (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)));
+                }
             } else {
                 return hierarchy;
             }
@@ -1496,7 +1509,8 @@ export class PivotEngine {
                 let member: IAxisSet = {};
                 let memInd: number = this.indexMatrix[position[pos]][childrens.index];
                 let slicedHeader: IAxisSet = slicedHeaders[orderedIndex[memInd]];
-                let formattedValue: IAxisSet = (this.formatFields[field] && this.formatFields[field].type === 'date') ?
+                let formattedValue: IAxisSet = (this.formatFields[field] &&
+                    (['date', 'dateTime', 'time'].indexOf(this.formatFields[field].type) > -1)) ?
                     this.getFormattedValue(data[position[pos]][field] as string, field) :
                     { formattedText: data[position[pos]][field].toString(), actualText: data[position[pos]][field].toString() };
                 if (!(slicedHeader && slicedHeader.formattedText === formattedValue.formattedText)) {
@@ -2599,10 +2613,14 @@ export class PivotEngine {
     public getFormattedValue(value: number | string, fieldName: string): IAxisSet {
         let formattedValue: IAxisSet = {
             formattedText: value !== undefined ? value === null ? 'null' : value.toString() : undefined,
-            actualText: value !== undefined ? value === null ? 'null' : value : undefined
+            actualText: value !== undefined ? value === null ? 'null' : value : undefined,
+            dateText: value !== undefined ? value === null ? 'null' : value : undefined
         };
         if (this.formatFields[fieldName] && value) {
-            let formatSetting: IFormatSettings = extend({}, this.formatFields[fieldName], null, true) as IFormatSettings;
+            let formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName]).properties ?
+                (<{ [key: string]: Object }>this.formatFields[fieldName]).properties : this.formatFields[fieldName]);
+            let formatSetting: IFormatSettings = extend({}, formatField, null, true) as IFormatSettings;
+
             delete formatSetting.name;
             if (!formatSetting.minimumSignificantDigits && formatSetting.minimumSignificantDigits < 1) {
                 delete formatSetting.minimumSignificantDigits;
@@ -2616,9 +2634,9 @@ export class PivotEngine {
                 formattedValue.formattedText = this.globalize.formatNumber(value as number, formatSetting);
             }
             formattedValue.actualText = value;
-            if (formatSetting.type && this.formatFields[fieldName].type === 'date') {
+            if (formatSetting.type && ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
                 formatSetting.format = 'yyyy/MM/dd/HH/mm/ss';
-                formattedValue.actualText = this.globalize.formatDate(new Date(value as string), formatSetting);
+                formattedValue.dateText = this.globalize.formatDate(new Date(value as string), formatSetting);
             }
         }
         return formattedValue;
@@ -2910,6 +2928,7 @@ export interface IAxisSet {
     style?: IStyle;
     enableHyperlink?: boolean;
     showSubTotals?: boolean;
+    dateText?: number | string;
 }
 interface ValueSortData {
     rowData: IDataSet[];

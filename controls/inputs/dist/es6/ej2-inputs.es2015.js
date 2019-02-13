@@ -3109,6 +3109,30 @@ let Slider = class Slider extends Component {
         this.ticksFormatInfo = {};
         this.initCultureInfo();
         this.initCultureFunc();
+        this.formChecker();
+    }
+    formChecker() {
+        const formElement = closest(this.element, 'form');
+        if (formElement) {
+            this.isForm = true;
+            // this condition needs to be checked, if the slider is going to be refreshed by `refresh()`
+            // then we need to revert the slider `value` back to `formResetValue` to preserve the initial value
+            if (!isNullOrUndefined(this.formResetValue)) {
+                this.setProperties({ 'value': this.formResetValue }, true);
+            }
+            this.formResetValue = this.value;
+            if (this.type === 'Range' &&
+                (isNullOrUndefined(this.formResetValue) || typeof (this.formResetValue) !== 'object')) {
+                this.formResetValue = [parseFloat(formatUnit(this.min)), parseFloat(formatUnit(this.max))];
+            }
+            else if (isNullOrUndefined(this.formResetValue)) {
+                this.formResetValue = parseFloat(formatUnit(this.min));
+            }
+            this.formElement = formElement;
+        }
+        else {
+            this.isForm = false;
+        }
     }
     initCultureFunc() {
         this.internationalization = new Internationalization(this.locale);
@@ -5315,6 +5339,9 @@ let Slider = class Slider extends Component {
                 this.wireButtonEvt(false);
             }
             this.wireMaterialTooltipEvent(false);
+            if (this.isForm) {
+                EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+            }
         }
     }
     unwireEvents() {
@@ -5331,6 +5358,11 @@ let Slider = class Slider extends Component {
             this.wireButtonEvt(true);
         }
         this.wireMaterialTooltipEvent(true);
+        EventHandler.remove(this.element, 'reset', this.formResetHandler);
+    }
+    formResetHandler() {
+        this.setProperties({ 'value': this.formResetValue }, true);
+        this.setValue();
     }
     keyUp(event) {
         if (event.keyCode === 9 && event.target.classList.contains(classNames.sliderHandle)) {
@@ -5588,18 +5620,20 @@ let Slider = class Slider extends Component {
                     this.setCSSClass(oldProp.cssClass);
                     break;
                 case 'value':
-                    let value = isNullOrUndefined(newProp.value) ?
-                        (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
-                    this.setProperties({ 'value': value }, true);
-                    if (oldProp.value.toString() !== value.toString()) {
-                        this.setValue();
-                        this.refreshTooltip();
-                        if (this.type === 'Range') {
-                            if (isNullOrUndefined(newProp.value) || oldProp.value[1] === value[1]) {
-                                this.activeHandle = 1;
-                            }
-                            else {
-                                this.activeHandle = 2;
+                    if (newProp && oldProp) {
+                        let value = isNullOrUndefined(newProp.value) ?
+                            (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
+                        this.setProperties({ 'value': value }, true);
+                        if (oldProp.value.toString() !== value.toString()) {
+                            this.setValue();
+                            this.refreshTooltip();
+                            if (this.type === 'Range') {
+                                if (isNullOrUndefined(newProp.value) || oldProp.value[1] === value[1]) {
+                                    this.activeHandle = 1;
+                                }
+                                else {
+                                    this.activeHandle = 2;
+                                }
                             }
                         }
                     }
@@ -6147,11 +6181,18 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     defRule(input, ruleCon, ruleName, value) {
         let message = input.getAttribute('data-' + ruleName + '-message');
         let annotationMessage = input.getAttribute('data-val-' + ruleName);
+        let customMessage;
+        if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
+            customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
+        }
         if (message) {
             value = [value, message];
         }
         else if (annotationMessage) {
             value = [value, annotationMessage];
+        }
+        else if (customMessage) {
+            value = [value, customMessage];
         }
         ruleCon[ruleName] = value;
     }
@@ -6344,8 +6385,10 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     }
     // Return default error message or custom error message 
     getErrorMessage(ruleValue, rule) {
-        let message = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
-            (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
+        let message = this.element[0].getAttribute('data-' + rule + '-message') ?
+            this.element[0].getAttribute('data-' + rule + '-message') :
+            (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
+                (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         let formats = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (let i = 0; i < formats.length; i++) {
@@ -9253,8 +9296,16 @@ let ColorPicker = class ColorPicker extends Component {
         super(options, element);
     }
     preRender() {
+        let ele = this.element;
+        this.formElement = closest(this.element, 'form');
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         let localeText = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode' };
         this.l10n = new L10n('colorpicker', localeText, this.locale);
+        if (ele.getAttribute('ejs-for') && !ele.getAttribute('name')) {
+            ele.setAttribute('name', ele.id);
+        }
     }
     /**
      * To Initialize the component rendering
@@ -9280,7 +9331,11 @@ let ColorPicker = class ColorPicker extends Component {
         this.container = this.createElement('div', { className: CONTAINER });
         this.getWrapper().appendChild(this.container);
         let value = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
-        this.element.value = value.slice(0, 7);
+        let slicedValue = value.slice(0, 7);
+        if (isNullOrUndefined(this.initialInputValue)) {
+            this.initialInputValue = slicedValue;
+        }
+        this.element.value = slicedValue;
         this.setProperties({ 'value': value }, true);
         if (this.enableRtl) {
             wrapper.classList.add(RTL$1);
@@ -9684,7 +9739,9 @@ let ColorPicker = class ColorPicker extends Component {
         this.createNumericInput(container.appendChild(this.createElement('input', { className: OPACITY })), this.rgb[3] * 100, 'A', 100);
     }
     appendValueSwitchBtn(targetEle) {
-        let valueSwitchBtn = this.createElement('button', { className: 'e-icons e-btn e-flat e-icon-btn ' + FORMATSWITCH });
+        let valueSwitchBtn = this.createElement('button', {
+            className: 'e-icons e-css e-btn e-flat e-icon-btn ' + FORMATSWITCH
+        });
         targetEle.appendChild(valueSwitchBtn);
         if (this.isPicker() && !this.getWrapper().classList.contains(HIDERGBA)) {
             valueSwitchBtn.addEventListener('click', this.formatSwitchHandler.bind(this));
@@ -9701,13 +9758,13 @@ let ColorPicker = class ColorPicker extends Component {
                 let apply = this.l10n.getConstant('Apply');
                 controlBtnWrapper.appendChild(this.createElement('button', {
                     innerHTML: apply,
-                    className: 'e-btn e-flat e-primary e-small ' + APPLY,
+                    className: 'e-btn e-css e-flat e-primary e-small ' + APPLY,
                     attrs: { 'title': apply }
                 }));
                 let cancel = this.l10n.getConstant('Cancel');
                 controlBtnWrapper.appendChild(this.createElement('button', {
                     innerHTML: cancel,
-                    className: 'e-btn e-flat e-small ' + CANCEL,
+                    className: 'e-btn e-css e-flat e-small ' + CANCEL,
                     attrs: { 'title': cancel }
                 }));
             }
@@ -9932,6 +9989,10 @@ let ColorPicker = class ColorPicker extends Component {
             EventHandler.add(this.container, 'click', this.paletteClickHandler, this);
             EventHandler.add(this.container, 'keydown', this.paletteKeyDown, this);
         }
+    }
+    formResetHandler() {
+        this.value = this.initialInputValue;
+        attributes(this.element, { 'value': this.initialInputValue });
     }
     addCtrlSwitchEvent() {
         EventHandler.add(select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler, this);
@@ -10437,6 +10498,9 @@ let ColorPicker = class ColorPicker extends Component {
         wrapper.parentElement.insertBefore(this.element, wrapper);
         detach(wrapper);
         this.container = null;
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     }
     destroyOtherComp() {
         if (this.isPicker()) {
@@ -11113,10 +11177,12 @@ let TextBox = class TextBox extends Component {
             container: this.textboxWrapper.container
         };
         this.trigger('input', eventArgs);
+        args.stopPropagation();
     }
     changeHandler(args) {
         this.setProperties({ value: this.element.value }, true);
         this.raiseChangeEvent(args, true);
+        args.stopPropagation();
     }
     raiseChangeEvent(event, interaction) {
         let eventArgs = {

@@ -1,14 +1,9 @@
-
 /*! component's default definitions and variables */
 $skin-name: 'material' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: $border-radius !default;
 $card-box-shadow: $shadow-color !default;
-$card-action-btn-txt-transform: none !default;;
-$card-bg-color: $default-bg-color !default;
-$card-focus-bg-color: $default-bg-color !default;
-$card-hover-bg-color: $default-bg-color !default;
-$card-active-bg-color: $default-bg-color !default;
+$card-action-btn-txt-transform: none !default;
 $card-focus-brdr-color: $default-border-color !default;
 $card-hover-brdr-color: $default-border-color !default;
 $card-active-brdr-color: $default-border-color !default;
@@ -118,9 +113,6 @@ $card-action-btn-pressed-bg: $default-bg-color !default;
 $card-action-btn-pressed-border: 0 !default;
 $card-action-btn-pressed-font: $default-font-color !default;
 $card-font-color: $default-font-color !default;
-$card-header-txt-title-color: $default-font-color !default;
-$card-header-txt-subtitle-color: $default-font-color !default;
-$card-content-font-color: $card-header-txt-subtitle-color !default;
 $card-action-btn-icon-color: $default-font-color !default;
 /*! component's theme wise override material-definitions and variables */
 $skin-name: 'material' !default;
@@ -210,10 +202,10 @@ $card-action-btn-bigger-icon-height: 24px !default;
 
 // color
 
-$card-bg-color: $grey-white !default;
-$card-focus-bg-color: $grey-white !default;
-$card-hover-bg-color: $grey-white !default;
-$card-active-bg-color: $grey-white !default;
+$card-bg-color: $grey-dark !default;
+$card-focus-bg-color: $grey-dark !default;
+$card-hover-bg-color: $grey-dark !default;
+$card-active-bg-color: $grey-dark !default;
 $card-focus-brdr-color: $default-border-color !default;
 $card-hover-brdr-color: $default-border-color !default;
 $card-active-brdr-color: $default-border-color !default;
@@ -238,8 +230,8 @@ $card-action-btn-pressed-bg: rgba($grey-black, .12) !default;
 $card-action-btn-pressed-border: 0 !default;
 $card-action-btn-pressed-font: $accent  !default;
 $card-font-color: rgba($grey-light-font, .87) !default;
-$card-header-txt-title-color: rgba($grey-light-font, .87) !default;
-$card-header-txt-subtitle-color: rgba($grey-light-font, .54) !default;
+$card-header-txt-title-color: $grey-dark-font !default;
+$card-header-txt-subtitle-color: rgba($grey-dark-font, .7) !default;
 $card-content-font-color: $card-header-txt-subtitle-color !default;
 $card-box-shadow: 0 2px 3px 0 rgba($grey-black, .16) !default;
 $card-action-btn-icon-color: rgba($grey-light-font, .54) !default;

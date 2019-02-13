@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- Form reset issue is fixed.
+
 ## 16.4.52 (2019-02-05)
 
 ### MaskedTextBox

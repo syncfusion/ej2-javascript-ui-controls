@@ -5,7 +5,7 @@ import {
     Container, TextElement, StackPanel, ImageElement, DataBinding, HierarchicalTree, TreeInfo
 } from '@syncfusion/ej2-diagrams';
 import { DataManager } from '@syncfusion/ej2-data';
-import { data } from './overview-data';
+import { data } from './assets/overview-data';
 Diagram.Inject(DataBinding, HierarchicalTree);
 /**
  * Sample for Overview layout

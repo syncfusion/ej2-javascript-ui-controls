@@ -4388,9 +4388,8 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                     minorGird = minorGird.concat('M' + ' ' + coor + ' ' + (this.seriesClipRect.y)
                         + 'L ' + coor + ' ' + (this.seriesClipRect.y + this.seriesClipRect.height));
                     coor = (Math.floor(position + rect.x));
-                    var scrollBarHeight = 16;
                     minorTick = minorTick.concat('M' + ' ' + coor + ' ' + (rect.y)
-                        + 'L ' + coor + ' ' + (ticksX + scrollBarHeight));
+                        + 'L ' + coor + ' ' + (ticksX + axis.scrollBarHeight));
                 }
             }
         }
@@ -4404,7 +4403,8 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                     minorGird = minorGird.concat('M' + ' ' + (this.seriesClipRect.x) + ' ' + coor
                         + 'L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + coor + ' ');
                     coor = (Math.floor(position + rect.y + rect.height));
-                    minorTick = minorTick.concat('M' + ' ' + rect.x + ' ' + coor + 'L ' + ticksY + ' ' + coor + ' ');
+                    minorTick = minorTick.concat('M' + ' ' + rect.x + ' ' + coor + 'L ' + (ticksY - axis.scrollBarHeight) +
+                        ' ' + coor + ' ');
                 }
                 logPosition += logInterval;
             }
@@ -5409,7 +5409,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.chart = chart;
         var dateSource = this.dataSource || chart.dataSource;
-        if (!(dateSource instanceof DataManager) && !isNullOrUndefined(dateSource)) {
+        if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
             this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, chart, false);
             return;
         }
@@ -5495,7 +5495,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], SeriesBase.prototype, "dataSource", void 0);
     __decorate$4([
-        Property({})
+        Property()
     ], SeriesBase.prototype, "query", void 0);
     __decorate$4([
         Collection([], ChartSegment)
@@ -7315,8 +7315,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.renderBorder();
         this.renderTitle();
         this.renderAreaBorder();
-        var axisElement = this.renderAxes();
-        this.renderSeriesElements(axisElement);
+        this.renderSeriesElements(this.renderAxes());
         this.renderLegend();
         this.applyZoomkit();
         this.performSelection();
@@ -7891,6 +7890,12 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, 'contextmenu', this.chartRightClick);
         EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize);
+        /**
+         * To fix memory issue
+         */
+        if (this.touchObject) {
+            this.touchObject.destroy();
+        }
     };
     Chart.prototype.wireEvents = function () {
         /*! Find the Events type */
@@ -7904,7 +7909,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize.bind(this));
         this.longPress = this.longPress.bind(this);
-        new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
+        this.touchObject = new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
         /*! Apply the style for chart */
         this.setStyle(this.element);
     };
@@ -8709,13 +8714,18 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                         for (var i = 0; i < len; i++) {
                             series = newProp.series[i];
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close)) {
+                                series.high || series.low || series.open || series.close || series.fill || series.name)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                         }
                         if (seriesRefresh) {
-                            this.clearVisibleAxisLabels();
+                            this.calculateVisibleSeries();
+                            this.initTechnicalIndicators();
+                            this.initTrendLines();
+                            this.refreshDefinition(this.columns);
+                            this.refreshDefinition(this.rows);
+                            this.calculateVisibleAxis();
                             this.processData(false);
                             refreshBounds = true;
                         }
@@ -21606,20 +21616,14 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         }
         else if (this.isExist(id, 'scrollBarBackRect_')) {
             var currentX = this.moveLength(this.previousXY, this.previousRectX);
-            if (this.animateDuration && !this.isLazyLoad) {
-                currentX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
-                this.performAnimation(elem.thumbRectX, currentX);
-            }
-            else {
-                elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
-                this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
-                this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
-                if (this.isLazyLoad) {
-                    var thumbMove = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
-                    var args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
-                    if (args) {
-                        this.component.trigger(scrollEnd, args);
-                    }
+            elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
+            this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
+            this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
+            if (this.isLazyLoad) {
+                var thumbMove = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
+                var args = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
+                if (args) {
+                    this.component.trigger(scrollEnd, args);
                 }
             }
         }
@@ -21696,7 +21700,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         var zoomFactor = this.zoomFactor;
         if (this.isThumbDrag) {
             this.svgObject.style.cursor = '-webkit-grabbing';
-            mouseXY = this.isLazyLoad ? ((this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY) : mouseXY;
+            mouseXY = (this.isVertical || this.axis.isInversed) ? this.width - mouseXY : mouseXY;
             var currentX = elem.thumbRectX + (mouseXY - this.previousXY);
             if (mouseXY >= 0 && mouseXY <= currentX + elem.thumbRectWidth) {
                 elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
@@ -22053,7 +22057,8 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
         this.width = this.isVertical ? axis.rect.height : axis.rect.width;
         this.height = 16;
         var currentX = this.zoomPosition * (this.isVertical ? axis.rect.height : this.width);
-        this.scrollElements.thumbRectX = currentX > circleRadius ? currentX : circleRadius;
+        var minThumbX = (this.width - minThumbWidth - circleRadius);
+        this.scrollElements.thumbRectX = currentX > minThumbX ? minThumbX : currentX < circleRadius ? circleRadius : currentX;
         this.scrollElements.thumbRectWidth = ((currentWidth + this.scrollElements.thumbRectX) < this.width - (circleRadius * 2))
             ? currentWidth : this.width - this.scrollElements.thumbRectX - circleRadius;
     };
@@ -22123,38 +22128,6 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
      */
     ScrollBar.prototype.injectTo = function (axis, component) {
         axis.zoomingScrollBar = new ScrollBar(component, axis);
-    };
-    /**
-     * Animation Calculation for scrollbar
-     * @param previous
-     * @param current
-     */
-    ScrollBar.prototype.performAnimation = function (previous, current) {
-        var _this = this;
-        var currentX;
-        var width = this.scrollElements.thumbRectWidth;
-        var range = this.axis.visibleRange;
-        var zoomPosition = this.zoomPosition;
-        var zoomFactor = this.zoomFactor;
-        new Animation({}).animate(createElement('div'), {
-            duration: this.animateDuration,
-            progress: function (args) {
-                currentX = linear(args.timeStamp, 0, current - previous, args.duration) + previous;
-                _this.positionThumb(currentX, width);
-                range = _this.axis.visibleRange;
-                zoomPosition = _this.zoomPosition;
-                zoomFactor = _this.zoomFactor;
-                _this.setZoomFactorPosition(currentX, width);
-                _this.component.trigger(scrollChanged, _this.getArgs(scrollChanged, range, zoomPosition, zoomFactor));
-            },
-            end: function () {
-                _this.scrollElements.thumbRectX = current;
-                _this.startX = current;
-                _this.positionThumb(current, width);
-                _this.setZoomFactorPosition(current, width);
-                _this.component.trigger(scrollEnd, _this.getArgs(scrollEnd, range, zoomPosition, zoomFactor));
-            }
-        });
     };
     /**
      * Method to destroy scrollbar
@@ -22542,7 +22515,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
     AccumulationSeries.prototype.refreshDataManager = function (accumulation, render) {
         var _this = this;
         var dateSource = this.dataSource || accumulation.dataSource;
-        if (!(dateSource instanceof DataManager)) {
+        if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
             this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, accumulation, render);
             return;
         }
@@ -22786,7 +22759,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], AccumulationSeries.prototype, "dataSource", void 0);
     __decorate$8([
-        Property({})
+        Property()
     ], AccumulationSeries.prototype, "query", void 0);
     __decorate$8([
         Property('')
@@ -26796,7 +26769,7 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
     };
     RangeSeries.prototype.processDataSource = function (dataSource, query, control, series) {
         var _this = this;
-        if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource)) {
+        if (!(dataSource instanceof DataManager) && !isNullOrUndefined(dataSource) && isNullOrUndefined(query)) {
             this.dataManagerSuccess({ result: dataSource, count: dataSource.length }, control, series);
             return;
         }
@@ -27530,7 +27503,7 @@ var RangeNavigatorSeries = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], RangeNavigatorSeries.prototype, "yName", void 0);
     __decorate$11([
-        Property({})
+        Property()
     ], RangeNavigatorSeries.prototype, "query", void 0);
     __decorate$11([
         Property('Line')
@@ -28582,7 +28555,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], RangeNavigator.prototype, "yName", void 0);
     __decorate$10([
-        Property({})
+        Property()
     ], RangeNavigator.prototype, "query", void 0);
     __decorate$10([
         Collection([], RangeNavigatorSeries)
@@ -30165,7 +30138,7 @@ var StockSeries = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], StockSeries.prototype, "dataSource", void 0);
     __decorate$12([
-        Property({})
+        Property()
     ], StockSeries.prototype, "query", void 0);
     __decorate$12([
         Property('#e74c3d')
@@ -30325,7 +30298,7 @@ var StockChartIndicator = /** @__PURE__ @class */ (function (_super) {
         Property(1)
     ], StockChartIndicator.prototype, "width", void 0);
     __decorate$12([
-        Property({})
+        Property()
     ], StockChartIndicator.prototype, "query", void 0);
     __decorate$12([
         Property('')

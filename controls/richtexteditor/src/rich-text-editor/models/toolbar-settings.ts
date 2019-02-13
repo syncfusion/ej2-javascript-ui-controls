@@ -268,9 +268,9 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
 export class FontFamily extends ChildProperty<FontFamily> {
     /**
      * Specifies default font family selection
-     * @default 0
+     * @default 'null'
      */
-    @Property('Segoe UI')
+    @Property(null)
     public default: string;
     /**
      * Specifies content width
@@ -293,9 +293,9 @@ export class FontFamily extends ChildProperty<FontFamily> {
 export class FontSize extends ChildProperty<FontSize> {
     /**
      * Specifies default font size selection
-     * @default 0
+     * @default 'null'
      */
-    @Property('10 pt')
+    @Property(null)
     public default: string;
     /**
      * Specifies content width
@@ -318,9 +318,9 @@ export class FontSize extends ChildProperty<FontSize> {
 export class Format extends ChildProperty<Format> {
     /**
      * Specifies default format
-     * @default 'Paragraph'
+     * @default 'null'
      */
-    @Property('Paragraph')
+    @Property(null)
     public default: string;
     /**
      * Specifies content width

@@ -62,7 +62,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Defines class/multiple classes separated by a space in the Button element. The Button types, styles, and
      * size can be defined by using
-     * [`this`](http://ej2.syncfusion.com/documentation/button/howto.html?lang=typescript#create-a-block-button).
+     * [`this`](https://ej2.syncfusion.com/documentation/button/how-to/create-a-block-button/).
      * @default ""
      */
     @Property('')

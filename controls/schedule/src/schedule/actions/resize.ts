@@ -215,7 +215,7 @@ export class Resize extends ActionBase {
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             } else {
                 let cellWidth: number = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth : 0;
+                    this.actionObj.cellWidth : this.actionObj.cellWidth - this.actionObj.interval;
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -302,7 +302,7 @@ export class Resize extends ActionBase {
     private getLeftRightStyles(e: MouseEvent & TouchEvent, isLeft: boolean): { [key: string]: Object } {
         let styles: { [key: string]: Object } = {};
         let isTimelineView: boolean = this.parent.activeView.isTimelineView();
-        let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > 0 &&
+        let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
             this.parent.activeViewOptions.timeScale.enable;
         let slotInterval: number = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
         let pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);

@@ -84,13 +84,13 @@ export class LayerPanel {
             panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center
         );
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
-        if (panel.mapObject.markerModule) {
-            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
-        }
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(
                 panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex)
             );
+        }
+        if (panel.mapObject.markerModule) {
+            panel.mapObject.markerModule.markerRender(panel.layerObject, layerIndex, panel.mapObject.tileZoomLevel, null);
         }
         panel.translateLayerElements(panel.layerObject, layerIndex);
         panel.layerGroup.appendChild(panel.layerObject);
@@ -385,7 +385,7 @@ export class LayerPanel {
         this.layerGroup.appendChild(this.layerObject);
     }
 
-    /** 
+    /**
      *  render datalabel
      */
     private renderLabel(

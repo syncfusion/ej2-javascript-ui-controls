@@ -473,4 +473,107 @@ describe('RTE CR issues', () => {
             expect((rteObj as any).inputElement.id === 'htmlAttr-id_rte-edit-view').toBe(true);
         })
     });
+
+    describe('EJ2-22404 - Setting default font styles is not maintained on typing into RTE.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        it(' Check the default value as null to format, fontSize, fontFamily', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                value: `<p>a</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            expect(rteObj.fontFamily.default).toBeNull();
+            expect(rteObj.format.default).toBeNull();
+            expect(rteObj.fontSize.default).toBeNull();
+        });
+        it(' Set default value to format, fontSize, fontFamily ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                fontSize: { default: '14pt' },
+                fontFamily: { default: 'Arial' },
+                format: {
+                    default: 'Code'
+                },
+                value: `<p>a</p>`
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            let fontSize: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontName');
+            let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
+            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '14 pt').toBe(true);
+            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Arial').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Code').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '14pt').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === 'Arial').toBe(true);
+        });
+
+        it(' Dynamic Set the default value to format, fontSize, fontFamily', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                
+                value: `<p>a</p>`
+            });
+            rteObj.fontSize = { default: '14pt' };
+            rteObj.fontFamily = { default: 'Arial' };
+            rteObj.format = {
+                default: 'Code'
+            };
+            rteObj.dataBind();
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            let fontSize: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontName');
+            let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
+            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '14 pt').toBe(true);
+            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Arial').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Code').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '14pt').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === 'Arial').toBe(true);
+        });
+
+        it(' Dynamic Set the default value as null to format, fontSize, fontFamily ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize', 'FontName', 'Formats']
+                },
+                fontSize: { default: '14pt' },
+                fontFamily: { default: 'Arial' },
+                format: {
+                    default: 'Code'
+                },
+                value: `<p>a</p>`
+            });
+            rteObj.fontSize = { default: null };
+            rteObj.fontFamily = { default: null };
+            rteObj.format = {
+                default: null
+            };
+            rteObj.dataBind();
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            let fontSize: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontSize');
+            let fontName: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_FontName');
+            let format: HTMLElement = rteEle.querySelector('#' + controlId + '_toolbar_Formats');
+            expect(fontSize.querySelector(".e-rte-dropdown-btn-text").textContent === '10 pt').toBe(true);
+            expect(fontName.querySelector(".e-rte-dropdown-btn-text").textContent === 'Segoe UI').toBe(true);
+            expect(format.querySelector(".e-rte-dropdown-btn-text").textContent === 'Paragraph').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontSize === '').toBe(true);
+            expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === '').toBe(true);
+        });
+
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 })

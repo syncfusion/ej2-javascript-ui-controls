@@ -40,7 +40,7 @@ export interface FieldSettingsModel {
 
     /**
      * This property used for nested navigation of list-items.
-     * Refer the documentation [here](./listview/nested-list)
+     * Refer the documentation [here](../../listview/nested-list)
      *  to know more about this property with demo.
      */
     child?: string;
@@ -52,7 +52,7 @@ export interface FieldSettingsModel {
 
     /**
      * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](./listview/grouping)
+     * Refer the documentation [here](../../listview/grouping)
      *  to know more about this property with demo.
      */
     groupBy?: string;
@@ -70,7 +70,7 @@ export interface FieldSettingsModel {
     /**
      * It is used to fetch a specified named table data while using serviceUrl of DataManager
      *  in dataSource property.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/data/getting-started?lang=typescript)
+     * Refer the documentation [here](../../data/getting-started/)
      *  to know more about this property with demo.
      */
     tableName?: string;
@@ -119,8 +119,7 @@ export interface ListViewModel extends ComponentModel{
 
     /**
      * It is used to fetch the specific data from dataSource by using where, select key words.
-     * Refer the documentation [here]
-     * (./data-binding#bind-to-remote-data)
+     * Refer the documentation [here](../../listview/data-binding#bind-to-remote-data)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
@@ -203,7 +202,7 @@ export interface ListViewModel extends ComponentModel{
 
     /**
      * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](./listview/customizing-templates)
+     * Refer the documentation [here](../../listview/customizing-templates)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
@@ -214,7 +213,7 @@ export interface ListViewModel extends ComponentModel{
     /**
      * The ListView has an option to custom design the ListView header title with the help of headerTemplate property.
      * Refer the documentation [here]
-     * (./listview/customizing-templates#header-template)
+     * (../../listview/customizing-templates#header-template)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
@@ -225,7 +224,7 @@ export interface ListViewModel extends ComponentModel{
     /**
      * The ListView has an option to custom design the group header title with the help of groupTemplate property.
      * Refer the documentation [here]
-     * (./listview/customizing-templates#group-template)
+     * (../../listview/customizing-templates#group-template)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}

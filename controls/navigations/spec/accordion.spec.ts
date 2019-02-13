@@ -3319,3 +3319,91 @@ describe("Accordion Testing", () => {
         });
     });
 });
+
+describe("Accordion item object is undefined", () => {
+    let accordion: any;
+    let undefinedCount: number = 0;
+    function click(e: AccordionClickArgs): void {
+        if(e.item === undefined){
+            undefinedCount++;
+          }
+    }
+    document.body.innerHTML = "";
+    beforeEach((done: Function) => {
+        let ele: HTMLElement = document.createElement("div");
+        ele.id = "accordion";
+        document.body.appendChild(ele);
+        accordion = new Accordion(
+            {
+                clicked: click,
+                items: [
+                    { header: "Item1", content: "Content of Item1", expanded: true },
+                    { header: "Item2", content: "Content of Item2" },
+                    { header: "Item3", content: "Content of Item3" }
+                ]
+            }, ele);
+        setTimeout(() => { done(); }, TIME_DELAY);
+    });
+    afterEach((): void => {
+        if (accordion) {
+            accordion.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+    it("Accordion clicked event", (done: Function) => {
+        let ele: HTMLElement = document.getElementById('accordion');
+        (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[1]).click();
+        expect(undefinedCount === 0).toBe(true);
+        (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[2]).click();
+        expect(undefinedCount === 0).toBe(true);
+        setTimeout(() => { done(); }, TIME_DELAY);
+    });
+});
+
+describe("Nested accordion item object is undefined", () => {
+    let accordion: Accordion;
+    document.body.innerHTML = "";
+    let undefinedCount: number = 0;
+    function click(e: AccordionClickArgs): void {
+        if(e.item === undefined){
+            undefinedCount++;
+          }
+    }
+    function create(): void {
+        let nestAcc: Accordion = new Accordion({
+            expandMode: "Single",
+            clicked: click,
+            items: [{
+                header: "nestItem1", content: "nested Content"
+            }
+            ]
+        });
+        nestAcc.appendTo("#nestedAccordion");
+    }
+    beforeEach((done: Function) => {
+        let ele: HTMLElement = document.createElement("div");
+        ele.id = "accordion";
+        document.body.appendChild(ele);
+        accordion = new Accordion(
+            {
+                created: create,
+                expandMode: "Single",
+                items: [
+                    { header: "Item1", content: "<div id = 'nestedAccordion'></div>", expanded: true },
+                    { header: "Item2", content: "Content of Item2" }
+                ]
+            }, ele);
+        setTimeout(() => { done(); }, TIME_DELAY);
+    });
+    afterEach((): void => {
+        if (accordion) {
+            accordion.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+    it("Nested accordion clicked event", () => {
+        let ele: HTMLElement = document.getElementById('nestedAccordion');
+        (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[0]).click();
+        expect(undefinedCount === 0).toBe(true);
+    });
+});

@@ -48,7 +48,7 @@ export class TocProperties {
     private initializeTocPane = (): void => {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         // tslint:disable-next-line:max-line-length
-        this.element = createElement('div', { id: this.elementId + '_tocProperties', styles: 'width:270px' });
+        this.element = createElement('div', { id: this.elementId + '_tocProperties', className: 'e-de-prop-pane' });
         let container: HTMLElement = createElement('div', { className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
         this.tocHeaderDiv(container);
         this.initTemplates(container);

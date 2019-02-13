@@ -31,6 +31,11 @@ describe("'FontColor and BackgroundColor' - ColorPicker render testing", () => {
         //expect(rteEle.querySelectorAll(".e-colorpicker-wrapper")[0].classList.contains("e-font-color")).toBe(true);
         //expect(rteEle.querySelectorAll(".e-colorpicker-wrapper")[1].classList.contains("e-background-color")).toBe(true);
     });
+    it(" fontColor DropDown button target element as span", () => {
+        let item:HTMLElement= rteEle.querySelector("#"+rteEle.id+"_toolbar_FontColor")
+         expect(item.tagName==='SPAN').toBe(true);
+         expect(item.hasAttribute('type')).toBe(false);
+     });
 
 });
 

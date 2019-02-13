@@ -1,7 +1,7 @@
 /**
  * Exports util methods used by RichTextEditor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
 import { IToolsItemConfigs } from '../base/interface';
@@ -122,10 +122,12 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             if (isNOU(dropDown.formatDropDown) || isPopToolbar) { return; }
                             let formatItems: IDropDownItemModel[] = e.parent.format.types;
                             result = getDropDownValue(formatItems, value, 'subCommand', 'text');
+                            let formatContent: string = isNullOrUndefined(e.parent.format.default) ? formatItems[0].text :
+                                e.parent.format.default;
                             dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
-                                + (isNOU(result) ? 'Paragraph' : result) +
+                                + (isNOU(result) ? formatContent : result) +
                                 '</span></span>');
                             dropDown.formatDropDown.dataBind();
                             break;
@@ -140,7 +142,9 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             if (isNOU(dropDown.fontNameDropDown) || isPopToolbar) { return; }
                             let fontNameItems: IDropDownItemModel[] = e.parent.fontFamily.items;
                             result = getDropDownValue(fontNameItems, value, 'value', 'text');
-                            let name: string = (isNOU(result) ? 'Segoe UI' : result);
+                            let fontNameContent: string = isNullOrUndefined(e.parent.fontFamily.default) ? fontNameItems[0].text :
+                                e.parent.fontFamily.default;
+                            let name: string = (isNOU(result) ? fontNameContent : result);
                             e.tbElements[j].title = name;
                             dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontFamily.width + '" >' +
@@ -151,8 +155,10 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         case 'fontsize':
                             if (isNOU(dropDown.fontSizeDropDown)) { return; }
                             let fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
+                            let fontSizeContent: string = isNullOrUndefined(e.parent.fontSize.default) ? fontSizeItems[1].text :
+                                e.parent.fontSize.default;
                             result = getDropDownValue(
-                                fontSizeItems, (value === '' ? e.parent.fontSize.default.replace(/\s/g, '') : value), 'value', 'text');
+                                fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                             dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontSize.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'

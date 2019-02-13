@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 16.4.52 (2019-02-05)
+## 16.4.53 (2019-02-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- Console error is thrown in IE11 browser while using the SVG element style with transform and then render the RichTextEditor in an application, that issue has been fixed.
+
+- HTML 5 standard issues has been fixed.
+
+- Cursor position changed after typed some contents issue has been fixed.
+
+#### Breaking Changes
+
+- Changed the  `fontSize`, `fontFamily`, `format` properties  default value as null.
+
+## 16.4.48 (2019-01-22)
 
 ### RichTextEditor
 

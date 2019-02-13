@@ -500,8 +500,8 @@ var Render = /** @__PURE__ @class */ (function () {
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent)))) {
             index = data.parentIndex;
-            var collapsed$$1 = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
-                parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
+            var collapsed$$1 = (this.parent.initialRender && (!(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
+                parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll)) ||
                 !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
             if (collapsed$$1) {
                 args.row.style.display = 'none';
@@ -565,7 +565,7 @@ var Render = /** @__PURE__ @class */ (function () {
                         !this.parent.enableCollapseAll;
                 }
                 else {
-                    expand = data.expanded;
+                    expand = !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
                 }
                 var collapsed$$1 = true;
                 if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
@@ -835,6 +835,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
      */
     DataManipulation.prototype.convertToFlatData = function (data) {
         var _this = this;
+        this.parent.flatData = [];
         if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
             var dm = this.parent.dataSource;
             if (this.parent.parentIdMapping) {
@@ -888,7 +889,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                         if (this.isSelfReference) {
                             if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData, index)) {
                                 this.hierarchyData[index][this.parent.childMapping] = childData;
-                                if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping]) && groupData.key === this.taskIds[index]) {
+                                if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping])) {
                                     this.hierarchyData.splice(index, 1);
                                     this.taskIds.splice(index, 1);
                                 }
@@ -4661,9 +4662,14 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             target.classList.contains('e-treegridcollapse'))) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
-            this.parent.grid.editSettings.mode = 'Batch';
-            this.parent.grid.dataBind();
+            this.updateGridEditMode('Batch');
         }
+    };
+    Edit$$1.prototype.updateGridEditMode = function (mode) {
+        this.parent.grid.setProperties({ editSettings: { mode: mode } }, true);
+        var updateMethod = getObject('updateEditObj', this.parent.grid.editModule);
+        updateMethod.apply(this.parent.grid.editModule);
+        this.parent.grid.isEdit = false;
     };
     Edit$$1.prototype.keyPressed = function (args) {
         if (this.isOnBatch) {
@@ -4707,8 +4713,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 cell: this.parent.grid.getSelectedRows()[0].cells[this.parent.treeColumnIndex],
                 column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
             });
-            this.parent.grid.editSettings.mode = 'Normal';
-            this.parent.grid.dataBind();
+            this.updateGridEditMode('Normal');
             this.isOnBatch = false;
         }
         // this.batchRecords = [];
@@ -4750,16 +4755,18 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             }
             row = this.parent.grid.getRows()[rowIndex_1];
             this.parent.grid.editModule.updateRow(rowIndex_1, args.rowData);
+            if (this.parent.grid.aggregateModule) {
+                this.parent.grid.aggregateModule.refresh(args.rowData);
+            }
             this.parent.grid.editModule.formObj.destroy();
             if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-                this.parent.grid.editSettings.mode = 'Normal';
-                this.parent.grid.dataBind();
+                this.updateGridEditMode('Normal');
                 this.isOnBatch = false;
             }
             this.enableToolbarItems('save');
             removeClass([row], ['e-editedrow', 'e-batchrow']);
             removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-            this.editAction({ value: args.rowData, action: 'edit' });
+            this.editAction({ value: args.rowData, action: 'edit' }, args.columnName);
             var saveArgs = {
                 type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
                 previousData: args.previousValue, row: row, target: args.cell
@@ -4970,7 +4977,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         }
         return { value: value, isSkip: isSkip };
     };
-    Edit$$1.prototype.editAction = function (details) {
+    Edit$$1.prototype.editAction = function (details, columnName) {
         var _this = this;
         var value = details.value;
         var action = details.action;
@@ -5030,7 +5037,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                         else {
                             if (action === 'edit') {
                                 for (j = 0; j < keys.length; j++) {
-                                    if (treeData[i].hasOwnProperty(keys[j])) {
+                                    if (treeData[i].hasOwnProperty(keys[j]) && (this_1.parent.editSettings.mode !== 'Cell' || keys[j] === columnName)) {
                                         treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                     }
                                 }
@@ -5065,7 +5072,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                         }
                     }
                     else if (!isNullOrUndefined(treeData[i][this_1.parent.childMapping])) {
-                        if (this_1.removeChildRecords(treeData[i][this_1.parent.childMapping], modifiedData[k], action, key, originalData)) {
+                        if (this_1.removeChildRecords(treeData[i][this_1.parent.childMapping], modifiedData[k], action, key, originalData, columnName)) {
                             this_1.updateParentRow(key, treeData[i], action);
                         }
                     }
@@ -5079,7 +5086,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Edit$$1.prototype.removeChildRecords = function (childRecords, modifiedData, action, key, originalData) {
+    Edit$$1.prototype.removeChildRecords = function (childRecords, modifiedData, action, key, originalData, columnName) {
         var isChildAll = false;
         var j = childRecords.length;
         while (j-- && j >= 0) {
@@ -5088,7 +5095,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 if (action === 'edit') {
                     var keys = Object.keys(modifiedData);
                     for (var i = 0; i < keys.length; i++) {
-                        if (childRecords[j].hasOwnProperty(keys[i])) {
+                        if (childRecords[j].hasOwnProperty(keys[i]) && (this.parent.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
                             childRecords[j][keys[i]] = modifiedData[keys[i]];
                         }
                     }
@@ -5125,7 +5132,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 }
             }
             else if (!isNullOrUndefined(childRecords[j][this.parent.childMapping])) {
-                if (this.removeChildRecords(childRecords[j][this.parent.childMapping], modifiedData, action, key, originalData)) {
+                if (this.removeChildRecords(childRecords[j][this.parent.childMapping], modifiedData, action, key, originalData, columnName)) {
                     this.updateParentRow(key, childRecords[j], action);
                 }
             }

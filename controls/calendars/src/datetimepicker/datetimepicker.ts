@@ -118,6 +118,16 @@ export class DateTimePicker extends DatePicker {
     @Property(false)
     public enablePersistence: boolean;
     /**
+     * > Support for `allowEdit` has been provided from 
+     * [`v16.2.46`](https://ej2.syncfusion.com/angular/documentation/release-notes/16.2.46/#datetimepicker).
+     * 
+     * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
+     * popup and cannot edit in the input textbox.
+     * @default true
+     */
+    @Property(true)
+    public allowEdit: boolean;
+    /**
      * Specifies the option to enable the multiple dates selection of the calendar.
      * @default false
      * @private
@@ -150,7 +160,7 @@ export class DateTimePicker extends DatePicker {
      * it allows invalid or out-of-range value with highlighted error class.
      * @default false
      * > For more details refer to 
-     * [`Strict Mode`](../datetimepicker/strict-mode/) documentation.
+     * [`Strict Mode`](../../datetimepicker/strict-mode/) documentation.
      */
     @Property(false)
     public strictMode: boolean;
@@ -446,10 +456,10 @@ export class DateTimePicker extends DatePicker {
         let cldrTime: string;
         let culture: Internationalization = new Internationalization(this.locale);
         let dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         } else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     }
@@ -1130,11 +1140,12 @@ export class DateTimePicker extends DatePicker {
         }
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
+                type: 'dateTime', skeleton: 'yMd'
             });
         } else {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(),
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
                 type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
             });
         }
@@ -1272,6 +1283,7 @@ export class DateTimePicker extends DatePicker {
                     super.updateInput();
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
                     this.setValue();
                     break;
@@ -1313,5 +1325,12 @@ export class DateTimePicker extends DatePicker {
      */
     protected getModuleName(): string {
         return 'datetimepicker';
+    }
+    protected restoreValue(): void {
+        this.previousDateTime = this.previousDate;
+        this.currentDate = this.value ? this.value : new Date();
+        this.valueWithMinutes = this.value;
+        this.previousDate = this.value;
+        this.previousElementValue = this.inputElement.value;
     }
 }

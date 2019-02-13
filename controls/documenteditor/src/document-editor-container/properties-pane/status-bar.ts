@@ -41,7 +41,7 @@ export class StatusBar {
         div.appendChild(label);
         // tslint:disable-next-line:max-line-length
         this.pageNumberLabel = createElement('label', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text;height:17px;max-width:150px' });
-        this.editablePageNumber = createElement('div', { styles: 'border: 1px solid #F1F1F1;display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-de-pagenumber-text' });
+        this.editablePageNumber = createElement('div', { styles: 'display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-de-pagenumber-text' });
         this.editablePageNumber.appendChild(this.pageNumberLabel);
         if (isRtl) {
             label.style.marginLeft = '6px';
@@ -168,6 +168,10 @@ export class StatusBar {
                 this.updatePageNumber();
             }
             this.editablePageNumber.contentEditable = 'false';
+            this.editablePageNumber.style.border = 'none';
+        });
+        this.editablePageNumber.addEventListener('focus', (): void => {
+            this.editablePageNumber.style.border = '1px solid #F1F1F1';
         });
         this.editablePageNumber.addEventListener('click', (): void => {
             this.updateDocumentEditorPageNumber();

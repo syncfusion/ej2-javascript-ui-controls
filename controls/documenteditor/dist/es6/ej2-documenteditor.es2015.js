@@ -14724,11 +14724,8 @@ class Layout {
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(currentWidget.y + currentWidget.height, 2))) {
                 if (!isNullOrUndefined(viewer.blockToShift)) {
                     viewer.blockToShift = block;
-                    break;
                 }
-                if (isNullOrUndefined(nextWidget.nextWidget)) {
-                    break;
-                }
+                break;
             }
             updateNextBlockList = true;
             if (viewer.owner.isShiftingEnabled && viewer.fieldStacks.length === 0) {
@@ -20075,6 +20072,7 @@ class SfdtReader {
     constructor(viewer) {
         /* tslint:disable:no-any */
         this.viewer = undefined;
+        this.isPageBreakInsideTable = false;
         this.viewer = viewer;
     }
     get isPasting() {
@@ -20407,10 +20405,13 @@ class SfdtReader {
                     cell.containerWidget = row;
                     cell.index = j;
                     cell.rowIndex = i;
+                    cell.columnIndex = j;
                     if (block.rows[i].cells[j].hasOwnProperty('cellFormat')) {
                         this.parseCellFormat(block.rows[i].cells[j].cellFormat, cell.cellFormat);
                     }
+                    this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell);
+                    this.isPageBreakInsideTable = false;
                 }
             }
             table.childWidgets.push(row);
@@ -20453,6 +20454,9 @@ class SfdtReader {
                 }
                 else if (inline.text === '\t') {
                     textElement = new TabElementBox();
+                }
+                else if (inline.text === '\f' && this.isPageBreakInsideTable) {
+                    continue;
                 }
                 else {
                     textElement = new TextElementBox();
@@ -63656,7 +63660,7 @@ class TextProperties {
     }
     initializeTextProperties(id, isTableProperties, isRtl) {
         /* tslint:disable-next-line:max-line-length */
-        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-text-pane' });
+        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-prop-pane' });
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
         this.paragraph.updateStyleNames();
@@ -63787,7 +63791,7 @@ class HeaderFooterProperties {
         let localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         let elementId = 'header_footer_properties';
         // tslint:disable-next-line:max-line-length
-        this.element = createElement('div', { id: this.documentEditor.element.id + elementId, styles: 'width:269px;' });
+        this.element = createElement('div', { id: this.documentEditor.element.id + elementId, className: 'e-de-prop-pane' });
         let headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
         classList(headerDiv, ['e-de-cntr-pane-padding'], []);
         let headerLabel = createElement('label', { className: 'e-de-prop-header-label' });
@@ -63944,7 +63948,7 @@ class ImageProperties {
         this.isHeightApply = false;
         this.initializeImageProperties = () => {
             // tslint:disable-next-line:max-line-length
-            this.element = createElement('div', { id: this.elementId + '_imageProperties', styles: 'width:269px;' });
+            this.element = createElement('div', { id: this.elementId + '_imageProperties', className: 'e-de-prop-pane' });
             this.element.style.display = 'none';
             this.container.propertiesPaneContainer.appendChild(this.element);
             this.initImageProp();
@@ -64114,7 +64118,7 @@ class TocProperties {
         this.initializeTocPane = () => {
             this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
             // tslint:disable-next-line:max-line-length
-            this.element = createElement('div', { id: this.elementId + '_tocProperties', styles: 'width:270px' });
+            this.element = createElement('div', { id: this.elementId + '_tocProperties', className: 'e-de-prop-pane' });
             let container = createElement('div', { className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
             this.tocHeaderDiv(container);
             this.initTemplates(container);
@@ -64441,7 +64445,7 @@ class TableProperties {
         };
         this.addTablePropertyTab = () => {
             // tslint:disable-next-line:max-line-length
-            this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-table-pane' });
+            this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
             this.element = createElement('div', { id: this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
             // tslint:disable-next-line:max-line-length
             let items = [{ header: { text: this.localObj.getConstant('Table') }, content: this.tableProperties }, { header: { text: this.localObj.getConstant('Text') }, content: this.tableTextProperties.element }];
@@ -65034,7 +65038,7 @@ class StatusBar {
             div.appendChild(label);
             // tslint:disable-next-line:max-line-length
             this.pageNumberLabel = createElement('label', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text;height:17px;max-width:150px' });
-            this.editablePageNumber = createElement('div', { styles: 'border: 1px solid #F1F1F1;display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-de-pagenumber-text' });
+            this.editablePageNumber = createElement('div', { styles: 'display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-de-pagenumber-text' });
             this.editablePageNumber.appendChild(this.pageNumberLabel);
             if (isRtl) {
                 label.style.marginLeft = '6px';
@@ -65167,6 +65171,10 @@ class StatusBar {
                     this.updatePageNumber();
                 }
                 this.editablePageNumber.contentEditable = 'false';
+                this.editablePageNumber.style.border = 'none';
+            });
+            this.editablePageNumber.addEventListener('focus', () => {
+                this.editablePageNumber.style.border = '1px solid #F1F1F1';
             });
             this.editablePageNumber.addEventListener('click', () => {
                 this.updateDocumentEditorPageNumber();

@@ -1358,8 +1358,7 @@ let MenuBase = class MenuBase extends Component {
     }
     getPopups() {
         let popups = [];
-        let ele = document.querySelectorAll('.' + POPUP);
-        ele.forEach((elem) => {
+        [].slice.call(document.querySelectorAll('.' + POPUP)).forEach((elem) => {
             if (this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
                 popups.push(elem);
             }
@@ -4563,7 +4562,10 @@ let Accordion = class Accordion extends Component {
             tglIcon = select('.' + CLS_TOOGLEICN, acrdnHdr);
         }
         let acrdnCtnItem;
-        if (acrdnCtn) {
+        if (acrdnHdr) {
+            acrdnCtnItem = closest(acrdnHdr, '.' + CLS_ITEM$1);
+        }
+        else if (acrdnCtn) {
             acrdnCtnItem = closest(acrdnCtn, '.' + CLS_ITEM$1);
         }
         let acrdActive = [];

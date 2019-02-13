@@ -363,10 +363,15 @@ describe('DateTimePicker', () => {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
                 expect(datetimepicker.popupWrapper.style.zIndex).toEqual('1500');
             });
-            it('Element created with Format property', () => {
+            it('Element created with string Format property', () => {
                 datetimepicker = new DateTimePicker({ format: 'MM/dd/yyyy hh:mm a', value: new Date('04/06/2018 10:30 AM') });
                 datetimepicker.appendTo('#dateTime');
                 expect(datetimepicker.inputElement.value == '04/06/2018 10:30 AM').toBe(true);
+            });
+            it('Element created with object Format property', () => {
+                datetimepicker = new DateTimePicker({ format: {skeleton:'short'}, value: new Date("12/12/2016 10:15 AM") });
+                datetimepicker.appendTo('#dateTime');
+                expect(datetimepicker.inputElement.value == '12/12/16, 10:15 AM').toBe(true);
             });
             it('Element created with Format property', () => {
                 datetimepicker = new DateTimePicker();
@@ -576,6 +581,16 @@ describe('DOM Wrapper Testing with default value ', () => {
     it('readonly testing', () => {
         expect(datetimepicker.inputElement.getAttribute('readonly')).toEqual(null);
     });
+    it('valid value entering when popup is in the open state', function () {
+        datetimepicker = new DateTimePicker({});
+        datetimepicker.appendTo('#dateTime');
+        datetimepicker.show();
+        datetimepicker.value = new Date('1/1/2019 1:00 AM');
+        datetimepicker.dataBind();
+        datetimepicker.focusOut();
+        expect(datetimepicker.element.value).toBe('1/1/2019 1:00 AM');
+        expect(datetimepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+    });
 });
 describe('DOM Wrapper Testing with basic properites', () => {
     let datetimepicker: any;
@@ -679,6 +694,7 @@ describe('DOM Wrapper Testing with basic properites', () => {
         let dateTimeFormat: any = datetimepicker.cldrDateTimeFormat();
         expect(dateTimeFormat).toBe("M/d/y h:mm a");
         datetimepicker.format = "MM/dd/yyyy hh:mm a";
+        datetimepicker.dataBind();
         let dateTimeFormat1: any = datetimepicker.cldrDateTimeFormat();
         expect(dateTimeFormat1).toBe("MM/dd/yyyy hh:mm a");
     });
@@ -1206,14 +1222,21 @@ describe('document strict mode testing', () => {
         datetimepicker.dataBind();
         expect(datetimepicker.floatLabelType).toBe('Always');
     })
-    it('onproperty change format testing', () => {
+    it('onproperty change string format testing', () => {
         datetimepicker = new DateTimePicker();
         datetimepicker.appendTo('#dateTime');
         datetimepicker.value = new Date('3/3/2017 11:00 AM');
         datetimepicker.dataBind();
-        datetimepicker.format = 'dd/MM/yyyy HH:mm';
+        expect(datetimepicker.inputElement.value).toBe('3/3/2017 11:00 AM');
+    })
+    it('onproperty change object format testing', () => {
+        datetimepicker = new DateTimePicker();
+        datetimepicker.appendTo('#dateTime');
+        datetimepicker.value = new Date("12/12/2016 10:15 AM");
         datetimepicker.dataBind();
-        expect(datetimepicker.inputElement.value).toBe('03/03/2017 11:00');
+        datetimepicker.format = {skeleton:'short'};
+        datetimepicker.dataBind();
+        expect(datetimepicker.inputElement.value).toBe('12/12/16, 10:15 AM');
     })
     it('onproperty change cssClass during time popup open time testing', (done) => {
         datetimepicker = new DateTimePicker({
@@ -2235,3 +2258,4 @@ describe('Islamic ', () => {
     //     datetimepicker.appendTo('#dateTime');
     // });
 });
+

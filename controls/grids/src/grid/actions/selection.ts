@@ -102,6 +102,7 @@ export class Selection implements IAction {
     private isCancelDeSelect: boolean = false;
     private isPreventCellSelect: boolean = false;
     private disableUI: boolean = false;
+    private isPersisted: boolean = false;
 
     /**
      * Constructor for the Grid selection module
@@ -515,6 +516,10 @@ export class Selection implements IAction {
             let span: Element = this.parent.element.querySelector('.e-gridpopup').querySelector('span');
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
+            }
+            if (this.parent.isPersistSelection) {
+                this.persistSelectedData = [];
+                this.selectedRowState = {};
             }
             this.clearRowSelection();
             this.clearCellSelection();
@@ -1631,7 +1636,9 @@ export class Selection implements IAction {
             !isNullOrUndefined(e.properties.cellSelectionMode)) {
             this.clearSelection();
         }
+        this.isPersisted = true;
         this.checkBoxSelectionChanged();
+        this.isPersisted = false;
         this.initPerisistSelection();
         let checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
         if (checkboxColumn.length) {
@@ -1669,7 +1676,7 @@ export class Selection implements IAction {
                 this.initPerisistSelection();
             }
         }
-        if (!gobj.isCheckBoxSelection) {
+        if (!gobj.isCheckBoxSelection && !this.isPersisted) {
             this.chkField = null;
             this.initPerisistSelection();
         }
@@ -1697,6 +1704,9 @@ export class Selection implements IAction {
                 !gobj.isPersistSelection)) {
             let data: Data = this.parent.getDataModule();
             let query: Query = new Query().where(this.chkField, 'equal', true);
+            if (!query.params) {
+                query.params = this.parent.query.params;
+            }
             let dataManager: Promise<Object> = data.getData({} as NotifyArgs, query);
             let proxy: Selection = this;
             this.parent.showSpinner();

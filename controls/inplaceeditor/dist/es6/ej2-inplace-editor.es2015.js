@@ -844,6 +844,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         if (this.type === 'RTE') {
             this.rteModule.refresh();
+            this.setAttribute(select('.e-richtexteditor textarea', this.containerEle), ['name']);
         }
         else if (this.type === 'Slider') {
             this.sliderModule.refresh();

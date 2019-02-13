@@ -50,7 +50,7 @@ describe('DataSource onDemand', () => {
             let dataBound: EmitType<Object> = () => { done(); };
             jasmine.Ajax.install();
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
             dataManager = new DataManager({
                 url: 'http://localhost:50499/Home/UrlData',
                 crossDomain: true

@@ -1,6 +1,6 @@
 import { ShadowModel, GradientModel } from '../core/appearance-model';
 import { PointModel } from './../primitives/point-model';
-import { TextOverflow, Scale, ImageAlignment, Stretch, TextWrap } from '../enum/enum';
+import { TextOverflow, Scale, ImageAlignment, Stretch, TextWrap, FlipDirection } from '../enum/enum';
 /**
  * canvas interface
  */
@@ -28,6 +28,7 @@ export interface BaseAttributes extends StyleAttributes {
     visible: boolean;
     description?: string;
     canApplyStyle?: boolean;
+    flip?: FlipDirection;
 }
 /** @private */
 export interface LineAttributes extends BaseAttributes {

@@ -161,7 +161,7 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
             this.dropDown.refreshPosition(this.element);
         }
         this.dropDown.hide();
-        attributes(this.element, (_a = {}, _a['role'] = 'menu', _a['aria-haspopup'] = this.items.length || this.target ? 'true' : 'false', _a['aria-expanded'] = 'false', _a['aria-owns'] = this.getPopUpElement().id, _a['type'] = 'button', _a));
+        attributes(this.element, (_a = {}, _a['aria-haspopup'] = this.items.length || this.target ? 'true' : 'false', _a['aria-expanded'] = 'false', _a['aria-owns'] = this.getPopUpElement().id, _a['type'] = 'button', _a));
         if (this.cssClass) {
             addClass([div], this.cssClass.split(' '));
         }
@@ -176,7 +176,7 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
         var li;
         var eventArgs;
         var ul = this.createElement('ul', {
-            attrs: { 'tabindex': '0' }
+            attrs: { 'role': 'menu', 'tabindex': '0' }
         });
         for (var i = 0; i < items.length; i++) {
             item = items[i];
@@ -270,8 +270,8 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
                 removeClass([this.element], classList_1);
             }
             removeClass(this.activeElem, ['e-active']);
-            attrList = this.element.getAttribute('class') ? ['role', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type']
-                : ['role', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
+            attrList = this.element.getAttribute('class') ? ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type']
+                : ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
             attrList.forEach(function (key) {
                 _this.element.removeAttribute(key);
             });
@@ -741,7 +741,7 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
     };
     SplitButton.prototype.setAria = function () {
         attributes(this.element, {
-            'role': 'listbox', 'aria-expanded': 'false', 'aria-haspopup': 'true',
+            'aria-expanded': 'false', 'aria-haspopup': 'true',
             'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': this.secondaryBtnObj.dropDown.element.id
         });
     };
@@ -775,7 +775,7 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 removeClass([this.element], classList$$1);
-                ['role', 'aria-label', 'aria-haspopup', 'aria-expanded',
+                ['aria-label', 'aria-haspopup', 'aria-expanded',
                     'aria-owns', 'type'].forEach(function (key) {
                     _this.element.removeAttribute(key);
                 });

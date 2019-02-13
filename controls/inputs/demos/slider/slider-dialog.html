@@ -14,20 +14,17 @@
         require.config({
             packages: [{
                 name: '@syncfusion/ej2-base',
-                location: '../../node_modules/@syncfusion/ej2-base',
-                main: 'index.js'
-            },
-            {
+                location: '../../node_modules/@syncfusion/ej2-base/dist',
+                main: 'ej2-base.umd.min.js'
+            }, {
                 name: '@syncfusion/ej2-buttons',
-                location: '../../node_modules/@syncfusion/ej2-buttons',
-                main: 'src/button/button.js'
-            },
-            {
+                location: '../../node_modules/@syncfusion/ej2-buttons/dist',
+                main: 'ej2-buttons.umd.min.js'
+            }, {
                 name: '@syncfusion/ej2-popups',
-                location: '../../node_modules/@syncfusion/ej2-popups',
-                main: 'index.js'
-            },
-            ]
+                location: '../../node_modules/@syncfusion/ej2-popups/dist',
+                main: 'ej2-popups.umd.min.js'
+            }, ]
         });
     </script>
     <style>
@@ -36,16 +33,16 @@
             height: 100%;
             width: 100%;
             margin: 0px;
-        }    
+        }
         #alertDialog {
             width: 450px !important;
-        }  
+        }
         .slider-container {
             margin-top: 50px;
         }
         .e-btn-hide {
             display: none;
-        }       
+        }
         .e-slider-tooltip.e-tooltip-wrap.e-popup{
           z-index: 1000 !important;
         }
@@ -70,9 +67,9 @@
         <div id="dialogWrapper" class="content-wrapper">
             <!-- Initialize alert Dialog -->
             <div id="alertDialog"></div>
-            
-        </div>  
-        
+
+        </div>
+
     </div>
 </body>
 

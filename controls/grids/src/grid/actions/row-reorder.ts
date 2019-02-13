@@ -133,7 +133,8 @@ export class RowDD {
         this.processArgs(target);
         gObj.trigger(events.rowDrag, {
             rows: this.rows,
-            target: target, draggableType: 'rows', data: this.rowData
+            target: target, draggableType: 'rows', data: this.rowData,
+            originalEvent: e
         });
         this.stopTimer();
         gObj.element.classList.add('e-rowdrag');
@@ -552,7 +553,7 @@ export class RowDD {
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
          || gObj.getSelectedRecords().length === 0) {
             this.rows = [this.startedRow];
-            this.rowData = this.parent.getRowInfo(parentsUntil(target, 'e-row').querySelector('.e-rowcell')).rowData;
+            this.rowData = this.parent.getRowInfo((this.startedRow).querySelector('.e-rowcell')).rowData;
         } else {
             this.rows = gObj.getSelectedRows();
             this.rowData = gObj.getSelectedRecords();

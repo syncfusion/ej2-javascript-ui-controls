@@ -423,7 +423,6 @@ export class CartesianAxisLayoutPanel {
      * @private
      */
     public renderAxes(): Element {
-
         let chart: Chart = this.chart;
         let axis: Axis;
         let axisElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisInsideCollection' });
@@ -991,9 +990,8 @@ export class CartesianAxisLayoutPanel {
                     minorGird = minorGird.concat('M' + ' ' + coor + ' ' + (this.seriesClipRect.y)
                         + 'L ' + coor + ' ' + (this.seriesClipRect.y + this.seriesClipRect.height));
                     coor = (Math.floor(position + rect.x));
-                    let scrollBarHeight: number =  16;
                     minorTick = minorTick.concat('M' + ' ' + coor + ' ' + (rect.y)
-                        + 'L ' + coor + ' ' + (ticksX + scrollBarHeight));
+                        + 'L ' + coor + ' ' + (ticksX + axis.scrollBarHeight));
                 }
             }
         } else {
@@ -1006,7 +1004,8 @@ export class CartesianAxisLayoutPanel {
                     minorGird = minorGird.concat('M' + ' ' + (this.seriesClipRect.x) + ' ' + coor
                         + 'L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + coor + ' ');
                     coor = (Math.floor(position + rect.y + rect.height));
-                    minorTick = minorTick.concat('M' + ' ' + rect.x + ' ' + coor + 'L ' + ticksY + ' ' + coor + ' ');
+                    minorTick = minorTick.concat('M' + ' ' + rect.x + ' ' + coor + 'L ' + (ticksY - axis.scrollBarHeight) +
+                        ' ' + coor + ' ');
                 }
                 logPosition += logInterval;
             }

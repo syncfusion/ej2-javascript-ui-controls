@@ -31,6 +31,7 @@ export class BatchEdit {
     private renderer: EditRender;
     private focus: FocusStrategy;
     private dataBoundFunction: Function;
+    private removeSelectedData : Object[];
     private cellDetails: {
         rowData?: Object, field?: string, value?: string,
         isForeignKey?: boolean, column?: Column, rowIndex?: number, cellIndex?: number,
@@ -312,8 +313,8 @@ export class BatchEdit {
         }
         let changes: Object = this.getBatchChanges();
         if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
-            gObj.clearSelection();
-            changes[deletedRecords] = changes[deletedRecords].concat(this.parent.getSelectedRecords());
+            changes[deletedRecords] = changes[deletedRecords].concat(this.removeSelectedData);
+            this.removeSelectedData = [];
         }
         let original: Object = {
             changedRecords: this.parent.getRowsObject()
@@ -400,8 +401,12 @@ export class BatchEdit {
 
 
     private bulkDelete(fieldname?: string, data?: Object): void {
+        this.removeSelectedData = [];
         let gObj: IGrid = this.parent;
-        let index: number = data ? this.getIndexFromData(data) : gObj.selectedRowIndex;
+        if (data) {
+            gObj.selectRow(this.getIndexFromData(data));
+        }
+        let index: number = gObj.selectedRowIndex;
         let selectedRows: Element[] = gObj.getSelectedRows();
         let args: BeforeBatchDeleteArgs = {
             primaryKey: this.parent.getPrimaryKeyFieldNames(),
@@ -455,6 +460,7 @@ export class BatchEdit {
             }
         }
         this.refreshRowIdx();
+        this.removeSelectedData =  gObj.getSelectedRecords();
         gObj.clearSelection();
         gObj.selectRow(index);
         gObj.trigger(events.batchDelete, args);
@@ -823,7 +829,9 @@ export class BatchEdit {
         }
         let tr: Element = parentsUntil(this.form, 'e-row');
         let column: Column = this.cellDetails.column;
-        let editedData: Object = gObj.editModule.getCurrentEditedData(this.form, {});
+        let obj: Object = {};
+        obj[column.field] = this.cellDetails.rowData[column.field];
+        let editedData: Object = gObj.editModule.getCurrentEditedData(this.form, obj);
         let cloneEditedData: Object = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
         let value: string = getObject(column.field, cloneEditedData);

@@ -57,6 +57,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Specifies the size of the Sidebar in dock state.
+     * > For more details about dockSize refer to 
+     * [`Dock`](../../sidebar/docking-sidebar/) documentation.
      * @default 'auto'
      */
     @Property('auto')
@@ -68,6 +70,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *       mediaQuery: window.matchMedia('(min-width: 600px)') 
      *   });
      * ```
+     * > For more details about mediaQuery refer to 
+     * [`Auto Close`](../../sidebar/auto-close/) documentation.
      * @default null
      * @aspIgnore
      */
@@ -75,6 +79,12 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     public mediaQuery: MediaQueryList;
     /**
      * Specifies the docking state of the component.
+     * 
+     * > From v16.4.49, When the Sidebar type is set to `Auto`,
+     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the `isOpen` property.
+     * 
+     * > For more details about enableDock refer to 
+     * [`Dock`](../../sidebar/docking-sidebar/) documentation.
      * @default false
      */
     @Property(false)
@@ -102,9 +112,11 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public enableGestures: boolean;
     /**
-     * Gets or sets the Sidebar component is open or close. 
-     * > When the Sidebar type is set to `Auto`,
-     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the isOpen property.
+     * Gets or sets the Sidebar component is open or close.
+     * 
+     * > From v16.4.49, When the Sidebar type is set to `Auto`,
+     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the `isOpen` property.
+     * 
      * @default false
      */
     @Property(false)
@@ -136,18 +148,24 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     public closeOnDocumentClick: boolean;
     /**
      * Specifies the position of the Sidebar (Left/Right) corresponding to the main content.
+     * > For more details about SidebarPosition refer to 
+     * [`position`](../../sidebar/getting-started/) documentation.
      * @default 'Left'
      */
     @Property('Left')
     public position: SidebarPosition;
     /**
      * Allows to place the sidebar inside the target element.
+     * > For more details about target refer to 
+     * [`Custom Context`](../../sidebar/custom-context/) documentation.
      * @default null
      */
     @Property(null)
     public target: HTMLElement | string;
     /**
      * Specifies the whether to apply overlay options to main content when the Sidebar is in an open state.
+     * > For more details about showBackdrop refer to 
+     * [`Backdrop`](../../sidebar/getting-started/#enable-backdrop) documentation.
      * @default false
      */
     @Property(false)
@@ -159,6 +177,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * * `Slide` - The sidebar translates the x and y positions of main content area based on the sidebar width. 
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
+     * > For more details about SidebarType refer to 
+     * [`SidebarType`](../../sidebar/variations/#types) documentation.
      * @default 'Auto'
      */
     @Property('Auto')

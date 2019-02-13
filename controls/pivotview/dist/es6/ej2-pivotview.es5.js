@@ -318,8 +318,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                 if (!isNullOrUndefined(mkey)) {
                     if (!isDataAvail) {
                         var fKey = mkey;
-                        var formattedValue = (this.pageSettings &&
-                            !(this.formatFields[key] && this.formatFields[key].type === 'date')) ? ({
+                        var formattedValue = (this.pageSettings && !(this.formatFields[key] &&
+                            (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
                             formattedText: isNullOrUndefined(mkey) ? mkey : mkey.toString(),
                             actualText: mkey
                         }) : this.getFormattedValue(mkey, key);
@@ -332,7 +332,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                 index: [dl], ordinal: membersCnt,
                                 isDrilled: this.isExpandAll ? true : false
                             };
-                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: formattedValue.actualText });
+                            /* tslint:disable-next-line:max-line-length */
+                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
                             //sort.push(mkey);
                         }
                         else {
@@ -705,7 +706,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             field.filter = filter;
             field.filterType = type;
             field.isExcelFilter = isLabelFilter;
-            var members = (_this.formatFields[name] && _this.formatFields[name].type === 'date') ?
+            var members = (_this.formatFields[name] &&
+                (['date', 'dateTime', 'time'].indexOf(_this.formatFields[name].type) > -1)) ?
                 field.formattedMembers : field.members;
             var allowFil = isInclude;
             var final = {};
@@ -1364,6 +1366,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             var childrens = this.fieldList[fieldName];
             var index = {};
             var isNoData = false;
+            var isDateType = (this.formatFields[fieldName] &&
+                (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1));
             var showNoDataItems = (position.length < 1 && keyInd > 0) || field.showNoDataItems;
             var savedMembers = {};
             if (showNoDataItems) {
@@ -1398,10 +1402,13 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     continue;
                 }
                 member.isDrilled = member.hasChild ? childrens.members[headerValue].isDrilled : false;
-                var formattedValue = (this.formatFields[fieldName] && this.formatFields[fieldName].type === 'date') ?
+                var formattedValue = isDateType ?
                     this.getFormattedValue(headerValue, fieldName) : { formattedText: headerValue.toString(), actualText: headerValue };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
+                if (isDateType) {
+                    member.dateText = formattedValue.dateText;
+                }
                 var availData = showNoDataItems ? (this.filterPosObj[position[pos]] !== undefined &&
                     !isNoData ? true : false) : true;
                 //member.name = members[memInd];
@@ -1483,10 +1490,17 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             }
             /* tslint:disable:typedef */
             if (this.enableSort) {
-                //return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
-                return childrens.sort === 'Ascending' ?
-                    (hierarchy.sort(function (a, b) { return (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0); })) :
-                    (hierarchy.sort(function (a, b) { return (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0); }));
+                // return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
+                if (isDateType) {
+                    return childrens.sort === 'Ascending' ?
+                        (hierarchy.sort(function (a, b) { return (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0); })) :
+                        (hierarchy.sort(function (a, b) { return (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0); }));
+                }
+                else {
+                    return childrens.sort === 'Ascending' ?
+                        (hierarchy.sort(function (a, b) { return (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0); })) :
+                        (hierarchy.sort(function (a, b) { return (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0); }));
+                }
             }
             else {
                 return hierarchy;
@@ -1517,7 +1531,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                 var member = {};
                 var memInd = this.indexMatrix[position[pos]][childrens.index];
                 var slicedHeader = slicedHeaders[orderedIndex[memInd]];
-                var formattedValue = (this.formatFields[field] && this.formatFields[field].type === 'date') ?
+                var formattedValue = (this.formatFields[field] &&
+                    (['date', 'dateTime', 'time'].indexOf(this.formatFields[field].type) > -1)) ?
                     this.getFormattedValue(data[position[pos]][field], field) :
                     { formattedText: data[position[pos]][field].toString(), actualText: data[position[pos]][field].toString() };
                 if (!(slicedHeader && slicedHeader.formattedText === formattedValue.formattedText)) {
@@ -2693,10 +2708,13 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
     PivotEngine.prototype.getFormattedValue = function (value, fieldName) {
         var formattedValue = {
             formattedText: value !== undefined ? value === null ? 'null' : value.toString() : undefined,
-            actualText: value !== undefined ? value === null ? 'null' : value : undefined
+            actualText: value !== undefined ? value === null ? 'null' : value : undefined,
+            dateText: value !== undefined ? value === null ? 'null' : value : undefined
         };
         if (this.formatFields[fieldName] && value) {
-            var formatSetting = extend({}, this.formatFields[fieldName], null, true);
+            var formatField = (this.formatFields[fieldName].properties ?
+                this.formatFields[fieldName].properties : this.formatFields[fieldName]);
+            var formatSetting = extend({}, formatField, null, true);
             delete formatSetting.name;
             if (!formatSetting.minimumSignificantDigits && formatSetting.minimumSignificantDigits < 1) {
                 delete formatSetting.minimumSignificantDigits;
@@ -2711,9 +2729,9 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                 formattedValue.formattedText = this.globalize.formatNumber(value, formatSetting);
             }
             formattedValue.actualText = value;
-            if (formatSetting.type && this.formatFields[fieldName].type === 'date') {
+            if (formatSetting.type && ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
                 formatSetting.format = 'yyyy/MM/dd/HH/mm/ss';
-                formattedValue.actualText = this.globalize.formatDate(new Date(value), formatSetting);
+                formattedValue.dateText = this.globalize.formatDate(new Date(value), formatSetting);
             }
         }
         return formattedValue;
@@ -7294,7 +7312,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         this.parent.currentTreeItemsPos = {};
         this.parent.savedTreeFilterPos = {};
         this.parent.isDateField = this.parent.engineModule.formatFields[fieldName] &&
-            this.parent.engineModule.formatFields[fieldName].type === 'date';
+            ((['date', 'dateTime', 'time']).indexOf(this.parent.engineModule.formatFields[fieldName].type) > -1);
         var list = [];
         var memberCount = 1;
         var filterObj = {};

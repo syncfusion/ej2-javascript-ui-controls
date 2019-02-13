@@ -113,4 +113,100 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
+  describe('Cell Editing With scroller', () => {
+    let gridObj: TreeGrid;
+    let actionBegin: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          width: 600, height: 400,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
+
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [
+            {
+                field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+                validationRules: { required: true, number: true }, width: 190
+            },
+            { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: { required: true } },
+            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 230, editType: 'datepickeredit',
+                format: 'yMd', validationRules: { date: true } },
+            {
+                field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 200, editType: 'numericedit',
+                validationRules: { number: true, min: 0 }, edit: { params: { format: 'n' } }
+            }
+        ]
+        },
+        done
+      );
+    });
+    it('cell edit', () => {
+      expect((<HTMLElement>gridObj.grid.element).style.width).toBe('600px');
+      expect((<HTMLElement>gridObj.getContent().firstChild).classList.contains('e-content')).toBeTruthy();
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      let scrollPosition: number = gridObj.getContent().firstElementChild.scrollLeft;
+      gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+      expect(gridObj.getContent().firstElementChild.scrollLeft).toEqual(scrollPosition);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      expect(gridObj.getContent().firstElementChild.scrollLeft).toEqual(scrollPosition);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+      describe('Check the expanding state of record after delete operation', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionBegin: () => void;
+    let actionComplete: () => void;
+
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Cell',
+                newRowPosition: 'Below'
+
+            },
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'startDate', headerText: 'Start Date'},
+            { field: 'duration', headerText: 'duration' },
+            ]
+        },
+        done
+      );
+    });
+    it('Check expand state of record after deletion of another record', (done: Function) => {
+      (<HTMLElement>gridObj.getRows()[5].querySelectorAll('.e-treegridexpand')[0]).click();
+      (<HTMLElement>gridObj.getRows()[11].querySelectorAll('.e-treegridexpand')[0]).click();
+      gridObj.selectRow(2);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+      gridObj.actionComplete = (args?: Object): void => {
+        (<HTMLElement>gridObj.getRows()[10].querySelectorAll('.e-treegridcollapse')[0]).click();
+        expect(gridObj.getRows()[11].getElementsByClassName('e-treecolumn-container')[0].children[1].classList.contains('e-treegridexpand')).toBe(true);
+        expect(gridObj.getRows()[12].getElementsByClassName('e-treecolumn-container')[0].children[2].classList.contains('e-treegridexpand')).toBe(true);
+        done();
+      }
+  });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
 });

@@ -2031,8 +2031,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             Copy: 'Copy',
             Group: 'Group by this column',
             Ungroup: 'Ungroup by this column',
-            autoFitAll: 'Auto Fit all columns',
-            autoFit: 'Auto Fit this column',
+            autoFitAll: 'Autofit all columns',
+            autoFit: 'Autofit this column',
             Export: 'Export',
             FirstPage: 'First Page',
             LastPage: 'Last Page',
@@ -2464,7 +2464,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.selectRow(newProp.selectedRowIndex);
                 }
                 this.isSelectedRowIndexUpdating = false; break;
-    }
+        }
     }
 
     /**
@@ -2778,9 +2778,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 let rows: Row<{}>[] = <Row<{}>[]>(isMovable ?
                     this.contentModule.getMovableRows() : this.contentModule.getRows());
                 let rowsObject: Object = rows.filter((r: Row<{}>) => r.uid === row.getAttribute('data-uid'));
-                let rowData: Object = rowsObject[0].data;
-                let column: Column =
-                    rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex].column as Column;
+                let rowData: Object = {};
+                let column: Column;
+                if (Object.keys(rowsObject).length) {
+                    rowData = rowsObject[0].data;
+                    column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex].column as Column;
+                }
                 args = { cell: cell, cellIndex: cellIndex, row: row, rowIndex: rowIndex, rowData: rowData, column: column, target: target };
             }
         }
@@ -2961,7 +2964,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getMovableCellFromIndex(rowIndex: number, columnIndex: number): Element {
         return this.getMovableDataRows()[rowIndex] &&
-                this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - this.getFrozenColumns()];
+            this.getMovableDataRows()[rowIndex].querySelectorAll('.e-rowcell')[columnIndex - this.getFrozenColumns()];
     }
 
     /**
@@ -3655,6 +3658,32 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public reorderColumns(fromFName: string | string[], toFName: string): void {
         if (this.reorderModule) {
             this.reorderModule.reorderColumns(fromFName, toFName);
+        }
+    }
+
+    /** 
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByIndex multiple times, 
+     * then you won't get the same results every time. 
+     * @param  {number} fromIndex - Defines the origin field index. 
+     * @param  {number} toIndex - Defines the destination field index. 
+     * @return {void} 
+     */
+    public reorderColumnByIndex(fromIndex: number, toIndex: number): void {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        }
+    }
+
+    /** 
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByTargetIndex multiple times, 
+     * then you will get the same results every time. 
+     * @param  {string} fieldName - Defines the field name. 
+     * @param  {number} toIndex - Defines the destination field index. 
+     * @return {void} 
+     */
+    public reorderColumnByTargetIndex(fieldName: string | string[], toIndex: number): void {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
         }
     }
 

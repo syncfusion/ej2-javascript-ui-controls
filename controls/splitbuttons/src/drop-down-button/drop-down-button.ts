@@ -204,7 +204,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         this.dropDown.hide();
         attributes(this.element, {
-            ['role']: 'menu', ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
+            ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
             ['aria-owns']: this.getPopUpElement().id, ['type']: 'button'
         });
         if (this.cssClass) { addClass([div], this.cssClass.split(' ')); }
@@ -218,7 +218,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         let showIcon: boolean = this.hasIcon(items, 'iconCss');
         let span: Element; let item: ItemModel; let li: Element; let eventArgs: MenuEventArgs;
         let ul: HTMLElement = this.createElement('ul', {
-            attrs: { 'tabindex': '0' }
+            attrs: { 'role': 'menu', 'tabindex': '0' }
         });
         for (let i: number = 0; i < items.length; i++) {
             item = items[i];
@@ -316,8 +316,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 removeClass([this.element], classList);
             }
             removeClass(this.activeElem, ['e-active']);
-            attrList = this.element.getAttribute('class') ? ['role', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type']
-            : ['role', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
+            attrList = this.element.getAttribute('class') ? ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type']
+            : ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
             attrList.forEach((key: string) => {
                 this.element.removeAttribute(key);
             });

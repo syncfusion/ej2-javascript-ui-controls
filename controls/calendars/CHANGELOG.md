@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### DatePicker
+
+#### Bug Fixes
+
+- Fixed the form validation class `ng-dirty` issue in Angular forms.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- Fixed the form validation class `ng-dirty` issue in Angular forms.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- Fixed the form validation class `ng-dirty` issue in Angular forms.
+
+### TimePicker
+
+#### Bug Fixes
+
+- Fixed the form validation class `ng-dirty` issue in Angular forms.
+
 ## 16.4.52 (2019-02-05)
 
 ### Calendar

@@ -464,10 +464,16 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     private defRule(input: HTMLInputElement, ruleCon: { [key: string]: Object }, ruleName: string, value: Object): void {
         let message: string = input.getAttribute('data-' + ruleName + '-message');
         let annotationMessage: string = input.getAttribute('data-val-' + ruleName);
+        let customMessage: string;
+        if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
+            customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
+        }
         if (message) {
             value = [value, message];
         } else if (annotationMessage) {
             value = [value, annotationMessage];
+        } else if (customMessage) {
+            value = [value, customMessage];
         }
         ruleCon[ruleName] = value;
     }
@@ -660,8 +666,10 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Return default error message or custom error message 
     private getErrorMessage(ruleValue: Object, rule: string): string {
-        let message: string = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
-        (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
+        let message: string = this.element[0].getAttribute('data-' + rule + '-message') ?
+            this.element[0].getAttribute('data-' + rule + '-message') :
+            (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
+                (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         let formats: string[] = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (let i: number = 0; i < formats.length; i++) {

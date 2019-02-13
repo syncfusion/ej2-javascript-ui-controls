@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### Grid
+
+#### Bug Fixes
+
+- Persisted row selection is not cleared in other pages while calling `clearSelection` method is resolved.
+- Grid cells with value '0' are exported as an empty cells in excel exporting is fixed.
+- Multiple requests are sent to server for each checkbox selection is fixed.
+- Additional parameter is not passed to the server when getting checkbox selection state is resolved.
+- Script error thrown while dragging the row to outside of the Grid content issue is fixed.
+- Auto generated columns not working when we change the Grid dataSource dynamically and also it throws Script error is fixed.
+- Programmatic deletion is not working in batch edit mode is fixed.
+- Grid shows invalid result while clearing string column values in Batch mode is fixed.
+- Mouse event is passed as a parameter for `rowDrag` event.
+- Editing misbehaves with `allowResizing` and `frozenColumns` enabled is fixed.
+- Need to maintain edit state when exception thrown with custom binding is fixed.
+- Grid `getRowInfo` method throws script Error on Expand and Collapse is fixed.
+
 ## 16.4.52 (2019-02-05)
 
 ### Grid
@@ -32,12 +51,8 @@
 
 #### New Features
 
-- `Toggle` option for Selected Row is provided.
 - Property change handling for `SelectedRowIndex` is provided.
 - Support to add `params` for `filtering` is added.
-- Support to perform searching only based on the visible columns in Grid is provided.
-- `Reorder` position support for target field is provided.
-- Send the culture file name as parameter to excel export function is added.
 
 ## 16.4.48 (2019-01-22)
 

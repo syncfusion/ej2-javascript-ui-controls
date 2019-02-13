@@ -363,6 +363,15 @@ describe("Toast Testing", () => {
             toast.hide();
             setTimeout(() => { done(); }, TIME_DELAY);
         });
+        it("Toast Target default value testing", (done: Function) => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({}, ele);
+            toast.show({ title: 'Sample_title', timeOut: 0, content: 'Sample_content' });
+            expect(ele.parentElement.tagName).toEqual('BODY');
+            expect(ele.parentElement).toEqual(document.body);
+            toast.hide();
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
     });
 
     describe("Toast Target property testing", () => {

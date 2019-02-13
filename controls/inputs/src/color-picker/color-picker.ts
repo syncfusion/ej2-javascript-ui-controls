@@ -89,6 +89,8 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     private clientY: number;
     private rgb: number[];
     private hsv: number[];
+    private formElement: HTMLFormElement;
+    private initialInputValue: string;
 
     /**
      * It is used to set the color value for ColorPicker. It should be specified as Hex code.
@@ -245,8 +247,16 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     protected preRender(): void {
+        let ele: Element = this.element;
+        this.formElement = <HTMLFormElement>closest(this.element, 'form');
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         let localeText: object = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode' };
         this.l10n = new L10n('colorpicker', localeText, this.locale);
+        if (ele.getAttribute('ejs-for') && !ele.getAttribute('name')) {
+            ele.setAttribute('name', ele.id);
+        }
     }
 
     /**
@@ -273,7 +283,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.container = this.createElement('div', { className: CONTAINER });
         this.getWrapper().appendChild(this.container);
         let value: string = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
-        this.element.value = value.slice(0, 7);
+        let slicedValue: string = value.slice(0, 7);
+        if (isNullOrUndefined(this.initialInputValue)) {
+            this.initialInputValue = slicedValue;
+        }
+        this.element.value = slicedValue;
         this.setProperties({ 'value': value }, true);
         if (this.enableRtl) {
             wrapper.classList.add(RTL);
@@ -707,7 +721,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     }
 
     private appendValueSwitchBtn(targetEle: Element): void {
-        let valueSwitchBtn: HTMLElement = this.createElement('button', { className: 'e-icons e-btn e-flat e-icon-btn ' + FORMATSWITCH });
+        let valueSwitchBtn: HTMLElement = this.createElement('button', {
+            className: 'e-icons e-css e-btn e-flat e-icon-btn ' + FORMATSWITCH
+        });
         targetEle.appendChild(valueSwitchBtn);
         if (this.isPicker() && !this.getWrapper().classList.contains(HIDERGBA)) {
             valueSwitchBtn.addEventListener('click', this.formatSwitchHandler.bind(this));
@@ -725,13 +741,13 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 let apply: string = this.l10n.getConstant('Apply');
                 controlBtnWrapper.appendChild(this.createElement('button', {
                     innerHTML: apply,
-                    className: 'e-btn e-flat e-primary e-small ' + APPLY,
+                    className: 'e-btn e-css e-flat e-primary e-small ' + APPLY,
                     attrs: { 'title': apply }
                 }));
                 let cancel: string = this.l10n.getConstant('Cancel');
                 controlBtnWrapper.appendChild(this.createElement('button', {
                     innerHTML: cancel,
-                    className: 'e-btn e-flat e-small ' + CANCEL,
+                    className: 'e-btn e-css e-flat e-small ' + CANCEL,
                     attrs: { 'title': cancel }
                 }));
             }
@@ -960,6 +976,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             EventHandler.add(this.container, 'click', this.paletteClickHandler, this);
             EventHandler.add(this.container, 'keydown', this.paletteKeyDown, this);
         }
+    }
+
+    private formResetHandler(): void {
+        this.value = this.initialInputValue;
+        attributes(this.element, { 'value' : this.initialInputValue });
     }
 
     private addCtrlSwitchEvent(): void {
@@ -1472,6 +1493,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         wrapper.parentElement.insertBefore(this.element, wrapper);
         detach(wrapper);
         this.container = null;
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     }
 
     private destroyOtherComp(): void {

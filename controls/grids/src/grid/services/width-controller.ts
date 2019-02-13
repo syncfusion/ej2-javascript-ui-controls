@@ -80,11 +80,15 @@ export class ColumnWidthService {
         if (contentCol) {
             contentCol.style.width = fWidth;
         }
-        let edit: HTMLTableElement = <HTMLTableElement>content.querySelector('.e-table.e-inline-edit');
-        if (edit) {
-            if (<HTMLTableColElement>edit.querySelector('colgroup').children[index]) {
-                (<HTMLTableColElement>edit.querySelector('colgroup').children[index]).style.width = fWidth;
+        let edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
+        let editTableCol: HTMLTableColElement[] = [];
+        for (let i: number = 0; i < edit.length; i++) {
+            for (let j: number = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
+                editTableCol.push((<HTMLTableColElement>edit[i].querySelector('colgroup').children[j]));
             }
+        }
+        if (edit.length) {
+            editTableCol[index].style.width = fWidth;
         }
     }
 
@@ -135,18 +139,24 @@ export class ColumnWidthService {
         return tWidth;
     }
 
+    private calcMovableOrFreezeColWidth(tableType: String): string {
+        let columns: Column[] = this.parent.getColumns().slice();
+        if (tableType === 'movable') {
+            columns.splice(0, this.parent.getFrozenColumns());
+        } else if (tableType === 'freeze') {
+            columns.splice(this.parent.getFrozenColumns(), columns.length);
+        }
+        return formatUnit(this.getTableWidth(columns));
+    }
+
     private setWidthToFrozenTable(): void {
-        let columns: Column[] = this.parent.getColumns();
-        columns.splice(this.parent.getFrozenColumns(), columns.length);
-        let freezeWidth: string = formatUnit(this.getTableWidth(columns));
+        let freezeWidth: string = this.calcMovableOrFreezeColWidth('freeze');
         (this.parent.getHeaderTable() as HTMLTableElement).style.width = freezeWidth;
         (this.parent.getContentTable() as HTMLTableElement).style.width = freezeWidth;
     }
 
     private setWidthToMovableTable(): void {
-        let columns: Column[] = this.parent.getColumns();
-        columns.splice(0, this.parent.getFrozenColumns());
-        let movableWidth: string = formatUnit(this.getTableWidth(columns));
+        let movableWidth: string = this.calcMovableOrFreezeColWidth('movable');
         if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
             (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild as HTMLTableElement).style.width
                 = movableWidth;
@@ -154,7 +164,14 @@ export class ColumnWidthService {
         (this.parent.getContent().querySelector('.e-movablecontent').firstElementChild as HTMLTableElement).style.width =
             movableWidth;
     }
-
+    private setWidthToFrozenEditTable(): void {
+        let freezeWidth: string = this.calcMovableOrFreezeColWidth('freeze');
+        (this.parent.element.querySelectorAll('.e-table.e-inline-edit')[0] as HTMLTableElement).style.width = freezeWidth;
+    }
+    private setWidthToMovableEditTable(): void {
+        let movableWidth: string = this.calcMovableOrFreezeColWidth('movable');
+        (this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1]as HTMLTableElement).style.width = movableWidth;
+    }
     public setWidthToTable(): void {
         let tWidth: string = formatUnit(this.getTableWidth(<Column[]>this.parent.getColumns()));
         if (this.parent.getFrozenColumns()) {
@@ -168,7 +185,10 @@ export class ColumnWidthService {
             (this.parent.getContentTable() as HTMLTableElement).style.width = tWidth;
         }
         let edit: HTMLTableElement = <HTMLTableElement>this.parent.element.querySelector('.e-table.e-inline-edit');
-        if (edit) {
+        if (edit && this.parent.getFrozenColumns()) {
+            this.setWidthToFrozenEditTable();
+            this.setWidthToMovableEditTable();
+        } else if (edit) {
             edit.style.width = tWidth;
         }
     }

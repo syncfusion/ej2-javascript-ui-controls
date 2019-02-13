@@ -1,5 +1,5 @@
-import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
-import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
+import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaseEventArgs, detach, EmitType, Event, EventHandler } from '@syncfusion/ej2-base';
 import { wrapperInitialize, rippleMouseHandler } from './../common/common';
 import { RadioButtonModel } from './radio-button-model';
@@ -26,6 +26,8 @@ const WRAPPER: string = 'e-radio-wrapper';
 export class RadioButton extends Component<HTMLInputElement> implements INotifyPropertyChanged {
     private tagName: string;
     private isKeyPressed: boolean = false;
+    private formElement: HTMLFormElement;
+    private initialCheckedValue: boolean;
 
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
@@ -180,6 +182,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private initialize(): void {
+        if (isNullOrUndefined(this.initialCheckedValue)) {
+            this.initialCheckedValue = this.checked;
+        }
         this.initWrapper();
         if (this.name) {
             this.element.setAttribute('name', this.name);
@@ -235,6 +240,13 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     private mouseDownHandler(): void {
         this.isKeyPressed = false;
+    }
+
+    private formResetHandler(): void {
+        this.checked = this.initialCheckedValue;
+        if (this.initialCheckedValue) {
+            attributes(this.element, { 'checked' : 'true'});
+        }
     }
 
     /**
@@ -301,6 +313,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      */
     protected preRender(): void {
         let element: HTMLInputElement = this.element;
+        this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-RADIOBUTTON', 'radio', element, WRAPPER, 'radio');
         this.element = element;
@@ -355,6 +368,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
             EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);
         }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     }
 
     protected wireEvents(): void {
@@ -368,6 +384,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         if (rippleLabel) {
             EventHandler.add(rippleLabel, 'mousedown', this.labelRippleHandler, this);
             EventHandler.add(rippleLabel, 'mouseup', this.labelRippleHandler, this);
+        }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
     }
 }

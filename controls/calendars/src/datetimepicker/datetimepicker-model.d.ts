@@ -39,6 +39,16 @@ export interface DateTimePickerModel extends DatePickerModel{
     enablePersistence?: boolean;
 
     /**
+     * > Support for `allowEdit` has been provided from 
+     * [`v16.2.46`](https://ej2.syncfusion.com/angular/documentation/release-notes/16.2.46/#datetimepicker).
+     * 
+     * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
+     * popup and cannot edit in the input textbox.
+     * @default true
+     */
+    allowEdit?: boolean;
+
+    /**
      * Specifies the option to enable the multiple dates selection of the calendar.
      * @default false
      * @private
@@ -71,7 +81,7 @@ export interface DateTimePickerModel extends DatePickerModel{
      * it allows invalid or out-of-range value with highlighted error class.
      * @default false
      * > For more details refer to 
-     * [`Strict Mode`](../datetimepicker/strict-mode/) documentation.
+     * [`Strict Mode`](../../datetimepicker/strict-mode/) documentation.
      */
     strictMode?: boolean;
 

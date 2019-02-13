@@ -450,7 +450,8 @@ export class ExcelExport {
                 }
                 let column: Column = gCell.column;
                 let field: string = column.field;
-                let value: string = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
+                let cellValue: string = !isNullOrUndefined(field) ? getValue(field, row.data) : '';
+                let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
                 let fkData: Object;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     fkData = helper.getFData(value, column);

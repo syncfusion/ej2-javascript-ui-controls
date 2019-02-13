@@ -759,8 +759,8 @@ let CalendarBase = class CalendarBase extends Component {
         localDate.setMonth(0);
         localDate.setDate(1);
         let localYr = localDate.getFullYear();
-        let startYr = new Date('' + (localYr - localYr % 10));
-        let endYr = new Date('' + (localYr - localYr % 10 + (10 - 1)));
+        let startYr = new Date(localDate.setFullYear((localYr - localYr % 10)));
+        let endYr = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
         let startHdrYr = this.globalize.formatDate(startYr, { type: 'dateTime', skeleton: 'y' });
         let endHdrYr = this.globalize.formatDate(endYr, { type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
@@ -2176,6 +2176,8 @@ const TODAY$1 = 'e-today';
 const LINK$1 = 'e-day';
 const CELL$1 = 'e-cell';
 const dayMilliSeconds$1 = 86400000;
+const minDecade = 2060;
+const maxDecade = 2069;
 class Islamic {
     constructor(instance) {
         this.calendarInstance = instance;
@@ -2605,7 +2607,11 @@ class Islamic {
         if (hijriStart.year > end) {
             result = 1;
         }
-        else if (hijriStart.year < start) {
+        else if ((this.calendarInstance.currentView() === 'Decade') && hijriStart.year < start &&
+            !((startDate.getFullYear() >= minDecade && startDate.getFullYear() <= maxDecade))) {
+            result = -1;
+        }
+        else if (hijriStart.year < start && (this.calendarInstance.currentView() === 'Year')) {
             result = -1;
         }
         return result;
@@ -2679,6 +2685,7 @@ let DatePicker = class DatePicker extends Calendar {
         super(options, element);
         this.previousElementValue = '';
         this.isDateIconClicked = false;
+        this.isAltKeyPressed = false;
         this.invalidValueString = null;
         this.checkPreviousValue = null;
         this.keyConfigs = {
@@ -2798,7 +2805,7 @@ let DatePicker = class DatePicker extends Calendar {
         if (!isNullOrUndefined(this.value)) {
             let dateValue = this.value;
             let dateString;
-            let tempFormat = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            let tempFormat = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
                     dateString = this.globalize.formatDate(this.value, {
@@ -2813,10 +2820,10 @@ let DatePicker = class DatePicker extends Calendar {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 }
                 else {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 dateString = this.globalize.formatDate(this.value, formatOptions);
             }
@@ -2918,13 +2925,19 @@ let DatePicker = class DatePicker extends Calendar {
             this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         }
         else {
-            this.value = null;
+            this.setProperties({ value: null }, true);
             if (this.inputElement) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 attributes(this.inputElement, { 'aria-invalid': 'false' });
                 removeClass([this.inputWrapper.container], ERROR);
             }
+            this.restoreValue();
         }
+    }
+    restoreValue() {
+        this.currentDate = this.value ? this.value : new Date();
+        this.previousDate = this.value;
+        this.previousElementValue = this.inputElement.value;
     }
     inputChangeHandler(e) {
         e.stopPropagation();
@@ -3039,10 +3052,12 @@ let DatePicker = class DatePicker extends Calendar {
     inputKeyActionHandle(e) {
         switch (e.action) {
             case 'altUpArrow':
+                this.isAltKeyPressed = false;
                 this.hide(e);
                 this.inputElement.focus();
                 break;
             case 'altDownArrow':
+                this.isAltKeyPressed = true;
                 this.strictModeUpdate();
                 this.updateInput();
                 this.changeTrigger(e);
@@ -3073,21 +3088,27 @@ let DatePicker = class DatePicker extends Calendar {
                 this.errorClass();
                 this.hide(e);
                 break;
+            case 'select':
+                (!this.isAltKeyPressed) ? this.hide(e) : this.defaultAction(e);
+                break;
             default:
-                this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
-                if (this.isCalendar()) {
-                    super.keyActionHandle(e);
-                }
+                this.defaultAction(e);
+        }
+    }
+    defaultAction(e) {
+        this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
+        if (this.isCalendar()) {
+            super.keyActionHandle(e);
         }
     }
     strictModeUpdate() {
         let format;
         let formatOptions;
         if (this.getModuleName() === 'datetimepicker') {
-            format = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            format = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
         }
         else {
-            format = isNullOrUndefined(this.format) ? this.format : this.format.replace('dd', 'd');
+            format = isNullOrUndefined(this.formatString) ? this.formatString : this.formatString.replace('dd', 'd');
         }
         if (!isNullOrUndefined(format)) {
             let len = format.split('M').length - 1;
@@ -3099,13 +3120,13 @@ let DatePicker = class DatePicker extends Calendar {
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 dateOptions = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 };
             }
             else {
                 dateOptions = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 };
             }
@@ -3291,10 +3312,10 @@ let DatePicker = class DatePicker extends Calendar {
         let tempFormat;
         let formatOptions;
         if (this.getModuleName() === 'datetimepicker') {
-            tempFormat = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            tempFormat = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
         }
         else {
-            tempFormat = this.format;
+            tempFormat = this.formatString;
         }
         if (this.value) {
             if (this.getModuleName() === 'datetimepicker') {
@@ -3308,10 +3329,10 @@ let DatePicker = class DatePicker extends Calendar {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 }
                 else {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             }
@@ -3416,6 +3437,7 @@ let DatePicker = class DatePicker extends Calendar {
             }
             if (this.isCalendar() && (prevent && !this.preventArgs.cancel)) {
                 this.popupObj.hide();
+                this.isAltKeyPressed = false;
                 this.keyboardModule.destroy();
                 removeClass(this.inputWrapper.buttons, ACTIVE);
             }
@@ -3595,30 +3617,58 @@ let DatePicker = class DatePicker extends Calendar {
             target.removeAttribute(attribute[i]);
         }
     }
+    checkFormat() {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            }
+            else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
+                let skeletonString = this.format.skeleton;
+                if (this.getModuleName() === 'datetimepicker') {
+                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'dateTime' });
+                }
+                else {
+                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
+                }
+            }
+            else {
+                if (this.getModuleName() === 'datetimepicker') {
+                    this.formatString = this.dateTimeFormat;
+                }
+                else {
+                    this.formatString = null;
+                }
+            }
+        }
+        else {
+            this.formatString = null;
+        }
+    }
     checkHtmlAttributes() {
         this.globalize = new Internationalization(this.locale);
+        this.checkFormat();
         let attributes$$1 = ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
         let options;
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 options = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 };
             }
             else {
                 options = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 };
             }
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                options = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             }
             else {
-                options = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
         }
         for (let prop of attributes$$1) {
@@ -3706,13 +3756,13 @@ let DatePicker = class DatePicker extends Calendar {
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 globalize = this.globalize.formatDate(valueCopy, {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 });
             }
             else {
                 globalize = this.globalize.formatDate(valueCopy, {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 });
             }
@@ -3720,14 +3770,16 @@ let DatePicker = class DatePicker extends Calendar {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             }
             else {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
             inputVal = this.globalize.formatDate(valueCopy, formatOptions);
         }
-        Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+        if (!this.popupObj) {
+            Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
     }
     setAriaAttributes() {
         if (this.isCalendar()) {
@@ -3763,14 +3815,20 @@ let DatePicker = class DatePicker extends Calendar {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        let options = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+        let options;
+        if (this.calendarMode === 'Gregorian') {
+            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+        }
+        else {
+            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
                     if (typeof newProp.value === 'string' && !this.invalidValueString) {
-                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        newProp.value = this.checkDateValue(this.globalize.parseDate(newProp.value, options));
                         this.setProperties({ value: newProp.value }, true);
                     }
                     this.previousElementValue = this.inputElement.value;
@@ -3784,6 +3842,7 @@ let DatePicker = class DatePicker extends Calendar {
                     }
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.updateInput();
                     break;
                 case 'allowEdit':
@@ -4185,10 +4244,28 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     initProperty() {
         this.globalize = new Internationalization(this.locale);
+        this.checkFormat();
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: this.globalize.getFirstDayOfWeek() }, true);
         }
         this.updateValue();
+    }
+    checkFormat() {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            }
+            else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
+                let skeletonString = this.format.skeleton;
+                this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
+            }
+            else {
+                this.formatString = null;
+            }
+        }
+        else {
+            this.formatString = null;
+        }
     }
     initialize() {
         if (this.angularTag !== null) {
@@ -4329,14 +4406,26 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.clearRange();
         this.hide(e);
     }
+    restoreValue() {
+        this.previousEleValue = this.inputElement.value;
+        this.previousStartValue = this.startValue;
+        this.previousEndValue = this.endValue;
+        this.valueType = null;
+        this.initStartDate = this.checkDateValue(this.startValue);
+        this.initEndDate = this.checkDateValue(this.endValue);
+        this.setValue();
+        this.setModelValue();
+    }
     formResetHandler(e) {
         if (this.formElement && e.target === this.formElement) {
-            this.value = null;
+            this.setProperties({ value: null, startDate: null, endDate: null }, true);
+            this.startValue = this.endValue = null;
             if (this.inputElement) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 attributes(this.inputElement, { 'aria-invalid': 'false' });
                 removeClass([this.inputWrapper.container], ERROR$1);
             }
+            this.restoreValue();
         }
     }
     clear() {
@@ -4386,7 +4475,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let attributes$$1;
         attributes$$1 = ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled',
             'readonly', 'style', 'name', 'placeholder', 'type'];
-        let format = { format: this.format, type: 'date', skeleton: 'yMd' };
+        let format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
@@ -4649,7 +4738,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             if (!isNullOrUndefined(value) && value.trim() !== '') {
                 let range = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
-                    let dateOptions = { format: this.format, type: 'date', skeleton: 'yMd' };
+                    let dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
                     let startDate = this.globalize.parseDate(range[0].trim(), dateOptions);
                     let endDate = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -5199,9 +5288,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let inputValue;
         let range;
         let startDate = !isNullOrUndefined(this.startValue) ?
-            this.globalize.formatDate(this.startValue, { format: this.format, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.startValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
         let endDate = !isNullOrUndefined(this.endValue) ?
-            this.globalize.formatDate(this.endValue, { format: this.format, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.endValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
             range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -6786,8 +6875,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     updateInput() {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let startDate = this.globalize.formatDate(this.startValue, { format: this.format, type: 'date', skeleton: 'yMd' });
-            let endDate = this.globalize.formatDate(this.endValue, { format: this.format, type: 'date', skeleton: 'yMd' });
+            let formatingOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+            let startDate = this.globalize.formatDate(this.startValue, formatingOptions);
+            let endDate = this.globalize.formatDate(this.endValue, formatingOptions);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
@@ -7222,7 +7312,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
      */
     // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
-        let format = { format: this.format, type: 'date', skeleton: 'yMd' };
+        let format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (let prop of Object.keys(newProp)) {
             this.hide(null);
             switch (prop) {
@@ -7266,6 +7356,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
                     this.updateInput();
                     this.changeTrigger();
@@ -7665,6 +7756,7 @@ let TimePicker = class TimePicker extends Component {
     initialize() {
         this.globalize = new Internationalization(this.locale);
         this.defaultCulture = new Internationalization('en');
+        this.checkTimeFormat();
         this.checkInvalidValue(this.value);
         // persist the value property.
         this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true);
@@ -7696,6 +7788,23 @@ let TimePicker = class TimePicker extends Component {
         }
         if (isNullOrUndefined(this.inputElement.getAttribute('name'))) {
             attributes(this.inputElement, { 'name': this.element.id });
+        }
+    }
+    checkTimeFormat() {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            }
+            else if (!isNullOrUndefined(this.format.skeleton) && this.format.skeleton !== '') {
+                let skeletonString = this.format.skeleton;
+                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: skeletonString });
+            }
+            else {
+                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: 'short' });
+            }
+        }
+        else {
+            this.formatString = null;
         }
     }
     checkDateValue(value) {
@@ -7730,11 +7839,11 @@ let TimePicker = class TimePicker extends Component {
         let culture = new Internationalization(this.locale);
         let cldrTime;
         let dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.CldrFormat('time');
         }
         else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     }
@@ -7754,7 +7863,7 @@ let TimePicker = class TimePicker extends Component {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.format, type: 'dateTime', skeleton: 'yMd'
+                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
                             }));
                         }
                     }
@@ -8072,7 +8181,7 @@ let TimePicker = class TimePicker extends Component {
     }
     cldrTimeFormat() {
         let cldrTime;
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
                 cldrTime = (getValue('timeFormats.short', getDefaultDateObject()));
             }
@@ -8081,7 +8190,7 @@ let TimePicker = class TimePicker extends Component {
             }
         }
         else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     }
@@ -8457,10 +8566,14 @@ let TimePicker = class TimePicker extends Component {
     }
     formResetHandler() {
         if (!this.inputElement.getAttribute('value')) {
-            this.value = null;
+            this.setProperties({ value: null }, true);
+            this.prevDate = this.value;
+            this.valueWithMinutes = this.value;
+            this.initValue = this.value;
             if (this.inputElement) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 this.removeErrorClass();
+                this.prevValue = this.inputElement.value;
             }
         }
         else {
@@ -9305,6 +9418,7 @@ let TimePicker = class TimePicker extends Component {
                     this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
                     break;
                 case 'format':
+                    this.checkTimeFormat();
                     this.setProperties({ format: newProp.format }, true);
                     this.setValue(this.value);
                     break;
@@ -9761,11 +9875,11 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         let cldrTime;
         let culture = new Internationalization(this.locale);
         let dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         }
         else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     }
@@ -10474,12 +10588,13 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
+                type: 'dateTime', skeleton: 'yMd'
             });
         }
         else {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(),
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
                 type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
             });
         }
@@ -10630,6 +10745,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                     super.updateInput();
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
                     this.setValue();
                     break;
@@ -10672,6 +10788,13 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     getModuleName() {
         return 'datetimepicker';
     }
+    restoreValue() {
+        this.previousDateTime = this.previousDate;
+        this.currentDate = this.value ? this.value : new Date();
+        this.valueWithMinutes = this.value;
+        this.previousDate = this.value;
+        this.previousElementValue = this.inputElement.value;
+    }
 };
 __decorate$4([
     Property(null)
@@ -10688,6 +10811,9 @@ __decorate$4([
 __decorate$4([
     Property(false)
 ], DateTimePicker.prototype, "enablePersistence", void 0);
+__decorate$4([
+    Property(true)
+], DateTimePicker.prototype, "allowEdit", void 0);
 __decorate$4([
     Property(false)
 ], DateTimePicker.prototype, "isMultiSelection", void 0);

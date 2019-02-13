@@ -26,7 +26,7 @@ export interface ChangeEventArgs extends SelectEventArgs {
     /**
      * Returns the previous selected item as JSON Object from the data source.
      */
-    previousItemData: FieldSettingsModel;
+    previousItemData: FieldSettingsModel | { [key: string]: string };
     /**
      * Returns the root element of the component.
      */
@@ -1434,6 +1434,14 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isNotSearchList = true;
             } else {
                 this.isNotSearchList = false;
+                if ((this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options.length > 0)
+                    || (this.element.tagName === 'UL' && (<HTMLUListElement>this.element).childNodes.length > 0)) {
+                    let data: boolean = dataSource instanceof Array ? (dataSource.length > 0)
+                : !isNullOrUndefined(dataSource);
+                    if (!data && this.listData.length > 0) {
+                        dataSource = this.listData;
+                    }
+                }
                 this.resetList(dataSource, fields, query);
             }
         }

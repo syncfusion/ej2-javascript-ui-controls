@@ -23,14 +23,7 @@ describe('RTE UNDO REDO - undoRedoSteps - ', () => {
             done();
         })
         it(' Test the default value ', () => {
-            expect(rteObj.format.default === 'Paragraph').toBe(true);
-        });
-        it(' Test the default value of width ', () => {
-            expect(rteObj.format.width === "65px").toBe(true);
-        });
-
-        it(' Test the default value of items ', () => {
-            expect(rteObj.format.types.length === 7).toBe(true);
+            expect(rteObj.undoRedoSteps === 30).toBe(true);
         });
     });
 
@@ -125,7 +118,7 @@ describe('RTE UNDO REDO - undoRedoSteps - ', () => {
                 expect((rteObj as any).inputElement.innerHTML === '<span id="rte"><strong><em><span style="text-decoration: underline;">RTE</span></em></strong></span>').toBe(true);
                 item = rteObj.element.querySelector('#' + controlId + '_toolbar_Undo');
                 item.click();
-                expect((rteObj as any).inputElement.innerHTML=== '<span id="rte"><strong><em>RTE</em></strong></span>').toBe(true);
+                expect((rteObj as any).inputElement.innerHTML === '<span id="rte"><strong><em>RTE</em></strong></span>').toBe(true);
                 item.click();
                 expect((rteObj as any).inputElement.innerHTML === '<span id="rte"><strong>RTE</strong></span>').toBe(true);
                 expect(item.parentElement.classList.contains('e-overlay')).toBe(true);

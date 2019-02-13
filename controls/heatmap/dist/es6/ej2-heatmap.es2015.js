@@ -4558,8 +4558,8 @@ class Legend {
     renderLegendLabelTooltip(e) {
         let x = this.heatMap.mouseX;
         let y = this.heatMap.mouseY;
-        if (e.target.id.indexOf('_Legend_Label') !== -1 && event.target.textContent.indexOf('...') > -1) {
-            let targetId = event.target.id.split(this.heatMap.element.id + '_Legend_Label');
+        if (e.target.id.indexOf('_Legend_Label') !== -1 && e.target.textContent.indexOf('...') > -1) {
+            let targetId = e.target.id.split(this.heatMap.element.id + '_Legend_Label');
             if (targetId.length === 2) {
                 let index;
                 if (targetId[1].length === 1 || this.heatMap.legendSettings.textStyle.textOverflow === 'Trim') {

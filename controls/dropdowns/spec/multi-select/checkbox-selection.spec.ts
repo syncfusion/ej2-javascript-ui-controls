@@ -416,6 +416,19 @@ describe('MultiSelect', () => {
             }
             Browser.userAgent = navigator.userAgent;
         })
+        it('EJ2-22343 - Selected value not cleared bootstrap modal only in mobile', (done) => {
+            listObj.open = (): void => {
+                setTimeout((): void => {
+                    listObj.checkBoxSelectionModule.clickOnBackIcon();
+                    setTimeout((): void => {
+                        expect(listObj.overAllWrapper.classList.contains('e-input-focus')).toBe(true);
+                        listObj.open = null;
+                        done();
+                    }, 200);
+                }, 200);
+            };
+            listObj.showPopup();
+        })
         it('allowFiltering enabled', () => {
             listObj.showPopup();
             expect(listObj.popupObj.element.style.maxHeight).toBe('100%');

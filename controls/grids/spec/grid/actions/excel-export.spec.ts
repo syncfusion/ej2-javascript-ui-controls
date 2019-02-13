@@ -88,6 +88,39 @@ describe('excel Export =>', () => {
             expect(excelRows[0].cells.length).toBe(5);
         });
 
+        it('check cell with value 0', () => {
+            var data: Object = [gridObj.dataSource[0]];
+            data[0]['EmployeeID'] = 0;
+            gridObj.excelQueryCellInfo = (args) => {
+                if(args.column.field == 'EmployeeID' && args.data['FirstName'] == 'Nancy') {
+                expect(args.value).toBe(0);
+                }
+            }
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, undefined, {result: data });
+        });
+
+        it('check cell with value null', () => {
+            var data: Object = [gridObj.dataSource[0]];
+            data[0]['FirstName'] = null;
+            gridObj.excelQueryCellInfo = (args) => {
+                if(args.column.field == 'FirstName' && args.data['EmployeeID'] == 0) {
+                expect(args.value).toBe('');
+                }
+            }
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, undefined, {result: data });
+        });
+
+        it('check cell with empty string value', () => {
+            var data: Object = [gridObj.dataSource[0]];
+            data[0]['FirstName'] = '';
+            gridObj.excelQueryCellInfo = (args) => {
+                if(args.column.field == 'FirstName' && args.data['EmployeeID'] == 0) {
+                expect(args.value).toBe('');
+                }
+            }
+            let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, undefined, {result: data });
+        });
+
         afterAll(() => {
             destroy(gridObj);
         });

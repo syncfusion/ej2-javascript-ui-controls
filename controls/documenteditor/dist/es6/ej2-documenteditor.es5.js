@@ -15595,11 +15595,8 @@ var Layout = /** @__PURE__ @class */ (function () {
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(currentWidget.y + currentWidget.height, 2))) {
                 if (!isNullOrUndefined(viewer.blockToShift)) {
                     viewer.blockToShift = block;
-                    break;
                 }
-                if (isNullOrUndefined(nextWidget.nextWidget)) {
-                    break;
-                }
+                break;
             }
             updateNextBlockList = true;
             if (viewer.owner.isShiftingEnabled && viewer.fieldStacks.length === 0) {
@@ -21045,6 +21042,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
     function SfdtReader(viewer) {
         /* tslint:disable:no-any */
         this.viewer = undefined;
+        this.isPageBreakInsideTable = false;
         this.viewer = viewer;
     }
     Object.defineProperty(SfdtReader.prototype, "isPasting", {
@@ -21381,10 +21379,13 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                     cell.containerWidget = row;
                     cell.index = j;
                     cell.rowIndex = i;
+                    cell.columnIndex = j;
                     if (block.rows[i].cells[j].hasOwnProperty('cellFormat')) {
                         this.parseCellFormat(block.rows[i].cells[j].cellFormat, cell.cellFormat);
                     }
+                    this.isPageBreakInsideTable = true;
                     this.parseTextBody(block.rows[i].cells[j].blocks, cell);
+                    this.isPageBreakInsideTable = false;
                 }
             }
             table.childWidgets.push(row);
@@ -21427,6 +21428,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 }
                 else if (inline.text === '\t') {
                     textElement = new TabElementBox();
+                }
+                else if (inline.text === '\f' && this.isPageBreakInsideTable) {
+                    continue;
                 }
                 else {
                     textElement = new TextElementBox();
@@ -65353,7 +65357,7 @@ var TextProperties = /** @__PURE__ @class */ (function () {
     });
     TextProperties.prototype.initializeTextProperties = function (id, isTableProperties, isRtl) {
         /* tslint:disable-next-line:max-line-length */
-        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-text-pane' });
+        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-prop-pane' });
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
         this.paragraph.updateStyleNames();
@@ -65495,7 +65499,7 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         var localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         var elementId = 'header_footer_properties';
         // tslint:disable-next-line:max-line-length
-        this.element = createElement('div', { id: this.documentEditor.element.id + elementId, styles: 'width:269px;' });
+        this.element = createElement('div', { id: this.documentEditor.element.id + elementId, className: 'e-de-prop-pane' });
         var headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
         classList(headerDiv, ['e-de-cntr-pane-padding'], []);
         var headerLabel = createElement('label', { className: 'e-de-prop-header-label' });
@@ -65654,7 +65658,7 @@ var ImageProperties = /** @__PURE__ @class */ (function () {
         this.isHeightApply = false;
         this.initializeImageProperties = function () {
             // tslint:disable-next-line:max-line-length
-            _this.element = createElement('div', { id: _this.elementId + '_imageProperties', styles: 'width:269px;' });
+            _this.element = createElement('div', { id: _this.elementId + '_imageProperties', className: 'e-de-prop-pane' });
             _this.element.style.display = 'none';
             _this.container.propertiesPaneContainer.appendChild(_this.element);
             _this.initImageProp();
@@ -65830,7 +65834,7 @@ var TocProperties = /** @__PURE__ @class */ (function () {
         this.initializeTocPane = function () {
             _this.localObj = new L10n('documenteditorcontainer', _this.container.defaultLocale, _this.container.locale);
             // tslint:disable-next-line:max-line-length
-            _this.element = createElement('div', { id: _this.elementId + '_tocProperties', styles: 'width:270px' });
+            _this.element = createElement('div', { id: _this.elementId + '_tocProperties', className: 'e-de-prop-pane' });
             var container = createElement('div', { className: 'e-de-cntr-pane-padding e-de-prop-separator-line' });
             _this.tocHeaderDiv(container);
             _this.initTemplates(container);
@@ -66167,7 +66171,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         };
         this.addTablePropertyTab = function () {
             // tslint:disable-next-line:max-line-length
-            _this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-table-pane' });
+            _this.parentElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-prop-pane' });
             _this.element = createElement('div', { id: _this.elementId + '_propertyTabDiv', className: 'e-de-property-tab' });
             // tslint:disable-next-line:max-line-length
             var items = [{ header: { text: _this.localObj.getConstant('Table') }, content: _this.tableProperties }, { header: { text: _this.localObj.getConstant('Text') }, content: _this.tableTextProperties.element }];
@@ -66766,7 +66770,7 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             div.appendChild(label);
             // tslint:disable-next-line:max-line-length
             _this.pageNumberLabel = createElement('label', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text;height:17px;max-width:150px' });
-            _this.editablePageNumber = createElement('div', { styles: 'border: 1px solid #F1F1F1;display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-de-pagenumber-text' });
+            _this.editablePageNumber = createElement('div', { styles: 'display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-de-pagenumber-text' });
             _this.editablePageNumber.appendChild(_this.pageNumberLabel);
             if (isRtl) {
                 label.style.marginLeft = '6px';
@@ -66899,6 +66903,10 @@ var StatusBar = /** @__PURE__ @class */ (function () {
                     _this.updatePageNumber();
                 }
                 _this.editablePageNumber.contentEditable = 'false';
+                _this.editablePageNumber.style.border = 'none';
+            });
+            _this.editablePageNumber.addEventListener('focus', function () {
+                _this.editablePageNumber.style.border = '1px solid #F1F1F1';
             });
             _this.editablePageNumber.addEventListener('click', function () {
                 _this.updateDocumentEditorPageNumber();

@@ -21,7 +21,8 @@ export class ButtonProps extends ChildProperty<ButtonProps> {
     /**
      * Specify the type of the button.
      * Possible values are Button, Submit and Reset.
-     * @event
+     * @default 'Button'
+     * @aspType string
      */
     @Property('Button')
     public type: ButtonType | string;
@@ -689,7 +690,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     element: this.element,
                     target: this.target
                 };
-                if (this.enableResize && this.animationSettings.effect !== 'None') {
+                if (this.enableResize) {
                     this.getMinHeight();
                 }
                 this.trigger('open', eventArgs);

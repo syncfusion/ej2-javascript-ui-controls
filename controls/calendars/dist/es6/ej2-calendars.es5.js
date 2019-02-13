@@ -776,8 +776,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         localDate.setMonth(0);
         localDate.setDate(1);
         var localYr = localDate.getFullYear();
-        var startYr = new Date('' + (localYr - localYr % 10));
-        var endYr = new Date('' + (localYr - localYr % 10 + (10 - 1)));
+        var startYr = new Date(localDate.setFullYear((localYr - localYr % 10)));
+        var endYr = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
         var startHdrYr = this.globalize.formatDate(startYr, { type: 'dateTime', skeleton: 'y' });
         var endHdrYr = this.globalize.formatDate(endYr, { type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
@@ -2199,6 +2199,8 @@ var TODAY$1 = 'e-today';
 var LINK$1 = 'e-day';
 var CELL$1 = 'e-cell';
 var dayMilliSeconds$1 = 86400000;
+var minDecade = 2060;
+var maxDecade = 2069;
 var Islamic = /** @__PURE__ @class */ (function () {
     function Islamic(instance) {
         this.calendarInstance = instance;
@@ -2628,7 +2630,11 @@ var Islamic = /** @__PURE__ @class */ (function () {
         if (hijriStart.year > end) {
             result = 1;
         }
-        else if (hijriStart.year < start) {
+        else if ((this.calendarInstance.currentView() === 'Decade') && hijriStart.year < start &&
+            !((startDate.getFullYear() >= minDecade && startDate.getFullYear() <= maxDecade))) {
+            result = -1;
+        }
+        else if (hijriStart.year < start && (this.calendarInstance.currentView() === 'Year')) {
             result = -1;
         }
         return result;
@@ -2717,6 +2723,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.previousElementValue = '';
         _this.isDateIconClicked = false;
+        _this.isAltKeyPressed = false;
         _this.invalidValueString = null;
         _this.checkPreviousValue = null;
         _this.keyConfigs = {
@@ -2837,7 +2844,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.value)) {
             var dateValue = this.value;
             var dateString = void 0;
-            var tempFormat = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            var tempFormat = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
                     dateString = this.globalize.formatDate(this.value, {
@@ -2852,10 +2859,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 }
                 else {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 dateString = this.globalize.formatDate(this.value, formatOptions);
             }
@@ -2957,13 +2964,19 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         }
         else {
-            this.value = null;
+            this.setProperties({ value: null }, true);
             if (this.inputElement) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 attributes(this.inputElement, { 'aria-invalid': 'false' });
                 removeClass([this.inputWrapper.container], ERROR);
             }
+            this.restoreValue();
         }
+    };
+    DatePicker.prototype.restoreValue = function () {
+        this.currentDate = this.value ? this.value : new Date();
+        this.previousDate = this.value;
+        this.previousElementValue = this.inputElement.value;
     };
     DatePicker.prototype.inputChangeHandler = function (e) {
         e.stopPropagation();
@@ -3078,10 +3091,12 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.inputKeyActionHandle = function (e) {
         switch (e.action) {
             case 'altUpArrow':
+                this.isAltKeyPressed = false;
                 this.hide(e);
                 this.inputElement.focus();
                 break;
             case 'altDownArrow':
+                this.isAltKeyPressed = true;
                 this.strictModeUpdate();
                 this.updateInput();
                 this.changeTrigger(e);
@@ -3112,21 +3127,27 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.errorClass();
                 this.hide(e);
                 break;
+            case 'select':
+                (!this.isAltKeyPressed) ? this.hide(e) : this.defaultAction(e);
+                break;
             default:
-                this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
-                if (this.isCalendar()) {
-                    _super.prototype.keyActionHandle.call(this, e);
-                }
+                this.defaultAction(e);
+        }
+    };
+    DatePicker.prototype.defaultAction = function (e) {
+        this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
+        if (this.isCalendar()) {
+            _super.prototype.keyActionHandle.call(this, e);
         }
     };
     DatePicker.prototype.strictModeUpdate = function () {
         var format;
         var formatOptions;
         if (this.getModuleName() === 'datetimepicker') {
-            format = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            format = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
         }
         else {
-            format = isNullOrUndefined(this.format) ? this.format : this.format.replace('dd', 'd');
+            format = isNullOrUndefined(this.formatString) ? this.formatString : this.formatString.replace('dd', 'd');
         }
         if (!isNullOrUndefined(format)) {
             var len = format.split('M').length - 1;
@@ -3138,13 +3159,13 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 dateOptions = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 };
             }
             else {
                 dateOptions = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 };
             }
@@ -3331,10 +3352,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         var tempFormat;
         var formatOptions;
         if (this.getModuleName() === 'datetimepicker') {
-            tempFormat = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            tempFormat = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
         }
         else {
-            tempFormat = this.format;
+            tempFormat = this.formatString;
         }
         if (this.value) {
             if (this.getModuleName() === 'datetimepicker') {
@@ -3348,10 +3369,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 }
                 else {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             }
@@ -3456,6 +3477,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             if (this.isCalendar() && (prevent_2 && !this.preventArgs.cancel)) {
                 this.popupObj.hide();
+                this.isAltKeyPressed = false;
                 this.keyboardModule.destroy();
                 removeClass(this.inputWrapper.buttons, ACTIVE);
             }
@@ -3635,30 +3657,58 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             target.removeAttribute(attribute[i]);
         }
     };
+    DatePicker.prototype.checkFormat = function () {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            }
+            else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
+                var skeletonString = this.format.skeleton;
+                if (this.getModuleName() === 'datetimepicker') {
+                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'dateTime' });
+                }
+                else {
+                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
+                }
+            }
+            else {
+                if (this.getModuleName() === 'datetimepicker') {
+                    this.formatString = this.dateTimeFormat;
+                }
+                else {
+                    this.formatString = null;
+                }
+            }
+        }
+        else {
+            this.formatString = null;
+        }
+    };
     DatePicker.prototype.checkHtmlAttributes = function () {
         this.globalize = new Internationalization(this.locale);
+        this.checkFormat();
         var attributes$$1 = ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
         var options;
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 options = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 };
             }
             else {
                 options = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 };
             }
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                options = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             }
             else {
-                options = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
         }
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
@@ -3747,13 +3797,13 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 globalize = this.globalize.formatDate(valueCopy, {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 });
             }
             else {
                 globalize = this.globalize.formatDate(valueCopy, {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 });
             }
@@ -3761,14 +3811,16 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             }
             else {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
             inputVal = this.globalize.formatDate(valueCopy, formatOptions);
         }
-        Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+        if (!this.popupObj) {
+            Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
     };
     DatePicker.prototype.setAriaAttributes = function () {
         if (this.isCalendar()) {
@@ -3804,7 +3856,13 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     DatePicker.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var options = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+        var options;
+        if (this.calendarMode === 'Gregorian') {
+            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+        }
+        else {
+            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+        }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -3812,7 +3870,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
                     if (typeof newProp.value === 'string' && !this.invalidValueString) {
-                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        newProp.value = this.checkDateValue(this.globalize.parseDate(newProp.value, options));
                         this.setProperties({ value: newProp.value }, true);
                     }
                     this.previousElementValue = this.inputElement.value;
@@ -3826,6 +3884,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.updateInput();
                     break;
                 case 'allowEdit':
@@ -4248,10 +4307,28 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.initProperty = function () {
         this.globalize = new Internationalization(this.locale);
+        this.checkFormat();
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: this.globalize.getFirstDayOfWeek() }, true);
         }
         this.updateValue();
+    };
+    DateRangePicker.prototype.checkFormat = function () {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            }
+            else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
+                var skeletonString = this.format.skeleton;
+                this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
+            }
+            else {
+                this.formatString = null;
+            }
+        }
+        else {
+            this.formatString = null;
+        }
     };
     DateRangePicker.prototype.initialize = function () {
         if (this.angularTag !== null) {
@@ -4393,14 +4470,26 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.clearRange();
         this.hide(e);
     };
+    DateRangePicker.prototype.restoreValue = function () {
+        this.previousEleValue = this.inputElement.value;
+        this.previousStartValue = this.startValue;
+        this.previousEndValue = this.endValue;
+        this.valueType = null;
+        this.initStartDate = this.checkDateValue(this.startValue);
+        this.initEndDate = this.checkDateValue(this.endValue);
+        this.setValue();
+        this.setModelValue();
+    };
     DateRangePicker.prototype.formResetHandler = function (e) {
         if (this.formElement && e.target === this.formElement) {
-            this.value = null;
+            this.setProperties({ value: null, startDate: null, endDate: null }, true);
+            this.startValue = this.endValue = null;
             if (this.inputElement) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 attributes(this.inputElement, { 'aria-invalid': 'false' });
                 removeClass([this.inputWrapper.container], ERROR$1);
             }
+            this.restoreValue();
         }
     };
     DateRangePicker.prototype.clear = function () {
@@ -4450,7 +4539,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var attributes$$1;
         attributes$$1 = ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled',
             'readonly', 'style', 'name', 'placeholder', 'type'];
-        var format = { format: this.format, type: 'date', skeleton: 'yMd' };
+        var format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
@@ -4714,7 +4803,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(value) && value.trim() !== '') {
                 var range = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
-                    var dateOptions = { format: this.format, type: 'date', skeleton: 'yMd' };
+                    var dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
                     var startDate = this.globalize.parseDate(range[0].trim(), dateOptions);
                     var endDate = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -5269,9 +5358,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var inputValue;
         var range;
         var startDate = !isNullOrUndefined(this.startValue) ?
-            this.globalize.formatDate(this.startValue, { format: this.format, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.startValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
         var endDate = !isNullOrUndefined(this.endValue) ?
-            this.globalize.formatDate(this.endValue, { format: this.format, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.endValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
             range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -6866,8 +6955,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.updateInput = function () {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            var startDate = this.globalize.formatDate(this.startValue, { format: this.format, type: 'date', skeleton: 'yMd' });
-            var endDate = this.globalize.formatDate(this.endValue, { format: this.format, type: 'date', skeleton: 'yMd' });
+            var formatingOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+            var startDate = this.globalize.formatDate(this.startValue, formatingOptions);
+            var endDate = this.globalize.formatDate(this.endValue, formatingOptions);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
@@ -7302,7 +7392,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      */
     // tslint:disable-next-line:max-func-body-length
     DateRangePicker.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var format = { format: this.format, type: 'date', skeleton: 'yMd' };
+        var format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             this.hide(null);
@@ -7347,6 +7437,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
                     this.updateInput();
                     this.changeTrigger();
@@ -7762,6 +7853,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.initialize = function () {
         this.globalize = new Internationalization(this.locale);
         this.defaultCulture = new Internationalization('en');
+        this.checkTimeFormat();
         this.checkInvalidValue(this.value);
         // persist the value property.
         this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true);
@@ -7793,6 +7885,23 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         if (isNullOrUndefined(this.inputElement.getAttribute('name'))) {
             attributes(this.inputElement, { 'name': this.element.id });
+        }
+    };
+    TimePicker.prototype.checkTimeFormat = function () {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            }
+            else if (!isNullOrUndefined(this.format.skeleton) && this.format.skeleton !== '') {
+                var skeletonString = this.format.skeleton;
+                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: skeletonString });
+            }
+            else {
+                this.formatString = this.globalize.getDatePattern({ type: 'time', skeleton: 'short' });
+            }
+        }
+        else {
+            this.formatString = null;
         }
     };
     TimePicker.prototype.checkDateValue = function (value) {
@@ -7827,11 +7936,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         var culture = new Internationalization(this.locale);
         var cldrTime;
         var dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.CldrFormat('time');
         }
         else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     };
@@ -7851,7 +7960,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.format, type: 'dateTime', skeleton: 'yMd'
+                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
                             }));
                         }
                     }
@@ -8170,7 +8279,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.cldrTimeFormat = function () {
         var cldrTime;
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
                 cldrTime = (getValue('timeFormats.short', getDefaultDateObject()));
             }
@@ -8179,7 +8288,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     };
@@ -8555,10 +8664,14 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.formResetHandler = function () {
         if (!this.inputElement.getAttribute('value')) {
-            this.value = null;
+            this.setProperties({ value: null }, true);
+            this.prevDate = this.value;
+            this.valueWithMinutes = this.value;
+            this.initValue = this.value;
             if (this.inputElement) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 this.removeErrorClass();
+                this.prevValue = this.inputElement.value;
             }
         }
         else {
@@ -9406,6 +9519,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
                     break;
                 case 'format':
+                    this.checkTimeFormat();
                     this.setProperties({ format: newProp.format }, true);
                     this.setValue(this.value);
                     break;
@@ -9878,11 +9992,11 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         var cldrTime;
         var culture = new Internationalization(this.locale);
         var dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
-        if (this.isNullOrEmpty(this.format)) {
+        if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         }
         else {
-            cldrTime = this.format;
+            cldrTime = this.formatString;
         }
         return cldrTime;
     };
@@ -10593,12 +10707,13 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd'
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
+                type: 'dateTime', skeleton: 'yMd'
             });
         }
         else {
             dateString = this.globalize.formatDate(time, {
-                format: !isNullOrUndefined(this.format) ? this.format : this.cldrDateTimeFormat(),
+                format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
                 type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
             });
         }
@@ -10750,6 +10865,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     _super.prototype.updateInput.call(this);
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
                     this.setValue();
                     break;
@@ -10792,6 +10908,13 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     DateTimePicker.prototype.getModuleName = function () {
         return 'datetimepicker';
     };
+    DateTimePicker.prototype.restoreValue = function () {
+        this.previousDateTime = this.previousDate;
+        this.currentDate = this.value ? this.value : new Date();
+        this.valueWithMinutes = this.value;
+        this.previousDate = this.value;
+        this.previousElementValue = this.inputElement.value;
+    };
     __decorate$4([
         Property(null)
     ], DateTimePicker.prototype, "timeFormat", void 0);
@@ -10807,6 +10930,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(false)
     ], DateTimePicker.prototype, "enablePersistence", void 0);
+    __decorate$4([
+        Property(true)
+    ], DateTimePicker.prototype, "allowEdit", void 0);
     __decorate$4([
         Property(false)
     ], DateTimePicker.prototype, "isMultiSelection", void 0);

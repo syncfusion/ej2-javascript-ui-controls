@@ -562,6 +562,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         return this.element.parentElement.parentElement;
     };
     CheckBox.prototype.initialize = function () {
+        if (isNullOrUndefined(this.initialCheckedValue)) {
+            this.initialCheckedValue = this.checked;
+        }
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
@@ -701,6 +704,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      */
     CheckBox.prototype.preRender = function () {
         var element = this.element;
+        this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-CHECKBOX', 'checkbox', element, WRAPPER, 'checkbox');
         this.element = element;
@@ -712,7 +716,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Initialize the control rendering
+     * Initialize the control rendering.
      * @private
      */
     CheckBox.prototype.render = function () {
@@ -747,6 +751,10 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.changeHandler = function (e) {
         e.stopPropagation();
     };
+    CheckBox.prototype.formResetHandler = function () {
+        this.checked = this.initialCheckedValue;
+        attributes(this.element, { 'checked': this.initialCheckedValue.toString() });
+    };
     CheckBox.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
         EventHandler.remove(this.element, 'click', this.clickHandler);
@@ -757,6 +765,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         var label = wrapper.getElementsByTagName('label')[0];
         EventHandler.remove(label, 'mousedown', this.labelMouseHandler);
         EventHandler.remove(label, 'mouseup', this.labelMouseHandler);
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.remove(this.element, 'change', this.changeHandler);
         }
@@ -771,6 +782,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         var label = wrapper.getElementsByTagName('label')[0];
         EventHandler.add(label, 'mousedown', this.labelMouseHandler, this);
         EventHandler.add(label, 'mouseup', this.labelMouseHandler, this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
@@ -929,6 +943,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
         return this.element.nextElementSibling;
     };
     RadioButton.prototype.initialize = function () {
+        if (isNullOrUndefined(this.initialCheckedValue)) {
+            this.initialCheckedValue = this.checked;
+        }
         this.initWrapper();
         if (this.name) {
             this.element.setAttribute('name', this.name);
@@ -980,6 +997,12 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     };
     RadioButton.prototype.mouseDownHandler = function () {
         this.isKeyPressed = false;
+    };
+    RadioButton.prototype.formResetHandler = function () {
+        this.checked = this.initialCheckedValue;
+        if (this.initialCheckedValue) {
+            attributes(this.element, { 'checked': 'true' });
+        }
     };
     /**
      * Called internally if any of the property value changes.
@@ -1048,6 +1071,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      */
     RadioButton.prototype.preRender = function () {
         var element = this.element;
+        this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-RADIOBUTTON', 'radio', element, WRAPPER$1, 'radio');
         this.element = element;
@@ -1100,6 +1124,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
             EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);
         }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     };
     RadioButton.prototype.wireEvents = function () {
         var label = this.getLabel();
@@ -1112,6 +1139,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
         if (rippleLabel) {
             EventHandler.add(rippleLabel, 'mousedown', this.labelRippleHandler, this);
             EventHandler.add(rippleLabel, 'mouseup', this.labelRippleHandler, this);
+        }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
     };
     var RadioButton_1;
@@ -1273,6 +1303,9 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         return this.element.parentElement;
     };
     Switch.prototype.initialize = function () {
+        if (isNullOrUndefined(this.initialSwitchCheckedValue)) {
+            this.initialSwitchCheckedValue = this.checked;
+        }
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
@@ -1377,6 +1410,7 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      */
     Switch.prototype.preRender = function () {
         var element = this.element;
+        this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
         preRender(this, 'EJS-SWITCH', WRAPPER$2, element, this.getModuleName());
     };
@@ -1443,6 +1477,10 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Switch.prototype.formResetHandler = function () {
+        this.checked = this.initialSwitchCheckedValue;
+        attributes(this.element, { 'checked': this.initialSwitchCheckedValue.toString() });
+    };
     /**
      * Toggle the Switch component state into checked/unchecked.
      * @returns void
@@ -1462,6 +1500,9 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
     };
     Switch.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
@@ -1473,6 +1514,9 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     };
     __decorate$3([
         Event()

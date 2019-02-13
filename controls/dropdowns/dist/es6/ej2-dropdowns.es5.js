@@ -2257,6 +2257,14 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.isNotSearchList = false;
+                if ((this.element.tagName === 'SELECT' && this.element.options.length > 0)
+                    || (this.element.tagName === 'UL' && this.element.childNodes.length > 0)) {
+                    var data = dataSource instanceof Array ? (dataSource.length > 0)
+                        : !isNullOrUndefined(dataSource);
+                    if (!data && this.listData.length > 0) {
+                        dataSource = this.listData;
+                    }
+                }
                 this.resetList(dataSource, fields, query);
             }
         }
@@ -4678,6 +4686,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             var proxy_1 = this;
             window.onpopstate = function () {
                 proxy_1.hidePopup();
+                proxy_1.inputElement.focus();
             };
             history.pushState({}, '');
         }
@@ -5267,9 +5276,20 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (this.allowFiltering && !isNullOrUndefined(this.mainList)) {
             this.ulElement = this.mainList;
         }
+        this.checkPlaceholderSize();
+    };
+    MultiSelect.prototype.checkPlaceholderSize = function () {
+        if ((!this.value || !this.value.length) && this.showDropDownIcon &&
+            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth)) {
+            var downIconWidth = this.dropIcon.offsetWidth +
+                parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
+            do {
+                this.inputElement.size -= 1;
+            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth);
+        }
     };
     MultiSelect.prototype.refreshInputHight = function () {
-        if (!this.value || !this.value.length) {
+        if ((!this.value || !this.value.length) && isNullOrUndefined(this.text)) {
             this.searchWrapper.classList.remove(ZERO_SIZE);
         }
         else {
@@ -5347,6 +5367,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             if (this.mode !== 'CheckBox') {
                 this.searchWrapper.classList.remove(ZERO_SIZE);
             }
+            this.checkPlaceholderSize();
             if (this.focused) {
                 this.inputElement.focus();
                 var args = { isInteracted: e ? true : false, event: e };
@@ -5838,7 +5859,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.refreshPlaceHolder = function () {
         if (this.placeholder && this.floatLabelType === 'Never') {
-            if (this.value && this.value.length) {
+            if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
                 this.inputElement.placeholder = '';
             }
             else {
@@ -6295,6 +6316,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 this.updateDelimView();
             }
             this.makeTextBoxEmpty();
+            this.checkPlaceholderSize();
             if (this.isPopupOpen()) {
                 this.refreshPopup();
             }
@@ -7191,7 +7213,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     MultiSelect.prototype.render = function () {
-        var _this = this;
         this.setDynValue = this.initStatus = false;
         this.searchWrapper = this.createElement('span', { className: SEARCHBOX_WRAPPER + ' ' + ((this.mode === 'Box') ? BOX_ELEMENT : '') });
         this.viewWrapper = this.createElement('span', { className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER, styles: 'display:none;' });
@@ -7273,6 +7294,37 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.wireEvent();
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
+        this.checkInitialValue();
+    };
+    MultiSelect.prototype.checkInitialValue = function () {
+        var _this = this;
+        var isData = this.dataSource instanceof Array ? (this.dataSource.length > 0)
+            : !isNullOrUndefined(this.dataSource);
+        if (!(this.value && this.value.length) &&
+            isNullOrUndefined(this.text) &&
+            !isData &&
+            this.element.tagName === 'SELECT' &&
+            this.element.options.length > 0) {
+            var optionsElement = this.element.options;
+            var valueCol = [];
+            var textCol = '';
+            for (var index = 0, optionsLen = optionsElement.length; index < optionsLen; index++) {
+                var opt = optionsElement[index];
+                if (opt.selected) {
+                    (opt.getAttribute('value')) ? valueCol.push(opt.getAttribute('value')) : textCol += (opt.text + this.delimiterChar);
+                }
+            }
+            if (valueCol.length > 0) {
+                this.setProperties({ value: valueCol }, true);
+            }
+            else if (textCol !== '') {
+                this.setProperties({ text: textCol }, true);
+            }
+            if (valueCol.length > 0 || textCol !== '') {
+                this.refreshInputHight();
+                this.refreshPlaceHolder();
+            }
+        }
         if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
             this.renderPopup();
         }
@@ -7332,6 +7384,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.updateHTMLAttribute();
         this.updateReadonly(this.readonly);
         this.refreshInputHight();
+        this.checkPlaceholderSize();
     };
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
@@ -7776,6 +7829,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
     CheckBoxSelection.prototype.clickOnBackIcon = function (e) {
         this.parent.hidePopup();
         removeClass([document.body, this.parent.popupObj.element], popupFullScreen);
+        this.parent.inputElement.focus();
     };
     CheckBoxSelection.prototype.clearText = function (e) {
         this.parent.targetInputElement.value = '';

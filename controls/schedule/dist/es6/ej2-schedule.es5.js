@@ -11907,7 +11907,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 var cellWidth = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth : 0;
+                    this.actionObj.cellWidth : this.actionObj.cellWidth - this.actionObj.interval;
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -11997,7 +11997,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
     Resize.prototype.getLeftRightStyles = function (e, isLeft) {
         var styles = {};
         var isTimelineView = this.parent.activeView.isTimelineView();
-        var isTimeViews = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > 0 &&
+        var isTimeViews = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
             this.parent.activeViewOptions.timeScale.enable;
         var slotInterval = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
         var pageWidth = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);

@@ -4,7 +4,7 @@ import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
 import { rotatePoint, getOffset } from '../../utility/base-util';
-
+import { ElementAction } from '../../enum/enum';
 /**
  * Container module is used to group related objects
  */
@@ -124,6 +124,10 @@ export class Container extends DiagramElement {
                     if (child.horizontalAlignment === 'Stretch') {
                         child.offsetX = this.offsetX;
                         child.parentTransform = this.parentTransform + this.rotateAngle;
+                        if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
+                            child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
+                                -child.parentTransform : child.parentTransform;
+                        }
                         arrange = true;
                     }
                     if (child.verticalAlignment === 'Stretch') {

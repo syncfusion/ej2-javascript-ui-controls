@@ -2,12 +2,11 @@
  * Dropdownlist spec document
  */
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
-import { DropDownBase, FilteringEventArgs, dropDownBaseClasses, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
+import { DropDownBase, FilteringEventArgs, dropDownBaseClasses, PopupEventArgs, SelectEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DropDownList } from '../../src/drop-down-list/drop-down-list';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 import '../../node_modules/es6-promise/dist/es6-promise';
-import { SelectEventArgs } from '@syncfusion/ej2-lists';
 
 
 L10n.load({
@@ -4391,6 +4390,85 @@ describe('DDList', () => {
             listObj.showPopup();
         });
 
+    });
+
+    describe('EJ2-22283 - Need to add object type in itemData in select and change event', () => {
+        let listObj: DropDownList;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let num: number = 0;
+        let data2: { [key: string]: Object }[] = [
+            { 
+                id: 'id1',
+                text: 'PHP',
+                value: 'value1',
+                list: 'list1',
+                drop: 'drop1',
+                anim: 'anim1'
+            }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('itemData in select and change event', (done) => {
+            listObj = new DropDownList({
+                dataSource: data2,
+               fields: { text: "text", value: "id" },
+                select: (e: SelectEventArgs) => {
+                    expect(e.itemData.value).toBe('value1');
+                    expect(e.itemData.text).toBe('PHP');
+                    expect((e.itemData as {[key: string]: string}).anim as string).toBe('anim1');
+                    done();
+                }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+            listObj.value = 'id1';
+        });
+    });
+    describe('EJ2-22432 - allowFiltering not work with select element', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74,
+            metaKey: false
+        };
+        let listObj: any;
+        let element: HTMLSelectElement;
+        beforeAll(() => {
+            element = <HTMLSelectElement>createElement('select', { id: 'list' });
+            element.innerHTML = `<option value="0">American Football</option>
+            <option value="1">Badminton</option>
+            <option value="2">Basketball</option>
+            <option value="3">Cricket</option>
+            <option value="4">Football</option>
+            <option value="5">Golf</option>
+            <option value="6">Hockey</option>
+            <option value="7">Rugby</option>
+            <option value="8">Snooker</option>
+            <option value="9">Tennis</option>`;
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                allowFiltering: true
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        afterAll(() => {
+            if (element) { element.remove(); };
+            document.body.innerHTML = '';
+        });
+
+        it('filter a suggestion list with select element', () => {
+            listObj.filterInput.value = "C";
+            listObj.onInput()
+            listObj.onFilterUp(keyEventArgs);
+            let element = document.querySelector(".e-list-parent");
+            expect(element.childNodes[0].textContent === 'Cricket').toBe(true);
+        });
     });
 
 });

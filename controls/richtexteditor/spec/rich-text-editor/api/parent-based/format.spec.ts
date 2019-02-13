@@ -23,7 +23,7 @@ describe('RTE PARENT BASED - formats - ', () => {
             done();
         })
         it(' Test the default value ', () => {
-            expect(rteObj.format.default === 'Paragraph').toBe(true);
+            expect(rteObj.format.default === null).toBe(true);
         });
         it(' Test the default value of width ', () => {
             expect(rteObj.format.width === "65px").toBe(true);

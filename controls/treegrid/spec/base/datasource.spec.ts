@@ -293,6 +293,105 @@ export let sampleData: Object[] = [
         'parentID': 8
     }
     ];
+    
+    export var multiLevelSelfRef1 = [{
+    'TaskID': 1,
+    'TaskName': 'Parent Task 1',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '40'
+},
+{
+    'TaskID': 2,
+    'TaskName': 'Child Task 1',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '40',
+    'parentID': 1
+},
+{
+    'TaskID': 3,
+    'TaskName': 'Parent Task 2',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '30',
+    'parentID': 2
+},
+{
+    'TaskID': 33,
+    'TaskName': 'Parent Task 2',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '30',
+    'parentID': 2
+},
+{
+    'TaskID': 4,
+    'TaskName': 'Child Task 1',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '60',
+    'parentID': 3
+},
+{
+    'TaskID': 44,
+    'TaskName': 'Child Task 1',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '60',
+    'parentID': 4
+},
+{
+    'TaskID': 444,
+    'TaskName': 'Child Task 1',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '60',
+    'parentID': 4
+},
+{
+    'TaskID': 5,
+    'TaskName': 'Parent Task 5',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '40'
+},
+{
+    'TaskID': 6,
+    'TaskName': 'Child Task 1',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '40',
+    'parentID': 5
+},
+{
+    'TaskID': 7,
+    'TaskName': 'Parent Task 2',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '30',
+    'parentID': 6
+},
+{
+    'TaskID': 8,
+    'TaskName': 'Child Task 1',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '60',
+    'parentID': 4
+},
+
+{
+    'TaskID': 9,
+    'TaskName': 'Child Task 9',
+    'StartDate': new Date('02/23/2014'),
+    'EndDate': new Date('02/27/2014'),
+    'Progress': '60',
+    'parentID': 44
+}
+];
+    
+    
 export let treeMappedData: Object[] = [
     {
         'taskID': 1,

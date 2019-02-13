@@ -294,7 +294,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * Specifies Query to select data from dataSource. This property is applicable only when the dataSource is `ej.DataManager`.
      * @default null
      */
-    @Property({})
+    @Property()
     public query: Query;
 
     /**
@@ -584,7 +584,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     /** @private To refresh the Datamanager for series */
     public refreshDataManager(accumulation: AccumulationChart, render : boolean): void {
         let dateSource: Object | DataManager = this.dataSource || accumulation.dataSource;
-        if (!(dateSource instanceof DataManager)) {
+        if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
             this.dataManagerSuccess({ result: dateSource, count: (dateSource as Object[]).length }, accumulation, render);
             return;
         }

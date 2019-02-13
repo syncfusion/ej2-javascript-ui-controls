@@ -23,7 +23,7 @@ describe('RTE SELECTION BASED - fontFamily - ', () => {
             done();
         })
         it(' Test the default value ', () => {
-            expect(rteObj.fontFamily.default === 'Segoe UI').toBe(true);
+            expect(rteObj.fontFamily.default === null).toBe(true);
         });
         it(' Test the default value of width ', () => {
             expect(rteObj.fontFamily.width === "65px").toBe(true);

@@ -489,8 +489,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      if (acrdnHdr) {
        tglIcon = <HTEle> select('.' + CLS_TOOGLEICN, acrdnHdr); }
      let acrdnCtnItem: HTEle;
-     if (acrdnCtn) {
-       acrdnCtnItem = <HTEle>closest(acrdnCtn, '.' + CLS_ITEM); }
+     if (acrdnHdr) {
+      acrdnCtnItem = <HTEle>closest(acrdnHdr, '.' + CLS_ITEM); } else if (acrdnCtn) {
+      acrdnCtnItem = <HTEle>closest(acrdnCtn, '.' + CLS_ITEM); }
      let acrdActive: HTEle[] = [];
      index = this.getIndexByItem(acrdnItem);
      if (acrdnCtnItem) {

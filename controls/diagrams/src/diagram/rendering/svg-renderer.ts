@@ -432,6 +432,7 @@ export class SvgRenderer implements IRenderer {
     }
 
     private setNativTransform(element: DiagramNativeElement, nativeElement: SVGElement, height: number, width: number): void {
+        let angle: number;
         let contentWidth: number = element.contentSize.width !== 0 ? element.contentSize.width : 1;
         let contentHeight: number = element.contentSize.height !== 0 ? element.contentSize.height : 1;
         let x: number = element.templatePosition.x * width / contentWidth;

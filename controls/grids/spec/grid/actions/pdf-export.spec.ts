@@ -85,6 +85,39 @@ describe('pdf Export =>', () => {
             expect(pdfGrid.columns.count).toBe(5);
         });
 
+        it('check cell with value 0', () => {
+            var data: Object = [gridObj.dataSource[0]];
+            data[0]['EmployeeID'] = 0;
+            gridObj.pdfQueryCellInfo = (args) => {
+                if(args.column.field == 'EmployeeID' && args.data['FirstName'] == 'Nancy') {
+                expect(args.value).toBe('0');
+                }
+            }
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: data } , {includeHiddenColumn: true});
+        });
+
+        it('check cell with value null', () => {
+            var data: Object = [gridObj.dataSource[0]];
+            data[0]['FirstName'] = null;
+            gridObj.pdfQueryCellInfo = (args) => {
+                if(args.column.field == 'FirstName' && args.data['EmployeeID'] == 0) {
+                expect(args.value).toBe('');
+                }
+            }
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: data } , {includeHiddenColumn: true});
+        });
+
+        it('check cell with empty string value', () => {
+            var data: Object = [gridObj.dataSource[0]];
+            data[0]['FirstName'] = '';
+            gridObj.pdfQueryCellInfo = (args) => {
+                if(args.column.field == 'FirstName' && args.data['EmployeeID'] == 0) {
+                expect(args.value).toBe('');
+                }
+            }
+            let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: data } , {includeHiddenColumn: true});
+        });
+
         afterAll(() => {
             destroy(gridObj);
         });

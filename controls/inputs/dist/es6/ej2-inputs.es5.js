@@ -3189,6 +3189,30 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         this.ticksFormatInfo = {};
         this.initCultureInfo();
         this.initCultureFunc();
+        this.formChecker();
+    };
+    Slider.prototype.formChecker = function () {
+        var formElement = closest(this.element, 'form');
+        if (formElement) {
+            this.isForm = true;
+            // this condition needs to be checked, if the slider is going to be refreshed by `refresh()`
+            // then we need to revert the slider `value` back to `formResetValue` to preserve the initial value
+            if (!isNullOrUndefined(this.formResetValue)) {
+                this.setProperties({ 'value': this.formResetValue }, true);
+            }
+            this.formResetValue = this.value;
+            if (this.type === 'Range' &&
+                (isNullOrUndefined(this.formResetValue) || typeof (this.formResetValue) !== 'object')) {
+                this.formResetValue = [parseFloat(formatUnit(this.min)), parseFloat(formatUnit(this.max))];
+            }
+            else if (isNullOrUndefined(this.formResetValue)) {
+                this.formResetValue = parseFloat(formatUnit(this.min));
+            }
+            this.formElement = formElement;
+        }
+        else {
+            this.isForm = false;
+        }
     };
     Slider.prototype.initCultureFunc = function () {
         this.internationalization = new Internationalization(this.locale);
@@ -5402,6 +5426,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 this.wireButtonEvt(false);
             }
             this.wireMaterialTooltipEvent(false);
+            if (this.isForm) {
+                EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+            }
         }
     };
     Slider.prototype.unwireEvents = function () {
@@ -5418,6 +5445,11 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.wireButtonEvt(true);
         }
         this.wireMaterialTooltipEvent(true);
+        EventHandler.remove(this.element, 'reset', this.formResetHandler);
+    };
+    Slider.prototype.formResetHandler = function () {
+        this.setProperties({ 'value': this.formResetValue }, true);
+        this.setValue();
     };
     Slider.prototype.keyUp = function (event) {
         if (event.keyCode === 9 && event.target.classList.contains(classNames.sliderHandle)) {
@@ -5678,18 +5710,20 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                     this.setCSSClass(oldProp.cssClass);
                     break;
                 case 'value':
-                    var value = isNullOrUndefined(newProp.value) ?
-                        (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
-                    this.setProperties({ 'value': value }, true);
-                    if (oldProp.value.toString() !== value.toString()) {
-                        this.setValue();
-                        this.refreshTooltip();
-                        if (this.type === 'Range') {
-                            if (isNullOrUndefined(newProp.value) || oldProp.value[1] === value[1]) {
-                                this.activeHandle = 1;
-                            }
-                            else {
-                                this.activeHandle = 2;
+                    if (newProp && oldProp) {
+                        var value = isNullOrUndefined(newProp.value) ?
+                            (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
+                        this.setProperties({ 'value': value }, true);
+                        if (oldProp.value.toString() !== value.toString()) {
+                            this.setValue();
+                            this.refreshTooltip();
+                            if (this.type === 'Range') {
+                                if (isNullOrUndefined(newProp.value) || oldProp.value[1] === value[1]) {
+                                    this.activeHandle = 1;
+                                }
+                                else {
+                                    this.activeHandle = 2;
+                                }
                             }
                         }
                     }
@@ -6261,11 +6295,18 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
     FormValidator.prototype.defRule = function (input, ruleCon, ruleName, value) {
         var message = input.getAttribute('data-' + ruleName + '-message');
         var annotationMessage = input.getAttribute('data-val-' + ruleName);
+        var customMessage;
+        if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
+            customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
+        }
         if (message) {
             value = [value, message];
         }
         else if (annotationMessage) {
             value = [value, annotationMessage];
+        }
+        else if (customMessage) {
+            value = [value, customMessage];
         }
         ruleCon[ruleName] = value;
     };
@@ -6461,8 +6502,10 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
     };
     // Return default error message or custom error message 
     FormValidator.prototype.getErrorMessage = function (ruleValue, rule) {
-        var message = (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
-            (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
+        var message = this.element[0].getAttribute('data-' + rule + '-message') ?
+            this.element[0].getAttribute('data-' + rule + '-message') :
+            (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
+                (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         var formats = message.match(/{(\d)}/g);
         if (!isNullOrUndefined(formats)) {
             for (var i = 0; i < formats.length; i++) {
@@ -9454,8 +9497,16 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         return _super.call(this, options, element) || this;
     }
     ColorPicker.prototype.preRender = function () {
+        var ele = this.element;
+        this.formElement = closest(this.element, 'form');
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         var localeText = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode' };
         this.l10n = new L10n('colorpicker', localeText, this.locale);
+        if (ele.getAttribute('ejs-for') && !ele.getAttribute('name')) {
+            ele.setAttribute('name', ele.id);
+        }
     };
     /**
      * To Initialize the component rendering
@@ -9481,7 +9532,11 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.container = this.createElement('div', { className: CONTAINER });
         this.getWrapper().appendChild(this.container);
         var value = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
-        this.element.value = value.slice(0, 7);
+        var slicedValue = value.slice(0, 7);
+        if (isNullOrUndefined(this.initialInputValue)) {
+            this.initialInputValue = slicedValue;
+        }
+        this.element.value = slicedValue;
         this.setProperties({ 'value': value }, true);
         if (this.enableRtl) {
             wrapper.classList.add(RTL$1);
@@ -9889,7 +9944,9 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.createNumericInput(container.appendChild(this.createElement('input', { className: OPACITY })), this.rgb[3] * 100, 'A', 100);
     };
     ColorPicker.prototype.appendValueSwitchBtn = function (targetEle) {
-        var valueSwitchBtn = this.createElement('button', { className: 'e-icons e-btn e-flat e-icon-btn ' + FORMATSWITCH });
+        var valueSwitchBtn = this.createElement('button', {
+            className: 'e-icons e-css e-btn e-flat e-icon-btn ' + FORMATSWITCH
+        });
         targetEle.appendChild(valueSwitchBtn);
         if (this.isPicker() && !this.getWrapper().classList.contains(HIDERGBA)) {
             valueSwitchBtn.addEventListener('click', this.formatSwitchHandler.bind(this));
@@ -9906,13 +9963,13 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
                 var apply = this.l10n.getConstant('Apply');
                 controlBtnWrapper.appendChild(this.createElement('button', {
                     innerHTML: apply,
-                    className: 'e-btn e-flat e-primary e-small ' + APPLY,
+                    className: 'e-btn e-css e-flat e-primary e-small ' + APPLY,
                     attrs: { 'title': apply }
                 }));
                 var cancel = this.l10n.getConstant('Cancel');
                 controlBtnWrapper.appendChild(this.createElement('button', {
                     innerHTML: cancel,
-                    className: 'e-btn e-flat e-small ' + CANCEL,
+                    className: 'e-btn e-css e-flat e-small ' + CANCEL,
                     attrs: { 'title': cancel }
                 }));
             }
@@ -10139,6 +10196,10 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.container, 'click', this.paletteClickHandler, this);
             EventHandler.add(this.container, 'keydown', this.paletteKeyDown, this);
         }
+    };
+    ColorPicker.prototype.formResetHandler = function () {
+        this.value = this.initialInputValue;
+        attributes(this.element, { 'value': this.initialInputValue });
     };
     ColorPicker.prototype.addCtrlSwitchEvent = function () {
         EventHandler.add(select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler, this);
@@ -10647,6 +10708,9 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         wrapper.parentElement.insertBefore(this.element, wrapper);
         detach(wrapper);
         this.container = null;
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     };
     ColorPicker.prototype.destroyOtherComp = function () {
         if (this.isPicker()) {
@@ -11346,10 +11410,12 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             container: this.textboxWrapper.container
         };
         this.trigger('input', eventArgs);
+        args.stopPropagation();
     };
     TextBox.prototype.changeHandler = function (args) {
         this.setProperties({ value: this.element.value }, true);
         this.raiseChangeEvent(args, true);
+        args.stopPropagation();
     };
     TextBox.prototype.raiseChangeEvent = function (event, interaction) {
         var eventArgs = {

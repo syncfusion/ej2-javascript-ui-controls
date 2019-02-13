@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue that occurs on enabling the time interval for resizing in timeline day view has been fixed.
+
 ## 16.4.52 (2019-02-05)
 
 ### Schedule

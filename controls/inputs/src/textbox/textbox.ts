@@ -358,11 +358,13 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
             container: this.textboxWrapper.container
         };
         this.trigger('input', eventArgs);
+        args.stopPropagation();
     }
 
     private changeHandler(args: Event): void {
         this.setProperties({value: this.element.value}, true);
         this.raiseChangeEvent(args, true);
+        args.stopPropagation();
     }
 
     private raiseChangeEvent(event?: Event, interaction?: boolean): void {

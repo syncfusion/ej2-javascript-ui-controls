@@ -32,11 +32,10 @@ import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Point } from './primitives/point';
 import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
 import { DistributeOptions, SizingOptions, RenderingMode, DiagramAction, ThumbsConstraints, NudgeDirection } from './enum/enum';
-import { RealAction } from './enum/enum';
+import { RealAction, ElementAction, FlipDirection } from './enum/enum';
 import { PathElement } from './core/elements/path-element';
 import { TextElement } from './core/elements/text-element';
 import { updateStyle, removeItem, updateConnector, updateShape, setUMLActivityDefaults, findNodeByName } from './utility/diagram-util';
@@ -107,6 +106,7 @@ import { canAllowDrop } from './utility/constraints-util';
 import { checkParentAsContainer, addChildToContainer } from './interaction/container-interaction';
 import { DataManager } from '@syncfusion/ej2-data';
 import { ContextMenuItemModel } from './../diagram/objects/interface/interfaces';
+import { flipConnector, updatePortEdges, alignElement } from './utility/diagram-util';
 /**
  * Represents the Diagram control
  * ```html
@@ -3964,7 +3964,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.realActions |= RealAction.PreventScale;
                     let diffX: number = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
-                    this.drag(node1, diffX, 0);
+                    if ((node as Node).flip === 'None') {
+                        this.drag(node1, diffX, 0);
+                    }
                     this.realActions &= ~RealAction.PreventScale;
                 } else {
                     node1.offsetX = node.wrapper.offsetX;
@@ -3973,7 +3975,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.realActions |= RealAction.PreventScale;
                     let diffY: number = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
-                    this.drag(node1, 0, diffY);
+                    if ((node as Node).flip === 'None') {
+                        this.drag(node1, 0, diffY);
+                    }
                     this.realActions &= ~RealAction.PreventScale;
 
                 } else {
@@ -4010,8 +4014,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 for (let i: number = 0; i < obj.children.length; i++) {
                     let childCollection: Canvas = new Canvas();
                     let child: NodeModel = this.nameTable[obj.children[i]];
-                    childCollection.children = [];
-                    childCollection.children.push(child.wrapper);
+                    childCollection.children = []; childCollection.children.push(child.wrapper);
                     if (child) {
                         (canvas as GridPanel).addObject(child.wrapper, child.rowIndex, child.columnIndex, child.rowSpan, child.columnSpan);
                     }
@@ -4020,8 +4023,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 for (let i: number = 0; i < obj.children.length; i++) {
                     if (this.nameTable[obj.children[i]]) {
                         let child: Node = this.nameTable[obj.children[i]];
-                        this.updateStackProperty(obj, child, i);
-                        canvas.children.push(child.wrapper);
+                        this.updateStackProperty(obj, child, i); canvas.children.push(child.wrapper);
+                        canvas.elementActions = canvas.elementActions | ElementAction.ElementIsGroup;
+                        child.wrapper.flip = child.wrapper.flip === 'None' ?
+                        obj.wrapper.flip : child.wrapper.flip;
                     }
                 }
             }
@@ -4040,8 +4045,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             canvas.children.push(content);
         }
         // tslint:disable-next-line:no-any
-        let wrapperContent: any;
-        wrapperContent = getFunction(this.getDescription);
+        let wrapperContent: any; wrapperContent = getFunction(this.getDescription);
         if (wrapperContent) {
             (obj.children ? canvas : content).description = wrapperContent;
         } else {
@@ -4088,6 +4092,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 nodesCollection[i].offsetX = nodesCollection[i].wrapper.offsetX;
                 nodesCollection[i].offsetY = nodesCollection[i].wrapper.offsetY;
             }
+        }
+        if (obj.wrapper.flip !== 'None' && obj.wrapper.elementActions & ElementAction.ElementIsGroup) {
+            alignElement(obj.wrapper, obj.wrapper.offsetX, obj.wrapper.offsetY, this, obj.wrapper.flip);
         }
         if (obj instanceof Node && obj.container && (obj.width < canvas.outerBounds.width || obj.height < canvas.outerBounds.height) &&
             canvas.bounds.x <= canvas.outerBounds.x && canvas.bounds.y <= canvas.outerBounds.y) {
@@ -5428,11 +5435,27 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             actualObject.wrapper.children[0].shadow = canShadow(actualObject) ? actualObject.shadow : null;
         }
         if (node.offsetX !== undefined) {
-            actualObject.wrapper.offsetX = node.offsetX; update = true;
+            if (actualObject.wrapper.flip !== 'None') {
+                if (actualObject.offsetX !== actualObject.wrapper.offsetX && oldObject.offsetX !== undefined) {
+                    let offsetX = node.offsetX - oldObject.offsetX;
+                    actualObject.wrapper.offsetX = actualObject.wrapper.offsetX + offsetX;
+                    this.updateFlipOffset(actualObject.wrapper, offsetX, 0, actualObject.wrapper.flip);
+                }
+            } else {
+                actualObject.wrapper.offsetX = node.offsetX;
+            } update = true;
             updateConnector = true;
         }
         if (node.offsetY !== undefined) {
-            actualObject.wrapper.offsetY = node.offsetY; update = true;
+            if (actualObject.wrapper.flip !== 'None') {
+                if (actualObject.offsetY !== actualObject.wrapper.offsetY && oldObject.offsetY !== undefined) {
+                    let offsetY = node.offsetY - oldObject.offsetY;
+                    actualObject.wrapper.offsetY = actualObject.wrapper.offsetY + offsetY;
+                    this.updateFlipOffset(actualObject.wrapper, 0, offsetY, actualObject.wrapper.flip);
+                }
+            } else {
+                actualObject.wrapper.offsetY = node.offsetY;
+            } update = true;
             updateConnector = true;
         }
         if (node.pivot !== undefined) {
@@ -5453,6 +5476,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (node.maxHeight !== undefined) {
             actualObject.wrapper.maxHeight = node.maxHeight; update = true;
             updateConnector = true;
+        }
+        if (node.flip !== undefined) {
+            actualObject.wrapper.flip = node.flip;
+            update = true;
+            updateConnector = true;
+            if (actualObject.wrapper.elementActions & ElementAction.ElementIsGroup) {
+                alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, node.flip);
+                if (actualObject && actualObject.children) {
+                    for (let child of actualObject.children) {
+                        let updateNode: Node = this.nameTable[child];
+                        updateNode.wrapper.flip = node.flip;
+                        this.updatePorts(updateNode, node.flip);
+                    }
+                }
+            } else {
+                actualObject.wrapper.children[0].flip = node.flip;
+                this.updatePorts(actualObject, node.flip);
+            }
         }
         if (node.rotateAngle !== undefined) {
             if (actualObject.children && rotate) {
@@ -5566,6 +5607,37 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
+
+    private updatePorts(actualObject: Node, flip: FlipDirection): void {
+        if (actualObject && actualObject.ports.length > 0) {
+            for (let key of Object.keys(actualObject.ports)) {
+                let index: number = Number(key);
+                let actualPort: PointPortModel = actualObject.ports[index];
+                let portWrapper: DiagramElement = this.getWrapper(actualObject.wrapper, actualPort.id);
+                portWrapper = updatePortEdges(portWrapper, flip, actualPort);
+                portWrapper.relativeMode = 'Point';
+                portWrapper.measure(new Size(portWrapper.width, portWrapper.height));
+                portWrapper.arrange(portWrapper.desiredSize);
+            }
+        }
+    }
+
+    private updateFlipOffset(element: Container, diffX: number, diffY: number, flip: FlipDirection): void {
+        if (element.hasChildren()) {
+            for (let child of element.children) {
+                if (flip === 'Horizontal' || flip === 'Both') {
+                    child.flipOffset.x = child.flipOffset.x + diffX;
+                }
+                if (flip === 'Vertical' || flip === 'Both') {
+                    child.flipOffset.y = child.flipOffset.y + diffY;
+                }
+                if (child instanceof Canvas || child instanceof Container) {
+                    this.updateFlipOffset(child, diffX, diffY, flip);
+                }
+            }
+        }
+    }
+
     private updateUMLActivity(changedProp: Node, oldObject: Node, actualObject: Node, diagram: Diagram): void {
         let sizeChanged: boolean = changedProp.width !== undefined || changedProp.height !== undefined;
         if (sizeChanged) {
@@ -5635,7 +5707,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (newProp.sourcePoint !== undefined || newProp.targetPoint !== undefined
             || newProp.sourceID !== undefined || newProp.targetID !== undefined ||
             newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined ||
-            newProp.type !== undefined || newProp.segments !== undefined) {
+            newProp.type !== undefined || newProp.segments !== undefined || newProp.flip !== undefined) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 let sourceNode: Node = this.nameTable[actualObject.sourceID];
                 outPort = this.findInOutConnectPorts(sourceNode, false);
@@ -5678,6 +5750,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 actualObject.targetPortWrapper = target ?
                     this.getWrapper(target, newProp.targetPortID) : undefined;
             }
+            if (newProp.flip !== undefined) {
+                actualObject.flip = newProp.flip; flipConnector(actualObject);
+            }
             points = this.getPoints(actualObject);
         }//Add prop change for zindex, alignments and margin
         if (newProp.style !== undefined) {
@@ -5686,9 +5761,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (points.length > 0 || newProp.sourceDecorator !== undefined || newProp.targetDecorator !== undefined ||
             newProp.cornerRadius !== undefined) {
             updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
-            if (newProp.type !== undefined) {
-                updateSelector = true;
-            }
+            if (newProp.type !== undefined) { updateSelector = true; }
             if (points.length > 0) {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
                 actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
@@ -5700,9 +5773,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             && this.diagramActions === DiagramAction.Render) {
             updateSelector = true;
         }
-        if (!disableBridging) {
-            this.updateBridging();
-        }
+        if (!disableBridging) { this.updateBridging(); }
         this.updateAnnotations(newProp, actualObject);
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);

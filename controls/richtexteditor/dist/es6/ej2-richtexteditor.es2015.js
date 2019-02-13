@@ -1154,10 +1154,12 @@ function setToolbarStatus(e, isPopToolbar) {
                             }
                             let formatItems = e.parent.format.types;
                             result = getDropDownValue(formatItems, value, 'subCommand', 'text');
+                            let formatContent = isNullOrUndefined(e.parent.format.default) ? formatItems[0].text :
+                                e.parent.format.default;
                             dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
-                                + (isNullOrUndefined(result) ? 'Paragraph' : result) +
+                                + (isNullOrUndefined(result) ? formatContent : result) +
                                 '</span></span>');
                             dropDown.formatDropDown.dataBind();
                             break;
@@ -1176,7 +1178,9 @@ function setToolbarStatus(e, isPopToolbar) {
                             }
                             let fontNameItems = e.parent.fontFamily.items;
                             result = getDropDownValue(fontNameItems, value, 'value', 'text');
-                            let name = (isNullOrUndefined(result) ? 'Segoe UI' : result);
+                            let fontNameContent = isNullOrUndefined(e.parent.fontFamily.default) ? fontNameItems[0].text :
+                                e.parent.fontFamily.default;
+                            let name = (isNullOrUndefined(result) ? fontNameContent : result);
                             e.tbElements[j].title = name;
                             dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontFamily.width + '" >' +
@@ -1189,7 +1193,9 @@ function setToolbarStatus(e, isPopToolbar) {
                                 return;
                             }
                             let fontSizeItems = e.parent.fontSize.items;
-                            result = getDropDownValue(fontSizeItems, (value === '' ? e.parent.fontSize.default.replace(/\s/g, '') : value), 'value', 'text');
+                            let fontSizeContent = isNullOrUndefined(e.parent.fontSize.default) ? fontSizeItems[1].text :
+                                e.parent.fontSize.default;
+                            result = getDropDownValue(fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                             dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontSize.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
@@ -1546,6 +1552,7 @@ class ToolbarRenderer {
         popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1;
+        dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = () => { proxy.parent.notify(selectionSave, {}); };
         return dropDown;
     }
@@ -1791,13 +1798,13 @@ class DropDownButtons {
                                 command: { value: 'Formats', enumerable: true }, subCommand: { value: item.value, enumerable: true }
                             });
                         });
+                        let formatContent = isNullOrUndefined(this.parent.format.default) ? formatItem[0].text :
+                            this.parent.format.default;
                         this.formatDropDown = this.toolbarRenderer.renderDropDownButton({
                             iconCss: ((type === 'quick') ? 'e-formats e-icons' : ''),
-                            content: this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' : getDropDownValue(formatItem, this.parent.format.default, 'text', 'text'))),
+                            content: this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' : getDropDownValue(formatItem, formatContent, 'text', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FORMATS_TB_BTN,
-                            itemName: 'Formats',
-                            items: formatItem,
-                            element: targetElement
+                            itemName: 'Formats', items: formatItem, element: targetElement
                         });
                         break;
                     case 'fontname':
@@ -1811,14 +1818,17 @@ class DropDownButtons {
                                 command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontName', enumerable: true }
                             });
                         });
+                        let fontNameContent = isNullOrUndefined(this.parent.fontFamily.default) ? fontItem[0].text :
+                            this.parent.fontFamily.default;
                         this.fontNameDropDown = this.toolbarRenderer.renderDropDownButton({
                             iconCss: ((type === 'quick') ? 'e-font-name e-icons' : ''),
-                            content: this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' : getDropDownValue(fontItem, this.parent.fontFamily.default, 'text', 'text'))),
+                            content: this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' : getDropDownValue(fontItem, fontNameContent, 'text', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FONT_NAME_TB_BTN,
-                            itemName: 'FontName',
-                            items: fontItem,
-                            element: targetElement
+                            itemName: 'FontName', items: fontItem, element: targetElement
                         });
+                        if (!isNullOrUndefined(this.parent.fontFamily.default)) {
+                            this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
+                        }
                         break;
                     case 'fontsize':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_FontSize', tbElement);
@@ -1831,13 +1841,16 @@ class DropDownButtons {
                                 command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontSize', enumerable: true }
                             });
                         });
+                        let fontSizeContent = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
+                            this.parent.fontSize.default;
                         this.fontSizeDropDown = this.toolbarRenderer.renderDropDownButton({
-                            content: this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text'))),
+                            content: this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FONT_SIZE_TB_BTN,
-                            itemName: 'FontSize',
-                            items: fontsize,
-                            element: targetElement
+                            itemName: 'FontSize', items: fontsize, element: targetElement
                         });
+                        if (!isNullOrUndefined(this.parent.fontSize.default)) {
+                            this.getEditNode().style.fontSize = this.parent.fontSize.default;
+                        }
                         break;
                     case 'alignments':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_Alignments', tbElement);
@@ -1847,9 +1860,7 @@ class DropDownButtons {
                         this.alignDropDown = this.toolbarRenderer.renderDropDownButton({
                             iconCss: 'e-justify-left e-icons',
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS,
-                            itemName: 'Alignments',
-                            items: alignmentItems,
-                            element: targetElement
+                            itemName: 'Alignments', items: alignmentItems, element: targetElement
                         });
                         break;
                     case 'align':
@@ -1897,9 +1908,17 @@ class DropDownButtons {
                                     let fontItems = this.fontNameDropDown.items;
                                     let type = !isNullOrUndefined(closest(this.fontNameDropDown.element, '.' + CLS_QUICK_TB)) ?
                                         'quick' : 'toolbar';
+                                    let fontNameContent = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
+                                        this.parent.fontFamily.default;
                                     let content = this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(fontItems, this.parent.fontFamily.default, 'text', 'text')));
+                                        getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
                                     this.fontNameDropDown.setProperties({ content: content });
+                                    if (!isNullOrUndefined(this.parent.fontFamily.default)) {
+                                        this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
+                                    }
+                                    else {
+                                        this.getEditNode().style.removeProperty('font-family');
+                                    }
                                     break;
                                 case 'items':
                                     this.fontNameDropDown.setProperties({
@@ -1918,8 +1937,16 @@ class DropDownButtons {
                                 case 'width':
                                     let fontsize = this.fontSizeDropDown.items;
                                     let type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
-                                    let content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text')));
+                                    let fontSizeContent = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
+                                        this.parent.fontSize.default;
+                                    let content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text')));
                                     this.fontSizeDropDown.setProperties({ content: content });
+                                    if (!isNullOrUndefined(this.parent.fontSize.default)) {
+                                        this.getEditNode().style.fontSize = this.parent.fontSize.default;
+                                    }
+                                    else {
+                                        this.getEditNode().style.removeProperty('font-size');
+                                    }
                                     break;
                                 case 'items':
                                     this.fontSizeDropDown.setProperties({
@@ -1938,8 +1965,10 @@ class DropDownButtons {
                                 case 'width':
                                     let formatItems = this.formatDropDown.items;
                                     let type = !isNullOrUndefined(closest(this.formatDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    let formatContent = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
+                                        this.parent.format.default;
                                     let content = this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(formatItems, this.parent.format.default, 'text', 'text')));
+                                        getDropDownValue(formatItems, formatContent, 'text', 'text')));
                                     this.formatDropDown.setProperties({ content: content });
                                     break;
                                 case 'types':
@@ -1953,6 +1982,9 @@ class DropDownButtons {
                     break;
             }
         }
+    }
+    getEditNode() {
+        return this.parent.contentModule.getEditPanel();
     }
     rowDropDown(type, tbElement, targetElement) {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableRows', tbElement);
@@ -2323,7 +2355,7 @@ class Toolbar$1 {
         this.isTransformChild = false;
         let transformElements = selectAll('[style*="transform"]', document);
         for (let i = 0; i < transformElements.length; i++) {
-            if (transformElements[i].contains(this.parent.element)) {
+            if (!isNullOrUndefined(transformElements[i].contains) && transformElements[i].contains(this.parent.element)) {
                 this.isTransformChild = true;
                 break;
             }
@@ -13385,7 +13417,7 @@ __decorate$2([
 class FontFamily extends ChildProperty {
 }
 __decorate$2([
-    Property('Segoe UI')
+    Property(null)
 ], FontFamily.prototype, "default", void 0);
 __decorate$2([
     Property('65px')
@@ -13399,7 +13431,7 @@ __decorate$2([
 class FontSize extends ChildProperty {
 }
 __decorate$2([
-    Property('10 pt')
+    Property(null)
 ], FontSize.prototype, "default", void 0);
 __decorate$2([
     Property('35px')
@@ -13413,7 +13445,7 @@ __decorate$2([
 class Format extends ChildProperty {
 }
 __decorate$2([
-    Property('Paragraph')
+    Property(null)
 ], Format.prototype, "default", void 0);
 __decorate$2([
     Property('65px')
@@ -14645,19 +14677,21 @@ let RichTextEditor = class RichTextEditor extends Component {
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         }
     }
-    setPanelValue() {
+    getUpdatedValue() {
+        let value;
         if (this.editorMode === 'HTML') {
-            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+            value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
                 this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         }
         else {
-            this.value = this.inputElement.value === '' ? null :
+            value = this.inputElement.value === '' ? null :
                 this.inputElement.value;
         }
-        this.valueContainer.value = this.value;
+        return value;
     }
     updateIntervalValue() {
-        this.setPanelValue();
+        this.setProperties({ value: this.getUpdatedValue() }, true);
+        this.valueContainer.value = this.value;
         this.invokeChangeEvent();
     }
     onDocumentClick(e) {
@@ -14688,7 +14722,8 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.isBlur && isNullOrUndefined(trg)) {
             removeClass([this.element], [CLS_FOCUS]);
             this.notify(focusChange, {});
-            this.setPanelValue();
+            let value = this.getUpdatedValue();
+            this.setProperties({ value: value });
             this.notify(toolbarRefresh, { args: e, documentNode: document });
             this.invokeChangeEvent();
             this.isFocusOut = true;

@@ -926,8 +926,8 @@ export class Legend {
     public renderLegendLabelTooltip(e: PointerEvent): void {
         let x: number = this.heatMap.mouseX;
         let y: number = this.heatMap.mouseY;
-        if ((<Element>e.target).id.indexOf('_Legend_Label') !== -1 && (<HTMLElement>event.target).textContent.indexOf('...') > -1) {
-            let targetId: string[] = (<HTMLElement>event.target).id.split(this.heatMap.element.id + '_Legend_Label');
+        if ((<Element>e.target).id.indexOf('_Legend_Label') !== -1 && (<HTMLElement>e.target).textContent.indexOf('...') > -1) {
+            let targetId: string[] = (<HTMLElement>e.target).id.split(this.heatMap.element.id + '_Legend_Label');
             if (targetId.length === 2) {
                 let index: number;
                 if (targetId[1].length === 1 || this.heatMap.legendSettings.textStyle.textOverflow === 'Trim') {

@@ -59,7 +59,7 @@ export class HeaderFooterProperties {
         let localObj: L10n = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
         let elementId: string = 'header_footer_properties';
         // tslint:disable-next-line:max-line-length
-        this.element = createElement('div', { id: this.documentEditor.element.id + elementId, styles: 'width:269px;' });
+        this.element = createElement('div', { id: this.documentEditor.element.id + elementId, className: 'e-de-prop-pane' });
         let headerDiv: HTMLElement = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
         classList(headerDiv, ['e-de-cntr-pane-padding'], []);
         let headerLabel: HTMLElement = createElement('label', { className: 'e-de-prop-header-label' });

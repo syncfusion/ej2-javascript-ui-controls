@@ -879,6 +879,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.type === 'RTE') {
             this.rteModule.refresh();
+            this.setAttribute(select('.e-richtexteditor textarea', this.containerEle), ['name']);
         }
         else if (this.type === 'Slider') {
             this.sliderModule.refresh();

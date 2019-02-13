@@ -12,6 +12,7 @@ import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
 import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
+import { flipConnector } from './../utility/diagram-util';
 import { PathElement } from '../core/elements/path-element';
 import { PathAnnotation } from './annotation';
 import { Canvas } from '../core/containers/canvas';
@@ -1293,6 +1294,7 @@ export class Connector extends NodeBase implements IElement {
     public getSegmentElement(connector: Connector, segmentElement: PathElement): PathElement {
         let bounds: Rect; let segmentPath: string;
         let points: PointModel[] = [];
+        flipConnector(connector);
         points = this.getConnectorPoints(connector.type);
         this.intermediatePoints = points;
         segmentElement.staticSize = true;

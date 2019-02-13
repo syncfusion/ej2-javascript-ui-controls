@@ -1,6 +1,6 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
 import { EmitType, Event, EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
-import { addClass, isRippleEnabled, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { addClass, isRippleEnabled, removeClass, rippleEffect, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SwitchModel } from './switch-model';
 import { rippleMouseHandler, destroy, preRender, ChangeEventArgs } from './../common/common';
 
@@ -30,6 +30,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private isDrag: boolean = false;
     private delegateMouseUpHandler: Function;
     private delegateKeyDownHandler: Function;
+    private formElement: HTMLFormElement;
+    private initialSwitchCheckedValue: boolean;
+
     /**
      * Triggers when Switch state has been changed by user interaction.
      * @event
@@ -177,6 +180,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         return this.element.parentElement;
     }
     private initialize(): void {
+        if (isNullOrUndefined(this.initialSwitchCheckedValue)) {
+            this.initialSwitchCheckedValue = this.checked;
+        }
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
@@ -278,6 +284,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
      */
     protected preRender(): void {
         let element: HTMLInputElement = this.element;
+        this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
         preRender(this, 'EJS-SWITCH', WRAPPER, element, this.getModuleName());
     }
@@ -344,6 +351,11 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             }
         }
     }
+
+    private formResetHandler(): void {
+        this.checked = this.initialSwitchCheckedValue;
+        attributes(this.element, { 'checked': this.initialSwitchCheckedValue.toString() });
+    }
     /**
      * Toggle the Switch component state into checked/unchecked.
      * @returns void
@@ -363,6 +375,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
     }
     private unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
@@ -374,6 +389,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     }
 }
 

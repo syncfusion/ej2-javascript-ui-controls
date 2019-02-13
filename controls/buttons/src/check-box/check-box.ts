@@ -1,6 +1,6 @@
-import { Component, INotifyPropertyChanged , NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
-import { EmitType, Event, EventHandler, KeyboardEvents } from '@syncfusion/ej2-base';
-import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, KeyboardEvents, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs } from './../common/common';
 
@@ -33,6 +33,8 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private tagName: string;
     private isKeyPressed: boolean = false;
     private keyboardModule: KeyboardEvents;
+    private formElement: HTMLElement;
+    private initialCheckedValue: boolean;
 
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
@@ -233,6 +235,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private initialize(): void {
+        if (isNullOrUndefined(this.initialCheckedValue)) {
+            this.initialCheckedValue = this.checked;
+        }
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
@@ -372,6 +377,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      */
     protected preRender(): void {
         let element: HTMLInputElement = this.element;
+        this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-CHECKBOX', 'checkbox', element, WRAPPER, 'checkbox');
         this.element = element;
@@ -384,7 +390,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     /**
-     * Initialize the control rendering
+     * Initialize the control rendering.
      * @private
      */
     protected render(): void {
@@ -421,6 +427,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         e.stopPropagation();
     }
 
+    private formResetHandler(): void {
+        this.checked = this.initialCheckedValue;
+        attributes(this.element, { 'checked': this.initialCheckedValue.toString() });
+    }
+
     protected unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
         EventHandler.remove(this.element, 'click', this.clickHandler);
@@ -431,6 +442,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         let label: Element = wrapper.getElementsByTagName('label')[0];
         EventHandler.remove(label, 'mousedown', this.labelMouseHandler);
         EventHandler.remove(label, 'mouseup', this.labelMouseHandler);
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.remove(this.element, 'change', this.changeHandler);
         }
@@ -447,6 +461,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         let label: Element = wrapper.getElementsByTagName('label')[0];
         EventHandler.add(label, 'mousedown', this.labelMouseHandler, this);
         EventHandler.add(label, 'mouseup', this.labelMouseHandler, this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }

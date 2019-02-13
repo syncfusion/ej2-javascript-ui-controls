@@ -1155,10 +1155,12 @@ function setToolbarStatus(e, isPopToolbar) {
                             }
                             var formatItems = e.parent.format.types;
                             result = getDropDownValue(formatItems, value, 'subCommand', 'text');
+                            var formatContent = isNullOrUndefined(e.parent.format.default) ? formatItems[0].text :
+                                e.parent.format.default;
                             dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
-                                + (isNullOrUndefined(result) ? 'Paragraph' : result) +
+                                + (isNullOrUndefined(result) ? formatContent : result) +
                                 '</span></span>');
                             dropDown.formatDropDown.dataBind();
                             break;
@@ -1177,7 +1179,9 @@ function setToolbarStatus(e, isPopToolbar) {
                             }
                             var fontNameItems = e.parent.fontFamily.items;
                             result = getDropDownValue(fontNameItems, value, 'value', 'text');
-                            var name_1 = (isNullOrUndefined(result) ? 'Segoe UI' : result);
+                            var fontNameContent = isNullOrUndefined(e.parent.fontFamily.default) ? fontNameItems[0].text :
+                                e.parent.fontFamily.default;
+                            var name_1 = (isNullOrUndefined(result) ? fontNameContent : result);
                             e.tbElements[j].title = name_1;
                             dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontFamily.width + '" >' +
@@ -1190,7 +1194,9 @@ function setToolbarStatus(e, isPopToolbar) {
                                 return;
                             }
                             var fontSizeItems = e.parent.fontSize.items;
-                            result = getDropDownValue(fontSizeItems, (value === '' ? e.parent.fontSize.default.replace(/\s/g, '') : value), 'value', 'text');
+                            var fontSizeContent = isNullOrUndefined(e.parent.fontSize.default) ? fontSizeItems[1].text :
+                                e.parent.fontSize.default;
+                            result = getDropDownValue(fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                             dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.fontSize.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text">'
@@ -1550,6 +1556,7 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
         popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1;
+        dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = function () { proxy.parent.notify(selectionSave, {}); };
         return dropDown;
     };
@@ -1800,13 +1807,13 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 command: { value: 'Formats', enumerable: true }, subCommand: { value: item.value, enumerable: true }
                             });
                         });
+                        var formatContent = isNullOrUndefined(_this.parent.format.default) ? formatItem[0].text :
+                            _this.parent.format.default;
                         _this.formatDropDown = _this.toolbarRenderer.renderDropDownButton({
                             iconCss: ((type === 'quick') ? 'e-formats e-icons' : ''),
-                            content: _this.dropdownContent(_this.parent.format.width, type, ((type === 'quick') ? '' : getDropDownValue(formatItem, _this.parent.format.default, 'text', 'text'))),
+                            content: _this.dropdownContent(_this.parent.format.width, type, ((type === 'quick') ? '' : getDropDownValue(formatItem, formatContent, 'text', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FORMATS_TB_BTN,
-                            itemName: 'Formats',
-                            items: formatItem,
-                            element: targetElement
+                            itemName: 'Formats', items: formatItem, element: targetElement
                         });
                         break;
                     case 'fontname':
@@ -1820,14 +1827,17 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontName', enumerable: true }
                             });
                         });
+                        var fontNameContent = isNullOrUndefined(_this.parent.fontFamily.default) ? fontItem[0].text :
+                            _this.parent.fontFamily.default;
                         _this.fontNameDropDown = _this.toolbarRenderer.renderDropDownButton({
                             iconCss: ((type === 'quick') ? 'e-font-name e-icons' : ''),
-                            content: _this.dropdownContent(_this.parent.fontFamily.width, type, ((type === 'quick') ? '' : getDropDownValue(fontItem, _this.parent.fontFamily.default, 'text', 'text'))),
+                            content: _this.dropdownContent(_this.parent.fontFamily.width, type, ((type === 'quick') ? '' : getDropDownValue(fontItem, fontNameContent, 'text', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FONT_NAME_TB_BTN,
-                            itemName: 'FontName',
-                            items: fontItem,
-                            element: targetElement
+                            itemName: 'FontName', items: fontItem, element: targetElement
                         });
+                        if (!isNullOrUndefined(_this.parent.fontFamily.default)) {
+                            _this.getEditNode().style.fontFamily = _this.parent.fontFamily.default;
+                        }
                         break;
                     case 'fontsize':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_FontSize', tbElement);
@@ -1840,13 +1850,16 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontSize', enumerable: true }
                             });
                         });
+                        var fontSizeContent = isNullOrUndefined(_this.parent.fontSize.default) ? fontsize[1].text :
+                            _this.parent.fontSize.default;
                         _this.fontSizeDropDown = _this.toolbarRenderer.renderDropDownButton({
-                            content: _this.dropdownContent(_this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, _this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text'))),
+                            content: _this.dropdownContent(_this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text'))),
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS + ' ' + CLS_FONT_SIZE_TB_BTN,
-                            itemName: 'FontSize',
-                            items: fontsize,
-                            element: targetElement
+                            itemName: 'FontSize', items: fontsize, element: targetElement
                         });
+                        if (!isNullOrUndefined(_this.parent.fontSize.default)) {
+                            _this.getEditNode().style.fontSize = _this.parent.fontSize.default;
+                        }
                         break;
                     case 'alignments':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_Alignments', tbElement);
@@ -1856,9 +1869,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                         _this.alignDropDown = _this.toolbarRenderer.renderDropDownButton({
                             iconCss: 'e-justify-left e-icons',
                             cssClass: CLS_DROPDOWN_POPUP + ' ' + CLS_DROPDOWN_ITEMS,
-                            itemName: 'Alignments',
-                            items: alignmentItems,
-                            element: targetElement
+                            itemName: 'Alignments', items: alignmentItems, element: targetElement
                         });
                         break;
                     case 'align':
@@ -1908,9 +1919,17 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                     var fontItems = this.fontNameDropDown.items;
                                     var type = !isNullOrUndefined(closest(this.fontNameDropDown.element, '.' + CLS_QUICK_TB)) ?
                                         'quick' : 'toolbar';
+                                    var fontNameContent = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
+                                        this.parent.fontFamily.default;
                                     var content = this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(fontItems, this.parent.fontFamily.default, 'text', 'text')));
+                                        getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
                                     this.fontNameDropDown.setProperties({ content: content });
+                                    if (!isNullOrUndefined(this.parent.fontFamily.default)) {
+                                        this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
+                                    }
+                                    else {
+                                        this.getEditNode().style.removeProperty('font-family');
+                                    }
                                     break;
                                 case 'items':
                                     this.fontNameDropDown.setProperties({
@@ -1930,8 +1949,16 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 case 'width':
                                     var fontsize = this.fontSizeDropDown.items;
                                     var type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
-                                    var content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, this.parent.fontSize.default.replace(/\s/g, ''), 'value', 'text')));
+                                    var fontSizeContent = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
+                                        this.parent.fontSize.default;
+                                    var content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text')));
                                     this.fontSizeDropDown.setProperties({ content: content });
+                                    if (!isNullOrUndefined(this.parent.fontSize.default)) {
+                                        this.getEditNode().style.fontSize = this.parent.fontSize.default;
+                                    }
+                                    else {
+                                        this.getEditNode().style.removeProperty('font-size');
+                                    }
                                     break;
                                 case 'items':
                                     this.fontSizeDropDown.setProperties({
@@ -1951,8 +1978,10 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 case 'width':
                                     var formatItems = this.formatDropDown.items;
                                     var type = !isNullOrUndefined(closest(this.formatDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    var formatContent = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
+                                        this.parent.format.default;
                                     var content = this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(formatItems, this.parent.format.default, 'text', 'text')));
+                                        getDropDownValue(formatItems, formatContent, 'text', 'text')));
                                     this.formatDropDown.setProperties({ content: content });
                                     break;
                                 case 'types':
@@ -1966,6 +1995,9 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                     break;
             }
         }
+    };
+    DropDownButtons.prototype.getEditNode = function () {
+        return this.parent.contentModule.getEditPanel();
     };
     DropDownButtons.prototype.rowDropDown = function (type, tbElement, targetElement) {
         targetElement = select('#' + this.parent.getID() + '_' + type + '_TableRows', tbElement);
@@ -2340,7 +2372,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.isTransformChild = false;
         var transformElements = selectAll('[style*="transform"]', document);
         for (var i = 0; i < transformElements.length; i++) {
-            if (transformElements[i].contains(this.parent.element)) {
+            if (!isNullOrUndefined(transformElements[i].contains) && transformElements[i].contains(this.parent.element)) {
                 this.isTransformChild = true;
                 break;
             }
@@ -13519,7 +13551,7 @@ var FontFamily = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property('Segoe UI')
+        Property(null)
     ], FontFamily.prototype, "default", void 0);
     __decorate$2([
         Property('65px')
@@ -13538,7 +13570,7 @@ var FontSize = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property('10 pt')
+        Property(null)
     ], FontSize.prototype, "default", void 0);
     __decorate$2([
         Property('35px')
@@ -13557,7 +13589,7 @@ var Format = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property('Paragraph')
+        Property(null)
     ], Format.prototype, "default", void 0);
     __decorate$2([
         Property('65px')
@@ -14861,19 +14893,21 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         }
     };
-    RichTextEditor.prototype.setPanelValue = function () {
+    RichTextEditor.prototype.getUpdatedValue = function () {
+        var value;
         if (this.editorMode === 'HTML') {
-            this.value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
+            value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
                 this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         }
         else {
-            this.value = this.inputElement.value === '' ? null :
+            value = this.inputElement.value === '' ? null :
                 this.inputElement.value;
         }
-        this.valueContainer.value = this.value;
+        return value;
     };
     RichTextEditor.prototype.updateIntervalValue = function () {
-        this.setPanelValue();
+        this.setProperties({ value: this.getUpdatedValue() }, true);
+        this.valueContainer.value = this.value;
         this.invokeChangeEvent();
     };
     RichTextEditor.prototype.onDocumentClick = function (e) {
@@ -14904,7 +14938,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         if (this.isBlur && isNullOrUndefined(trg)) {
             removeClass([this.element], [CLS_FOCUS]);
             this.notify(focusChange, {});
-            this.setPanelValue();
+            var value = this.getUpdatedValue();
+            this.setProperties({ value: value });
             this.notify(toolbarRefresh, { args: e, documentNode: document });
             this.invokeChangeEvent();
             this.isFocusOut = true;

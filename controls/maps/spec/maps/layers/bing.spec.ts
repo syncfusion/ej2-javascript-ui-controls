@@ -214,6 +214,14 @@ describe('Map layer testing', () => {
             osm.zoomSettings.zoomFactor = 3;
             osm.refresh();
         });
+		it('OSM Map Zoom level 3 and testing title parent left padding', (done: Function) => {
+            osm.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + '_tile_parent');
+                expect((<HTMLDivElement>spec).style.left === "18px").toBe(true);
+                done();
+            };
+            osm.refresh();
+        });
         it('OSM Map sublayer testing spec', (done: Function) => {
             osm.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');

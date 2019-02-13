@@ -127,6 +127,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
      * @default 0
      * @aspType int
+     * > For more details about firstDayOfWeek refer to 
+     * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
     @Property(null)
     public firstDayOfWeek: number;
@@ -159,7 +161,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Decade<br/></td><td colSpan=1 rowSpan=1>
      * Calendar view shows the years of the decade.<br/></td></tr>
      * </table>
-     * 
+     *
+     * > For more details about start refer to 
+     * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation. 
      */
     @Property('Month')
     public start: CalendarView;
@@ -187,12 +191,16 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Calendar view shows up to the years of the decade.<br/></td></tr> 
      * </table> 
      * 
+     *  > For more details about depth refer to 
+     *  [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public depth: CalendarView;
     /**
      * Determines whether the week number of the year is to be displayed in the calendar or not.
      * @default false
+     * > For more details about weekNumber refer to 
+     * [`Calendar with week number`](../../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
      */
     @Property(false)
     public weekNumber: boolean;
@@ -905,8 +913,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         localDate.setMonth(0);
         localDate.setDate(1);
         let localYr: number = localDate.getFullYear();
-        let startYr: Date = new Date('' + (localYr - localYr % 10));
-        let endYr: Date = new Date('' + (localYr - localYr % 10 + (10 - 1)));
+        let startYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10)));
+        let endYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
         let startHdrYr: string = this.globalize.formatDate(startYr, { type: 'dateTime', skeleton: 'y' });
         let endHdrYr: string = this.globalize.formatDate(endYr, { type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);

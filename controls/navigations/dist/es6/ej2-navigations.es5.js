@@ -1437,8 +1437,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     MenuBase.prototype.getPopups = function () {
         var _this = this;
         var popups = [];
-        var ele = document.querySelectorAll('.' + POPUP);
-        ele.forEach(function (elem) {
+        [].slice.call(document.querySelectorAll('.' + POPUP)).forEach(function (elem) {
             if (_this.getIndex(elem.querySelector('.' + ITEM).id, true).length) {
                 popups.push(elem);
             }
@@ -4743,7 +4742,10 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             tglIcon = select('.' + CLS_TOOGLEICN, acrdnHdr);
         }
         var acrdnCtnItem;
-        if (acrdnCtn) {
+        if (acrdnHdr) {
+            acrdnCtnItem = closest(acrdnHdr, '.' + CLS_ITEM$1);
+        }
+        else if (acrdnCtn) {
             acrdnCtnItem = closest(acrdnCtn, '.' + CLS_ITEM$1);
         }
         var acrdActive = [];

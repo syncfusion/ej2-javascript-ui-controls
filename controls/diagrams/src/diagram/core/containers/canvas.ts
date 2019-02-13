@@ -1,10 +1,10 @@
 import { Container } from './container';
 import { DiagramElement } from '../elements/diagram-element';
 import { rotateSize } from '../../utility/base-util';
-import { Transform } from '../../enum/enum';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
+import { Transform, ElementAction } from '../../enum/enum';
 import { TextElement } from '../elements/text-element';
 
 /**
@@ -96,6 +96,10 @@ export class Canvas extends Container {
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
 
+                    if (this.flip !== 'None' || this.elementActions & ElementAction.ElementIsGroup) {
+                        child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
+                            -child.parentTransform : child.parentTransform;
+                    }
                     let childSize: Size = child.desiredSize.clone();
 
                     let topLeft: PointModel;

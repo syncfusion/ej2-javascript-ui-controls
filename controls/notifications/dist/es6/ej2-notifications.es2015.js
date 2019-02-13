@@ -245,7 +245,7 @@ let Toast = class Toast extends Component {
     fetchEle(ele, value, prob) {
         let templateFn;
         let tempVar;
-        let tempArray;
+        let tmpArray;
         prob === 'title' ? tempVar = this.titleTemplate : prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
         if (!isNullOrUndefined(tempVar)) {
             ele.appendChild(tempVar.cloneNode(true));
@@ -264,10 +264,10 @@ let Toast = class Toast extends Component {
             templateFn = compile(value);
         }
         if (!isNullOrUndefined(templateFn)) {
-            tempArray = templateFn({}, this, prob);
+            tmpArray = templateFn({}, this, prob);
         }
-        if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
-            [].slice.call(tempArray).forEach((el) => {
+        if (!isNullOrUndefined(tmpArray) && tmpArray.length > 0 && !(isNullOrUndefined(tmpArray[0].tagName) && tmpArray.length === 1)) {
+            [].slice.call(tmpArray).forEach((el) => {
                 if (!isNullOrUndefined(el.tagName)) {
                     el.style.display = '';
                 }
@@ -622,7 +622,7 @@ __decorate([
     Collection([{}], ButtonModelProps)
 ], Toast.prototype, "buttons", void 0);
 __decorate([
-    Property()
+    Property(null)
 ], Toast.prototype, "target", void 0);
 __decorate([
     Event()

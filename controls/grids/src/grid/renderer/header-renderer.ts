@@ -241,6 +241,9 @@ export class HeaderRender implements IRenderer {
      */
     public createTable(): Element {
         let gObj: IGrid = this.parent;
+        if (this.getTable() && (!gObj.getFrozenColumns())) {
+            remove(this.getTable());
+        }
         let columns: Column[] = <Column[]>gObj.getColumns();
         let table: Element = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
         let innerDiv: Element = <Element>this.getPanel().firstChild;

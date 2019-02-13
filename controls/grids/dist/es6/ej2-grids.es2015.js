@@ -2782,7 +2782,7 @@ class Data {
                 promise = this.dataManager.update(key, args.data, query.fromTable, query, args.previousData);
                 break;
         }
-        args[pr] = promise;
+        args[pr] = args[pr] ? args[pr] : promise;
         this.parent.notify(crudAction, args);
     }
     /** @hidden */
@@ -2866,9 +2866,12 @@ class Data {
             if (args.requestType === 'save' || args.requestType === 'delete') {
                 let editArgs = args;
                 editArgs.key = key;
+                let promise = 'promise';
+                editArgs[promise] = deff.promise;
                 editArgs.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;
+                dataArgs.cancelEdit = deff.reject;
                 this.parent.trigger(dataSourceChanged, editArgs);
                 deff.promise.then((e) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
@@ -2876,7 +2879,8 @@ class Data {
                         this.parent.notify(recordAdded, editArgs);
                     }
                     this.parent.trigger(dataStateChange, state);
-                });
+                })
+                    .catch(() => void 0);
             }
             else {
                 this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
@@ -3734,6 +3738,9 @@ class ContentRender {
      */
     createContentTable(id) {
         let innerDiv = this.getPanel().firstChild;
+        if (this.getTable()) {
+            remove(this.getTable());
+        }
         let table = this.parent.createElement('table', {
             className: 'e-table', attrs: {
                 cellspacing: '0.25px', role: 'grid',
@@ -4304,6 +4311,9 @@ class HeaderRender {
      */
     createTable() {
         let gObj = this.parent;
+        if (this.getTable() && (!gObj.getFrozenColumns())) {
+            remove(this.getTable());
+        }
         let columns = gObj.getColumns();
         let table = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
         let innerDiv = this.getPanel().firstChild;
@@ -5932,11 +5942,15 @@ class ColumnWidthService {
         if (contentCol) {
             contentCol.style.width = fWidth;
         }
-        let edit = content.querySelector('.e-table.e-inline-edit');
-        if (edit) {
-            if (edit.querySelector('colgroup').children[index]) {
-                edit.querySelector('colgroup').children[index].style.width = fWidth;
+        let edit = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
+        let editTableCol = [];
+        for (let i = 0; i < edit.length; i++) {
+            for (let j = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
+                editTableCol.push(edit[i].querySelector('colgroup').children[j]);
             }
+        }
+        if (edit.length) {
+            editTableCol[index].style.width = fWidth;
         }
     }
     getSiblingsHeight(element) {
@@ -5984,23 +5998,37 @@ class ColumnWidthService {
         }
         return tWidth;
     }
+    calcMovableOrFreezeColWidth(tableType) {
+        let columns = this.parent.getColumns().slice();
+        if (tableType === 'movable') {
+            columns.splice(0, this.parent.getFrozenColumns());
+        }
+        else if (tableType === 'freeze') {
+            columns.splice(this.parent.getFrozenColumns(), columns.length);
+        }
+        return formatUnit(this.getTableWidth(columns));
+    }
     setWidthToFrozenTable() {
-        let columns = this.parent.getColumns();
-        columns.splice(this.parent.getFrozenColumns(), columns.length);
-        let freezeWidth = formatUnit(this.getTableWidth(columns));
+        let freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
         this.parent.getHeaderTable().style.width = freezeWidth;
         this.parent.getContentTable().style.width = freezeWidth;
     }
     setWidthToMovableTable() {
-        let columns = this.parent.getColumns();
-        columns.splice(0, this.parent.getFrozenColumns());
-        let movableWidth = formatUnit(this.getTableWidth(columns));
+        let movableWidth = this.calcMovableOrFreezeColWidth('movable');
         if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
             this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild.style.width
                 = movableWidth;
         }
         this.parent.getContent().querySelector('.e-movablecontent').firstElementChild.style.width =
             movableWidth;
+    }
+    setWidthToFrozenEditTable() {
+        let freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
+        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[0].style.width = freezeWidth;
+    }
+    setWidthToMovableEditTable() {
+        let movableWidth = this.calcMovableOrFreezeColWidth('movable');
+        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1].style.width = movableWidth;
     }
     setWidthToTable() {
         let tWidth = formatUnit(this.getTableWidth(this.parent.getColumns()));
@@ -6016,7 +6044,11 @@ class ColumnWidthService {
             this.parent.getContentTable().style.width = tWidth;
         }
         let edit = this.parent.element.querySelector('.e-table.e-inline-edit');
-        if (edit) {
+        if (edit && this.parent.getFrozenColumns()) {
+            this.setWidthToFrozenEditTable();
+            this.setWidthToMovableEditTable();
+        }
+        else if (edit) {
             edit.style.width = tWidth;
         }
     }
@@ -6875,6 +6907,7 @@ class Selection {
         this.isCancelDeSelect = false;
         this.isPreventCellSelect = false;
         this.disableUI = false;
+        this.isPersisted = false;
         this.parent = parent;
         this.selectionSettings = selectionSettings;
         this.factory = locator.getService('rendererFactory');
@@ -7278,6 +7311,10 @@ class Selection {
             let span = this.parent.element.querySelector('.e-gridpopup').querySelector('span');
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
+            }
+            if (this.parent.isPersistSelection) {
+                this.persistSelectedData = [];
+                this.selectedRowState = {};
             }
             this.clearRowSelection();
             this.clearCellSelection();
@@ -8316,7 +8353,9 @@ class Selection {
             !isNullOrUndefined(e.properties.cellSelectionMode)) {
             this.clearSelection();
         }
+        this.isPersisted = true;
         this.checkBoxSelectionChanged();
+        this.isPersisted = false;
         this.initPerisistSelection();
         let checkboxColumn = this.parent.getColumns().filter((col) => col.type === 'checkbox');
         if (checkboxColumn.length) {
@@ -8352,7 +8391,7 @@ class Selection {
                 this.initPerisistSelection();
             }
         }
-        if (!gobj.isCheckBoxSelection) {
+        if (!gobj.isCheckBoxSelection && !this.isPersisted) {
             this.chkField = null;
             this.initPerisistSelection();
         }
@@ -8380,6 +8419,9 @@ class Selection {
                 !gobj.isPersistSelection)) {
             let data = this.parent.getDataModule();
             let query = new Query().where(this.chkField, 'equal', true);
+            if (!query.params) {
+                query.params = this.parent.query.params;
+            }
             let dataManager = data.getData({}, query);
             let proxy = this;
             this.parent.showSpinner();
@@ -10523,8 +10565,8 @@ let Grid = Grid_1 = class Grid extends Component {
             Copy: 'Copy',
             Group: 'Group by this column',
             Ungroup: 'Ungroup by this column',
-            autoFitAll: 'Auto Fit all columns',
-            autoFit: 'Auto Fit this column',
+            autoFitAll: 'Autofit all columns',
+            autoFit: 'Autofit this column',
             Export: 'Export',
             FirstPage: 'First Page',
             LastPage: 'Last Page',
@@ -11274,8 +11316,12 @@ let Grid = Grid_1 = class Grid extends Component {
                 let rows = (isMovable ?
                     this.contentModule.getMovableRows() : this.contentModule.getRows());
                 let rowsObject = rows.filter((r) => r.uid === row.getAttribute('data-uid'));
-                let rowData = rowsObject[0].data;
-                let column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex].column;
+                let rowData = {};
+                let column;
+                if (Object.keys(rowsObject).length) {
+                    rowData = rowsObject[0].data;
+                    column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex].column;
+                }
                 args = { cell: cell, cellIndex: cellIndex, row: row, rowIndex: rowIndex, rowData: rowData, column: column, target: target };
             }
         }
@@ -12068,6 +12114,30 @@ let Grid = Grid_1 = class Grid extends Component {
     reorderColumns(fromFName, toFName) {
         if (this.reorderModule) {
             this.reorderModule.reorderColumns(fromFName, toFName);
+        }
+    }
+    /**
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByIndex multiple times,
+     * then you won't get the same results every time.
+     * @param  {number} fromIndex - Defines the origin field index.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    reorderColumnByIndex(fromIndex, toIndex) {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        }
+    }
+    /**
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByTargetIndex multiple times,
+     * then you will get the same results every time.
+     * @param  {string} fieldName - Defines the field name.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    reorderColumnByTargetIndex(fieldName, toIndex) {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
         }
     }
     /**
@@ -17767,6 +17837,20 @@ class Reorder {
             }
         }
     }
+    moveTargetColumn(column, toIndex) {
+        if (toIndex > -1) {
+            this.moveColumns(toIndex, column, true);
+        }
+    }
+    reorderSingleColumnByTarget(fieldName, toIndex) {
+        let column = this.parent.getColumnByField(fieldName);
+        this.moveTargetColumn(column, toIndex);
+    }
+    reorderMultipleColumnByTarget(fieldName, toIndex) {
+        for (let i = 0; i < fieldName.length; i++) {
+            this.reorderSingleColumnByTarget(fieldName[i], toIndex);
+        }
+    }
     /**
      * Changes the position of the Grid columns by field names.
      * @param  {string | string[]} fromFName - Defines the origin field names.
@@ -17775,6 +17859,26 @@ class Reorder {
      */
     reorderColumns(fromFName, toFName) {
         typeof fromFName === 'string' ? this.reorderSingleColumn(fromFName, toFName) : this.reorderMultipleColumns(fromFName, toFName);
+    }
+    /**
+     * Changes the position of the Grid columns by field index.
+     * @param  {number} fromIndex - Defines the origin field index.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    reorderColumnByIndex(fromIndex, toIndex) {
+        let column = this.parent.getColumnByIndex(fromIndex);
+        this.moveTargetColumn(column, toIndex);
+    }
+    /**
+     * Changes the position of the Grid columns by field index.
+     * @param  {string | string[]} fieldName - Defines the field name.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    reorderColumnByTargetIndex(fieldName, toIndex) {
+        typeof fieldName === 'string' ? this.reorderSingleColumnByTarget(fieldName, toIndex) :
+            this.reorderMultipleColumnByTarget(fieldName, toIndex);
     }
     enableAfterRender(e) {
         if (e.module === this.getModuleName() && e.enable) {
@@ -18028,7 +18132,8 @@ class RowDD {
             this.processArgs(target);
             gObj.trigger(rowDrag, {
                 rows: this.rows,
-                target: target, draggableType: 'rows', data: this.rowData
+                target: target, draggableType: 'rows', data: this.rowData,
+                originalEvent: e
             });
             this.stopTimer();
             gObj.element.classList.add('e-rowdrag');
@@ -18422,7 +18527,7 @@ class RowDD {
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
             || gObj.getSelectedRecords().length === 0) {
             this.rows = [this.startedRow];
-            this.rowData = this.parent.getRowInfo(parentsUntil(target, 'e-row').querySelector('.e-rowcell')).rowData;
+            this.rowData = this.parent.getRowInfo((this.startedRow).querySelector('.e-rowcell')).rowData;
         }
         else {
             this.rows = gObj.getSelectedRows();
@@ -22287,8 +22392,8 @@ class BatchEdit {
         }
         let changes = this.getBatchChanges();
         if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
-            gObj.clearSelection();
-            changes[deletedRecords] = changes[deletedRecords].concat(this.parent.getSelectedRecords());
+            changes[deletedRecords] = changes[deletedRecords].concat(this.removeSelectedData);
+            this.removeSelectedData = [];
         }
         let original = {
             changedRecords: this.parent.getRowsObject()
@@ -22369,8 +22474,12 @@ class BatchEdit {
             this.parent.getRowsObject().push(row);
     }
     bulkDelete(fieldname, data) {
+        this.removeSelectedData = [];
         let gObj = this.parent;
-        let index = data ? this.getIndexFromData(data) : gObj.selectedRowIndex;
+        if (data) {
+            gObj.selectRow(this.getIndexFromData(data));
+        }
+        let index = gObj.selectedRowIndex;
         let selectedRows = gObj.getSelectedRows();
         let args = {
             primaryKey: this.parent.getPrimaryKeyFieldNames(),
@@ -22428,6 +22537,7 @@ class BatchEdit {
             }
         }
         this.refreshRowIdx();
+        this.removeSelectedData = gObj.getSelectedRecords();
         gObj.clearSelection();
         gObj.selectRow(index);
         gObj.trigger(batchDelete, args);
@@ -22780,7 +22890,9 @@ class BatchEdit {
         }
         let tr = parentsUntil(this.form, 'e-row');
         let column = this.cellDetails.column;
-        let editedData = gObj.editModule.getCurrentEditedData(this.form, {});
+        let obj = {};
+        obj[column.field] = this.cellDetails.rowData[column.field];
+        let editedData = gObj.editModule.getCurrentEditedData(this.form, obj);
         let cloneEditedData = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
         let value = getObject(column.field, cloneEditedData);
@@ -24993,7 +25105,8 @@ class ExcelExport {
                 }
                 let column = gCell.column;
                 let field = column.field;
-                let value = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
+                let cellValue = !isNullOrUndefined(field) ? getValue(field, row.data) : '';
+                let value = !isNullOrUndefined(cellValue) ? cellValue : '';
                 let fkData;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     fkData = helper.getFData(value, column);
@@ -26228,7 +26341,8 @@ class PdfExport {
                 }
                 let column = gridCell.column;
                 let field = column.field;
-                let value = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
+                let cellValue = !isNullOrUndefined(field) ? getValue(field, row.data) : '';
+                let value = !isNullOrUndefined(cellValue) ? cellValue : '';
                 let foreignKeyData$$1;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     foreignKeyData$$1 = helper.getFData(value, column);

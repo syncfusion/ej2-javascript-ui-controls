@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### Maps
+
+#### Bug Fixes
+
+- Padding issue for OSM type layers resolved now.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Maps

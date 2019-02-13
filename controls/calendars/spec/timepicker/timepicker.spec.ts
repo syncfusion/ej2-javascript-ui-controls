@@ -450,6 +450,33 @@ describe('TimePicker', () => {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
             }
         });
+        it('timeformat value as skeleton object while Creation', () => {
+            timeObj.destroy();
+            timeObj = new TimePicker({ value: new Date('2/2/2017 10:30'),format : {skeleton:'medium'}, strictMode: true });
+            timeObj.appendTo('#timepicker1');
+            expect(timeObj.getText()).toBe('10:30:00 AM');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(30);
+        });
+        it('timeformat value as skeleton object', () => {
+            timeObj.format = {skeleton:'ms'};
+            timeObj.dataBind();
+            expect(timeObj.getText()).toBe('00:00');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(0);
+            expect((timeObj.value).getSeconds()).toBe(0);
+            timeObj.value = new Date('2/2/2017 10:30');
+            timeObj.format = {skeleton:'Hm'};
+            timeObj.dataBind();
+            expect(timeObj.getText()).toBe('10:30');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(30);
+            timeObj.format = {skeleton:'medium'};
+            timeObj.dataBind();
+            expect(timeObj.getText()).toBe('10:30:00 AM');
+            expect((timeObj.value).getHours()).toBe(10);
+            expect((timeObj.value).getMinutes()).toBe(30);
+        });
     });
     describe('DOM Wrapper Testing with min & max value', () => {
         beforeEach(() => {

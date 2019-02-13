@@ -1,4 +1,4 @@
-import { HorizontalAlignment, VerticalAlignment, UnitMode, Transform, RelativeMode } from '../../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, UnitMode, Transform, RelativeMode, FlipDirection, ElementAction } from '../../enum/enum';
 import { MarginModel, ShapeStyleModel, ShadowModel } from '../appearance-model';
 import { Size } from '../../primitives/size';
 import { PointModel } from '../../primitives/point-model';
@@ -127,6 +127,14 @@ export class DiagramElement {
     public verticalAlignment: VerticalAlignment = 'Auto';
 
     /**
+     * Sets/Gets the mirror image of diagram element in both horizontal and vertical directions
+     * * FlipHorizontal - Translate the diagram element throughout its immediate parent
+     * * FlipVertical - Rotate the diagram element throughout its immediate parent
+     */
+
+    public flip: FlipDirection = 'None';
+
+    /**
      * Sets whether the element has to be aligned with respect to a point/with respect to its immediate parent
      * * Point - Diagram elements will be aligned with respect to a point
      * * Object - Diagram elements will be aligned with respect to its immediate parent
@@ -203,6 +211,18 @@ export class DiagramElement {
 
     /** @private */
     public isCalculateDesiredSize: boolean = true;
+
+    /**
+     * Set the offset values for container in flipping
+     */
+    /** @private */
+    public flipOffset: PointModel = { x: 0, y: 0 };
+
+    /**
+     * Defines whether the element is group or port
+     */
+    /** @private */
+    public elementActions: ElementAction = ElementAction.None;
 
     // public constructor() {
     //     this.id = randomId();

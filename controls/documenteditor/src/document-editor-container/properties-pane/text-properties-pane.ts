@@ -58,7 +58,7 @@ export class TextProperties {
     }
     private initializeTextProperties(id: string, isTableProperties: boolean, isRtl?: boolean): void {
         /* tslint:disable-next-line:max-line-length */
-        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-text-pane' });
+        this.element = createElement('div', { id: id + 'id_' + this.generateUniqueID(), className: 'e-de-prop-pane' });
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
         this.paragraph.updateStyleNames();

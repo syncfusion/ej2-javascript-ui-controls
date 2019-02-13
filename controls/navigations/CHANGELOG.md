@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### Accordion
+
+#### Bug Fixes
+
+- Resolved the issue with accessing Accordion item object in clicked event arguments.
+
 ## 16.4.52 (2019-02-05)
 
 ### Sidebar
@@ -13,6 +21,8 @@
 #### Breaking Changes
 
 - Sidebar with type `Auto` will always expand on initial rendering, irrespective of `enableDock` and `isOpen` properties.
+
+- When dynamically changing the type property of the Sidebar with invalid property value (For ex:`Pushs`), will reset the type of the Sidebar to its default type as `Auto`.
 
 ### Menu
 

@@ -2209,6 +2209,14 @@ let DropDownList = class DropDownList extends DropDownBase {
             }
             else {
                 this.isNotSearchList = false;
+                if ((this.element.tagName === 'SELECT' && this.element.options.length > 0)
+                    || (this.element.tagName === 'UL' && this.element.childNodes.length > 0)) {
+                    let data = dataSource instanceof Array ? (dataSource.length > 0)
+                        : !isNullOrUndefined(dataSource);
+                    if (!data && this.listData.length > 0) {
+                        dataSource = this.listData;
+                    }
+                }
                 this.resetList(dataSource, fields, query);
             }
         }
@@ -4569,6 +4577,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let proxy = this;
             window.onpopstate = () => {
                 proxy.hidePopup();
+                proxy.inputElement.focus();
             };
             history.pushState({}, '');
         }
@@ -5157,9 +5166,20 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.allowFiltering && !isNullOrUndefined(this.mainList)) {
             this.ulElement = this.mainList;
         }
+        this.checkPlaceholderSize();
+    }
+    checkPlaceholderSize() {
+        if ((!this.value || !this.value.length) && this.showDropDownIcon &&
+            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth)) {
+            let downIconWidth = this.dropIcon.offsetWidth +
+                parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
+            do {
+                this.inputElement.size -= 1;
+            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth);
+        }
     }
     refreshInputHight() {
-        if (!this.value || !this.value.length) {
+        if ((!this.value || !this.value.length) && isNullOrUndefined(this.text)) {
             this.searchWrapper.classList.remove(ZERO_SIZE);
         }
         else {
@@ -5237,6 +5257,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             if (this.mode !== 'CheckBox') {
                 this.searchWrapper.classList.remove(ZERO_SIZE);
             }
+            this.checkPlaceholderSize();
             if (this.focused) {
                 this.inputElement.focus();
                 let args = { isInteracted: e ? true : false, event: e };
@@ -5728,7 +5749,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     refreshPlaceHolder() {
         if (this.placeholder && this.floatLabelType === 'Never') {
-            if (this.value && this.value.length) {
+            if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
                 this.inputElement.placeholder = '';
             }
             else {
@@ -6183,6 +6204,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 this.updateDelimView();
             }
             this.makeTextBoxEmpty();
+            this.checkPlaceholderSize();
             if (this.isPopupOpen()) {
                 this.refreshPopup();
             }
@@ -7158,6 +7180,36 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.wireEvent();
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
+        this.checkInitialValue();
+    }
+    checkInitialValue() {
+        let isData = this.dataSource instanceof Array ? (this.dataSource.length > 0)
+            : !isNullOrUndefined(this.dataSource);
+        if (!(this.value && this.value.length) &&
+            isNullOrUndefined(this.text) &&
+            !isData &&
+            this.element.tagName === 'SELECT' &&
+            this.element.options.length > 0) {
+            let optionsElement = this.element.options;
+            let valueCol = [];
+            let textCol = '';
+            for (let index = 0, optionsLen = optionsElement.length; index < optionsLen; index++) {
+                let opt = optionsElement[index];
+                if (opt.selected) {
+                    (opt.getAttribute('value')) ? valueCol.push(opt.getAttribute('value')) : textCol += (opt.text + this.delimiterChar);
+                }
+            }
+            if (valueCol.length > 0) {
+                this.setProperties({ value: valueCol }, true);
+            }
+            else if (textCol !== '') {
+                this.setProperties({ text: textCol }, true);
+            }
+            if (valueCol.length > 0 || textCol !== '') {
+                this.refreshInputHight();
+                this.refreshPlaceHolder();
+            }
+        }
         if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
             this.renderPopup();
         }
@@ -7217,6 +7269,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.updateHTMLAttribute();
         this.updateReadonly(this.readonly);
         this.refreshInputHight();
+        this.checkPlaceholderSize();
     }
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
@@ -7659,6 +7712,7 @@ class CheckBoxSelection {
     clickOnBackIcon(e) {
         this.parent.hidePopup();
         removeClass([document.body, this.parent.popupObj.element], popupFullScreen);
+        this.parent.inputElement.focus();
     }
     clearText(e) {
         this.parent.targetInputElement.value = '';

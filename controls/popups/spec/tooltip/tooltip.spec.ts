@@ -84,7 +84,7 @@ describe('Tooltip Control', () => {
             tooltip.destroy();
             expect(document.getElementById('tstooltip').classList.contains('e-tooltip')).toEqual(false);
         });
-        it('Destroy method testing while using beforeClose Event', () => { 
+        it('Destroy method testing while using beforeClose Event', () => {
             function cancelbeforeClose(args: TooltipEventArgs) {
                 args.cancel = true;
             }
@@ -345,12 +345,12 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 id: 'tstooltip', innerHTML:
-                "<label for='name'>User Name:</label><input type='text' id='name' class='formctrl' name='firstname' title='enter name'>"
+                    "<label for='name'>User Name:</label><input type='text' id='name' class='formctrl' name='firstname' title='enter name'>"
             });
             document.body.appendChild(ele);
             let ele1: HTMLElement = createElement('div', {
                 id: 'tstooltip1', innerHTML:
-                "<div id='focusdiv' style='width: 100px;height: 30px;border: 1px solid;' tabindex='1' title='focus from div'></div>"
+                    "<div id='focusdiv' style='width: 100px;height: 30px;border: 1px solid;' tabindex='1' title='focus from div'></div>"
             });
             document.body.appendChild(ele1);
         });
@@ -391,7 +391,7 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 id: 'tstooltip', innerHTML:
-                "<label for='name'>User Name:</label><input type='text' id='name' class='formctrl' name='firstname' title='enter name'>"
+                    "<label for='name'>User Name:</label><input type='text' id='name' class='formctrl' name='firstname' title='enter name'>"
             });
             document.body.appendChild(ele);
         });
@@ -463,8 +463,8 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltiptarget', innerHTML:
-                "<p><a id='link1' title='MAScript (or ES) is a trademarked scripting-language specification'>ECMAScript</a> and "
-                + "<a id='link2' title='The World Wide Web'>WWW</a></p> <a id='link3'>Test without title attribute</a>"
+                    "<p><a id='link1' title='MAScript (or ES) is a trademarked scripting-language specification'>ECMAScript</a> and "
+                    + "<a id='link2' title='The World Wide Web'>WWW</a></p> <a id='link3'>Test without title attribute</a>"
             });
             document.body.appendChild(ele);
         });
@@ -526,7 +526,7 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltipparent', styles: 'margin:200px', innerHTML:
-                "<div id='tstooltip' style='width:400px;height:100px;background: #a7c2e4;' title='Position combinations test cases'>Hover me !</div>"
+                    "<div id='tstooltip' style='width:400px;height:100px;background: #a7c2e4;' title='Position combinations test cases'>Hover me !</div>"
             });
             document.body.appendChild(ele);
         });
@@ -809,6 +809,25 @@ describe('Tooltip Control', () => {
             expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-bottom')).toEqual(true);
             triggerMouseEvent(target1, 'mouseleave');
         });
+        it('collision affected position - top with offset', () => {
+            let elem: HTMLDivElement = document.createElement('div');
+            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;">Tooltip target</div></div>';
+            document.body.appendChild(elem.firstChild);
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                position: 'TopCenter', content: 'collision left and top', target: '#target', offsetY: -10, beforeCollision: onCollision
+            }, '#targetContainer');
+            let target1: HTMLElement = document.getElementById('target');
+            triggerMouseEvent(target1, 'mouseover');
+            function onCollision(e: TooltipEventArgs){
+              expect(e.collidedPosition).toBe('BottomCenter');
+            }
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            let tipHeight: number = 8;
+            // tooltipOffset is space between tooltip element and target element
+            let tooltipOffset: number = (tooltipEle.getBoundingClientRect().top - tipHeight) - target1.getBoundingClientRect().bottom;
+            expect(tooltipOffset).toEqual(10);
+        });
     });
     describe('Touch event', () => {
         let tooltip: any;
@@ -823,7 +842,7 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltipparent', innerHTML:
-                "<div id='tstooltip' title='touch event test cases'>Touch me !</div>"
+                    "<div id='tstooltip' title='touch event test cases'>Touch me !</div>"
             });
             document.body.appendChild(ele);
         });
@@ -882,7 +901,7 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 innerHTML:
-                "<div id='tstooltip' style='height: 300px;width: 300px;background: #4e699c;margin:50px' title='Position combinations'>Hover me !</div>"
+                    "<div id='tstooltip' style='height: 300px;width: 300px;background: #4e699c;margin:50px' title='Position combinations'>Hover me !</div>"
             });
             document.body.appendChild(ele);
         });
@@ -1117,7 +1136,7 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltipparent', innerHTML:
-                "<div id='tstooltip' title='keyboard event test cases'>Click me !</div>"
+                    "<div id='tstooltip' title='keyboard event test cases'>Click me !</div>"
             });
             document.body.appendChild(ele);
             tooltip = new Tooltip({ animation: { open: { effect: 'None' }, close: { effect: 'None' } }, width: '100px' }, '#tstooltip');
@@ -1244,13 +1263,13 @@ describe('Tooltip Control', () => {
             tooltip = undefined;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltipparent', innerHTML:
-                "<div id='tstooltip' title='sticky mode test cases'>Stick me !</div>"
+                    "<div id='tstooltip' title='sticky mode test cases'>Stick me !</div>"
             });
             document.body.appendChild(ele);
             let ele1: HTMLElement = createElement('div', {
                 className: 'tooltiptarget', innerHTML:
-                "<p><a id='link1' title='MAScript (or ES) is a trademarked scripting-language specification'>ECMAScript</a> and "
-                + "<a id='link2' title='The World Wide Web'>WWW</a></p><a id='link3'>Test without title attribute</a>"
+                    "<p><a id='link1' title='MAScript (or ES) is a trademarked scripting-language specification'>ECMAScript</a> and "
+                    + "<a id='link2' title='The World Wide Web'>WWW</a></p><a id='link3'>Test without title attribute</a>"
             });
             document.body.appendChild(ele1);
         });
@@ -1308,7 +1327,7 @@ describe('Tooltip Control', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltipparent', innerHTML:
-                "<div id='tstooltip' title='animation test cases'>Animate me !</div>"
+                    "<div id='tstooltip' title='animation test cases'>Animate me !</div>"
             });
             document.body.appendChild(ele);
         });
@@ -1373,7 +1392,7 @@ describe('Tooltip Control', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
             let ele: HTMLElement = createElement('div', {
                 className: 'tooltipparent', innerHTML:
-                "<div id='tstooltip' title='animation test cases'>Animate me !</div>"
+                    "<div id='tstooltip' title='animation test cases'>Animate me !</div>"
             });
             document.body.appendChild(ele);
         });
@@ -1607,10 +1626,10 @@ describe('Tooltip Control', () => {
             }, '#tstooltip');
             tooltip.open(document.getElementById('tstooltip'));
             let tip: HTMLElement = document.querySelector('.e-arrow-tip') as HTMLElement;
-            let tipPreviousVal=tip.style.left;
-            elem.onclick=function(){
-                tooltip.height='50px';
-                tooltip.width='150px';
+            let tipPreviousVal = tip.style.left;
+            elem.onclick = function () {
+                tooltip.height = '50px';
+                tooltip.width = '150px';
                 tooltip.dataBind();
             };
             elem.click();
@@ -2026,5 +2045,5 @@ describe('Tooltip Control', () => {
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
     });
- 
+
 });

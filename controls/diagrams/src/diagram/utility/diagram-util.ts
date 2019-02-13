@@ -8,7 +8,7 @@ import { StrokeStyle, LinearGradient, RadialGradient } from './../core/appearanc
 import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
 import { PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityShapes, PortConstraints } from './../enum/enum';
-import { FlowShapes, SelectorConstraints, ThumbsConstraints } from './../enum/enum';
+import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
 import { PathElement } from './../core/elements/path-element';
 import { DiagramNativeElement } from './../core/elements/native-element';
@@ -1397,4 +1397,67 @@ export let getObjectType: Function = (obj: Object): Object => {
         }
     }
     return obj;
+};
+
+/** @private */
+export let flipConnector: Function = (connector: Connector): void => {
+    if (!connector.sourceID && !connector.targetID) {
+        let source: PointModel = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
+        let target: PointModel = { x: connector.targetPoint.x, y: connector.targetPoint.y };
+        if (connector.flip === 'Horizontal') {
+            connector.sourcePoint.x = target.x;
+            connector.targetPoint.x = source.x;
+        } else if (connector.flip === 'Vertical') {
+            connector.sourcePoint.y = target.y;
+            connector.targetPoint.y = source.y;
+        } else if (connector.flip === 'Both') {
+            connector.sourcePoint = target;
+            connector.targetPoint = source;
+        }
+    }
+};
+
+/** @private */
+export let updatePortEdges: Function = (portContent: DiagramElement, flip: FlipDirection, port: PointPortModel): DiagramElement => {
+    let offsetX: number = port.offset.x;
+    let offsetY: number = port.offset.y;
+    if (flip === 'Horizontal') {
+        offsetX = 1 - port.offset.x;
+        offsetY = port.offset.y;
+    } else if (flip === 'Vertical') {
+        offsetX = port.offset.x;
+        offsetY = 1 - port.offset.y;
+    } else if (flip === 'Both') {
+        offsetX = 1 - port.offset.x;
+        offsetY = 1 - port.offset.y;
+    }
+    portContent.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
+    return portContent;
+};
+
+/** @private */
+export let alignElement: Function = (element: Container, offsetX: number, offsetY: number, diagram: Diagram, flip: FlipDirection): void => {
+    if (element.hasChildren()) {
+        for (let child of element.children) {
+            let childX: number = ((offsetX - child.offsetX) + offsetX);
+            let childY: number = ((offsetY - child.offsetY) + offsetY);
+            if (flip === 'Horizontal' || flip === 'Both') {
+                child.offsetX = childX;
+                child.flipOffset.x = childX - child.desiredSize.width / 2;
+            }
+            if (flip === 'Vertical' || flip === 'Both') {
+                child.offsetY = childY;
+                child.flipOffset.y = childY - child.desiredSize.height / 2;
+            }
+            if (child instanceof Canvas || child instanceof Container) {
+                alignElement(child, offsetX, offsetY, diagram, flip);
+            }
+            child.measure(new Size(child.bounds.width, child.bounds.height));
+            child.arrange(child.desiredSize);
+            let node: Node = diagram.nameTable[child.id];
+            if (node) {
+                diagram.updateConnectorEdges(node);
+            }
+        }
+    }
 };

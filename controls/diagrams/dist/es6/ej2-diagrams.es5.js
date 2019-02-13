@@ -1573,6 +1573,21 @@ var NodeConstraints;
     /** Enables all constraints */
     NodeConstraints[NodeConstraints["Default"] = 5240814] = "Default";
 })(NodeConstraints || (NodeConstraints = {}));
+/** Enables/Disables The element actions
+ * None - Diables all element actions are none
+ * ElementIsPort - Enable element action is port
+ * ElementIsGroup - Enable element action as Group
+ * @private
+ */
+var ElementAction;
+(function (ElementAction) {
+    /** Disables all element actions are none  */
+    ElementAction[ElementAction["None"] = 0] = "None";
+    /** Enable the element action is Port  */
+    ElementAction[ElementAction["ElementIsPort"] = 2] = "ElementIsPort";
+    /** Enable the element action as Group  */
+    ElementAction[ElementAction["ElementIsGroup"] = 4] = "ElementIsGroup";
+})(ElementAction || (ElementAction = {}));
 /** Enables/Disables the handles of the selector
  * Rotate - Enable Rotate Thumb
  * ConnectorSource - Enable Connector source point
@@ -2184,6 +2199,12 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
          */
         this.verticalAlignment = 'Auto';
         /**
+         * Sets/Gets the mirror image of diagram element in both horizontal and vertical directions
+         * * FlipHorizontal - Translate the diagram element throughout its immediate parent
+         * * FlipVertical - Rotate the diagram element throughout its immediate parent
+         */
+        this.flip = 'None';
+        /**
          * Sets whether the element has to be aligned with respect to a point/with respect to its immediate parent
          * * Point - Diagram elements will be aligned with respect to a point
          * * Object - Diagram elements will be aligned with respect to its immediate parent
@@ -2239,6 +2260,16 @@ var DiagramElement = /** @__PURE__ @class */ (function () {
         this.isRectElement = false;
         /** @private */
         this.isCalculateDesiredSize = true;
+        /**
+         * Set the offset values for container in flipping
+         */
+        /** @private */
+        this.flipOffset = { x: 0, y: 0 };
+        /**
+         * Defines whether the element is group or port
+         */
+        /** @private */
+        this.elementActions = ElementAction.None;
         //private variables
         this.position = undefined;
         this.unitMode = undefined;
@@ -2836,6 +2867,10 @@ var Container = /** @__PURE__ @class */ (function (_super) {
                     if (child.horizontalAlignment === 'Stretch') {
                         child.offsetX = this.offsetX;
                         child.parentTransform = this.parentTransform + this.rotateAngle;
+                        if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
+                            child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
+                                -child.parentTransform : child.parentTransform;
+                        }
                         arrange = true;
                     }
                     if (child.verticalAlignment === 'Stretch') {
@@ -3502,6 +3537,10 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                 var child = _a[_i];
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
+                    if (this.flip !== 'None' || this.elementActions & ElementAction.ElementIsGroup) {
+                        child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
+                            -child.parentTransform : child.parentTransform;
+                    }
                     var childSize = child.desiredSize.clone();
                     var topLeft = void 0;
                     var center = { x: 0, y: 0 };
@@ -4282,6 +4321,9 @@ var NodeBase = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property()
     ], NodeBase.prototype, "addInfo", void 0);
+    __decorate$6([
+        Property('None')
+    ], NodeBase.prototype, "flip", void 0);
     return NodeBase;
 }(ChildProperty));
 
@@ -7911,6 +7953,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     Connector.prototype.getSegmentElement = function (connector, segmentElement) {
         var points = [];
+        flipConnector(connector);
         points = this.getConnectorPoints(connector.type);
         this.intermediatePoints = points;
         segmentElement.staticSize = true;
@@ -10872,6 +10915,7 @@ var Node = /** @__PURE__ @class */ (function (_super) {
             case 'Bpmn':
                 if (diagram.bpmnModule) {
                     content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
+                    this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
                     var subProcess = this.shape.activity.subProcess;
                     if (subProcess.processes && subProcess.processes.length) {
                         var children = this.shape.activity.subProcess.processes;
@@ -10951,6 +10995,9 @@ var Node = /** @__PURE__ @class */ (function (_super) {
                 content.style = this.style;
             }
         }
+        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === 'Horizontal' || this.flip === 'Vertical') {
+            content.flip = this.flip;
+        }
         return content;
     };
     /* tslint:enable */
@@ -11001,6 +11048,7 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         canvas.maxWidth = this.maxWidth;
         canvas.pivot = this.pivot;
         canvas.margin = this.margin;
+        canvas.flip = this.flip;
         this.wrapper = canvas;
         return canvas;
     };
@@ -11010,6 +11058,7 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         var port;
         for (var i = 0; this.ports !== undefined, i < this.ports.length; i++) {
             port = this.initPortWrapper(this.ports[i]);
+            port.elementActions = port.elementActions | ElementAction.ElementIsPort;
             // tslint:disable-next-line:no-any
             var wrapperContent = void 0;
             var contentAccessibility = getFunction(accessibilityContent);
@@ -11106,7 +11155,7 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         };
         portContent.horizontalAlignment = ports.horizontalAlignment;
         portContent.verticalAlignment = ports.verticalAlignment;
-        portContent.setOffsetWithRespectToBounds(ports.offset.x, ports.offset.y, 'Fraction');
+        portContent = updatePortEdges(portContent, this.flip, ports);
         if (this.width !== undefined || this.height !== undefined) {
             portContent.float = true;
         }
@@ -13385,6 +13434,71 @@ var getObjectType = function (obj) {
     }
     return obj;
 };
+/** @private */
+var flipConnector = function (connector) {
+    if (!connector.sourceID && !connector.targetID) {
+        var source = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
+        var target = { x: connector.targetPoint.x, y: connector.targetPoint.y };
+        if (connector.flip === 'Horizontal') {
+            connector.sourcePoint.x = target.x;
+            connector.targetPoint.x = source.x;
+        }
+        else if (connector.flip === 'Vertical') {
+            connector.sourcePoint.y = target.y;
+            connector.targetPoint.y = source.y;
+        }
+        else if (connector.flip === 'Both') {
+            connector.sourcePoint = target;
+            connector.targetPoint = source;
+        }
+    }
+};
+/** @private */
+var updatePortEdges = function (portContent, flip, port) {
+    var offsetX = port.offset.x;
+    var offsetY = port.offset.y;
+    if (flip === 'Horizontal') {
+        offsetX = 1 - port.offset.x;
+        offsetY = port.offset.y;
+    }
+    else if (flip === 'Vertical') {
+        offsetX = port.offset.x;
+        offsetY = 1 - port.offset.y;
+    }
+    else if (flip === 'Both') {
+        offsetX = 1 - port.offset.x;
+        offsetY = 1 - port.offset.y;
+    }
+    portContent.setOffsetWithRespectToBounds(offsetX, offsetY, 'Fraction');
+    return portContent;
+};
+/** @private */
+var alignElement = function (element, offsetX, offsetY, diagram, flip) {
+    if (element.hasChildren()) {
+        for (var _i = 0, _a = element.children; _i < _a.length; _i++) {
+            var child = _a[_i];
+            var childX = ((offsetX - child.offsetX) + offsetX);
+            var childY = ((offsetY - child.offsetY) + offsetY);
+            if (flip === 'Horizontal' || flip === 'Both') {
+                child.offsetX = childX;
+                child.flipOffset.x = childX - child.desiredSize.width / 2;
+            }
+            if (flip === 'Vertical' || flip === 'Both') {
+                child.offsetY = childY;
+                child.flipOffset.y = childY - child.desiredSize.height / 2;
+            }
+            if (child instanceof Canvas || child instanceof Container) {
+                alignElement(child, offsetX, offsetY, diagram, flip);
+            }
+            child.measure(new Size(child.bounds.width, child.bounds.height));
+            child.arrange(child.desiredSize);
+            var node = diagram.nameTable[child.id];
+            if (node) {
+                diagram.updateConnectorEdges(node);
+            }
+        }
+    }
+};
 
 /**
  * Defines the functionalities that need to access DOM
@@ -14594,9 +14708,28 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
         ctx.beginPath();
         var pivotY = options.y + options.height * options.pivotY;
         var pivotX = options.x + options.width * options.pivotX;
-        this.rotateContext(canvas, options.angle, pivotX, pivotY);
+        if (options.flip === 'Horizontal' || options.flip === 'Vertical') {
+            ctx.translate(options.x + options.width / 2, options.y + options.height / 2);
+            ctx.rotate(-options.angle * Math.PI / 180);
+            ctx.translate(-options.x - options.width / 2, -options.y - options.height / 2);
+        }
+        else {
+            this.rotateContext(canvas, options.angle, pivotX, pivotY);
+        }
         this.setStyle(canvas, options);
         ctx.translate(options.x, options.y);
+        if (options.flip === 'Horizontal') {
+            ctx.scale(-1, 1);
+            ctx.translate(options.width * -1, 0);
+        }
+        else if (options.flip === 'Vertical') {
+            ctx.scale(1, -1);
+            ctx.translate(0, options.height * -1);
+        }
+        else if (options.flip === 'Both') {
+            ctx.scale(-1, -1);
+            ctx.translate(options.width * -1, options.height * -1);
+        }
         this.renderPath(canvas, options, collection);
         ctx.fill();
         ctx.translate(-options.x, -options.y);
@@ -14902,6 +15035,22 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
             else {
                 ctx.drawImage(image, x, y, width, height);
             }
+        }
+        else if (alignOptions.flip !== 'None') {
+            var scaleX = 1;
+            var scaleY = 1;
+            if (alignOptions.flip === 'Horizontal' || alignOptions.flip === 'Both') {
+                x = -x;
+                width = -width;
+                scaleX = -1;
+            }
+            if (alignOptions.flip === 'Vertical' || alignOptions.flip === 'Both') {
+                y = -y;
+                height = -height;
+                scaleY = -1;
+            }
+            ctx.scale(scaleX, scaleY);
+            ctx.drawImage(image, x, y, width, height);
         }
         else {
             ctx.drawImage(image, x, y, width, height);
@@ -16105,6 +16254,10 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.data = element.absolutePath;
         options.data = element.absolutePath;
         var ariaLabel = element.description ? element.description : element.id;
+        if (!this.isSvgMode) {
+            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
+            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
+        }
         this.renderer.drawPath(canvas, options, this.diagramId, undefined, parentSvg, ariaLabel);
     };
     /**   @private  */
@@ -16467,6 +16620,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         if (group.hasChildren()) {
             var parentG = void 0;
             var svgParent_1;
+            var flip = void 0;
             for (var _i = 0, _a = group.children; _i < _a.length; _i++) {
                 var child = _a[_i];
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children) || child) || parentSvg;
@@ -16477,8 +16631,59 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
                         parentSvg = svgParent_1.svg;
                     }
                 }
+                if (!this.isSvgMode) {
+                    child.flip = group.flip;
+                }
                 this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette);
+                if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
+                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
+                    this.renderFlipElement(child, parentG, flip);
+                }
+                if ((child.elementActions & ElementAction.ElementIsPort) && parentG) {
+                    flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
+                    this.renderFlipElement(group, parentG, flip);
+                }
+                if (!(child instanceof TextElement) && group.flip !== 'None' &&
+                    (group.elementActions & ElementAction.ElementIsGroup)) {
+                    this.renderFlipElement(child, parentG || canvas, group.flip);
+                }
             }
+            if (!(group.elementActions & ElementAction.ElementIsGroup)) {
+                this.renderFlipElement(group, canvas, group.flip);
+            }
+        }
+    };
+    DiagramRenderer.prototype.renderFlipElement = function (element, canvas, flip) {
+        var attr = {};
+        var scaleX = 1;
+        var scaleY = 1;
+        var posX = 0;
+        var posY = 0;
+        var offsetX = 0;
+        var offsetY = 0;
+        if (flip !== 'None') {
+            if (flip === 'Horizontal' || flip === 'Both') {
+                posX = element.bounds.center.x;
+                offsetX = -element.bounds.center.x;
+                scaleX = -1;
+            }
+            if (flip === 'Vertical' || flip === 'Both') {
+                posY = element.bounds.center.y;
+                offsetY = -element.bounds.center.y;
+                scaleY = -1;
+            }
+            attr = {
+                'transform': 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
+                    + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
+            };
+        }
+        else {
+            attr = {
+                'transform': 'translate(' + 0 + ',' + 0 + ')'
+            };
+        }
+        if (attr) {
+            setAttributeSvg(canvas, attr);
         }
     };
     /**   @private  */
@@ -16518,6 +16723,9 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
+        if (element.flip) {
+            options.flip = element.flip;
+        }
         if (transform) {
             options.x += transform.tx;
             options.y += transform.ty;
@@ -28907,7 +29115,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.realActions |= RealAction.PreventScale;
                     var diffX = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
-                    this.drag(node1, diffX, 0);
+                    if (node.flip === 'None') {
+                        this.drag(node1, diffX, 0);
+                    }
                     this.realActions &= ~RealAction.PreventScale;
                 }
                 else {
@@ -28917,7 +29127,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.realActions |= RealAction.PreventScale;
                     var diffY = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
-                    this.drag(node1, 0, diffY);
+                    if (node.flip === 'None') {
+                        this.drag(node1, 0, diffY);
+                    }
                     this.realActions &= ~RealAction.PreventScale;
                 }
                 else {
@@ -28972,6 +29184,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         var child = this.nameTable[obj.children[i]];
                         this.updateStackProperty(obj, child, i);
                         canvas.children.push(child.wrapper);
+                        canvas.elementActions = canvas.elementActions | ElementAction.ElementIsGroup;
+                        child.wrapper.flip = child.wrapper.flip === 'None' ?
+                            obj.wrapper.flip : child.wrapper.flip;
                     }
                 }
             }
@@ -29068,6 +29283,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 nodesCollection[i].offsetX = nodesCollection[i].wrapper.offsetX;
                 nodesCollection[i].offsetY = nodesCollection[i].wrapper.offsetY;
             }
+        }
+        if (obj.wrapper.flip !== 'None' && obj.wrapper.elementActions & ElementAction.ElementIsGroup) {
+            alignElement(obj.wrapper, obj.wrapper.offsetX, obj.wrapper.offsetY, this, obj.wrapper.flip);
         }
         if (obj instanceof Node && obj.container && (obj.width < canvas.outerBounds.width || obj.height < canvas.outerBounds.height) &&
             canvas.bounds.x <= canvas.outerBounds.x && canvas.bounds.y <= canvas.outerBounds.y) {
@@ -30337,12 +30555,30 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             actualObject.wrapper.children[0].shadow = canShadow(actualObject) ? actualObject.shadow : null;
         }
         if (node.offsetX !== undefined) {
-            actualObject.wrapper.offsetX = node.offsetX;
+            if (actualObject.wrapper.flip !== 'None') {
+                if (actualObject.offsetX !== actualObject.wrapper.offsetX && oldObject.offsetX !== undefined) {
+                    var offsetX_1 = node.offsetX - oldObject.offsetX;
+                    actualObject.wrapper.offsetX = actualObject.wrapper.offsetX + offsetX_1;
+                    this.updateFlipOffset(actualObject.wrapper, offsetX_1, 0, actualObject.wrapper.flip);
+                }
+            }
+            else {
+                actualObject.wrapper.offsetX = node.offsetX;
+            }
             update = true;
             updateConnector$$1 = true;
         }
         if (node.offsetY !== undefined) {
-            actualObject.wrapper.offsetY = node.offsetY;
+            if (actualObject.wrapper.flip !== 'None') {
+                if (actualObject.offsetY !== actualObject.wrapper.offsetY && oldObject.offsetY !== undefined) {
+                    var offsetY_1 = node.offsetY - oldObject.offsetY;
+                    actualObject.wrapper.offsetY = actualObject.wrapper.offsetY + offsetY_1;
+                    this.updateFlipOffset(actualObject.wrapper, 0, offsetY_1, actualObject.wrapper.flip);
+                }
+            }
+            else {
+                actualObject.wrapper.offsetY = node.offsetY;
+            }
             update = true;
             updateConnector$$1 = true;
         }
@@ -30369,6 +30605,26 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             actualObject.wrapper.maxHeight = node.maxHeight;
             update = true;
             updateConnector$$1 = true;
+        }
+        if (node.flip !== undefined) {
+            actualObject.wrapper.flip = node.flip;
+            update = true;
+            updateConnector$$1 = true;
+            if (actualObject.wrapper.elementActions & ElementAction.ElementIsGroup) {
+                alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, node.flip);
+                if (actualObject && actualObject.children) {
+                    for (var _i = 0, _a = actualObject.children; _i < _a.length; _i++) {
+                        var child = _a[_i];
+                        var updateNode = this.nameTable[child];
+                        updateNode.wrapper.flip = node.flip;
+                        this.updatePorts(updateNode, node.flip);
+                    }
+                }
+            }
+            else {
+                actualObject.wrapper.children[0].flip = node.flip;
+                this.updatePorts(actualObject, node.flip);
+            }
         }
         if (node.rotateAngle !== undefined) {
             if (actualObject.children && rotate) {
@@ -30411,8 +30667,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             updateConnector$$1 = true;
         }
         if (node.ports !== undefined) {
-            for (var _i = 0, _a = Object.keys(node.ports); _i < _a.length; _i++) {
-                var key = _a[_i];
+            for (var _b = 0, _c = Object.keys(node.ports); _b < _c.length; _b++) {
+                var key = _c[_b];
                 var index = Number(key);
                 update = true;
                 var changedObject = node.ports[key];
@@ -30421,8 +30677,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (node.annotations !== undefined || node.width !== undefined) {
-            for (var _b = 0, _c = Object.keys(node.annotations || actualObject.annotations); _b < _c.length; _b++) {
-                var key = _c[_b];
+            for (var _d = 0, _e = Object.keys(node.annotations || actualObject.annotations); _d < _e.length; _d++) {
+                var key = _e[_d];
                 var index = Number(key);
                 update = true;
                 var changedObject = node.annotations ? node.annotations[key] : actualObject.annotations;
@@ -30502,6 +30758,36 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Diagram.prototype.updatePorts = function (actualObject, flip) {
+        if (actualObject && actualObject.ports.length > 0) {
+            for (var _i = 0, _a = Object.keys(actualObject.ports); _i < _a.length; _i++) {
+                var key = _a[_i];
+                var index = Number(key);
+                var actualPort = actualObject.ports[index];
+                var portWrapper = this.getWrapper(actualObject.wrapper, actualPort.id);
+                portWrapper = updatePortEdges(portWrapper, flip, actualPort);
+                portWrapper.relativeMode = 'Point';
+                portWrapper.measure(new Size(portWrapper.width, portWrapper.height));
+                portWrapper.arrange(portWrapper.desiredSize);
+            }
+        }
+    };
+    Diagram.prototype.updateFlipOffset = function (element, diffX, diffY, flip) {
+        if (element.hasChildren()) {
+            for (var _i = 0, _a = element.children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                if (flip === 'Horizontal' || flip === 'Both') {
+                    child.flipOffset.x = child.flipOffset.x + diffX;
+                }
+                if (flip === 'Vertical' || flip === 'Both') {
+                    child.flipOffset.y = child.flipOffset.y + diffY;
+                }
+                if (child instanceof Canvas || child instanceof Container) {
+                    this.updateFlipOffset(child, diffX, diffY, flip);
+                }
+            }
+        }
+    };
     Diagram.prototype.updateUMLActivity = function (changedProp, oldObject, actualObject, diagram) {
         var sizeChanged = changedProp.width !== undefined || changedProp.height !== undefined;
         if (sizeChanged) {
@@ -30575,7 +30861,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (newProp.sourcePoint !== undefined || newProp.targetPoint !== undefined
             || newProp.sourceID !== undefined || newProp.targetID !== undefined ||
             newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined ||
-            newProp.type !== undefined || newProp.segments !== undefined) {
+            newProp.type !== undefined || newProp.segments !== undefined || newProp.flip !== undefined) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 var sourceNode = this.nameTable[actualObject.sourceID];
                 outPort = this.findInOutConnectPorts(sourceNode, false);
@@ -30618,6 +30904,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 actualObject.targetPortWrapper = target ?
                     this.getWrapper(target, newProp.targetPortID) : undefined;
+            }
+            if (newProp.flip !== undefined) {
+                actualObject.flip = newProp.flip;
+                flipConnector(actualObject);
             }
             points = this.getPoints(actualObject);
         } //Add prop change for zindex, alignments and margin
@@ -44536,5 +44826,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

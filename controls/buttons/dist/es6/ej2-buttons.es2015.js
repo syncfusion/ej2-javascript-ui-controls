@@ -528,6 +528,9 @@ let CheckBox = class CheckBox extends Component {
         return this.element.parentElement.parentElement;
     }
     initialize() {
+        if (isNullOrUndefined(this.initialCheckedValue)) {
+            this.initialCheckedValue = this.checked;
+        }
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
@@ -666,6 +669,7 @@ let CheckBox = class CheckBox extends Component {
      */
     preRender() {
         let element = this.element;
+        this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-CHECKBOX', 'checkbox', element, WRAPPER, 'checkbox');
         this.element = element;
@@ -677,7 +681,7 @@ let CheckBox = class CheckBox extends Component {
         }
     }
     /**
-     * Initialize the control rendering
+     * Initialize the control rendering.
      * @private
      */
     render() {
@@ -712,6 +716,10 @@ let CheckBox = class CheckBox extends Component {
     changeHandler(e) {
         e.stopPropagation();
     }
+    formResetHandler() {
+        this.checked = this.initialCheckedValue;
+        attributes(this.element, { 'checked': this.initialCheckedValue.toString() });
+    }
     unWireEvents() {
         let wrapper = this.getWrapper();
         EventHandler.remove(this.element, 'click', this.clickHandler);
@@ -722,6 +730,9 @@ let CheckBox = class CheckBox extends Component {
         let label = wrapper.getElementsByTagName('label')[0];
         EventHandler.remove(label, 'mousedown', this.labelMouseHandler);
         EventHandler.remove(label, 'mouseup', this.labelMouseHandler);
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.remove(this.element, 'change', this.changeHandler);
         }
@@ -736,6 +747,9 @@ let CheckBox = class CheckBox extends Component {
         let label = wrapper.getElementsByTagName('label')[0];
         EventHandler.add(label, 'mousedown', this.labelMouseHandler, this);
         EventHandler.add(label, 'mouseup', this.labelMouseHandler, this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
         if (this.tagName === 'EJS-CHECKBOX') {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
@@ -877,6 +891,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         return this.element.nextElementSibling;
     }
     initialize() {
+        if (isNullOrUndefined(this.initialCheckedValue)) {
+            this.initialCheckedValue = this.checked;
+        }
         this.initWrapper();
         if (this.name) {
             this.element.setAttribute('name', this.name);
@@ -928,6 +945,12 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     }
     mouseDownHandler() {
         this.isKeyPressed = false;
+    }
+    formResetHandler() {
+        this.checked = this.initialCheckedValue;
+        if (this.initialCheckedValue) {
+            attributes(this.element, { 'checked': 'true' });
+        }
     }
     /**
      * Called internally if any of the property value changes.
@@ -995,6 +1018,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      */
     preRender() {
         let element = this.element;
+        this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
         element = wrapperInitialize(this.createElement, 'EJS-RADIOBUTTON', 'radio', element, WRAPPER$1, 'radio');
         this.element = element;
@@ -1047,6 +1071,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
             EventHandler.remove(rippleLabel, 'mouseup', this.labelRippleHandler);
         }
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     }
     wireEvents() {
         let label = this.getLabel();
@@ -1059,6 +1086,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         if (rippleLabel) {
             EventHandler.add(rippleLabel, 'mousedown', this.labelRippleHandler, this);
             EventHandler.add(rippleLabel, 'mouseup', this.labelRippleHandler, this);
+        }
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
     }
 };
@@ -1203,6 +1233,9 @@ let Switch = class Switch extends Component {
         return this.element.parentElement;
     }
     initialize() {
+        if (isNullOrUndefined(this.initialSwitchCheckedValue)) {
+            this.initialSwitchCheckedValue = this.checked;
+        }
         if (this.name) {
             this.element.setAttribute('name', this.name);
         }
@@ -1306,6 +1339,7 @@ let Switch = class Switch extends Component {
      */
     preRender() {
         let element = this.element;
+        this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
         preRender(this, 'EJS-SWITCH', WRAPPER$2, element, this.getModuleName());
     }
@@ -1372,6 +1406,10 @@ let Switch = class Switch extends Component {
             }
         }
     }
+    formResetHandler() {
+        this.checked = this.initialSwitchCheckedValue;
+        attributes(this.element, { 'checked': this.initialSwitchCheckedValue.toString() });
+    }
     /**
      * Toggle the Switch component state into checked/unchecked.
      * @returns void
@@ -1391,6 +1429,9 @@ let Switch = class Switch extends Component {
         EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
     }
     unWireEvents() {
         let wrapper = this.getWrapper();
@@ -1402,6 +1443,9 @@ let Switch = class Switch extends Component {
         EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
+        if (this.formElement) {
+            EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
     }
 };
 __decorate$3([

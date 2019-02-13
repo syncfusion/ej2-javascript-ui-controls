@@ -252,7 +252,12 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseUpEvent(diagramCanvas, center.x + 50 + 25 + 10 + 10, center.y + 50 + 25 + 10 + 10);
                 let element = document.getElementById('diagram_diagram');
                 let value = element.getAttribute("style");
-                expect(value === "position: absolute; left: 20px; top: 0px; transform: scale(0.666667); transform-origin: 0px 0px 0px;").toBe(true);
+                console.log(value);
+                console.log("position: absolute; left: 20px; top: 0px; transform: scale(0.666667); transform-origin: 0px 0px 0px;");
+                expect(((value === 'position: absolute; left: 20px; top: 0px; transform: scale(0.666667); transform-origin: 0px 0px;') ||
+                    (value === "position: absolute; left: 20px; top: 0px; transform: scale(0.666667); transform-origin: 0px 0px 0px;")
+                )).toBe(true);
+
                 done();
             }, 250);
 

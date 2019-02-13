@@ -4773,8 +4773,8 @@ var Legend = /** @__PURE__ @class */ (function () {
     Legend.prototype.renderLegendLabelTooltip = function (e) {
         var x = this.heatMap.mouseX;
         var y = this.heatMap.mouseY;
-        if (e.target.id.indexOf('_Legend_Label') !== -1 && event.target.textContent.indexOf('...') > -1) {
-            var targetId = event.target.id.split(this.heatMap.element.id + '_Legend_Label');
+        if (e.target.id.indexOf('_Legend_Label') !== -1 && e.target.textContent.indexOf('...') > -1) {
+            var targetId = e.target.id.split(this.heatMap.element.id + '_Legend_Label');
             if (targetId.length === 2) {
                 var index = void 0;
                 if (targetId[1].length === 1 || this.heatMap.legendSettings.textStyle.textOverflow === 'Trim') {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### Button
+
+#### Bug Fixes
+
+- Flat button text is not visible in bootstrap theme issue is fixed.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### Chips

@@ -29,6 +29,10 @@ const OPENDURATION: number = 300;
 const CLOSEDURATION: number = 200;
 const OFFSETVALUE: number = 4;
 
+export interface FormatObject {
+    skeleton?: string;
+}
+
 /**
  * Represents the DatePicker component that allows user to select
  * or enter a date value.
@@ -60,10 +64,12 @@ export class DatePicker extends Calendar implements IInput {
     protected l10n: L10n;
     protected preventArgs: PopupObjectArgs;
     private isDateIconClicked: boolean = false;
+    protected isAltKeyPressed: boolean = false;
     private index: number;
     private formElement: HTMLElement;
     private invalidValueString: string = null;
     private checkPreviousValue: Date = null;
+    protected formatString: string;
     protected tabIndex: string;
     protected keyConfigs: { [key: string]: string } = {
         altUpArrow: 'alt+uparrow',
@@ -110,15 +116,18 @@ export class DatePicker extends Calendar implements IInput {
      * will resets to previous value. By default, strictMode is in false.
      * it allows invalid or out-of-range date value with highlighted error class.
      * @default false
+     * > For more details refer to 
+     * [`Strict Mode`](../../datepicker/strict-mode/) documentation.
      */
     @Property(false)
     public strictMode: boolean;
     /**
      * Specifies the format of the value that to be displayed in component. By default, the format is based on the culture.
      * @default null
+     * @aspType string
      */
     @Property(null)
-    public format: string;
+    public format: string | FormatObject;
     /**
      * Specifies the component to be disabled or not.
      * @default true
@@ -146,6 +155,9 @@ export class DatePicker extends Calendar implements IInput {
     @Property(true)
     public showClearButton: boolean;
     /**
+     * > Support for `allowEdit` has been provided from 
+     * [`v16.2.46`](https://ej2.syncfusion.com/angular/documentation/release-notes/16.2.46/#datepicker).
+     * 
      * Specifies whether the input textbox is editable or not. Here the user can select the value from the 
      * popup and cannot edit in the input textbox.
      * @default true
@@ -330,7 +342,7 @@ export class DatePicker extends Calendar implements IInput {
         if (!isNullOrUndefined(this.value)) {
             let dateValue: Date = this.value;
             let dateString: string;
-            let tempFormat: string = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            let tempFormat: string = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
                     dateString = this.globalize.formatDate(this.value, {
@@ -343,9 +355,9 @@ export class DatePicker extends Calendar implements IInput {
                 }
             } else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 } else {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 dateString = this.globalize.formatDate(this.value, formatOptions);
             }
@@ -442,13 +454,19 @@ export class DatePicker extends Calendar implements IInput {
         if (this.inputElement.getAttribute('value')) {
             this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         } else {
-            this.value = null;
+            this.setProperties({ value: null }, true);
             if (this.inputElement) {
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 attributes(this.inputElement, { 'aria-invalid': 'false' });
                 removeClass([this.inputWrapper.container], ERROR);
             }
+            this.restoreValue();
         }
+    }
+    protected restoreValue(): void {
+        this.currentDate = this.value ? this.value : new Date();
+        this.previousDate = this.value;
+        this.previousElementValue = this.inputElement.value;
     }
     private inputChangeHandler(e: MouseEvent): void {
         e.stopPropagation();
@@ -561,10 +579,12 @@ export class DatePicker extends Calendar implements IInput {
     protected inputKeyActionHandle(e: KeyboardEventArgs): void {
         switch (e.action) {
             case 'altUpArrow':
+                this.isAltKeyPressed = false;
                 this.hide(e);
                 this.inputElement.focus();
                 break;
             case 'altDownArrow':
+                this.isAltKeyPressed = true;
                 this.strictModeUpdate();
                 this.updateInput();
                 this.changeTrigger(e);
@@ -595,20 +615,27 @@ export class DatePicker extends Calendar implements IInput {
                 this.errorClass();
                 this.hide(e);
                 break;
+            case 'select':
+                (!this.isAltKeyPressed) ? this.hide(e) : this.defaultAction(e);
+                break;
             default:
-                this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
-                if (this.isCalendar()) {
-                    super.keyActionHandle(e);
-                }
+                this.defaultAction(e);
+        }
+    }
+    protected defaultAction(e: KeyboardEventArgs): void {
+        this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
+        if (this.isCalendar()) {
+            super.keyActionHandle(e);
+
         }
     }
     protected strictModeUpdate(): void {
         let format: string;
         let formatOptions: DateFormatOptions;
         if (this.getModuleName() === 'datetimepicker') {
-            format = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            format = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
         } else {
-            format = isNullOrUndefined(this.format) ? this.format : this.format.replace('dd', 'd');
+            format = isNullOrUndefined(this.formatString) ? this.formatString : this.formatString.replace('dd', 'd');
         }
         if (!isNullOrUndefined(format)) {
             let len: number = format.split('M').length - 1;
@@ -620,12 +647,12 @@ export class DatePicker extends Calendar implements IInput {
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 dateOptions = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 };
             } else {
                 dateOptions = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 };
             }
@@ -811,9 +838,9 @@ export class DatePicker extends Calendar implements IInput {
         let tempFormat: string;
         let formatOptions: DateFormatOptions;
         if (this.getModuleName() === 'datetimepicker') {
-            tempFormat = !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat;
+            tempFormat = !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat;
         } else {
-            tempFormat = this.format;
+            tempFormat = this.formatString;
         }
         if (this.value) {
             if (this.getModuleName() === 'datetimepicker') {
@@ -825,9 +852,9 @@ export class DatePicker extends Calendar implements IInput {
                 date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 } else {
-                    formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
                 }
                 date = this.globalize.formatDate(this.changedArgs.value, formatOptions);
             }
@@ -928,6 +955,7 @@ export class DatePicker extends Calendar implements IInput {
                     duration: CLOSEDURATION,
                 };
                 this.popupObj.hide();
+                this.isAltKeyPressed = false;
                 this.keyboardModule.destroy();
                 removeClass(this.inputWrapper.buttons, ACTIVE);
             }
@@ -1093,28 +1121,51 @@ export class DatePicker extends Calendar implements IInput {
             target.removeAttribute(attribute[i]);
         }
     }
+    protected checkFormat(): void {
+        if (this.format) {
+            if (typeof this.format === 'string') {
+                this.formatString = this.format;
+            } else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
+                let skeletonString: string = this.format.skeleton;
+                if (this.getModuleName() === 'datetimepicker') {
+                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'dateTime' });
+                } else {
+                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
+                }
+            } else {
+                if (this.getModuleName() === 'datetimepicker') {
+                    this.formatString = this.dateTimeFormat;
+                } else {
+                    this.formatString = null;
+                }
+            }
+        } else {
+            this.formatString = null;
+        }
+    }
     private checkHtmlAttributes(): void {
         this.globalize = new Internationalization(this.locale);
+        this.checkFormat();
         let attributes: string[] = ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
         let options: object;
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 options = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 };
             } else {
                 options = {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 };
             }
 
         } else {
             if (this.calendarMode === 'Gregorian') {
-                options = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             } else {
-                options = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
         }
         for (let prop of attributes) {
@@ -1202,25 +1253,27 @@ export class DatePicker extends Calendar implements IInput {
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
                 globalize = this.globalize.formatDate(valueCopy, {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd'
                 });
             } else {
                 globalize = this.globalize.formatDate(valueCopy, {
-                    format: !isNullOrUndefined(this.format) ? this.format : this.dateTimeFormat,
+                    format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
                     type: 'dateTime', skeleton: 'yMd', calendar: 'islamic'
                 });
             }
             inputVal = globalize;
         } else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
             } else {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
             inputVal = this.globalize.formatDate(valueCopy, formatOptions);
         }
-        Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+        if (!this.popupObj) {
+            Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
     }
     private setAriaAttributes(): void {
         if (this.isCalendar()) {
@@ -1254,14 +1307,19 @@ export class DatePicker extends Calendar implements IInput {
      * @private
      */
     public onPropertyChanged(newProp: DatePickerModel, oldProp: DatePickerModel): void {
-        let options: object = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+        let options: DateFormatOptions;
+        if (this.calendarMode === 'Gregorian') {
+            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+        } else {
+            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
                     if (typeof newProp.value === 'string' && !this.invalidValueString) {
-                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
+                        newProp.value = this.checkDateValue(this.globalize.parseDate(newProp.value, options));
                         this.setProperties({ value: newProp.value }, true);
                     }
                     this.previousElementValue = this.inputElement.value;
@@ -1275,6 +1333,7 @@ export class DatePicker extends Calendar implements IInput {
                     }
                     break;
                 case 'format':
+                    this.checkFormat();
                     this.updateInput();
                     break;
                 case 'allowEdit':

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### HeatMap
+
+#### Bug Fixes
+
+- The console window exception which is thrown for mouse hovering action on legend labels in Firefox browser has been handled.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### HeatMap

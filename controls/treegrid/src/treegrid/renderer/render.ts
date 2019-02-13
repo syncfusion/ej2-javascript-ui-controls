@@ -32,8 +32,8 @@ export class Render {
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent))))  {
             index = data.parentIndex;
-            let collapsed: boolean = !(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
-                             parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll ||
+            let collapsed: boolean = (this.parent.initialRender && (!(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
+                             parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll)) ||
                             !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
             if (collapsed) {
                 (<HTMLTableRowElement>args.row).style.display = 'none';
@@ -95,7 +95,7 @@ export class Render {
                         (isNullOrUndefined(data[this.parent.expandStateMapping]) || data[this.parent.expandStateMapping]) &&
                         !this.parent.enableCollapseAll;
                 } else {
-                    expand = data.expanded;
+                   expand =  !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
                 }
                 let collapsed: boolean = true;
                 if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])

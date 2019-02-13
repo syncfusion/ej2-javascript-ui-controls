@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### DropDownList
+
+- ItemData parameter supports `object` collection in select and change event.
+
+- Filtering is not working when rendered control by using select element issue has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- Lengthy placeholder breaks UI issue has been resolved.
+
+- Values are not cleared in mobile devices issue has been resolved.
+
+- Values are not selected based on selected attribute in select element rendering issue has been resolved.
+
 ## 16.4.52 (2019-02-05)
 
 ### ComboBox

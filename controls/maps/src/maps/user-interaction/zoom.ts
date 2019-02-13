@@ -289,7 +289,16 @@ export class Zoom {
                         ) {
                             if (this.maps.isTileMap && (currentEle.id.indexOf('_line_Group') > -1)) {
                                 currentEle.remove();
-                                layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index));
+                                if (layerElement.children.length > 0 && layerElement.children[0]) {
+                                    layerElement.insertBefore(
+                                        this.maps.navigationLineModule.renderNavigation(
+                                            this.currentLayer, this.maps.tileZoomLevel, index
+                                        ),
+                                        layerElement.children[0]
+                                    );
+                                } else {
+                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index));
+                                }
                             } else {
                                 changeBorderWidth(currentEle, index, scale, this.maps);
                                 this.animateTransform(currentEle, animate, x, y, scale);

@@ -128,7 +128,7 @@ let DropDownButton = class DropDownButton extends Component {
         }
         this.dropDown.hide();
         attributes(this.element, {
-            ['role']: 'menu', ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
+            ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
             ['aria-owns']: this.getPopUpElement().id, ['type']: 'button'
         });
         if (this.cssClass) {
@@ -145,7 +145,7 @@ let DropDownButton = class DropDownButton extends Component {
         let li;
         let eventArgs;
         let ul = this.createElement('ul', {
-            attrs: { 'tabindex': '0' }
+            attrs: { 'role': 'menu', 'tabindex': '0' }
         });
         for (let i = 0; i < items.length; i++) {
             item = items[i];
@@ -238,8 +238,8 @@ let DropDownButton = class DropDownButton extends Component {
                 removeClass([this.element], classList$$1);
             }
             removeClass(this.activeElem, ['e-active']);
-            attrList = this.element.getAttribute('class') ? ['role', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type']
-                : ['role', 'aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
+            attrList = this.element.getAttribute('class') ? ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type']
+                : ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
             attrList.forEach((key) => {
                 this.element.removeAttribute(key);
             });
@@ -689,7 +689,7 @@ let SplitButton = class SplitButton extends DropDownButton {
     }
     setAria() {
         attributes(this.element, {
-            'role': 'listbox', 'aria-expanded': 'false', 'aria-haspopup': 'true',
+            'aria-expanded': 'false', 'aria-haspopup': 'true',
             'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': this.secondaryBtnObj.dropDown.element.id
         });
     }
@@ -722,7 +722,7 @@ let SplitButton = class SplitButton extends DropDownButton {
             }
             else {
                 removeClass([this.element], classList$$1);
-                ['role', 'aria-label', 'aria-haspopup', 'aria-expanded',
+                ['aria-label', 'aria-haspopup', 'aria-expanded',
                     'aria-owns', 'type'].forEach((key) => {
                     this.element.removeAttribute(key);
                 });

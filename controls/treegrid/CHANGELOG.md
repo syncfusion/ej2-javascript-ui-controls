@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.53 (2019-02-13)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- Child records of third level or its successor displays properly based on their hierarchy relation in self reference data binding.
+
 ## 16.4.52 (2019-02-05)
 
 ### TreeGrid

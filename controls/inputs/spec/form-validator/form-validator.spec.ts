@@ -12,6 +12,8 @@ import { FormValidator, ErrorOption } from '../../src/form-validator/form-valida
 let inputElement1: string = "<div>"
     + createElement("input", { attrs: { id: "required", type: "text", name: "input1" } }).outerHTML + "</div>";
 let inputElement2: string = "<div>" + createElement("input", { attrs: { id: "mail", type: "text", name: "input2" } }).outerHTML + "</div>";
+let inputElement3: string = "<div>" + createElement("input", { attrs: { id: "required", type: "text", name: "input3", required: "true" } }).outerHTML + "</div>";
+let inputElement4: string = "<div>" + createElement("input", { attrs: { id: "hidden", type: "text", name: "validateHidden", required: "true", validateHidden: "true" } }).outerHTML + "</div>";
 let check: string = "<div><input type=\"checkbox\" id=\"check\" name=\"input3\" /></div>";
 let radio: string = "<div><input type=\"radio\" id=\"radio\" name=\"input4\" /></div>";
 // tslint:disable-next-line:max-line-length
@@ -57,6 +59,8 @@ let mvcErrorContainer: string = "<div><input type=\"text\" id=\"input\" name=\"m
 // form elements initialization
 let formElement: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId', innerHTML: inputElement1 });
 let formElement1: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId1', innerHTML: inputElement1 });
+let formElement2: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId2', innerHTML: inputElement3 });
+let formElement3: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId3', innerHTML: inputElement4 });
 let inputTypeElement: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId1', innerHTML: inputElement1 + inputElement2 + check + radio + intSelect + submit });
 let html5Elements: HTMLFormElement = <HTMLFormElement>createElement('form', {
     id: 'formId2', innerHTML: messageElement + mailElement + rangeLengthElement + minElement + maxElement + minLengthElement + maxLengthElement + rangeElement + urlElement + dateElement + html5dateElement + numberElement + html5numberElement + digitsElement + regexElement + dateIsoElement + dataValidation + errorContainer + mvcErrorContainer
@@ -68,6 +72,8 @@ let annotationElements: HTMLFormElement = <HTMLFormElement>createElement('form',
 let formObj: FormValidator;
 let formObj1: FormValidator;
 let formObj2: FormValidator;
+let formObj3: FormValidator;
+let formObj4: FormValidator;
 
 function setInputValue(formObj: FormValidator, name: string, value: string): void {
     (<HTMLInputElement>formObj.element.querySelector('[name=' + name + ']')).value = value;
@@ -657,6 +663,8 @@ describe('FormValidator # ', () => {
     describe('required validation # ', () => {
         beforeAll(() => {
             formObj = new FormValidator(formElement, { rules: { 'input1': { required: true } } });
+            formObj3 = new FormValidator(formElement2, { rules: { 'input3': { required: [true, 'Field mandatory'] } } });
+            formObj4 = new FormValidator(formElement3, { rules: { 'validateHidden': { required: [true, 'Reject the validateHidden rule'] } } });
         });
 
         it('initial validation without value # ', () => {
@@ -666,6 +674,18 @@ describe('FormValidator # ', () => {
         it('testing error element # ', () => {
             let errorElement: HTMLElement = <HTMLElement>formObj.getInputElement('input1').nextSibling;
             expect(errorElement.classList.contains('e-error')).toEqual(true);
+        });
+
+        it('testing custom error message # ', () => {
+            formObj3.validate('input3');
+            let errorMessage: HTMLElement = <HTMLElement>formObj3.getInputElement('input3').nextSibling;
+            expect(errorMessage.innerText).toEqual('Field mandatory');
+        });
+
+        it('testing custom error message with validate hidden rule # ', () => {
+            formObj4.validate('validateHidden');
+            let errorMessage: HTMLElement = <HTMLElement>formObj4.getInputElement('validateHidden').nextSibling;
+            expect(errorMessage.innerText).toEqual('Reject the validateHidden rule');
         });
 
         it('required success # ', () => {
@@ -1491,7 +1511,7 @@ describe('FormValidator # ', () => {
                 setInputValue(formObj, 'mailElement', '@1.com');
                 expect(formObj.validate('mailElement')).toEqual(false);
             });
-            
+
             it('testing for valid email #8 ', () => {
                 setInputValue(formObj, 'mailElement', '1@.com');
                 expect(formObj.validate('mailElement')).toEqual(false);

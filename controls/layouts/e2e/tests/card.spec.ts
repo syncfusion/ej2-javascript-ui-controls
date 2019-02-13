@@ -317,6 +317,15 @@ describe('Default-Card with Image-title-Pos UI Testing', () => {
     }, 1200000);
 });
 
+describe('Material dark theme is not exported properly in card component', () => {
+    it('Card header sample with material-dark theme UI Testing', () => {
+        browser.load('/demo/card/card_header_material_dark.html');
+        load_delay(2000, 'presence', element(By.css('.e-card')));
+        Card('card_header_material_dark', 'card');
+        Card('card_header_card_1_material_dark', 'card_1');
+        Card('card_header_card_2_material_dark', 'card_2');
+    }, 1200000);
+});
 
 function load_delay(waitTime: number, type: string, element?: WebElement): void {
     switch (type) {

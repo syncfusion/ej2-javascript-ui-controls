@@ -157,7 +157,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * It is used to set the height of Tooltip component which accepts both string and number values.
      * When Tooltip content gets overflow due to height value then the scroll mode will be enabled.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/setting-dimension.html?lang=typescript)
+     * Refer the documentation [here](../../tooltip/setting-dimension/)
      *  to know more about this property with demo.
      * @default 'auto'
      */
@@ -165,7 +165,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public height: string | number;
     /**
      * It is used to display the content of Tooltip which can be both string and HTML Elements.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript)
+     * Refer the documentation [here](../../tooltip/content/)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
@@ -217,7 +217,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * When it sets to auto, the tip pointer auto adjusts within the space of target's length
      *  and does not point outside.
      * Refer the documentation
-     *  [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#tip-pointer-positioning)
+     *  [here](../../tooltip/position/#tip-pointer-positioning)
      *  to know more about this property with demo.
      * @default 'Auto'
      */
@@ -235,7 +235,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public opensOn: string;
     /**
      * It allows the Tooltip to follow the mouse pointer movement over the specified target element.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#mouse-trailing)
+     * Refer the documentation [here](../../tooltip/position/#mouse-trailing)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
@@ -245,7 +245,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public mouseTrail: boolean;
     /**
      * It is used to display the Tooltip in an open state until closed by manually.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/open-mode.html?lang=typescript#sticky-mode)
+     * Refer the documentation [here](../../tooltip/open-mode/#sticky-mode)
      *  to know more about this property with demo.
      * @default false
      */
@@ -253,7 +253,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public isSticky: boolean;
     /**
      * We can set the same or different animation option to Tooltip while it is in open or close state.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/animation.html?lang=typescript)
+     * Refer the documentation [here](../../tooltip/animation/)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/animation-api/index.ts" %}{% endcodeBlock %}
@@ -292,7 +292,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      * This event is mainly used for the purpose of customizing the Tooltip before it shows up on the screen.
      * For example, to load the AJAX content or to set new animation effects on the Tooltip, this event can be opted.
      * Refer the documentation
-     *  [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript#dynamic-content-via-ajax)
+     *  [here](../../tooltip/content/#dynamic-content-via-ajax)
      *  to know more about this property with demo.
      * @event
      */
@@ -739,9 +739,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         };
         this.trigger('beforeCollision', this.tooltipEventArgs);
         if (elePos.position !== newpos) {
-            let pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, elePos.vertical);
+            let pos: OffsetPosition = calculatePosition(target, elePos.horizontal, elePos.vertical);
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
             let offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
+            offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+            ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
+            offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+            ('RightLeft'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetX) : 0;
             elePos.position = newpos;
             elePos.left = pos.left + offsetPos.left;
             elePos.top = pos.top + offsetPos.top;
@@ -1030,7 +1034,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'width':
-                   if (this.tooltipEle && targetElement) {
+                    if (this.tooltipEle && targetElement) {
                         this.tooltipEle.style.width = formatUnit(newProp.width);
                         this.reposition(targetElement);
                     }

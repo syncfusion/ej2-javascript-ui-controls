@@ -312,8 +312,8 @@ class PivotEngine {
                 if (!isNullOrUndefined(mkey)) {
                     if (!isDataAvail) {
                         let fKey = mkey;
-                        let formattedValue = (this.pageSettings &&
-                            !(this.formatFields[key] && this.formatFields[key].type === 'date')) ? ({
+                        let formattedValue = (this.pageSettings && !(this.formatFields[key] &&
+                            (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
                             formattedText: isNullOrUndefined(mkey) ? mkey : mkey.toString(),
                             actualText: mkey
                         }) : this.getFormattedValue(mkey, key);
@@ -326,7 +326,8 @@ class PivotEngine {
                                 index: [dl], ordinal: membersCnt,
                                 isDrilled: this.isExpandAll ? true : false
                             };
-                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: formattedValue.actualText });
+                            /* tslint:disable-next-line:max-line-length */
+                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
                             //sort.push(mkey);
                         }
                         else {
@@ -693,7 +694,8 @@ class PivotEngine {
             field.filter = filter;
             field.filterType = type;
             field.isExcelFilter = isLabelFilter;
-            let members = (this.formatFields[name] && this.formatFields[name].type === 'date') ?
+            let members = (this.formatFields[name] &&
+                (['date', 'dateTime', 'time'].indexOf(this.formatFields[name].type) > -1)) ?
                 field.formattedMembers : field.members;
             let allowFil = isInclude;
             let final = {};
@@ -1342,6 +1344,8 @@ class PivotEngine {
             let childrens = this.fieldList[fieldName];
             let index = {};
             let isNoData = false;
+            let isDateType = (this.formatFields[fieldName] &&
+                (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1));
             let showNoDataItems = (position.length < 1 && keyInd > 0) || field.showNoDataItems;
             let savedMembers = {};
             if (showNoDataItems) {
@@ -1376,10 +1380,13 @@ class PivotEngine {
                     continue;
                 }
                 member.isDrilled = member.hasChild ? childrens.members[headerValue].isDrilled : false;
-                let formattedValue = (this.formatFields[fieldName] && this.formatFields[fieldName].type === 'date') ?
+                let formattedValue = isDateType ?
                     this.getFormattedValue(headerValue, fieldName) : { formattedText: headerValue.toString(), actualText: headerValue };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
+                if (isDateType) {
+                    member.dateText = formattedValue.dateText;
+                }
                 let availData = showNoDataItems ? (this.filterPosObj[position[pos]] !== undefined &&
                     !isNoData ? true : false) : true;
                 //member.name = members[memInd];
@@ -1461,10 +1468,17 @@ class PivotEngine {
             }
             /* tslint:disable:typedef */
             if (this.enableSort) {
-                //return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
-                return childrens.sort === 'Ascending' ?
-                    (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                    (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)));
+                // return new DataManager(hierarchy as JSON[]).executeLocal(new Query().sortBy('actualText', childrens.sort.toLowerCase()));
+                if (isDateType) {
+                    return childrens.sort === 'Ascending' ?
+                        (hierarchy.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
+                        (hierarchy.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0)));
+                }
+                else {
+                    return childrens.sort === 'Ascending' ?
+                        (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                        (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)));
+                }
             }
             else {
                 return hierarchy;
@@ -1495,7 +1509,8 @@ class PivotEngine {
                 let member = {};
                 let memInd = this.indexMatrix[position[pos]][childrens.index];
                 let slicedHeader = slicedHeaders[orderedIndex[memInd]];
-                let formattedValue = (this.formatFields[field] && this.formatFields[field].type === 'date') ?
+                let formattedValue = (this.formatFields[field] &&
+                    (['date', 'dateTime', 'time'].indexOf(this.formatFields[field].type) > -1)) ?
                     this.getFormattedValue(data[position[pos]][field], field) :
                     { formattedText: data[position[pos]][field].toString(), actualText: data[position[pos]][field].toString() };
                 if (!(slicedHeader && slicedHeader.formattedText === formattedValue.formattedText)) {
@@ -2644,10 +2659,13 @@ class PivotEngine {
     getFormattedValue(value, fieldName) {
         let formattedValue = {
             formattedText: value !== undefined ? value === null ? 'null' : value.toString() : undefined,
-            actualText: value !== undefined ? value === null ? 'null' : value : undefined
+            actualText: value !== undefined ? value === null ? 'null' : value : undefined,
+            dateText: value !== undefined ? value === null ? 'null' : value : undefined
         };
         if (this.formatFields[fieldName] && value) {
-            let formatSetting = extend({}, this.formatFields[fieldName], null, true);
+            let formatField = (this.formatFields[fieldName].properties ?
+                this.formatFields[fieldName].properties : this.formatFields[fieldName]);
+            let formatSetting = extend({}, formatField, null, true);
             delete formatSetting.name;
             if (!formatSetting.minimumSignificantDigits && formatSetting.minimumSignificantDigits < 1) {
                 delete formatSetting.minimumSignificantDigits;
@@ -2662,9 +2680,9 @@ class PivotEngine {
                 formattedValue.formattedText = this.globalize.formatNumber(value, formatSetting);
             }
             formattedValue.actualText = value;
-            if (formatSetting.type && this.formatFields[fieldName].type === 'date') {
+            if (formatSetting.type && ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
                 formatSetting.format = 'yyyy/MM/dd/HH/mm/ss';
-                formattedValue.actualText = this.globalize.formatDate(new Date(value), formatSetting);
+                formattedValue.dateText = this.globalize.formatDate(new Date(value), formatSetting);
             }
         }
         return formattedValue;
@@ -7085,7 +7103,7 @@ class EventBase {
         this.parent.currentTreeItemsPos = {};
         this.parent.savedTreeFilterPos = {};
         this.parent.isDateField = this.parent.engineModule.formatFields[fieldName] &&
-            this.parent.engineModule.formatFields[fieldName].type === 'date';
+            ((['date', 'dateTime', 'time']).indexOf(this.parent.engineModule.formatFields[fieldName].type) > -1);
         let list = [];
         let memberCount = 1;
         let filterObj = {};

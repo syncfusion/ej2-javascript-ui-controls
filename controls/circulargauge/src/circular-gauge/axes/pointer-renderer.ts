@@ -3,7 +3,7 @@ import { Axis, Pointer, VisibleRangeModel } from './axis';
 import { stringToNumber, GaugeLocation, Size, calculateShapes, appendPath } from '../utils/helper';
 import { getLocationFromAngle, PathOption } from '../utils/helper';
 import { linear, getAngleFromValue, getCompleteArc, getRoundedPathArc } from '../utils/helper';
-import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { animationComplete } from '../model/constants';
 
 /**
@@ -175,6 +175,9 @@ export class PointerRenderer {
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
         roundEndAngle = ((((pointer.currentRadius) * ((endAngle * Math.PI) / 180) -
             radius) / (pointer.currentRadius)) * 180) / Math.PI;
+        if (isNullOrUndefined(pointer.currentRadius)) {
+            this.calculatePointerRadius(axis, pointer);
+        }
         pointer.pathElement.map((element: Element) => {
             if (pointer.type === 'RangeBar') {
                 if (pointer.roundedCornerRadius && value) {

@@ -827,7 +827,8 @@ export class PdfExport {
                 }
                 let column: Column = gridCell.column;
                 let field: string = column.field;
-                let value: string = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
+                let cellValue: string = !isNullOrUndefined(field) ? getValue(field, row.data) : '';
+                let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
                 let foreignKeyData: Object;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     foreignKeyData = helper.getFData(value, column);

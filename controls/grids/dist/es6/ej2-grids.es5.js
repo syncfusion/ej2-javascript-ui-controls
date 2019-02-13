@@ -2820,7 +2820,7 @@ var Data = /** @__PURE__ @class */ (function () {
                 promise = this.dataManager.update(key, args.data, query.fromTable, query, args.previousData);
                 break;
         }
-        args[pr] = promise;
+        args[pr] = args[pr] ? args[pr] : promise;
         this.parent.notify(crudAction, args);
     };
     /** @hidden */
@@ -2905,9 +2905,12 @@ var Data = /** @__PURE__ @class */ (function () {
             if (args.requestType === 'save' || args.requestType === 'delete') {
                 var editArgs_1 = args;
                 editArgs_1.key = key;
+                var promise = 'promise';
+                editArgs_1[promise] = deff.promise;
                 editArgs_1.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;
+                dataArgs.cancelEdit = deff.reject;
                 this.parent.trigger(dataSourceChanged, editArgs_1);
                 deff.promise.then(function (e) {
                     _this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
@@ -2915,7 +2918,8 @@ var Data = /** @__PURE__ @class */ (function () {
                         _this.parent.notify(recordAdded, editArgs_1);
                     }
                     _this.parent.trigger(dataStateChange, state);
-                });
+                })
+                    .catch(function () { return void 0; });
             }
             else {
                 this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
@@ -3843,6 +3847,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
      */
     ContentRender.prototype.createContentTable = function (id) {
         var innerDiv = this.getPanel().firstChild;
+        if (this.getTable()) {
+            remove(this.getTable());
+        }
         var table = this.parent.createElement('table', {
             className: 'e-table', attrs: {
                 cellspacing: '0.25px', role: 'grid',
@@ -4417,6 +4424,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
      */
     HeaderRender.prototype.createTable = function () {
         var gObj = this.parent;
+        if (this.getTable() && (!gObj.getFrozenColumns())) {
+            remove(this.getTable());
+        }
         var columns = gObj.getColumns();
         var table = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
         var innerDiv = this.getPanel().firstChild;
@@ -6239,11 +6249,15 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         if (contentCol) {
             contentCol.style.width = fWidth;
         }
-        var edit = content.querySelector('.e-table.e-inline-edit');
-        if (edit) {
-            if (edit.querySelector('colgroup').children[index]) {
-                edit.querySelector('colgroup').children[index].style.width = fWidth;
+        var edit = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
+        var editTableCol = [];
+        for (var i = 0; i < edit.length; i++) {
+            for (var j = 0; j < edit[i].querySelector('colgroup').children.length; j++) {
+                editTableCol.push(edit[i].querySelector('colgroup').children[j]);
             }
+        }
+        if (edit.length) {
+            editTableCol[index].style.width = fWidth;
         }
     };
     ColumnWidthService.prototype.getSiblingsHeight = function (element) {
@@ -6292,23 +6306,37 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         }
         return tWidth;
     };
+    ColumnWidthService.prototype.calcMovableOrFreezeColWidth = function (tableType) {
+        var columns = this.parent.getColumns().slice();
+        if (tableType === 'movable') {
+            columns.splice(0, this.parent.getFrozenColumns());
+        }
+        else if (tableType === 'freeze') {
+            columns.splice(this.parent.getFrozenColumns(), columns.length);
+        }
+        return formatUnit(this.getTableWidth(columns));
+    };
     ColumnWidthService.prototype.setWidthToFrozenTable = function () {
-        var columns = this.parent.getColumns();
-        columns.splice(this.parent.getFrozenColumns(), columns.length);
-        var freezeWidth = formatUnit(this.getTableWidth(columns));
+        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
         this.parent.getHeaderTable().style.width = freezeWidth;
         this.parent.getContentTable().style.width = freezeWidth;
     };
     ColumnWidthService.prototype.setWidthToMovableTable = function () {
-        var columns = this.parent.getColumns();
-        columns.splice(0, this.parent.getFrozenColumns());
-        var movableWidth = formatUnit(this.getTableWidth(columns));
+        var movableWidth = this.calcMovableOrFreezeColWidth('movable');
         if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
             this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild.style.width
                 = movableWidth;
         }
         this.parent.getContent().querySelector('.e-movablecontent').firstElementChild.style.width =
             movableWidth;
+    };
+    ColumnWidthService.prototype.setWidthToFrozenEditTable = function () {
+        var freezeWidth = this.calcMovableOrFreezeColWidth('freeze');
+        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[0].style.width = freezeWidth;
+    };
+    ColumnWidthService.prototype.setWidthToMovableEditTable = function () {
+        var movableWidth = this.calcMovableOrFreezeColWidth('movable');
+        this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1].style.width = movableWidth;
     };
     ColumnWidthService.prototype.setWidthToTable = function () {
         var tWidth = formatUnit(this.getTableWidth(this.parent.getColumns()));
@@ -6324,7 +6352,11 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
             this.parent.getContentTable().style.width = tWidth;
         }
         var edit = this.parent.element.querySelector('.e-table.e-inline-edit');
-        if (edit) {
+        if (edit && this.parent.getFrozenColumns()) {
+            this.setWidthToFrozenEditTable();
+            this.setWidthToMovableEditTable();
+        }
+        else if (edit) {
             edit.style.width = tWidth;
         }
     };
@@ -7258,6 +7290,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.isCancelDeSelect = false;
         this.isPreventCellSelect = false;
         this.disableUI = false;
+        this.isPersisted = false;
         this.parent = parent;
         this.selectionSettings = selectionSettings;
         this.factory = locator.getService('rendererFactory');
@@ -7665,6 +7698,10 @@ var Selection = /** @__PURE__ @class */ (function () {
             var span = this.parent.element.querySelector('.e-gridpopup').querySelector('span');
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
+            }
+            if (this.parent.isPersistSelection) {
+                this.persistSelectedData = [];
+                this.selectedRowState = {};
             }
             this.clearRowSelection();
             this.clearCellSelection();
@@ -8706,7 +8743,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             !isNullOrUndefined(e.properties.cellSelectionMode)) {
             this.clearSelection();
         }
+        this.isPersisted = true;
         this.checkBoxSelectionChanged();
+        this.isPersisted = false;
         this.initPerisistSelection();
         var checkboxColumn = this.parent.getColumns().filter(function (col) { return col.type === 'checkbox'; });
         if (checkboxColumn.length) {
@@ -8742,7 +8781,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.initPerisistSelection();
             }
         }
-        if (!gobj.isCheckBoxSelection) {
+        if (!gobj.isCheckBoxSelection && !this.isPersisted) {
             this.chkField = null;
             this.initPerisistSelection();
         }
@@ -8770,6 +8809,9 @@ var Selection = /** @__PURE__ @class */ (function () {
                 !gobj.isPersistSelection)) {
             var data = this.parent.getDataModule();
             var query = new Query().where(this.chkField, 'equal', true);
+            if (!query.params) {
+                query.params = this.parent.query.params;
+            }
             var dataManager = data.getData({}, query);
             var proxy_1 = this;
             this.parent.showSpinner();
@@ -11026,8 +11068,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             Copy: 'Copy',
             Group: 'Group by this column',
             Ungroup: 'Ungroup by this column',
-            autoFitAll: 'Auto Fit all columns',
-            autoFit: 'Auto Fit this column',
+            autoFitAll: 'Autofit all columns',
+            autoFit: 'Autofit this column',
             Export: 'Export',
             FirstPage: 'First Page',
             LastPage: 'Last Page',
@@ -11781,8 +11823,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 var rows = (isMovable ?
                     this.contentModule.getMovableRows() : this.contentModule.getRows());
                 var rowsObject = rows.filter(function (r) { return r.uid === row_1.getAttribute('data-uid'); });
-                var rowData = rowsObject[0].data;
-                var column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex].column;
+                var rowData = {};
+                var column = void 0;
+                if (Object.keys(rowsObject).length) {
+                    rowData = rowsObject[0].data;
+                    column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex].column;
+                }
                 args = { cell: cell, cellIndex: cellIndex, row: row_1, rowIndex: rowIndex, rowData: rowData, column: column, target: target };
             }
         }
@@ -12584,6 +12630,30 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.reorderColumns = function (fromFName, toFName) {
         if (this.reorderModule) {
             this.reorderModule.reorderColumns(fromFName, toFName);
+        }
+    };
+    /**
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByIndex multiple times,
+     * then you won't get the same results every time.
+     * @param  {number} fromIndex - Defines the origin field index.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    Grid.prototype.reorderColumnByIndex = function (fromIndex, toIndex) {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByIndex(fromIndex, toIndex);
+        }
+    };
+    /**
+     * Changes the Grid column positions by field index. If you invoke reorderColumnByTargetIndex multiple times,
+     * then you will get the same results every time.
+     * @param  {string} fieldName - Defines the field name.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    Grid.prototype.reorderColumnByTargetIndex = function (fieldName, toIndex) {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByTargetIndex(fieldName, toIndex);
         }
     };
     /**
@@ -18391,6 +18461,20 @@ var Reorder = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    Reorder.prototype.moveTargetColumn = function (column, toIndex) {
+        if (toIndex > -1) {
+            this.moveColumns(toIndex, column, true);
+        }
+    };
+    Reorder.prototype.reorderSingleColumnByTarget = function (fieldName, toIndex) {
+        var column = this.parent.getColumnByField(fieldName);
+        this.moveTargetColumn(column, toIndex);
+    };
+    Reorder.prototype.reorderMultipleColumnByTarget = function (fieldName, toIndex) {
+        for (var i = 0; i < fieldName.length; i++) {
+            this.reorderSingleColumnByTarget(fieldName[i], toIndex);
+        }
+    };
     /**
      * Changes the position of the Grid columns by field names.
      * @param  {string | string[]} fromFName - Defines the origin field names.
@@ -18399,6 +18483,26 @@ var Reorder = /** @__PURE__ @class */ (function () {
      */
     Reorder.prototype.reorderColumns = function (fromFName, toFName) {
         typeof fromFName === 'string' ? this.reorderSingleColumn(fromFName, toFName) : this.reorderMultipleColumns(fromFName, toFName);
+    };
+    /**
+     * Changes the position of the Grid columns by field index.
+     * @param  {number} fromIndex - Defines the origin field index.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    Reorder.prototype.reorderColumnByIndex = function (fromIndex, toIndex) {
+        var column = this.parent.getColumnByIndex(fromIndex);
+        this.moveTargetColumn(column, toIndex);
+    };
+    /**
+     * Changes the position of the Grid columns by field index.
+     * @param  {string | string[]} fieldName - Defines the field name.
+     * @param  {number} toIndex - Defines the destination field index.
+     * @return {void}
+     */
+    Reorder.prototype.reorderColumnByTargetIndex = function (fieldName, toIndex) {
+        typeof fieldName === 'string' ? this.reorderSingleColumnByTarget(fieldName, toIndex) :
+            this.reorderMultipleColumnByTarget(fieldName, toIndex);
     };
     Reorder.prototype.enableAfterRender = function (e) {
         if (e.module === this.getModuleName() && e.enable) {
@@ -18655,7 +18759,8 @@ var RowDD = /** @__PURE__ @class */ (function () {
             _this.processArgs(target);
             gObj.trigger(rowDrag, {
                 rows: _this.rows,
-                target: target, draggableType: 'rows', data: _this.rowData
+                target: target, draggableType: 'rows', data: _this.rowData,
+                originalEvent: e
             });
             _this.stopTimer();
             gObj.element.classList.add('e-rowdrag');
@@ -19052,7 +19157,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
             || gObj.getSelectedRecords().length === 0) {
             this.rows = [this.startedRow];
-            this.rowData = this.parent.getRowInfo(parentsUntil(target, 'e-row').querySelector('.e-rowcell')).rowData;
+            this.rowData = this.parent.getRowInfo((this.startedRow).querySelector('.e-rowcell')).rowData;
         }
         else {
             this.rows = gObj.getSelectedRows();
@@ -23049,8 +23154,8 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
         var changes = this.getBatchChanges();
         if (this.parent.selectionSettings.type === 'Multiple' && changes[deletedRecords].length) {
-            gObj.clearSelection();
-            changes[deletedRecords] = changes[deletedRecords].concat(this.parent.getSelectedRecords());
+            changes[deletedRecords] = changes[deletedRecords].concat(this.removeSelectedData);
+            this.removeSelectedData = [];
         }
         var original = {
             changedRecords: this.parent.getRowsObject()
@@ -23132,8 +23237,12 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             this.parent.getRowsObject().push(row);
     };
     BatchEdit.prototype.bulkDelete = function (fieldname, data) {
+        this.removeSelectedData = [];
         var gObj = this.parent;
-        var index = data ? this.getIndexFromData(data) : gObj.selectedRowIndex;
+        if (data) {
+            gObj.selectRow(this.getIndexFromData(data));
+        }
+        var index = gObj.selectedRowIndex;
         var selectedRows = gObj.getSelectedRows();
         var args = {
             primaryKey: this.parent.getPrimaryKeyFieldNames(),
@@ -23191,6 +23300,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             }
         }
         this.refreshRowIdx();
+        this.removeSelectedData = gObj.getSelectedRecords();
         gObj.clearSelection();
         gObj.selectRow(index);
         gObj.trigger(batchDelete, args);
@@ -23545,7 +23655,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
         var tr = parentsUntil(this.form, 'e-row');
         var column = this.cellDetails.column;
-        var editedData = gObj.editModule.getCurrentEditedData(this.form, {});
+        var obj = {};
+        obj[column.field] = this.cellDetails.rowData[column.field];
+        var editedData = gObj.editModule.getCurrentEditedData(this.form, obj);
         var cloneEditedData = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
         var value = getObject(column.field, cloneEditedData);
@@ -25802,7 +25914,8 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 }
                 var column = gCell.column;
                 var field = column.field;
-                var value = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
+                var cellValue = !isNullOrUndefined(field) ? getValue(field, row.data) : '';
+                var value = !isNullOrUndefined(cellValue) ? cellValue : '';
                 var fkData = void 0;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     fkData = helper.getFData(value, column);
@@ -27051,7 +27164,8 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 }
                 var column = gridCell.column;
                 var field = column.field;
-                var value = (!isNullOrUndefined(field) && getValue(field, row.data)) || '';
+                var cellValue = !isNullOrUndefined(field) ? getValue(field, row.data) : '';
+                var value = !isNullOrUndefined(cellValue) ? cellValue : '';
                 var foreignKeyData$$1 = void 0;
                 if (column.isForeignColumn && column.isForeignColumn()) {
                     foreignKeyData$$1 = helper.getFData(value, column);

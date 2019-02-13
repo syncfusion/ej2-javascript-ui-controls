@@ -134,7 +134,7 @@ export class ButtonModelProps extends ChildProperty<ButtonModelProps> {
    * toast.appendTo('#element');
    * ```
    *  
-   * @default 'null'
+   * @default null
    */
   @Property(null)
   public model: ButtonModel;
@@ -153,20 +153,20 @@ export class ButtonModelProps extends ChildProperty<ButtonModelProps> {
 export class ToastAnimations extends ChildProperty<ToastAnimations> {
   /**
    * Specifies the type of animation.
-   * @default : 'FadeIn'
+   * @default 'FadeIn'
    * @aspType string
    */
   @Property('FadeIn')
   public effect: Effect;
   /**
    * Specifies the duration to animate.
-   * @default : 600
+   * @default 600
    */
   @Property(600)
   public duration: number;
   /**
    * Specifies the animation timing function.
-   * @default : 'ease'
+   * @default 'ease'
    */
   @Property('ease')
   public easing: string;
@@ -327,7 +327,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * until the old Toast messages removed.
      * X values are: Left , Right ,Center
      * Y values are: Top , Bottom
-     * @default { X: "Left", Y: "Top"}
+     * @default { X: "Left", Y: "Top" }
      */
     @Complex<ToastPositionModel>({}, ToastPosition)
     public position: ToastPositionModel;
@@ -343,10 +343,11 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Specifies the target container where the Toast to be displayed.
      * Based on the target, the positions such as `Left`, `Top` will be applied to the Toast.
-     * @default document.body
+     * The default value is null, which refers the `document.body` element.
+     * @default null
      * @aspType string
      */
-    @Property()
+    @Property(null)
     public target: HTMLElement | Element | string;
 
     /**
@@ -544,7 +545,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private fetchEle (ele: HTEle, value: string, prob: string): HTEle {
       let templateFn: Function;
       let tempVar: HTEle;
-      let tempArray: HTEle[];
+      let tmpArray: HTEle[];
       prob === 'title' ? tempVar = this.titleTemplate : prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
       if (!isNOU(tempVar)) {
         ele.appendChild(tempVar.cloneNode(true));
@@ -561,10 +562,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         templateFn = templateCompiler(value);
       }
       if (!isNOU(templateFn)) {
-        tempArray = templateFn({}, this, prob);
+        tmpArray = templateFn({}, this, prob);
       }
-      if (!isNOU(tempArray) && tempArray.length > 0 && !(isNOU(tempArray[0].tagName) && tempArray.length === 1) ) {
-        [].slice.call(tempArray).forEach((el: HTEle): void => {
+      if (!isNOU(tmpArray) && tmpArray.length > 0 && !(isNOU(tmpArray[0].tagName) && tmpArray.length === 1) ) {
+        [].slice.call(tmpArray).forEach((el: HTEle): void => {
           if (!isNOU(el.tagName)) {
             el.style.display = '';
           }

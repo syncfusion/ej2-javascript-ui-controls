@@ -28,6 +28,7 @@ describe('Rte module', () => {
         beforeAll((done: Function): void => {
             editorObj = renderEditor({
                 type: 'RTE',
+                name: 'TextEditor',
                 value: 'test',
                 mode: 'Inline'
             });
@@ -50,6 +51,9 @@ describe('Rte module', () => {
         it('Value property testing', () => {
             expect(editorObj.rteModule.compObj.value === 'test').toEqual(true);
             expect(editorObj.value === editorObj.rteModule.compObj.value).toEqual(true);
+        });
+        it('Name property testing', () => {
+            expect(select('#TextEditor_editor-value', editorObj.element).getAttribute('name')).toEqual('TextEditor');
         });
         it('save method with value property testing', () => {
             editorObj.rteModule.compObj.value = 'testing';

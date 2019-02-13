@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 16.4.52 (2019-02-05)
+## 16.4.53 (2019-02-13)
+
+### Document Editor
+
+#### Bug Fixes
+
+- Table inside header is now layout properly.
+- Table re-layout while editing now layout properly.
+- Page break inside table is handled.
+
+## 16.4.48 (2019-01-22)
 
 ### Document Editor
 

@@ -1,7 +1,7 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex, classList } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, Complex } from '@syncfusion/ej2-base';
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
-import { attributes, addClass, removeClass, setStyleAttribute, detach } from '@syncfusion/ej2-base';
+import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';
 import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { SliderModel, TicksDataModel, TooltipDataModel, LimitDataModel } from './slider-model';
@@ -383,6 +383,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private secondPartRemain: number;
     private minDiff: number;
     private drag: boolean = true;
+    private isForm: boolean;
+    private formElement: HTMLFormElement;
+    private formResetValue: number | number[];
 
     /**
      * It is used to denote the current value of the Slider.
@@ -405,7 +408,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * It is used to denote the step value of Slider component which is the amount of Slider value change
      *  when increase / decrease button is clicked or press arrow keys or drag the thumb.
-     *  Refer the documentation [here](./ticks.html#step)
+     *  Refer the documentation [here](../../slider/ticks#step)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="slider/step-api/index.ts" %}{% endcodeBlock %}
@@ -451,7 +454,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It is used to render the slider ticks options such as placement and step values.
-     * Refer the documentation [here](./ticks.html)
+     * Refer the documentation [here](../../slider/ticks)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="slider/ticks-api/index.ts" %}{% endcodeBlock %}
@@ -462,7 +465,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It is used to limit the slider movement within certain limits.
-     * Refer the documentation [here](./limits.html)
+     * Refer the documentation [here](../../slider/limits)
      *  to know more about this property with demo
      *
      * {% codeBlock src="slider/limits-api/index.ts" %}{% endcodeBlock %}
@@ -498,7 +501,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * It is used to show or hide the increase and decrease button of Slider Component,
      *  which is used to change the slider value.
-     * Refer the documentation [here](./getting-started.html#buttons)
+     * Refer the documentation [here](../../slider/getting-started#buttons)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="slider/showButtons-api/index.ts" %}{% endcodeBlock %}
@@ -516,7 +519,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     /**
      * It is used to render Slider in either horizontal or vertical orientation.
-     *  Refer the documentation [here](./getting-started.html#orientation)
+     *  Refer the documentation [here](../../slider/getting-started#orientation)
      *  to know more about this property with demo.
      * @default 'Horizontal'
      */
@@ -589,6 +592,29 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.ticksFormatInfo = {};
         this.initCultureInfo();
         this.initCultureFunc();
+        this.formChecker();
+    }
+
+    private formChecker(): void {
+        const formElement: Element = closest(this.element, 'form');
+        if (formElement) {
+            this.isForm = true;
+            // this condition needs to be checked, if the slider is going to be refreshed by `refresh()`
+            // then we need to revert the slider `value` back to `formResetValue` to preserve the initial value
+            if (!isNullOrUndefined(this.formResetValue)) {
+                this.setProperties({ 'value': this.formResetValue }, true);
+            }
+            this.formResetValue = this.value;
+            if (this.type === 'Range' &&
+                (isNullOrUndefined(this.formResetValue) || typeof (this.formResetValue) !== 'object')) {
+                this.formResetValue = [parseFloat(formatUnit(this.min)), parseFloat(formatUnit(this.max))];
+            } else if (isNullOrUndefined(this.formResetValue)) {
+                this.formResetValue = parseFloat(formatUnit(this.min));
+            }
+            this.formElement = formElement as HTMLFormElement;
+        } else {
+            this.isForm = false;
+        }
     }
 
     private initCultureFunc(): void {
@@ -2804,6 +2830,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.wireButtonEvt(false);
             }
             this.wireMaterialTooltipEvent(false);
+            if (this.isForm) {
+                EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+            }
         }
     }
 
@@ -2821,6 +2850,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.wireButtonEvt(true);
         }
         this.wireMaterialTooltipEvent(true);
+        EventHandler.remove(this.element, 'reset', this.formResetHandler);
+    }
+
+    private formResetHandler(): void {
+        this.setProperties({ 'value': this.formResetValue }, true);
+        this.setValue();
     }
 
     private keyUp(event: KeyboardEvent): void {
@@ -3087,17 +3122,19 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     this.setCSSClass(oldProp.cssClass);
                     break;
                 case 'value':
-                    let value: number | number[] = isNullOrUndefined(newProp.value) ?
-                        (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
-                    this.setProperties({ 'value': value }, true);
-                    if (oldProp.value.toString() !== value.toString()) {
-                        this.setValue();
-                        this.refreshTooltip();
-                        if (this.type === 'Range') {
-                            if (isNullOrUndefined(newProp.value) || (oldProp.value as number[])[1] === (value as number[])[1]) {
-                                this.activeHandle = 1;
-                            } else {
-                                this.activeHandle = 2;
+                    if (newProp && oldProp) {
+                        let value: number | number[] = isNullOrUndefined(newProp.value) ?
+                            (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
+                        this.setProperties({ 'value': value }, true);
+                        if (oldProp.value.toString() !== value.toString()) {
+                            this.setValue();
+                            this.refreshTooltip();
+                            if (this.type === 'Range') {
+                                if (isNullOrUndefined(newProp.value) || (oldProp.value as number[])[1] === (value as number[])[1]) {
+                                    this.activeHandle = 1;
+                                } else {
+                                    this.activeHandle = 2;
+                                }
                             }
                         }
                     }

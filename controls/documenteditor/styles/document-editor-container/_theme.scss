@@ -270,8 +270,7 @@
     padding: 12px;
   }
 
-  .e-de-text-pane,
-  .e-de-table-pane {
+  .e-de-prop-pane {
     width: $de-text-pane-width;
   }
 
@@ -280,8 +279,7 @@
       padding: 16px;
     }
 
-    .e-de-text-pane,
-    .e-de-table-pane {
+    .e-de-prop-pane {
       width: $de-text-pane-width-big;
     }
   }

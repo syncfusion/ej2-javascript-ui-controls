@@ -279,7 +279,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     Toast.prototype.fetchEle = function (ele, value, prob) {
         var templateFn;
         var tempVar;
-        var tempArray;
+        var tmpArray;
         prob === 'title' ? tempVar = this.titleTemplate : prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
         if (!isNullOrUndefined(tempVar)) {
             ele.appendChild(tempVar.cloneNode(true));
@@ -298,10 +298,10 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             templateFn = compile(value);
         }
         if (!isNullOrUndefined(templateFn)) {
-            tempArray = templateFn({}, this, prob);
+            tmpArray = templateFn({}, this, prob);
         }
-        if (!isNullOrUndefined(tempArray) && tempArray.length > 0 && !(isNullOrUndefined(tempArray[0].tagName) && tempArray.length === 1)) {
-            [].slice.call(tempArray).forEach(function (el) {
+        if (!isNullOrUndefined(tmpArray) && tmpArray.length > 0 && !(isNullOrUndefined(tmpArray[0].tagName) && tmpArray.length === 1)) {
+            [].slice.call(tmpArray).forEach(function (el) {
                 if (!isNullOrUndefined(el.tagName)) {
                     el.style.display = '';
                 }
@@ -660,7 +660,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         Collection([{}], ButtonModelProps)
     ], Toast.prototype, "buttons", void 0);
     __decorate([
-        Property()
+        Property(null)
     ], Toast.prototype, "target", void 0);
     __decorate([
         Event()

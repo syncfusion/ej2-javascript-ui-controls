@@ -1836,7 +1836,7 @@ let Dialog = class Dialog extends Component {
                     element: this.element,
                     target: this.target
                 };
-                if (this.enableResize && this.animationSettings.effect !== 'None') {
+                if (this.enableResize) {
                     this.getMinHeight();
                 }
                 this.trigger('open', eventArgs);
@@ -3311,9 +3311,13 @@ let Tooltip = class Tooltip extends Component {
         };
         this.trigger('beforeCollision', this.tooltipEventArgs);
         if (elePos.position !== newpos) {
-            let pos = calculatePosition(target, this.tooltipPositionX, elePos.vertical);
+            let pos = calculatePosition(target, elePos.horizontal, elePos.vertical);
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
             let offsetPos = this.calculateTooltipOffset(newpos);
+            offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+                ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
+            offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
+                ('RightLeft'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetX) : 0;
             elePos.position = newpos;
             elePos.left = pos.left + offsetPos.left;
             elePos.top = pos.top + offsetPos.top;

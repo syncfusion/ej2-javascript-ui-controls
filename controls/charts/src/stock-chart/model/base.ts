@@ -588,7 +588,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
      * @default null
      */
-    @Property({})
+    @Property()
     public query: Query;
 
     /**
@@ -1039,7 +1039,7 @@ export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
      * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
      * @default null
      */
-    @Property({})
+    @Property()
     public query: Query;
 
     /**

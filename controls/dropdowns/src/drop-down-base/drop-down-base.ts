@@ -83,7 +83,7 @@ export interface SelectEventArgs {
     /**
      * Returns the selected item as JSON Object from the data source.
      */
-    itemData: FieldSettingsModel;
+    itemData: FieldSettingsModel | { [key: string]: string };
     /**
      * Specifies the original event arguments.
      */

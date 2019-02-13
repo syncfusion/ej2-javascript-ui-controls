@@ -96,7 +96,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public annotationsModule: Annotations;
 
 
-    // Maps pblic API Declaration 
+    // Maps pblic API Declaration
 
     /**
      * To configure the background of the maps container.
@@ -395,7 +395,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public availableSize: Size;
 
     /**
-     * localization object 
+     * localization object
      * @private
      */
     public localeObject: L10n;
@@ -484,10 +484,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     constructor(options?: MapsModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
     }
-    /** 
-     * Gets the localized label by locale keyword. 
-     * @param  {string} key  
-     * @return {string}  
+    /**
+     * Gets the localized label by locale keyword.
+     * @param  {string} key
+     * @return {string}
      */
     public getLocalizedLabel(key: string): string {
         return this.localeObject.getConstant(key);
@@ -583,8 +583,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To change datalabel font
-     * @param layers 
-     * @param style 
+     * @param layers
+     * @param style
      */
     private setLabelFont(layers: LayerSettingsModel[], style: FontModel): void {
         for (let layer of layers) {
@@ -701,12 +701,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.element.appendChild(this.svgObject);
         if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
             let svg: ClientRect = this.svgObject.getBoundingClientRect();
+            let element: HTMLElement = document.getElementById(this.element.id);
             let tile: ClientRect = document.getElementById(this.element.id + '_tile_parent').getBoundingClientRect();
-            let bottom: number = svg.bottom - tile.bottom;
-            let left: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left);
+            let bottom: number = svg.bottom - tile.bottom - element.offsetTop;
+            let left: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left) + element.offsetTop;
             document.getElementById(this.element.id + '_tile_parent').style.left = (tile.left < this.element.getBoundingClientRect().left ?
-                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : 0) + 'px';
-            let top: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top);
+                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : left) + 'px';
+            let top: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top) + element.offsetTop;
             let value: number = (bottom <= 10) ? top : (top * 2);
             document.getElementById(this.element.id + '_tile_parent').style.top = value + 'px';
         }
@@ -1052,7 +1053,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * 
+     *
      */
     public mouseEndOnMap(e: PointerEvent): boolean {
         let targetEle: Element = <Element>e.target;
@@ -1087,7 +1088,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         return false;
     }
     /**
-     * 
+     *
      */
     public mouseDownOnMap(e: PointerEvent): void {
         let pageX: number;
@@ -1107,7 +1108,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * 
+     *
      */
     /* tslint:disable:no-string-literal */
     public mouseMoveOnMap(e: PointerEvent): void {
@@ -1152,7 +1153,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             removeElement(this.element.id + '_EJ2_Title_Tooltip');
         }
     }
-    /* 
+    /*
 
     /**
      * To handle the window resize event on maps.
@@ -1186,8 +1187,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To zoom the map by specifies the center position
-     * @param centerPosition 
-     * @param zoomFactor 
+     * @param centerPosition
+     * @param zoomFactor
      */
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
         let factor: number = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
@@ -1222,7 +1223,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To pan the map by specifies the direction
-     * @param direction 
+     * @param direction
      */
     public panByDirection(direction: PanDirection): void {
         let xDiff: number = 0; let yDiff: number = 0;
@@ -1247,7 +1248,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To add layer
-     * @param layer 
+     * @param layer
      */
     public addLayer(layer: LayerSettingsModel): void {
         this.layers.push(new LayerSettings(this.layers[0] as LayerSettings, 'layers', layer));
@@ -1255,7 +1256,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To remove layer
-     * @param index 
+     * @param index
      */
     public removeLayer(index: number): void {
         this.layers.splice(index, 1);
@@ -1263,8 +1264,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * To add marker
-     * @param layerIndex 
-     * @param marker 
+     * @param layerIndex
+     * @param marker
      */
     public addMarker(layerIndex: number, markerCollection: MarkerSettingsModel[]): void {
         let layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
@@ -1348,7 +1349,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * To provide the array of modules needed for maps rendering
      * @return {ModuleDeclaration[]}
-     * @private 
+     * @private
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
@@ -1514,15 +1515,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
     /**
      * Handles the export method for chart control.
-     * @param type 
-     * @param fileName 
+     * @param type
+     * @param fileName
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
         let exportMap: ExportUtils = new ExportUtils(this);
         exportMap.export(type, fileName, orientation);
     }
     /**
-     * To find visibility of layers and markers for required modules load. 
+     * To find visibility of layers and markers for required modules load.
      */
     private findVisibleLayers(
         layers: LayerSettingsModel[], isLayerVisible: boolean = false,

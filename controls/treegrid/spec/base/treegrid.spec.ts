@@ -1,10 +1,11 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, treeMappedData, multiLevelSelfRef } from './datasource.spec';
+import { sampleData, projectData, treeMappedData, multiLevelSelfRef1 } from './datasource.spec';
 import { PageEventArgs, extend, Page, doesImplementInterface } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Grid base spec 
@@ -393,7 +394,7 @@ describe('TreeGrid base module', () => {
     beforeAll((done: Function) => {
       gridObj = createGrid(
         {
-          dataSource: multiLevelSelfRef,
+          dataSource: multiLevelSelfRef1,
           idMapping: 'TaskID',
           parentIdMapping: 'parentID',
           treeColumnIndex: 1,
@@ -404,10 +405,11 @@ describe('TreeGrid base module', () => {
     });
 
     it('third inner level child', () => {
-      expect(gridObj.getRows()[3].querySelector('td').innerText).toBe('4');
-      expect(gridObj.getRows()[3].querySelectorAll('.e-treegridexpand').length).toBe(1);
-      expect(gridObj.getRows()[5].querySelector('td').innerText).toBe('444');
-      expect(gridObj.getRows()[6].querySelector('td').innerText).toBe('33');
+      expect(gridObj.getRows()[4].querySelector('td').innerText).toBe('44');
+      expect(gridObj.getRows()[4].querySelectorAll('.e-treegridexpand').length).toBe(1);
+      expect(gridObj.getRows()[5].querySelector('td').innerText).toBe('9');
+      expect(gridObj.getRows()[6].querySelector('td').innerText).toBe('444');
+      expect(gridObj.getRows()[9].querySelectorAll('.e-treegridexpand').length).toBe(1);
       expect(gridObj.getRows()[10].querySelectorAll('.e-treegridexpand').length).toBe(1);
     });
     afterAll(() => {
@@ -459,6 +461,38 @@ describe('TreeGrid base module', () => {
       gridObj.dataBind();
       expect(gridObj.element.style.height).toBe('100%');
       expect(gridObj.element.style.width).toBe('100%');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+      describe('Checking dataSource property after updating', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+
+        },
+        done
+      );
+    });
+    it('Check the length of dataSource after splicing', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.getRows().length == 11).toBe(true);
+        expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(false);
+        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Planning").toBe(true);
+        expect(isNullOrUndefined(gridObj.getRows()[5].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treegridexpand"))).toBe(false);
+        expect(gridObj.getRows()[5].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
+       done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.dataSource = (<any>gridObj.dataSource).splice(0,2);
     });
     afterAll(() => {
       destroy(gridObj);

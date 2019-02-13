@@ -280,6 +280,7 @@ export class ToolbarRenderer implements IRenderer {
         popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1;
+        dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
         return dropDown;
     }

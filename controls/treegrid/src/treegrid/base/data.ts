@@ -89,7 +89,8 @@ public isRemote(): boolean {
  * @hidden
  */
   public convertToFlatData(data: Object): void {
-    if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
+      this.parent.flatData = [];
+      if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
       let dm: DataManager = <DataManager>this.parent.dataSource;
       if (this.parent.parentIdMapping) {
         this.parent.query = isNullOrUndefined(this.parent.query) ?
@@ -143,7 +144,7 @@ public isRemote(): boolean {
           if (this.isSelfReference) {
             if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData, index)) {
               this.hierarchyData[index][this.parent.childMapping] = childData;
-              if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping]) && groupData.key === this.taskIds[index]) {
+              if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping])) {
                 this.hierarchyData.splice(index, 1);
                 this.taskIds.splice(index, 1);
               }
@@ -188,7 +189,7 @@ public isRemote(): boolean {
           }
         }
       } else if (!isNullOrUndefined(data[i][this.parent.childMapping])) {
-        returns = this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData, index);
+        returns =  this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData, index);
       }
     }
     return returns;

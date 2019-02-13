@@ -333,6 +333,77 @@ describe('Switch', () => {
         })
     });
 
+    describe('Switch in HTML5 forms', () => {
+        let input: HTMLFormElement;
+        let input1: HTMLFormElement;
+        let formElement: HTMLFormElement;
+        let switch1: Switch;
+        let switch2: Switch;
+
+        beforeEach(() => {
+
+            formElement = createElement('form', {
+                id: 'form'
+            }) as HTMLFormElement;
+
+            input = createElement('input', { id: 'switch1' }) as HTMLFormElement;
+            input.setAttribute('type', 'checkbox');
+
+            input1 = createElement('input', { id: 'switch2' }) as HTMLFormElement;
+            input1.setAttribute('type', 'checkbox');
+
+            formElement.appendChild(input);
+            formElement.appendChild(input1);
+
+            document.body.appendChild(formElement);
+        })
+
+        afterEach(() => {
+            switch1.destroy();
+            switch2.destroy();
+            formElement.remove();
+        })
+
+        it('form reset should make switch to its initial value', () => {
+            switch1 = new Switch({
+                checked: true
+            }, '#switch1');
+            switch2 = new Switch({
+                checked: false
+            }, '#switch2');
+            switch1.checked = false;
+            expect(switch1.checked).toBeFalsy();
+            expect(switch2.checked).toBeFalsy();
+            formElement.reset();
+            expect(switch1.checked).toBeTruthy();
+            expect(switch2.checked).toBeFalsy();
+        });
+
+        it('form reset should make switch to its default value', () => {
+            switch1 = new Switch({}, '#switch1');
+            switch2 = new Switch({}, '#switch2');
+            switch1.checked = true;
+            switch2.checked = true;
+            expect(switch1.checked).toBeTruthy();
+            expect(switch2.checked).toBeTruthy();
+            formElement.reset();
+            expect(switch1.checked).toBeFalsy();
+            expect(switch2.checked).toBeFalsy();
+        });
+
+        it('form reset with initial value and default value', () => {
+            switch1 = new Switch({}, '#switch1');
+            switch2 = new Switch({ checked: false }, '#switch2');
+            switch1.checked = true;
+            switch2.checked = false;
+            expect(switch1.checked).toBeTruthy();
+            expect(switch2.checked).toBeFalsy();
+            formElement.reset();
+            expect(switch1.checked).toBeFalsy();
+            expect(switch2.checked).toBeFalsy();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);
