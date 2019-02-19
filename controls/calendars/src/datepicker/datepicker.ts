@@ -12,6 +12,8 @@ import { DatePickerModel } from './datepicker-model';
 //class constant defination
 const DATEWRAPPER: string = 'e-date-wrapper';
 const ROOT: string = 'e-datepicker';
+const LIBRARY: string = 'e-lib';
+const CONTROL: string = 'e-control';
 const POPUPWRAPPER: string = 'e-popup-wrapper';
 const INPUTWRAPPER: string = 'e-input-group-icon';
 const POPUP: string = 'e-popup';
@@ -60,7 +62,8 @@ export class DatePicker extends Calendar implements IInput {
     protected previousElementValue: string = '';
     protected ngTag: string;
     protected dateTimeFormat: string;
-    private inputEleCopy: HTMLElement;
+    protected inputElementCopy: HTMLElement;
+    protected inputValueCopy: Date;
     protected l10n: L10n;
     protected preventArgs: PopupObjectArgs;
     private isDateIconClicked: boolean = false;
@@ -276,6 +279,8 @@ export class DatePicker extends Calendar implements IInput {
         this.setAllowEdit();
         this.updateInput();
         this.previousElementValue = this.inputElement.value;
+        this.inputElement.setAttribute('value', this.inputElement.value);
+        this.inputValueCopy = this.value;
         this.previousDate = new Date(+this.value);
     }
 
@@ -284,7 +289,7 @@ export class DatePicker extends Calendar implements IInput {
             'aria-live': 'assertive', 'aria-atomic': 'true',
             'aria-haspopup': 'true', 'aria-activedescendant': 'null',
             'aria-owns': this.element.id + '_options', 'aria-expanded': 'false', 'role': 'combobox', 'autocomplete': 'off',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
+            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
         if (this.getModuleName() === 'datepicker') {
             let l10nLocale: object = { placeholder: null };
@@ -407,10 +412,10 @@ export class DatePicker extends Calendar implements IInput {
                 let basicISOString: RegExp = null;
                 // tslint:disable-next-line
                 extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
-               // tslint:disable-next-line
+                // tslint:disable-next-line
                 basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
                 if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
-                 && !isNaN(parseInt(valueString, 10)) || isNaN(+new Date('' + valueString))) {
+                    && !isNaN(parseInt(valueString, 10)) || isNaN(+new Date('' + valueString))) {
                     this.invalidValueString = valueString;
                     this.setProperties({ value: null }, true);
                 }
@@ -451,14 +456,17 @@ export class DatePicker extends Calendar implements IInput {
             });
     }
     protected resetFormHandler(): void {
-        if (this.inputElement.getAttribute('value')) {
-            this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
-        } else {
-            this.setProperties({ value: null }, true);
+        if (!this.inputElement.disabled) {
+            let value: string = this.inputElement.getAttribute('value');
+            if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
+                value = '';
+                this.inputValueCopy = null;
+                this.inputElement.setAttribute('value', '');
+            }
+            this.setProperties({ value: this.inputValueCopy }, true);
             if (this.inputElement) {
-                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                attributes(this.inputElement, { 'aria-invalid': 'false' });
-                removeClass([this.inputWrapper.container], ERROR);
+                Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
+                this.errorClass();
             }
             this.restoreValue();
         }
@@ -1042,8 +1050,8 @@ export class DatePicker extends Calendar implements IInput {
         };
         if (this.inputElement) {
             Input.removeAttributes(<{ [key: string]: string }>ariaAttrs, this.inputElement);
-            (!isNullOrUndefined(this.inputEleCopy.getAttribute('tabindex'))) ?
-            this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
+            (!isNullOrUndefined(this.inputElementCopy.getAttribute('tabindex'))) ?
+                this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
             this.ensureInputAttribute();
@@ -1067,13 +1075,21 @@ export class DatePicker extends Calendar implements IInput {
     }
 
     protected ensureInputAttribute(): void {
+        let prop: string[] = [];
         for (let i: number = 0; i < this.inputElement.attributes.length; i++) {
-            let prop: string = this.inputElement.attributes[i].name;
-            if (isNullOrUndefined(this.inputEleCopy.getAttribute(prop))) {
-                if (prop.toLowerCase() === 'value' || isNullOrUndefined(this.inputEleCopy.getAttribute('value'))) {
+            prop[i] = this.inputElement.attributes[i].name;
+        }
+        for (let i: number = 0; i < prop.length; i++) {
+            if (isNullOrUndefined(this.inputElementCopy.getAttribute(prop[i]))) {
+                if (prop[i].toLowerCase() === 'value') {
                     this.inputElement.value = '';
                 }
-                this.inputElement.removeAttribute(prop);
+                this.inputElement.removeAttribute(prop[i]);
+            } else {
+                if (prop[i].toLowerCase() === 'value') {
+                    this.inputElement.value = this.inputElementCopy.getAttribute(prop[i]);
+                }
+                this.inputElement.setAttribute(prop[i], this.inputElementCopy.getAttribute(prop[i]));
             }
         }
     }
@@ -1082,7 +1098,8 @@ export class DatePicker extends Calendar implements IInput {
      * @private
      */
     protected preRender(): void {
-        this.inputEleCopy = <HTMLElement>this.element.cloneNode(true);
+        this.inputElementCopy = <HTMLElement>this.element.cloneNode(true);
+        removeClass([this.inputElementCopy], [ROOT, CONTROL, LIBRARY]);
         this.inputElement = <HTMLInputElement>this.element;
         this.formElement = <HTMLFormElement>closest(this.inputElement, 'form');
         this.index = this.showClearButton ? 2 : 1;
@@ -1122,15 +1139,16 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     protected checkFormat(): void {
+        let culture: Internationalization = new Internationalization(this.locale);
         if (this.format) {
             if (typeof this.format === 'string') {
                 this.formatString = this.format;
             } else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
                 let skeletonString: string = this.format.skeleton;
                 if (this.getModuleName() === 'datetimepicker') {
-                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'dateTime' });
+                    this.formatString = culture.getDatePattern({ skeleton: skeletonString, type: 'dateTime' });
                 } else {
-                    this.formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
+                    this.formatString = culture.getDatePattern({ skeleton: skeletonString, type: 'date' });
                 }
             } else {
                 if (this.getModuleName() === 'datetimepicker') {
@@ -1297,8 +1315,10 @@ export class DatePicker extends Calendar implements IInput {
             && +new Date(+this.value).setMilliseconds(0) <= +this.max))
             || (!this.strictMode && this.inputElement.value !== '' && isNullOrUndefined(this.value) || isDisabledDate)) {
             addClass([this.inputWrapper.container], ERROR);
+            attributes(this.inputElement, { 'aria-invalid': 'true' });
         } else {
             removeClass([this.inputWrapper.container], ERROR);
+            attributes(this.inputElement, { 'aria-invalid': 'false' });
         }
     }
     /**

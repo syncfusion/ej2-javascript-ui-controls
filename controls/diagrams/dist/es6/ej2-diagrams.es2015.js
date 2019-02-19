@@ -13120,6 +13120,33 @@ function getDiagramElement(elementId, contentId) {
     diagramElement = (element) ? element.querySelector('#' + elementId) : document.getElementById(elementId);
     return diagramElement;
 }
+/** @private */
+function getDomIndex(viewId, elementId, layer) {
+    let index = undefined;
+    let parentElement;
+    let postId = '';
+    if (layer === 'native') {
+        parentElement = getNativeLayer(viewId);
+        postId = '_content_groupElement';
+    }
+    else if (layer === 'html') {
+        parentElement = getHTMLLayer(viewId).childNodes[0];
+        postId = '_content_html_element';
+    }
+    else {
+        parentElement = getDiagramLayer(viewId);
+        postId = '_groupElement';
+    }
+    let childElement;
+    for (let i = 0; parentElement.childNodes && i < parentElement.childNodes.length; i++) {
+        childElement = parentElement.childNodes[i];
+        if (childElement && childElement.id === elementId + postId) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
 /**
  * @private
  */
@@ -13147,13 +13174,13 @@ function getAdornerLayer(diagramId) {
     adornerLayer = diagramAdornerSvg.getElementById(diagramId + '_diagramAdorner');
     return adornerLayer;
 }
-// /** @private */
-// export function getDiagramLayer(diagramId: string): SVGElement {
-//     let diagramLayer: SVGElement;
-//     let diagramLayerSvg: SVGSVGElement = getDiagramLayerSvg(diagramId);
-//     diagramLayer = diagramLayerSvg.getElementById(diagramId + '_diagramLayer') as SVGElement;
-//     return diagramLayer;
-// }
+/** @private */
+function getDiagramLayer(diagramId) {
+    let diagramLayer;
+    let diagramLayerSvg = getDiagramLayerSvg(diagramId);
+    diagramLayer = diagramLayerSvg.getElementById(diagramId + '_diagramLayer');
+    return diagramLayer;
+}
 /** @private */
 function getPortLayerSvg(diagramId) {
     let adornerLayerSvg = null;
@@ -14729,7 +14756,7 @@ class SvgRenderer {
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
     }
     /** @private */
-    drawHTMLContent(element, canvas, transform, value) {
+    drawHTMLContent(element, canvas, transform, value, indexValue) {
         let htmlElement;
         if (canvas) {
             let i;
@@ -14746,7 +14773,12 @@ class SvgRenderer {
             };
             htmlElement = createHtmlElement('div', attr);
             htmlElement.appendChild(element.template.cloneNode(true));
-            canvas.appendChild(htmlElement);
+            if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
+                canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
+            }
+            else {
+                canvas.appendChild(htmlElement);
+            }
         }
         let point = cornersPointsBeforeRotation(element).topLeft;
         htmlElement.setAttribute('style', 'height:' + (element.actualSize.height) + 'px; width:' + (element.actualSize.width) +
@@ -15066,7 +15098,7 @@ class DiagramRenderer {
             this.renderNativeElement(element, canvas, transform, parentSvg, fromPalette);
         }
         else if (element instanceof DiagramHtmlElement) {
-            this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette);
+            this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette, indexValue);
         }
         else {
             this.renderRect(element, canvas, transform, parentSvg);
@@ -15770,14 +15802,14 @@ class DiagramRenderer {
             this.svgRenderer.drawNativeContent(element, nativeLayer, templateHeight, templateWidth, nativeSvg);
         }
     }
-    renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette) {
+    renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette, indexValue) {
         let options = this.getBaseAttributes(element, transform);
         options.fill = 'transparent';
         options.cornerRadius = element.cornerRadius;
         options.stroke = 'transparent';
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
         if (this.svgRenderer) {
-            this.svgRenderer.drawHTMLContent(element, htmlLayer.children[0], transform, isDiagramChild(htmlLayer));
+            this.svgRenderer.drawHTMLContent(element, htmlLayer.children[0], transform, isDiagramChild(htmlLayer), indexValue);
         }
     }
     /**   @private  */
@@ -15845,7 +15877,7 @@ class DiagramRenderer {
                 let groupElement;
                 groupElement = this.getParentElement(group, canvas, parentSvg, indexValue).g || canvas;
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children)) || parentSvg;
-                let svgNativeParent = this.getParentElement(this.hasNativeParent(group.children), groupElement, parentSvg);
+                let svgNativeParent = this.getParentElement(this.hasNativeParent(group.children), groupElement, parentSvg, indexValue);
                 svgParent.svg = svgNativeParent.svg || parentSvg;
                 svgParent.g = svgNativeParent.g || groupElement;
                 if (createParent) {
@@ -15878,7 +15910,7 @@ class DiagramRenderer {
                 if (!this.isSvgMode) {
                     child.flip = group.flip;
                 }
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
                     this.renderFlipElement(child, parentG, flip);
@@ -16047,8 +16079,8 @@ class DiagramRenderer {
         return false;
     }
     /** @private */
-    updateNode(element, diagramElementsLayer, htmlLayer, transform) {
-        this.renderElement(element, diagramElementsLayer, htmlLayer, transform, this.getParentSvg(element));
+    updateNode(element, diagramElementsLayer, htmlLayer, transform, insertIndex) {
+        this.renderElement(element, diagramElementsLayer, htmlLayer, transform, this.getParentSvg(element), undefined, undefined, insertIndex);
     }
 }
 
@@ -17602,7 +17634,12 @@ class MoveTool extends ToolBase {
             }
         }
         else {
-            this.commandHandler.portDrag(args.source, args.sourceWrapper, args.position.x - this.prevPosition.x, args.position.y - this.prevPosition.y);
+            let matrix = identityMatrix();
+            let node = args.source;
+            rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
+            let prevPosition = transformPointByMatrix(matrix, { x: this.prevPosition.x, y: this.prevPosition.y });
+            let position = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
+            this.commandHandler.portDrag(args.source, args.sourceWrapper, position.x - prevPosition.x, position.y - prevPosition.y);
         }
         this.prevPosition = this.currentPosition;
         return !this.blocked;
@@ -28385,6 +28422,24 @@ class Diagram extends Component {
             element[j].canApplyStyle = value;
         }
     }
+    getZindexPosition(obj, viewId) {
+        let objects = [];
+        let index = undefined;
+        objects = objects.concat(this.nodes);
+        objects = objects.concat(this.connectors);
+        let type;
+        if (obj.zIndex !== -1) {
+            for (let i = 0; i < objects.length; i++) {
+                if (objects[i].zIndex > obj.zIndex) {
+                    if (obj.shape.type === 'HTML' || obj.shape.type === 'Native') {
+                        type = obj.shape.type === 'HTML' ? 'html' : 'native';
+                    }
+                    index = getDomIndex(viewId, objects[i].id, type);
+                }
+            }
+        }
+        return index;
+    }
     /** @private */
     updateDiagramObject(obj) {
         let view;
@@ -28397,7 +28452,7 @@ class Diagram extends Component {
                     if (this.diagramActions & DiagramAction.Interactions) {
                         this.updateCanupdateStyle(obj.wrapper.children, true);
                     }
-                    this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined);
+                    this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined, this.getZindexPosition(obj, view.element.id));
                     this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
             }
@@ -28875,7 +28930,7 @@ class Diagram extends Component {
             this.renderDiagramElements(g, overview.diagramRenderer || renderer, htmlLayer, undefined, undefined, true);
         }
     }
-    updateThumbConstraints(node, selectorModel) {
+    updateThumbConstraints(node, selectorModel, canInitialize) {
         let length = node.length;
         for (let i = 0; i < length; i++) {
             let obj = node[i];
@@ -28916,7 +28971,9 @@ class Diagram extends Component {
                 }
             }
             else if (obj instanceof Connector) {
-                thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                if (!canInitialize) {
+                    thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                }
                 if (canDragSourceEnd(obj)) {
                     thumbConstraints = thumbConstraints | ThumbsConstraints.ConnectorSource;
                 }
@@ -28931,7 +28988,9 @@ class Diagram extends Component {
                 }
             }
             else {
-                thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                if (!canInitialize) {
+                    thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                }
                 if (!canResize(obj)) {
                     thumbConstraints = thumbConstraints & ~(ThumbsConstraints.ResizeSouthEast | ThumbsConstraints.ResizeSouthWest |
                         ThumbsConstraints.ResizeSouth | ThumbsConstraints.ResizeEast | ThumbsConstraints.ResizeWest |
@@ -28979,7 +29038,7 @@ class Diagram extends Component {
             }
             else {
                 this.updateThumbConstraints(selectorModel.nodes, selectorModel);
-                this.updateThumbConstraints(selectorModel.connectors, selectorModel);
+                this.updateThumbConstraints(selectorModel.connectors, selectorModel, true);
             }
             if (selectorModel.annotation) {
                 this.renderSelectorForAnnotation(selectorModel, selectorElement);
@@ -29012,67 +29071,70 @@ class Diagram extends Component {
     /** @private */
     updateSelector() {
         let size = new Size();
-        let selectorModel = this.selectedItems;
-        let selectorConstraints = selectorModel.constraints;
+        let selector = this.selectedItems;
+        let selectorConstraints = selector.constraints;
         if (!(this.diagramActions & DiagramAction.ToolAction) && this.selectedItems.nodes.length === 1) {
             this.selectedItems.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
             this.selectedItems.wrapper.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
         }
         if (this.selectedItems !== undefined) {
             this.clearSelectorLayer();
-            if (selectorModel.wrapper !== null && selectorModel.wrapper.children && selectorModel.wrapper.children.length) {
-                selectorModel.wrapper.measure(size);
-                selectorModel.wrapper.arrange(selectorModel.wrapper.desiredSize);
-                if (selectorModel.rotateAngle !== 0 || selectorModel.rotateAngle !== selectorModel.wrapper.prevRotateAngle) {
-                    for (let obj of selectorModel.nodes) {
+            if (selector.wrapper !== null && selector.wrapper.children && selector.wrapper.children.length) {
+                selector.wrapper.measure(size);
+                selector.wrapper.arrange(selector.wrapper.desiredSize);
+                if (selector.rotateAngle !== 0 || selector.rotateAngle !== selector.wrapper.prevRotateAngle) {
+                    for (let obj of selector.nodes) {
                         obj.offsetX = obj.wrapper.offsetX;
                         obj.offsetY = obj.wrapper.offsetY;
                     }
                 }
-                selectorModel.width = selectorModel.wrapper.actualSize.width;
-                selectorModel.height = selectorModel.wrapper.actualSize.height;
-                selectorModel.offsetX = selectorModel.wrapper.offsetX;
-                selectorModel.offsetY = selectorModel.wrapper.offsetY;
-                let selectorElement;
-                selectorElement = getSelectorElement(this.element.id);
+                selector.width = selector.wrapper.actualSize.width;
+                selector.height = selector.wrapper.actualSize.height;
+                selector.offsetX = selector.wrapper.offsetX;
+                selector.offsetY = selector.wrapper.offsetY;
+                let selectorEle;
+                selectorEle = getSelectorElement(this.element.id);
                 let canHideResizers = this.eventHandler.canHideResizers();
-                selectorModel.thumbsConstraints = ThumbsConstraints.Default;
-                if (selectorModel.annotation) {
-                    this.updateThumbConstraints([selectorModel.annotation], selectorModel);
+                selector.thumbsConstraints = ThumbsConstraints.Default;
+                if (selector.annotation) {
+                    this.updateThumbConstraints([selector.annotation], selector);
                 }
                 else {
-                    this.updateThumbConstraints(selectorModel.nodes, selectorModel);
-                    this.updateThumbConstraints(selectorModel.connectors, selectorModel);
+                    this.updateThumbConstraints(selector.nodes, selector);
+                    this.updateThumbConstraints(selector.connectors, selector, true);
                 }
-                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selectorModel.annotation))) {
-                    this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
+                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation))) {
+                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
                 }
-                if (selectorModel.annotation) {
-                    this.renderSelectorForAnnotation(selectorModel, selectorElement);
+                if (selector.annotation) {
+                    this.renderSelectorForAnnotation(selector, selectorEle);
                 }
-                else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
-                    if (selectorModel.connectors[0] instanceof Connector) {
-                        let connector = selectorModel.connectors[0];
-                        this.diagramRenderer.renderEndPointHandle(connector, selectorElement, selectorModel.thumbsConstraints, selectorConstraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
+                else if (selector.nodes.length + selector.connectors.length === 1) {
+                    if (selector.connectors[0] instanceof Connector) {
+                        let connector = selector.connectors[0];
+                        this.diagramRenderer.renderEndPointHandle(connector, selectorEle, selector.thumbsConstraints, selectorConstraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
                     }
-                    else if (selectorModel.nodes[0] instanceof Node) {
-                        if (checkParentAsContainer(this, selectorModel.nodes[0])) {
-                            let stackPanel = selectorModel.nodes[0];
+                    else if (selector.nodes[0] instanceof Node) {
+                        if (checkParentAsContainer(this, selector.nodes[0])) {
+                            let stackPanel = selector.nodes[0];
                             if (stackPanel.shape.type !== 'UmlClassifier' && !(stackPanel.parentId &&
                                 this.nameTable[stackPanel.parentId]
                                 && this.nameTable[stackPanel.parentId].shape.type === 'UmlClassifier')) {
-                                selectorModel.nodes[0].constraints &= ~(NodeConstraints.HideThumbs | NodeConstraints.Rotate);
-                                selectorModel.thumbsConstraints &= ~ThumbsConstraints.Rotate;
+                                if (!(stackPanel.container && (stackPanel.container.type === 'Canvas'
+                                    || stackPanel.container.type === 'Grid'))) {
+                                    selector.nodes[0].constraints &= ~(NodeConstraints.HideThumbs | NodeConstraints.Rotate);
+                                }
+                                selector.thumbsConstraints &= ~ThumbsConstraints.Rotate;
                             }
                         }
-                        this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel.nodes[0]), (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
+                        this.diagramRenderer.renderResizeHandle(selector.wrapper.children[0], selectorEle, selector.thumbsConstraints, this.scroller.currentZoom, selector.constraints, this.scroller.transform, canHideResizers, canMove(selector.nodes[0]), (selector.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
                     }
                 }
                 else {
                     if (this.diagramActions & DiagramAction.Interactions) {
                         this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions | RendererAction.PreventRenderSelector;
                     }
-                    this.diagramRenderer.renderResizeHandle(selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel));
+                    this.diagramRenderer.renderResizeHandle(selector.wrapper, selectorEle, selector.thumbsConstraints, this.scroller.currentZoom, selector.constraints, this.scroller.transform, canHideResizers, canMove(selector));
                     this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions & ~RendererAction.PreventRenderSelector;
                 }
             }
@@ -29527,6 +29589,7 @@ class Diagram extends Component {
                 let changedObject = node.ports[key];
                 let actualPort = actualObject.ports[index];
                 this.updatePort(changedObject, actualPort, actualObject.wrapper);
+                updateConnector$$1 = true;
             }
         }
         if (node.annotations !== undefined || node.width !== undefined) {

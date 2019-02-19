@@ -1000,7 +1000,10 @@ export class DateTimePicker extends DatePicker {
         }
     }
     protected preRender(): void {
+        this.checkFormat();
+        this.dateTimeFormat = this.cldrDateTimeFormat();
         super.preRender();
+        removeClass([this.inputElementCopy], [ROOT]);
     };
     protected getProperty(date: DateTimePickerModel, val: string): void {
         if (val === 'min') {

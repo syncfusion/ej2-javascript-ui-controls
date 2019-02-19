@@ -84,7 +84,7 @@ export interface DropDownBaseModel extends ComponentModel{
 
     /**
      * Accepts the template design and assigns it to each list item present in the popup.
-     * We have built-in [`template engine`](./template-engine.html)
+     * We have built-in `template engine`
      * 
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals. 
@@ -130,13 +130,13 @@ export interface DropDownBaseModel extends ComponentModel{
     /**
      * Accepts the list items either through local or remote service and binds it to the component.
      * It can be an array of JSON Objects or an instance of
-     * [`DataManager`](./api-dataManager.html).
+     * `DataManager`.
      * @default [].
      */
     dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
 
     /**
-     * Accepts the external [`Query`](./api-query.html)
+     * Accepts the external `Query`
      * which will execute along with the data processing.
      * @default null.
      */

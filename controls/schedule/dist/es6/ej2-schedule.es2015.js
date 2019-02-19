@@ -3053,10 +3053,7 @@ function monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject)
     let tempDate = new Date(startDate.getTime());
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     let interval = ruleObject.interval;
-    let state;
     let monthCollection = [];
-    let month;
-    let index;
     let beginDate;
     let monthInit = 0;
     tempDate = calendarUtil.getMonthStartDate(tempDate);
@@ -3065,23 +3062,14 @@ function monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject)
     }
     tempDate = getStartDateForWeek(tempDate, ruleObject.day);
     while (compareDates(tempDate, endDate) && (expectedCount && (data.length + tempExcludeDate.length) < expectedCount)) {
-        month = tempDate.getMonth();
         beginDate = new Date(tempDate.getTime());
         let currentMonthDate = new Date(tempDate.getTime());
         while (calendarUtil.isSameMonth(tempDate, currentMonthDate)) {
             monthCollection.push([currentMonthDate.getTime()]);
             currentMonthDate.setDate(currentMonthDate.getDate() + (7));
         }
-        index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-        if (ruleObject.setPosition === null) {
-            let recurrenceCollections;
-            recurrenceCollections = getRecurrenceCollection(monthCollection, expectedDays);
-            monthCollection = recurrenceCollections.monthCollection;
-            index = recurrenceCollections.index;
-        }
-        if (monthCollection.length > 0) {
-            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
-        }
+        // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+        insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
         monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
         tempDate = getStartDateForWeek(tempDate, ruleObject.day);
         monthCollection = [];
@@ -3096,12 +3084,14 @@ function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
         processDateCollectionforByDayWithInteger(startDate, endDate, data, ruleObject);
         return;
     }
+    else if (ruleObject.month.length && expectedDays.length === 1 && isHavingNumber.indexOf(true) > -1) {
+        monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject);
+        return;
+    }
     let tempDate = new Date(startDate.getTime());
-    let index;
     let currentMonthDate;
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     let interval = ruleObject.interval;
-    let state;
     let monthCollection = [];
     if (ruleObject.month.length) {
         calendarUtil.setMonth(tempDate, ruleObject.month[0], tempDate.getDate());
@@ -3157,16 +3147,8 @@ function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
             }
         }
         tempDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), currentMonthDate.getDate());
-        index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-        if (ruleObject.setPosition === null) {
-            let recurrenceObject;
-            recurrenceObject = getRecurrenceCollection(monthCollection, expectedDays);
-            monthCollection = recurrenceObject.monthCollection;
-            index = recurrenceObject.index;
-        }
-        if (monthCollection.length > 0) {
-            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
-        }
+        // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+        insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
         if (calendarUtil.isLastMonth(tempDate)) {
             calendarUtil.setValidDate(tempDate, 1, 1);
             tempDate = getStartDateForWeek(tempDate, ruleObject.day);
@@ -3313,6 +3295,28 @@ function getDateCollectionforBySetPosNull(monthCollection) {
     monthCollection = datas.length > 0 ? [datas] : [];
     return monthCollection;
 }
+// To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+function insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject) {
+    let expectedDays = ruleObject.day;
+    let index;
+    let state;
+    let datas = [];
+    let dateCollection = [];
+    let recurrenceCollections;
+    recurrenceCollections = getRecurrenceCollection(monthCollection, expectedDays);
+    monthCollection = recurrenceCollections.monthCollection;
+    index = recurrenceCollections.index;
+    if (ruleObject.setPosition != null) {
+        dateCollection = [(filterDateCollectionByIndex(monthCollection, index, datas))];
+        insertDateCollectionBasedonBySetPos(dateCollection, state, startDate, endDate, data, ruleObject);
+    }
+    else {
+        if (monthCollection.length > 0) {
+            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+        }
+    }
+    datas = [];
+}
 // To filter date collection when BYDAY property having values with number
 function filterDateCollectionByIndex(monthCollection, index, datas) {
     for (let week = 0; week < monthCollection[index].length; week++) {
@@ -3333,8 +3337,10 @@ function insertDateCollection(state, startDate, endDate, data, ruleObject, dayDa
 // To process datte collection based on Byset position after process the collection based on BYDAY property value index: EX:BYDAY=1SUm-1SU
 function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, endDate, data, ruleObject) {
     if (monthCollection.length > 0) {
-        let index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
         for (let week = 0; week < monthCollection.length; week++) {
+            monthCollection[week].sort();
+            let index = ((ruleObject.setPosition < 1)
+                ? (monthCollection[week].length + ruleObject.setPosition) : ruleObject.setPosition - 1);
             let dayData = monthCollection[week][index];
             insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
         }
@@ -3343,6 +3349,7 @@ function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, 
 // To insert datas into existing collection which is processed from previous loop.
 function insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) {
     for (let week = 0; week < monthCollection[index].length; week++) {
+        monthCollection[index].sort();
         let dayData = monthCollection[index][week];
         insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
     }
@@ -5525,7 +5532,16 @@ class QuickPopups {
         if (target.classList.contains(APPOINTMENT_CLASS)) {
             return this.parent.activeEventData.event;
         }
-        return this.parent.activeCellsData;
+        // Depricated cells data in quick popups
+        let eventObj = {
+            startTime: this.parent.activeCellsData.startTime,
+            endTime: this.parent.activeCellsData.endTime,
+            isAllDay: this.parent.activeCellsData.isAllDay,
+            groupIndex: this.parent.activeCellsData.groupIndex
+        };
+        let cellsData = this.parent.activeCellsData;
+        this.parent.eventWindow.convertToEventData(cellsData, eventObj);
+        return eventObj;
     }
     beforeQuickDialogClose() {
         this.parent.eventBase.focusElement();
@@ -7486,15 +7502,7 @@ class EventWindow {
         this.element.querySelector('.' + EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
         let eventObj = {};
         if (this.cellClickAction) {
-            if (event.subject) {
-                eventObj[this.fields.subject] = event.subject;
-            }
-            eventObj[this.fields.startTime] = event.startTime;
-            eventObj[this.fields.endTime] = event.endTime;
-            eventObj[this.fields.isAllDay] = event.isAllDay;
-            if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
-                this.parent.resourceBase.setResourceValues(eventObj, false);
-            }
+            this.convertToEventData(event, eventObj);
         }
         else {
             this.parent.activeCellsData = {
@@ -7527,6 +7535,17 @@ class EventWindow {
             this.disableButton(saveButton, false);
         }
         this.dialogObject.show();
+    }
+    convertToEventData(cellsData, eventObj) {
+        if (cellsData.subject) {
+            eventObj[this.fields.subject] = cellsData.subject;
+        }
+        eventObj[this.fields.startTime] = cellsData.startTime;
+        eventObj[this.fields.endTime] = cellsData.endTime;
+        eventObj[this.fields.isAllDay] = cellsData.isAllDay;
+        if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
+            this.parent.resourceBase.setResourceValues(eventObj, false);
+        }
     }
     applyFormValidation() {
         let getValidationRule = (rules) => (rules && Object.keys(rules).length > 0) ? rules : undefined;
@@ -12384,6 +12403,9 @@ class ViewBase {
             },
             getTime: (dt) => {
                 if (this.parent.isAdaptive) {
+                    if (this.parent.timeFormat === 'HH:mm') {
+                        return this.parent.globalize.formatDate(dt, { format: 'H', calendar: this.parent.getCalendarMode() });
+                    }
                     return this.parent.globalize.formatDate(dt, { skeleton: 'h', calendar: this.parent.getCalendarMode() });
                 }
                 return this.parent.getTimeString(dt);
@@ -15532,9 +15554,10 @@ class Agenda extends ViewBase {
     renderContent(tBody, agendaDate) {
         let fieldMapping = this.parent.eventFields;
         let firstDate = new Date(agendaDate.getTime());
-        let lastDate = this.getEndDateFromStartDate(firstDate);
+        let lastDate = (!this.parent.activeViewOptions.allowVirtualScrolling) ?
+            addDays(firstDate, this.parent.agendaDaysCount) : this.getEndDateFromStartDate(firstDate);
         let isObject = this.appointmentFiltering(firstDate, lastDate);
-        if (isObject.length === 0) {
+        if (isObject.length === 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
             lastDate = firstDate;
             firstDate = new Date(this.minDate.getTime());
             isObject = this.appointmentFiltering(firstDate, lastDate);
@@ -15544,7 +15567,7 @@ class Agenda extends ViewBase {
                 isObject = this.appointmentFiltering(firstDate, lastDate);
             }
         }
-        if (isObject.length > 0) {
+        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
             let appoint = isObject;
             agendaDate = appoint[0][fieldMapping.startTime];
             agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));

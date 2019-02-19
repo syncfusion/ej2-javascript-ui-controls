@@ -37,6 +37,7 @@ const CLS_DISABLE: Str = 'e-overlay';
 const CLS_TOGANIMATE: Str = 'e-toggle-animation';
 const CLS_NEST: Str = 'e-nested';
 const CLS_EXPANDSTATE: Str = 'e-expand-state';
+const CLS_CONTAINER: Str = 'e-accordion-container';
 
 interface AcrdnTemplateRef {
   elementRef: AcrdnElementRef;
@@ -403,7 +404,13 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     }
     private ctrlTemplate(): void {
        this.ctrlTem = <HTEle>this.element.cloneNode(true);
-       let innerEles: HTMLCollection = this.element.children as HTMLCollection;
+       let innerEles: HTMLCollection;
+       let rootEle: HTMLElement = <HTMLElement>select('.' + CLS_CONTAINER, this.element);
+       if (rootEle) {
+        innerEles = rootEle.children as HTMLCollection;
+       } else {
+          innerEles = this.element.children as HTMLCollection;
+       }
        let content: HTEle;
        addClass([].slice.call(innerEles), [CLS_ITEM]);
        [].slice.call(innerEles).forEach((el: HTEle) => {

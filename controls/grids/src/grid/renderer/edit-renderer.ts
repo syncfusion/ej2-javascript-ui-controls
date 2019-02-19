@@ -148,9 +148,9 @@ export class EditRender {
                 let model: IModelGenerator<Column> = new RowModelGenerator(this.parent);
                 let cellRenderer: ICellRenderer<{}> = cellRendererFact.getCellRenderer(CellType.CommandColumn);
                 let cells: Cell<Column>[] = model.generateRows(args.rowData)[0].cells;
-                let cell: Cell<Column> = cells.filter((cell: Cell<Column>) => cell.commands)[0];
+                let cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 let td: Element = cellRenderer.render(
-                    cell, args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
+                    cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
                 let div: Element = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;

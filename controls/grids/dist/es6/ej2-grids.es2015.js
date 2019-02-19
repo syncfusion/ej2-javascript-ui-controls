@@ -7153,11 +7153,12 @@ class Selection {
             return;
         }
         let args;
+        let checkboxColumn = this.parent.getColumns().filter((col) => col.type === 'checkbox');
         for (let rowIndex of rowIndexes) {
             let rowObj = this.getRowObj(rowIndex);
             let isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
             this.selectRowIndex(rowIndex);
-            if (isUnSelected) {
+            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
@@ -8783,9 +8784,9 @@ class Selection {
     rowCellSelectionHandler(rowIndex, cellIndex) {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
-                this.selectRow(rowIndex, true);
+                this.selectRow(rowIndex, this.selectionSettings.enableToggle);
             }
-            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
+            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
             if (this.selectedRowCellIndexes.length) {
                 this.updateAutoFillPosition();
             }
@@ -10183,6 +10184,9 @@ __decorate([
 __decorate([
     Property(false)
 ], SelectionSettings.prototype, "enableSimpleMultiRowSelection", void 0);
+__decorate([
+    Property(true)
+], SelectionSettings.prototype, "enableToggle", void 0);
 /**
  * Configures the search behavior of the Grid.
  */
@@ -10896,7 +10900,7 @@ let Grid = Grid_1 = class Grid extends Component {
                     requireGridRefresh = true;
                     break;
                 default:
-                    this.extendedPropertyChange(prop, newProp);
+                    this.extendedPropertyChange(prop, newProp, requireGridRefresh);
             }
         }
         if (checkCursor) {
@@ -10913,10 +10917,11 @@ let Grid = Grid_1 = class Grid extends Component {
         else if (requireRefresh) {
             this.notify(modelChanged, args);
             requireRefresh = false;
+            this.maintainSelection(newProp.selectedRowIndex);
         }
     }
     /* tslint:disable-next-line:max-line-length */
-    extendedPropertyChange(prop, newProp) {
+    extendedPropertyChange(prop, newProp, requireGridRefresh) {
         switch (prop) {
             case 'enableRtl':
                 this.updateRTL();
@@ -11018,7 +11023,9 @@ let Grid = Grid_1 = class Grid extends Component {
                 else {
                     this.getDataModule().setState({ isDataChanged: false });
                     this.notify(dataSourceModified, {});
-                    this.renderModule.refresh();
+                    if (!requireGridRefresh) {
+                        this.renderModule.refresh();
+                    }
                 }
                 break;
             case 'enableHover':
@@ -11031,6 +11038,15 @@ let Grid = Grid_1 = class Grid extends Component {
                 }
                 this.isSelectedRowIndexUpdating = false;
                 break;
+        }
+    }
+    maintainSelection(index) {
+        if (index !== -1) {
+            let fn = () => {
+                this.selectRow(index);
+                this.off(contentReady, fn);
+            };
+            this.on(contentReady, fn, this);
         }
     }
     /**
@@ -20051,9 +20067,11 @@ class FooterRenderer extends ContentRender {
         editedData = editedData instanceof Array ? editedData : [];
         let field = this.parent.getPrimaryKeyFieldNames()[0];
         let deletedCols = [];
+        let data = 'dataSource';
         let mergeds;
         let rows = this.parent.frozenColumns > 0 ? this.parent.getMovableRowsObject() : this.parent.getRowsObject();
-        let initds = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.getCurrentViewRecords();
+        let initds = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.dataSource[data].json.length
+            ? this.parent.dataSource[data].json : this.parent.getCurrentViewRecords();
         let addrow = [];
         let changeds = rows.map((row) => {
             if (row.changes && row.edit === 'add') {
@@ -21444,8 +21462,8 @@ class EditRender {
                 let model = new RowModelGenerator(this.parent);
                 let cellRenderer = cellRendererFact.getCellRenderer(CellType.CommandColumn);
                 let cells = model.generateRows(args.rowData)[0].cells;
-                let cell = cells.filter((cell) => cell.commands)[0];
-                let td = cellRenderer.render(cell, args.rowData, { 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
+                let cell = cells.filter((cell) => cell.rowID);
+                let td = cellRenderer.render(cell[i], args.rowData, { 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
                 let div = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;
@@ -21543,7 +21561,7 @@ class BooleanEditCell {
             addRemoveActiveClasses([].slice.call(args.row.querySelectorAll('.e-rowcell')), chkState, ...this.activeClasses);
         }
         this.obj = new CheckBox(extend({
-            label: this.parent.editSettings.mode !== 'Dialog' ? '' : args.column.headerText,
+            label: this.parent.editSettings.mode !== 'Dialog' ? ' ' : args.column.headerText,
             checked: chkState,
             disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
             change: this.checkBoxChange.bind(this)

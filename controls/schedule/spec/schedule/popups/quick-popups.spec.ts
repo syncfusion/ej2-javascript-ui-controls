@@ -1831,4 +1831,62 @@ describe('Quick Popups', () => {
             expect(quickDialog.classList).toContain('e-popup-close');
         });
     });
+    describe('CR Issue EJ2-22846 Casing of popup open event argument mismatch', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { width: '500px', height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Cell click QuickInfo popup type', () => {
+            schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                if (args.type === 'QuickInfo') {
+                    let data: { [key: string]: Object } = args.data as { [key: string]: Object };
+                    expect(+data.startTime).toBe(+new Date('2017-10-29T00:00:00.000'));
+                    expect(+data.endTime).toBe(+new Date('2017-10-29T00:30:00.000'));
+                    expect(data.isAllDay).toBe(false);
+                    expect(+data.StartTime).toBe(+new Date('2017-10-29T00:00:00.000'));
+                    expect(+data.EndTime).toBe(+new Date('2017-10-29T00:30:00.000'));
+                    expect(data.IsAllDay).toBe(false);
+                    args.cancel = true;
+                }
+            };
+            (schObj.element.querySelector('.e-work-cells') as HTMLElement).click();
+        });
+        it('Event click QuickInfo popup type', () => {
+            schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                if (args.type === 'QuickInfo') {
+                    let data: { [key: string]: Object } = args.data as { [key: string]: Object };
+                    expect(data.startTime).toBeUndefined();
+                    expect(data.endTime).toBeUndefined();
+                    expect(data.isAllDay).toBeUndefined()
+                    expect(+data.StartTime).toBe(+new Date('2017-10-31T00:00:00.000'));
+                    expect(+data.EndTime).toBe(+new Date('2017-11-01T00:00:00.000'));
+                    expect(data.IsAllDay).toBe(true);
+                    args.cancel = true;
+                }
+            };
+            (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
+        });
+        it('Editor popup type', () => {
+            schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                if (args.type === 'Editor') {
+                    let data: { [key: string]: Object } = args.data as { [key: string]: Object };
+                    expect(data.startTime).toBeUndefined();
+                    expect(data.endTime).toBeUndefined();
+                    expect(data.isAllDay).toBeUndefined()
+                    expect(+data.StartTime).toBe(+new Date('2017-10-29T00:00:00.000'));
+                    expect(+data.EndTime).toBe(+new Date('2017-10-29T00:30:00.000'));
+                    expect(data.IsAllDay).toBe(false);
+                    args.cancel = true;
+                }
+            };
+            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+        });
+    });
+
 });

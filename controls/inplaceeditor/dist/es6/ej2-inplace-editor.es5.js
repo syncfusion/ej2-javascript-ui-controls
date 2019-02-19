@@ -743,7 +743,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                 data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
             };
             this.trigger('validating', args);
-            if ((args.errorMessage) && (args.data.value === 'Empty')) {
+            if (args.errorMessage) {
                 select('.' + EDITABLE_ERROR, this.formEle).innerHTML = args.errorMessage;
                 this.toggleErrorClass(true);
             }
@@ -996,7 +996,11 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         this.element.focus();
         this.editEle = select('.' + INPUT, this.formEle);
-        if (select('.' + ERROR, this.editEle) && isNullOrUndefined(this.validationRules)) {
+        var errEle = null;
+        errEle = select('.' + ERROR, this.editEle);
+        var type = this.type;
+        var calendarComp = type === 'Date' || type === 'DateTime' || type === 'DateRange' || type === 'Time';
+        if ((errEle && !isNullOrUndefined(this.validationRules)) || (errEle && calendarComp)) {
             return;
         }
         if (!this.isTemplate) {

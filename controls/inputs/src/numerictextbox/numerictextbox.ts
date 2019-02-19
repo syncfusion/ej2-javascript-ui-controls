@@ -41,6 +41,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private hiddenInput: HTMLInputElement;
     private spinUp: HTMLElement;
     private spinDown: HTMLElement;
+    private formEle: HTMLElement;
+    private inputEleValue: number;
     private timeOut: any; // tslint:disable-line
     private prevValue: number;
     private isValidState: boolean;
@@ -301,6 +303,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
+        this.formEle = <HTMLFormElement>closest(this.element, 'form');
         if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
             this.angularTagName = this.element.tagName;
             let input: HTMLElement = this.createElement('input');
@@ -331,6 +334,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.initCultureFunc();
         this.checkAttributes();
         this.prevValue = this.value;
+        if (this.formEle) {
+            this.inputEleValue = this.value;
+        }
         this.validateMinMax();
         this.validateStep();
         if (this.placeholder === null) {
@@ -354,6 +360,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 if (this.decimals) {
                     this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
                 }
+            }
+            if (this.element.getAttribute('value') || this.value) {
+                this.element.setAttribute('value', this.element.value);
             }
         }
     }
@@ -514,6 +523,14 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.setElementValue('');
     }
 
+    protected resetFormHandler(): void {
+        if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
+            this.updateValue(null);
+        } else {
+            this.updateValue(this.inputEleValue);
+        }
+    }
+
     private wireEvents(): void {
         EventHandler.add(this.element, 'focus', this.focusIn, this);
         EventHandler.add(this.element, 'blur', this.focusOut, this);
@@ -525,6 +542,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         EventHandler.add(this.element, 'paste', this.pasteHandler, this);
         if (this.enabled) {
             this.bindClearEvent();
+            if (this.formEle) {
+                EventHandler.add(this.formEle, 'reset', this.resetFormHandler, this);
+            }
         }
     }
 
@@ -547,6 +567,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         EventHandler.remove(this.element, 'keypress', this.keyPressHandler);
         EventHandler.remove(this.element, 'change', this.changeHandler);
         EventHandler.remove(this.element, 'paste', this.pasteHandler);
+        if (this.formEle) {
+            EventHandler.remove(this.formEle, 'reset', this.resetFormHandler);
+        }
     }
 
     private unwireSpinBtnEvents(): void {

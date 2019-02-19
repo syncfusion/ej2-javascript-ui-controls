@@ -595,7 +595,26 @@ describe('Calendar', () => {
             calendar.element.tabIndex = '4';
             expect(calendar.element.getAttribute('tabindex') === '4').toBe(true);
         });
-         /**
+        it('Tab index checking while destroy the component', () => {
+            let inputEle: HTMLElement = createElement('div', { id: 'calendar', attrs: { "tabindex": "1" } });
+            document.body.appendChild(inputEle);
+            calendar = new Calendar({  });
+            calendar.appendTo('#calendar');
+            calendar.destroy();
+            expect(inputEle.getAttribute('tabindex') === '1' ).toBe(true);
+            calendar = null;
+        });
+        it('Tab index checking while destroy the Angular component', () => {
+            let element: any = createElement('ejs-calendar', { id: 'calendar' });
+            element.setAttribute('tabindex', '1');
+            document.body.appendChild(element);
+            calendar = new Calendar();
+            calendar.appendTo(element);
+            calendar.destroy();
+            expect(element.getAttribute('tabindex') === '1' ).toBe(true);
+            calendar = null;
+        });
+        /**
          * min and max test case
          */
         it('min and max  with undefined type test case', () => {
@@ -2112,6 +2131,7 @@ describe('Calendar', () => {
                 expect(calendar.currentView()).toBe("Decade");
                 expect(document.querySelector('.e-title').textContent).toBe('2010 - 2019');
             });
+            // Test case was changed since decade view has been modified.
             it(' home and end button testing on year and decade view ', () => {
                 calendar = new Calendar({ value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');
@@ -2129,10 +2149,10 @@ describe('Calendar', () => {
                 expect(calendar.currentView()).toBe("Decade");
                 keyEventArgs.action = 'home';
                 calendar.keyActionHandle(keyEventArgs);
-                expect(document.querySelector('.e-focused-date').textContent).toBe('2009');
+                expect(document.querySelector('.e-focused-date').textContent).toBe('2010');
                 keyEventArgs.action = 'end';
                 calendar.keyActionHandle(keyEventArgs);
-                expect(document.querySelector('.e-focused-date').textContent).toBe('2010');
+                expect(document.querySelector('.e-focused-date').textContent).toBe('2019');
             });
             it('Today button enter key support case ', () => {
                 calendar = new Calendar({ value: new Date('3/3/2017') });
@@ -3989,62 +4009,64 @@ describe(' Islamic Calendar', () => {
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
             expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('Jum. I');
         });
+        // Test case has been changed since decade view has been modified.
         it('selected date with previous and next navigation test case in Decade view', () => {
             Calendar.Inject(Islamic)
-            calendar = new Calendar({ value: new Date('1/1/2020'), start: "Decade", calendarMode: 'Islamic' });
+            calendar = new Calendar({ value: new Date('1/1/2022'), start: "Decade", calendarMode: 'Islamic' });
             calendar.appendTo('#calendar');
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1431 - 1440');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1441 - 1450');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
-            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('1441');
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('1443');
             (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
             (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(0);
             (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
             (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1431 - 1440');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1441 - 1450');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
-            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('1441');
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('1443');
         });
+        // Test case has been changed since decade view has been modified.
         it('selected date with drillup and drilldown navigation test case', () => {
             Calendar.Inject(Islamic)
-            calendar = new Calendar({ value: new Date('1/1/2020'), calendarMode: 'Islamic' });
+            calendar = new Calendar({ value: new Date('1/1/2022'), calendarMode: 'Islamic' });
             calendar.appendTo('#calendar');
             /* month view */
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('Jumada I1441');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('Jumada I1443');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
-            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('6');
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('28');
             (<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).click();
             /* year view */
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1441');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1443');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
             expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('Jum. I');
             (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1442');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1444');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(0);
             (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
             (<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).click();
             /* decade view */
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1431 - 1440');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1441 - 1450');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
-            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('1441');
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('1443');
             (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1420 - 1430');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1431 - 1440');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(0);
             (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
             (<HTMLElement>document.getElementsByClassName('e-selected')[0]).click();
             /* year view */
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1441');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1443');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
             expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('Jum. I');
             (<HTMLElement>document.getElementsByClassName('e-date-icon-prev')[0]).click();
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1440');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('1442');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(0);
             (<HTMLElement>document.getElementsByClassName('e-date-icon-next')[0]).click();
             (<HTMLElement>document.getElementsByClassName('e-selected')[0]).click();
             /* month view */
-            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('Jumada I1441');
+            expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('Jumada I1443');
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
-            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('6');
+            expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('28');
         });
         it('initialization testcase', () => {
             Calendar.Inject(Islamic)

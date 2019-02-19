@@ -166,7 +166,7 @@ export class DiagramRenderer {
         } else if (element instanceof DiagramNativeElement) {
             this.renderNativeElement(element, canvas, transform, parentSvg, fromPalette);
         } else if (element instanceof DiagramHtmlElement) {
-            this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette);
+            this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette, indexValue);
         } else {
             this.renderRect(element, canvas, transform, parentSvg);
         }
@@ -995,7 +995,7 @@ export class DiagramRenderer {
 
     private renderHTMLElement(
         element: DiagramHtmlElement, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
-        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean): void {
+        transform?: Transforms, parentSvg?: SVGSVGElement, fromPalette?: boolean, indexValue?: number): void {
         let options: BaseAttributes = this.getBaseAttributes(element, transform);
         (options as RectAttributes).fill = 'transparent';
         (options as RectAttributes).cornerRadius = element.cornerRadius;
@@ -1003,7 +1003,7 @@ export class DiagramRenderer {
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
         if (this.svgRenderer) {
             this.svgRenderer.drawHTMLContent(
-                element, htmlLayer.children[0] as HTMLElement, transform, isDiagramChild(htmlLayer));
+                element, htmlLayer.children[0] as HTMLElement, transform, isDiagramChild(htmlLayer), indexValue);
         }
     }
 
@@ -1080,7 +1080,8 @@ export class DiagramRenderer {
                 let groupElement: HTMLCanvasElement | SVGElement;
                 groupElement = this.getParentElement(group, canvas, parentSvg, indexValue).g || canvas;
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children)) || parentSvg;
-                let svgNativeParent: SvgParent = this.getParentElement(this.hasNativeParent(group.children), groupElement, parentSvg);
+                let svgNativeParent: SvgParent =
+                    this.getParentElement(this.hasNativeParent(group.children), groupElement, parentSvg, indexValue);
                 svgParent.svg = svgNativeParent.svg || parentSvg;
                 svgParent.g = svgNativeParent.g || groupElement;
                 if (createParent) {
@@ -1112,7 +1113,7 @@ export class DiagramRenderer {
                 if (!this.isSvgMode) {
                     child.flip = group.flip;
                 }
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
                     this.renderFlipElement(child, parentG, flip);
@@ -1296,11 +1297,13 @@ export class DiagramRenderer {
 
 
     /** @private */
-    public updateNode
-        (element: DiagramElement, diagramElementsLayer: HTMLCanvasElement, htmlLayer: HTMLElement, transform?: Transforms): void {
-        this.renderElement(element as Container, diagramElementsLayer, htmlLayer, transform, this.getParentSvg(element));
+    public updateNode(
+        element: DiagramElement, diagramElementsLayer: HTMLCanvasElement, htmlLayer: HTMLElement,
+        transform?: Transforms, insertIndex?: number): void {
+        this.renderElement(
+            element as Container, diagramElementsLayer, htmlLayer, transform,
+            this.getParentSvg(element), undefined, undefined, insertIndex);
     }
-
 
     // public empty(node: HTMLElement | string): void {
     //     if (typeof node === 'string') {

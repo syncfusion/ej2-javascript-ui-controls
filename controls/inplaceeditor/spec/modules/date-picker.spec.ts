@@ -263,9 +263,9 @@ describe('DatePicker Control', () => {
             setTimeout(() => {
                 expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
                 buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
-                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
                 editEle = <HTMLElement>select('.' + classes.INPUT, ele);
                 errorEle = <HTMLElement>select('.e-date-wrapper', editEle);
+                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
                 expect(errorEle.classList.contains(classes.ERROR)).toEqual(true);
                 done();
             }, 400);

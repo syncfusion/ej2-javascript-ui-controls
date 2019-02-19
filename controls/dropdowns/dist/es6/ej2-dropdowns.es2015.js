@@ -5314,17 +5314,19 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     checkTextLength() {
         return this.targetElement().length < 1;
     }
-    popupKeyActions(keyCode) {
-        switch (keyCode) {
+    popupKeyActions(e) {
+        switch (e.keyCode) {
             case 38:
                 this.hidePopup();
                 if (this.mode === 'CheckBox') {
                     this.inputElement.focus();
                 }
+                e.preventDefault();
                 break;
             case 40:
                 if (!this.isPopupOpen()) {
                     this.showPopup();
+                    e.preventDefault();
                 }
                 break;
         }
@@ -5344,8 +5346,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             return;
         }
         if (e.altKey) {
-            this.popupKeyActions(e.keyCode);
-            e.preventDefault();
+            this.popupKeyActions(e);
             return;
         }
         else if (this.isPopupOpen()) {

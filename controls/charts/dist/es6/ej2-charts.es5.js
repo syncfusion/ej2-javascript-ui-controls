@@ -23384,7 +23384,7 @@ var PieBase = /** @__PURE__ @class */ (function (_super) {
      */
     PieBase.prototype.doAnimation = function (slice, series) {
         var _this = this;
-        var startAngle = series.startAngle - 85;
+        var startAngle = series.startAngle - 90;
         var value;
         var radius = Math.max(this.accumulation.availableSize.height, this.accumulation.availableSize.width) * 0.75;
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)

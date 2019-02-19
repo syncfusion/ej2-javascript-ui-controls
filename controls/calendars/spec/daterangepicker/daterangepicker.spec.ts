@@ -2675,6 +2675,7 @@ describe('DateRangePicker', () => {
             daterangepicker.keyInputHandler(keyEventArgs);
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('January 2020');
         });
+        // Test case has been changed since decade view has been modified.
         it('move focus from on td to other td cell', function () {
             daterangepicker.value = [new Date('2/1/2019'), new Date('1/1/2020')];
             daterangepicker.dataBind();
@@ -2707,10 +2708,10 @@ describe('DateRangePicker', () => {
             daterangepicker.keyInputHandler(keyEventArgs);
             keyEventArgs.action = 'home';
             daterangepicker.keyInputHandler(keyEventArgs);
-            expect((<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).textContent).toBe('2009');
+            expect((<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).textContent).toBe('2010');
             keyEventArgs.action = 'end';
             daterangepicker.keyInputHandler(keyEventArgs);
-            expect((<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).textContent).toBe('2010');
+            expect((<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).textContent).toBe('2019');
         });
 
         it('move focus from right to cancel button', function () {
@@ -6488,42 +6489,162 @@ describe('DateRangePicker', () => {
             }
             document.body.innerHTML = '';
         });
-        it('Input element value rest test case', () => {
-            range = new DateRangePicker({ value: [new Date(), new Date()] });
+         // Test cases for reset the component when value has been given.
+        it('Input element value reset test case (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')] });
             range.appendTo('#range');
             (<any>document.getElementById("form-element")).reset();
-            expect(range.element.value).toBe('');
-            expect(range.value).toBe(null);
+            range.dataBind();
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
+            expect(range.value !== null).toBe(true);
         });
-        it('Input element value rest with enabled test case', () => {
-            range = new DateRangePicker({ value: [new Date(), new Date()], enabled: false });
+        it('Input element value changing dynamically (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')] });
+            range.appendTo('#range');
+            range.element.value = [new Date('02/12/2018'), new Date('5/7/2017')];
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
+            expect(range.value !== null).toBe(true);
+        });
+        it('Input element value changing dynamically to null (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')] });
+            range.appendTo('#range');
+            range.element.value = null;
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
+            expect(range.value !== null).toBe(true);
+        });
+        it('clear Input element value changing dynamically by clear icon (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')] });
+            range.appendTo('#range');
+            (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
+            expect(range.value !== null).toBe(true);
+        });
+        
+        // below test cases are modified since this behavior has been changed in all input component.
+
+        it('Input element value reset with enabled test case (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')], enabled: false });
             range.appendTo('#range');
             (<any>document.getElementById("form-element")).reset();
-            expect(range.element.value).toBe('');
+            range.dataBind();
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
         });
-        it('Form rest with floatLabeltype("Auto") property test case', () => {
-            range = new DateRangePicker({ value: [new Date(), new Date()], floatLabelType: "Auto" });
+        it('Form reset with floatLabeltype("Auto") property test case (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')], floatLabelType: "Auto" });
             range.appendTo('#range');
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
             (<any>document.getElementById("form-element")).reset();
-            expect(document.querySelector('.e-float-text').classList.contains('e-label-bottom')).toBe(true);
-            expect(range.element.value).toBe('');
+            range.dataBind();
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
         });
-        it('Form rest with floatLabeltype("Always") property test case', () => {
-            range = new DateRangePicker({ value: [new Date(), new Date()], floatLabelType: "Always" });
+        it('Form reset with floatLabeltype("Always") property test case (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')], floatLabelType: "Always" });
             range.appendTo('#range');
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
             (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
-            expect(range.element.value).toBe('');
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
         });
-        it('Form rest with floatLabeltype("Never") property test case', () => {
-            range = new DateRangePicker({ value: [new Date(), new Date()], floatLabelType: "Never" });
+        it('Form reset with floatLabeltype("Never") property test case (initialized)', () => {
+            range = new DateRangePicker({ value: [new Date('2/2/2018'), new Date('4/4/2018')], floatLabelType: "Never" });
             range.appendTo('#range');
             expect(document.querySelector('.e-float-text')).toBe(null);
             (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(document.querySelector('.e-float-text')).toBe(null);
+            expect(range.element.value).toBe('2/2/2018 - 4/4/2018');
+        });
+        it('Input value reset in destroy case (initialized) ', () => {
+            range = new DateRangePicker({ value: [new Date('02/02/2017'), new Date('4/4/2018')] });
+            range.appendTo('#range');
+            range.destroy();
+            (<any>document.getElementById("form-element")).reset();
+            expect((<any>document.getElementById('range')).value !== '2/2/2017 - 4/4/2018').toBe(true);
+            range = null;
+        });
+        
+        // Test cases for reset the component when value not initialized
+
+        it('Input element value changing dynamically', () => {
+            range = new DateRangePicker();
+            range.appendTo('#range');
+            range.element.value = [new Date('02/12/2018'), new Date('5/7/2017')];
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(range.element.value).toBe('');
+            expect(range.value === null).toBe(true);
+        });
+        it('Input element value changing dynamically to null', () => {
+            range = new DateRangePicker();
+            range.appendTo('#range');
+            range.element.value = null;
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(range.element.value).toBe('');
+            expect(range.value === null).toBe(true);
+        });
+        it('clear Input element value changing dynamically by clear icon', () => {
+            range = new DateRangePicker();
+            range.appendTo('#range');
+            (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(range.element.value).toBe('');
+            expect(range.value === null).toBe(true);
+        });
+        it('Input element value reset with enabled test case', () => {
+            range = new DateRangePicker();
+            range.appendTo('#range');
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(range.element.value).toBe('');
+        });
+
+        // Below case need to be fixed by the component.
+
+        // it('Form reset with floatLabeltype("Auto") property test case', () => {
+        //     range = new DateRangePicker({ floatLabelType: "Auto" });
+        //     range.appendTo('#range');
+        //     expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+        //     (<any>document.getElementById("form-element")).reset();
+        //     range.dataBind();
+        //     expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+        //     expect(range.element.value).toBe('');
+        // });
+
+        it('Form reset with floatLabeltype("Always") property test case', () => {
+            range = new DateRangePicker({  floatLabelType: "Always" });
+            range.appendTo('#range');
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            expect(range.element.value).toBe('');
+        });
+        it('Form reset with floatLabeltype("Never") property test case', () => {
+            range = new DateRangePicker({  floatLabelType: "Never" });
+            range.appendTo('#range');
+            expect(document.querySelector('.e-float-text')).toBe(null);
+            (<any>document.getElementById("form-element")).reset();
+            range.dataBind();
             expect(document.querySelector('.e-float-text')).toBe(null);
             expect(range.element.value).toBe('');
+        });
+        it('Input value reset in destroy case ', () => {
+            range = new DateRangePicker({});
+            range.appendTo('#range');
+            range.destroy();
+            (<any>document.getElementById("form-element")).reset();
+            expect((<any>document.getElementById('range')).value === '').toBe(true);
+            range = null;
         });
     });
 

@@ -3482,7 +3482,6 @@ let Toolbar = class Toolbar extends Component {
             detach(this.popObj.element);
             this.popObj = null;
             ele.setAttribute('aria-haspopup', 'false');
-            ele.classList.remove('e-toolpop');
         }
     }
     ignoreEleFetch(index, innerEle) {
@@ -4286,6 +4285,7 @@ const CLS_DISABLE$3 = 'e-overlay';
 const CLS_TOGANIMATE = 'e-toggle-animation';
 const CLS_NEST = 'e-nested';
 const CLS_EXPANDSTATE = 'e-expand-state';
+const CLS_CONTAINER = 'e-accordion-container';
 class AccordionActionSettings extends ChildProperty {
 }
 __decorate$4([
@@ -4466,7 +4466,14 @@ let Accordion = class Accordion extends Component {
     }
     ctrlTemplate() {
         this.ctrlTem = this.element.cloneNode(true);
-        let innerEles = this.element.children;
+        let innerEles;
+        let rootEle = select('.' + CLS_CONTAINER, this.element);
+        if (rootEle) {
+            innerEles = rootEle.children;
+        }
+        else {
+            innerEles = this.element.children;
+        }
         let content;
         addClass([].slice.call(innerEles), [CLS_ITEM$1]);
         [].slice.call(innerEles).forEach((el) => {
@@ -6285,6 +6292,7 @@ let Tab = class Tab extends Component {
                         ele.removeChild(ele.firstChild);
                     }
                 }
+                this.clearTemplate(['content']);
                 this.templateEle = [];
                 this.getContent(ele, this.items[0].content, 'render');
                 ele.classList.remove(CLS_ACTIVE$1);
@@ -6405,7 +6413,9 @@ let Tab = class Tab extends Component {
         this.setActiveBorder();
         let curActItem = select('.' + CLS_HEADER$1 + ' #' + id, this.element);
         this.refreshItemVisibility(curActItem);
-        curActItem.firstChild.focus();
+        if (!this.initRender) {
+            curActItem.firstChild.focus();
+        }
         let eventArg = {
             previousItem: this.prevItem,
             previousIndex: this.prevIndex,

@@ -373,6 +373,13 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property(false)
     public enableSimpleMultiRowSelection: boolean;
+
+    /**
+     * If 'enableToggle' set to true, then the user can able to perform toggle for the selected row.
+     * @default true
+     */
+    @Property(true)
+    public enableToggle: boolean;
 }
 
 /**    
@@ -2348,7 +2355,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     requireGridRefresh = true;
                     break;
                 default:
-                    this.extendedPropertyChange(prop, newProp);
+                    this.extendedPropertyChange(prop, newProp, requireGridRefresh);
             }
         }
         if (checkCursor) { this.updateDefaultCursor(); }
@@ -2361,11 +2368,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         } else if (requireRefresh) {
             this.notify(events.modelChanged, args);
             requireRefresh = false;
+            this.maintainSelection(newProp.selectedRowIndex);
         }
     }
 
     /* tslint:disable-next-line:max-line-length */
-    private extendedPropertyChange(prop: string, newProp: GridModel): void {
+    private extendedPropertyChange(prop: string, newProp: GridModel, requireGridRefresh: boolean): void {
         switch (prop) {
             case 'enableRtl':
                 this.updateRTL();
@@ -2411,15 +2419,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             case 'columnMenuItems':
                 this.notify(events.uiUpdate, { module: 'columnMenu', enable: this.columnMenuItems }); break;
             case 'contextMenuItems':
-                this.notify(events.uiUpdate, { module: 'contextMenu', enable: this.contextMenuItems });
-                break;
+                this.notify(events.uiUpdate, { module: 'contextMenu', enable: this.contextMenuItems }); break;
             case 'showColumnChooser':
                 this.notify(events.uiUpdate, { module: 'columnChooser', enable: this.showColumnChooser });
                 break;
             case 'filterSettings':
                 this.updateStackedFilter();
-                this.notify(events.inBoundModelChanged, { module: 'filter', properties: newProp.filterSettings });
-                break;
+                this.notify(events.inBoundModelChanged, { module: 'filter', properties: newProp.filterSettings }); break;
             case 'searchSettings':
                 this.notify(events.inBoundModelChanged, { module: 'search', properties: newProp.searchSettings }); break;
             case 'sortSettings':
@@ -2453,7 +2459,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 } else {
                     this.getDataModule().setState({ isDataChanged: false });
                     this.notify(events.dataSourceModified, {});
+                    if (!requireGridRefresh) {
                     this.renderModule.refresh();
+                    }
                 } break;
             case 'enableHover':
                 let action: Function = newProp.enableHover ? addClass : removeClass;
@@ -2464,6 +2472,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.selectRow(newProp.selectedRowIndex);
                 }
                 this.isSelectedRowIndexUpdating = false; break;
+        }
+    }
+
+    private maintainSelection(index: number): void {
+        if (index !== -1) {
+            let fn: Function = () => {
+                this.selectRow(index);
+                this.off(events.contentReady, fn);
+            };
+            this.on(events.contentReady, fn, this);
         }
     }
 

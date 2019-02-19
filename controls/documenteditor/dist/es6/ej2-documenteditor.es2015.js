@@ -18344,6 +18344,7 @@ class LayoutViewer {
         this.styles.clear();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
+        this.defaultTabWidth = 36;
     }
     /**
      * @private
@@ -20087,6 +20088,9 @@ class SfdtReader {
         let jsonObject = JSON.parse(json);
         this.parseCharacterFormat(jsonObject.characterFormat, this.viewer.characterFormat);
         this.parseParagraphFormat(jsonObject.paragraphFormat, this.viewer.paragraphFormat);
+        if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
+            this.viewer.defaultTabWidth = jsonObject.defaultTabWidth;
+        }
         if (!isNullOrUndefined(jsonObject.background)) {
             this.viewer.backgroundColor = this.getColor(jsonObject.background.color);
         }
@@ -53046,6 +53050,7 @@ class SfdtExport {
         this.document.sections = [];
         this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
         this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
+        this.document.defaultTabWidth = this.viewer.defaultTabWidth;
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             // For selection
             let startPara = line.paragraph;

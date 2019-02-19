@@ -537,6 +537,7 @@ export abstract class LayoutViewer {
         this.styles.clear();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
+        this.defaultTabWidth = 36;
     }
     /**
      * @private

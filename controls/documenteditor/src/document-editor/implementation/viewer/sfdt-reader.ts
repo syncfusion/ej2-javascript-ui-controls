@@ -35,6 +35,9 @@ export class SfdtReader {
         let jsonObject: any = JSON.parse(json);
         this.parseCharacterFormat(jsonObject.characterFormat, this.viewer.characterFormat);
         this.parseParagraphFormat(jsonObject.paragraphFormat, this.viewer.paragraphFormat);
+        if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
+            this.viewer.defaultTabWidth = jsonObject.defaultTabWidth;
+        }
         if (!isNullOrUndefined(jsonObject.background)) {
             this.viewer.backgroundColor = this.getColor(jsonObject.background.color);
         }

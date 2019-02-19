@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- Gauge is rendering fine now even in small size, when it is moved to the center position.
+
 ## 16.4.53 (2019-02-13)
 
 ### CircularGauge

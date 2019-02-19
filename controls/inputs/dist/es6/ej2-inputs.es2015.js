@@ -651,6 +651,7 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.cloneElement = this.element.cloneNode(true);
         removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
+        this.formEle = closest(this.element, 'form');
         if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
             this.angularTagName = this.element.tagName;
             let input = this.createElement('input');
@@ -678,6 +679,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.initCultureFunc();
         this.checkAttributes();
         this.prevValue = this.value;
+        if (this.formEle) {
+            this.inputEleValue = this.value;
+        }
         this.validateMinMax();
         this.validateStep();
         if (this.placeholder === null) {
@@ -706,6 +710,9 @@ let NumericTextBox = class NumericTextBox extends Component {
                 if (this.decimals) {
                     this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
                 }
+            }
+            if (this.element.getAttribute('value') || this.value) {
+                this.element.setAttribute('value', this.element.value);
             }
         }
     }
@@ -855,6 +862,14 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.setProperties({ value: null }, true);
         this.setElementValue('');
     }
+    resetFormHandler() {
+        if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
+            this.updateValue(null);
+        }
+        else {
+            this.updateValue(this.inputEleValue);
+        }
+    }
     wireEvents() {
         EventHandler.add(this.element, 'focus', this.focusIn, this);
         EventHandler.add(this.element, 'blur', this.focusOut, this);
@@ -866,6 +881,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         EventHandler.add(this.element, 'paste', this.pasteHandler, this);
         if (this.enabled) {
             this.bindClearEvent();
+            if (this.formEle) {
+                EventHandler.add(this.formEle, 'reset', this.resetFormHandler, this);
+            }
         }
     }
     wireSpinBtnEvents() {
@@ -886,6 +904,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         EventHandler.remove(this.element, 'keypress', this.keyPressHandler);
         EventHandler.remove(this.element, 'change', this.changeHandler);
         EventHandler.remove(this.element, 'paste', this.pasteHandler);
+        if (this.formEle) {
+            EventHandler.remove(this.formEle, 'reset', this.resetFormHandler);
+        }
     }
     unwireSpinBtnEvents() {
         /* unbind spin button events */
@@ -1732,6 +1753,9 @@ function wireEvents() {
     EventHandler.add(this.element, 'drop', maskInputDropHandler, this);
     if (this.enabled) {
         bindClearEvent.call(this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', resetFormHandler, this);
+        }
     }
 }
 /**
@@ -1747,6 +1771,9 @@ function unwireEvents() {
     EventHandler.remove(this.element, 'blur', maskInputBlurHandler);
     EventHandler.remove(this.element, 'paste', maskInputPasteHandler);
     EventHandler.remove(this.element, 'cut', maskInputCutHandler);
+    if (this.formElement) {
+        EventHandler.remove(this.formElement, 'reset', resetFormHandler);
+    }
 }
 /**
  * @hidden
@@ -1772,6 +1799,14 @@ function clear(event) {
     });
     triggerMaskChangeEvent.call(this, event, value);
     this.element.setSelectionRange(0, 0);
+}
+function resetFormHandler() {
+    if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
+        setElementValue.call(this, this.promptMask);
+    }
+    else {
+        this.value = this.initInputValue;
+    }
 }
 /**
  * @hidden
@@ -2640,6 +2675,7 @@ const CONTROL$1 = 'e-control';
 let MaskedTextBox = class MaskedTextBox extends Component {
     constructor(options, element) {
         super(options, element);
+        this.initInputValue = '';
     }
     /**
      * Gets the component name
@@ -2671,6 +2707,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         this.cloneElement = this.element.cloneNode(true);
         removeClass([this.cloneElement], [CONTROL$1, COMPONENT$1, 'e-lib']);
         this.angularTagName = null;
+        this.formElement = closest(this.element, 'form');
         if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
             this.angularTagName = this.element.tagName;
             let input = this.createElement('input');
@@ -2686,6 +2723,9 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             this.element.appendChild(input);
             this.element = input;
             setValue('ej2_instances', ejInstance, this.element);
+        }
+        if (this.formElement) {
+            this.initInputValue = this.value;
         }
     }
     /**
@@ -2717,6 +2757,9 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             this.preEleVal = this.element.value;
             if (!Browser.isDevice && (Browser.info.version === '11.0' || Browser.info.name === 'edge')) {
                 this.element.blur();
+            }
+            if (this.element.getAttribute('value') || this.value) {
+                this.element.setAttribute('value', this.element.value);
             }
         }
     }
@@ -6774,6 +6817,9 @@ let Uploader = class Uploader extends Component {
                     this.setLocalizedTexts();
                     this.preLocaleObj = getValue('currentLocale', this.l10n);
                     break;
+                case 'cssClass':
+                    this.setCSSClass(oldProp.cssClass);
+                    break;
             }
         }
     }
@@ -6855,8 +6901,8 @@ let Uploader = class Uploader extends Component {
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.checkHTMLAttributes();
-        if (this.asyncSettings.saveUrl === '' && this.asyncSettings.removeUrl === '' && !this.autoUpload) {
-            let parentEle = this.element.parentElement;
+        let parentEle = this.element.parentElement;
+        if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
                 if (parentEle.tagName === 'FORM') {
                     this.isForm = true;
@@ -6943,6 +6989,7 @@ let Uploader = class Uploader extends Component {
         this.setRTL();
         this.renderPreLoadFiles();
         this.setControlStatus();
+        this.setCSSClass();
     }
     renderBrowseButton() {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
@@ -7149,6 +7196,14 @@ let Uploader = class Uploader extends Component {
             }
         }
     }
+    setCSSClass(oldCSSClass) {
+        if (this.cssClass) {
+            addClass([this.uploadWrapper], this.cssClass.split(this.cssClass.indexOf(',') > -1 ? ',' : ' '));
+        }
+        if (oldCSSClass) {
+            removeClass([this.uploadWrapper], oldCSSClass.split(' '));
+        }
+    }
     wireEvents() {
         EventHandler.add(this.browseButton, 'click', this.browseButtonClick, this);
         EventHandler.add(this.element, 'change', this.onSelectFiles, this);
@@ -7166,6 +7221,9 @@ let Uploader = class Uploader extends Component {
         EventHandler.remove(this.browseButton, 'click', this.browseButtonClick);
         EventHandler.remove(this.element, 'change', this.onSelectFiles);
         EventHandler.remove(document, 'click', this.removeFocus);
+        if (this.isForm) {
+            EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
         this.keyboardModule.destroy();
     }
     resetForm() {
@@ -9133,6 +9191,9 @@ __decorate$4([
     Property(false)
 ], Uploader.prototype, "enableRtl", void 0);
 __decorate$4([
+    Property('')
+], Uploader.prototype, "cssClass", void 0);
+__decorate$4([
     Property(true)
 ], Uploader.prototype, "enabled", void 0);
 __decorate$4([
@@ -11006,6 +11067,8 @@ let TextBox = class TextBox extends Component {
     constructor(options, element) {
         super(options, element);
         this.previousValue = null;
+        this.isAngular = false;
+        this.isForm = false;
     }
     /**
      * Calls internally if any of the property value is changed.
@@ -11072,6 +11135,10 @@ let TextBox = class TextBox extends Component {
     }
     preRender() {
         this.cloneElement = this.element.cloneNode(true);
+        this.formElement = this.element.closest('form');
+        if (!isNullOrUndefined(this.formElement)) {
+            this.isForm = true;
+        }
         /* istanbul ignore next */
         if (this.element.tagName === 'EJS-TEXTBOX') {
             let ejInstance = getValue('ej2_instances', this.element);
@@ -11139,14 +11206,49 @@ let TextBox = class TextBox extends Component {
         if (!isNullOrUndefined(this.value)) {
             Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
         }
+        if (!isNullOrUndefined(this.value)) {
+            this.initialValue = this.value;
+            this.setInitialValue();
+        }
+    }
+    setInitialValue() {
+        if (!this.isAngular) {
+            this.element.setAttribute('value', this.initialValue);
+        }
     }
     wireEvents() {
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
         EventHandler.add(this.element, 'input', this.inputHandler, this);
         EventHandler.add(this.element, 'change', this.changeHandler, this);
+        if (this.isForm) {
+            EventHandler.add(this.formElement, 'reset', this.resetForm, this);
+        }
         if (this.enabled) {
             this.bindClearEvent();
+        }
+    }
+    resetValue(value) {
+        let prevOnChange = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        this.value = value;
+        this.isProtectedOnChange = prevOnChange;
+    }
+    resetForm() {
+        if (this.isAngular) {
+            this.resetValue('');
+        }
+        else {
+            this.resetValue(this.initialValue);
+        }
+        let label = this.textboxWrapper.container.querySelector('.e-float-text');
+        if (isNullOrUndefined(this.initialValue) || this.initialValue === '') {
+            label.classList.add('e-label-bottom');
+            label.classList.remove('e-label-top');
+        }
+        else if (this.initialValue !== '') {
+            label.classList.add('e-label-top');
+            label.classList.remove('e-label-bottom');
         }
     }
     focusHandler(args) {
@@ -11170,12 +11272,18 @@ let TextBox = class TextBox extends Component {
         this.trigger('blur', eventArgs);
     }
     inputHandler(args) {
+        // tslint:disable-next-line
+        let textboxObj = this;
         let eventArgs = {
             event: args,
             value: this.element.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
+        if (this.isAngular) {
+            textboxObj.localChange({ value: this.element.value });
+            this.preventChange = true;
+        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     }
@@ -11193,7 +11301,13 @@ let TextBox = class TextBox extends Component {
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
-        this.trigger('change', eventArgs);
+        if (this.isAngular && this.preventChange !== true) {
+            this.trigger('change', eventArgs);
+        }
+        else if (isNullOrUndefined(this.isAngular) || !this.isAngular) {
+            this.trigger('change', eventArgs);
+        }
+        this.preventChange = false;
         this.previousValue = this.value;
     }
     bindClearEvent() {
@@ -11204,8 +11318,16 @@ let TextBox = class TextBox extends Component {
     resetInputHandler(event) {
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
+            let previousValue = this.value;
             Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
             this.value = '';
+            let eventArgs = {
+                event: event,
+                value: this.element.value,
+                previousValue: previousValue,
+                container: this.textboxWrapper.container
+            };
+            this.trigger('input', eventArgs);
         }
     }
     unWireEvents() {
@@ -11213,6 +11335,9 @@ let TextBox = class TextBox extends Component {
         EventHandler.remove(this.element, 'blur', this.focusOutHandler);
         EventHandler.remove(this.element, 'input', this.inputHandler);
         EventHandler.remove(this.element, 'change', this.changeHandler);
+        if (this.isForm) {
+            EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
     }
     /**
      * Removes the component from the DOM and detaches all its related event handlers.

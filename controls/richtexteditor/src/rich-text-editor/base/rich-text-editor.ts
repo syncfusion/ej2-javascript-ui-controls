@@ -677,7 +677,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             let rteOuterWrapper: HTMLElement = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
             }) as HTMLElement;
-            rteOuterWrapper.innerHTML = (this.element as HTMLTextAreaElement).value;
+            this.element.innerHTML = '';
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element as HTMLTextAreaElement;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
@@ -689,9 +689,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.valueContainer.name = this.getID();
         addClass([this.valueContainer], classes.CLS_RTE_HIDDEN);
-        if (this.value !== null) {
-            this.valueContainer.value = this.value;
-        }
         this.element.appendChild(this.valueContainer);
     }
 
@@ -793,6 +790,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.disableToolbarItem(['Undo', 'Redo']);
         }
         this.setContentHeight();
+        if (this.value !== null) {
+            this.valueContainer.defaultValue = this.value;
+        }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
     }
 
@@ -1642,8 +1642,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private resetHandler(): void {
-        this.setProperties({ value: null });
-        this.invokeChangeEvent();
+        this.setProperties({ value: this.valueContainer.defaultValue === '' ? null : this.valueContainer.defaultValue });
     }
 
     /**

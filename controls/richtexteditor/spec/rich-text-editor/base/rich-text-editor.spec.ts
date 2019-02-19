@@ -2434,7 +2434,7 @@ describe('RTE Form reset', () => {
                 </div>` });
         document.body.appendChild(element);
         rteObj = new RichTextEditor({
-            value: `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`,
+            value: `<div><p>First p node-0</p></div>`,
             placeholder: 'Type something'
         });
         rteObj.appendTo('#defaultRTE');
@@ -2442,11 +2442,11 @@ describe('RTE Form reset', () => {
         rteEle = rteObj.element;
         done();
     });
-    it(" Clear the value property while click on reset button", () => {
+    it(" Check the value property while click on reset button", () => {
         expect(rteObj.value !== null).toBe(true);
         document.getElementById('resetbtn').click();
-        expect(rteObj.value === null).toBe(true);
-        expect((rteObj as any).inputElement.innerHTML).toEqual('<p><br></p>');
+        expect(rteObj.value === '<div><p>First p node-0</p></div>').toBe(true);
+        expect((rteObj as any).inputElement.innerHTML).toEqual('<div><p>First p node-0</p></div>');
     });
     afterAll(() => {
         rteObj.destroy();

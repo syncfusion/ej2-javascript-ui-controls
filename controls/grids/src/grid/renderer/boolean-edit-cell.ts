@@ -63,7 +63,7 @@ export class BooleanEditCell implements IEditCell {
         this.obj = new CheckBox(
             extend(
                 {
-                    label: this.parent.editSettings.mode !== 'Dialog' ? '' : args.column.headerText,
+                    label: this.parent.editSettings.mode !== 'Dialog' ? ' ' : args.column.headerText,
                     checked: chkState,
                     disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
                     change: this.checkBoxChange.bind(this)

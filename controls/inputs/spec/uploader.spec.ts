@@ -161,6 +161,71 @@ describe('Uploader Control', () => {
             expect(liElements[0].querySelector('.e-icons').classList.contains('e-file-delete-btn')).toBe(true);
         });
     })
+    describe('cssClass Api testing', () => {
+        let uploadObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'}); 
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        });
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('cssClass testing single class', () => {
+            uploadObj = new Uploader({cssClass: 'class1'}, '#upload');
+            expect(uploadObj.uploadWrapper.classList.contains('class1')).toEqual(true);
+        });       
+        it('cssClass separated by comma', () => {
+            uploadObj = new Uploader({cssClass: 'class1,class2'}, '#upload');
+            expect(uploadObj.uploadWrapper.classList.contains('class1')).toEqual(true);
+            expect(uploadObj.uploadWrapper.classList.contains('class2')).toEqual(true);
+        });
+    })
+    describe('cssClass Api testing with null and undefined', () => {
+        let uploadObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'}); 
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        });
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('cssClass testing initial null', () => {
+        uploadObj = new Uploader({cssClass: null}, '#upload');
+        expect(uploadObj.uploadWrapper.classList.length).toEqual(3);
+        });
+        it('cssClass testing initial undefined', () => {
+            uploadObj = new Uploader({cssClass: undefined}, '#upload');
+            expect(uploadObj.uploadWrapper.classList.length).toEqual(3);
+        });
+    });
+    describe('cssClass Api', () => {
+        let uploadObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'}); 
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({cssClass: 'class1 class2' }, '#upload');
+         })
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('cssClass testing multiclass', () => {
+            expect(uploadObj.uploadWrapper.classList.contains('class1')).toEqual(true);
+            expect(uploadObj.uploadWrapper.classList.contains('class2')).toEqual(true);
+        });
+        it('cssClass testing undefined', () => {
+            let length=uploadObj.uploadWrapper.classList.length;
+            uploadObj.cssClass = undefined;
+            expect(uploadObj.uploadWrapper.classList.length).toBe(length);
+        });   
+        it('cssClass testing null check', () => {
+            let length=uploadObj.uploadWrapper.classList.length;
+            uploadObj.cssClass = null;
+            expect(uploadObj.uploadWrapper.classList.length).toBe(length);
+        });
+    })
 
     describe('onProperty changes ', () => {
         let uploadObj: any;
@@ -2596,6 +2661,42 @@ describe('Uploader Control', () => {
         });
     })
 
+    
+    describe('Form support', () => {
+        let uploadObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload', attrs: {accept : '.png'}});            
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});
+            let resetButton: HTMLElement = createElement('button',{attrs: {type: 'reset', id: 'reset'}});
+            form.appendChild(element);
+            form.appendChild(resetButton);
+            document.body.appendChild(form);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({ 
+                asyncSettings: {
+                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                },
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Reset', () => {
+            let fileObj: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["Nice One"], "sample2.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            let element : HTMLFormElement = <HTMLFormElement>document.getElementById("form1");
+            expect(uploadObj.getFilesData().length).toEqual(2);
+            expect(uploadObj.fileList.length).toEqual(2);
+            (document.querySelector('#reset') as HTMLButtonElement).click();
+            expect(uploadObj.getFilesData().length).toEqual(0);
+            expect(uploadObj.fileList.length).toEqual(0);
+        });
+    })
 
     describe('Cancel & retry public methods for', () => {
         let iconElement : any;

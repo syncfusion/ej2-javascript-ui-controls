@@ -21,14 +21,14 @@
         & .e-header .e-title:hover {
           color: $range-calendar-header-dark-color;
           text-decoration: none;
-        }& .e-content.e-month .e-range-hover {
+        }& .e-conten .e-range-hover {
           background-color: $range-hover-color;
           color: $range-calendar-dark-color;
         }& .e-content.e-month .e-today.e-range-hover span {
           background-color: $range-today-color;
           border: $range-today-border-color;
           color: $range-calendar-today-color;
-        }& .e-content.e-month .e-range-hover span {
+        }& .e-content .e-range-hover span {
           background: $range-hover-color;
           border: $range-calendar-selection-border;
           color: $range-calendar-dark-color;
@@ -45,16 +45,16 @@
           border: $range-calendar-active-border;
         }& .e-range-hover.e-selected.e-today:hover span.e-day {
           border: $range-calendar-today-start-color;
-        }& .e-content.e-month .e-other-month.e-range-hover,
-        & .e-content.e-month .e-other-month.e-range-hover span,
-        & .e-content.e-month .e-other-month.e-range-hover:hover span.e-day,
-        & .e-content.e-month .e-other-month.e-selected,
-        & .e-content.e-month .e-other-month.e-selected span {
+        }& .e-content .e-other-month.e-range-hover,
+        & .e-content .e-other-month.e-range-hover span,
+        & .e-content .e-other-month.e-range-hover:hover span.e-day,
+        & .e-content .e-other-month.e-selected,
+        & .e-content .e-other-month.e-selected span {
           background-color: $range-other-hover-color;
           border: $range-calendar-other-month-border;
           color: $range-other-month-date;
-        }& .e-content.e-month .e-other-month.e-range-hover,
-        & .e-content.e-month .e-other-month.e-selected {
+        }& .e-content .e-other-month.e-range-hover,
+        & .e-content .e-other-month.e-selected {
           background-color: $range-other-hover-color;
           border: $range-calendar-other-normal-border;
           color: $range-other-month-date;

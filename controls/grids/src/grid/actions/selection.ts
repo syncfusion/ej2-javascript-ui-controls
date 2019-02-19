@@ -358,11 +358,12 @@ export class Selection implements IAction {
             return;
         }
         let args: Object;
+        let checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
         for (let rowIndex of rowIndexes) {
             let rowObj: Row<Column> = this.getRowObj(rowIndex);
             let isUnSelected: boolean = this.selectedRowIndexes.indexOf(rowIndex) > -1;
             this.selectRowIndex(rowIndex);
-            if (isUnSelected) {
+            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.rowDeselect(events.rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
@@ -2072,9 +2073,9 @@ export class Selection implements IAction {
     private rowCellSelectionHandler(rowIndex: number, cellIndex: number): void {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
-                this.selectRow(rowIndex, true);
+                this.selectRow(rowIndex, this.selectionSettings.enableToggle);
             }
-            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
+            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
             if (this.selectedRowCellIndexes.length) {
                 this.updateAutoFillPosition();
             }

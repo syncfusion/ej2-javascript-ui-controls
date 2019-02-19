@@ -261,36 +261,34 @@ export class Splitter extends Component<HTMLDivElement> {
                     this.changeOrientation(newProp.orientation);
                     break;
                 case 'paneSettings':
-                    if (!(newProp.paneSettings instanceof Array && oldProp.paneSettings instanceof Array)) {
-                        let paneCounts: Object[] = Object.keys(newProp.paneSettings);
-                        for (let i: number = 0; i < paneCounts.length; i++) {
-                            let index: number = parseInt(Object.keys(newProp.paneSettings)[i], 10);
-                            let changedPropsCount: number = Object.keys(newProp.paneSettings[index]).length;
-                            for (let j: number = 0; j < changedPropsCount; j++) {
-                                let property: string = Object.keys(newProp.paneSettings[index])[j];
-                                let newVal: string = Object(newProp.paneSettings[index])[property];
-                                index = (this.enableRtl) ? (this.allBars.length - 1) - index : index;
-                                if (property === 'content') {
-                                    this.allPanes[index].innerHTML = '';
-                                    this.setTemplate(newVal, this.allPanes[index]);
-                                }
-                                if (property === 'resizable') {
-                                    EventHandler.remove(this.allBars[index], 'mousedown', this.onMouseDown);
-                                    if (newVal) {
-                                        EventHandler.add(this.allBars[index], 'mousedown', this.onMouseDown, this);
-                                        this.currentSeparator = this.allBars[index];
-                                        if (this.isResizable()) {
-                                            this.showResizer(this.allBars[index]);
-                                            this.allBars[index].classList.add(RESIZABLE_BAR);
-                                        }
-                                    } else {
-                                        this.hideResizer(this.allBars[index]);
-                                        this.allBars[index].classList.remove(RESIZABLE_BAR);
+                    let paneCounts: Object[] = Object.keys(newProp.paneSettings);
+                    for (let i: number = 0; i < paneCounts.length; i++) {
+                        let index: number = parseInt(Object.keys(newProp.paneSettings)[i], 10);
+                        let changedPropsCount: number = Object.keys(newProp.paneSettings[index]).length;
+                        for (let j: number = 0; j < changedPropsCount; j++) {
+                            let property: string = Object.keys(newProp.paneSettings[index])[j];
+                            let newVal: string = Object(newProp.paneSettings[index])[property];
+                            index = (this.enableRtl) ? (this.allBars.length - 1) - index : index;
+                            if (property === 'content') {
+                                this.allPanes[index].innerHTML = '';
+                                this.setTemplate(newVal, this.allPanes[index]);
+                            }
+                            if (property === 'resizable') {
+                                EventHandler.remove(this.allBars[index], 'mousedown', this.onMouseDown);
+                                if (newVal) {
+                                    EventHandler.add(this.allBars[index], 'mousedown', this.onMouseDown, this);
+                                    this.currentSeparator = this.allBars[index];
+                                    if (this.isResizable()) {
+                                        this.showResizer(this.allBars[index]);
+                                        this.allBars[index].classList.add(RESIZABLE_BAR);
                                     }
+                                } else {
+                                    this.hideResizer(this.allBars[index]);
+                                    this.allBars[index].classList.remove(RESIZABLE_BAR);
                                 }
-                                if (property === 'size') {
-                                    this.allPanes[index].style.flexBasis = newVal;
-                                }
+                            }
+                            if (property === 'size') {
+                                this.allPanes[index].style.flexBasis = newVal;
                             }
                         }
                     }

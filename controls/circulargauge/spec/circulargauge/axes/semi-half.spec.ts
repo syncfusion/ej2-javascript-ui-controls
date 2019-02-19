@@ -56,6 +56,18 @@ describe('Circular-Gauge Control', () => {
             gauge.moveToCenter = true;
             gauge.refresh();
         });
+        it('Checking move to center for small size gauges - semi circle ', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                ele = document.getElementById("container_Axis_Group_0");
+                let height : number = ele.getBoundingClientRect().height;
+                let gaugeHeight: number = 186;
+                expect(height >=  gaugeHeight / 2).toBe(true);                
+                done();
+            };
+            gauge.height = '186';
+            gauge.width = '209';
+            gauge.refresh();
+        });
         it('Checking start angle greater than 270 and end angle less than 360 - quarter circle ', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 ele = document.getElementById("container_AxisLine_0");
@@ -66,6 +78,8 @@ describe('Circular-Gauge Control', () => {
                 startAngle: 270,
                 endAngle: 350
             }];
+            gauge.height = '100%';
+            gauge.width = '100%';
             gauge.refresh();
         });
         it('Checking start angle greater than 270 and end angle less than 360 - full circle ', (done: Function) => {

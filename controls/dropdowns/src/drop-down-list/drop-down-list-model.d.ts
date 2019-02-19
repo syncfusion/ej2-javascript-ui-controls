@@ -24,7 +24,7 @@ export interface DropDownListModel extends DropDownBaseModel{
     /**
      * Specifies the height of the popup list.  
      * > For more details about the popup configuration refer to 
-     * [`Popup Configuration`](./getting-started.html#configure-the-popup-list) documentation.
+     * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
      * @default '300px'
      * @aspType string
      */
@@ -34,7 +34,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Specifies the width of the popup list. By default, the popup width sets based on the width of 
      * the component.
      * > For more details about the popup configuration refer to 
-     * [`Popup Configuration`](./getting-started.html#configure-the-popup-list) documentation.
+     * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
      * @default '100%'
      * @aspType string
      */
@@ -65,7 +65,7 @@ export interface DropDownListModel extends DropDownBaseModel{
     htmlAttributes?: { [key: string]: string; };
 
     /**
-     * Accepts the external [`Query`](./api-query.html)
+     * Accepts the external `Query`
      * that execute along with data processing.
      * 
      * {% codeBlock src="dropdownlist/query-api/index.ts" %}{% endcodeBlock %}
@@ -79,9 +79,9 @@ export interface DropDownListModel extends DropDownBaseModel{
     /**
      * Accepts the template design and assigns it to the selected list item in the input element of the component.
      * For more details about the available template options refer to 
-     * [`Template`](./templates.html) documentation.
+     * [`Template`](../../drop-down-list/templates) documentation.
      * 
-     * We have built-in [`template engine`](./template-engine.html) 
+     * We have built-in `template engine` 
      * which provides options to compile template string into a executable function.
      * For EX: We have expression evolution as like ES6 expression string literals.
      * @default null
@@ -90,14 +90,14 @@ export interface DropDownListModel extends DropDownBaseModel{
 
     /**
      * Accepts the template design and assigns it to the header container of the popup list.
-     * > For more details about the available template options refer to [`Template`](./templates.html) documentation.
+     * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      * @default null
      */
     headerTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
-     * > For more details about the available template options refer to [`Template`](./templates.html) documentation.
+     * > For more details about the available template options refer to [`Template`](../../drop-down-list/templates) documentation.
      * @default null
      */
     footerTemplate?: string;
@@ -108,7 +108,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * the characters typed in the search TextBox.
      * 
      * If no match is found, the value of the `noRecordsTemplate` property will be displayed.
-     * > For more details about the filtering refer to [`Filtering`](./filtering.html) documentation.
+     * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      * 
      * {% codeBlock src="dropdownlist/allow-filtering-api/index.ts" %}{% endcodeBlock %}
      * 
@@ -174,7 +174,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Triggers on typing a character in the filter bar when the 
      * [`allowFiltering`](./api-dropDownList.html#allowfiltering) 
      * is enabled.
-     * > For more details about the filtering refer to [`Filtering`](./filtering.html) documentation.
+     * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      * 
      * @event
      */
@@ -183,7 +183,7 @@ export interface DropDownListModel extends DropDownBaseModel{
     /**
      * Triggers when an item in a popup is selected or when the model value is changed by user.
      * Use change event to 
-     * [`Configure the Cascading DropDownList`](./how-to.html#configure-the-cascading-dropdownlist)
+     * [`Configure the Cascading DropDownList`](../../drop-down-list/how-to/cascading)
      * @event
      */
     change?: EmitType<ChangeEventArgs>;

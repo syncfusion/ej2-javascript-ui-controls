@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### Splitter
+
+#### Bug Fixes
+
+- Issue with dynamic update of pane content has been fixed
+
 ## 16.4.53 (2019-02-13)
 
 ### Card

@@ -497,10 +497,7 @@ function monthlyDayTypeProcessforMonthFreq(startDate: Date, endDate: Date, data:
     let tempDate: Date = new Date(startDate.getTime());
     let expectedCount: Number = ruleObject.count ? ruleObject.count : maxOccurrence;
     let interval: number = ruleObject.interval;
-    let state: boolean;
     let monthCollection: number[][] = [];
-    let month: number;
-    let index: number;
     let beginDate: Date;
     let monthInit: number = 0;
     tempDate = calendarUtil.getMonthStartDate(tempDate);
@@ -509,29 +506,19 @@ function monthlyDayTypeProcessforMonthFreq(startDate: Date, endDate: Date, data:
     }
     tempDate = getStartDateForWeek(tempDate, ruleObject.day);
     while (compareDates(tempDate, endDate) && (expectedCount && (data.length + tempExcludeDate.length) < expectedCount)) {
-        month = tempDate.getMonth();
         beginDate = new Date(tempDate.getTime());
         let currentMonthDate: Date = new Date(tempDate.getTime());
         while (calendarUtil.isSameMonth(tempDate, currentMonthDate)) {
             monthCollection.push([currentMonthDate.getTime()]);
             currentMonthDate.setDate(currentMonthDate.getDate() + (7));
         }
-        index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-        if (ruleObject.setPosition === null) {
-            let recurrenceCollections: ProcessCollectionForEmptyBySetPos;
-            recurrenceCollections = getRecurrenceCollection(monthCollection, expectedDays);
-            monthCollection = recurrenceCollections.monthCollection;
-            index = recurrenceCollections.index;
-        }
-        if (monthCollection.length > 0) {
-            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
-        }
+        // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+        insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
         monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
         tempDate = getStartDateForWeek(tempDate, ruleObject.day);
         monthCollection = [];
     }
 }
-
 // To process monday day type for FREQ=YEARLY
 function monthlyDayTypeProcess(startDate: Date, endDate: Date, data: number[], ruleObject: RecRule): void {
     let expectedDays: string[] = ruleObject.day;
@@ -540,13 +527,14 @@ function monthlyDayTypeProcess(startDate: Date, endDate: Date, data: number[], r
     if (expectedDays.length > 1 && isHavingNumber.indexOf(true) > -1) {
         processDateCollectionforByDayWithInteger(startDate, endDate, data, ruleObject);
         return;
+    } else if (ruleObject.month.length && expectedDays.length === 1 && isHavingNumber.indexOf(true) > -1) {
+        monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject);
+        return;
     }
     let tempDate: Date = new Date(startDate.getTime());
-    let index: number;
     let currentMonthDate: Date;
     let expectedCount: Number = ruleObject.count ? ruleObject.count : maxOccurrence;
     let interval: number = ruleObject.interval;
-    let state: boolean;
     let monthCollection: number[][] = [];
     if (ruleObject.month.length) {
         calendarUtil.setMonth(tempDate, ruleObject.month[0], tempDate.getDate());
@@ -600,16 +588,8 @@ function monthlyDayTypeProcess(startDate: Date, endDate: Date, data: number[], r
             }
         }
         tempDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), currentMonthDate.getDate());
-        index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-        if (ruleObject.setPosition === null) {
-            let recurrenceObject: ProcessCollectionForEmptyBySetPos;
-            recurrenceObject = getRecurrenceCollection(monthCollection, expectedDays);
-            monthCollection = recurrenceObject.monthCollection;
-            index = recurrenceObject.index;
-        }
-        if (monthCollection.length > 0) {
-            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
-        }
+        // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+        insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
         if (calendarUtil.isLastMonth(tempDate)) {
             calendarUtil.setValidDate(tempDate, 1, 1);
             tempDate = getStartDateForWeek(tempDate, ruleObject.day);
@@ -761,6 +741,31 @@ function getDateCollectionforBySetPosNull(monthCollection: number[][]): number[]
     return monthCollection;
 }
 
+// To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+function insertDateCollectionBasedonIndex
+    (monthCollection: number[][], startDate: Date, endDate: Date, data: number[], ruleObject: RecRule)
+    : void {
+    let expectedDays: string[] = ruleObject.day;
+    let index: number;
+    let state: boolean;
+    let datas: number[] = [];
+    let dateCollection: number[][] = [];
+    let recurrenceCollections: ProcessCollectionForEmptyBySetPos;
+    recurrenceCollections = getRecurrenceCollection(monthCollection, expectedDays);
+    monthCollection = recurrenceCollections.monthCollection;
+    index = recurrenceCollections.index;
+    if (ruleObject.setPosition != null) {
+        dateCollection = [(filterDateCollectionByIndex(monthCollection, index, datas))];
+        insertDateCollectionBasedonBySetPos(dateCollection, state, startDate, endDate, data, ruleObject);
+
+    } else {
+        if (monthCollection.length > 0) {
+            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+        }
+    }
+    datas = [];
+}
+
 // To filter date collection when BYDAY property having values with number
 function filterDateCollectionByIndex
     (monthCollection: number[][], index: number, datas: number[])
@@ -788,8 +793,10 @@ function insertDateCollection
 function insertDateCollectionBasedonBySetPos
     (monthCollection: number[][], state: boolean, startDate: Date, endDate: Date, data: number[], ruleObject: RecRule): void {
     if (monthCollection.length > 0) {
-        let index: number = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
         for (let week: number = 0; week < monthCollection.length; week++) {
+            monthCollection[week].sort();
+            let index: number = ((ruleObject.setPosition < 1)
+                ? (monthCollection[week].length + ruleObject.setPosition) : ruleObject.setPosition - 1);
             let dayData: number = monthCollection[week][index];
             insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
         }
@@ -801,6 +808,7 @@ function insertDatasIntoExistingCollection
     (monthCollection: number[][], index: number, state: boolean, startDate: Date, endDate: Date, data: number[], ruleObject: RecRule)
     : void {
     for (let week: number = 0; week < monthCollection[index].length; week++) {
+        monthCollection[index].sort();
         let dayData: number = monthCollection[index][week];
         insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
     }

@@ -187,9 +187,11 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         editedData = editedData instanceof Array ? editedData : [];
         let field: string = this.parent.getPrimaryKeyFieldNames()[0];
         let deletedCols: Object[] = [];
+        let data: string = 'dataSource';
         let mergeds: Object[];
         let rows: Row<Column>[] = this.parent.frozenColumns > 0 ? this.parent.getMovableRowsObject() : this.parent.getRowsObject();
-        let initds: Object[] = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.getCurrentViewRecords();
+        let initds: Object[] = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.dataSource[data].json.length
+         ? this.parent.dataSource[data].json : this.parent.getCurrentViewRecords();
         let addrow: Object[] = [];
         let changeds: Object[] = rows.map((row: Row<{}>) => {
             if (row.changes && row.edit === 'add') { addrow.push(row.changes); }

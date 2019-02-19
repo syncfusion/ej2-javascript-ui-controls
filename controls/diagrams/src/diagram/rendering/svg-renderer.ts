@@ -374,7 +374,8 @@ export class SvgRenderer implements IRenderer {
     }
 
     /** @private */
-    public drawHTMLContent(element: DiagramHtmlElement, canvas: HTMLElement, transform?: Transforms, value?: boolean): void {
+    public drawHTMLContent(
+        element: DiagramHtmlElement, canvas: HTMLElement, transform?: Transforms, value?: boolean, indexValue?: number): void {
         let htmlElement: HTMLElement;
         if (canvas) {
             let i: number;
@@ -391,7 +392,12 @@ export class SvgRenderer implements IRenderer {
             };
             htmlElement = createHtmlElement('div', attr);
             htmlElement.appendChild(element.template.cloneNode(true));
-            canvas.appendChild(htmlElement);
+            if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
+                canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
+
+            } else {
+                canvas.appendChild(htmlElement);
+            }
         }
         let point: PointModel = cornersPointsBeforeRotation(element).topLeft;
         htmlElement.setAttribute(

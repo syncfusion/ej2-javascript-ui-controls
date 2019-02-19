@@ -1,5 +1,5 @@
 import { selectAll, select, createElement, Base, EmitType } from '@syncfusion/ej2-base';import { extend, isNullOrUndefined, IKeyValue, EventHandler } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, onIntlChange } from '@syncfusion/ej2-base';import { Internationalization, L10n } from '@syncfusion/ej2-base';
-import {ErrorOption} from "./form-validator";
+import {ErrorOption,ValidArgs,FormEventArgs} from "./form-validator";
 
 /**
  * Interface for a class FormValidator
@@ -87,13 +87,13 @@ export interface FormValidatorModel {
      * Triggers before validation starts
      * @event
      */
-    validationBegin?: EmitType<Object>;
+    validationBegin?: EmitType<Object | ValidArgs>;
 
     /**
      * Triggers after validation is completed
      * @event
      */
-    validationComplete?: EmitType<Object>;
+    validationComplete?: EmitType<Object | FormEventArgs>;
 
     /**
      * Assigns the custom function to place the error message in the page.

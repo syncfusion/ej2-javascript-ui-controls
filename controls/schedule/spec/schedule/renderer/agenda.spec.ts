@@ -361,7 +361,7 @@ describe('Agenda View', () => {
                 eventSettings: {
                     dataSource: [{
                         Id: 1,
-                        Subject: 'Spanned Event',
+                        Subject: 'Event',
                         StartTime: new Date(2018, 3, 1),
                         EndTime: new Date(2018, 3, 5),
                         IsAllDay: true
@@ -387,6 +387,138 @@ describe('Agenda View', () => {
             agendaAppointment[0].click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
+        });
+    });
+
+    describe('Checking Event loading on current view', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            schObj = new Schedule({
+                height: '500px',
+                currentView: 'Agenda',
+                selectedDate: new Date(2018, 3, 8),
+                eventSettings: {
+                    dataSource: [{
+                        Id: 1,
+                        Subject: 'Event',
+                        StartTime: new Date(2018, 3, 7),
+                        EndTime: new Date(2018, 3, 7),
+                        IsAllDay: true
+                    }]
+                },
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('test current page event loading', () => {
+            let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(agendaAppointment.length).toEqual(0);
+            let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+            expect(element.innerHTML).toEqual('No events');
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
+        });
+
+        it('test check event loading on previous click', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let agendaAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(agendaAppointments.length).toEqual(1);
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 07 - 13, 2018');
+                done();
+            };
+            let prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            prevEle.click();
+            schObj.dataBound = dataBound;
+        });
+
+
+        it('test check event loading on next click', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(agendaAppointment.length).toEqual(0);
+                let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+                expect(element.innerHTML).toEqual('No events');
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
+                done();
+            };
+            let nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            nextEle.click();
+            schObj.dataBound = dataBound;
+        });
+    });
+
+    describe('Checking Event loading on view specific agenda view', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            schObj = new Schedule({
+                height: '500px',
+                currentView: 'Agenda',
+                views: [{ option: 'Agenda', allowVirtualScrolling: false }],
+                selectedDate: new Date(2018, 3, 8),
+                eventSettings: {
+                    dataSource: [{
+                        Id: 1,
+                        Subject: 'Event',
+                        StartTime: new Date(2018, 3, 7),
+                        EndTime: new Date(2018, 3, 7),
+                        IsAllDay: true
+                    }]
+                },
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('test current page event loading', () => {
+            let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(agendaAppointment.length).toEqual(0);
+            let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+            expect(element.innerHTML).toEqual('No events');
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
+        });
+
+        it('test check event loading on previous click', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let agendaAppointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(agendaAppointments.length).toEqual(1);
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 07 - 13, 2018');
+                done();
+            };
+            let prevEle: HTMLElement = schObj.element.querySelector('.e-prev') as HTMLElement;
+            prevEle.click();
+            schObj.dataBound = dataBound;
+        });
+
+        it('test check event loading on next click', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let agendaAppointment: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(agendaAppointment.length).toEqual(0);
+                let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+                expect(element.innerHTML).toEqual('No events');
+                expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('April 08 - 14, 2018');
+                done();
+            };
+            let nextEle: HTMLElement = schObj.element.querySelector('.e-next') as HTMLElement;
+            nextEle.click();
+            schObj.dataBound = dataBound;
         });
     });
 

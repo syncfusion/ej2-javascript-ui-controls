@@ -132,3 +132,59 @@ describe('Sfdt export for Table format Bidi validation', () => {
         expect(() => { editor.save('Smaple', 'Docx') }).not.toThrowError();
     });
 });
+
+
+
+let tab: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "inlines": [
+                        {
+                            "text": "\t"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "defaultTabWidth": 56.0
+};
+describe('Default tab width export validation', () => {
+    let editor: DocumentEditor;
+    let viewer: LayoutViewer;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(SfdtExport, WordExport);
+        editor = new DocumentEditor({ enableSfdtExport: true, enableWordExport: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+    });
+    afterAll((done): void => {
+        viewer.destroy();
+        viewer = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('opened document- check default tab width', () => {
+        editor.open(JSON.stringify(tab));
+        let document: any = viewer.owner.sfdtExportModule.write();
+        expect(document.defaultTabWidth).toBe(56);
+    });
+    it('open blank default tab width export validation', () => {
+        editor.openBlank();
+        let document: any = viewer.owner.sfdtExportModule.write();
+        expect(document.defaultTabWidth).toBe(36);
+    });
+});
+

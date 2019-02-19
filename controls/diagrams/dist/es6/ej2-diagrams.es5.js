@@ -13859,6 +13859,33 @@ function getDiagramElement(elementId, contentId) {
     diagramElement = (element) ? element.querySelector('#' + elementId) : document.getElementById(elementId);
     return diagramElement;
 }
+/** @private */
+function getDomIndex(viewId, elementId, layer) {
+    var index = undefined;
+    var parentElement;
+    var postId = '';
+    if (layer === 'native') {
+        parentElement = getNativeLayer(viewId);
+        postId = '_content_groupElement';
+    }
+    else if (layer === 'html') {
+        parentElement = getHTMLLayer(viewId).childNodes[0];
+        postId = '_content_html_element';
+    }
+    else {
+        parentElement = getDiagramLayer(viewId);
+        postId = '_groupElement';
+    }
+    var childElement;
+    for (var i = 0; parentElement.childNodes && i < parentElement.childNodes.length; i++) {
+        childElement = parentElement.childNodes[i];
+        if (childElement && childElement.id === elementId + postId) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
 /**
  * @private
  */
@@ -13886,13 +13913,13 @@ function getAdornerLayer(diagramId) {
     adornerLayer = diagramAdornerSvg.getElementById(diagramId + '_diagramAdorner');
     return adornerLayer;
 }
-// /** @private */
-// export function getDiagramLayer(diagramId: string): SVGElement {
-//     let diagramLayer: SVGElement;
-//     let diagramLayerSvg: SVGSVGElement = getDiagramLayerSvg(diagramId);
-//     diagramLayer = diagramLayerSvg.getElementById(diagramId + '_diagramLayer') as SVGElement;
-//     return diagramLayer;
-// }
+/** @private */
+function getDiagramLayer(diagramId) {
+    var diagramLayer;
+    var diagramLayerSvg = getDiagramLayerSvg(diagramId);
+    diagramLayer = diagramLayerSvg.getElementById(diagramId + '_diagramLayer');
+    return diagramLayer;
+}
 /** @private */
 function getPortLayerSvg(diagramId) {
     var adornerLayerSvg = null;
@@ -15480,7 +15507,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', imageObj.src.toString());
     };
     /** @private */
-    SvgRenderer.prototype.drawHTMLContent = function (element, canvas, transform, value) {
+    SvgRenderer.prototype.drawHTMLContent = function (element, canvas, transform, value, indexValue) {
         var htmlElement;
         if (canvas) {
             var i = void 0;
@@ -15497,7 +15524,12 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             };
             htmlElement = createHtmlElement('div', attr);
             htmlElement.appendChild(element.template.cloneNode(true));
-            canvas.appendChild(htmlElement);
+            if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
+                canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
+            }
+            else {
+                canvas.appendChild(htmlElement);
+            }
         }
         var point = cornersPointsBeforeRotation(element).topLeft;
         htmlElement.setAttribute('style', 'height:' + (element.actualSize.height) + 'px; width:' + (element.actualSize.width) +
@@ -15818,7 +15850,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.renderNativeElement(element, canvas, transform, parentSvg, fromPalette);
         }
         else if (element instanceof DiagramHtmlElement) {
-            this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette);
+            this.renderHTMLElement(element, canvas, htmlLayer, transform, parentSvg, fromPalette, indexValue);
         }
         else {
             this.renderRect(element, canvas, transform, parentSvg);
@@ -16525,14 +16557,14 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             this.svgRenderer.drawNativeContent(element, nativeLayer, templateHeight, templateWidth, nativeSvg);
         }
     };
-    DiagramRenderer.prototype.renderHTMLElement = function (element, canvas, htmlLayer, transform, parentSvg, fromPalette) {
+    DiagramRenderer.prototype.renderHTMLElement = function (element, canvas, htmlLayer, transform, parentSvg, fromPalette, indexValue) {
         var options = this.getBaseAttributes(element, transform);
         options.fill = 'transparent';
         options.cornerRadius = element.cornerRadius;
         options.stroke = 'transparent';
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
         if (this.svgRenderer) {
-            this.svgRenderer.drawHTMLContent(element, htmlLayer.children[0], transform, isDiagramChild(htmlLayer));
+            this.svgRenderer.drawHTMLContent(element, htmlLayer.children[0], transform, isDiagramChild(htmlLayer), indexValue);
         }
     };
     /**   @private  */
@@ -16600,7 +16632,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
                 var groupElement = void 0;
                 groupElement = this.getParentElement(group, canvas, parentSvg, indexValue).g || canvas;
                 parentSvg = this.getParentSvg(this.hasNativeParent(group.children)) || parentSvg;
-                var svgNativeParent = this.getParentElement(this.hasNativeParent(group.children), groupElement, parentSvg);
+                var svgNativeParent = this.getParentElement(this.hasNativeParent(group.children), groupElement, parentSvg, indexValue);
                 svgParent.svg = svgNativeParent.svg || parentSvg;
                 svgParent.g = svgNativeParent.g || groupElement;
                 if (createParent) {
@@ -16634,7 +16666,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
                 if (!this.isSvgMode) {
                     child.flip = group.flip;
                 }
-                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette);
+                this.renderElement(child, parentG || canvas, htmlLayer, transform, parentSvg, true, fromPalette, indexValue);
                 if (child instanceof TextElement && parentG && !(group.elementActions & ElementAction.ElementIsGroup)) {
                     flip = (child.flip && child.flip !== 'None') ? child.flip : group.flip;
                     this.renderFlipElement(child, parentG, flip);
@@ -16803,8 +16835,8 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         return false;
     };
     /** @private */
-    DiagramRenderer.prototype.updateNode = function (element, diagramElementsLayer, htmlLayer, transform) {
-        this.renderElement(element, diagramElementsLayer, htmlLayer, transform, this.getParentSvg(element));
+    DiagramRenderer.prototype.updateNode = function (element, diagramElementsLayer, htmlLayer, transform, insertIndex) {
+        this.renderElement(element, diagramElementsLayer, htmlLayer, transform, this.getParentSvg(element), undefined, undefined, insertIndex);
     };
     return DiagramRenderer;
 }());
@@ -18505,7 +18537,12 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            this.commandHandler.portDrag(args.source, args.sourceWrapper, args.position.x - this.prevPosition.x, args.position.y - this.prevPosition.y);
+            var matrix = identityMatrix();
+            var node = args.source;
+            rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
+            var prevPosition = transformPointByMatrix(matrix, { x: this.prevPosition.x, y: this.prevPosition.y });
+            var position = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
+            this.commandHandler.portDrag(args.source, args.sourceWrapper, position.x - prevPosition.x, position.y - prevPosition.y);
         }
         this.prevPosition = this.currentPosition;
         return !this.blocked;
@@ -29514,6 +29551,24 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             element[j].canApplyStyle = value;
         }
     };
+    Diagram.prototype.getZindexPosition = function (obj, viewId) {
+        var objects = [];
+        var index = undefined;
+        objects = objects.concat(this.nodes);
+        objects = objects.concat(this.connectors);
+        var type;
+        if (obj.zIndex !== -1) {
+            for (var i = 0; i < objects.length; i++) {
+                if (objects[i].zIndex > obj.zIndex) {
+                    if (obj.shape.type === 'HTML' || obj.shape.type === 'Native') {
+                        type = obj.shape.type === 'HTML' ? 'html' : 'native';
+                    }
+                    index = getDomIndex(viewId, objects[i].id, type);
+                }
+            }
+        }
+        return index;
+    };
     /** @private */
     Diagram.prototype.updateDiagramObject = function (obj) {
         var view;
@@ -29527,7 +29582,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     if (this.diagramActions & DiagramAction.Interactions) {
                         this.updateCanupdateStyle(obj.wrapper.children, true);
                     }
-                    this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined);
+                    this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined, this.getZindexPosition(obj, view.element.id));
                     this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
             }
@@ -30013,7 +30068,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.renderDiagramElements(g, overview.diagramRenderer || renderer, htmlLayer, undefined, undefined, true);
         }
     };
-    Diagram.prototype.updateThumbConstraints = function (node, selectorModel) {
+    Diagram.prototype.updateThumbConstraints = function (node, selectorModel, canInitialize) {
         var length = node.length;
         for (var i = 0; i < length; i++) {
             var obj = node[i];
@@ -30054,7 +30109,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else if (obj instanceof Connector) {
-                thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                if (!canInitialize) {
+                    thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                }
                 if (canDragSourceEnd(obj)) {
                     thumbConstraints = thumbConstraints | ThumbsConstraints.ConnectorSource;
                 }
@@ -30069,7 +30126,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                if (!canInitialize) {
+                    thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                }
                 if (!canResize(obj)) {
                     thumbConstraints = thumbConstraints & ~(ThumbsConstraints.ResizeSouthEast | ThumbsConstraints.ResizeSouthWest |
                         ThumbsConstraints.ResizeSouth | ThumbsConstraints.ResizeEast | ThumbsConstraints.ResizeWest |
@@ -30119,7 +30178,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.updateThumbConstraints(selectorModel.nodes, selectorModel);
-                this.updateThumbConstraints(selectorModel.connectors, selectorModel);
+                this.updateThumbConstraints(selectorModel.connectors, selectorModel, true);
             }
             if (selectorModel.annotation) {
                 this.renderSelectorForAnnotation(selectorModel, selectorElement);
@@ -30152,68 +30211,71 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     Diagram.prototype.updateSelector = function () {
         var size = new Size();
-        var selectorModel = this.selectedItems;
-        var selectorConstraints = selectorModel.constraints;
+        var selector = this.selectedItems;
+        var selectorConstraints = selector.constraints;
         if (!(this.diagramActions & DiagramAction.ToolAction) && this.selectedItems.nodes.length === 1) {
             this.selectedItems.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
             this.selectedItems.wrapper.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
         }
         if (this.selectedItems !== undefined) {
             this.clearSelectorLayer();
-            if (selectorModel.wrapper !== null && selectorModel.wrapper.children && selectorModel.wrapper.children.length) {
-                selectorModel.wrapper.measure(size);
-                selectorModel.wrapper.arrange(selectorModel.wrapper.desiredSize);
-                if (selectorModel.rotateAngle !== 0 || selectorModel.rotateAngle !== selectorModel.wrapper.prevRotateAngle) {
-                    for (var _i = 0, _a = selectorModel.nodes; _i < _a.length; _i++) {
+            if (selector.wrapper !== null && selector.wrapper.children && selector.wrapper.children.length) {
+                selector.wrapper.measure(size);
+                selector.wrapper.arrange(selector.wrapper.desiredSize);
+                if (selector.rotateAngle !== 0 || selector.rotateAngle !== selector.wrapper.prevRotateAngle) {
+                    for (var _i = 0, _a = selector.nodes; _i < _a.length; _i++) {
                         var obj = _a[_i];
                         obj.offsetX = obj.wrapper.offsetX;
                         obj.offsetY = obj.wrapper.offsetY;
                     }
                 }
-                selectorModel.width = selectorModel.wrapper.actualSize.width;
-                selectorModel.height = selectorModel.wrapper.actualSize.height;
-                selectorModel.offsetX = selectorModel.wrapper.offsetX;
-                selectorModel.offsetY = selectorModel.wrapper.offsetY;
-                var selectorElement = void 0;
-                selectorElement = getSelectorElement(this.element.id);
+                selector.width = selector.wrapper.actualSize.width;
+                selector.height = selector.wrapper.actualSize.height;
+                selector.offsetX = selector.wrapper.offsetX;
+                selector.offsetY = selector.wrapper.offsetY;
+                var selectorEle = void 0;
+                selectorEle = getSelectorElement(this.element.id);
                 var canHideResizers = this.eventHandler.canHideResizers();
-                selectorModel.thumbsConstraints = ThumbsConstraints.Default;
-                if (selectorModel.annotation) {
-                    this.updateThumbConstraints([selectorModel.annotation], selectorModel);
+                selector.thumbsConstraints = ThumbsConstraints.Default;
+                if (selector.annotation) {
+                    this.updateThumbConstraints([selector.annotation], selector);
                 }
                 else {
-                    this.updateThumbConstraints(selectorModel.nodes, selectorModel);
-                    this.updateThumbConstraints(selectorModel.connectors, selectorModel);
+                    this.updateThumbConstraints(selector.nodes, selector);
+                    this.updateThumbConstraints(selector.connectors, selector, true);
                 }
-                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selectorModel.annotation))) {
-                    this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
+                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation))) {
+                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
                 }
-                if (selectorModel.annotation) {
-                    this.renderSelectorForAnnotation(selectorModel, selectorElement);
+                if (selector.annotation) {
+                    this.renderSelectorForAnnotation(selector, selectorEle);
                 }
-                else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
-                    if (selectorModel.connectors[0] instanceof Connector) {
-                        var connector = selectorModel.connectors[0];
-                        this.diagramRenderer.renderEndPointHandle(connector, selectorElement, selectorModel.thumbsConstraints, selectorConstraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
+                else if (selector.nodes.length + selector.connectors.length === 1) {
+                    if (selector.connectors[0] instanceof Connector) {
+                        var connector = selector.connectors[0];
+                        this.diagramRenderer.renderEndPointHandle(connector, selectorEle, selector.thumbsConstraints, selectorConstraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
                     }
-                    else if (selectorModel.nodes[0] instanceof Node) {
-                        if (checkParentAsContainer(this, selectorModel.nodes[0])) {
-                            var stackPanel = selectorModel.nodes[0];
+                    else if (selector.nodes[0] instanceof Node) {
+                        if (checkParentAsContainer(this, selector.nodes[0])) {
+                            var stackPanel = selector.nodes[0];
                             if (stackPanel.shape.type !== 'UmlClassifier' && !(stackPanel.parentId &&
                                 this.nameTable[stackPanel.parentId]
                                 && this.nameTable[stackPanel.parentId].shape.type === 'UmlClassifier')) {
-                                selectorModel.nodes[0].constraints &= ~(NodeConstraints.HideThumbs | NodeConstraints.Rotate);
-                                selectorModel.thumbsConstraints &= ~ThumbsConstraints.Rotate;
+                                if (!(stackPanel.container && (stackPanel.container.type === 'Canvas'
+                                    || stackPanel.container.type === 'Grid'))) {
+                                    selector.nodes[0].constraints &= ~(NodeConstraints.HideThumbs | NodeConstraints.Rotate);
+                                }
+                                selector.thumbsConstraints &= ~ThumbsConstraints.Rotate;
                             }
                         }
-                        this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel.nodes[0]), (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
+                        this.diagramRenderer.renderResizeHandle(selector.wrapper.children[0], selectorEle, selector.thumbsConstraints, this.scroller.currentZoom, selector.constraints, this.scroller.transform, canHideResizers, canMove(selector.nodes[0]), (selector.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
                     }
                 }
                 else {
                     if (this.diagramActions & DiagramAction.Interactions) {
                         this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions | RendererAction.PreventRenderSelector;
                     }
-                    this.diagramRenderer.renderResizeHandle(selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel));
+                    this.diagramRenderer.renderResizeHandle(selector.wrapper, selectorEle, selector.thumbsConstraints, this.scroller.currentZoom, selector.constraints, this.scroller.transform, canHideResizers, canMove(selector));
                     this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions & ~RendererAction.PreventRenderSelector;
                 }
             }
@@ -30674,6 +30736,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var changedObject = node.ports[key];
                 var actualPort = actualObject.ports[index];
                 this.updatePort(changedObject, actualPort, actualObject.wrapper);
+                updateConnector$$1 = true;
             }
         }
         if (node.annotations !== undefined || node.width !== undefined) {

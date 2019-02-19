@@ -321,6 +321,8 @@ export class Islamic {
         let localYr: number = localDate.getFullYear();
         let startYr: Date = new Date('' + (localYr - localYr % 10));
         let endYr: Date = new Date('' + (localYr - localYr % 10 + (10 - 1)));
+        let startFullYr: number = startYr.getFullYear();
+        let endFullYr: number = endYr.getFullYear();
         /* tslint:disable-next-line:max-line-length */
         let startHdrYr: string = this.calendarInstance.globalize.formatDate(startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
         let endHdrYr: string = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
@@ -342,7 +344,9 @@ export class Islamic {
             /* tslint:disable-next-line:max-line-length */
             dayLink.textContent = this.calendarInstance.globalize.formatDate(localDate, { type: 'dateTime', format: 'y', calendar: 'islamic' });
             /* tslint:disable-next-line:no-any */
-            if (year < new Date('' + this.calendarInstance.min).getFullYear()
+            if ((year < startFullYr) || (year > endFullYr)) {
+                addClass([tdEle], OTHERMONTH);
+            } else if (year < new Date('' + (this.calendarInstance.min)).getFullYear()
                 || year > new Date('' + this.calendarInstance.max).getFullYear()) {
                 addClass([tdEle], DISABLED);
             } else if (!isNullOrUndefined(value) &&

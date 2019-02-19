@@ -577,3 +577,95 @@ describe('RTE CR issues', () => {
         });
     });
 })
+describe('EJ2-22524 - Default value should be set while restting form - ', () => {
+
+    let innerHtmlRule: string = `<form id="form-element" class="form-vertical">
+<div class="form-group">
+    <textarea id="defaultRTE" name="defaultRTE"> 
+    </textarea>
+</div>
+<div style="text-align: center">
+    <button id="validateSubmit" class="samplebtn e-control e-btn" type="submit" data-ripple="true">Submit</button>
+    <button id="resetbtn" class="samplebtn e-control e-btn" type="reset" data-ripple="true">Reset</button>
+</div>
+</form>`;
+    describe(' reset  - ', () => {
+        let rteObj: RichTextEditor;
+        let form: FormValidator;
+        let editNode: HTMLElement;
+        let containerEle: HTMLElement;
+        let formEle: HTMLElement;
+        let onChange: jasmine.Spy;
+        beforeEach((done: Function) => {
+            containerEle = document.createElement('div');
+            containerEle.innerHTML = innerHtmlRule;
+            onChange = jasmine.createSpy('change');
+            document.body.appendChild(containerEle);
+            rteObj = new RichTextEditor({
+                showCharCount: true,
+                maxLength: 100,
+                value:'<p>RichTextEditor</p>',
+                change: onChange,
+                placeholder: 'Type something'
+            });
+            rteObj.appendTo("#defaultRTE");
+            editNode = (rteObj as any).inputElement;
+            form = new FormValidator('#form-element', {
+                rules: {
+                    defaultRTE: {
+                        required: true,
+                        maxLength: "100",
+                        minLength: "20"
+                    }
+                }
+            });
+            formEle = document.getElementById("form-element");
+            done();
+        })
+        afterEach((done: Function) => {
+            rteObj.destroy();
+            detach(containerEle);
+            done();
+        });
+
+        it(' test the reset the form ', () => {
+            editNode.focus();
+            dispatchEvent(editNode, 'focusin');
+            editNode.innerHTML = '<p>EJ2 RichTextEditor Component</p>';
+            editNode.blur();
+            dispatchEvent(editNode, 'focusout');
+            let element: HTMLElement = rteObj.element.querySelector('#defaultRTE-info');
+            expect(rteObj.value === '<p>EJ2 RichTextEditor Component</p>').toBe(true);
+            expect(isNullOrUndefined(element)).toBe(true);
+            expect(onChange).toHaveBeenCalled();
+            form.reset();
+            expect(rteObj.value === '<p>RichTextEditor</p>').toBe(true);
+            expect(onChange).toHaveBeenCalledTimes(1);
+        });
+    });
+    describe('EJ2-22972 - Editor content rendered twice in DOM when using RichTextEditorFor', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLTextAreaElement;
+        beforeEach((done: Function) => {
+            done();
+        });
+
+        it(' Check the edit area content in wrapper element', (done) => {
+            elem = <HTMLTextAreaElement>createElement('textarea',
+                { id: 'rte_test_EJ2-22972', innerHTML: '<p class="test-paragraph">RichTextEditor</p>' });
+            document.body.appendChild(elem);
+            elem.setAttribute('ejs-for', '');
+            rteObj = new RichTextEditor({
+                value: '<p class="test-paragraph">RichTextEditor</p>'
+            });
+            rteObj.appendTo(elem);
+            expect(rteObj.element.querySelectorAll('.test-paragraph').length === 1).toBe(true);
+            done();
+        });
+
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+});

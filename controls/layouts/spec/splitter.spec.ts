@@ -2161,4 +2161,31 @@ describe('Splitter Control', () => {
                 expect(document.querySelectorAll('.e-pane').length).toBe(4);
             });
         });
+        
+        describe('updating pane-content dynamically', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            child1.innerHTML = 'pane - 1';
+            let child2: HTMLElement = createElement('div');
+            child2.innerHTML = 'pane - 2';
+            let child3: HTMLElement = createElement('div');
+            child3.innerHTML = 'pane - 3';
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%' }, { size: '50%' }, { size: '10%'}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('test', () => {
+                splitterObj.paneSettings[0].content = 'newContent';
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerText === 'newContent').toBe(true);
+            });
+        });
  });

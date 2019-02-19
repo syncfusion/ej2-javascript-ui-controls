@@ -593,7 +593,9 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         let tempRule = {};
         let ddlObj;
+        let inOperator = ['in', 'notin'];
         let operatorList;
+        let betweenOperator = ['between', 'notbetween'];
         let filterElem;
         let operatorElem;
         let oprElem;
@@ -621,11 +623,13 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.trigger('beforeOperatorChange', eventsArgs);
             tempRule.operator = args.itemData.value;
             let currOper = tempRule.operator.toLowerCase();
-            if (tempRule.operator.toLowerCase().indexOf('between') > -1 || (tempRule.operator.toLowerCase().indexOf('in') > -1
-                && tempRule.operator.toLowerCase().indexOf('contains') < 0)) {
+            if (inOperator.indexOf(currOper) > -1 || betweenOperator.indexOf(currOper) > -1) {
                 filterElem = operatorElem.previousElementSibling;
                 tempRule.type = rule.type;
-                rule.value = [];
+                if (!(inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) &&
+                    !(betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
+                    rule.value = [];
+                }
             }
             else if (typeof rule.value === 'object') {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
@@ -637,8 +641,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                     tempRule.type = rule.type;
                 }
             }
-            if ((prevOper.indexOf('in') > -1 && prevOper.indexOf('in') < 5) && (currOper.indexOf('in') > -1
-                && currOper.indexOf('in') < 5)) {
+            if ((inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) ||
+                (betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
                 filterElem = null;
             }
         }

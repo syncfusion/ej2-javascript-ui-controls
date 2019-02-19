@@ -435,6 +435,37 @@ describe("Accordion Testing", () => {
             expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
             expect(acrdnItem.childElementCount).toBe(2);
         });
+        it("Accordion content template with additional div element testing", () => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            let acrdncontainer: HTMLElement = document.createElement("div");
+            acrdncontainer.setAttribute('class', 'e-accordion-container')
+            let acrdnHeader: HTMLElement = document.createElement("div");
+            let acrdnContent: HTMLElement = document.createElement("div");
+            let acrdnInnerContent: HTMLElement = document.createElement("div");
+            let acrdnItemEle: HTMLElement = document.createElement("div");
+            acrdnContent.appendChild(acrdnInnerContent);
+            acrdnItemEle.appendChild(acrdnHeader);
+            acrdnItemEle.appendChild(acrdnContent);
+            acrdncontainer.appendChild(acrdnItemEle);
+            ele.appendChild(acrdncontainer);
+            accordion = new Accordion({}, ele);
+            let acrdnItem: Element = acrdncontainer.children[0];
+            let acrdnItemHder: Element = acrdnItem.firstElementChild;
+            let acrdnInnerCtn: Element = acrdnItem.children[1].children[0];
+            expect(acrdnItemHder.childElementCount).toBe(1);
+            expect(acrdnInnerCtn.classList.contains(CLS_CTENT)).toBe(true);
+            expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
+            expect(acrdnItem.childElementCount).toBe(2);
+            accordion.refresh();
+            acrdnItem = acrdncontainer.children[0];
+            acrdnItemHder = acrdnItem.firstElementChild;
+            acrdnInnerCtn = acrdnItem.children[1].children[0];
+            expect(acrdnItemHder.childElementCount).toBe(1);
+            expect(acrdnInnerCtn.classList.contains(CLS_CTENT)).toBe(true);
+            expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
+            expect(acrdnItem.childElementCount).toBe(2);
+
+        });
         it("Accordion Control with header and content with inner Content template", () => {
             let ele: HTMLElement = document.getElementById("accordion");
             let acrdnHeader: HTMLElement = document.createElement("div");

@@ -1,6 +1,6 @@
 import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, getValue, setValue, attributes, addClass, detach, createElement } from '@syncfusion/ej2-base';
-import { removeClass , Browser} from '@syncfusion/ej2-base';
+import { removeClass , Browser, closest} from '@syncfusion/ej2-base';
 import { Input, InputObject, FloatLabelType } from '../../input/input';
 import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';
 import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';
@@ -48,7 +48,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private isInitial: boolean;
     private isIosInvalid: boolean;
     private preEleVal: string;
-
+    private formElement: HTMLElement;
+    private initInputValue: string = '';
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the
      * complete UI styles for the MaskedTextBox component.
@@ -246,6 +247,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
         removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
         this.angularTagName = null;
+        this.formElement = <HTMLFormElement>closest(this.element, 'form');
         if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
             this.angularTagName = this.element.tagName;
             let input: HTMLElement = this.createElement('input');
@@ -261,6 +263,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.element.appendChild(input);
             this.element = <HTMLInputElement>input;
             setValue('ej2_instances', ejInstance, this.element);
+        }
+        if (this.formElement) {
+            this.initInputValue = this.value;
         }
     }
 
@@ -294,6 +299,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.preEleVal = this.element.value;
             if (!Browser.isDevice && (Browser.info.version === '11.0' || Browser.info.name === 'edge')) {
                  this.element.blur();
+             }
+            if (this.element.getAttribute('value') || this.value) {
+                 this.element.setAttribute('value', this.element.value);
              }
         }
     }

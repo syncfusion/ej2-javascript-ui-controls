@@ -779,9 +779,11 @@ export class MoveTool extends ToolBase {
                 this.isTooltipVisible = false;
             }
         } else {
-            this.commandHandler.portDrag(
-                args.source, args.sourceWrapper, args.position.x - this.prevPosition.x,
-                args.position.y - this.prevPosition.y);
+            let matrix: Matrix = identityMatrix(); let node: NodeModel = args.source as Node;
+            rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
+            let prevPosition: PointModel = transformPointByMatrix(matrix, { x: this.prevPosition.x, y: this.prevPosition.y });
+            let position: PointModel = transformPointByMatrix(matrix, { x: args.position.x, y: args.position.y });
+            this.commandHandler.portDrag(args.source, args.sourceWrapper, position.x - prevPosition.x, position.y - prevPosition.y);
         }
         this.prevPosition = this.currentPosition;
         return !this.blocked;

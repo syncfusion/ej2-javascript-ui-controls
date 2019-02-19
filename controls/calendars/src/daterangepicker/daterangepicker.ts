@@ -66,6 +66,8 @@ const OFFSETVALUE: number = 4;
 const PRIMARY: string = 'e-primary';
 const FLAT: string = 'e-flat';
 const CSS: string = 'e-css';
+const LIBRARY: string = 'e-lib';
+const CONTROL: string = 'e-control';
 
 export class Presets extends ChildProperty<Presets> {
     /** 
@@ -228,6 +230,8 @@ export class DateRangePicker extends CalendarBase {
     private controlDown: KeyboardEventArgs;
     private formElement: Element;
     private formatString: string;
+    private startCopy: Date;
+    private endCopy: Date;
     protected tabIndex: string;
 
     /**
@@ -569,6 +573,7 @@ export class DateRangePicker extends CalendarBase {
             this.element.appendChild(this.inputElement);
         }
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
+        removeClass([this.cloneElement], [ROOT, CONTROL, LIBRARY]);
         if (this.element.getAttribute('id')) {
             if (this.angularTag !== null) { this.inputElement.id = this.element.getAttribute('id') + '_input'; }
         } else {
@@ -825,13 +830,32 @@ export class DateRangePicker extends CalendarBase {
         this.setModelValue();
     }
     protected formResetHandler(e: MouseEvent): void {
-        if (this.formElement && e.target === this.formElement) {
-            this.setProperties({ value: null, startDate: null, endDate: null }, true);
-            this.startValue = this.endValue = null;
+        if (this.formElement && (e.target === this.formElement) && !this.inputElement.disabled) {
+            let val: string = this.inputElement.getAttribute('value');
+            if (!isNullOrUndefined(this.startCopy)) {
+                if (!isNullOrUndefined(this.value) && !isNullOrUndefined((<DateRange>this.value).start)) {
+                    this.setProperties({ value: { start: this.startCopy, end: this.endCopy } }, true);
+                    this.startValue = (<DateRange>this.value).start;
+                    this.endValue = (<DateRange>this.value).end;
+                } else {
+                    this.setProperties({ value: [this.startCopy, this.endCopy] }, true);
+                    this.startValue = (<Date[]>this.value)[0];
+                    this.endValue = (<Date[]>this.value)[1];
+                }
+                this.setProperties({ startDate: this.startValue, endDate: this.endValue }, true);
+            } else {
+                this.setProperties({ value: null, startDate: null, endDate: null }, true);
+                this.startValue = this.endValue = null;
+            }
+            if (this.element.tagName === 'EJS-DATERANGEPICKER') {
+                this.setProperties({ value: null, startDate: null, endDate: null }, true);
+                val = '';
+                this.startValue = this.endValue = null;
+                this.inputElement.setAttribute('value', '');
+            }
             if (this.inputElement) {
-                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                attributes(this.inputElement, { 'aria-invalid': 'false' });
-                removeClass([this.inputWrapper.container], ERROR);
+                Input.setValue(val, this.inputElement, this.floatLabelType, this.showClearButton);
+                this.errorClass();
             }
             this.restoreValue();
         }
@@ -3173,6 +3197,9 @@ export class DateRangePicker extends CalendarBase {
         }
         this.refreshControl();
         this.previousEleValue = this.inputElement.value;
+        this.inputElement.setAttribute('value', this.inputElement.value);
+        this.startCopy = this.startDate;
+        this.endCopy = this.endDate;
     }
 
     private setEleWidth(width: number | string): void {
@@ -3416,13 +3443,21 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     protected ensureInputAttribute(): void {
-        for (let attr: number = 0; attr < this.inputElement.attributes.length; attr++) {
-            let prop: string = this.inputElement.attributes[attr].name;
-            if (isNullOrUndefined(this.cloneElement.getAttribute(prop))) {
-                if (prop.toLowerCase() === 'value' || isNullOrUndefined(this.cloneElement.getAttribute('value'))) {
+        let attr: string[] = [];
+        for (let i: number = 0; i < this.inputElement.attributes.length; i++) {
+            attr[i] = this.inputElement.attributes[i].name;
+        }
+        for (let i: number = 0; i < attr.length; i++) {
+            if (isNullOrUndefined(this.cloneElement.getAttribute(attr[i]))) {
+                if (attr[i].toLowerCase() === 'value') {
                     this.inputElement.value = '';
                 }
-                this.inputElement.removeAttribute(prop);
+                this.inputElement.removeAttribute(attr[i]);
+            } else {
+                if (attr[i].toLowerCase() === 'value') {
+                    this.inputElement.value = this.cloneElement.getAttribute(attr[i]);
+                }
+                this.inputElement.setAttribute(attr[i], this.cloneElement.getAttribute(attr[i]));
             }
         }
     }

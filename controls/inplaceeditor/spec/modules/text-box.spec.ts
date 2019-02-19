@@ -5,6 +5,7 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
+import { ValidateEventArgs } from '../../src';
 
 describe('TextBox Control', () => {
     beforeAll(() => {
@@ -96,6 +97,87 @@ describe('TextBox Control', () => {
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-textbox', document.body).length === 1).toEqual(true);
             expect(selectAll('#' + ele.id, document.body).length === 1).toEqual(true);
+        });
+    });
+    describe('validation testing', () =>{
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let buttonEle: HTMLElement;
+        let ctrlGroup: HTMLElement;
+        let editorError: HTMLElement;
+        let errMsg: string;
+        let eventValue: string | number;
+        let eventFieldName: string | number;
+        let eventPrimaryKey: string | number;
+        let message: string;
+        function validation(e: ValidateEventArgs) {
+            if(this.value.length > 8) {}
+            else {
+                e.errorMessage = "value length should be more than 8";
+                message = e.errorMessage;
+            }
+        }
+        function clickFn(e: ValidateEventArgs): void {
+            errMsg = e.errorMessage;
+            eventValue = e.data.value;
+            eventFieldName = e.data.name;
+            eventPrimaryKey = e.data.primaryKey;
+        }
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('validation rules testing', (done: Function) => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                name: 'Game',
+                validating: clickFn,
+                validationRules: {
+                    Game: {
+                        required: true
+                    }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click(); 
+            setTimeout(() => {
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+                buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+                let formEle: HTMLElement = <HTMLElement>select('.' + classes.FORM, ele);
+                expect(formEle.classList.contains(classes.ERROR)).toEqual(true);
+                ctrlGroup = <HTMLElement>select('.' + classes.CTRL_GROUP, ele);
+                editorError = <HTMLElement>select('.' + classes.EDITABLE_ERROR, ctrlGroup);
+                expect(editorError.childElementCount).toBe(1);
+                let errorContainer: HTMLElement = <HTMLElement>select('.' + classes.ERROR, editorError);
+                expect(errMsg).toBe(errorContainer.innerText);
+                expect(eventValue).toEqual('Empty');
+                expect(eventFieldName).toEqual('Game');
+                expect(eventPrimaryKey).toEqual('');
+                done();
+            },400);           
+        });
+        it('custom validation testing', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: "sample",
+                name: 'text',
+                validating: validation
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+                let formEle: HTMLElement = <HTMLElement>select('.' + classes.FORM, ele);
+                buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+                expect(formEle.classList.contains(classes.ERROR)).toEqual(true);
+                let editEle: HTMLElement = <HTMLElement>select('.' + classes.EDITABLE_ERROR, formEle);
+                expect(editEle.innerHTML).toBe(message);
         });
     });
     describe('Value formatting related testing', () => {

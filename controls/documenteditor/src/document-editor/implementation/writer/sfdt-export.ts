@@ -75,6 +75,7 @@ export class SfdtExport {
         this.document.sections = [];
         this.document.characterFormat = this.writeCharacterFormat(this.viewer.characterFormat);
         this.document.paragraphFormat = this.writeParagraphFormat(this.viewer.paragraphFormat);
+        this.document.defaultTabWidth = this.viewer.defaultTabWidth;
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             // For selection
             let startPara: ParagraphWidget = line.paragraph;

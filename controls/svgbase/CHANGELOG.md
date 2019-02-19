@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.53 (2019-02-13)
+## 16.4.54 (2019-02-19)
+
+### SvgBase
+
+#### Bug Fixes
+
+- Charts in tab control initial tooltip opacity issue fixed.
+
+## 16.4.52 (2019-02-05)
 
 ### SvgBase
 

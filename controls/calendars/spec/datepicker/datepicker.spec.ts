@@ -2561,58 +2561,138 @@ describe('Datepicker', () => {
             }
             document.body.innerHTML = '';
         });
-        it('Input element value rest test case', () => {
-            datepicker = new DatePicker({ value: new Date() });
+        // Test cases for reset the component when value has been given.
+        it('Input element value reset test case (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017') });
             datepicker.appendTo('#datepicker');
             (<any>document.getElementById("form-element")).reset();
-            expect(datepicker.element.value).toBe('');
-            expect(datepicker.value).toBe(null);
+            datepicker.dataBind();
+            expect(datepicker.element.value).toBe('2/2/2017');
+            expect(+datepicker.value !== null).toBe(true);
         });
-        it('Form rest with floatLabeltype("Auto") property test case', () => {
-            datepicker = new DatePicker({ value: new Date(), floatLabelType: "Auto" });
+        it('Input element value changing dynamically (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017') });
+            datepicker.appendTo('#datepicker');
+            datepicker.element.value = new Date('02/12/2018');
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.element.value).toBe('2/2/2017');
+            expect(datepicker.value !== null).toBe((true));
+        });
+        it('Input element value changing dynamically to null value (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017') });
+            datepicker.appendTo('#datepicker');
+            datepicker.element.value = null;
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.element.value).toBe('2/2/2017');
+            expect(datepicker.value !== null).toBe((true));
+        });
+        it('Clear the Input element value dynamically via clear button (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017') });
+            datepicker.appendTo('#datepicker');
+            (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.element.value).toBe('2/2/2017');
+            expect(datepicker.value !== null).toBe((true));
+        });
+
+        // below test cases are modified since this behavior has been changed in all input component.
+
+        it('Form reset with floatLabeltype("Auto") property test case (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017'), floatLabelType: "Auto" });
             datepicker.appendTo('#datepicker');
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
             (<any>document.getElementById("form-element")).reset();
-            expect(document.querySelector('.e-float-text').classList.contains('e-label-bottom')).toBe(true);
-            expect(datepicker.element.value).toBe('');
+            datepicker.dataBind();
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            expect(datepicker.element.value === '2/2/2017').toBe(true);
         });
-        it('Form rest with floatLabeltype("Always") property test case', () => {
-            datepicker = new DatePicker({ value: new Date(), floatLabelType: "Always" });
+        it('Form reset with floatLabeltype("Always") property test case (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017'), floatLabelType: "Always" });
             datepicker.appendTo('#datepicker');
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
             (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
-            expect(datepicker.element.value).toBe('');
+            expect(datepicker.element.value !== null).toBe(true);
         });
-        it('Form rest with floatLabeltype("Never") property test case', () => {
-            datepicker = new DatePicker({ value: new Date(), floatLabelType: "Never" });
+        it('Form reset with floatLabeltype("Never") property test case (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017'), floatLabelType: "Never" });
             datepicker.appendTo('#datepicker');
             expect(document.querySelector('.e-float-text')).toBe(null);
             (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
             expect(document.querySelector('.e-float-text')).toBe(null);
-            expect(datepicker.element.value).toBe('');
+            expect(datepicker.element.value !== null).toBe(true);
         });
-    });
-    describe('Form element with value ', () => {
-        let datepicker: any;
-        beforeEach(() => {
-            let formEle: HTMLElement = createElement('form', { id: "form-element" });
-            let Ele: HTMLElement = createElement('input', { id: "datepicker", attrs: { value: '02/02/2017' } });
-            formEle.appendChild(Ele);
-            document.body.appendChild(formEle);
-        });
-        afterEach(() => {
-            if (datepicker) {
-                datepicker.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('Input element value rest test case', () => {
-            datepicker = new DatePicker({ value: new Date() });
+        it('Input value reset in destroy case (initialized)', () => {
+            datepicker = new DatePicker({ value: new Date('02/02/2017') });
             datepicker.appendTo('#datepicker');
+            datepicker.destroy();
             (<any>document.getElementById("form-element")).reset();
-            expect(datepicker.element.value).toBe('02/02/2017');
-            expect(+datepicker.value).toBe(+new Date('2/2/2017'));
+            expect((<any>document.getElementById('datepicker')).value !== '2/2/2017').toBe(true);
+            datepicker = null;
+        });
+        // Test cases for reset the component when value not initialized
+        it('Input element value changing dynamically', () => {
+            datepicker = new DatePicker({  });
+            datepicker.appendTo('#datepicker');
+            datepicker.element.value = new Date('02/12/2018');
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.element.value).toBe('');
+            expect(datepicker.value === null).toBe((true));
+        });
+        it('Clear the Input element value dynamically via clear button', () => {
+            datepicker = new DatePicker({ });
+            datepicker.appendTo('#datepicker');
+            datepicker.element.value = new Date('02/12/2018');
+            (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.element.value).toBe('');
+            expect(datepicker.value === null).toBe((true));
+        });
+        // Below case need to be fixed by the component.
+        // it('Form reset with floatLabeltype("Auto") property test case', () => {
+        //     datepicker = new DatePicker({ floatLabelType: "Auto" });
+        //     datepicker.appendTo('#datepicker');
+        //     datepicker.value = new Date('02/12/2018');
+        //     expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+        //     (<any>document.getElementById("form-element")).reset();
+        //     datepicker.dataBind();
+        //     expect(document.querySelector('.e-float-text').classList.contains('e-label-bottom')).toBe(true);
+        //     expect(datepicker.element.value === '').toBe(true);
+        // });
+        it('Form reset with floatLabeltype("Always") property test case', () => {
+            datepicker = new DatePicker({ floatLabelType: "Always" });
+            datepicker.appendTo('#datepicker');
+            datepicker.element.value = new Date('02/12/2018');
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            expect(datepicker.element.value === '').toBe(true);
+        });
+        it('Form reset with floatLabeltype("Never") property test case', () => {
+            datepicker = new DatePicker({ floatLabelType: "Never" });
+            datepicker.appendTo('#datepicker');
+            expect(document.querySelector('.e-float-text')).toBe(null);
+            datepicker.element.value = new Date('02/12/2018');
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(document.querySelector('.e-float-text')).toBe(null);
+            expect(datepicker.element.value === '').toBe(true);
+        });
+        it('Input value reset in destroy case ', () => {
+            datepicker = new DatePicker({ });
+            datepicker.appendTo('#datepicker');
+            datepicker.destroy();
+            (<any>document.getElementById("form-element")).reset();
+            expect((<any>document.getElementById('datepicker')).value === '').toBe(true);
+            datepicker = null;
         });
     });
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- Now, you can enter special characters inside MultiSelect using virtual keyboard.
+
 ## 16.4.53 (2019-02-13)
 
 ### DropDownList

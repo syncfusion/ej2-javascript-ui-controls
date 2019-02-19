@@ -4654,6 +4654,7 @@ describe('Tab Control', () => {
             });
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
@@ -4662,6 +4663,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -4701,6 +4703,7 @@ describe('Tab Control', () => {
             tab.appendTo('#ej2Tab');
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -4708,6 +4711,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -5639,12 +5643,14 @@ describe('Tab Control', () => {
         });
         it('moveRight and moveLeft key with item visibility testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -5678,12 +5684,14 @@ describe('Tab Control', () => {
         });
         it('Vertical tab - end and home key with item visibility testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -5760,12 +5768,14 @@ describe('Tab Control', () => {
         });
         it('moveRight and moveLeft with shiftTab popup opening key testing', (done: Function): void => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -5834,23 +5844,27 @@ describe('Tab Control', () => {
         });
         it('Tab key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle, '.e-toolbar-item').id).toEqual('e-item_0');
         });
         it('moveRight and moveLeft key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -5881,6 +5895,7 @@ describe('Tab Control', () => {
         it('Home and End key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -5888,6 +5903,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -5910,6 +5926,7 @@ describe('Tab Control', () => {
         it('Space key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -5917,6 +5934,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -5988,6 +6006,7 @@ describe('Tab Control', () => {
         it('Enter key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -5995,6 +6014,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6020,6 +6040,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6027,6 +6048,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6052,6 +6074,7 @@ describe('Tab Control', () => {
         it('Delete key with showCloseButton as false', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6059,6 +6082,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(false);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6086,6 +6110,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6093,6 +6118,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6120,6 +6146,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let targetEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6127,6 +6154,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            targetEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6193,23 +6221,27 @@ describe('Tab Control', () => {
         });
         it('Tab key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle, '.e-toolbar-item').id).toEqual('e-item_0');
         });
         it('moveUp and moveDown key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6240,6 +6272,7 @@ describe('Tab Control', () => {
         it('Home and End key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6247,6 +6280,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6269,6 +6303,7 @@ describe('Tab Control', () => {
         it('Space key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6276,6 +6311,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6347,6 +6383,7 @@ describe('Tab Control', () => {
         it('Enter key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6354,6 +6391,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6379,6 +6417,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6386,6 +6425,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6411,6 +6451,7 @@ describe('Tab Control', () => {
         it('Delete key with showCloseButton as false', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6418,6 +6459,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(false);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6445,6 +6487,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6452,6 +6495,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6479,6 +6523,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let targetEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6486,6 +6531,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            targetEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6552,18 +6598,21 @@ describe('Tab Control', () => {
         });
         it('Tab key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle, '.e-toolbar-item').id).toEqual('e-item_0');
         });
         it('moveRight and moveLeft key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6571,6 +6620,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6593,6 +6643,7 @@ describe('Tab Control', () => {
         it('Home and End key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6600,6 +6651,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6622,6 +6674,7 @@ describe('Tab Control', () => {
         it('Space key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6629,6 +6682,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6668,6 +6722,7 @@ describe('Tab Control', () => {
         it('Enter key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6675,6 +6730,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6700,6 +6756,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6707,6 +6764,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6734,6 +6792,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let targetEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6741,6 +6800,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            targetEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6811,18 +6871,21 @@ describe('Tab Control', () => {
         });
         it('Tab key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'tab',
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle, '.e-toolbar-item').id).toEqual('e-item_0');
         });
         it('moveRight and moveLeft key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6830,6 +6893,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6852,6 +6916,7 @@ describe('Tab Control', () => {
         it('Home and End key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6859,6 +6924,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6881,6 +6947,7 @@ describe('Tab Control', () => {
         it('Space key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6888,6 +6955,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6927,6 +6995,7 @@ describe('Tab Control', () => {
         it('Enter key testing', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6934,6 +7003,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -6959,6 +7029,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -6966,6 +7037,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -6993,6 +7065,7 @@ describe('Tab Control', () => {
             tab.showCloseButton = true;
             tab.dataBind();
             let toolbar: DomElements = <DomElements> element.querySelector('.e-tab-header');
+            let targetEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             let toolbarObj: any = <Toolbar> toolbar.ej2_instances[0];
             keyEventArgs = {
                 preventDefault: function () { },
@@ -7000,6 +7073,7 @@ describe('Tab Control', () => {
                 target: element
             };
             tab.keyHandler(keyEventArgs);
+            targetEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(tab.showCloseButton).toEqual(true);
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
@@ -9001,6 +9075,7 @@ describe('Tab Control', () => {
             tab.disable(true);
             let element: HTMLElement = document.getElementById('ej2Tab');
             toolbar = <DomElements> element.querySelector('.e-tab-header');
+            let trgEle: HTMLElement = <HTMLElement> element.querySelector('.e-toolbar-item .e-tab-wrap');
             toolbarObj = <Toolbar> toolbar.ej2_instances[0];
             expect(element.classList.contains('e-disable')).toBe(true);
             keyEventArgs = {
@@ -9009,6 +9084,7 @@ describe('Tab Control', () => {
                 target: element,
             };
             tab.keyHandler(keyEventArgs);
+            trgEle.focus();
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(closest(actEle1, '.e-toolbar-item').id).toEqual('e-item_0');
             keyEventArgs = {
@@ -9908,6 +9984,57 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-content').length).toEqual(1);
             expect(element.querySelectorAll('.e-toolbar-items').length).toEqual(1);
             expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+        });
+    });
+
+    describe('Focus should be removed for initial active tab content', () => {
+        let tab1: Tab;
+        let tab2: Tab;
+        let items1: any;
+        let items2: any;
+        beforeEach((): void => {
+            let styleTag: any = document.createElement('style');
+            let styles: string = '#Tab2 { margin-top: 2000px; } ';
+            styleTag.innerHTML = styles;
+            document.body.appendChild(styleTag);
+            tab1 = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'Tab1' });
+            document.body.appendChild(ele);
+            tab2 = undefined;
+            let ele2: HTMLElement = createElement('div', { id: 'Tab2' });
+            document.body.appendChild(ele2);
+            items1 = [
+                { header: { "text": "item1" }, content: "Content1" },
+                { header: { "text": "item2" }, content: "Content2" },
+                { header: { "text": "item3" }, content: "Content3" }
+            ];
+            items2 = [
+                { header: { "text": "item1" }, content: "Content1" },
+                { header: { "text": "item2" }, content: "Content2" },
+                { header: { "text": "item3" }, content: "Content3" }
+            ];
+        });
+        afterEach((): void => {
+            if (tab1) {
+                tab1.destroy();
+            }
+            if (tab2) {
+                tab2.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Ininitial tab rendering testing', () => {
+            tab1 = new Tab({
+                items: items1
+            });
+            tab1.appendTo('#Tab1');
+            tab2 = new Tab({
+                items: items2
+            });
+            tab2.appendTo('#Tab2');
+            let actEle1: HTMLElement = <HTMLElement> document.activeElement;
+            expect(actEle1).toBe(document.body);
+            expect(document.getElementsByTagName('html')[0].scrollTop).toEqual(0);
         });
     });
 });

@@ -108,7 +108,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Gets or sets the height of the popup list. By default it renders based on its list item.
      * > For more details about the popup configuration refer to 
-     * [`Popup Configuration`](./getting-started.html#configure-the-popup-list) documentation.
+     * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      * 
      * @default '300px'
      * @aspType string
@@ -118,7 +118,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Gets or sets the width of the popup list and percentage values has calculated based on input width.
      * > For more details about the popup configuration refer to 
-     * [`Popup Configuration`](./getting-started.html#configure-the-popup-list) documentation.
+     * [`Popup Configuration`](../../multi-select/getting-started/#configure-the-popup-list) documentation.
      * 
      * @default '100%'
      * @aspType string
@@ -152,9 +152,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Accepts the template design and assigns it to the selected list item in the input element of the component.
      * For more details about the available template options refer to 
-     * [`Template`](./templates.html) documentation.
+     * [`Template`](../../multi-select/templates.html) documentation.
      * 
-     * We have built-in [`template engine`](./template-engine.html) 
+     * We have built-in `template engine` 
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals.
      * @default null
@@ -163,7 +163,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public valueTemplate: string;
     /**
      * Accepts the template design and assigns it to the header container of the popup list.
-     * > For more details about the available template options refer to [`Template`](./templates.html) documentation.
+     * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      * 
      * @default null
      */
@@ -171,7 +171,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public headerTemplate: string;
     /**
      * Accepts the template design and assigns it to the footer container of the popup list.
-     * > For more details about the available template options refer to [`Template`](./templates.html) documentation.
+     * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      * 
      * @default null
      */
@@ -179,9 +179,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     public footerTemplate: string;
     /**
      * Accepts the template design and assigns it to each list item present in the popup.
-     * > For more details about the available template options refer to [`Template`](./templates.html) documentation.
+     * > For more details about the available template options refer to [`Template`](../../multi-select/templates) documentation.
      * 
-     * We have built-in [`template engine`](./template-engine.html) 
+     * We have built-in `template engine`
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals.
      * @default null
@@ -203,7 +203,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public allowFiltering: boolean;
     /**
      * Allows user to add a 
-     * [`custom value`](./custom-value.html), the value which is not present in the suggestion list. 
+     * [`custom value`](../../multi-select/custom-value), the value which is not present in the suggestion list. 
      * @default false
      */
     @Property(false)
@@ -280,7 +280,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     @Property(',')
     public delimiterChar: string;
     /**
-     * Sets [`case sensitive`](./filtering.html#case-sensitive-filtering) 
+     * Sets [`case sensitive`](../../multi-select/filtering/#case-sensitive-filtering) 
      * option for filter operation.
      * @default true
      */
@@ -402,7 +402,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     public chipSelection: EmitType<Object>;
     /**
      * Triggers event,when user types a text in search box.
-     * > For more details about filtering, refer to [`Filtering`](./filtering.html) documentation.
+     * > For more details about filtering, refer to [`Filtering`](../../multi-select/filtering) documentation.
      * 
      * @event
      */
@@ -410,14 +410,14 @@ export class MultiSelect extends DropDownBase implements IInput {
     public filtering: EmitType<FilteringEventArgs>;
     /**
      * Fires before set the selected item as chip in the component.
-     * > For more details about chip customization refer [`Chip Customization`](./chip-customization.html)
+     * > For more details about chip customization refer [`Chip Customization`](../../multi-select/chip-customization)
      * 
      * @event
      */
     @Event()
     public tagging: EmitType<TaggingEventArgs>;
     /**
-     * Triggers when the [`customValue`](./custom-value.html) is selected.
+     * Triggers when the [`customValue`](../../multi-select/custom-value) is selected.
      * @event
      */
     @Event()
@@ -1282,15 +1282,17 @@ export class MultiSelect extends DropDownBase implements IInput {
     private checkTextLength(): boolean {
         return this.targetElement().length < 1;
     }
-    private popupKeyActions(keyCode: number): void {
-        switch (keyCode) {
+    private popupKeyActions(e: KeyboardEventArgs): void {
+        switch (e.keyCode) {
             case 38:
                 this.hidePopup();
                 if (this.mode === 'CheckBox') { this.inputElement.focus(); }
+                e.preventDefault();
                 break;
             case 40:
                 if (!this.isPopupOpen()) {
                     this.showPopup();
+                    e.preventDefault();
                 }
                 break;
         }
@@ -1308,8 +1310,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.keyDownStatus = true;
         if (e.keyCode > 111 && e.keyCode < 124) { return; }
         if (e.altKey) {
-            this.popupKeyActions(e.keyCode);
-            e.preventDefault();
+            this.popupKeyActions(e);
             return;
         } else if (this.isPopupOpen()) {
             let focusedItem: Element = this.list.querySelector('.' + dropDownBaseClasses.focus);

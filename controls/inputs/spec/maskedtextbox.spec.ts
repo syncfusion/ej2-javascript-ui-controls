@@ -2231,7 +2231,52 @@ describe('MaskedTextBox Component', () => {
             expect(containerValue).toEqual(1);
         });
     });
-	it('memory leak testing', () => {
+    describe('MaskedTextBox in HTML5 forms testing:', () => {
+        let mask: MaskedTextBox;
+        let container: HTMLDivElement;
+        let targetElement: HTMLElement;
+        let formElement: HTMLFormElement;
+
+        beforeEach(() => {
+            container = createElement('div', {
+                id: "container"
+            }) as HTMLDivElement;
+
+            formElement = createElement('form', {
+                id: 'form'
+            }) as HTMLFormElement;
+
+            targetElement = createElement('input', {
+                id: "mask"
+            }) as HTMLElement;
+
+            formElement.appendChild(targetElement);
+
+            container.appendChild(formElement);
+
+            document.body.appendChild(container);
+        })
+
+        afterEach(() => {
+            mask.destroy();
+            mask = null;
+            document.getElementById('container').remove();
+        })
+
+        it('form reset method should make default MaskedTextBox to go back to it default value', () => {
+            mask = new MaskedTextBox({
+                value: '123',
+                mask: '999'
+            });
+            mask.appendTo(targetElement);
+
+            mask.value = '321';
+            expect((targetElement as any).ej2_instances[0].value).toBe('321');
+            formElement.reset();
+            expect((targetElement as any).ej2_instances[0].value).toBe('123');
+        });        
+    });
+    it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

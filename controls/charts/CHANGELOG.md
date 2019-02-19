@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### Chart
+
+#### Bug Fixes
+
+- Pie animation starting angle issue fixed.
+
 ## 16.4.53 (2019-02-13)
 
 ### Chart

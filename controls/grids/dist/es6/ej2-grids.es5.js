@@ -7537,12 +7537,13 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         var args;
+        var checkboxColumn = this.parent.getColumns().filter(function (col) { return col.type === 'checkbox'; });
         for (var _i = 0, rowIndexes_2 = rowIndexes; _i < rowIndexes_2.length; _i++) {
             var rowIndex = rowIndexes_2[_i];
             var rowObj = this.getRowObj(rowIndex);
             var isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
             this.selectRowIndex(rowIndex);
-            if (isUnSelected) {
+            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
@@ -9178,9 +9179,9 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.rowCellSelectionHandler = function (rowIndex, cellIndex) {
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
-                this.selectRow(rowIndex, true);
+                this.selectRow(rowIndex, this.selectionSettings.enableToggle);
             }
-            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, true);
+            this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
             if (this.selectedRowCellIndexes.length) {
                 this.updateAutoFillPosition();
             }
@@ -10653,6 +10654,9 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], SelectionSettings.prototype, "enableSimpleMultiRowSelection", void 0);
+    __decorate([
+        Property(true)
+    ], SelectionSettings.prototype, "enableToggle", void 0);
     return SelectionSettings;
 }(ChildProperty));
 /**
@@ -11400,7 +11404,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     requireGridRefresh = true;
                     break;
                 default:
-                    this.extendedPropertyChange(prop, newProp);
+                    this.extendedPropertyChange(prop, newProp, requireGridRefresh);
             }
         }
         if (checkCursor) {
@@ -11417,10 +11421,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         else if (requireRefresh) {
             this.notify(modelChanged, args);
             requireRefresh = false;
+            this.maintainSelection(newProp.selectedRowIndex);
         }
     };
     /* tslint:disable-next-line:max-line-length */
-    Grid.prototype.extendedPropertyChange = function (prop, newProp) {
+    Grid.prototype.extendedPropertyChange = function (prop, newProp, requireGridRefresh) {
         switch (prop) {
             case 'enableRtl':
                 this.updateRTL();
@@ -11522,7 +11527,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 else {
                     this.getDataModule().setState({ isDataChanged: false });
                     this.notify(dataSourceModified, {});
-                    this.renderModule.refresh();
+                    if (!requireGridRefresh) {
+                        this.renderModule.refresh();
+                    }
                 }
                 break;
             case 'enableHover':
@@ -11535,6 +11542,16 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.isSelectedRowIndexUpdating = false;
                 break;
+        }
+    };
+    Grid.prototype.maintainSelection = function (index) {
+        var _this = this;
+        if (index !== -1) {
+            var fn_1 = function () {
+                _this.selectRow(index);
+                _this.off(contentReady, fn_1);
+            };
+            this.on(contentReady, fn_1, this);
         }
     };
     /**
@@ -20715,9 +20732,11 @@ var FooterRenderer = /** @__PURE__ @class */ (function (_super) {
         editedData = editedData instanceof Array ? editedData : [];
         var field = this.parent.getPrimaryKeyFieldNames()[0];
         var deletedCols = [];
+        var data = 'dataSource';
         var mergeds;
         var rows = this.parent.frozenColumns > 0 ? this.parent.getMovableRowsObject() : this.parent.getRowsObject();
-        var initds = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.getCurrentViewRecords();
+        var initds = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.dataSource[data].json.length
+            ? this.parent.dataSource[data].json : this.parent.getCurrentViewRecords();
         var addrow = [];
         var changeds = rows.map(function (row) {
             if (row.changes && row.edit === 'add') {
@@ -22178,8 +22197,8 @@ var EditRender = /** @__PURE__ @class */ (function () {
                 var model = new RowModelGenerator(this.parent);
                 var cellRenderer = cellRendererFact.getCellRenderer(CellType.CommandColumn);
                 var cells = model.generateRows(args.rowData)[0].cells;
-                var cell = cells.filter(function (cell) { return cell.commands; })[0];
-                var td = cellRenderer.render(cell, args.rowData, { 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
+                var cell = cells.filter(function (cell) { return cell.rowID; });
+                var td = cellRenderer.render(cell[i], args.rowData, { 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
                 var div = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;
@@ -22278,7 +22297,7 @@ var BooleanEditCell = /** @__PURE__ @class */ (function () {
             addRemoveActiveClasses.apply(void 0, [[].slice.call(args.row.querySelectorAll('.e-rowcell')), chkState].concat(this.activeClasses));
         }
         this.obj = new CheckBox(extend({
-            label: this.parent.editSettings.mode !== 'Dialog' ? '' : args.column.headerText,
+            label: this.parent.editSettings.mode !== 'Dialog' ? ' ' : args.column.headerText,
             checked: chkState,
             disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
             change: this.checkBoxChange.bind(this)

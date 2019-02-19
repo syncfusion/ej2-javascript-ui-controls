@@ -2,9 +2,13 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
+import { ConnectorModel} from '../../../src/diagram/objects/connector-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
+import { PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
+import { PointModel } from '../../../src/diagram/primitives/point-model';
+import { MouseEvents } from '../interaction/mouseevents.spec';
 
 
 
@@ -187,4 +191,49 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('Port drag issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramPortDragIssue' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: "node", offsetX: 250, offsetY: 250, width: 100, height: 100, rotateAngle: 180, annotations: [{content: "Test"}],
+                ports: [
+                    {
+                        id: "port", width: 25, height: 25, offset: {x: 0.5, y: 1},
+                        visibility: PortVisibility.Visible, constraints: PortConstraints.Drag
+                    }
+                ]
+            };
+            let connector: ConnectorModel = {sourceID: "node", sourcePortID: "port", targetPoint: { x: 350, y: 250 }};
+            diagram = new Diagram({ width: 800, height: 800, nodes: [node], connectors: [connector] });
+            diagram.appendTo('#diagramPortDragIssue');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking drag port when rotate angle is 90 degree', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let nodePort: PointPortModel = diagram.nodes[0].ports[0];
+            let connectorSourcePoint: PointModel = diagram.connectors[0].sourcePoint;
+            expect(nodePort.offset.x === 0.5 && nodePort.offset.y === 1).toBe(true);
+            expect(connectorSourcePoint.x === 250 && connectorSourcePoint.y === 200).toBe(true);
+            let bounds: ClientRect = document.getElementById('node').getBoundingClientRect();
+            let mE: MouseEvents = new MouseEvents();
+            mE.mouseMoveEvent(diagramCanvas, (bounds.left + (bounds.width / 2)), (bounds.top - 10));
+            mE.mouseDownEvent(diagramCanvas, (bounds.left + (bounds.width / 2)), (bounds.top - 10));
+            mE.mouseMoveEvent(diagramCanvas, 500, 100);
+            mE.mouseUpEvent(diagramCanvas, 500, 100);
+            expect(nodePort.offset.x === -1.92 && nodePort.offset.y === 1.98).toBe(true);
+            expect(connectorSourcePoint.x === 492 && connectorSourcePoint.y === 102).toBe(true);
+            done();
+        });
+    });
+
+
 });

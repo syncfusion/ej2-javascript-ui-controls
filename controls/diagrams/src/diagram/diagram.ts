@@ -69,7 +69,7 @@ import { UndoRedo } from './objects/undo-redo';
 import { ConnectorEditing } from './interaction/connector-editing';
 import { Ruler } from '../ruler/index';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, EJ2Instance } from '@syncfusion/ej2-navigations';
-import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements } from './utility/dom-util';
+import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex } from './utility/dom-util';
 import { getDiagramElement, getScrollerWidth, getHTMLLayer } from './utility/dom-util';
 import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg } from './utility/dom-util';
 import { getPortLayerSvg, getDiagramLayerSvg } from './utility/dom-util';
@@ -4026,7 +4026,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.updateStackProperty(obj, child, i); canvas.children.push(child.wrapper);
                         canvas.elementActions = canvas.elementActions | ElementAction.ElementIsGroup;
                         child.wrapper.flip = child.wrapper.flip === 'None' ?
-                        obj.wrapper.flip : child.wrapper.flip;
+                            obj.wrapper.flip : child.wrapper.flip;
                     }
                 }
             }
@@ -4331,6 +4331,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    private getZindexPosition(obj: (NodeModel | ConnectorModel), viewId: string): number {
+        let objects: (NodeModel | ConnectorModel)[] = [];
+        let index: number = undefined;
+        objects = objects.concat(this.nodes);
+        objects = objects.concat(this.connectors);
+        let type: string;
+        if (obj.zIndex !== -1) {
+            for (let i: number = 0; i < objects.length; i++) {
+                if (objects[i].zIndex > obj.zIndex) {
+                    if (obj.shape.type === 'HTML' || obj.shape.type === 'Native') {
+                        type = obj.shape.type === 'HTML' ? 'html' : 'native';
+                    }
+                    index = getDomIndex(viewId, objects[i].id, type);
+                }
+            }
+        }
+        return index;
+    }
 
     /** @private */
     public updateDiagramObject(obj: (NodeModel | ConnectorModel)): void {
@@ -4347,7 +4365,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     this.diagramRenderer.updateNode(
                         obj.wrapper as DiagramElement, diagramElementsLayer,
-                        htmlLayer, undefined);
+                        htmlLayer, undefined, this.getZindexPosition(obj, view.element.id));
                     this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
 
@@ -4874,7 +4892,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private updateThumbConstraints(
-        node: NodeModel[] | ConnectorModel[] | PathAnnotation[] | ShapeAnnotation[], selectorModel: SelectorModel): void {
+        node: NodeModel[] | ConnectorModel[] | PathAnnotation[] | ShapeAnnotation[],
+        selectorModel: SelectorModel, canInitialize?: boolean): void {
         let state: number = 0;
         let length: number = node.length;
         for (let i: number = 0; i < length; i++) {
@@ -4915,7 +4934,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     thumbConstraints = thumbConstraints & ~ThumbsConstraints.ResizeSouthWest;
                 }
             } else if (obj instanceof Connector) {
-                thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                if (!canInitialize) { thumbConstraints = thumbConstraints | ThumbsConstraints.Default; }
                 if (canDragSourceEnd(obj as Connector)) {
                     thumbConstraints = thumbConstraints | ThumbsConstraints.ConnectorSource;
                 } else {
@@ -4927,7 +4946,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     thumbConstraints = thumbConstraints & ~ThumbsConstraints.ConnectorTarget;
                 }
             } else {
-                thumbConstraints = thumbConstraints | ThumbsConstraints.Default;
+                if (!canInitialize) { thumbConstraints = thumbConstraints | ThumbsConstraints.Default; }
                 if (!canResize(obj as ShapeAnnotation | PathAnnotation)) {
                     thumbConstraints = thumbConstraints & ~(ThumbsConstraints.ResizeSouthEast | ThumbsConstraints.ResizeSouthWest |
                         ThumbsConstraints.ResizeSouth | ThumbsConstraints.ResizeEast | ThumbsConstraints.ResizeWest |
@@ -4976,7 +4995,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.updateThumbConstraints([selectorModel.annotation] as (ShapeAnnotation[] | PathAnnotation[]), selectorModel);
             } else {
                 this.updateThumbConstraints(selectorModel.nodes, selectorModel);
-                this.updateThumbConstraints(selectorModel.connectors, selectorModel);
+                this.updateThumbConstraints(selectorModel.connectors, selectorModel, true);
             }
             if (selectorModel.annotation) {
                 this.renderSelectorForAnnotation(selectorModel, selectorElement);
@@ -5016,73 +5035,77 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public updateSelector(): void {
         let size: Size = new Size();
-        let selectorModel: Selector = this.selectedItems as Selector;
-        let selectorConstraints: SelectorConstraints = selectorModel.constraints;
+        let selector: Selector = this.selectedItems as Selector;
+        let selectorConstraints: SelectorConstraints = selector.constraints;
         if (!(this.diagramActions & DiagramAction.ToolAction) && this.selectedItems.nodes.length === 1) {
             this.selectedItems.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
             this.selectedItems.wrapper.rotateAngle = this.selectedItems.nodes[0].rotateAngle;
         }
         if (this.selectedItems !== undefined) {
             this.clearSelectorLayer();
-            if (selectorModel.wrapper !== null && selectorModel.wrapper.children && selectorModel.wrapper.children.length) {
-                selectorModel.wrapper.measure(size);
-                selectorModel.wrapper.arrange(selectorModel.wrapper.desiredSize);
-                if (selectorModel.rotateAngle !== 0 || selectorModel.rotateAngle !== selectorModel.wrapper.prevRotateAngle) {
-                    for (let obj of selectorModel.nodes) {
+            if (selector.wrapper !== null && selector.wrapper.children && selector.wrapper.children.length) {
+                selector.wrapper.measure(size);
+                selector.wrapper.arrange(selector.wrapper.desiredSize);
+                if (selector.rotateAngle !== 0 || selector.rotateAngle !== selector.wrapper.prevRotateAngle) {
+                    for (let obj of selector.nodes) {
                         obj.offsetX = obj.wrapper.offsetX;
                         obj.offsetY = obj.wrapper.offsetY;
                     }
                 }
-                selectorModel.width = selectorModel.wrapper.actualSize.width;
-                selectorModel.height = selectorModel.wrapper.actualSize.height;
-                selectorModel.offsetX = selectorModel.wrapper.offsetX;
-                selectorModel.offsetY = selectorModel.wrapper.offsetY;
-                let selectorElement: (SVGElement | HTMLCanvasElement);
-                selectorElement = getSelectorElement(this.element.id);
+                selector.width = selector.wrapper.actualSize.width;
+                selector.height = selector.wrapper.actualSize.height;
+                selector.offsetX = selector.wrapper.offsetX;
+                selector.offsetY = selector.wrapper.offsetY;
+                let selectorEle: (SVGElement | HTMLCanvasElement);
+                selectorEle = getSelectorElement(this.element.id);
                 let canHideResizers: boolean = this.eventHandler.canHideResizers();
-                selectorModel.thumbsConstraints = ThumbsConstraints.Default;
-                if (selectorModel.annotation) {
-                    this.updateThumbConstraints([selectorModel.annotation] as (ShapeAnnotation[] | PathAnnotation[]), selectorModel);
+                selector.thumbsConstraints = ThumbsConstraints.Default;
+                if (selector.annotation) {
+                    this.updateThumbConstraints([selector.annotation] as (ShapeAnnotation[] | PathAnnotation[]), selector);
                 } else {
-                    this.updateThumbConstraints(selectorModel.nodes, selectorModel);
-                    this.updateThumbConstraints(selectorModel.connectors, selectorModel);
+                    this.updateThumbConstraints(selector.nodes, selector);
+                    this.updateThumbConstraints(selector.connectors, selector, true);
                 }
-                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selectorModel.annotation))) {
-                    this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
+                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation))) {
+                    this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
                 }
-                if (selectorModel.annotation) {
-                    this.renderSelectorForAnnotation(selectorModel, selectorElement);
-                } else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
-                    if (selectorModel.connectors[0] instanceof Connector) {
-                        let connector: Connector = selectorModel.connectors[0] as Connector;
+                if (selector.annotation) {
+                    this.renderSelectorForAnnotation(selector, selectorEle);
+                } else if (selector.nodes.length + selector.connectors.length === 1) {
+                    if (selector.connectors[0] instanceof Connector) {
+                        let connector: Connector = selector.connectors[0] as Connector;
                         this.diagramRenderer.renderEndPointHandle(
-                            connector, selectorElement, selectorModel.thumbsConstraints, selectorConstraints,
+                            connector, selectorEle, selector.thumbsConstraints, selectorConstraints,
                             this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined,
                             (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
-                    } else if (selectorModel.nodes[0] instanceof Node) {
-                        if (checkParentAsContainer(this, selectorModel.nodes[0])) {
-                            let stackPanel: NodeModel = selectorModel.nodes[0];
+                    } else if (selector.nodes[0] instanceof Node) {
+                        if (checkParentAsContainer(this, selector.nodes[0])) {
+                            let stackPanel: NodeModel = selector.nodes[0];
                             if (stackPanel.shape.type !== 'UmlClassifier' && !((stackPanel as Node).parentId &&
                                 this.nameTable[(stackPanel as Node).parentId]
                                 && this.nameTable[(stackPanel as Node).parentId].shape.type === 'UmlClassifier')) {
-                                selectorModel.nodes[0].constraints &= ~(NodeConstraints.HideThumbs | NodeConstraints.Rotate);
-                                selectorModel.thumbsConstraints &= ~ThumbsConstraints.Rotate;
+                                if (!(stackPanel.container && (stackPanel.container.type === 'Canvas'
+                                    || stackPanel.container.type === 'Grid'))) {
+                                    selector.nodes[0].constraints &= ~(NodeConstraints.HideThumbs | NodeConstraints.Rotate);
+                                }
+                                selector.thumbsConstraints &= ~ThumbsConstraints.Rotate;
                             }
                         }
                         this.diagramRenderer.renderResizeHandle(
-                            selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom,
-                            selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel.nodes[0]),
-                            (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
+                            selector.wrapper.children[0], selectorEle, selector.thumbsConstraints, this.scroller.currentZoom,
+                            selector.constraints, this.scroller.transform, canHideResizers, canMove(selector.nodes[0]),
+                            (selector.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
                     }
                 } else {
                     if (this.diagramActions & DiagramAction.Interactions) {
                         this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions | RendererAction.PreventRenderSelector;
                     }
                     this.diagramRenderer.renderResizeHandle(
-                        selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom,
-                        selectorModel.constraints, this.scroller.transform, canHideResizers, canMove(selectorModel),
+                        selector.wrapper, selectorEle, selector.thumbsConstraints, this.scroller.currentZoom,
+                        selector.constraints, this.scroller.transform, canHideResizers, canMove(selector)
                     );
                     this.diagramRenderer.rendererActions = this.diagramRenderer.rendererActions & ~RendererAction.PreventRenderSelector;
+
                 }
             }
         }
@@ -5536,6 +5559,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let index: number = Number(key); update = true; let changedObject: PointPortModel = node.ports[key];
                 let actualPort: PointPortModel = actualObject.ports[index];
                 this.updatePort(changedObject, actualPort, actualObject.wrapper);
+                updateConnector = true;
             }
         }
         if (node.annotations !== undefined || node.width !== undefined) {

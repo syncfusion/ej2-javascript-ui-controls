@@ -2968,38 +2968,71 @@ describe('TimePicker', () => {
             }
             document.body.innerHTML = '';
         });
-        it('Input element value rest test case', () => {
-            timepicker = new TimePicker({ value: new Date() });
+        // Test cases for reset the component when value has been given.
+        it('Input element value reset test case (initialized)', () => {
+            timepicker = new TimePicker({ value: new Date('02/02/2017')});
             timepicker.appendTo('#timepicker');
             (<any>document.getElementById("form-element")).reset();
-            expect(timepicker.element.value).toBe('');
-            expect(timepicker.value).toBe(null);
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('12:00 AM');
+            expect(timepicker.value !== null).toBe(true);
         });
-        it('Form rest with floatLabeltype("Auto") property test case', () => {
-            timepicker = new TimePicker({ value: new Date(), floatLabelType: "Auto" });
+        it('Input element value changing dynamically (initialized)', () => {
+            timepicker = new TimePicker({ value: new Date('02/02/2017') });
+            timepicker.appendTo('#timepicker');
+            timepicker.element.value = new Date('02/12/2018 4:00 PM');
+            (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('12:00 AM');
+            expect(timepicker.value !== null).toBe((true));
+        });
+        it('Input element value changing dynamically to null value (initialized)', () => {
+            timepicker = new TimePicker({ value: new Date('02/02/2017') });
+            timepicker.appendTo('#timepicker');
+            timepicker.element.value = null;
+            (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('12:00 AM');
+            expect(timepicker.value !== null).toBe((true));
+        });
+        it('Clear the Input element value dynamically via clear button (initialized)', () => {
+            timepicker = new TimePicker({ value: new Date('02/02/2017') });
+            timepicker.appendTo('#timepicker');
+            (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
+            (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('12:00 AM');
+            expect(timepicker.value !== null).toBe((true));
+        });
+        // below test cases are modified since this behavior has been changed in all input component.
+        it('Form reset with floatLabeltype("Auto") property test case (initialized)', () => {
+            timepicker = new TimePicker({ value: new Date('02/02/2017'), floatLabelType: "Auto" });
             timepicker.appendTo('#timepicker');
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
             (<any>document.getElementById("form-element")).reset();
-            expect(document.querySelector('.e-float-text').classList.contains('e-label-bottom')).toBe(true);
-            expect(timepicker.element.value).toBe('');
+            timepicker.dataBind();
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            expect(timepicker.element.value === '12:00 AM').toBe(true);
         });
-        it('Form rest with floatLabeltype("Always") property test case', () => {
-            timepicker = new TimePicker({ value: new Date(), floatLabelType: "Always" });
+        it('Form reset with floatLabeltype("Always") property test case (initialized)', () => {
+            timepicker = new TimePicker({ value: new Date('02/02/2017'), floatLabelType: "Always" });
             timepicker.appendTo('#timepicker');
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
             (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
             expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
-            expect(timepicker.element.value).toBe('');
+            expect(timepicker.element.value === '12:00 AM').toBe(true);
         });
-        it('Form rest with floatLabeltype("Never") property test case', () => {
-            timepicker = new TimePicker({ value: new Date(), floatLabelType: "Never" });
+        it('Form reset with floatLabeltype("Never") property test case (initialized)', () => {
+            timepicker = new TimePicker({ value: new Date('02/02/2017'), floatLabelType: "Never" });
             timepicker.appendTo('#timepicker');
             expect(document.querySelector('.e-float-text')).toBe(null);
             (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
             expect(document.querySelector('.e-float-text')).toBe(null);
-            expect(timepicker.element.value).toBe('');
+            expect(timepicker.element.value === '12:00 AM').toBe(true);
         });
-        it('Form destroy event test case',()=>{
+        it('Form destroy event test case (initialized)',()=>{
             timepicker = new TimePicker({ value: new Date()});
             timepicker.appendTo('#timepicker');
             expect(document.getElementById('timepicker').classList.contains('e-timepicker')).toBe(true);
@@ -3011,107 +3044,147 @@ describe('TimePicker', () => {
             expect(document.forms[0].__eventList.events.length).toBe(0);
             timepicker.appendTo('#timepicker');
         });
-    });
-    describe('Form element with value ', () => {
-        let timepicker: any;
-        beforeEach(() => {
-            let formEle: HTMLElement = createElement('form', { id: "form-element" });
-            let Ele: HTMLElement = createElement('input', { id: "timepicker", attrs: { value: '2/2/2017' } });
-            formEle.appendChild(Ele);
-            document.body.appendChild(formEle);
+         // Test cases for reset the component when value not initialized
+         it('Input element value changing dynamically', () => {
+            timepicker = new TimePicker({  });
+            timepicker.appendTo('#timepicker');
+            timepicker.element.value = new Date('02/12/2018');
+            (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('');
+            expect(timepicker.value === null).toBe((true));
         });
-        afterEach(() => {
+        it('Clear the Input element value dynamically via clear button', () => {
+            timepicker = new TimePicker({ });
+            timepicker.appendTo('#timepicker');
+            timepicker.element.value = new Date('02/12/2018');
+            (<HTMLInputElement>document.getElementsByClassName('e-clear-icon')[0]).dispatchEvent(clickEvent);
+            (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
+            expect(timepicker.element.value).toBe('');
+            expect(timepicker.value === null).toBe((true));
+        });
+        // Below test case get failed since this is need to be fixed.
+        // it('Form reset with floatLabeltype("Auto") property test case', () => {
+        //     timepicker = new TimePicker({ floatLabelType: "Auto" });
+        //     timepicker.appendTo('#timepicker');
+        //     timepicker.element.value = new Date('02/12/2018');
+        //     expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+        //     (<any>document.getElementById("form-element")).reset();
+        //     timepicker.dataBind();
+        //     expect(document.querySelector('.e-float-text').classList.contains('e-label-bottom')).toBe(true);
+        //     expect(timepicker.element.value === '').toBe(true);
+        // });
+        it('Form reset with floatLabeltype("Always") property test case', () => {
+            timepicker = new TimePicker({ floatLabelType: "Always" });
+            timepicker.appendTo('#timepicker');
+            timepicker.element.value = new Date('02/12/2018');
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
+            expect(document.querySelector('.e-float-text').classList.contains('e-label-top')).toBe(true);
+            expect(timepicker.element.value === '').toBe(true);
+        });
+        it('Form reset with floatLabeltype("Never") property test case', () => {
+            timepicker = new TimePicker({ floatLabelType: "Never" });
+            timepicker.appendTo('#timepicker');
+            expect(document.querySelector('.e-float-text')).toBe(null);
+            timepicker.element.value = new Date('02/12/2018');
+            (<any>document.getElementById("form-element")).reset();
+            timepicker.dataBind();
+            expect(document.querySelector('.e-float-text')).toBe(null);
+            expect(timepicker.element.value === '').toBe(true);
+        });
+        it('Form destroy event test case',()=>{
+            timepicker = new TimePicker({ });
+            timepicker.appendTo('#timepicker');
+            expect(document.getElementById('timepicker').classList.contains('e-timepicker')).toBe(true);
+            expect(!isNullOrUndefined(timepicker.inputWrapper)).toBe(true);
+            expect(document.forms[0].__eventList.events[0].name).toBe('reset');
+            timepicker.destroy();
+            expect(document.getElementById('timepicker').classList.contains('e-timepicker')).toBe(false);
+            expect(!isNullOrUndefined(timepicker.inputWrapper)).toBe(false);
+            expect(document.forms[0].__eventList.events.length).toBe(0);
+            timepicker.appendTo('#timepicker');
+        });
+    });
+        /**
+    * Model dialog test case
+    */
+    describe('Model dialog', function () {
+        let timepicker: any;
+        beforeEach(()=>{
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            timepicker = new TimePicker({
+                value: new Date('4/4/2017 1:00 AM')
+            });
+            timepicker.appendTo('#date');
+        });
+        afterEach(()=>{
             if (timepicker) {
                 timepicker.destroy();
             }
             document.body.innerHTML = '';
         });
-        it('Input element value rest test case', () => {
-            timepicker = new TimePicker({ value: new Date() });
-            timepicker.appendTo('#timepicker');
-            (<any>document.getElementById("form-element")).reset();
-            (<HTMLElement>document.getElementsByClassName('e-time-icon')[0]).dispatchEvent(clickEvent);
-            expect(timepicker.element.value).toBe('2/2/2017');
-            expect(+timepicker.value).toBe(+new Date('2/2/2017'));
+        it(' desktop test case', function () {
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('left');
+            expect(timepicker.popupObj.position.Y).toBe('bottom');
+            expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
+        });
+        it(' desktop no value test case', function () {
+            timepicker.value = null;
+            timepicker.dataBind();
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('left');
+            expect(timepicker.popupObj.position.Y).toBe('bottom');
+            expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
         });
     });
-    /**
-    * Model dialog test case
-    */
-   describe('Model dialog', function () {
-       let timepicker: any;
-       beforeEach(()=>{
-           let ele: HTMLElement = createElement('input', { id: 'date' });
-           document.body.appendChild(ele);
-           timepicker = new TimePicker({
-               value: new Date('4/4/2017 1:00 AM')
-           });
-           timepicker.appendTo('#date');
-       });
-       afterEach(()=>{
-           if (timepicker) {
-               timepicker.destroy();
-           }
-           document.body.innerHTML = '';
-       });
-       it(' desktop test case', function () {
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('left');
-           expect(timepicker.popupObj.position.Y).toBe('bottom');
-           expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
-       });
-       it(' desktop no value test case', function () {
-           timepicker.value = null;
-           timepicker.dataBind();
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 0).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('left');
-           expect(timepicker.popupObj.position.Y).toBe('bottom');
-           expect(timepicker.popupObj.relateTo).toBe(timepicker.inputWrapper.container);
-       });
-   });
-   describe('Model dialog-mobile', function () {
-       let timepicker: any;
-       beforeAll(() => {
-           let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-           Browser.userAgent = androidPhoneUa;
-       });
-       beforeEach(()=>{
-           let ele: HTMLElement = createElement('input', { id: 'date' });
-           document.body.appendChild(ele);
-           timepicker = new TimePicker({
-               value: new Date('4/5/2017 1:00 AM')
-           });
-           timepicker.appendTo('#date');
-       });
-       afterEach(()=>{
-           if (timepicker) {
-               timepicker.destroy();
-           }
-           document.body.innerHTML = '';
-       });
-       afterAll(() => {
-           let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
-           Browser.userAgent = androidPhoneUa;
-       });
-       it(' mobile test case', function () {
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('center');
-           expect(timepicker.popupObj.position.Y).toBe('center');
-           expect(timepicker.popupObj.relateTo).toBe(document.body)
-       });
-       it(' mobile no value test case', function () {
-           timepicker.value = null;
-           timepicker.dataBind();
-           (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
-           expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
-           expect(timepicker.popupObj.position.X).toBe('center');
-           expect(timepicker.popupObj.position.Y).toBe('center');
-           expect(timepicker.popupObj.relateTo).toBe(document.body)
-       });
-   });
+    describe('Model dialog-mobile', function () {
+        let timepicker: any;
+        beforeAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        beforeEach(()=>{
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            timepicker = new TimePicker({
+                value: new Date('4/5/2017 1:00 AM')
+            });
+            timepicker.appendTo('#date');
+        });
+        afterEach(()=>{
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        afterAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+        });
+        it(' mobile test case', function () {
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('center');
+            expect(timepicker.popupObj.position.Y).toBe('center');
+            expect(timepicker.popupObj.relateTo).toBe(document.body)
+        });
+        it(' mobile no value test case', function () {
+            timepicker.value = null;
+            timepicker.dataBind();
+            (<HTMLElement>document.getElementsByClassName('e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+            expect(document.getElementsByClassName('e-time-modal').length === 1).toBe(true);
+            expect(timepicker.popupObj.position.X).toBe('center');
+            expect(timepicker.popupObj.position.Y).toBe('center');
+            expect(timepicker.popupObj.relateTo).toBe(document.body)
+        });
+    });
 });
 

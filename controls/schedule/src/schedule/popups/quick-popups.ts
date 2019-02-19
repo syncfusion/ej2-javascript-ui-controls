@@ -846,7 +846,16 @@ export class QuickPopups {
         if (target.classList.contains(cls.APPOINTMENT_CLASS)) {
             return this.parent.activeEventData.event;
         }
-        return this.parent.activeCellsData;
+        // Depricated cells data in quick popups
+        let eventObj: { [key: string]: Object } = {
+            startTime: this.parent.activeCellsData.startTime,
+            endTime: this.parent.activeCellsData.endTime,
+            isAllDay: this.parent.activeCellsData.isAllDay,
+            groupIndex: this.parent.activeCellsData.groupIndex
+        };
+        let cellsData: Object = this.parent.activeCellsData;
+        this.parent.eventWindow.convertToEventData(cellsData as { [key: string]: Object }, eventObj);
+        return eventObj;
     }
 
     private beforeQuickDialogClose(): void {

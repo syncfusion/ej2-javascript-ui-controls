@@ -22,6 +22,9 @@ export class ViewBase {
         },
         getTime: (dt: Date) => {
             if (this.parent.isAdaptive) {
+                if (this.parent.timeFormat === 'HH:mm') {
+                    return this.parent.globalize.formatDate(dt, { format: 'H', calendar: this.parent.getCalendarMode() });
+                }
                 return this.parent.globalize.formatDate(dt, { skeleton: 'h', calendar: this.parent.getCalendarMode() });
             }
             return this.parent.getTimeString(dt);

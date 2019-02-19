@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### TextBox
+
+#### Bug Fixes
+
+- Now, input event will trigger after clear the textbox value using clear icon.
+
+- Now, the default value is set to the textbox while resetting the form.
+
+### Uploader
+
+#### Bug Fixes
+
+- Uploader file list will be cleared while reset the form.
+
+#### New Features
+
+- Provided `cssClass` property to add custom CSS classes to an uploader.
+
+### MaskedTextBox
+
+#### Bug Fixes
+
+- Issue with, “MaskedTextBox not restoring the initial value on form reset” has been fixed.
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- Issue with, “NumericTextBox not restoring the initial value on form reset” has been fixed.
+
 ## 16.4.53 (2019-02-13)
 
 ### ColorPicker

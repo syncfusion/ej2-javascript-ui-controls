@@ -2320,13 +2320,16 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     this.setCSSClass(oldProp.cssClass);
                     break;
                 case 'buttons':
-                    if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-                        if (!isNullOrUndefined(this.ftrTemplateContent)) {
-                            detach(this.ftrTemplateContent);
-                            this.ftrTemplateContent = null;
+                    var buttonCount = this.buttons.length;
+                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                        detach(this.ftrTemplateContent);
+                        this.ftrTemplateContent = null;
+                    }
+                    for (var i = 0; i < buttonCount; i++) {
+                        if (!isNullOrUndefined(this.buttons[i].buttonModel)) {
+                            this.footerTemplate = '';
+                            this.setButton();
                         }
-                        this.footerTemplate = '';
-                        this.setButton();
                     }
                     break;
                 case 'allowDragging':

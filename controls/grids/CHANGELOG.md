@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### Grid
+
+#### Bug Fixes
+
+- Custom command content is not working in edited state when it is used in Multiple Columns issue is fixed.
+- Selection is not maintained when using `rowselected` and `rowdeselected` event is resolved.
+- Reactive aggregate is updating aggregate with current view data on cell editing is fixed.
+- Grid gets refreshed twice when we change the values through `setProperties` method is fixed.
+
 ## 16.4.53 (2019-02-13)
 
 ### Grid

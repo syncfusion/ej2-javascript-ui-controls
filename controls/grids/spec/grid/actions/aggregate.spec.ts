@@ -17,7 +17,7 @@ import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Freeze } from '../../../src/grid/actions/freeze';
-import { DataManager, ODataAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ODataAdaptor, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 
 Grid.Inject(Aggregate, Edit, Group, Toolbar, Selection, Freeze);
 
@@ -1071,6 +1071,49 @@ describe('Aggregates Functionality testing', () => {
             //tab key press here
             grid.element.querySelector('.e-editedbatchcell').querySelector('input').value = '100';
             grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cell } as any);
+        });
+        afterAll(() => {
+            destroy(grid);
+        });
+    });
+
+    describe('Reactive aggregates in batch editing', () => {
+        let grid: Grid;
+        let rows: HTMLTableRowElement;
+        let datas = new DataManager({
+            json: data,
+            adaptor: new RemoteSaveAdaptor
+        });
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource : datas,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch'},
+                    toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    pageSettings: { pageSize: 8 },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right', isPrimaryKey: true,
+                            textAlign: 'Right'
+                        },
+                        { field: 'CustomerID', headerText: 'Customer ID', textAlign: 'Right' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', type: 'datetime' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{ columns: [{ type: 'Sum', field: 'Freight', format: 'C2', footerTemplate: 'Sum: ${Sum}' }] }]
+                },done);
+        });
+        it('Reactive aggregate with remote save adaptor ', () => {
+            expect((grid.getFooterContent().querySelector('.e-templatecell') as HTMLElement).innerText).toBe('Sum: $696.45');
+            grid.editModule.editCell(0, 'Freight');
+            grid.editModule.saveCell();
+            expect(grid.isEdit).toBeFalsy();
+            expect((grid.getFooterContent().querySelector('.e-templatecell') as HTMLElement).innerText).toBe('Sum: $696.45');
+            grid.editModule.editCell(0, 'CustomerID');
+            grid.editModule.saveCell();
+            expect((grid.getFooterContent().querySelector('.e-templatecell') as HTMLElement).innerText).toBe('Sum: $696.45');
         });
         afterAll(() => {
             destroy(grid);

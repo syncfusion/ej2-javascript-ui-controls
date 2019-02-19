@@ -825,6 +825,46 @@ describe('Schedule - recurrence Freq- MONTHLY (without EndDate)', () => {
                 new Date('Fri Jun 17 2067 ').getTime(), new Date('Mon Jun 17 2069 ').getTime(),
                 new Date('Tue Jun 17 2070 ').getTime()]));
     });
+    it('Default - BYMONTH having single value and ByDay Single Day with numeric value', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=YEARLY;BYDAY=-1TH;BYMONTH=6;COUNT=5', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Thu Jun 26 2014 ').getTime(), new Date('Thu Jun 25 2015 ').getTime(),
+                    new Date('Thu Jun 30 2016 ').getTime(), new Date('Thu Jun 29 2017 ').getTime(),
+                    new Date('Thu Jun 28 2018 ').getTime()]));
+    });
+    it('Default - BYMONTH having multiple value and ByDay Single Day with numeric value', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=YEARLY;BYDAY=-1TH;BYMONTH=6,7;COUNT=5', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Thu Jun 26 2014 ').getTime(), new Date('Thu Jul 31 2014 ').getTime(),
+                    new Date('Thu Jun 25 2015 ').getTime(), new Date('Thu Jul 30 2015 ').getTime(),
+                    new Date('Thu Jun 30 2016 ').getTime()]));
+    });
+    it('Default - BYMONTH having single value and ByDay Single Day with numeric value and BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=YEARLY;BYDAY=-1TH;BYMONTH=6;COUNT=5;BYSETPOS=-1', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Mon Jun 26 2014 ').getTime(), new Date('Mon Jun 25 2015 ').getTime(),
+                    new Date('Mon Jun 30 2016 ').getTime(), new Date('Mon Jun 29 2017 ').getTime(),
+                    new Date('Mon Jun 28 2018 ').getTime()]));
+    });
+    it('Default - BYMONTH having multiple value and ByDay Mulitple Day with numeric value and BYSETPOS', () => {
+        expect(
+            JSON.stringify(generate(startDate,
+                'FREQ=YEARLY;COUNT=6;BYDAY=-2MO,2TU;BYMONTH=5,6;BYSETPOS=-1', null, 0)))
+            .toBe(
+                JSON.stringify([
+                    new Date('Mon Jun 23 2014 ').getTime(), new Date('Mon Jun 22 2015 ').getTime(),
+                    new Date('Mon Jun 20 2016 ').getTime(), new Date('Mon Jun 19 2017 ').getTime(),
+                    new Date('Mon Jun 18 2018 ').getTime(), new Date('Mon Jun 17 2019 ').getTime()]));
+    });  
     it('Default - ByDay Single Day with numeric value', () => {
         expect(
             JSON.stringify(generate(startDate,

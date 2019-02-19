@@ -118,7 +118,7 @@ export class AxisLayoutPanel {
                         endYDiff = Math.abs(startPoint.y - (this.gauge.gaugeRect.y + this.gauge.gaugeRect.height));
                     }
                     if ((!isNullOrUndefined(startXDiff) && !isNullOrUndefined(endXDiff) && !isNullOrUndefined(startYDiff) &&
-                        !isNullOrUndefined(endYDiff)) && ((startXDiff > 5 || endXDiff > 5) && (startYDiff > 5 || endYDiff > 5))) {
+                        !isNullOrUndefined(endYDiff)) && ((startXDiff > 0 || endXDiff > 0) && (startYDiff > 0 || endYDiff > 0))) {
                         xDiff = Math.abs((startXDiff + endXDiff) - xMarginDiff);
                         yDiff = Math.abs((startYDiff + endYDiff) - yMarginDiff);
                         this.gauge.midPoint.x = this.gauge.midPoint.x - (startXDiff / 2) + (endXDiff / 2);

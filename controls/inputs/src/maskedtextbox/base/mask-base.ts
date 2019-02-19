@@ -136,6 +136,9 @@ export function wireEvents(): void {
     EventHandler.add(this.element, 'drop', maskInputDropHandler, this);
     if (this.enabled) {
         bindClearEvent.call(this);
+        if (this.formElement) {
+            EventHandler.add(this.formElement, 'reset', resetFormHandler, this);
+        }
     }
 }
 
@@ -152,6 +155,9 @@ export function unwireEvents(): void {
     EventHandler.remove(this.element, 'blur', maskInputBlurHandler);
     EventHandler.remove(this.element, 'paste', maskInputPasteHandler);
     EventHandler.remove(this.element, 'cut', maskInputCutHandler);
+    if (this.formElement) {
+        EventHandler.remove(this.formElement, 'reset', resetFormHandler);
+    }
 }
 
 /**
@@ -178,6 +184,13 @@ function clear(event: MouseEvent): void {
     });
     triggerMaskChangeEvent.call(this, event, value);
     this.element.setSelectionRange(0, 0);
+}
+function resetFormHandler(): void {
+    if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
+         setElementValue.call(this, this.promptMask);
+    } else {
+        this.value = this.initInputValue;
+    }
 }
 
 /**

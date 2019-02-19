@@ -691,15 +691,7 @@ export class EventWindow {
         this.element.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
         let eventObj: { [key: string]: Object } = {};
         if (this.cellClickAction) {
-            if (event.subject) {
-                eventObj[this.fields.subject] = event.subject;
-            }
-            eventObj[this.fields.startTime] = event.startTime;
-            eventObj[this.fields.endTime] = event.endTime;
-            eventObj[this.fields.isAllDay] = event.isAllDay;
-            if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
-                this.parent.resourceBase.setResourceValues(eventObj, false);
-            }
+            this.convertToEventData(event, eventObj);
         } else {
             this.parent.activeCellsData = {
                 startTime: <Date>(event.startTime || event[this.fields.startTime]),
@@ -730,6 +722,18 @@ export class EventWindow {
             this.disableButton(saveButton, false);
         }
         this.dialogObject.show();
+    }
+
+    public convertToEventData(cellsData: { [key: string]: Object }, eventObj: { [key: string]: Object }): void {
+        if (cellsData.subject) {
+            eventObj[this.fields.subject] = cellsData.subject;
+        }
+        eventObj[this.fields.startTime] = cellsData.startTime;
+        eventObj[this.fields.endTime] = cellsData.endTime;
+        eventObj[this.fields.isAllDay] = cellsData.isAllDay;
+        if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
+            this.parent.resourceBase.setResourceValues(eventObj, false);
+        }
     }
 
     private applyFormValidation(): void {

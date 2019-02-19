@@ -1217,7 +1217,7 @@ describe('QueryBuilder', () => {
             itemsCln[6].click();
             expect(operatorElem[0].value).toEqual('notin');
             queryBuilder.getFilteredRecords(queryBuilder.rule);
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN (0,0) and Title NOT IN () and City LIKE ('%u')");
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN (4,5) and Title NOT IN ('Sales Manager') and City LIKE ('%u')");
             queryBuilder.reset();
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);

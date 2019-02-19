@@ -21864,7 +21864,7 @@ class PieBase extends AccumulationBase {
      * Method to start animation for pie series.
      */
     doAnimation(slice, series) {
-        let startAngle = series.startAngle - 85;
+        let startAngle = series.startAngle - 90;
         let value;
         let radius = Math.max(this.accumulation.availableSize.height, this.accumulation.availableSize.width) * 0.75;
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)

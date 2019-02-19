@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 16.4.53 (2019-02-13)
+## 16.4.54 (2019-02-19)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- 'Add Group' option is not disabled while setting groupInsert as false is fixed.
+
+## 16.4.52 (2019-02-05)
 
 ### QueryBuilder
 

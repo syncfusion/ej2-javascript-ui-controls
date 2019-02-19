@@ -3075,10 +3075,7 @@ function monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject)
     var tempDate = new Date(startDate.getTime());
     var expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     var interval = ruleObject.interval;
-    var state;
     var monthCollection = [];
-    var month;
-    var index;
     var beginDate;
     var monthInit = 0;
     tempDate = calendarUtil.getMonthStartDate(tempDate);
@@ -3087,23 +3084,14 @@ function monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject)
     }
     tempDate = getStartDateForWeek(tempDate, ruleObject.day);
     while (compareDates(tempDate, endDate) && (expectedCount && (data.length + tempExcludeDate.length) < expectedCount)) {
-        month = tempDate.getMonth();
         beginDate = new Date(tempDate.getTime());
         var currentMonthDate = new Date(tempDate.getTime());
         while (calendarUtil.isSameMonth(tempDate, currentMonthDate)) {
             monthCollection.push([currentMonthDate.getTime()]);
             currentMonthDate.setDate(currentMonthDate.getDate() + (7));
         }
-        index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-        if (ruleObject.setPosition === null) {
-            var recurrenceCollections = void 0;
-            recurrenceCollections = getRecurrenceCollection(monthCollection, expectedDays);
-            monthCollection = recurrenceCollections.monthCollection;
-            index = recurrenceCollections.index;
-        }
-        if (monthCollection.length > 0) {
-            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
-        }
+        // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+        insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
         monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
         tempDate = getStartDateForWeek(tempDate, ruleObject.day);
         monthCollection = [];
@@ -3118,12 +3106,14 @@ function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
         processDateCollectionforByDayWithInteger(startDate, endDate, data, ruleObject);
         return;
     }
+    else if (ruleObject.month.length && expectedDays.length === 1 && isHavingNumber.indexOf(true) > -1) {
+        monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject);
+        return;
+    }
     var tempDate = new Date(startDate.getTime());
-    var index;
     var currentMonthDate;
     var expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     var interval = ruleObject.interval;
-    var state;
     var monthCollection = [];
     if (ruleObject.month.length) {
         calendarUtil.setMonth(tempDate, ruleObject.month[0], tempDate.getDate());
@@ -3179,16 +3169,8 @@ function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
             }
         }
         tempDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), currentMonthDate.getDate());
-        index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-        if (ruleObject.setPosition === null) {
-            var recurrenceObject = void 0;
-            recurrenceObject = getRecurrenceCollection(monthCollection, expectedDays);
-            monthCollection = recurrenceObject.monthCollection;
-            index = recurrenceObject.index;
-        }
-        if (monthCollection.length > 0) {
-            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
-        }
+        // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+        insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
         if (calendarUtil.isLastMonth(tempDate)) {
             calendarUtil.setValidDate(tempDate, 1, 1);
             tempDate = getStartDateForWeek(tempDate, ruleObject.day);
@@ -3335,6 +3317,28 @@ function getDateCollectionforBySetPosNull(monthCollection) {
     monthCollection = datas.length > 0 ? [datas] : [];
     return monthCollection;
 }
+// To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
+function insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject) {
+    var expectedDays = ruleObject.day;
+    var index;
+    var state;
+    var datas = [];
+    var dateCollection = [];
+    var recurrenceCollections;
+    recurrenceCollections = getRecurrenceCollection(monthCollection, expectedDays);
+    monthCollection = recurrenceCollections.monthCollection;
+    index = recurrenceCollections.index;
+    if (ruleObject.setPosition != null) {
+        dateCollection = [(filterDateCollectionByIndex(monthCollection, index, datas))];
+        insertDateCollectionBasedonBySetPos(dateCollection, state, startDate, endDate, data, ruleObject);
+    }
+    else {
+        if (monthCollection.length > 0) {
+            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+        }
+    }
+    datas = [];
+}
 // To filter date collection when BYDAY property having values with number
 function filterDateCollectionByIndex(monthCollection, index, datas) {
     for (var week = 0; week < monthCollection[index].length; week++) {
@@ -3355,8 +3359,10 @@ function insertDateCollection(state, startDate, endDate, data, ruleObject, dayDa
 // To process datte collection based on Byset position after process the collection based on BYDAY property value index: EX:BYDAY=1SUm-1SU
 function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, endDate, data, ruleObject) {
     if (monthCollection.length > 0) {
-        var index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
         for (var week = 0; week < monthCollection.length; week++) {
+            monthCollection[week].sort();
+            var index = ((ruleObject.setPosition < 1)
+                ? (monthCollection[week].length + ruleObject.setPosition) : ruleObject.setPosition - 1);
             var dayData = monthCollection[week][index];
             insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
         }
@@ -3365,6 +3371,7 @@ function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, 
 // To insert datas into existing collection which is processed from previous loop.
 function insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) {
     for (var week = 0; week < monthCollection[index].length; week++) {
+        monthCollection[index].sort();
         var dayData = monthCollection[index][week];
         insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
     }
@@ -5583,7 +5590,16 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         if (target.classList.contains(APPOINTMENT_CLASS)) {
             return this.parent.activeEventData.event;
         }
-        return this.parent.activeCellsData;
+        // Depricated cells data in quick popups
+        var eventObj = {
+            startTime: this.parent.activeCellsData.startTime,
+            endTime: this.parent.activeCellsData.endTime,
+            isAllDay: this.parent.activeCellsData.isAllDay,
+            groupIndex: this.parent.activeCellsData.groupIndex
+        };
+        var cellsData = this.parent.activeCellsData;
+        this.parent.eventWindow.convertToEventData(cellsData, eventObj);
+        return eventObj;
     };
     QuickPopups.prototype.beforeQuickDialogClose = function () {
         this.parent.eventBase.focusElement();
@@ -7579,15 +7595,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.element.querySelector('.' + EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
         var eventObj = {};
         if (this.cellClickAction) {
-            if (event.subject) {
-                eventObj[this.fields.subject] = event.subject;
-            }
-            eventObj[this.fields.startTime] = event.startTime;
-            eventObj[this.fields.endTime] = event.endTime;
-            eventObj[this.fields.isAllDay] = event.isAllDay;
-            if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
-                this.parent.resourceBase.setResourceValues(eventObj, false);
-            }
+            this.convertToEventData(event, eventObj);
         }
         else {
             this.parent.activeCellsData = {
@@ -7620,6 +7628,17 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             this.disableButton(saveButton, false);
         }
         this.dialogObject.show();
+    };
+    EventWindow.prototype.convertToEventData = function (cellsData, eventObj) {
+        if (cellsData.subject) {
+            eventObj[this.fields.subject] = cellsData.subject;
+        }
+        eventObj[this.fields.startTime] = cellsData.startTime;
+        eventObj[this.fields.endTime] = cellsData.endTime;
+        eventObj[this.fields.isAllDay] = cellsData.isAllDay;
+        if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
+            this.parent.resourceBase.setResourceValues(eventObj, false);
+        }
     };
     EventWindow.prototype.applyFormValidation = function () {
         var getValidationRule = function (rules) { return (rules && Object.keys(rules).length > 0) ? rules : undefined; };
@@ -12761,6 +12780,9 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             },
             getTime: function (dt) {
                 if (_this.parent.isAdaptive) {
+                    if (_this.parent.timeFormat === 'HH:mm') {
+                        return _this.parent.globalize.formatDate(dt, { format: 'H', calendar: _this.parent.getCalendarMode() });
+                    }
                     return _this.parent.globalize.formatDate(dt, { skeleton: 'h', calendar: _this.parent.getCalendarMode() });
                 }
                 return _this.parent.getTimeString(dt);
@@ -16084,9 +16106,10 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
     Agenda.prototype.renderContent = function (tBody, agendaDate) {
         var fieldMapping = this.parent.eventFields;
         var firstDate = new Date(agendaDate.getTime());
-        var lastDate = this.getEndDateFromStartDate(firstDate);
+        var lastDate = (!this.parent.activeViewOptions.allowVirtualScrolling) ?
+            addDays(firstDate, this.parent.agendaDaysCount) : this.getEndDateFromStartDate(firstDate);
         var isObject = this.appointmentFiltering(firstDate, lastDate);
-        if (isObject.length === 0) {
+        if (isObject.length === 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
             lastDate = firstDate;
             firstDate = new Date(this.minDate.getTime());
             isObject = this.appointmentFiltering(firstDate, lastDate);
@@ -16096,7 +16119,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
                 isObject = this.appointmentFiltering(firstDate, lastDate);
             }
         }
-        if (isObject.length > 0) {
+        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
             var appoint = isObject;
             agendaDate = appoint[0][fieldMapping.startTime];
             agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));

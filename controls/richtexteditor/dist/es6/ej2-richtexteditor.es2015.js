@@ -13814,7 +13814,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             let rteOuterWrapper = this.createElement('div', {
                 className: 'e-control e-richtexteditor'
             });
-            rteOuterWrapper.innerHTML = this.element.value;
+            this.element.innerHTML = '';
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element;
             this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
@@ -13827,9 +13827,6 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
         this.valueContainer.name = this.getID();
         addClass([this.valueContainer], CLS_RTE_HIDDEN);
-        if (this.value !== null) {
-            this.valueContainer.value = this.value;
-        }
         this.element.appendChild(this.valueContainer);
     }
     getPersistData() {
@@ -13920,6 +13917,9 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.disableToolbarItem(['Undo', 'Redo']);
         }
         this.setContentHeight();
+        if (this.value !== null) {
+            this.valueContainer.defaultValue = this.value;
+        }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
     }
     /**
@@ -14768,8 +14768,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
     }
     resetHandler() {
-        this.setProperties({ value: null });
-        this.invokeChangeEvent();
+        this.setProperties({ value: this.valueContainer.defaultValue === '' ? null : this.valueContainer.defaultValue });
     }
     /**
      * @hidden

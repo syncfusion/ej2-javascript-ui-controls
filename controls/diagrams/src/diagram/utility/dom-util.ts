@@ -368,6 +368,33 @@ export function getDiagramElement(elementId: string, contentId?: string): HTMLEl
     return diagramElement;
 }
 
+/** @private */
+export function getDomIndex(viewId: string, elementId: string, layer: string): number {
+    let index: number = undefined;
+    let parentElement: HTMLElement | SVGElement;
+    let postId: string = '';
+    if (layer === 'native') {
+        parentElement = getNativeLayer(viewId);
+        postId = '_content_groupElement';
+    } else if (layer === 'html') {
+        parentElement = getHTMLLayer(viewId).childNodes[0] as HTMLElement;
+        postId = '_content_html_element';
+    } else {
+        parentElement = getDiagramLayer(viewId);
+        postId = '_groupElement';
+    }
+    let childElement: HTMLElement | SVGElement;
+    for (let i: number = 0; parentElement.childNodes && i < parentElement.childNodes.length; i++) {
+        childElement = parentElement.childNodes[i] as (HTMLElement | SVGElement);
+        if (childElement && childElement.id === elementId + postId) {
+            index = i;
+            break;
+        }
+    }
+    return index;
+}
+
+
 /**
  * @private
  */
@@ -398,13 +425,13 @@ export function getAdornerLayer(diagramId: string): SVGElement {
     return adornerLayer;
 }
 
-// /** @private */
-// export function getDiagramLayer(diagramId: string): SVGElement {
-//     let diagramLayer: SVGElement;
-//     let diagramLayerSvg: SVGSVGElement = getDiagramLayerSvg(diagramId);
-//     diagramLayer = diagramLayerSvg.getElementById(diagramId + '_diagramLayer') as SVGElement;
-//     return diagramLayer;
-// }
+/** @private */
+export function getDiagramLayer(diagramId: string): SVGElement {
+    let diagramLayer: SVGElement;
+    let diagramLayerSvg: SVGSVGElement = getDiagramLayerSvg(diagramId);
+    diagramLayer = diagramLayerSvg.getElementById(diagramId + '_diagramLayer') as SVGElement;
+    return diagramLayer;
+}
 
 /** @private */
 export function getPortLayerSvg(diagramId: string): SVGSVGElement {

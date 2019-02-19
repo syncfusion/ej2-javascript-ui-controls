@@ -563,8 +563,10 @@ let Tooltip = class Tooltip extends Component {
         svgObject.setAttribute('opacity', '1');
         pathElement.setAttribute('d', findDirection(this.rx, this.ry, pointRect, arrowLocation, this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius));
         if (this.enableShadow) {
-            pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#chart_shadow_tooltip)');
-            let shadow = '<filter id="chart_shadow_tooltip" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
+            // To fix next chart initial tooltip opacity issue in tab control
+            let shadowId = this.element.id + '_shadow';
+            pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+            let shadow = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
             shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
             let defElement = this.renderer.createDefs();

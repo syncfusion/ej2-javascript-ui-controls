@@ -5108,7 +5108,7 @@ describe('Change Event testing', () => {
             numerictextbox = new NumericTextBox({ min: 10, max: 30, format: 'c2', placeholder: 'Enter the numeric value' }, '#tsNumeric');
             numerictextbox.floatLabelType = 'Auto';
             numerictextbox.dataBind();
-            expect(document.querySelector('.e-float-input').children[3].classList.contains('e-label-bottom')).toEqual(true);
+            expect(document.querySelector('.e-float-input').children[3].classList.contains('e-label-top')).toEqual(true);
         });
 
         it('floating label-functionality:Never', () => {
@@ -5118,7 +5118,50 @@ describe('Change Event testing', () => {
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-float-input')).toEqual(false);
         });
     });
-	it('memory leak testing', () => {
+    describe('NumericTextBox in HTML5 forms testing:', () => {
+        let numeric: any;
+        let container: HTMLDivElement;
+        let targetElement: HTMLElement;
+        let formElement: HTMLFormElement;
+
+        beforeEach(() => {
+            container = createElement('div', {
+                id: "container"
+            }) as HTMLDivElement;
+
+            formElement = createElement('form', {
+                id: 'form'
+            }) as HTMLFormElement;
+
+            targetElement = createElement('input', {
+                id: "numeric"
+            }) as HTMLElement;
+
+            formElement.appendChild(targetElement);
+
+            container.appendChild(formElement);
+
+            document.body.appendChild(container);
+        })
+
+        afterEach(() => {
+            numeric.destroy();
+            numeric = null;
+            document.getElementById('container').remove();
+        })
+
+        it('form reset method should make default NumericTextBox to go back to it default value', () => {
+            numeric = new NumericTextBox({
+                value: 123
+            });
+            numeric.appendTo(targetElement);
+            numeric.value = 23;
+            expect((targetElement as any).ej2_instances[0].value).toBe(23);
+            formElement.reset();
+            expect((targetElement as any).ej2_instances[0].value).toBe(123);
+        });        
+    });
+    it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

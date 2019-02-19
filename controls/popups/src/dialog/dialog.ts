@@ -1092,14 +1092,19 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     break;
                 case 'cssClass':
                     this.setCSSClass(oldProp.cssClass); break;
-                case 'buttons':
-                    if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-                        if (!isNullOrUndefined(this.ftrTemplateContent)) {
-                            detach(this.ftrTemplateContent); this.ftrTemplateContent = null;
+                    case 'buttons':
+                    let buttonCount : number = this.buttons.length;
+                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                        detach(this.ftrTemplateContent);
+                        this.ftrTemplateContent = null;
+                    }
+                    for (let i : number = 0; i < buttonCount; i++) {
+                        if (!isNullOrUndefined(this.buttons[i].buttonModel)) {
+                            this.footerTemplate = '';
+                            this.setButton();
                         }
-                        this.footerTemplate = '';
-                        this.setButton();
-                    } break;
+                    }
+                    break;
                 case 'allowDragging':
                     if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                         this.setAllowDragging();

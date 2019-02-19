@@ -24,7 +24,7 @@ const classNames: ClassNames = {
 /**
  * DropDownButton component is used to toggle contextual overlays for displaying list of action items.
  * It can contain both text and images.
- * ``````html
+ * ```html
  * <button id="element">DropDownButton</button>
  * ```
  * ```typescript

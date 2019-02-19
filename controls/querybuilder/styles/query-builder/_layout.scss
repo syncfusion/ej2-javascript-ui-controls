@@ -328,6 +328,7 @@
 
     & .e-summary-text {
       border-style: none;
+      font-family: $font-family;
       line-height: 1.5em;
       padding: $qrybldr-summary-padding;
       resize: none;
@@ -367,7 +368,7 @@
       float: $qrybldr-rulelist-grcon-float;
     }
 
-    & .e-button-hide {
+    & ul .e-item.e-button-hide {
       display: $qrybldr-button-hide;
     }
 

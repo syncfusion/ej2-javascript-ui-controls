@@ -978,6 +978,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.maxHeight = Math.max(this.maxHeight, this.getHeight(ele));
                     while (ele.firstChild) { ele.removeChild(ele.firstChild); }
                 }
+                this.clearTemplate(['content']);
                 this.templateEle = [];
                 this.getContent(ele, this.items[0].content, 'render');
                 ele.classList.remove(CLS_ACTIVE);
@@ -1075,7 +1076,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.setActiveBorder();
         let curActItem: HTEle = <HTEle> select('.' + CLS_HEADER + ' #' + id, this.element);
         this.refreshItemVisibility(curActItem);
-        (<HTEle> curActItem.firstChild).focus();
+        if (!this.initRender) {
+            (<HTEle> curActItem.firstChild).focus();
+        }
         let eventArg: SelectEventArgs = {
             previousItem: this.prevItem,
             previousIndex: this.prevIndex,

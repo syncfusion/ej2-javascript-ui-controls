@@ -4392,44 +4392,6 @@ describe('DDList', () => {
 
     });
 
-    describe('EJ2-22283 - Need to add object type in itemData in select and change event', () => {
-        let listObj: DropDownList;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-        let num: number = 0;
-        let data2: { [key: string]: Object }[] = [
-            { 
-                id: 'id1',
-                text: 'PHP',
-                value: 'value1',
-                list: 'list1',
-                drop: 'drop1',
-                anim: 'anim1'
-            }];
-        beforeAll(() => {
-            document.body.appendChild(element);
-        });
-        afterAll(() => {
-            if (element) {
-                element.remove();
-                document.body.innerHTML = '';
-            }
-        });
-        it('itemData in select and change event', (done) => {
-            listObj = new DropDownList({
-                dataSource: data2,
-               fields: { text: "text", value: "id" },
-                select: (e: SelectEventArgs) => {
-                    expect(e.itemData.value).toBe('value1');
-                    expect(e.itemData.text).toBe('PHP');
-                    expect((e.itemData as {[key: string]: string}).anim as string).toBe('anim1');
-                    done();
-                }
-            });
-            listObj.appendTo(element);
-            listObj.dataBind();
-            listObj.value = 'id1';
-        });
-    });
     describe('EJ2-22432 - allowFiltering not work with select element', () => {
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },

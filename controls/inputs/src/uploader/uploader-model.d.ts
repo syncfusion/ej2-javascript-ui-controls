@@ -124,6 +124,13 @@ export interface UploaderModel extends ComponentModel{
     enableRtl?: boolean;
 
     /**
+     * Specifies the CSS class name that can be appended with root element of the uploader.
+     * One or more custom CSS classes can be added to a uploader.
+     * @default
+     */
+    cssClass?: string;
+
+    /**
      * Specifies Boolean value that indicates whether the component is enabled or disabled.
      * The uploader component does not allow to interact when this property is disabled.
      * @default true

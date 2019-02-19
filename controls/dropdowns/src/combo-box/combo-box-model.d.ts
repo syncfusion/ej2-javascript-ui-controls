@@ -44,8 +44,8 @@ export interface ComboBoxModel extends DropDownListModel{
     allowFiltering?: boolean;
 
     /**
-     * Accepts the external [`Query`](./api-query.html)
-     * that execute along with [`data processing`](./data-binding.html).
+     * Accepts the external `Query`
+     * that execute along with [`data processing`](../../combo-box/data-binding).
      * 
      * {% codeBlock src="combobox/query-api/index.ts" %}{% endcodeBlock %}
      * 
@@ -74,14 +74,14 @@ export interface ComboBoxModel extends DropDownListModel{
 
     /**
      * Triggers on set a 
-     * [`custom value`](./getting-started.html#custom-values) to this component.
+     * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      * @event
      */
     customValueSpecifier?: EmitType<CustomValueSpecifierEventArgs>;
 
     /**
      * Triggers on typing a character in the component.
-     * > For more details about the filtering refer to [`Filtering`](./filtering.html) documentation.
+     * > For more details about the filtering refer to [`Filtering`](../../combo-box/filtering) documentation.
      * @event
      */
     filtering?: EmitType<FilteringEventArgs>;

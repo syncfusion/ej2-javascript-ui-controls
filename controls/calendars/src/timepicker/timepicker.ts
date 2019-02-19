@@ -12,6 +12,8 @@ const WRAPPERCLASS: string = 'e-time-wrapper';
 const POPUP: string = 'e-popup';
 const ERROR: string = 'e-error';
 const POPUPDIMENSION: string = '240px';
+const LIBRARY: string = 'e-lib';
+const CONTROL: string = 'e-control';
 const DAY: number = new Date().getDate();
 const MONTH: number = new Date().getMonth();
 const YEAR: number = new Date().getFullYear();
@@ -169,6 +171,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected tabIndex: string;
     private formElement: Element;
     private invalidValueString: string = null;
+    private inputEleValue: Date;
     private openPopupEventArgs: PopupEventArgs;
     private modal: HTMLElement;
     private formatString: string;
@@ -388,6 +391,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             close: 'alt+uparrow'
         };
         this.cloneElement = <HTMLElement>this.element.cloneNode(true);
+        removeClass([this.cloneElement], [ROOT, CONTROL, LIBRARY]);
         this.inputElement = <HTMLInputElement>this.element;
         this.angularTag = null;
         this.formElement = closest(this.element, 'form');
@@ -413,6 +417,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.validateDisable();
         this.setValue(this.getFormattedValue(this.value));
         this.anchor = this.inputElement;
+        this.inputElement.setAttribute('value', this.inputElement.value);
+        this.inputEleValue = this.getDateObject(this.inputElement.value);
     }
     private setTimeAllowEdit(): void {
         if (this.allowEdit) {
@@ -625,13 +631,21 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
 
     }
     protected ensureInputAttribute(): void {
+        let propertyList: string[] = [];
         for (let i: number = 0; i < this.inputElement.attributes.length; i++) {
-            let prop: string = this.inputElement.attributes[i].name;
-            if (isNullOrUndefined(this.cloneElement.getAttribute(prop))) {
-                if (prop.toLowerCase() === 'value' || isNullOrUndefined(this.cloneElement.getAttribute('value'))) {
+            propertyList[i] = this.inputElement.attributes[i].name;
+        }
+        for (let i: number = 0; i < propertyList.length; i++) {
+            if (!isNullOrUndefined(this.cloneElement.getAttribute(propertyList[i]))) {
+                this.inputElement.setAttribute(propertyList[i], this.cloneElement.getAttribute(propertyList[i]));
+                if (propertyList[i].toLowerCase() === 'value') {
+                    this.inputElement.value = this.cloneElement.getAttribute(propertyList[i]);
+                }
+            } else {
+                this.inputElement.removeAttribute(propertyList[i]);
+                if (propertyList[i].toLowerCase() === 'value') {
                     this.inputElement.value = '';
                 }
-                this.inputElement.removeAttribute(prop);
             }
         }
     }
@@ -1217,18 +1231,23 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
     }
     protected formResetHandler(): void {
-        if (!this.inputElement.getAttribute('value')) {
-            this.setProperties({ value: null }, true);
+        if (!this.inputElement.disabled) {
+            let timeValue: string = this.inputElement.getAttribute('value');
+            let val: Date = this.checkDateValue(this.inputEleValue);
+            if (this.element.tagName === 'EJS-TIMEPICKER') {
+                val = null;
+                timeValue = '';
+                this.inputElement.setAttribute('value', '');
+            }
+            this.setProperties({ value: val }, true);
             this.prevDate = this.value;
             this.valueWithMinutes = this.value;
             this.initValue = this.value;
             if (this.inputElement) {
-                Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                this.removeErrorClass();
+                Input.setValue(timeValue, this.inputElement, this.floatLabelType, this.showClearButton);
+                this.checkErrorState(timeValue);
                 this.prevValue = this.inputElement.value;
             }
-        } else {
-            this.value = this.checkDateValue(new Date('' + this.element.getAttribute('value')));
         }
     }
     private inputChangeHandler(e: MouseEvent): void {

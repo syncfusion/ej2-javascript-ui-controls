@@ -440,7 +440,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     @Property(false)
     public enableRtl: boolean;
-
+    /**
+     * Specifies the CSS class name that can be appended with root element of the uploader.
+     * One or more custom CSS classes can be added to a uploader.
+     * @default
+     */
+    @Property('')
+    public cssClass: string;
     /**
      * Specifies Boolean value that indicates whether the component is enabled or disabled.
      * The uploader component does not allow to interact when this property is disabled.
@@ -881,6 +887,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.setLocalizedTexts();
                     this.preLocaleObj = getValue('currentLocale', this.l10n);
                     break;
+                case 'cssClass':
+                    this.setCSSClass(oldProp.cssClass);
+                    break;
             }
         }
     }
@@ -967,8 +976,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.checkHTMLAttributes();
-        if (this.asyncSettings.saveUrl === '' && this.asyncSettings.removeUrl === '' && !this.autoUpload) {
-            let parentEle: HTMLElement = this.element.parentElement;
+        let parentEle: HTMLElement = this.element.parentElement;
+        if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
                 if (parentEle.tagName === 'FORM') {
                     this.isForm = true;
@@ -1056,6 +1065,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.setRTL();
         this.renderPreLoadFiles();
         this.setControlStatus();
+        this.setCSSClass();
     }
 
     private renderBrowseButton(): void {
@@ -1265,7 +1275,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
         }
     }
-
+    private setCSSClass(oldCSSClass?: string): void {
+        if ( this.cssClass) {
+            addClass([this.uploadWrapper], this.cssClass.split(this.cssClass.indexOf(',') > -1 ? ',' : ' '));
+        }
+        if (oldCSSClass) {
+            removeClass([this.uploadWrapper], oldCSSClass.split(' '));
+        }
+    }
     private wireEvents(): void {
         EventHandler.add(this.browseButton, 'click', this.browseButtonClick, this);
         EventHandler.add(this.element, 'change', this.onSelectFiles, this);
@@ -1284,6 +1301,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         EventHandler.remove(this.browseButton, 'click', this.browseButtonClick);
         EventHandler.remove(this.element, 'change', this.onSelectFiles);
         EventHandler.remove(document, 'click', this.removeFocus);
+        if (this.isForm) {
+            EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
         this.keyboardModule.destroy();
     }
 

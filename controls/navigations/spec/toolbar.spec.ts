@@ -5025,7 +5025,7 @@ describe('Toolbar Control', () => {
             toolbar.width = '1000px';
             toolbar.dataBind();
             expect(element.getAttribute('aria-haspopup')).toEqual('false');
-            expect(element.classList.contains('e-toolpop')).toEqual(false);
+            expect(element.classList.contains('e-toolpop')).toEqual(true);
         });
     });
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### Document Editor
+
+#### Bug Fixes
+
+- Default tab width is parsed and serialized properly.
+
 ## 16.4.53 (2019-02-13)
 
 ### Document Editor

@@ -151,14 +151,14 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
      * @event
      */
     @Event()
-    public validationBegin: EmitType<Object>;
+    public validationBegin: EmitType<Object | ValidArgs>;
 
     /**
      * Triggers after validation is completed
      * @event
      */
     @Event()
-    public validationComplete: EmitType<Object>;
+    public validationComplete: EmitType<Object | FormEventArgs>;
 
     /**
      * Assigns the custom function to place the error message in the page.
@@ -846,7 +846,7 @@ interface Validator {
     [rule: string]: (value: ValidArgs) => boolean;
 }
 
-interface ValidArgs {
+export interface ValidArgs {
     value: string;
     param?: Object;
     element?: HTMLElement;
@@ -858,7 +858,7 @@ interface ErrorRule {
     message: string;
 }
 
-interface FormEventArgs {
+export interface FormEventArgs {
     inputName: string;
     message: string;
     element: HTMLInputElement;

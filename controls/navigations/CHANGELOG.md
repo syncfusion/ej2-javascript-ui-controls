@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.54 (2019-02-19)
+
+### Tab
+
+#### Breaking Changes
+
+- The initial focus set on active tab item is removed from the component on initial load.
+
 ## 16.4.53 (2019-02-13)
 
 ### Accordion

@@ -266,6 +266,7 @@ describe('TextBox ', () => {
             inputObj.textboxWrapper.clearButton.classList.add('e-clear-icon-hide');
             inputObj.resetInputHandler(mouseEvent);
             expect(inputObj.element.value).toBe('');
+            expect(onInput).toHaveBeenCalled();
         });
     });
 
@@ -286,6 +287,69 @@ describe('TextBox ', () => {
         afterAll((): void => {
             inputObj.destroy();
             document.body.innerHTML = '';
+        });
+    });
+
+    describe('Reset form with initial value', () => {
+        let inputObj: any;
+        let originalTimeout: number;
+        beforeAll((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            let resetButton: HTMLElement = createElement('button',{attrs: {type: 'reset', id: 'reset'}});
+            form.appendChild(element);
+            form.appendChild(resetButton);
+            document.body.appendChild(form);
+            inputObj = new TextBox({showClearButton: true, value: 'Syncfusion', floatLabelType: 'Auto'});
+            inputObj.appendTo(document.getElementById('textbox'));
+        })
+        afterAll((): void => {
+            inputObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Check element value ', () => {
+            expect(inputObj.element.value).toBe('Syncfusion');
+            inputObj.value = 'Content changed';
+            inputObj.dataBind();
+            expect(inputObj.element.value).toBe('Content changed');
+            (document.querySelector('#reset') as HTMLButtonElement).click();
+            expect(inputObj.element.value).toBe('Syncfusion');
+            expect(inputObj.value).toBe('Syncfusion');
+            expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-top'))).toBe(false);
+            expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-bottom'))).toBe(true);
+        });
+    });
+
+    describe('Reset form with empty value', () => {
+        let inputObj: any;
+        let originalTimeout: number;
+        beforeAll((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            let form: Element = createElement('form', {attrs: {id: 'form1'}});            
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            let resetButton: HTMLElement = createElement('button',{attrs: {type: 'reset', id: 'reset'}});
+            form.appendChild(element);
+            form.appendChild(resetButton);
+            document.body.appendChild(form);
+            inputObj = new TextBox({showClearButton: true, floatLabelType: 'Auto'});
+            inputObj.appendTo(document.getElementById('textbox'));
+        })
+        afterAll((): void => {
+            inputObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Check element value ', () => {
+            inputObj.value = 'Content changed';
+            inputObj.dataBind();
+            expect(inputObj.element.value).toBe('Content changed');
+            (document.querySelector('#reset') as HTMLButtonElement).click();
+            expect(inputObj.element.value).toBe('');
+            expect(isNullOrUndefined(inputObj.value)).toBe(true);
+            expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-bottom'))).toBe(false);
+            expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-top'))).toBe(true);
         });
     });
 })

@@ -202,7 +202,7 @@ export class PieBase extends AccumulationBase {
      * Method to start animation for pie series.
      */
     protected doAnimation(slice: Element, series: AccumulationSeries): void {
-        let startAngle: number = series.startAngle - 85;
+        let startAngle: number = series.startAngle - 90;
         let value: number;
         let radius: number = Math.max(this.accumulation.availableSize.height, this.accumulation.availableSize.width) * 0.75;
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)

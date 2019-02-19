@@ -1,7 +1,7 @@
 /**
  * Schedule base spec 
  */
-import { createElement, remove, L10n, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda } from '../../../src/schedule/index';
@@ -848,6 +848,50 @@ describe('Schedule base module', () => {
         });
         it('control class testing', () => {
             expect(document.getElementById('Schedule').classList.contains('e-schedule')).toEqual(true);
+        });
+    });
+
+    describe('EJ2-23004-24 hours format is not displaying in time cells in adaptive mode only', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let uA: string = Browser.userAgent;
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+        loadCultureFiles('fr-CH');
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => { done(); };
+            Browser.userAgent = androidUserAgent;
+            document.body.appendChild(elem);
+            schObj = new Schedule({
+                height: '550px',
+                width: '500px',
+                locale: 'fr-CH',
+                selectedDate: new Date(2017, 10, 6),
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+            Browser.userAgent = uA;
+        });
+
+        it('Checking elements', () => {
+            expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(1) td') as HTMLElement).innerText).
+                toEqual('0');
+            expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(3) td') as HTMLElement).innerText).
+                toEqual('1');
+            expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(25) td') as HTMLElement).innerText).
+                toEqual('12');
+            expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(27) td') as HTMLElement).innerText).
+                toEqual('13');
+            expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(45) td') as HTMLElement).innerText).
+                toEqual('22');
+            expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(47) td') as HTMLElement).innerText).
+                toEqual('23');
         });
     });
 });

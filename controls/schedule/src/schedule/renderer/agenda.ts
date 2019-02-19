@@ -97,9 +97,11 @@ export class Agenda extends ViewBase implements IRenderer {
 
     public renderContent(tBody: Element, agendaDate: Date): void {
         let fieldMapping: EventFieldsMapping = this.parent.eventFields;
-        let firstDate: Date = new Date(agendaDate.getTime()); let lastDate: Date = this.getEndDateFromStartDate(firstDate);
+        let firstDate: Date = new Date(agendaDate.getTime());
+        let lastDate: Date = (!this.parent.activeViewOptions.allowVirtualScrolling) ?
+            util.addDays(firstDate, this.parent.agendaDaysCount) : this.getEndDateFromStartDate(firstDate);
         let isObject: Object[] = this.appointmentFiltering(firstDate, lastDate);
-        if (isObject.length === 0) {
+        if (isObject.length === 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
             lastDate = firstDate; firstDate = new Date(this.minDate.getTime());
             isObject = this.appointmentFiltering(firstDate, lastDate);
             if (isObject.length === 0) {
@@ -107,7 +109,7 @@ export class Agenda extends ViewBase implements IRenderer {
                 isObject = this.appointmentFiltering(firstDate, lastDate);
             }
         }
-        if (isObject.length > 0) {
+        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
             let appoint: { [key: string]: Object }[] = <{ [key: string]: Object }[]>isObject;
             agendaDate = appoint[0][fieldMapping.startTime] as Date;
             agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));

@@ -5424,17 +5424,19 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.checkTextLength = function () {
         return this.targetElement().length < 1;
     };
-    MultiSelect.prototype.popupKeyActions = function (keyCode) {
-        switch (keyCode) {
+    MultiSelect.prototype.popupKeyActions = function (e) {
+        switch (e.keyCode) {
             case 38:
                 this.hidePopup();
                 if (this.mode === 'CheckBox') {
                     this.inputElement.focus();
                 }
+                e.preventDefault();
                 break;
             case 40:
                 if (!this.isPopupOpen()) {
                     this.showPopup();
+                    e.preventDefault();
                 }
                 break;
         }
@@ -5454,8 +5456,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (e.altKey) {
-            this.popupKeyActions(e.keyCode);
-            e.preventDefault();
+            this.popupKeyActions(e);
             return;
         }
         else if (this.isPopupOpen()) {

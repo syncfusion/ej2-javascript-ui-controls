@@ -1258,7 +1258,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             detach(this.popObj.element);
             this.popObj = null;
             ele.setAttribute('aria-haspopup', 'false');
-            ele.classList.remove('e-toolpop');
         }
     }
     private ignoreEleFetch(index: number, innerEle: HTEle): number {

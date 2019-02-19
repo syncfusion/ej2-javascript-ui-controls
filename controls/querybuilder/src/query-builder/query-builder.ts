@@ -829,8 +829,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (!args.itemData) {
             return;
         }
-        let tempRule: RulesModel = {}; let ddlObj: DropDownList;
-        let operatorList: { [key: string]: Object }[];
+        let tempRule: RulesModel = {}; let ddlObj: DropDownList; let inOperator: string [] = ['in', 'notin'];
+        let operatorList: { [key: string]: Object }[]; let betweenOperator: string [] = ['between', 'notbetween'];
         let filterElem: Element; let operatorElem: Element; let oprElem: Element;
         let prevOper: string = rule.operator ? rule.operator.toLowerCase() : '';
         filterElem = closest(args.element, '.e-rule-filter');
@@ -856,10 +856,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.trigger('beforeOperatorChange', eventsArgs);
             tempRule.operator = args.itemData.value;
             let currOper: string = tempRule.operator.toLowerCase();
-            if (tempRule.operator.toLowerCase().indexOf('between') > -1 || (tempRule.operator.toLowerCase().indexOf('in') > -1
-                && tempRule.operator.toLowerCase().indexOf('contains') < 0)) {
+            if (inOperator.indexOf(currOper) > -1 || betweenOperator.indexOf(currOper) > -1) {
                 filterElem = operatorElem.previousElementSibling;
-                tempRule.type = rule.type; rule.value = [];
+                tempRule.type = rule.type;
+                if (!(inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) &&
+                    !(betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
+                    rule.value = [];
+                }
             } else if (typeof rule.value === 'object') {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
             }
@@ -869,8 +872,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     filterElem = operatorElem.previousElementSibling; tempRule.type = rule.type;
                 }
             }
-            if ((prevOper.indexOf('in') > -1 && prevOper.indexOf('in') < 5) && (currOper.indexOf('in') > -1
-                && currOper.indexOf('in') < 5)) {
+            if ((inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) ||
+                (betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
                 filterElem = null;
             }
         }

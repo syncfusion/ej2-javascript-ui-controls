@@ -946,4 +946,39 @@ describe('MultiSelect', () => {
             listObj.showPopup();
         });
     });
+    describe('EJ2-22853 - insert special character', () => {
+        let listObj: MultiSelect;
+        let data: string[] = ['JAVA', 'C#']
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: data,
+                fields: { text: "text", value: "text" }
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+
+        it(' check the Alt key with popup interaction', () => {
+            keyboardEventArgs.altKey = true;
+            keyboardEventArgs.keyCode = 40;
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            expect((<any>listObj).popupWrapper.parentElement).not.toBe(null);
+            //close action validation
+            keyboardEventArgs.keyCode = 38;
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            expect((<any>listObj).popupWrapper.parentElement).toBe(null);
+            keyboardEventArgs.altKey = false;
+        });
+    });
 });

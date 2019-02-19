@@ -3614,7 +3614,6 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             detach(this.popObj.element);
             this.popObj = null;
             ele.setAttribute('aria-haspopup', 'false');
-            ele.classList.remove('e-toolpop');
         }
     };
     Toolbar.prototype.ignoreEleFetch = function (index, innerEle) {
@@ -4445,6 +4444,7 @@ var CLS_DISABLE$3 = 'e-overlay';
 var CLS_TOGANIMATE = 'e-toggle-animation';
 var CLS_NEST = 'e-nested';
 var CLS_EXPANDSTATE = 'e-expand-state';
+var CLS_CONTAINER = 'e-accordion-container';
 var AccordionActionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$4(AccordionActionSettings, _super);
     function AccordionActionSettings() {
@@ -4644,7 +4644,14 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.ctrlTemplate = function () {
         var _this = this;
         this.ctrlTem = this.element.cloneNode(true);
-        var innerEles = this.element.children;
+        var innerEles;
+        var rootEle = select('.' + CLS_CONTAINER, this.element);
+        if (rootEle) {
+            innerEles = rootEle.children;
+        }
+        else {
+            innerEles = this.element.children;
+        }
         var content;
         addClass([].slice.call(innerEles), [CLS_ITEM$1]);
         [].slice.call(innerEles).forEach(function (el) {
@@ -6546,6 +6553,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                         ele.removeChild(ele.firstChild);
                     }
                 }
+                this.clearTemplate(['content']);
                 this.templateEle = [];
                 this.getContent(ele, this.items[0].content, 'render');
                 ele.classList.remove(CLS_ACTIVE$1);
@@ -6666,7 +6674,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.setActiveBorder();
         var curActItem = select('.' + CLS_HEADER$1 + ' #' + id, this.element);
         this.refreshItemVisibility(curActItem);
-        curActItem.firstChild.focus();
+        if (!this.initRender) {
+            curActItem.firstChild.focus();
+        }
         var eventArg = {
             previousItem: this.prevItem,
             previousIndex: this.prevIndex,

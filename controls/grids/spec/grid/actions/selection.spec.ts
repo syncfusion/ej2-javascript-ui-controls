@@ -3486,6 +3486,16 @@ describe('Row,cell Selecting in batch edit while adding record => ', () => {
 
 describe('enableSimpleMultiRowSelection property Testing => ', () => {
     let gridObj: Grid;
+    let rows: Element[];
+    let ctrlEvt: MouseEvent = document.createEvent('MouseEvent');
+    ctrlEvt.initMouseEvent(
+        'click',
+        true /* bubble */, true /* cancelable */,
+        window, null,
+        0, 0, 0, 0, /* coordinates */
+        true, false, false, false, /* modifier keys */
+        0 /*left*/, null
+    );
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
@@ -3502,13 +3512,91 @@ describe('enableSimpleMultiRowSelection property Testing => ', () => {
     });
     it('Multiple row selection without pressing ctrl/shift', () => {
         gridObj.selectRow(0);
-        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
+        rows = gridObj.getRows();
+        expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
         gridObj.selectRow(1);
-        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
-        expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeTruthy();
+        expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
         gridObj.selectRow(1);
-        expect(gridObj.getRows()[0].hasAttribute('aria-selected')).toBeTruthy();
-        expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeFalsy();
+        expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    it('enableToggle Property check without pressing ctrl/shift', () => {
+        gridObj.selectionSettings.enableToggle = false;
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+    });
+
+    it('enableToggle Property check by pressing ctrl/shift', () => {
+        rows[1].firstChild.dispatchEvent(ctrlEvt);
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('enableToggle property Testing => ', () => {
+    let gridObj: Grid;
+    let rows: Element[];
+    let ctrlEvt: MouseEvent = document.createEvent('MouseEvent');
+    ctrlEvt.initMouseEvent(
+        'click',
+        true /* bubble */, true /* cancelable */,
+        window, null,
+        0, 0, 0, 0, /* coordinates */
+        true, false, false, false, /* modifier keys */
+        0 /*left*/, null
+    );
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                selectionSettings: { type:'Multiple', enableToggle: false},
+                columns: [
+                    { type: 'checkbox', width: 50},
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                ]
+            }, done);
+    });
+
+    it('enableToggle(false) Property check without pressing ctrl/shift', () => {
+        rows = gridObj.getRows();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    it('enableToggle(false) Property check by pressing ctrl key', () => {
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        rows[1].firstChild.dispatchEvent(ctrlEvt);
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+        gridObj.selectionSettings.enableToggle = true;
+    });
+
+    it('enableToggle(true) Property check without pressing ctrl/shift', () => {
+        expect(gridObj.selectionSettings.enableToggle).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+    });
+
+    it('enableToggle(true) Property check by pressing ctrl key', () => {
+        (rows[1].querySelector('.e-rowcell') as HTMLElement).click();
+        expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        rows[1].firstChild.dispatchEvent(ctrlEvt);
+        expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
     });
 
     afterAll(() => {

@@ -769,7 +769,37 @@ describe('Dialog Control', () => {
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
             expect(dialog1.btnObj.length).toBe(2);
         });
-
+        it('EJ2-22770-clear dialog buttons with empty object testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            dialog1.buttons=[{}];
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+        });
+        it('EJ2-22770-clear dialog buttons  with empty array testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            dialog1.buttons=[];
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+        });
+        it('EJ2-22770-dynamic dialog buttons testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+            dialog1.buttons=[{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }]
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            expect(dialog1.btnObj.length).toBe(2);
+        });
         it('dialog getButtons testing', () => {
             let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
@@ -788,7 +818,37 @@ describe('Dialog Control', () => {
             expect(dialog1.getButtons(0).element.type).toEqual('submit');
             expect(dialog1.getButtons(1).element.type).toEqual('button');
         });
-
+        it('clear dialog buttons with empty object testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            dialog1.buttons=[{}];
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+        });
+        it('clear dialog buttons  with empty array testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            dialog1.buttons=[];
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+        });
+        it('dynamic dialog buttons testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+            dialog1.buttons=[{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }]
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            expect(dialog1.btnObj.length).toBe(2);
+        });
         it('dialog getButtons testing', () => {
             let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");

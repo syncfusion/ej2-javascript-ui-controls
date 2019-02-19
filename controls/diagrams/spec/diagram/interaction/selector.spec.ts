@@ -4,6 +4,7 @@ import { MouseEvents } from './mouseevents.spec';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { SelectorModel } from '../../../src/diagram/interaction/selector-model';
+import { NodeConstraints } from '../../../src/diagram/enum/enum';
 
 
 /**
@@ -397,4 +398,87 @@ describe('Diagram Control', () => {
 
 
     });
+
+    describe('Select All the connectors, No node should be in diagram', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramRotateThumb' });
+            document.body.appendChild(ele);
+
+            let node = {
+                offsetX: 250,
+                offsetY: 250,
+                width: 100,
+                height: 100,
+                annotations: [
+                    {
+                        content: "Keep this way up",
+                    }
+                ],
+                constraints: NodeConstraints.Default & ~NodeConstraints.Rotate // Default except rotate
+            };
+            
+            let node2 = {
+                offsetX: 550,
+                offsetY: 250,
+                width: 100,
+                height: 100,
+                annotations: [
+                    {
+                        content: "Spin me",
+                    }
+                ],
+            };
+            
+            let connector = {
+                sourcePoint: {
+                    x: 350,
+                    y: 250,
+                },
+                targetPoint: {
+                    x: 450,
+                    y: 250,
+                }
+            }
+            
+            diagram = new Diagram({
+                width: '100%',
+                height: '600px',
+                nodes: [node, node2],
+                connectors: [connector],
+            });
+            
+            diagram.appendTo('#diagramRotateThumb');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Check rotate thumb for multiple selection when rotate for one node is disabled', (done: Function) => {
+            let events: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            events.clickEvent(diagramCanvas, 550, 250, true);
+            events.clickEvent(diagramCanvas, 400, 250, true);
+            expect(document.getElementById('rotateThumb') !== null && document.getElementById('pivotLine') !== null).toBe(true);
+            events.clickEvent(diagramCanvas, 100, 100);
+            events.clickEvent(diagramCanvas, 250, 250, true);
+            events.clickEvent(diagramCanvas, 400, 250, true);
+            expect(document.getElementById('rotateThumb') !== null && document.getElementById('pivotLine') !== null).toBe(false);
+            events.clickEvent(diagramCanvas, 100, 100);
+            events.clickEvent(diagramCanvas, 250, 250, true);
+            events.clickEvent(diagramCanvas, 550, 250, true);
+            expect(document.getElementById('rotateThumb') !== null && document.getElementById('pivotLine') !== null).toBe(false);
+            events.clickEvent(diagramCanvas, 100, 100);
+            events.clickEvent(diagramCanvas, 550, 250, true);
+            events.clickEvent(diagramCanvas, 250, 250, true);
+            expect(document.getElementById('rotateThumb') !== null && document.getElementById('pivotLine') !== null).toBe(false);
+            done();
+        });
+    });
+
+    
 });

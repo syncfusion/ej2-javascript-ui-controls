@@ -59,7 +59,11 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
     private previousValue: string = null;
     private cloneElement: HTMLInputElement;
     private globalize: Internationalization;
-
+    private preventChange: boolean;
+    private isAngular: boolean = false;
+    private isForm: boolean = false;
+    private formElement: HTMLElement;
+    private initialValue: string;
     /**
      * Specifies the behavior of the TextBox such as text, password, email, etc.
      * @default 'text'
@@ -250,6 +254,10 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
 
     protected preRender(): void {
         this.cloneElement = <HTMLInputElement>this.element.cloneNode(true);
+        this.formElement = this.element.closest('form');
+        if (!isNullOrUndefined(this.formElement)) {
+            this.isForm = true;
+        }
         /* istanbul ignore next */
         if (this.element.tagName === 'EJS-TEXTBOX') {
             let ejInstance: Object = getValue('ej2_instances', this.element);
@@ -317,6 +325,16 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         if (!isNullOrUndefined(this.value)) {
             Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
         }
+        if (!isNullOrUndefined(this.value)) {
+            this.initialValue = this.value;
+            this.setInitialValue();
+        }
+    }
+
+    private setInitialValue() : void {
+        if (!this.isAngular) {
+            this.element.setAttribute('value', this.initialValue);
+        }
     }
 
     private wireEvents(): void {
@@ -324,11 +342,35 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
         EventHandler.add(this.element, 'input', this.inputHandler, this);
         EventHandler.add(this.element, 'change', this.changeHandler, this);
+        if (this.isForm) {
+            EventHandler.add(this.formElement, 'reset', this.resetForm, this);
+        }
         if (this.enabled) {
             this.bindClearEvent();
         }
     }
 
+    private resetValue(value: string) : void {
+        let prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        this.value = value;
+        this.isProtectedOnChange = prevOnChange;
+    }
+    private resetForm() : void {
+        if (this.isAngular) {
+            this.resetValue('');
+        } else {
+            this.resetValue(this.initialValue);
+        }
+        let label: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
+        if (isNullOrUndefined(this.initialValue) || this.initialValue === '') {
+            label.classList.add('e-label-bottom');
+            label.classList.remove('e-label-top');
+        } else if (this.initialValue !== '') {
+            label.classList.add('e-label-top');
+            label.classList.remove('e-label-bottom');
+        }
+    }
     private focusHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {
         let eventArgs: FocusInEventArgs = {
             container: this.textboxWrapper.container,
@@ -351,12 +393,18 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
     }
 
     private inputHandler(args: KeyboardEvent): void {
+        // tslint:disable-next-line
+        let textboxObj: any = this;
         let eventArgs: InputEventArgs = {
             event: args,
             value: this.element.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
+        if (this.isAngular) {
+            textboxObj.localChange({ value: this.element.value });
+            this.preventChange = true;
+        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     }
@@ -376,7 +424,12 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
-        this.trigger('change', eventArgs);
+        if (this.isAngular && this.preventChange !== true) {
+            this.trigger('change', eventArgs);
+        } else if (isNullOrUndefined(this.isAngular) || !this.isAngular) {
+            this.trigger('change', eventArgs);
+        }
+        this.preventChange = false;
         this.previousValue = this.value;
     }
 
@@ -389,8 +442,16 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
     private resetInputHandler(event?: MouseEvent): void {
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
+            let previousValue: string = this.value;
             Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
             this.value = '';
+            let eventArgs: InputEventArgs = {
+                event: event,
+                value: this.element.value,
+                previousValue: previousValue,
+                container: this.textboxWrapper.container
+            };
+            this.trigger('input', eventArgs);
         }
     }
 
@@ -399,6 +460,9 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         EventHandler.remove(this.element, 'blur', this.focusOutHandler);
         EventHandler.remove(this.element, 'input', this.inputHandler);
         EventHandler.remove(this.element, 'change', this.changeHandler);
+        if (this.isForm) {
+            EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
     }
 
     /**

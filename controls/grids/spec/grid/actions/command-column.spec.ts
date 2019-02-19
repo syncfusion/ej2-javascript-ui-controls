@@ -14,8 +14,11 @@ import { Reorder } from '../../../src/grid/actions/reorder';
 import { Filter } from '../../../src/grid/actions/filter';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
+import { DetailRow } from '../../../src/grid/actions/detail-row';
 
-Grid.Inject(Group, Sort, Filter, Reorder, CommandColumn, Edit);
+
+
+Grid.Inject(Group, Sort,DetailRow, Filter, Reorder, CommandColumn, Edit);
 
 describe('Command Column ', () => {
 
@@ -390,6 +393,40 @@ describe('Command Column ', () => {
 
         afterAll(() => {
             destroy(grid);
+        });
+    });
+
+    describe('Inline editing custom command => ', function () {
+        let gridObj: Grid;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data,
+                detailTemplate: '#detailtemplate',
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right',
+                     commands: [{ type: 'Save',buttonOption: { content: 'done', cssClass: 'e-flat' } }] },
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { commands: [{ type: 'Edit', buttonOption: { content: 'Verified', cssClass: 'e-flat' } }] },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                ]
+            
+            }, done);
+        });
+        it('Custom command column checking', function () {
+            let rows = <HTMLTableRowElement>gridObj.getRows()[0];
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].lastElementChild });
+            expect(gridObj.isEdit).toBeTruthy();
+            expect(rows.querySelectorAll('.e-unboundcelldiv')[0].querySelector('.e-btn').getAttribute('title')).toBe('done');
+            expect(rows.querySelectorAll('.e-unboundcelldiv')[1].querySelector('.e-btn').getAttribute('title')).toBe('Verified');
+            (gridObj.editModule as any).editModule.endEdit();
+            expect(gridObj.isEdit).toBeFalsy();     
+           });
+        afterAll(function () {
+            destroy(gridObj);
         });
     });
 

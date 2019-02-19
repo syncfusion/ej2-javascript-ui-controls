@@ -708,7 +708,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 data: { name: this.name, primaryKey: this.primaryKey, value: this.checkValue(this.getSendValue()) }
             };
             this.trigger('validating', args);
-            if ((args.errorMessage) && (args.data.value === 'Empty')) {
+            if (args.errorMessage) {
                 select('.' + EDITABLE_ERROR, this.formEle).innerHTML = args.errorMessage;
                 this.toggleErrorClass(true);
             }
@@ -961,7 +961,11 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         this.element.focus();
         this.editEle = select('.' + INPUT, this.formEle);
-        if (select('.' + ERROR, this.editEle) && isNullOrUndefined(this.validationRules)) {
+        let errEle = null;
+        errEle = select('.' + ERROR, this.editEle);
+        let type = this.type;
+        let calendarComp = type === 'Date' || type === 'DateTime' || type === 'DateRange' || type === 'Time';
+        if ((errEle && !isNullOrUndefined(this.validationRules)) || (errEle && calendarComp)) {
             return;
         }
         if (!this.isTemplate) {

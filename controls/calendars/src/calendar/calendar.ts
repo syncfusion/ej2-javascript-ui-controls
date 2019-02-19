@@ -915,6 +915,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let localYr: number = localDate.getFullYear();
         let startYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10)));
         let endYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
+        let startFullYr: number = startYr.getFullYear();
+        let endFullYr: number = endYr.getFullYear();
         let startHdrYr: string = this.globalize.formatDate(startYr, { type: 'dateTime', skeleton: 'y' });
         let endHdrYr: string = this.globalize.formatDate(endYr, { type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
@@ -927,7 +929,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             attributes(tdEle, { 'role': 'gridcell' });
             let dayLink: HTMLElement = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
-            if (year < new Date('' + this.min).getFullYear() || year > new Date('' + this.max).getFullYear()) {
+            if ((year < startFullYr) || (year > endFullYr)) {
+                addClass([tdEle], OTHERMONTH);
+            } else if (year < new Date('' + this.min).getFullYear() ||
+                year > new Date('' + this.max).getFullYear()) {
                 addClass([tdEle], DISABLED);
             } else if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
                 addClass([tdEle], SELECTED);
@@ -1904,7 +1909,7 @@ export class Calendar extends CalendarBase {
         }
     }
     protected formResetHandler(): void {
-        this.value = null;
+        this.setProperties({ value: null }, true);
     }
     protected validateDate(): void {
         if (typeof this.value === 'string') {
