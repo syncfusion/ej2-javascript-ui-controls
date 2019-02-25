@@ -307,7 +307,7 @@ export class SelectTool extends ToolBase {
                 //handling multiple selection
                 if (args && args.source) {
                     if (!this.commandHandler.isSelected(args.source)) {
-                        this.commandHandler.selectObjects([args.source], true);
+                        this.commandHandler.selectObjects([...arrayNodes, args.source], true, arrayNodes);
                     } else {
                         if (args.clickCount === 1) {
                             this.commandHandler.unSelect(args.source);

@@ -63,6 +63,28 @@ describe('Diagram Control', () => {
                 mouseEvents.clickEvent(diagramCanvas, 250 + 8, 250 + 8);
                 done();
             });
+
+            it('Checking selection Change for multiple ctrl click select', (done: Function) => {
+                let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+                diagram.selectionChange = (args: ISelectionChangeEventArgs) => {
+                    if (args.state === 'Changed') {
+                        expect(args.oldValue.length === 0 && args.newValue.length === 1 && args.newValue[0].id == 'node1').toBe(true);
+                    }
+                };
+                mouseEvents.clickEvent(diagramCanvas, 100 + 8, 100 + 8);
+
+                diagram.selectionChange = (args: ISelectionChangeEventArgs) => {
+                    if (args.state === 'Changed') {
+                        expect(args.oldValue.length === 1 &&
+                               args.newValue.length === 2 &&
+                               args.newValue[0].id == 'node1' &&
+                               args.newValue[1].id == 'node2'
+                        ).toBe(true);
+                    }
+                };
+                mouseEvents.clickEvent(diagramCanvas, 150 + 8, 150 + 8, true);
+                done();
+            });
         });
     });
     describe('Testing event', () => {
