@@ -7,6 +7,7 @@ import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs } f
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords } from '../utils';
 import { getPlainData, extendArray } from '../utils';
+import { RowPosition } from '../enum';
 
 /**
  * TreeGrid Edit Module
@@ -30,6 +31,7 @@ export class Edit {
     // private batchChanges: Object;
     private selectedIndex: number;
     private doubleClickTarget: Element;
+    private previousNewRowPosition : RowPosition;
     /**
      * Constructor for Edit module
      */
@@ -40,6 +42,7 @@ export class Edit {
         // this.batchDeleted = {};
         // this.batchRecords = [];
         // this.isAdd = false;
+        this.previousNewRowPosition = null;
         this.addEventListener();
     }
     /**
@@ -63,6 +66,7 @@ export class Edit {
         this.parent.grid.on(events.keyPressed, this.keyPressed, this);
         this.parent.on(events.cellEdit, this.cellEdit, this);
         this.parent.grid.on(events.doubleTap, this.recordDoubleClick, this);
+        this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
         // this.parent.on(events.batchDelete, this.batchDelete, this);
@@ -86,6 +90,7 @@ export class Edit {
         this.parent.grid.off(events.keyPressed, this.keyPressed);
         this.parent.off(events.cellEdit, this.cellEdit);
         this.parent.grid.off(events.doubleTap, this.recordDoubleClick);
+        this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
       }
       /**
        * To destroy the editModule 
@@ -305,6 +310,11 @@ export class Edit {
 
         // }
     }
+    private savePreviousRowPosition(args: SaveEventArgs): void {
+      if (this.previousNewRowPosition === null) {
+         this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+       }
+  }
     private beginAddEdit(args: SaveEventArgs): SaveEventArgs {
       let value: ITreeData = args.data;
       if (args.action === 'add') {
@@ -315,13 +325,12 @@ export class Edit {
           let currentData: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
           let index: number =  this.addRowIndex;
           value.uniqueID = getUid(this.parent.element.id + '_data_');
-          let level: number; let dataIndex: number; let idMapping: Object; let parentIndex: number;
+          let level: number; let dataIndex: number; let idMapping: Object;
           let parentUniqueID: string; let parentItem: Object; let parentIdMapping: string;
           if (currentData.length) {
               level = currentData[this.addRowIndex].level;
               dataIndex = currentData[this.addRowIndex].index;
               idMapping = currentData[this.addRowIndex][this.parent.idMapping];
-              parentIndex = currentData[this.addRowIndex].parentIndex;
               parentIdMapping = currentData[this.addRowIndex][this.parent.parentIdMapping];
               if (currentData[this.addRowIndex].parentItem) {
                 parentUniqueID = currentData[this.addRowIndex].parentItem.uniqueID;
@@ -337,7 +346,6 @@ export class Edit {
               } else if (this.parent.editSettings.newRowPosition === 'Child') {
                   position = 'after';
                   if (this.selectedIndex > -1) {
-                    value.parentIndex = dataIndex;
                     value.parentItem = extend({}, currentData[this.addRowIndex]);
                     value.parentUniqueID = value.parentItem.uniqueID;
                     delete value.parentItem.childRecords; delete value.parentItem[this.parent.childMapping];
@@ -346,14 +354,13 @@ export class Edit {
                   value.level = level + 1;
                   if (this.isSelfReference) {
                       value[this.parent.parentIdMapping] = idMapping;
-                      if (!isNullOrUndefined(value.parentIndex)) {
+                      if (!isNullOrUndefined(value.parentItem)) {
                         this.updateParentRow(key, value.parentItem, 'add', value);
                       }
                   }
               }
               if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                 if (this.selectedIndex > -1 && level) {
-                  value.parentIndex = parentIndex;
                   value.parentUniqueID = parentUniqueID;
                   value.parentItem = extend({}, parentItem);
                   delete value.parentItem.childRecords; delete value.parentItem[this.parent.childMapping];
@@ -361,7 +368,7 @@ export class Edit {
                 value.level = level;
                 if (this.isSelfReference) {
                   value[this.parent.parentIdMapping] = parentIdMapping;
-                  if (!isNullOrUndefined(value.parentIndex)) {
+                  if (!isNullOrUndefined(value.parentItem)) {
                     this.updateParentRow(key, value.parentItem, 'add', value);
                   }
               }
@@ -498,6 +505,10 @@ export class Edit {
             }
           }
         }
+        }
+        if (action === 'add' && this.previousNewRowPosition != null) {
+          this.parent.setProperties({editSettings: {newRowPosition:  this.previousNewRowPosition}}, true);
+          this.previousNewRowPosition = null;
         }
       }
       private removeChildRecords(childRecords: ITreeData[], modifiedData: object, action: string, key: string, originalData?: ITreeData,

@@ -103,6 +103,7 @@ export class Selection implements IAction {
     private isPreventCellSelect: boolean = false;
     private disableUI: boolean = false;
     private isPersisted: boolean = false;
+    private isInteracted: boolean;
 
     /**
      * Constructor for the Grid selection module
@@ -376,6 +377,7 @@ export class Selection implements IAction {
                 }
                 this.rowDeselect(
                     events.rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow]);
+                this.isInteracted = false;
             } else {
                 args = {
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
@@ -518,6 +520,7 @@ export class Selection implements IAction {
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
             }
+            this.isInteracted = false;
             if (this.parent.isPersistSelection) {
                 this.persistSelectedData = [];
                 this.selectedRowState = {};
@@ -587,6 +590,7 @@ export class Selection implements IAction {
             this.isRowSelected = false;
             this.selectRowIndex(-1);
             this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow);
+            this.isInteracted = false;
         }
     }
 
@@ -597,7 +601,7 @@ export class Selection implements IAction {
         this.updatePersistCollection(row[0], false);
         let rowDeselectObj: Object = {
             rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData,
-            cancel: false, target: target
+            cancel: false, target: target, isInteracted: this.isInteracted
         };
         this.parent.trigger(type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj);
         this.isCancelDeSelect = rowDeselectObj[cancl];
@@ -1993,6 +1997,7 @@ export class Selection implements IAction {
     private clickHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         this.actualTarget = target;
+        this.isInteracted = true;
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
         this.popUpClickHandler(e);
@@ -2037,8 +2042,9 @@ export class Selection implements IAction {
         }
         this.isMultiCtrlRequest = false;
         this.isMultiShiftRequest = false;
+        if (isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell'))) {
         this.preventFocus = false;
-
+        }
     }
 
     private popUpClickHandler(e: MouseEvent): void {

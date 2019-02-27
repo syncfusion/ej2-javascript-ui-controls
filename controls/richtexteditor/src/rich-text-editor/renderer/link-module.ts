@@ -337,7 +337,8 @@ export class Link {
         }
         this.parent.formatter.process(
             this.parent, e.args, e.args,
-            { selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
+            {
+                selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
         (this.contentModule.getEditPanel() as HTMLElement).focus();
@@ -346,12 +347,12 @@ export class Link {
     private openLink(e: NotifyArgs): void {
         if ((e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor') || (e.selectParent[0] as HTMLElement).tagName === 'A') {
             this.parent.formatter.process(
-            this.parent, e.args, e.args,
-            {
-                url: (e.selectParent[0] as HTMLAnchorElement).href,
-                target: (e.selectParent[0] as HTMLAnchorElement).target === '' ? '_self' : '_blank', selectNode: e.selectNode,
-                subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
-            });
+                this.parent, e.args, e.args,
+                {
+                    url: (e.selectParent[0] as HTMLAnchorElement).href,
+                    target: (e.selectParent[0] as HTMLAnchorElement).target === '' ? '_self' : '_blank', selectNode: e.selectNode,
+                    subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
+                });
         }
     }
     private editLink(e: NotifyArgs): void {
@@ -361,7 +362,7 @@ export class Link {
             let inputDetails: { [key: string]: string } = {
                 url: (selectParentEle as HTMLAnchorElement).href, text: selectParentEle.innerHTML,
                 title: selectParentEle.title, target: (selectParentEle as HTMLAnchorElement).target,
-                header: 'Edit Link', btnText: linkUpdate
+                header: this.i10n.getConstant('editLink'), btnText: linkUpdate
             };
             this.linkDialog(e, inputDetails);
         }

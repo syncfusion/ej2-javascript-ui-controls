@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 16.4.55 (2019-02-27)
+
+### Splitter
+
+#### Bug Fixes
+
+- The issue with dynamic update of `paneSettings` has been fixed.
+
 ## 16.4.54 (2019-02-19)
 
 ### Splitter

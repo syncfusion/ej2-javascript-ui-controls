@@ -717,7 +717,7 @@ describe('MultiSelect', () => {
         it(' reset the child form', (done) => {
             document.getElementById('resetForm').click();
             setTimeout(() => {
-                expect(listObj.value === null).toBe(true);
+                expect(listObj.value[0] === 'list2').toBe(true);
                 done();
             })
         });

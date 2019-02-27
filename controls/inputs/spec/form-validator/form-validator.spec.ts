@@ -76,7 +76,7 @@ let formObj3: FormValidator;
 let formObj4: FormValidator;
 
 function setInputValue(formObj: FormValidator, name: string, value: string): void {
-    (<HTMLInputElement>formObj.element.querySelector('[name=' + name + ']')).value = value;
+    (<HTMLInputElement>formObj.element.querySelector('[name="' + name + '"]')).value = value;
 }
 
 describe('FormValidator # ', () => {
@@ -798,9 +798,54 @@ describe('FormValidator # ', () => {
             expect(formObj.validate('input1')).toEqual(false);
         });
 
-        it('testing correct url # ', () => {
+        it('testing correct url - with www value # ', () => {
             setInputValue(formObj, 'input1', 'http://www.sample.com');
             expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it('testing correct url - with out  www value # ', () => {
+            setInputValue(formObj, 'input1', 'http://syncfusion.com/');
+            expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it('testing correct url  -  with   www and without http value # #',()=>{
+            setInputValue(formObj, 'input1', 'www.syncfusion.com');
+            expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it("testing correct url - with multiple string #",()=>{
+            setInputValue(formObj, 'input1', 'https://ej2.syncfusion.com/home');
+            expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it("testing wrong url - with multiple string #",()=>{
+            setInputValue(formObj, 'input1', 's//:ej2.syncfusion.com/home/');
+            expect(formObj.validate('input1')).toEqual(false);
+            setInputValue(formObj, 'input1', '');
+        });
+        it("testing correct url  - with out https,ftp,http",() =>{
+            setInputValue(formObj, 'input1', 'www.ej2.syncfusion.com/home/');
+            expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it("testing correct url  - with subdomain",() =>{
+            setInputValue(formObj, 'input1', 'http://www.site.com:8008');
+            expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it("testing correct url  - url with querystring",() =>{
+            setInputValue(formObj, 'input1', 'http://www.example.com/products?id=1&page=2');
+            expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it("testing correct url  - url with #",() =>{
+            setInputValue(formObj, 'input1', 'http://www.example.com#up');
+            expect(formObj.validate('input1')).toEqual(true);
+            setInputValue(formObj, 'input1', '');
+        });
+        it("testing wrong url  - case 5 #",() =>{
+            setInputValue(formObj, 'input1', 'http://invalid.com/perl.cgi?key= | http://web-site.com/cgi-bin/perl.cgi?key1=value1&key2');
+            expect(formObj.validate('input1')).toEqual(false);
             setInputValue(formObj, 'input1', '');
         });
 
@@ -2544,5 +2589,27 @@ describe('global localization', () => {
         let element: HTMLElement = <HTMLElement>formObj.getInputElement('Email').nextSibling;
         expect(element.innerText).toEqual("أدخل بريد إلكتروني صالح");
 
+    });
+});
+
+describe('name attribute with dot sepeartor', () => {
+    beforeAll(() => {
+        let mail: string = "<div>" + createElement("input", { attrs: { id: "Email", type: "text", name: "User.Email" } }).outerHTML + "</div>";
+        let htmlelement: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId2', innerHTML: mail });
+        let options = {
+            rules: {
+                'User.Email': { email: [true, 'Enter valid email address'] },
+            },
+
+        };
+        formObj = new FormValidator(htmlelement, options);
+
+    });
+    it('Validate input element', (done) => {
+        setInputValue(formObj, 'User.Email', 'useremail');
+        formObj.validate('User.Email');
+        let element: HTMLElement = <HTMLElement>formObj.element.querySelector('[name="User.Email"]').nextSibling;
+        expect(element.innerText).toEqual("Enter valid email address");
+        done();
     });
 });

@@ -1224,7 +1224,7 @@ describe('Splitter Control', () => {
            expect(document.getElementsByClassName('e-split-bar')[0].querySelector('.e-resize-handler').classList.contains('e-hide-handler')).toBe(true);
            splitterObj.paneSettings[1].resizable = true;
            splitterObj.dataBind();
-           expect(document.getElementsByClassName('e-split-bar')[0].querySelector('.e-resize-handler').classList.contains('e-hide-handler')).toBe(false);
+           expect(document.getElementsByClassName('e-split-bar')[0].querySelector('.e-resize-handler').classList.contains('e-hide-handler')).toBe(true);
         });
     });
 
@@ -2186,6 +2186,65 @@ describe('Splitter Control', () => {
                 splitterObj.paneSettings[0].content = 'newContent';
                 splitterObj.dataBind();
                 expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerText === 'newContent').toBe(true);
+            });
+        });
+
+        //panesettings dynamic update
+
+        describe('PaneSettings dynamic update', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%',  content: 'contnet-1' }, { size: '50%',  content: 'contnet-2' }, { content: 'contnet-3'}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('as an array', () => {
+                splitterObj.paneSettings = [{ size: '10%' }, { size: '20%'}, { size: '30%'}];
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('10%');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].style.flexBasis).toEqual('20%');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
+            });
+        });
+
+        describe('Without PaneSettings', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('pane-settings as an array', () => {
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('');
+                splitterObj.paneSettings = [{ size: '10%' }, { size: '20%'}, { size: '30%'}];
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('10%');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].style.flexBasis).toEqual('20%');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
             });
         });
  });

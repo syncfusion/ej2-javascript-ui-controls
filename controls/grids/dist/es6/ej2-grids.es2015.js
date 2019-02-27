@@ -6114,7 +6114,8 @@ class FocusStrategy {
         let isFrozen = !isNullOrUndefined(closest(e.target, '.e-frozencontent')) ||
             !isNullOrUndefined(closest(e.target, '.e-frozenheader'));
         if (!isContent && isNullOrUndefined(closest(e.target, '.e-gridheader')) ||
-            e.target.classList.contains('e-content')) {
+            e.target.classList.contains('e-content') ||
+            !isNullOrUndefined(closest(e.target, '.e-unboundcell'))) {
             return;
         }
         this.setActive(isContent, isFrozen);
@@ -6441,6 +6442,9 @@ class Matrix {
             return [rowIndex, columnIndex];
         }
         rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
+        if (isNullOrUndefined(this.matrix[rowIndex])) {
+            return null;
+        }
         columnIndex = Math.max(0, Math.min(columnIndex + navigator[1], this.matrix[rowIndex].length - 1));
         if (tmp + navigator[1] > this.matrix[rowIndex].length - 1 && validator(rowIndex, columnIndex, action)) {
             return [rowIndex, tmp];
@@ -7170,6 +7174,7 @@ class Selection {
                     this.addRemoveClassesForRow(selectedMovableRow, false, null, 'e-selectionbackground', 'e-active');
                 }
                 this.rowDeselect(rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow]);
+                this.isInteracted = false;
             }
             else {
                 args = {
@@ -7313,6 +7318,7 @@ class Selection {
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
             }
+            this.isInteracted = false;
             if (this.parent.isPersistSelection) {
                 this.persistSelectedData = [];
                 this.selectedRowState = {};
@@ -7380,6 +7386,7 @@ class Selection {
             this.isRowSelected = false;
             this.selectRowIndex(-1);
             this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
+            this.isInteracted = false;
         }
     }
     rowDeselect(type, rowIndex, data, row, foreignKeyData$$1, target, mRow) {
@@ -7387,7 +7394,7 @@ class Selection {
         this.updatePersistCollection(row[0], false);
         let rowDeselectObj = {
             rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData$$1,
-            cancel: false, target: target
+            cancel: false, target: target, isInteracted: this.isInteracted
         };
         this.parent.trigger(type, this.parent.getFrozenColumns() ? Object.assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
         this.isCancelDeSelect = rowDeselectObj[cancl];
@@ -8706,6 +8713,7 @@ class Selection {
     clickHandler(e) {
         let target = e.target;
         this.actualTarget = target;
+        this.isInteracted = true;
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
         this.popUpClickHandler(e);
@@ -8752,7 +8760,9 @@ class Selection {
         }
         this.isMultiCtrlRequest = false;
         this.isMultiShiftRequest = false;
-        this.preventFocus = false;
+        if (isNullOrUndefined(closest(e.target, '.e-unboundcell'))) {
+            this.preventFocus = false;
+        }
     }
     popUpClickHandler(e) {
         let target = e.target;
@@ -10059,7 +10069,7 @@ class Clipboard {
                     }
                 }
             }
-            rowIndexes.sort();
+            rowIndexes.sort((a, b) => { return a - b; });
             if (i === rowCellIndxes.length && rowIndexes[rowIndexes.length - 1] - rowIndexes[0] === rowIndexes.length - 1) {
                 obj = { status: true, rowIndexes: rowIndexes, colIndexes: rowCellIndxes[0].cellIndexes };
             }
@@ -10281,6 +10291,9 @@ __decorate([
 __decorate([
     Property('Top')
 ], EditSettings.prototype, "newRowPosition", void 0);
+__decorate([
+    Property({})
+], EditSettings.prototype, "dialog", void 0);
 /**
  * Represents the Grid component.
  * ```html
@@ -21253,7 +21266,7 @@ class DialogEditRender {
         this.setLocaleObj();
         // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
         //     { X: 'center', Y: 'top' } : { X: 'center', Y: 'center' };
-        this.dialogObj = args.dialog = new Dialog({
+        this.dialogObj = args.dialog = new Dialog(extend({
             header: this.isEdit ? this.l10n.getConstant('EditFormTitle') + args.primaryKeyValue[0] :
                 this.l10n.getConstant('AddFormTitle'), isModal: true, visible: true, cssClass: 'e-edit-dialog',
             content: this.getEditElement(elements, args),
@@ -21268,7 +21281,7 @@ class DialogEditRender {
                     buttonModel: { content: this.l10n.getConstant('SaveButton'), cssClass: 'e-primary', isPrimary: true }
                 },
                 { click: this.btnClick.bind(this), buttonModel: { cssClass: 'e-flat', content: this.l10n.getConstant('CancelButton') } }]
-        });
+        }, gObj.editSettings.dialog.params));
         this.dialogObj.appendTo(this.dialog);
     }
     btnClick(e) {
@@ -21830,7 +21843,12 @@ class NormalEdit {
         };
         gObj.showSpinner();
         gObj.notify(updateData, args);
-        gObj.refresh();
+        if (args.promise) {
+            args.promise.then(() => gObj.refresh()).catch((e) => this.edFail(e));
+        }
+        else {
+            gObj.refresh();
+        }
     }
     editFormValidate() {
         let gObj = this.parent;
@@ -22347,9 +22365,8 @@ class BatchEdit {
                 }
             }
         }
-        if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
-            !gObj.getContentTable().querySelector('tr.e-row')) {
-            gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
+        if (!gObj.getContentTable().querySelector('tr.e-row')) {
+            gObj.renderModule.renderEmptyRow();
         }
         let args = {
             requestType: 'batchCancel', rows: this.parent.getRowsObject()
@@ -22642,7 +22659,7 @@ class BatchEdit {
         let tbody = gObj.getContentTable().querySelector('tbody');
         tr.classList.add('e-insertedrow');
         if (tbody.querySelector('.e-emptyrow')) {
-            tbody.querySelector('.e-emptyrow').classList.add('e-hide');
+            tbody.querySelector('.e-emptyrow').remove();
         }
         if (gObj.getFrozenColumns()) {
             mTr = this.renderMovable(tr);
@@ -23814,9 +23831,13 @@ class Edit {
         });
         let content = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
+        let validationForBottomRowPos;
+        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.parent.editSettings.mode !== 'Dialog' &&
+            ((this.editModule.args && this.editModule.args.requestType === 'add') || this.editModule.isAdded)) {
+            validationForBottomRowPos = true;
+        }
         let arrow;
-        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add' &&
-            this.parent.editSettings.mode !== 'Dialog') {
+        if (validationForBottomRowPos) {
             arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-bottom' });
             arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-bottom' }));
             arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-bottom' }));
@@ -23840,8 +23861,7 @@ class Edit {
             let pos = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
-        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add' &&
-            this.parent.editSettings.mode !== 'Dialog') {
+        if (validationForBottomRowPos) {
             div.style.bottom = inputClient.height + 9 + 'px';
             div.style.top = null;
         }
@@ -23877,6 +23897,7 @@ class ColumnChooser {
         this.isInitialOpen = false;
         this.isCustomizeOpenCC = false;
         this.searchOperator = 'startswith';
+        this.prevShowedCols = [];
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.addEventListener();
@@ -24290,7 +24311,21 @@ class ColumnChooser {
     }
     refreshCheckboxButton() {
         let searchValue = this.dlgObj.element.querySelector('.e-cc.e-input').value;
-        let selected = this.innerDiv.querySelectorAll('.e-check').length;
+        let visibleCols = this.parent.getVisibleColumns();
+        for (let i = 0; i < visibleCols.length; i++) {
+            let columnUID = visibleCols[i].uid;
+            if (this.prevShowedCols.indexOf(columnUID) === -1) {
+                this.prevShowedCols.push(columnUID);
+            }
+        }
+        let selected;
+        for (let i = 0; i < this.hideColumn.length; i++) {
+            let index = this.prevShowedCols.indexOf(this.hideColumn[i]);
+            if (index !== -1) {
+                this.prevShowedCols.splice(index, 1);
+            }
+        }
+        selected = this.showColumn.length !== 0 ? 1 : this.prevShowedCols.length;
         let btn = this.dlgDiv.querySelector('.e-footer-content').querySelector('.e-btn').ej2_instances[0];
         btn.disabled = false;
         let srchShowCols = [];
@@ -27217,7 +27252,7 @@ class ContextMenu$1 {
             this.eventArgs = args.event;
             args.column = this.targetColumn;
             this.parent.trigger(contextMenuOpen, args);
-            if (this.hiddenItems.length === args.items.length) {
+            if (this.hiddenItems.length === args.items.length && !args.parentItem) {
                 this.updateItemStatus();
                 args.cancel = true;
             }

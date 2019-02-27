@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 16.4.55 (2019-02-27)
+
+### Grid
+
+#### Bug Fixes
+
+- Script error throws when validating the column in Batch Editing is resolved.
+- script error is thrown when press for Tab key in batch edit mode is resolved.
+- Need to provide argument as `isInteracted` in `rowDeselected` event is fixed.
+- Grid `ContextMenu` shows unrelated items in its target is resolved.
+- Script error throws while does the key press event with frozen is resolved.
+- Delete Confirmation dialog loses focus when using command column for delete is resolved.
+- Problem in updating data with `updateRow` method when using remote data is resolved.
+- Grid copied rows pasted in single column in excel sheet randomly is resolved.
+- Column chooser not working when we select or unselect the searched columns is resolved.
+
+#### New Features
+
+- Need to provide support to set the Edit Dialog height by using API is fixed.
+
 ## 16.4.54 (2019-02-19)
 
 ### Grid

@@ -675,12 +675,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.element.tagName === 'TEXTAREA') {
             let rteOuterWrapper: HTMLElement = this.createElement('div', {
-                className: 'e-control e-richtexteditor'
+                className: this.element.getAttribute('class')
             }) as HTMLElement;
             this.element.innerHTML = '';
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element as HTMLTextAreaElement;
-            this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
+            removeClass([this.valueContainer], this.element.getAttribute('class').split(' '));
             this.element = rteOuterWrapper;
         } else {
             this.valueContainer = this.createElement('textarea', {

@@ -817,9 +817,13 @@ export class Edit implements IAction {
 
         let content: Element = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
+        let validationForBottomRowPos: boolean;
+        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.parent.editSettings.mode !== 'Dialog' &&
+        ((this.editModule.args && this.editModule.args.requestType === 'add') || this.editModule.isAdded)) {
+            validationForBottomRowPos = true;
+        }
         let arrow: Element;
-        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add' &&
-            this.parent.editSettings.mode !== 'Dialog') {
+        if (validationForBottomRowPos) {
             arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-bottom' });
             arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-outer e-tip-bottom' }));
             arrow.appendChild(this.parent.createElement('div', { className: 'e-arrow-tip-inner e-tip-bottom' }));
@@ -845,8 +849,7 @@ export class Edit implements IAction {
             let pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
-        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.editModule.args.requestType === 'add' &&
-            this.parent.editSettings.mode !== 'Dialog') {
+        if (validationForBottomRowPos) {
             div.style.bottom = inputClient.height + 9  + 'px';
             div.style.top = null;
         }

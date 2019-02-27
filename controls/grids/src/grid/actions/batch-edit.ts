@@ -245,9 +245,8 @@ export class BatchEdit {
                 }
             }
         }
-        if (gObj.getContentTable().querySelector('tr.e-emptyrow') &&
-            !gObj.getContentTable().querySelector('tr.e-row')) {
-            gObj.getContentTable().querySelector('tr.e-emptyrow').classList.remove('e-hide');
+        if (!gObj.getContentTable().querySelector('tr.e-row')) {
+            gObj.renderModule.renderEmptyRow();
         }
         let args: BatchCancelArgs = {
             requestType: 'batchCancel', rows: this.parent.getRowsObject()
@@ -550,7 +549,7 @@ export class BatchEdit {
         let tbody: Element = gObj.getContentTable().querySelector('tbody');
         tr.classList.add('e-insertedrow');
         if (tbody.querySelector('.e-emptyrow')) {
-            tbody.querySelector('.e-emptyrow').classList.add('e-hide');
+            tbody.querySelector('.e-emptyrow').remove();
         }
         if (gObj.getFrozenColumns()) {
             mTr = this.renderMovable(tr);

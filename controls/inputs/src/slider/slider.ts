@@ -337,18 +337,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private val: number;
     private activeHandle: number;
     private sliderTrack: HTMLElement;
-    private firstMaterialHandle: HTMLElement;
-    private secondMaterialHandle: HTMLElement;
+    private materialHandle: HTMLElement;
     private firstBtn: HTMLElement;
-    private firstTooltipObj: Tooltip;
-    private secondTooltipObj: Tooltip;
-    private firstTooltipElement: HTMLElement;
-    private secondTooltipElement: HTMLElement;
+    private tooltipObj: Tooltip;
+    private tooltipElement: HTMLElement;
+    private isMaterialTooltip: boolean;
     private secondBtn: HTMLElement;
     private ul: HTMLElement;
     private firstChild: Element;
-    private firstHandleTooltipPosition: string;
-    private secondHandleTooltipPosition: string;
+    private tooltipCollidedPosition: string;
+    private tooltipTarget: HTMLElement;
     private lastChild: Element;
     private previousTooltipClass: string;
     private horDir: string = 'left';
@@ -359,7 +357,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         rangeBar: 'all .4s cubic-bezier(.25, .8, .25, 1)'
     };
     private transitionOnMaterialTooltip: { [key: string]: string } = {
-        handle: 'left 1ms ease-out, right 1ms ease-out, bottom 1ms ease-out',
+        handle: 'left 1ms ease-out, right 1ms ease-out, bottom 1ms ease-out, top 1ms ease-out',
         rangeBar: 'left 1ms ease-out, right 1ms ease-out, bottom 1ms ease-out, width 1ms ease-out, height 1ms ease-out'
     };
     private scaleTransform: string = 'transform .4s cubic-bezier(.25, .8, .25, 1)';
@@ -367,7 +365,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private previousChanged: number | number[];
     private repeatInterval: number;
     private isMaterial: boolean;
-    private bootstrapCollisionArgs: TooltipEventArgs;
     private isBootstrap: boolean;
     private zIndex: number;
     private l10n: L10n;
@@ -690,22 +687,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setEnabled(): void {
-        let tooltipElement: HTMLElement[] = this.type !== 'Range' ? [this.firstTooltipElement] :
-            [this.firstTooltipElement, this.secondTooltipElement];
         if (!this.enabled) {
             addClass([this.sliderContainer], [classNames.sliderDisabled]);
-            if (this.tooltip.isVisible && this.tooltip.showOn === 'Always') {
-                tooltipElement.forEach((tooltipElement: HTMLElement) => {
-                    tooltipElement.classList.add(classNames.sliderDisabled);
-                });
+            if (this.tooltip.isVisible && this.tooltipElement && this.tooltip.showOn === 'Always') {
+                this.tooltipElement.classList.add(classNames.sliderDisabled);
             }
             this.unwireEvents();
         } else {
             removeClass([this.sliderContainer], [classNames.sliderDisabled]);
-            if (this.tooltip.isVisible && this.tooltip.showOn === 'Always') {
-                tooltipElement.forEach((tooltipElement: HTMLElement) => {
-                    tooltipElement.classList.remove(classNames.sliderDisabled);
-                });
+            if (this.tooltip.isVisible && this.tooltipElement && this.tooltip.showOn === 'Always') {
+                this.tooltipElement.classList.remove(classNames.sliderDisabled);
             }
             this.wireEvents();
         }
@@ -727,8 +718,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
         this.element.appendChild(this.sliderTrack);
         this.element.tabIndex = -1;
-        this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
-        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.getThemeInitialization();
         this.setHandler();
         this.createRangeBar();
         if (this.limits.enabled) {
@@ -778,6 +768,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         } else {
             removeClass([this.sliderContainer], [classNames.readonly]);
         }
+    }
+
+    private getThemeInitialization(): void {
+        this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
+        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }
 
     private createRangeBar(): void {
@@ -865,15 +861,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         });
         this.secondHandle.classList.add(classNames.sliderSecondHandle);
         this.element.appendChild(this.secondHandle);
-        if (this.isMaterial && this.tooltip.isVisible) {
-            this.secondMaterialHandle = this.createElement('div', {
-                attrs: {
-                    class: classNames.sliderHandle + ' ' +
-                        classNames.sliderMaterialHandle
-                }
-            });
-            this.element.appendChild(this.secondMaterialHandle);
-        }
     }
 
     private createFirstHandle(): void {
@@ -885,14 +872,14 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         });
         this.firstHandle.classList.add(classNames.sliderFirstHandle);
         this.element.appendChild(this.firstHandle);
-        if (this.isMaterial && this.tooltip.isVisible) {
-            this.firstMaterialHandle = this.createElement('div', {
+        if (this.isMaterialTooltip) {
+            this.materialHandle = this.createElement('div', {
                 attrs: {
                     class: classNames.sliderHandle + ' ' +
                         classNames.sliderMaterialHandle
                 }
             });
-            this.element.appendChild(this.firstMaterialHandle);
+            this.element.appendChild(this.materialHandle);
         }
     }
 
@@ -925,46 +912,28 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private handleStart(): void {
-        let pos: number = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
-        let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-        if (pos === 0 && this.type !== 'Range') {
-            this.getHandle().classList.add(classNames.sliderHandleStart);
-            if (this.isMaterial && this.tooltip.isVisible && this.firstMaterialHandle) {
-                this.firstMaterialHandle.classList.add(classNames.sliderHandleStart);
-                if (tooltipElement) {
-                    tooltipElement.classList.add(classNames.sliderTooltipStart);
+        if (this.type !== 'Range') {
+            this.firstHandle.classList[this.handlePos1 === 0 ? 'add' : 'remove'](classNames.sliderHandleStart);
+            if (this.isMaterialTooltip) {
+                this.materialHandle.classList[this.handlePos1 === 0 ? 'add' : 'remove'](classNames.sliderHandleStart);
+                if (this.tooltipElement) {
+                    this.tooltipElement.classList[this.handlePos1 === 0 ? 'add' : 'remove'](classNames.sliderTooltipStart);
                 }
             }
-        } else {
-            this.getHandle().classList.remove(classNames.sliderHandleStart);
         }
     }
 
     private transitionEnd(e: TransitionEvent): void {
-        this.handleStart();
-        this.getHandle().style.transition = 'none';
-        if (this.type !== 'Default') {
-            this.rangeBar.style.transition = 'none';
-        }
-        if (this.tooltip.isVisible) {
-            let tooltipObj: Tooltip = this.activeHandle === 1 ? this.firstTooltipObj : this.secondTooltipObj;
-            let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-            if (!this.isMaterial) {
-                tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } };
-                this.tooltipAnimation();
-            } else {
-                if (!tooltipElement.classList.contains(classNames.materialTooltipOpen) && e.propertyName !== 'transform') {
-                    this.openMaterialTooltip();
-                } else {
-                    if (this.type === 'Default') {
-                        tooltipElement.style.transition = this.transition.handle;
-                    }
-                    this.refreshTooltip();
-                }
+        if (e.propertyName !== 'transform') {
+            this.handleStart();
+            this.getHandle().style.transition = 'none';
+            if (this.type !== 'Default') {
+                this.rangeBar.style.transition = 'none';
             }
-        }
-
-        if (this.tooltip.showOn !== 'Always') {
+            if (this.isMaterial && this.tooltip.isVisible && this.type === 'Default') {
+                this.tooltipElement.style.transition = this.transition.handle;
+            }
+            this.tooltipToggle(this.getHandle());
             this.closeTooltip();
         }
     }
@@ -988,28 +957,14 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
     private handleOver(e: MouseEvent): void {
         if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover') {
-            this.tooltipValue();
-            let tooltipObj: Tooltip = e.currentTarget === this.firstHandle ? this.firstTooltipObj : this.secondTooltipObj;
-            tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } };
-            if (e.currentTarget === this.firstHandle) {
-                this.firstTooltipObj.open(this.firstHandle);
-            } else {
-                this.secondTooltipObj.open(this.secondHandle);
-            }
+            this.tooltipToggle(e.currentTarget as HTMLElement);
         }
     }
     private handleLeave(e: MouseEvent): void {
         if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover' &&
             !(e.currentTarget as HTMLElement).classList.contains(classNames.sliderHandleFocused) &&
             !(e.currentTarget as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
-            this.tooltipValue();
-            let tooltipObj: Tooltip = e.currentTarget === this.firstHandle ? this.firstTooltipObj : this.secondTooltipObj;
-            if (e.currentTarget === this.firstHandle) {
-                this.firstTooltipObj.close();
-            } else {
-                this.secondTooltipObj.close();
-            }
-            tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } };
+            this.closeTooltip();
         }
 
     }
@@ -1047,22 +1002,19 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private tooltipValue(): void {
         let text: string;
-        let value1: string;
-        let value2: string;
         let args: SliderTooltipEventArgs = {
             value: this.value,
             text: ''
         };
         this.setTooltipContent();
-        args.text = text = this.firstTooltipObj.content as string;
+        args.text = text = this.tooltipObj.content as string;
         this.trigger('tooltipChange', args);
         this.addTooltipClass(args.text);
         if (text !== args.text) {
             this.customAriaText = args.text;
-            this.firstTooltipObj.content = args.text;
+            this.tooltipObj.content = args.text;
             this.setAriaAttrValue(this.firstHandle);
             if (this.type === 'Range') {
-                this.secondTooltipObj.content = args.text;
                 this.setAriaAttrValue(this.secondHandle);
             }
         }
@@ -1070,16 +1022,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setTooltipContent(): void {
         let content: string;
-        if (this.type === 'Range') {
-            content = this.formatContent(this.tooltipFormatInfo, false);
-            this.firstTooltipObj.content = content;
-            this.secondTooltipObj.content = content;
-        } else {
-            if (!isNullOrUndefined(this.handleVal1)) {
-                content = this.formatContent(this.tooltipFormatInfo, false);
-                this.firstTooltipObj.content = content;
-            }
-        }
+        content = this.formatContent(this.tooltipFormatInfo, false);
+        this.tooltipObj.content = content;
     }
 
     private formatContent(formatInfo: NumberFormatOptions, ariaContent: boolean): string {
@@ -1132,121 +1076,71 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private addTooltipClass(content: string): void {
-        if (this.isMaterial && this.tooltip.isVisible) {
+        if (this.isMaterialTooltip) {
             let count: number = content.toString().length;
-            let tooltipElement: HTMLElement[] = this.type !== 'Range' ? [this.firstTooltipElement] :
-                [this.firstTooltipElement, this.secondTooltipElement];
-            tooltipElement.forEach((element: HTMLElement, index: number) => {
-                if (!element) {
-                    let cssClass: string = count > 4 ? classNames.sliderMaterialRange : classNames.sliderMaterialDefault;
-                    !index ? this.firstTooltipObj.cssClass = classNames.sliderTooltip + ' ' + cssClass :
-                        this.secondTooltipObj.cssClass = classNames.sliderTooltip + ' ' + cssClass;
-                } else {
-                    if (count > 4) {
-                        element.classList.remove(classNames.sliderMaterialDefault);
-                        if (!element.classList.contains(classNames.sliderMaterialRange)) {
-                            element.classList.add(classNames.sliderMaterialRange);
-                            element.style.transform = 'scale(1)';
-                        }
-                    } else {
-                        element.classList.remove(classNames.sliderMaterialRange);
-                        if (!element.classList.contains(classNames.sliderMaterialDefault)) {
-                            element.classList.add(classNames.sliderMaterialDefault);
-                            element.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
-                        }
-                    }
+            if (!this.tooltipElement) {
+                let cssClass: string = count > 4 ? classNames.sliderMaterialRange : classNames.sliderMaterialDefault;
+                this.tooltipObj.cssClass = classNames.sliderTooltip + ' ' + cssClass;
+            } else {
+                let cssClass: { [key: string]: string } = count > 4 ?
+                    { oldCss: classNames.sliderMaterialDefault, newCss: classNames.sliderMaterialRange } :
+                    { oldCss: classNames.sliderMaterialRange, newCss: classNames.sliderMaterialDefault };
+                this.tooltipElement.classList.remove(cssClass.oldCss);
+                if (!this.tooltipElement.classList.contains(cssClass.newCss)) {
+                    this.tooltipElement.classList.add(cssClass.newCss);
+                    this.tooltipElement.style.transform = count > 4 ? 'scale(1)' :
+                        this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
                 }
-            });
-
-        }
-    }
-    private tooltipPlacement(): void {
-        let tooltipPosition: Position;
-        if (this.orientation === 'Horizontal') {
-            this.tooltip.placement === 'Before' ? tooltipPosition = 'TopCenter' : tooltipPosition = 'BottomCenter';
-        } else {
-            this.tooltip.placement === 'Before' ? tooltipPosition = 'LeftCenter' : tooltipPosition = 'RightCenter';
-        }
-        this.firstTooltipObj.position = tooltipPosition;
-        if (this.type === 'Range') {
-            this.secondTooltipObj.position = tooltipPosition;
-        }
-        if (this.isMaterial) {
-            this.firstTooltipObj.showTipPointer = true;
-            this.setProperties({ tooltip: { showOn: 'Always' } }, true);
-            this.firstTooltipObj.height = 30;
-            if (this.type === 'Range') {
-                this.secondTooltipObj.showTipPointer = true;
-                this.secondTooltipObj.height = 30;
             }
         }
+    }
+
+    private tooltipPlacement(): Position {
+        return this.orientation === 'Horizontal' ? (this.tooltip.placement === 'Before' ? 'TopCenter' : 'BottomCenter') :
+            (this.tooltip.placement === 'Before' ? 'LeftCenter' : 'RightCenter');
     }
 
     private tooltipBeforeOpen(args: TooltipEventArgs): void {
-        let tooltipElement: HTMLElement = args.target === this.firstHandle ? this.firstTooltipElement = args.element :
-            this.secondTooltipElement = args.element;
-        if (this.tooltip.cssClass !== '') {
-            addClass([tooltipElement], this.tooltip.cssClass.split(' '));
+        this.tooltipElement = args.element;
+        if (this.tooltip.cssClass) {
+            addClass([this.tooltipElement], this.tooltip.cssClass.split(' ').filter((css: string) => css));
         }
         args.target.removeAttribute('aria-describedby');
-        if (this.isMaterial && this.tooltip.isVisible) {
-            let transformProperties: { [key: string]: string } = this.getTooltipTransformProperties(this.previousTooltipClass);
-            (tooltipElement.firstChild as HTMLElement).classList.add(classNames.materialTooltipHide);
+        if (this.isMaterialTooltip) {
+            (this.tooltipElement.firstElementChild as HTMLElement).classList.add(classNames.materialTooltipHide);
             this.handleStart();
-            if ((tooltipElement.firstElementChild as HTMLElement).innerText.length > 4) {
-                tooltipElement.style.transform = `${transformProperties.translate} scale(0.01)`;
-            } else {
-                tooltipElement.style.transform = `${transformProperties.translate} ${transformProperties.rotate} scale(0.01)`;
-            }
+            this.setTooltipTransform();
         }
-        if (this.isBootstrap) {
-            switch (this.bootstrapCollisionArgs.collidedPosition) {
+    }
+
+    private tooltipCollision(position: string): void {
+        if (this.isBootstrap || (this.isMaterial && !this.isMaterialTooltip)) {
+            switch (position) {
                 case 'TopCenter':
-                    this.firstTooltipObj.setProperties({ 'offsetY': -(bootstrapTooltipOffset) }, false);
-                    if (this.type === 'Range') {
-                        this.secondTooltipObj.setProperties({ 'offsetY': -(bootstrapTooltipOffset) }, false);
-                    }
+                    this.tooltipObj.setProperties({ 'offsetY': -(bootstrapTooltipOffset) }, false);
                     break;
 
                 case 'BottomCenter':
-                    this.firstTooltipObj.setProperties({ 'offsetY': bootstrapTooltipOffset }, false);
-                    if (this.type === 'Range') {
-                        this.secondTooltipObj.setProperties({ 'offsetY': bootstrapTooltipOffset }, false);
-                    }
+                    this.tooltipObj.setProperties({ 'offsetY': bootstrapTooltipOffset }, false);
                     break;
 
                 case 'LeftCenter':
-                    this.firstTooltipObj.setProperties({ 'offsetX': -(bootstrapTooltipOffset) }, false);
-                    if (this.type === 'Range') {
-                        this.secondTooltipObj.setProperties({ 'offsetX': -(bootstrapTooltipOffset) }, false);
-                    }
+                    this.tooltipObj.setProperties({ 'offsetX': -(bootstrapTooltipOffset) }, false);
                     break;
 
                 case 'RightCenter':
-                    this.firstTooltipObj.setProperties({ 'offsetX': bootstrapTooltipOffset }, false);
-                    if (this.type === 'Range') {
-                        this.secondTooltipObj.setProperties({ 'offsetX': bootstrapTooltipOffset }, false);
-                    }
-                    break;
-
-                default:
+                    this.tooltipObj.setProperties({ 'offsetX': bootstrapTooltipOffset }, false);
                     break;
             }
         }
     }
 
     private wireMaterialTooltipEvent(destroy: boolean): void {
-        if (this.isMaterial && this.tooltip.isVisible) {
+        if (this.isMaterialTooltip) {
             if (!destroy) {
-                EventHandler.add(this.firstTooltipElement, 'mousedown touchstart', this.sliderDown, this);
-                if (this.type === 'Range') {
-                    EventHandler.add(this.secondTooltipElement, 'mousedown touchstart', this.sliderDown, this);
-                }
+                EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.sliderDown, this);
             } else {
-                EventHandler.remove(this.firstTooltipElement, 'mousedown touchstart', this.sliderDown);
-                if (this.type === 'Range') {
-                    EventHandler.remove(this.secondTooltipElement, 'mousedown touchstart', this.sliderDown);
-                }
+                EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.sliderDown);
             }
         }
     }
@@ -1273,121 +1167,124 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private getTooltipTransformProperties(className: string): { [key: string]: string } {
-        if (this.firstTooltipElement) {
-            let position: number;
-            if (this.orientation === 'Horizontal') {
-                position = (this.firstTooltipElement.clientHeight + 14) - (this.firstTooltipElement.clientHeight / 2);
-            } else {
-                position = (this.firstTooltipElement.clientWidth + 14) - (this.firstTooltipElement.clientWidth / 2);
-            }
-            let transformProperties: { [key: string]: string } = this.orientation === 'Horizontal' ?
+        let transformProperties: { [key: string]: string };
+        if (this.tooltipElement) {
+            let position: number = this.orientation === 'Horizontal' ?
+                ((this.tooltipElement.clientHeight + 14) - (this.tooltipElement.clientHeight / 2)) :
+                ((this.tooltipElement.clientWidth + 14) - (this.tooltipElement.clientWidth / 2));
+            transformProperties = this.orientation === 'Horizontal' ?
                 (className === classNames.horizontalTooltipBefore ? { rotate: 'rotate(45deg)', translate: `translateY(${position}px)` } :
                     { rotate: 'rotate(225deg)', translate: `translateY(${-(position)}px)` }) :
                 (className === classNames.verticalTooltipBefore ? { rotate: 'rotate(-45deg)', translate: `translateX(${position}px)` } :
                     { rotate: 'rotate(-225deg)', translate: `translateX(${(-position)}px)` });
-
-            return transformProperties;
         }
-        return undefined;
+        return transformProperties;
     }
 
     private openMaterialTooltip(): void {
-        this.refreshTooltip();
-        let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-        let handle: HTMLElement = this.activeHandle === 1 ? this.firstMaterialHandle : this.secondMaterialHandle;
-        if ((tooltipElement.firstChild as HTMLElement).classList.contains(classNames.materialTooltipHide)) {
-            (tooltipElement.firstChild as HTMLElement).classList.remove(classNames.materialTooltipHide);
+        if (this.isMaterialTooltip) {
+            this.refreshTooltip(this.firstHandle);
+            let tooltipContentElement: HTMLElement = this.tooltipElement.firstElementChild as HTMLElement;
+            tooltipContentElement.classList.remove(classNames.materialTooltipHide);
+            tooltipContentElement.classList.add(classNames.materialTooltipShow);
+            this.firstHandle.style.cursor = 'default';
+            this.tooltipElement.style.transition = this.scaleTransform;
+            this.tooltipElement.classList.add(classNames.materialTooltipOpen);
+            this.materialHandle.style.transform = 'scale(0)';
+            if (tooltipContentElement.innerText.length > 4) {
+                this.tooltipElement.style.transform = 'scale(1)';
+            } else {
+                this.tooltipElement.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
+            }
+            if (this.type === 'Default') {
+                setTimeout(() => { this.tooltipElement.style.transition = this.transition.handle; }, 2500);
+            } else {
+                setTimeout(() => { this.tooltipElement.style.transition = 'none'; }, 2500);
+            }
+
         }
-        (tooltipElement.firstChild as HTMLElement).classList.add(classNames.materialTooltipShow);
-        this.getHandle().style.cursor = 'default';
-        tooltipElement.style.transition = this.scaleTransform;
-        tooltipElement.classList.add(classNames.materialTooltipOpen);
-        handle.style.transform = 'scale(0)';
-        if ((tooltipElement.firstElementChild as HTMLElement).innerText.length > 4) {
-            tooltipElement.style.transform = 'scale(1)';
-        } else {
-            tooltipElement.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
-        }
-        if (this.type === 'Default') {
-            setTimeout(() => { tooltipElement.style.transition = this.transition.handle; }, 2500);
-        } else {
-            setTimeout(() => { tooltipElement.style.transition = 'none'; }, 2500);
+    }
+
+    private closeMaterialTooltip(): void {
+        if (this.isMaterialTooltip) {
+            let tooltipContentElement: HTMLElement = this.tooltipElement.firstElementChild as HTMLElement;
+            this.tooltipElement.style.transition = this.scaleTransform;
+            tooltipContentElement.classList.remove(classNames.materialTooltipShow);
+            tooltipContentElement.classList.add(classNames.materialTooltipHide);
+            this.firstHandle.style.cursor = '-webkit-grab';
+            this.firstHandle.style.cursor = 'grab';
+            this.materialHandle.style.transform = 'scale(1)';
+            this.tooltipElement.classList.remove(classNames.materialTooltipOpen);
+            this.setTooltipTransform();
+            this.tooltipTarget = undefined;
+            setTimeout(() => { this.tooltipElement.style.transition = 'none'; }, 2500);
         }
     }
 
     private checkTooltipPosition(args: TooltipEventArgs): void {
-        let tooltipPosition: string = args.target === this.firstHandle ? this.firstHandleTooltipPosition :
-            this.secondHandleTooltipPosition;
-        if (this.isMaterial && (tooltipPosition === undefined || tooltipPosition !== args.collidedPosition)) {
-            let tooltipClass: string = this.tooltipPositionCalculation(args.collidedPosition);
-            args.element.classList.remove(this.previousTooltipClass);
-            args.element.classList.add(tooltipClass);
-            this.previousTooltipClass = tooltipClass;
-            if (args.element.style.transform && args.element.classList.contains(classNames.materialTooltipOpen) &&
-                (args.element.firstElementChild as HTMLElement).innerText.length < 4) {
-                args.element.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
+        if (this.tooltipCollidedPosition === undefined ||
+            this.tooltipCollidedPosition !== args.collidedPosition) {
+            if (this.isMaterialTooltip) {
+                let tooltipClass: string = this.tooltipPositionCalculation(args.collidedPosition);
+                args.element.classList.remove(this.previousTooltipClass);
+                args.element.classList.add(tooltipClass);
+                this.previousTooltipClass = tooltipClass;
+                if (args.element.style.transform && args.element.classList.contains(classNames.materialTooltipOpen) &&
+                    (args.element.firstElementChild as HTMLElement).innerText.length <= 4) {
+                    args.element.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
+                }
             }
-            if (args.target === this.firstHandle) {
-                this.firstHandleTooltipPosition = args.collidedPosition;
-            } else {
-                this.secondHandleTooltipPosition = args.collidedPosition;
-            }
+            this.tooltipCollidedPosition = args.collidedPosition;
         }
-        this.bootstrapCollisionArgs = args;
+        if (this.isMaterialTooltip && this.tooltipElement && this.tooltipElement.style.transform.indexOf('translate') !== -1) {
+            this.setTooltipTransform();
+        }
+    }
+
+    private setTooltipTransform(): void {
+        let transformProperties: { [key: string]: string } = this.getTooltipTransformProperties(this.previousTooltipClass);
+        if ((this.tooltipElement.firstElementChild as HTMLElement).innerText.length > 4) {
+            this.tooltipElement.style.transform = `${transformProperties.translate} scale(0.01)`;
+        } else {
+            this.tooltipElement.style.transform = `${transformProperties.translate} ${transformProperties.rotate} scale(0.01)`;
+        }
     }
 
     private renderTooltip(): void {
-        if (this.tooltip.showOn === 'Auto') {
-            this.setProperties({ tooltip: { showOn: 'Hover' } }, true);
-        }
-        let tooltipPointer: boolean = this.isBootstrap ? true : false;
-        this.firstTooltipObj = new Tooltip({
-            showTipPointer: tooltipPointer,
+        this.tooltipObj = new Tooltip({
+            showTipPointer: this.isBootstrap || this.isMaterial,
             cssClass: classNames.sliderTooltip,
-            animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+            height: this.isMaterial ? 30 : 'auto',
+            animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
             opensOn: 'Custom',
             beforeOpen: this.tooltipBeforeOpen.bind(this),
             beforeCollision: this.checkTooltipPosition.bind(this),
-            afterClose: this.tooltipAfterClose.bind(this)
-
+            beforeClose: this.tooltipBeforeClose.bind(this)
         });
-        this.firstTooltipObj.appendTo(this.firstHandle);
-        if (this.type === 'Range') {
-            this.secondTooltipObj = new Tooltip({
-                showTipPointer: tooltipPointer,
-                cssClass: classNames.sliderTooltip,
-                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
-                opensOn: 'Custom',
-                beforeOpen: this.tooltipBeforeOpen.bind(this),
-                beforeCollision: this.checkTooltipPosition.bind(this),
-                afterClose: this.tooltipAfterClose.bind(this)
-            });
-            this.secondTooltipObj.appendTo(this.secondHandle);
-        }
-        this.tooltipPlacement();
-        this.firstHandle.style.transition = 'none';
-        if (this.type !== 'Default') {
-            this.rangeBar.style.transition = 'none';
-        }
-        if (this.type === 'Range') {
-            this.secondHandle.style.transition = 'none';
-        }
-        if (this.isMaterial) {
-            this.sliderContainer.classList.add(classNames.materialSlider);
-            this.tooltipValue();
-            this.firstTooltipObj.open(this.firstHandle);
-            if (this.type === 'Range') {
-                this.secondTooltipObj.open(this.secondHandle);
-            }
-        }
+        this.tooltipObj.appendTo(this.firstHandle);
+        this.initializeTooltipProps();
     }
 
-    private tooltipAfterClose(args: TooltipEventArgs): void {
-        if (args.element === this.firstTooltipElement) {
-            this.firstTooltipElement = undefined;
-        } else {
-            this.secondTooltipElement = undefined;
+    private initializeTooltipProps(): void {
+        let tooltipShowOn: string = this.isMaterialTooltip ? 'Always' : (this.tooltip.showOn === 'Auto' ? 'Hover' : this.tooltip.showOn);
+        this.setProperties({ tooltip: { showOn: tooltipShowOn } }, true);
+        this.tooltipObj.position = this.tooltipPlacement();
+        this.tooltipCollision(this.tooltipObj.position);
+        [this.firstHandle, this.rangeBar, this.secondHandle].forEach((handle: HTMLElement) => {
+            if (!isNullOrUndefined(handle)) {
+                handle.style.transition = 'none';
+            }
+        });
+        if (this.isMaterialTooltip) {
+            this.sliderContainer.classList.add(classNames.materialSlider);
+            this.tooltipValue();
+            this.tooltipObj.animation.close.effect = 'None';
+            this.tooltipObj.open(this.firstHandle);
         }
+    }
+    private tooltipBeforeClose(): void {
+        this.tooltipElement = undefined;
+        this.tooltipCollidedPosition = undefined;
     }
 
     private setButtons(): void {
@@ -1419,11 +1316,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
     private repeatButton(args: MouseEvent): void {
-        let buttonElement: HTMLElement = (<HTMLElement>args.target).parentElement as HTMLElement;
-        let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-        if (!tooltipElement && this.tooltip.isVisible) {
-            this.openTooltip();
-        }
         let hVal: number = this.handleValueUpdate();
         let enabledRTL: boolean = this.enableRtl && this.orientation !== 'Vertical';
         let value: number;
@@ -1441,7 +1333,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (value >= this.min && value <= this.max) {
             this.changeHandleValue(value);
-            this.refreshTooltipOnMove();
+            this.tooltipToggle(this.getHandle());
         }
     }
 
@@ -1460,9 +1352,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
     private repeatHandlerUp(e: MouseEvent): void {
         this.changeEvent('changed');
-        if (this.tooltip.isVisible && this.tooltip.showOn !== 'Always' && !this.isMaterial) {
-            this.closeTooltip();
-        }
+        this.closeTooltip();
         clearInterval(this.repeatInterval);
         this.getHandle().focus();
 
@@ -1804,7 +1694,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
         }
-        this.tooltipAnimation();
+        this.tooltipToggle(this.getHandle());
         this.getHandle().focus();
         if ((args.currentTarget as HTMLElement).classList.contains(classNames.firstButton)) {
             EventHandler.add(this.firstBtn, 'mouseup touchend', this.buttonUp, this);
@@ -1814,26 +1704,17 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private tooltipAnimation(): void {
-        if (this.tooltip.isVisible) {
-            let tooltipObj: Tooltip = this.activeHandle === 1 ? this.firstTooltipObj : this.secondTooltipObj;
-            let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-            if (this.isMaterial) {
-                !tooltipElement.classList.contains(classNames.materialTooltipOpen) ? this.openMaterialTooltip() : this.refreshTooltip();
-            } else {
-                tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } };
-                this.openTooltip();
-            }
+    private tooltipToggle(target?: HTMLElement): void {
+        if (this.isMaterialTooltip) {
+            !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
+                this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
+        } else {
+            !this.tooltipElement ? this.openTooltip(target) : this.refreshTooltip(target);
         }
+
     }
 
     private buttonUp(args: KeyboardEvent | MouseEvent): void {
-        if (this.tooltip.isVisible) {
-            if (!this.isMaterial) {
-                let tooltipObj: Tooltip = this.activeHandle === 1 ? this.firstTooltipObj : this.secondTooltipObj;
-                tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'None' } };
-            }
-        }
         if ((args.currentTarget as HTMLElement).classList.contains(classNames.firstButton)) {
             EventHandler.remove(this.firstBtn, 'mouseup touchend', this.buttonUp);
         }
@@ -1841,6 +1722,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             EventHandler.remove(this.secondBtn, 'mouseup touchend', this.buttonUp);
         }
     }
+
     private setRangeBar(): void {
         if (this.orientation === 'Horizontal') {
             if (this.type === 'MinRange') {
@@ -1996,51 +1878,24 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.activeHandle === 1) {
                 this.firstHandle.style.zIndex = (this.zIndex + 4) + '';
                 this.secondHandle.style.zIndex = (this.zIndex + 3) + '';
-                if (this.isMaterial && this.tooltip.isVisible && this.firstTooltipElement && this.secondTooltipElement) {
-                    this.firstTooltipElement.style.zIndex = (this.zIndex + 4) + '';
-                    this.secondTooltipElement.style.zIndex = (this.zIndex + 3) + '';
-                }
             } else {
                 this.firstHandle.style.zIndex = (this.zIndex + 3) + '';
                 this.secondHandle.style.zIndex = (this.zIndex + 4) + '';
-                if (this.isMaterial && this.tooltip.isVisible && this.firstTooltipElement && this.secondTooltipElement) {
-                    this.firstTooltipElement.style.zIndex = (this.zIndex + 3) + '';
-                    this.secondTooltipElement.style.zIndex = (this.zIndex + 4) + '';
-                }
             }
-        } else if (this.isMaterial && this.tooltip.isVisible && this.firstTooltipElement) {
-            this.firstTooltipElement.style.zIndex = (this.zIndex + 4) + '';
+        } else if (this.isMaterialTooltip && this.tooltipElement) {
+            this.tooltipElement.style.zIndex = (this.zIndex + 4) + '';
         }
     }
 
     private setHandlePosition(): void {
-        let pos: number = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
-        let val: number = (this.activeHandle === 1) ? this.handleVal1 : this.handleVal2;
         let handle: HTMLElement[];
-        let tooltipElement: HTMLElement;
-        if (this.isMaterial && this.tooltip.isVisible) {
-            tooltipElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-            handle = [this.getHandle(), (this.activeHandle === 1 ? this.firstMaterialHandle : this.secondMaterialHandle)];
+        let pos: number = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
+        if (this.isMaterialTooltip) {
+            handle = [this.firstHandle, this.materialHandle];
         } else {
             handle = [this.getHandle()];
         }
-        if (this.tooltip.isVisible && pos === 0 && this.type !== 'Range') {
-            handle[0].classList.add(classNames.sliderHandleStart);
-            if (this.isMaterial) {
-                handle[1].classList.add(classNames.sliderHandleStart);
-                if (tooltipElement) {
-                    tooltipElement.classList.add(classNames.sliderTooltipStart);
-                }
-            }
-        } else {
-            handle[0].classList.remove(classNames.sliderHandleStart);
-            if (this.tooltip.isVisible && this.isMaterial) {
-                handle[1].classList.remove(classNames.sliderHandleStart);
-                if (tooltipElement) {
-                    tooltipElement.classList.remove(classNames.sliderTooltipStart);
-                }
-            }
-        }
+        this.handleStart();
         handle.forEach((handle: HTMLElement) => {
             if (this.orientation === 'Horizontal') {
                 this.enableRtl ? (handle.style.right =
@@ -2057,7 +1912,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setRangeValue(): void {
-        let temp: number = this.activeHandle;
         this.updateRangeValue();
         this.activeHandle = 1;
         this.setHandlePosition();
@@ -2091,12 +1945,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private changeEventArgs(eventName: string): SliderChangeEventArgs {
         let eventArgs: SliderChangeEventArgs;
-        if (this.tooltip.isVisible && this.firstTooltipObj) {
+        if (this.tooltip.isVisible && this.tooltipObj) {
             this.tooltipValue();
             eventArgs = {
                 value: this.value,
                 previousValue: eventName === 'change' ? this.previousVal : this.previousChanged,
-                action: eventName, text: <string>this.firstTooltipObj.content
+                action: eventName, text: <string>this.tooltipObj.content
             };
         } else {
             eventArgs = {
@@ -2212,9 +2066,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.orientation === 'Horizontal') {
             this.enableRtl ? this.firstHandle.style.right =
                 `${this.handlePos1}px` : this.firstHandle.style.left = `${this.handlePos1}px`;
-            if (this.isMaterial && this.tooltip.isVisible && this.firstMaterialHandle) {
-                this.enableRtl ? this.firstMaterialHandle.style.right =
-                    `${this.handlePos1}px` : this.firstMaterialHandle.style.left = `${this.handlePos1}px`;
+            if (this.isMaterialTooltip) {
+                this.enableRtl ? this.materialHandle.style.right =
+                    `${this.handlePos1}px` : this.materialHandle.style.left = `${this.handlePos1}px`;
             }
             if (this.type === 'MinRange') {
                 this.enableRtl ? (this.rangeBar.style.right = '0px') : (this.rangeBar.style.left = '0px');
@@ -2222,27 +2076,20 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             } else if (this.type === 'Range') {
                 this.enableRtl ? this.secondHandle.style.right =
                     `${this.handlePos2}px` : this.secondHandle.style.left = `${this.handlePos2}px`;
-                if (this.isMaterial && this.tooltip.isVisible && this.secondMaterialHandle) {
-                    this.enableRtl ? this.secondMaterialHandle.style.right =
-                        `${this.handlePos2}px` : this.secondMaterialHandle.style.left = `${this.handlePos2}px`;
-                }
                 this.enableRtl ? (this.rangeBar.style.right =
                     this.handlePos1 + 'px') : (this.rangeBar.style.left = this.handlePos1 + 'px');
                 setStyleAttribute(this.rangeBar, { 'width': this.handlePos2 - this.handlePos1 + 'px' });
             }
         } else {
             this.firstHandle.style.bottom = `${this.handlePos1}px`;
-            if (this.isMaterial && this.tooltip.isVisible && this.firstMaterialHandle) {
-                this.firstMaterialHandle.style.bottom = `${this.handlePos1}px`;
+            if (this.isMaterialTooltip) {
+                this.materialHandle.style.bottom = `${this.handlePos1}px`;
             }
             if (this.type === 'MinRange') {
                 this.rangeBar.style.bottom = '0px';
                 setStyleAttribute(this.rangeBar, { 'height': isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
             } else if (this.type === 'Range') {
                 this.secondHandle.style.bottom = `${this.handlePos2}px`;
-                if (this.isMaterial && this.tooltip.isVisible && this.secondMaterialHandle) {
-                    this.secondMaterialHandle.style.bottom = `${this.handlePos2}px`;
-                }
                 this.rangeBar.style.bottom = this.handlePos1 + 'px';
                 setStyleAttribute(this.rangeBar, { 'height': this.handlePos2 - this.handlePos1 + 'px' });
             }
@@ -2252,6 +2099,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.ticks.placement !== 'None' && this.ul) {
             this.removeElement(this.ul);
+            this.ul = undefined;
             this.renderScale();
         }
         this.handleStart();
@@ -2263,7 +2111,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             });
         }
-        this.refreshTooltip();
+        this.refreshTooltip(this.tooltipTarget);
     }
 
     private changeHandleValue(value: number): void {
@@ -2380,11 +2228,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         return val;
     }
 
-    private round(a: number): number {
-        let f: string[] = this.step.toString().split('.');
-        return f[1] ? parseFloat(a.toFixed(f[1].length)) : Math.round(a);
-    }
-
     private positionToValue(pos: number): number {
         let val: number;
         let diff: number = parseFloat(formatUnit(this.max)) - parseFloat(formatUnit(this.min));
@@ -2436,9 +2279,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.modifyZindex();
             this.firstHandle.focus();
         }
-        if (this.isMaterial && this.tooltip.isVisible) {
-            let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-            tooltipElement.classList.add(classNames.materialTooltipActive);
+        if (this.isMaterialTooltip) {
+            this.tooltipElement.classList.add(classNames.materialTooltipActive);
         }
         let focusedElement: Element = this.element.querySelector('.' + classNames.sliderTabHandle);
         if (focusedElement && this.getHandle() !== focusedElement) {
@@ -2450,7 +2292,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
                 this.materialChange();
             }
-            this.tooltipAnimation();
+            this.tooltipToggle(this.getHandle());
             return;
         }
         if (!this.checkRepeatedValue(handleVal)) {
@@ -2465,14 +2307,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.setHandlePosition();
         if (this.type !== 'Default') {
             this.setRangeBar();
-        }
-    }
-
-    private refreshTooltipOnMove(): void {
-        if (this.tooltip.isVisible) {
-            this.tooltipValue();
-            this.activeHandle === 1 ? this.firstTooltipObj.refresh(this.firstHandle) :
-                this.secondTooltipObj.refresh(this.secondHandle);
         }
     }
 
@@ -2494,7 +2328,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
             }
             this.minDiff = this.handleVal2 - this.handleVal1;
-            this.getHandle().focus();
+            this.tooltipToggle(this.rangeBar);
+            let focusedElement: Element = this.element.querySelector('.' + classNames.sliderTabHandle);
+            if (focusedElement) {
+                focusedElement.classList.remove(classNames.sliderTabHandle);
+            }
             EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
             EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
         } else {
@@ -2574,24 +2412,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.activeHandle = 1;
         this.setHandlePosition();
-        if (this.tooltip.isVisible) {
-            if (this.isMaterial) {
-                !this.firstTooltipElement.classList.contains(classNames.materialTooltipOpen) ? this.openMaterialTooltip() :
-                    this.refreshTooltipOnMove();
-            } else {
-                !this.firstTooltipElement ? this.openTooltip() : this.refreshTooltipOnMove();
-            }
-        }
         this.activeHandle = 2;
         this.setHandlePosition();
-        if (this.tooltip.isVisible) {
-            if (this.isMaterial) {
-                !this.secondTooltipElement.classList.contains(classNames.materialTooltipOpen) ? this.openMaterialTooltip() :
-                    this.refreshTooltipOnMove();
-            } else {
-                !this.secondTooltipElement ? this.openTooltip() : this.refreshTooltipOnMove();
-            }
-        }
+        this.tooltipToggle(this.rangeBar);
         this.setRangeBar();
     }
 
@@ -2602,21 +2425,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.type === 'Range') {
             this.secondHandle.classList.remove(classNames.sliderActiveHandle);
         }
-        if (this.tooltip.isVisible) {
-            if (this.tooltip.showOn !== 'Always') {
-                this.closeTooltip();
-            }
-            if (!this.isMaterial) {
-                let tooltipObj: Tooltip = this.activeHandle === 1 ? this.firstTooltipObj : this.secondTooltipObj;
-                tooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'None' } };
-            }
-        }
-
+        this.closeTooltip();
         if (this.isMaterial) {
             this.getHandle().classList.remove('e-large-thumb-size');
-            if (this.tooltip.isVisible) {
-                let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-                tooltipElement.classList.remove(classNames.materialTooltipActive);
+            if (this.isMaterialTooltip) {
+                this.tooltipElement.classList.remove(classNames.materialTooltipActive);
             }
         }
         EventHandler.remove(document, 'mousemove touchmove', this.sliderBarMove);
@@ -2699,15 +2512,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             !(this.getHandle() as HTMLElement).classList.contains(classNames.sliderTabHandle)) {
             this.materialChange();
         }
-        let tooltipElement: HTMLElement = this.activeHandle === 1 ? this.firstTooltipElement : this.secondTooltipElement;
-        if (this.tooltip.isVisible) {
-            if (this.isMaterial) {
-                !tooltipElement.classList.contains(classNames.materialTooltipOpen) ? this.openMaterialTooltip() :
-                    this.refreshTooltipOnMove();
-            } else {
-                !tooltipElement ? this.openTooltip() : this.refreshTooltipOnMove();
-            }
-        }
+        this.tooltipToggle(this.getHandle());
         if (this.type !== 'Default') {
             this.setRangeBar();
         }
@@ -2715,16 +2520,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private dragRangeBarUp(event: MouseEvent & TouchEvent): void {
         this.changeEvent('changed');
-        if (this.tooltip.isVisible) {
-            if (this.tooltip.showOn !== 'Always' && !this.isMaterial) {
-                this.activeHandle = 1;
-                this.firstTooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } };
-                this.closeTooltip();
-                this.activeHandle = 2;
-                this.secondTooltipObj.animation = { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } };
-                this.closeTooltip();
-            }
-        }
+        this.closeTooltip();
         EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
         EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
     }
@@ -2744,29 +2540,29 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         return 1;
     }
-    private refreshTooltip(): void {
-        if (this.tooltip.isVisible && this.firstTooltipObj) {
+    private refreshTooltip(target: HTMLElement): void {
+        if (this.tooltip.isVisible && this.tooltipObj) {
             this.tooltipValue();
-            this.firstTooltipObj.refresh(this.firstHandle);
-            if (this.type === 'Range') {
-                this.secondTooltipObj.refresh(this.secondHandle);
+            if (target) {
+                this.tooltipObj.refresh(target);
+                this.tooltipTarget = target;
             }
         }
     }
 
-    private openTooltip(): void {
-        if (this.tooltip.isVisible && this.firstTooltipObj) {
+    private openTooltip(target?: HTMLElement): void {
+        if (this.tooltip.isVisible && this.tooltipObj && !this.isMaterialTooltip) {
             this.tooltipValue();
-            if (this.isMaterial) {
-                this.openMaterialTooltip();
-            } else {
-                if (this.activeHandle === 1) {
-                    this.firstTooltipObj.open(this.firstHandle);
-                } else {
-                    this.secondTooltipObj.open(this.secondHandle);
-                }
-            }
+            this.tooltipObj.open(target);
+            this.tooltipTarget = target;
+        }
+    }
 
+    private closeTooltip(): void {
+        if (this.tooltip.isVisible && this.tooltipObj && this.tooltip.showOn !== 'Always' && !this.isMaterialTooltip) {
+            this.tooltipValue();
+            this.tooltipObj.close();
+            this.tooltipTarget = undefined;
         }
     }
 
@@ -2782,9 +2578,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             case 35:
                 event.preventDefault();
                 this.buttonClick(event);
-                if (this.tooltip.isVisible && this.tooltip.showOn !== 'Always' && !this.isMaterial) {
-                    this.closeTooltip();
-                }
                 break;
         }
 
@@ -2878,13 +2671,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                         this.activeHandle = 2 : this.activeHandle = 1;
                 }
                 this.getHandle().focus();
-                this.tooltipAnimation();
-                if (this.tooltip.isVisible && this.tooltip.showOn !== 'Always' && !this.isMaterial) {
-                    this.closeTooltip();
-                }
-
+                this.tooltipToggle(this.getHandle());
             }
         }
+        this.closeTooltip();
         this.changeEvent('changed');
     }
 
@@ -2902,33 +2692,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private sliderFocusOut(event: MouseEvent): void {
         if (event.relatedTarget !== this.secondHandle && event.relatedTarget !== this.firstHandle &&
             event.relatedTarget !== this.element && event.relatedTarget !== this.firstBtn && event.relatedTarget !== this.secondBtn) {
-            if (this.isMaterial && this.tooltip.isVisible) {
-                let transformProperties: { [key: string]: string } = this.getTooltipTransformProperties(this.previousTooltipClass);
-                let tooltipElement: HTMLElement[] = this.type !== 'Range' ? [this.firstTooltipElement] :
-                    [this.firstTooltipElement, this.secondTooltipElement];
-                let hiddenHandle: HTMLElement[] = this.type !== 'Range' ? [this.firstHandle] : [this.firstHandle, this.secondHandle];
-                let handle: HTMLElement[] = this.type !== 'Range' ? [this.firstMaterialHandle] :
-                    [this.firstMaterialHandle, this.secondMaterialHandle];
-                tooltipElement.forEach((tooltipElement: HTMLElement, index: number) => {
-                    if (tooltipElement) {
-                        tooltipElement.style.transition = this.scaleTransform;
-                        (tooltipElement.firstChild as HTMLElement).classList.remove(classNames.materialTooltipShow);
-                        (tooltipElement.firstChild as HTMLElement).classList.add(classNames.materialTooltipHide);
-                        hiddenHandle[index].style.cursor = '-webkit-grab';
-                        hiddenHandle[index].style.cursor = 'grab';
-                        handle[index].style.transform = 'scale(1)';
-                        tooltipElement.classList.remove(classNames.materialTooltipOpen);
-                        if ((tooltipElement.firstElementChild as HTMLElement).innerText.length > 4) {
-                            tooltipElement.style.transform = transformProperties.translate + ' ' + 'scale(0.01)';
-                        } else {
-                            tooltipElement.style.transform = transformProperties.translate + ' ' +
-                                transformProperties.rotate + ' ' + 'scale(0.01)';
-                        }
-                        setTimeout(() => { tooltipElement.style.transition = 'none'; }, 2500);
-
-                    }
-                });
-            }
+            this.closeMaterialTooltip();
             if (this.element.querySelector('.' + classNames.sliderTabHandle)) {
                 this.element.querySelector('.' + classNames.sliderTabHandle).classList.remove(classNames.sliderTabHandle);
             }
@@ -2945,61 +2709,49 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private closeTooltip(): void {
-        if (this.tooltip.isVisible) {
-            this.tooltipValue();
-            if (this.activeHandle === 1) {
-                this.firstTooltipObj.close();
-            } else {
-                this.secondTooltipObj.close();
-            }
-        }
-    }
     private removeElement(element: Element): void {
         if (element.parentNode) {
             element.parentNode.removeChild(element);
         }
     }
     private changeSliderType(type: SliderType): void {
-        if (this.isMaterial && this.firstMaterialHandle) {
+        if (this.isMaterialTooltip && this.materialHandle) {
             this.sliderContainer.classList.remove(classNames.materialSlider);
-            this.removeElement(this.firstMaterialHandle);
-            this.firstTooltipElement = undefined;
-            this.firstHandleTooltipPosition = undefined;
-            if (this.secondMaterialHandle) {
-                this.removeElement(this.secondMaterialHandle);
-                this.secondTooltipElement = undefined;
-                this.secondHandleTooltipPosition = undefined;
-            }
-        }
-        if (this.tooltip.isVisible && this.isMaterial) {
-            this.sliderContainer.classList.add(classNames.materialSlider);
+            this.removeElement(this.materialHandle);
+            this.materialHandle = undefined;
         }
         this.removeElement(this.firstHandle);
+        this.firstHandle = undefined;
         if (type !== 'Default') {
             if (type === 'Range') {
                 this.removeElement(this.secondHandle);
+                this.secondHandle = undefined;
             }
             this.removeElement(this.rangeBar);
+            this.rangeBar = undefined;
         }
-        if (this.tooltip.isVisible && !isNullOrUndefined(this.firstTooltipObj)) {
-            this.firstTooltipObj.destroy();
-            if (type === 'Range' && !isNullOrUndefined(this.secondTooltipObj)) {
-                this.secondTooltipObj.destroy();
-            }
+        if (this.tooltip.isVisible && !isNullOrUndefined(this.tooltipObj)) {
+            this.tooltipObj.destroy();
+            this.tooltipElement = undefined;
+            this.tooltipCollidedPosition = undefined;
         }
-        if (this.limits.enabled && type === 'MinRange' || type === 'Default') {
-            if (!isNullOrUndefined(this.limitBarFirst)) {
-                this.removeElement(this.limitBarFirst);
-            }
-        }
-        if (type === 'Range') {
-            if (this.limits.enabled) {
-                if (!isNullOrUndefined(this.limitBarFirst) && !isNullOrUndefined(this.limitBarSecond)) {
+        if (this.limits.enabled) {
+            if (type === 'MinRange' || type === 'Default') {
+                if (!isNullOrUndefined(this.limitBarFirst)) {
                     this.removeElement(this.limitBarFirst);
+                    this.limitBarFirst = undefined;
+                }
+            } else {
+                if (!isNullOrUndefined(this.limitBarSecond)) {
                     this.removeElement(this.limitBarSecond);
+                    this.limitBarSecond = undefined;
                 }
             }
+        }
+        this.activeHandle = 1;
+        this.getThemeInitialization();
+        if (this.type === 'Range') {
+            this.rangeValueUpdate();
         }
         this.createRangeBar();
         if (this.limits.enabled) {
@@ -3025,10 +2777,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         }
         this.updateConfig();
         if (this.tooltip.isVisible) {
-            this.firstTooltipObj.refresh(this.firstHandle);
-            if (this.type === 'Range') {
-                this.secondTooltipObj.refresh(this.secondHandle);
-            }
+            this.tooltipObj.refresh(this.firstHandle);
         }
         if (this.showButtons) {
             let enabledRTL: boolean = this.enableRtl && this.orientation !== 'Vertical';
@@ -3045,11 +2794,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.setEnableRTL();
         this.setValue();
         if (this.tooltip.isVisible) {
-            this.refreshTooltip();
+            this.refreshTooltip(this.tooltipTarget);
         }
         if (this.ticks.placement !== 'None') {
             if (this.ul) {
                 this.removeElement(this.ul);
+                this.ul = undefined;
                 this.renderScale();
             }
         }
@@ -3103,10 +2853,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
         detach(this.sliderContainer);
         if (this.tooltip.isVisible) {
-            this.firstTooltipObj.destroy();
-            if (this.type === 'Range' && !isNullOrUndefined(this.secondTooltipObj)) {
-                this.secondTooltipObj.destroy();
-            }
+            this.tooltipObj.destroy();
         }
         this.element.innerHTML = '';
     }
@@ -3128,7 +2875,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                         this.setProperties({ 'value': value }, true);
                         if (oldProp.value.toString() !== value.toString()) {
                             this.setValue();
-                            this.refreshTooltip();
+                            this.refreshTooltip(this.tooltipTarget);
                             if (this.type === 'Range') {
                                 if (isNullOrUndefined(newProp.value) || (oldProp.value as number[])[1] === (value as number[])[1]) {
                                     this.activeHandle = 1;
@@ -3206,7 +2953,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'readonly':
                     this.setReadOnly();
                     break;
-                case 'customValue':
+                case 'customValues':
                     this.setValue();
                     this.reposition();
                     break;
@@ -3226,7 +2973,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setMinMaxValue(): void {
         this.setValue();
-        this.refreshTooltip();
+        this.refreshTooltip(this.tooltipTarget);
         if (!isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
             if (this.ul) {
                 detach(this.ul);

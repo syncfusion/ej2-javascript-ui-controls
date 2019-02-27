@@ -46,6 +46,7 @@ export class ColumnChooser implements IAction {
     private searchBoxObj: SearchBox;
     private searchOperator: string = 'startswith';
     private targetdlg: Element;
+    private prevShowedCols: string[] = [];
     /**
      * Constructor for the Grid ColumnChooser module
      * @hidden
@@ -475,7 +476,21 @@ export class ColumnChooser implements IAction {
 
     private refreshCheckboxButton(): void {
         let searchValue: string = (<HTMLInputElement>this.dlgObj.element.querySelector('.e-cc.e-input')).value;
-        let selected: number = this.innerDiv.querySelectorAll('.e-check').length;
+        let visibleCols: Column[] = this.parent.getVisibleColumns();
+        for (let i: number = 0; i < visibleCols.length; i++) {
+            let columnUID: string = visibleCols[i].uid;
+            if (this.prevShowedCols.indexOf(columnUID) === -1) {
+                this.prevShowedCols.push(columnUID);
+            }
+        }
+        let selected: number;
+        for (let i: number = 0; i < this.hideColumn.length; i++) {
+            let index: number = this.prevShowedCols.indexOf(this.hideColumn[i]);
+            if (index !== -1) {
+                this.prevShowedCols.splice(index, 1);
+            }
+        }
+        selected = this.showColumn.length !== 0 ? 1 : this.prevShowedCols.length;
         let btn: Button = (this.dlgDiv.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
         btn.disabled = false;
         let srchShowCols: string[] = [];

@@ -577,9 +577,11 @@ export class MultiSelect extends DropDownBase implements IInput {
     private setScrollPosition(): void {
         if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
             (!isNullOrUndefined(this.value) && ( this.value.length > 0 ))) {
-            let valueEle: HTMLElement = this.hideSelectedItem ?
-            <HTMLElement>this.ulElement.querySelector('li[data-value="' + this.value[this.value.length - 1] + '"]')
-            : <HTMLElement>this.list.querySelector('li[data-value="' + this.value[this.value.length - 1] + '"]');
+            let valueEle: HTMLElement = this.findListElement(
+                (this.hideSelectedItem ? this.ulElement : this.list),
+                'li',
+                'data-value',
+                this.value[this.value.length - 1]);
             if (!isNullOrUndefined(valueEle)) {
                 this.scrollBottom(valueEle);
             }
@@ -687,7 +689,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 predicate = predicate.or(field, 'equal', (valuecheck[i] as string));
             }
         }
-        return new Query().where(predicate);
+        return this.getQuery(this.query).where(predicate);
     }
     protected onActionComplete(
         ulElement: HTMLElement,
@@ -698,8 +700,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         let valuecheck: string[] = [];
         if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
             for (let i: number = 0; i < this.value.length; i++) {
-                let checkEle: Element = ((this.allowFiltering && !isNullOrUndefined(this.mainList)) ?
-                    this.mainList : ulElement).querySelector('li[data-value="' + proxy.value[i] + '"]');
+                let checkEle: Element = this.findListElement(
+                    ((this.allowFiltering && !isNullOrUndefined(this.mainList)) ? this.mainList : ulElement),
+                    'li',
+                    'data-value',
+                    proxy.value[i]);
                 if (!checkEle) {
                     valuecheck.push(proxy.value[i] as string);
                 }
@@ -766,7 +771,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.value)) {
             for (let index: number = 0; !isNullOrUndefined(this.value[index]); index++) {
                 value = this.value[index];
-                element = <HTMLElement>this.list.querySelector('li[data-value="' + value + '"]');
+                element = this.findListElement(this.list, 'li', 'data-value', value);
                 if (element) {
                     addClass([element], className);
                     if (this.hideSelectedItem && element.previousSibling
@@ -816,7 +821,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let className: string = this.hideSelectedItem ?
             HIDE_LIST :
             dropDownBaseClasses.selected;
-        element1 = element = <HTMLElement>this.ulElement.querySelector('li[data-value="' + value + '"]');
+        element1 = element = this.findListElement(this.ulElement, 'li', 'data-value', value);
         let i: number = 0;
         let j: number = 0;
         let temp: boolean = true;
@@ -1674,7 +1679,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.inputElement.focus();
             }
             this.removeValue(value, e);
-            if (isNullOrUndefined(this.list.querySelector('li[data-value="' + value + '"]')) && this.mainList && this.listData) {
+            if (isNullOrUndefined(this.findListElement(this.list, 'li', 'data-value', value)) && this.mainList && this.listData) {
                 let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
                 this.onActionComplete(list, this.mainData);
             }
@@ -1708,7 +1713,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             HIDE_LIST :
             dropDownBaseClasses.selected;
         if (index !== -1) {
-            let element: HTMLElement = <HTMLElement>this.list.querySelector('li[data-value="' + value + '"]');
+            let element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', value);
             let val: FieldSettingsModel = this.getDataByValue(value) as FieldSettingsModel;
             let eventArgs: RemoveEventArgs = {
                 e: eve,
@@ -1722,7 +1727,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.value.splice(index, 1);
             this.setProperties({ value: <[number | string]>[].concat([], this.value) }, true);
             if (element !== null) {
-                let hideElement: HTMLElement = this.mainList.querySelector('li[data-value="' + value + '"]');
+                let hideElement: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', value);
                 element.setAttribute('aria-selected', 'false');
                 removeClass([element], className);
                 if (hideElement) {
@@ -1771,7 +1776,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private updateMainList(state: boolean, value: string): void {
         if (this.allowFiltering) {
-            let element2: HTMLElement = <HTMLElement>this.mainList.querySelector('li[data-value="' + value + '"]');
+            let element2: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', value);
             if (element2) {
                 if (state) {
                     element2.setAttribute('aria-selected', 'false');
@@ -1828,7 +1833,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.value = <string[]>[];
         }
         this.setProperties({ value: <[number | string]>[].concat([], this.value, [value]) }, true);
-        let element: HTMLElement = <HTMLElement>this.list.querySelector('li[data-value="' + value + '"]');
+        let element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', value);
         this.removeFocus();
         if (element) {
             this.addListFocus(element);
@@ -2165,7 +2170,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     private resetValueHandler(e: Event): void {
         let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
         if (formElement && e.target === formElement) {
-            this.value = null;
+            let textVal: string = (this.element.tagName === this.getNgDirective()) ? null : this.element.getAttribute('data-initial-value');
+            this.text = textVal;
         }
     }
     protected wireEvent(): void {
@@ -2272,8 +2278,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!isNullOrUndefined(this.value)) {
                 for (let index: number = 0; !isNullOrUndefined(this.value[index]); index++) {
                     value = this.value[index];
-                    element = this.hideSelectedItem ? <HTMLElement>this.ulElement.querySelector('li[data-value="' + value + '"]')
-                        : <HTMLElement>this.list.querySelector('li[data-value="' + value + '"]');
+                    element = this.findListElement( this.hideSelectedItem ? this.ulElement : this.list, 'li', 'data-value', value);
                     text = this.getTextByValue(value);
                     if ((element && (element.getAttribute('aria-selected') !== 'true')) ||
                         (element && (element.getAttribute('aria-selected') === 'true' && this.hideSelectedItem) &&
@@ -2327,7 +2332,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.value || (this.value as string[]).indexOf(value as string) === -1) {
             let argsCancel: boolean = this.dispatchSelect(value, e, <HTMLElement>li, (li.getAttribute('aria-selected') === 'true'), length);
             if (argsCancel) { return; }
-            if ((this.allowCustomValue || this.allowFiltering) && !this.mainList.querySelector('li[data-value="' + value + '"]')) {
+            if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
                 let temp: HTMLElement = <HTMLElement>li.cloneNode(true);
                 let data: Object = this.getDataByValue(value);
                 append([temp], this.mainList);
@@ -2747,11 +2752,26 @@ export class MultiSelect extends DropDownBase implements IInput {
         let length: number = li.length;
         if (li && li.length) {
             let index: number = 0;
-            while (index < length) {
+            while (index < length && index <= 50) {
                 this.updateListSelection(li[index], event, length - index);
                 index++;
             }
+            if (length > 50) {
+                setTimeout(
+                    (): void => {
+                        while (index < length) {
+                            this.updateListSelection(li[index], event, length - index);
+                            index++;
+                        }
+                        this.textboxValueUpdate();
+                    },
+                    0
+                );
+            }
         }
+        this.textboxValueUpdate();
+    }
+    private textboxValueUpdate(): void {
         if (this.mode !== 'Box' && !this.isPopupOpen()) {
             this.updateDelimView();
         } else {
@@ -3130,6 +3150,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.initStatus = true;
         this.checkAutoFocus();
+        if (!isNullOrUndefined(this.text)) {
+            this.element.setAttribute('data-initial-value', this.text);
+        }
     }
     private checkAutoFocus(): void {
         if (this.element.hasAttribute('autofocus')) {
@@ -3180,6 +3203,16 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.refreshInputHight();
         this.checkPlaceholderSize();
     }
+    private findListElement(list: HTMLElement, findNode: string, attr: string, value: string | boolean | number ): HTMLElement {
+        let liElement: HTMLElement = null;
+        list.querySelectorAll(findNode).forEach((item: HTMLElement) => {
+            if (item.getAttribute(attr) === (value + '')) {
+                liElement = item;
+                return;
+            }
+        });
+        return liElement;
+    }
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
      * @method destroy
@@ -3203,6 +3236,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.inputElement.removeAttribute(temp[length - 1]);
             length--;
         }
+        this.element.removeAttribute('data-initial-value');
         this.element.style.display = 'block';
         if (this.overAllWrapper.parentElement) {
             if (this.overAllWrapper.parentElement.tagName === this.getNgDirective()) {

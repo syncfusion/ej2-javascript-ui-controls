@@ -4748,7 +4748,6 @@ class QuickPopups {
             this.parent.element.appendChild(quickPopupWrapper);
         }
         this.quickPopup = new Popup(quickPopupWrapper, {
-            actionOnScroll: 'hide',
             targetType: (this.parent.isAdaptive ? 'container' : 'relative'),
             enableRtl: this.parent.enableRtl,
             open: this.quickPopupOpen.bind(this),

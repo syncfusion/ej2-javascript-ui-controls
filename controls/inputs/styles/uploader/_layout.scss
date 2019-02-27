@@ -362,6 +362,16 @@
         box-shadow: 0 0 0 transparent;
       }
 
+      & .e-file-remove-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-delete-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-pause-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-play-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-reload-btn.e-icons:focus,
+      & .e-file-abort-btn.e-icons:not(.e-disabled):focus,
+      & .e-clear-icon-focus {
+        border-radius: 50%;
+      }
+
       & .e-file-delete-btn.e-icons {
         font-size: $delete-icon-font-size-smaller;
         opacity: $delete-icon-opacity;

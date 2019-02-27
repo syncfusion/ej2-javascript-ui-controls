@@ -228,7 +228,7 @@ describe('ComboBox', () => {
         it(' reset the form', (done) => {
             document.getElementById('resetForm').click();
             setTimeout(() => {
-                expect(listObj.value === null).toBe(true);
+                expect(listObj.value === 'list1').toBe(true);
                 done();
             })
         });

@@ -1787,4 +1787,37 @@ describe('AutoComplete', () => {
             btnEle.click();
         });
     });
+    describe('EJ2-22523: Form reset', () => {
+        let element: HTMLInputElement;
+        let data: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA', icon: 'icon' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET', icon: 'icon' },
+            { id: 'list5', text: 'Oracle' }
+        ];
+        let listObj: AutoComplete;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('form', { id: 'form1' });
+            element.innerHTML = `<input type="text" id="ddl">
+            <input type="reset" id="resetForm"/>`;
+            document.body.appendChild(element);
+            listObj = new AutoComplete({
+                dataSource: data,
+                fields: { value: "id" },
+                value: 'list2'
+            });
+            listObj.appendTo('#ddl');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('reset the form', (done) => {
+            document.getElementById('resetForm').click();
+            setTimeout(() => {
+                expect((<any>listObj).inputElement.value === 'list2').toBe(true);
+                done();
+            });
+        });
+    });
 });

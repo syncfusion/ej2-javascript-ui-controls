@@ -4,10 +4,21 @@ import { sampleData, projectData } from './datasource.spec';
 import { PageEventArgs, RowSelectEventArgs, rowSelecting, RowSelectingEventArgs, CellSelectEventArgs, RowDeselectEventArgs, CellSelectingEventArgs, cellDeselected, CellDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { getObject, IIndex } from '@syncfusion/ej2-grids';
 import { rowSelected } from '../../src';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 /**
  * Grid base spec 
  */
 describe('Selection module', () => {
+  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+  });
+
   describe('Row Selection', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -249,4 +260,14 @@ describe('Selection module', () => {
       destroy(gridObj);
     });
   });
+  
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+});
 });

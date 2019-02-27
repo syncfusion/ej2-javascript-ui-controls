@@ -685,7 +685,11 @@ export class Image {
                 selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target
             };
             this.dialogObj.setProperties({
-                height: 'initial', width: '290px', header: 'Insert Link', content: linkWrap, position: { X: 'center', Y: 'center' },
+                height: 'initial',
+                width: '290px',
+                header: this.parent.localeObj.getConstant('imageInsertLinkHeader'),
+                content: linkWrap,
+                position: { X: 'center', Y: 'center' },
                 buttons: [{
                     click: (e: MouseEvent) => { this.insertlink(linkargs); },
                     buttonModel: {
@@ -1161,8 +1165,10 @@ export class Image {
             dialogContent.appendChild(linkHeader);
             dialogContent.appendChild(this.imageUrlPopup(e));
             if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
-                this.dialogObj.setProperties({ header: 'Edit Image', content: dialogContent }, false);
-                this.dialogObj.element.querySelector('.e-insertImage').textContent = 'Update';
+                this.dialogObj.setProperties({
+                    header: this.parent.localeObj.getConstant('editImageHeader'), content: dialogContent
+                });
+                this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
             } else {
                 this.dialogObj.setProperties({ content: dialogContent }, false);
             }
@@ -1195,7 +1201,11 @@ export class Image {
         let deviceImgUpMsg: string = this.i10n.getConstant('imageDeviceUploadMessage');
         let imgUpMsg: string = this.i10n.getConstant('imageUploadMessage');
         let span: HTMLElement = this.parent.createElement('span', { className: 'e-droptext' });
-        span.innerHTML = (Browser.isDevice) ? deviceImgUpMsg : imgUpMsg;
+        let spanMsg: HTMLElement = this.parent.createElement('span', {
+            className: 'e-rte-upload-text',
+            innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
+        });
+        span.appendChild(spanMsg);
         let btnEle: HTMLElement = this.parent.createElement('button', {
             className: 'e-browsebtn', id: this.rteID + '_insertImage',
             attrs: { autofocus: 'true', type: 'button' }

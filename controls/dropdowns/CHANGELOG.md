@@ -2,13 +2,65 @@
 
 ## [Unreleased]
 
+## 16.4.55 (2019-02-27)
+
+### DropDownList
+
+#### Bug Fixes
+
+- Pre-select value is not selected when its not present in the list issue fixed.
+
+- Reset text based initial value in form reset action behavior has been changed.
+
+### AutoComplete
+
+#### Bug Fixes
+
+- Reset text based initial value in form reset action behavior has been changed.
+
+### ComboBox
+
+#### Bug Fixes
+
+- Reset text based initial value in form reset action behavior has been changed.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- List selection throws exception while using quotes within string data issue has been resolved.
+
+- Select all operation's performance issue has been resolved.
+
 ## 16.4.54 (2019-02-19)
+
+### DropDownList
+
+#### Bug Fixes
+
+- When page scroll, grouping template is hiding issue has been resolved.
+
+- Reset the initial value in form reset action behavior has been changed.
+
+### AutoComplete
+
+#### Bug Fixes
+
+- Reset the initial value in form reset action behavior has been changed.
+
+### ComboBox
+
+#### Bug Fixes
+
+- Reset the initial value in form reset action behavior has been changed.
 
 ### MultiSelect
 
 #### Bug Fixes
 
 - Now, you can enter special characters inside MultiSelect using virtual keyboard.
+
+- Reset the initial value in form reset action behavior has been changed.
 
 ## 16.4.53 (2019-02-13)
 

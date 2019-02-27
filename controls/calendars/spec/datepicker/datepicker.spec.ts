@@ -51,13 +51,13 @@ function loadCultureFiles(name: string, base?: boolean): void {
 }
 L10n.load({
     'en': {
-        'datepicker': { placeholder: 'Enter Date' }
+        'datepicker': { placeholder: 'Enter Date', today: "Today" }
     },
     'de': {
-        'datepicker': { placeholder: 'Datum eingeben' }
+        'datepicker': { placeholder: 'Datum eingeben', today: "heute" }
     },
     'zh': {
-        'datepicker': { placeholder: '输入日期' }
+        'datepicker': { placeholder: '输入日期', today: "今天" }
     },
     'vi': {
         'datepicker': { placeholder: 'Nhập ngày' }
@@ -2313,6 +2313,27 @@ describe('Datepicker', () => {
             datepicker.appendTo('#date');
             expect(datepicker.firstDayOfWeek).toBe(1)
             expect(datepicker.tableHeadElement.querySelector('th').textContent).toBe('Mo.');
+        });
+
+        it('today text changing test cases based on the dynamic culture "de" test case ', () => {
+            datepicker = new DatePicker({
+                value: new Date('4/4/2017')
+            });
+            datepicker.appendTo('#date');
+            datepicker.locale = 'en-US';
+            datepicker.dataBind();
+            expect(datepicker.locale).toBe('en-US');
+            datepicker.show();
+            expect(datepicker.popupWrapper.getElementsByClassName('e-today')[0].textContent).toBe('Today')
+            datepicker.hide()
+            loadCultureFiles('de', true);
+            loadCultureFiles('de');
+            datepicker.locale = 'de';
+            datepicker.dataBind();
+            expect(datepicker.locale).toBe('de');
+            datepicker.show();
+            expect(datepicker.popupWrapper.getElementsByClassName('e-today')[0].textContent).toBe('heute')
+            datepicker.hide()
         });
 
         it('firstDayOfWeek based on the culture "ar" test case', () => {

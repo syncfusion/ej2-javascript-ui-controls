@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## 16.4.55 (2019-02-27)
+
+### TextBox
+
+#### Bug Fixes
+
+- Now, the validation works with complex names also.
+
+### Uploader
+
+#### Bug Fixes
+
+- Resolved the issue with `Tab` key navigation in uploader file list.
+
+### Slider
+
+#### New Features
+
+- Now, Range Slider in Material theme will support `showOn` property.
+- Now, Single tooltip will be used to display values in Range Slider.
+
+### FormValidator
+
+#### Bug Fixes
+
+- Now, the url validation works with all types of url.
+
 ## 16.4.54 (2019-02-19)
 
 ### TextBox
@@ -11,6 +38,12 @@
 - Now, input event will trigger after clear the textbox value using clear icon.
 
 - Now, the default value is set to the textbox while resetting the form.
+
+### Slider
+
+#### Bug Fixes
+
+- Now, the initial value is setback to the `slider` on form `reset`.
 
 ### Uploader
 

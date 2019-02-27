@@ -5,6 +5,8 @@ import { ResizeArgs, ColumnDragEventArgs, getObject } from '@syncfusion/ej2-grid
 import { EmitType } from '@syncfusion/ej2-base';
 import { Reorder } from '../../src/treegrid/actions/reorder';
 import { Resize } from '../../src/treegrid/actions/resize';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 
 /**
  * Grid base spec 
@@ -12,6 +14,15 @@ import { Resize } from '../../src/treegrid/actions/resize';
 TreeGrid.Inject(Reorder);
 TreeGrid.Inject(Resize);
 describe('TreeGrid Reordering', () => {
+  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+  });
+
   describe('Hierarchy data Reorder', () => {
     let TreeGridObj: TreeGrid;
     let headers: any;
@@ -185,5 +196,14 @@ describe('TreeGrid Reordering', () => {
       destroy(TreeGridObj);
     });
   });
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+});  
 });
 

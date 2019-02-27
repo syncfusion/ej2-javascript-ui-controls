@@ -390,7 +390,7 @@ describe('DropDownList', () => {
         it(' reset the form', (done) => {
             document.getElementById('resetForm').click();
             setTimeout(() => {
-                expect(listObj.value === null).toBe(true);
+                expect(listObj.value === 'list1').toBe(true);
                 done();
             })
         });
@@ -649,6 +649,34 @@ describe('DropDownList', () => {
                     expect(listObj.list.classList.contains('e-nodata')).toBe(true);
                     done();
                 }, 400);
+            }, 2000);
+        });
+    });
+    describe('EJ2-23180 - preselect value not selected when select the value not in the list', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeEach((done) => {
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: new DataManager({ url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
+                query: new Query().from('Customers').select('ContactName').take(2),
+                fields: { text: 'ContactName' },
+                value: "Hanna Moos"
+            });
+            listObj.appendTo(element);
+            done();
+        });
+        afterEach(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('get selected value ', (done) => {
+            setTimeout(() => {
+                expect(listObj.element.value === listObj.value).toBe(true);
+                expect(listObj.liCollections.length === 3).toBe(true);
+                done();
             }, 2000);
         });
     });

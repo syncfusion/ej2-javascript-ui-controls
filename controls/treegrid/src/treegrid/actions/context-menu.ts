@@ -1,5 +1,6 @@
 import { Grid, ContextMenu as cmenu, ContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base';
+import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 /**
  * ContextMenu Module for TreeGrid 
  * @hidden
@@ -16,6 +17,7 @@ export class ContextMenu {
      */
     public addEventListener(): void {
         this.parent.on('contextMenuOpen', this.contextMenuOpen, this);
+        this.parent.on('contextMenuClick', this.contextMenuClick, this);
       }
     /**
      * @hidden
@@ -25,6 +27,7 @@ export class ContextMenu {
           return;
         }
         this.parent.off('contextMenuOpen', this.contextMenuOpen);
+        this.parent.off('contextMenuClick', this.contextMenuClick);
       }
     private  contextMenuOpen(args: ContextMenuOpenEventArgs): void {
       let addRow: HTMLElement = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
@@ -34,6 +37,13 @@ export class ContextMenu {
         } else {
           addRow.style.display = 'block';
         }
+      }
+    }
+    private contextMenuClick(args: MenuEventArgs): void {
+      if (args.item.id === 'Above' || args.item.id === 'Below') {
+        this.parent.notify('savePreviousRowPosition', args);
+        this.parent.setProperties({editSettings: {newRowPosition:  args.item.id }}, true);
+        this.parent.addRecord();
       }
     }
     /**

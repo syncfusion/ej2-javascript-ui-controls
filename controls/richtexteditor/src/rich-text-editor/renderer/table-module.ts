@@ -730,7 +730,7 @@ export class Table {
             return;
         }
         this.hideTableQuickToolbar();
-        let header: string = this.l10n.getConstant('tblhead');
+        let header: string = '1X1';
         let insertbtn: string = this.l10n.getConstant('inserttablebtn');
         this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup', id: this.rteID + '_table' });
         this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' });

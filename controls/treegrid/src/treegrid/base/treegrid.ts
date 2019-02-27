@@ -1415,8 +1415,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       if (requestType === 'reorder') {
         this.notify('getColumnIndex', {});
       }
-      if (!isRemoteData(this) && this.grid.allowFiltering && this.grid.filterSettings.columns.length === 0) {
-        this.notify('clearFilters', { flatData: this.flatData });
+      if (!isRemoteData(this) && !isNullOrUndefined(this.filterModule)
+        && (this.grid.filterSettings.columns.length === 0 || this.grid.searchSettings.key.length === 0)) {
+        this.notify('clearFilters', { flatData: this.grid.dataSource });
         this.grid.dataSource = this.dataResults.result;
       }
       this.trigger(events.actionBegin, args);
@@ -1456,7 +1457,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
       treeGrid.renderModule.cellRender(args);
     };
-    this.grid.contextMenuClick = this.triggerEvents.bind(this);
+    this.grid.contextMenuClick = (args: MenuEventArgs): void => {
+      this.notify(events.contextMenuClick, args);
+      this.trigger(events.contextMenuClick, args);
+    };
     this.grid.contextMenuOpen = (args: BeforeOpenCloseMenuEventArgs) => {
       this.notify(events.contextMenuOpen, args);
       this.trigger(events.contextMenuOpen, args);
@@ -1660,8 +1664,14 @@ private getGridEditSettings(): GridEditModel {
           this.isLocalData = (!(this.dataSource instanceof DataManager) || (!isNullOrUndefined((<DataManager>this.dataSource).ready))
                            || this.dataSource.adaptor instanceof RemoteSaveAdaptor) ;
           this.convertTreeData(this.dataSource);
-          this.grid.dataSource = this.flatData.slice();
+          if (this.isLocalData) {
+            this.grid.dataSource = this.flatData.slice();
+          } else {
+            this.grid.dataSource = this.dataSource;
+          }
           break;
+        case 'query':
+          this.grid.query = this.query; break;
         case 'enableCollapseAll':
           if (newProp[prop]) {
                 this.collapseAll();
@@ -2389,7 +2399,9 @@ private getGridEditSettings(): GridEditModel {
           this.trigger(events.collapsed, args);
         }
       } else {
-        let childRecords: ITreeData[] = record.childRecords;
+        let childRecords: ITreeData[] =  this.getCurrentViewRecords().filter((e: ITreeData) => {
+          return (e.parentUniqueID === record.uniqueID);
+        });
         let index: number = (<ITreeData>childRecords[0].parentItem).index;
         let rows: HTMLTableRowElement[] = gridRows.filter(
           (r: HTMLTableRowElement) =>

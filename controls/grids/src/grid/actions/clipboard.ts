@@ -313,7 +313,7 @@ export class Clipboard implements IAction {
                     }
                 }
             }
-            rowIndexes.sort();
+            rowIndexes.sort((a: number, b: number) => { return a - b; });
             if (i === rowCellIndxes.length && rowIndexes[rowIndexes.length - 1] - rowIndexes[0] === rowIndexes.length - 1) {
                 obj = { status: true, rowIndexes: rowIndexes, colIndexes: rowCellIndxes[0].cellIndexes };
             }

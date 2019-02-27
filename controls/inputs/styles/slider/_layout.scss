@@ -29,111 +29,92 @@
 
   .e-slider-tooltip.e-tooltip-wrap.e-popup {
     @if $skin-name == 'material' {
+      background-color: $slider-handle-bg-color;
+      border: 0;
+      border-radius: 8px;
+      // sass-lint:disable-all
+      cursor: -webkit-grab;
+      cursor: grab;
+      // sass-lint:enable-all
+      opacity: 1;
 
       &.e-popup.e-popup-close {
         display: block;
         opacity: 0;
       }
 
-      &.e-material-range {
-        background-color: $slider-handle-bg-color;
-        border: 0;
-        border-radius: 8px;
-        // sass-lint:disable-all
-        cursor: -webkit-grab;
-        cursor: grab;
-        // sass-lint:enable-all
-        opacity: 1;
-
-        &.e-material-tooltip-start {
-          background-color: $slider-handle-border-color;
-
-          .e-arrow-tip-inner {
-            color: $grey-black;
-            opacity: 0;
-          }
-
-          &.e-slider-horizontal-before {
-            .e-arrow-tip-outer {
-              border-top-color: $slider-handle-border-color;
-            }
-          }
-
-          &.e-slider-horizontal-after {
-            .e-arrow-tip-outer {
-              border-bottom-color: $slider-handle-border-color;
-            }
-          }
-
-          &.e-slider-vertical-before {
-            .e-arrow-tip-outer {
-              border-left-color: $slider-handle-border-color;
-            }
-          }
-
-          &.e-slider-vertical-after {
-            .e-arrow-tip-outer {
-              border-right-color: $slider-handle-border-color;
-            }
-          }
-        }
-
-        &.e-tooltip-active {
-          // sass-lint:disable-all
-          cursor: -webkit-grabbing;
-          cursor: grabbing;
-          // sass-lint:enable-all
-        }
-
-        .e-arrow-tip {
-          visibility: visible;
-        }
-
-        .e-tip-content {
-          background-color: transparent;
-          height: 16px;
-          overflow: hidden;
-          padding: 0 8px;
-          text-align: center;
-          top: calc(50% - 8px);
-          width: 100%;
-
-          &.e-material-tooltip-show {
-            color: $slider-material-tooltip-content-color;
-          }
-
-          &.e-material-tooltip-hide {
-            color: transparent;
-          }
-        }
+      &.e-material-tooltip-start {
+        background-color: $slider-handle-border-color;
 
         .e-arrow-tip-inner {
-          color: $slider-handle-bg-color;
+          color: $grey-black;
+          opacity: 0;
         }
 
-        &.e-slider-horizontal-before {
-          .e-arrow-tip-outer {
-            border-top-color: $slider-handle-bg-color;
-          }
+        .e-arrow-tip-outer.e-tip-bottom {
+          border-top-color: $slider-handle-border-color;
         }
 
-        &.e-slider-horizontal-after {
-          .e-arrow-tip-outer {
-            border-bottom-color: $slider-handle-bg-color;
-          }
+        .e-arrow-tip-outer.e-tip-top {
+          border-bottom-color: $slider-handle-border-color;
         }
 
-        &.e-slider-vertical-before {
-          .e-arrow-tip-outer {
-            border-left-color: $slider-handle-bg-color;
-          }
+        .e-arrow-tip-outer.e-tip-right {
+          border-left-color: $slider-handle-border-color;
         }
 
-        &.e-slider-vertical-after {
-          .e-arrow-tip-outer {
-            border-right-color: $slider-handle-bg-color;
-          }
+        .e-arrow-tip-outer.e-tip-left {
+          border-right-color: $slider-handle-border-color;
         }
+      }
+
+      &.e-tooltip-active {
+        // sass-lint:disable-all
+        cursor: -webkit-grabbing;
+        cursor: grabbing;
+        // sass-lint:enable-all
+      }
+
+      .e-arrow-tip {
+        visibility: visible;
+      }
+
+      .e-tip-content {
+        background-color: transparent;
+        height: 16px;
+        overflow: hidden;
+        padding: 0 8px;
+        text-align: center;
+        top: calc(50% - 8px);
+        width: 100%;
+
+        &.e-material-tooltip-show {
+          color: $slider-material-tooltip-content-color;
+        }
+
+        &.e-material-tooltip-hide {
+          color: transparent;
+        }
+      }
+
+      .e-arrow-tip-inner {
+        color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-bottom {
+        border-top-color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-top {
+        border-bottom-color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-right {
+        border-left-color: $slider-handle-bg-color;
+      }
+
+      .e-arrow-tip-outer.e-tip-left {
+        border-right-color: $slider-handle-bg-color;
       }
 
       &.e-tooltip-wrap.e-popup.e-material-default {

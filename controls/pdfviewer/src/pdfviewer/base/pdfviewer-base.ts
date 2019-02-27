@@ -1570,7 +1570,7 @@ export class PdfViewerBase {
                             context.setTransform(matrix.Elements[0], matrix.Elements[1], matrix.Elements[2], matrix.Elements[3], matrix.Elements[4], matrix.Elements[5]);
                             context.drawImage(image, 0, 0, canvas.width, canvas.height);
                             this.showPageLoadingIndicator(pageIndex, false);
-                            if (pageIndex === 0 && this.getZoomFactor() === 1 && this.isDocumentLoaded) {
+                            if (pageIndex === 0 && this.isDocumentLoaded) {
                                 this.pdfViewer.fireDocumentLoad();
                                 this.isDocumentLoaded = false;
                             }

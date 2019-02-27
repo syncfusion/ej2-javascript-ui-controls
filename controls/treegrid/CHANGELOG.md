@@ -2,13 +2,24 @@
 
 ## [Unreleased]
 
-## 16.4.54 (2019-02-19)
+## 16.4.55 (2019-02-27)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- Change detection for properties `dataSource` and `query` were handled for remote data.
+- Edited records can be searched/filtered.
+- Inner level records will be collapsed/expanded after filtering/searching actions.
+
+## 16.4.53 (2019-02-13)
 
 ### TreeGrid
 
 #### Bug Fixes
 
 - Child records of third level or its successor displays properly based on their hierarchy relation in self reference data binding.
+- Change detection works fine for `dataSource` property.
 
 ## 16.4.52 (2019-02-05)
 

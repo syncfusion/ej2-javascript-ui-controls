@@ -1,11 +1,12 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, treeMappedData, multiLevelSelfRef1 } from './datasource.spec';
+import { sampleData, projectData, treeMappedData, multiLevelSelfRef1, emptyChildData } from './datasource.spec';
 import { PageEventArgs, extend, Page, doesImplementInterface } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 /**
  * Grid base spec 
@@ -14,6 +15,14 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 TreeGrid.Inject(ColumnMenu, Toolbar);
 
 describe('TreeGrid base module', () => {
+  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+  });
   describe('Hierarchy Data Basic Rendering', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -498,4 +507,35 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+  
+  describe('Checking dataSource when Children property is empty', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: emptyChildData,
+          childMapping: 'Children',
+          treeColumnIndex: 0,
+          columns: ['Name'],
+        },
+        done
+      );
+    });
+    it('Checking dataSource when Children property is empty', () => {
+      expect(gridObj.getRows().length != 0).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+});
 });

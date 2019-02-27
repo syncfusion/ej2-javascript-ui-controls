@@ -520,3 +520,116 @@ export let selfEditData: Object[] = [
     { 'TaskID': 15, 'TaskName': 'Child Task 5', 'StartDate': new Date('03/9/2017'), 'EndDate': new Date('03/13/2017'), 'Progress': '40', 'parentID': 10 }
 
 ];
+
+export let newSampledata: Object[] = [
+    {
+        'TaskId': 1,
+        'TaskName': 'Task 1',
+        'StartDate': new Date('10/23/2017'),
+        'BaselineStartDate': new Date('10/23/2017'),
+        'BaselineEndDate': new Date('10/28/2017'),
+        'Duration': 10,
+        'Progress': 70,
+        'cusClass': 'cusclass',
+        'Children': [
+            {
+                'resourceInfo': [1, 2], 'TaskId': 2, 'TaskName': 'Child task 1', 'cusClass': 'cusclass',
+                'StartDate': new Date('10/23/2017'), 'BaselineStartDate': new Date('10/23/2017'),
+                'BaselineEndDate': new Date('10/26/2017'), 'Duration': 4, 'Progress': 80,
+                'unit': 'minute'
+            },
+            {
+                'resourceInfo': [2, 3], 'TaskId': 3, 'TaskName': 'Child task 2',
+                'StartDate': new Date('10/24/2017'), 'BaselineStartDate': new Date('10/24/2017'),
+                'BaselineEndDate': new Date('10/28/2017'), 'Duration': 5, 'Progress': 65, 'Predecessor': '2',
+                'unit': 'hour'
+            },
+            {
+                'TaskId': 4,
+                'TaskName': 'Child task 3',
+                'StartDate': new Date('10/25/2017'),
+                'BaselineStartDate': new Date('10/26/2017'),
+                'BaselineEndDate': new Date('10/28/2017'),
+                'Duration': 6,
+                'Progress': 77,
+                'Children': [
+                    {
+                        'resourceInfo': [1,2,3], 'TaskId': 5, 'TaskName': 'Grand child task 1',
+                        'StartDate': new Date('10/28/2017'), 'BaselineStartDate': new Date('10/27/2017'),
+                        'BaselineEndDate': new Date('11/1/2017'), 'Duration': 5, 'Progress': 60,
+                        'unit': 'minute',
+                    },
+                    {
+                        'resourceInfo': [4,5], 'TaskId': 6, 'TaskName': 'Grand child task 2',
+                        'StartDate': new Date('10/29/2017'), 'BaselineStartDate': new Date('10/29/2017'),
+                        'BaselineEndDate': new Date('10/31/2017'), 'Duration': 6, 'Progress': 77, 'Predecessor': '5'
+                    },
+                    {
+                        'resourceInfo': [5], 'TaskId': 7, 'TaskName': 'Grand child task 3',
+                        'StartDate': new Date('10/25/2017'), 'BaselineStartDate': new Date('10/25/2017'),
+                        'BaselineEndDate': new Date('10/25/2017'), 'Duration': 0, 'Progress': 0, 'Predecessor': '6'
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        'TaskId': 8,
+        'TaskName': 'Task 1',
+        'StartDate': new Date('10/23/2017'),
+        'BaselineStartDate': new Date('10/23/2017'),
+        'BaselineEndDate': new Date('10/28/2017'),
+        'Duration': 10,
+        'Progress': 70,
+        'cusClass': 'cusclass',
+        'Children': [
+            {
+                'resourceInfo': [1], 'TaskId': 9, 'TaskName': 'Child task 1', 'cusClass': 'cusclass',
+                'StartDate': new Date('10/23/2017'), 'BaselineStartDate': new Date('10/23/2017'),
+                'BaselineEndDate': new Date('10/26/2017'), 'Duration': 4, 'Progress': 80
+            },
+            {
+                'resourceInfo': [2], 'TaskId': 10, 'TaskName': 'Child task 2',
+                'StartDate': new Date('10/24/2017'), 'BaselineStartDate': new Date('10/24/2017'),
+                'BaselineEndDate': new Date('10/28/2017'), 'Duration': 5, 'Progress': 65, 'Predecessor': '2'
+            },
+            {
+                'TaskId': 11,
+                'TaskName': 'Child task 3',
+                'StartDate': new Date('10/25/2017'),
+                'BaselineStartDate': new Date('10/26/2017'),
+                'BaselineEndDate': new Date('10/28/2017'),
+                'Duration': 6,
+                'Progress': 77,
+                'Children': [
+                    {
+                        'resourceInfo': [3], 'TaskId': 12, 'TaskName': 'Grand child task 1',
+                        'StartDate': new Date('10/28/2017'), 'BaselineStartDate': new Date('10/27/2017'),
+                        'BaselineEndDate': new Date('11/1/2017'), 'Duration': 5, 'Progress': 60
+                    },
+                    {
+                        'resourceInfo': [4], 'TaskId': 13, 'TaskName': 'Grand child task 2',
+                        'StartDate': new Date('10/29/2017'), 'BaselineStartDate': new Date('10/29/2017'),
+                        'BaselineEndDate': new Date('10/31/2017'), 'Duration': 6, 'Progress': 77, 'Predecessor': '5'
+                    },
+                    {
+                        'resourceInfo': [5], 'TaskId': 14, 'TaskName': 'Grand child task 3',
+                        'StartDate': new Date('10/25/2017'), 'BaselineStartDate': new Date('10/25/2017'),
+                        'BaselineEndDate': new Date('10/25/2017'), 'Duration': 0, 'Progress': 0, 'Predecessor': '6'
+                    }
+                ]
+            }
+        ]
+    }
+    ];
+    export var emptyChildData: Object[] = [
+    {
+        "Name": "Test1", "Children": [{ "Name": "Test1a" }, { "Name": "Test1b" }]
+   },
+   {
+       "Name": "Test2", "Children": [{ "Name": "Test2a" }, { "Name": "Test2b" }]
+   },
+   {
+       "Name": "Test3", "Children": []
+   }
+];

@@ -24,6 +24,7 @@ const SPLIT_TOUCH: string = 'e-splitter-touch';
 const DISABLED: string = 'e-disabled';
 const RTL: string = 'e-rtl';
 const E_ICONS: string = 'e-icons';
+const RESIZABLE_PANE: string = 'e-resizable';
 
 /**
  * Interface to configure pane properties such as its content, size, min, max, and resizable.
@@ -261,37 +262,47 @@ export class Splitter extends Component<HTMLDivElement> {
                     this.changeOrientation(newProp.orientation);
                     break;
                 case 'paneSettings':
-                    let paneCounts: Object[] = Object.keys(newProp.paneSettings);
-                    for (let i: number = 0; i < paneCounts.length; i++) {
-                        let index: number = parseInt(Object.keys(newProp.paneSettings)[i], 10);
-                        let changedPropsCount: number = Object.keys(newProp.paneSettings[index]).length;
-                        for (let j: number = 0; j < changedPropsCount; j++) {
-                            let property: string = Object.keys(newProp.paneSettings[index])[j];
-                            let newVal: string = Object(newProp.paneSettings[index])[property];
-                            index = (this.enableRtl) ? (this.allBars.length - 1) - index : index;
-                            if (property === 'content') {
-                                this.allPanes[index].innerHTML = '';
-                                this.setTemplate(newVal, this.allPanes[index]);
-                            }
-                            if (property === 'resizable') {
-                                EventHandler.remove(this.allBars[index], 'mousedown', this.onMouseDown);
-                                if (newVal) {
-                                    EventHandler.add(this.allBars[index], 'mousedown', this.onMouseDown, this);
-                                    this.currentSeparator = this.allBars[index];
-                                    if (this.isResizable()) {
-                                        this.showResizer(this.allBars[index]);
-                                        this.allBars[index].classList.add(RESIZABLE_BAR);
+                    if (!(newProp.paneSettings instanceof Array && oldProp.paneSettings instanceof Array)) {
+                        let paneCounts: Object[] = Object.keys(newProp.paneSettings);
+                        for (let i: number = 0; i < paneCounts.length; i++) {
+                            let index: number = parseInt(Object.keys(newProp.paneSettings)[i], 10);
+                            let changedPropsCount: number = Object.keys(newProp.paneSettings[index]).length;
+                            for (let j: number = 0; j < changedPropsCount; j++) {
+                                let property: string = Object.keys(newProp.paneSettings[index])[j];
+                                switch (property) {
+                                    case 'content':
+                                    let newValue: string = Object(newProp.paneSettings[index])[property];
+                                    if (!isNullOrUndefined(newValue)) {
+                                        this.allPanes[index].innerHTML = '';
+                                        this.setTemplate(newValue, this.allPanes[index]);
                                     }
-                                } else {
-                                    this.hideResizer(this.allBars[index]);
-                                    this.allBars[index].classList.remove(RESIZABLE_BAR);
+                                    break;
+
+                                    case 'resizable':
+                                    let newVal: boolean = Object(newProp.paneSettings[index])[property];
+                                    this.resizableModel(index, newVal);
+                                    break;
+
+                                    case 'size':
+                                    let newValSize: string = Object(newProp.paneSettings[index])[property];
+                                    if (newValSize !== '' && !isNullOrUndefined(newValSize)) {
+                                        this.allPanes[index].style.flexBasis = newValSize;
+                                        this.allPanes[index].classList.add(STATIC_PANE);
+                                    }
+                                    break;
                                 }
                             }
-                            if (property === 'size') {
-                                this.allPanes[index].style.flexBasis = newVal;
-                            }
                         }
+                    } else {
+                    this.destroyPaneSettings();
+                    this.allBars = [];
+                    this.allPanes = [];
+                    this.createSplitPane(this.element);
+                    this.addSeparator(this.element);
+                    this.getPanesDimensions();
+                    this.setRTL(this.enableRtl);
                     }
+
                     break;
                 case 'enableRtl':
                     this.setRTL(newProp.enableRtl);
@@ -335,6 +346,7 @@ export class Splitter extends Component<HTMLDivElement> {
         this.createSplitPane(this.element);
         this.addSeparator(this.element);
         this.getPanesDimensions();
+        this.setPaneSettings();
         this.setRTL(this.enableRtl);
     }
 
@@ -380,6 +392,59 @@ export class Splitter extends Component<HTMLDivElement> {
                 }
             }
         }
+    }
+
+    private destroyPaneSettings(): void {
+        [].slice.call(this.element.children).forEach ((el: HTMLElement) => { detach(el); });
+    }
+
+    private setPaneSettings(): void {
+        let childCount: number = this.allPanes.length;
+        let paneCollection: PanePropertiesModel[] = [];
+        let paneValue: PanePropertiesModel = {
+            size: '',
+            min: null,
+            max: null,
+            content: '',
+            resizable: true
+        };
+        for (let i: number = 0; i < childCount; i++) {
+            if (isNullOrUndefined(this.paneSettings[i])) {
+                    paneCollection[i] = paneValue;
+                } else {
+                paneCollection[i] = this.paneSettings[i];
+                }
+            }
+        this.setProperties({'paneSettings': paneCollection}, true);
+    }
+
+    private resizableModel(index: number, newVal: boolean): void {
+        let paneIndex: number;
+        let i: number = index;
+        paneIndex = (index === (this.allBars.length)) ? (index - 1) : index;
+        EventHandler.remove(this.allBars[paneIndex], 'mousedown', this.onMouseDown);
+        if (newVal) {
+            EventHandler.add(this.allBars[paneIndex], 'mousedown', this.onMouseDown, this);
+            if (this.isResizable()) {
+                this.showResizer(this.allBars[paneIndex]);
+                removeClass([select('.' + RESIZE_BAR, this.allBars[paneIndex])], HIDE_HANDLER);
+                this.allBars[paneIndex].classList.add(RESIZABLE_BAR);
+                (index === (this.allBars.length)) ? this.allPanes[index].classList.add(RESIZABLE_PANE) :
+                this.allPanes[paneIndex].classList.add(RESIZABLE_PANE);
+                this.updateResizablePanes(i);
+            }
+        } else {
+            this.updateResizablePanes(i);
+            this.hideResizer(this.allBars[paneIndex]);
+            this.allBars[paneIndex].classList.remove(RESIZABLE_BAR);
+            (index === (this.allBars.length)) ? this.allPanes[index].classList.remove(RESIZABLE_PANE) :
+                this.allPanes[paneIndex].classList.remove(RESIZABLE_PANE);
+        }
+    }
+
+    private updateResizablePanes(index: number): void {
+        this.getPaneDetails();
+        this.isResizable() ? this.allPanes[index].classList.add(RESIZABLE_PANE) : this.allPanes[index].classList.remove(RESIZABLE_PANE);
     }
 
     private removeDataPrefix(attribute: string): string {
@@ -762,11 +827,6 @@ export class Splitter extends Component<HTMLDivElement> {
           pane.offsetHeight.toString();
     }
 
-    private boundingRectValues(pane: HTMLElement): number {
-        return (this.orientation === 'Horizontal') ? pane.getBoundingClientRect().width :
-            pane.getBoundingClientRect().height;
-    }
-
     private isValidSize(paneIndex: number): boolean {
         let isValid: boolean = false;
         if (!isNullOrUndefined(this.paneSettings[paneIndex]) &&
@@ -782,11 +842,6 @@ export class Splitter extends Component<HTMLDivElement> {
             this.previousPane.style.flexBasis;
         this.nextPaneHeightWidth = (this.nextPane.style.flexBasis === '') ? this.getPaneHeight(this.nextPane) :
             this.nextPane.style.flexBasis;
-        if (this.paneSettings.length < 1) {
-            this.prePaneDimenson = this.boundingRectValues(this.previousPane);
-            this.nextPaneDimension = this.boundingRectValues(this.nextPane);
-            return;
-        }
         if (this.isValidSize(this.prevPaneIndex)) {
             this.previousPaneHeightWidth = this.convertPercentageToPixel(this.previousPaneHeightWidth).toString();
             this.updatePrePaneInPercentage = true;

@@ -415,6 +415,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private pausedData: MetaData[] = [];
     private uploadMetaData: MetaData[] = [];
     private tabIndex: string = '0';
+    private btnTabIndex: string = '0';
+    private disableKeyboardNavigation: boolean = false;
     private count: number = -1;
     private actionCompleteCount: number = 0;
     private flag: boolean = true;
@@ -440,6 +442,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     @Property(false)
     public enableRtl: boolean;
+
     /**
      * Specifies the CSS class name that can be appended with root element of the uploader.
      * One or more custom CSS classes can be added to a uploader.
@@ -1022,9 +1025,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         this.updateDirectoryAttributes();
         this.keyConfigs = {
-            previous: 'shift+tab',
-            enter: 'enter',
-            next: 'tab'
+            enter: 'enter'
         };
         if (this.element.hasAttribute('tabindex')) {
             this.tabIndex = this.element.getAttribute('tabindex');
@@ -1084,8 +1085,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private renderActionButtons(): void {
         this.element.setAttribute('tabindex', '-1');
         this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
-        this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS , attrs: {'type': 'button', 'tabindex': '-1'} });
-        this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS, attrs: {'type': 'button', 'tabindex': '-1'} });
+        this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS ,
+                                                attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
+        this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
+                                               attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
         this.actionButtons.appendChild(this.clearButton);
         this.actionButtons.appendChild(this.uploadButton);
         this.renderButtonTemplates();
@@ -1314,29 +1317,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private keyActionHandler(e: KeyboardEventArgs): void {
         let targetElement: HTMLElement = e.target as HTMLElement;
         switch (e.action) {
-            case 'next':
-                if (e.target === this.browseButton && isNullOrUndefined(this.listParent)) {
-                    this.browseButton.blur();
-                } else if (e.target === this.uploadButton) {
-                    this.uploadButton.blur();
-                } else {
-                    this.setTabFocus(e);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (e.target === this.clearButton && this.uploadButton.hasAttribute('disabled')) {
-                        this.clearButton.blur();
-                    }
-                }
-                break;
-            case 'previous':
-                if (e.target === this.browseButton) {
-                    this.browseButton.blur();
-                } else {
-                    this.setReverseFocus(e);
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                break;
                 case 'enter':
                 if (e.target === this.clearButton) {
                     this.clearButtonClick();
@@ -1353,9 +1333,15 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.resumeUpload(this.getCurrentMetaData(null, e), e);
                 } else if (targetElement.classList.contains(RETRY_ICON)) {
                     let metaData: MetaData = this.getCurrentMetaData(null, e);
-                    metaData.file.statusCode = '1';
-                    metaData.file.status = this.localizedTexts('readyToUploadMessage');
-                    this.chunkUpload(metaData.file);
+                    if (!isNullOrUndefined(metaData)) {
+                        metaData.file.statusCode = '1';
+                        metaData.file.status = this.localizedTexts('readyToUploadMessage');
+                        this.chunkUpload(metaData.file);
+                    } else {
+                        let target: HTMLElement = (<HTMLElement>e.target).parentElement;
+                        let fileData: FileInfo = this.filesData[this.fileList.indexOf(target)];
+                        this.retry(fileData);
+                    }
                 } else {
                     this.removeFiles(e);
                     if (!targetElement.classList.contains(ABORT_ICON)) {
@@ -1371,7 +1357,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private getCurrentMetaData(fileInfo?: FileInfo, e?: KeyboardEventArgs) : MetaData {
         let fileData: FileInfo; let targetMetaData : MetaData;
         if (isNullOrUndefined(fileInfo)) {
-            let target: HTMLElement = this.uploadWrapper.querySelector('.' + ICON_FOCUSED).parentElement;
+            let target: HTMLElement = (<HTMLElement>e.target).parentElement;
             fileData = this.filesData[this.fileList.indexOf(target)];
         } else {
             fileData = fileInfo;
@@ -1382,55 +1368,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
         }
         return targetMetaData;
-    }
-
-    private setReverseFocus(e: KeyboardEventArgs): void {
-        let target: HTMLElement = <HTMLElement>e.target;
-        if (target === this.uploadButton) {
-            this.uploadButton.blur();
-            this.clearButton.focus();
-        } else if (target === this.clearButton && this.listParent && this.listParent.querySelector('.e-icons')) {
-            this.clearButton.blur();
-            let items: HTMLElement[] = [].slice.call(this.listParent.querySelectorAll('span.e-icons'));
-            items[items.length - 1].classList.add(ICON_FOCUSED);
-            items[items.length - 1].focus();
-        } else {
-            let iconElements: HTMLElement[] = [].slice.call(this.listParent.querySelectorAll('span.e-icons'));
-            let index: number = iconElements.indexOf(target);
-            if (index > 0) {
-                this.removeFocus();
-                iconElements[index - 1].classList.add(ICON_FOCUSED);
-                iconElements[index - 1].focus();
-            } else {
-                this.removeFocus();
-                this.browseButton.focus();
-            }
-        }
-    }
-
-    private setTabFocus(e: KeyboardEventArgs): void {
-        let target: HTMLElement = <HTMLElement>e.target;
-        if (target === this.clearButton) {
-            this.removeFocus();
-            if (this.uploadButton.hasAttribute('disabled')) { return; }
-            this.uploadButton.focus();
-        } else if (target.classList.contains('e-icons')) {
-            let iconElements: HTMLElement[] = [].slice.call(this.listParent.querySelectorAll('span.e-icons'));
-            let index: number = iconElements.indexOf(target);
-            if (index < (iconElements.length - 1)) {
-                this.removeFocus();
-                iconElements[index + 1].classList.add(ICON_FOCUSED);
-                iconElements[index + 1].focus();
-            } else {
-                this.removeFocus();
-                this.clearButton.focus();
-            }
-        } else {
-            this.browseButton.blur();
-            let iconElement: HTMLElement = this.listParent.querySelectorAll('span.e-icons')[0] as HTMLElement;
-            iconElement.focus();
-            iconElement.classList.add(ICON_FOCUSED);
-        }
     }
 
     private removeFocus() : void {
@@ -1790,6 +1727,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.trigger('selected', eventArgs);
         this.selectedFiles = fileData;
         if (eventArgs.cancel) { return; }
+        this.btnTabIndex =  this.disableKeyboardNavigation ? '-1' : '0';
         if (this.showFileList) {
             if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
                 let dataFiles: FileInfo[] = this.allTypes ? eventArgs.modifiedFilesData :
@@ -1971,7 +1909,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 textContainer.appendChild(statusElement);
                 statusElement.innerHTML = listItem.status;
                 liElement.appendChild(textContainer);
-                let iconElement: HTMLElement = this.createElement('span', {className: ' e-icons', attrs: { 'tabindex': '-1'}});
+                let iconElement: HTMLElement = this.createElement('span', {className: ' e-icons', attrs: { 'tabindex': this.btnTabIndex}});
                 /* istanbul ignore next */
                 if (Browser.info.name === 'msie') { iconElement.classList.add('e-msie'); }
                 iconElement.setAttribute('title', this.localizedTexts('remove'));
@@ -2205,7 +2143,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         deleteIcon.classList.remove(ABORT_ICON, UPLOAD_INPROGRESS);
         deleteIcon.classList.add(REMOVE_ICON);
         deleteIcon.setAttribute('title', this.localizedTexts('remove'));
-        this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': '-1'}});
+        this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
         liElement.insertBefore(this.pauseButton, deleteIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         let retryElement: HTMLElement = liElement.querySelector('.' + RETRY_ICON) as HTMLElement;
@@ -2509,7 +2447,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
         eventArgs.fileData.statusCode = '5';
         eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
-        this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': '-1'}});
+        this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
         liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + REMOVE_ICON));
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         /* istanbul ignore next */
@@ -2864,7 +2802,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
         }
         if (isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && isNullOrUndefined(this.template) ) {
-            this.pauseButton = this.createElement('span', {className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': '-1'}});
+            this.pauseButton = this.createElement('span', {className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': this.btnTabIndex }});
             if (Browser.info.name === 'msie') { this.pauseButton.classList.add('e-msie'); }
             liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + ABORT_ICON));
             this.pauseButton.setAttribute('title', this.localizedTexts('pause'));

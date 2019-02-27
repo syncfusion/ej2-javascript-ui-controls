@@ -20,7 +20,6 @@ export class DataManipulation {
   private zerothLevelData: BeforeDataBoundArgs;
   private storedIndex: number;
   private parent: TreeGrid;
-  private rootIndex: number;
   private dataResults: ReturnOption;
   private sortedData: Object[];
   private hierarchyData: Object[];
@@ -31,7 +30,6 @@ export class DataManipulation {
     this.parentItems = [];
     this.taskIds = [];
     this.hierarchyData = [];
-    this.rootIndex = -1;
     this.storedIndex = -1;
     this.sortedData = [];
     this.isSortAction = false;
@@ -155,7 +153,11 @@ public isRemote(): boolean {
         }
       }
     }
+    if (!Object.keys(this.hierarchyData).length) {
+      this.parent.flatData = [];
+    } else {
     this.createRecords(this.hierarchyData);
+  }
     this.storedIndex = -1;
   }
   // else if (data instanceof DataManager && this.parent.isLocalData) {
@@ -244,7 +246,6 @@ public isRemote(): boolean {
           result[r].level = rowDetails.record.level + 1;
           result[r].index = Math.ceil(Math.random() * 1000);
           result[r].parentItem = rowDetails.record;
-          result[r].parentIndex = rowDetails.record.index;
           if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
              && !(haveChild && !haveChild[r])) {
             result[r].hasChildRecords = true;
@@ -265,7 +266,7 @@ public isRemote(): boolean {
   private beginSorting(): void {
     this.isSortAction = true;
   }
-  private createRecords(data: Object, parentRecords?: ITreeData, parentIndex?: number): void {
+  private createRecords(data: Object, parentRecords?: ITreeData): void {
     for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++) {
       let currentData: ITreeData = data[i];
       let level: number = 0;
@@ -289,23 +290,14 @@ public isRemote(): boolean {
         currentData.parentItem = parentData;
         currentData.parentUniqueID = parentData.uniqueID;
         level = parentRecords.level + 1;
-        currentData.parentIndex = parentIndex;
       }
       currentData.level = level;
-      if (isNullOrUndefined(currentData.parentIndex)) {
-        this.rootIndex = currentData.index;
-      } else {
-        currentData.rootIndex = this.rootIndex;
-      }
       if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
         this.parent.flatData.push(currentData);
       }
-      if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
-        this.createRecords(currentData[this.parent.childMapping], currentData, this.storedIndex);
+      if (!isNullOrUndefined(currentData[this.parent.childMapping] && currentData[this.parent.childMapping].length )) {
+        this.createRecords(currentData[this.parent.childMapping], currentData);
       }
-    }
-    if (!Object.keys(data).length) {
-      this.parent.flatData = [];
     }
   }
   private sortedRecords(data: { data: Object[]; name: string }): void {
@@ -337,8 +329,9 @@ public isRemote(): boolean {
    * @hidden
    */
   public dataProcessor(args?: BeforeDataBoundArgs) : void {
-    let results: ITreeData[] = this.parent.flatData;
-    let count: number = this.parent.flatData.length;
+    let dataObj: Object = this.parent.grid.dataSource;
+    let results: ITreeData[] = dataObj instanceof DataManager ? (<DataManager>dataObj).dataSource.json : <ITreeData[]>dataObj;
+    let count: number = results.length;
     if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
          (this.parent.grid.searchSettings.key.length > 0)) {
       let qry: Query = new Query();
@@ -351,7 +344,7 @@ public isRemote(): boolean {
       let fltrQuery: QueryOptions[]  = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onWhere');
       let srchQuery: QueryOptions[]  = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onSearch');
       qry.queries = fltrQuery.concat(srchQuery);
-      let filteredData: Object = new DataManager(this.parent.flatData).executeLocal(qry);
+      let filteredData: Object = new DataManager(results).executeLocal(qry);
       this.parent.notify('updateFilterRecs', { data: filteredData });
       results = <ITreeData[]>this.dataResults.result;
       this.dataResults.result = null;
@@ -401,7 +394,7 @@ public isRemote(): boolean {
         this.parent.notify('createSort', { modifiedData: <Object[]>modifiedData, parent: this.parent, srtQry: srtQry });
         this.parent.notify('createSortRecords', {
           modifiedData: <Object[]>modifiedData,
-          parentRecords: null, parentIndex: null, filteredResult: results
+          parentRecords: null, filteredResult: results
         });
       }
       results = this.sortedData;

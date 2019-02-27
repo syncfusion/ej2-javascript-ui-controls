@@ -7,11 +7,11 @@ import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@sync
 import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { incrementalSearch } from '../common/incremental-search';
 import { DropDownBase, dropDownBaseClasses, SelectEventArgs, FilteringEventArgs, PopupEventArgs } from '../drop-down-base/drop-down-base';
-import { FocusEventArgs } from '../drop-down-base/drop-down-base';
+import { FocusEventArgs, ResultData } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { DropDownListModel } from '../drop-down-list';
 /* tslint:disable */
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { SortOrder } from '@syncfusion/ej2-lists';
 /* tslint:enable */
 export interface ChangeEventArgs extends SelectEventArgs {
@@ -703,7 +703,8 @@ export class DropDownList extends DropDownBase implements IInput {
     private resetValueHandler(e: Event): void {
         let formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
         if (formElement && e.target === formElement) {
-            this.value = null;
+            let val: string = (this.element.tagName === this.getNgDirective()) ? null : this.inputElement.getAttribute('value');
+            this.text = val;
         }
     }
 
@@ -1520,6 +1521,17 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isNotSearchList = false;
             return;
         }
+        if (this.value && this.dataSource instanceof DataManager) {
+            let checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+            let checkVal: boolean = list.some((x: { [key: string]: Object; }) => x[checkField] === this.value);
+            if (!checkVal) {
+                let query: Query = this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value));
+                this.dataSource.executeQuery(query).then((e: Object) => {
+                    this.addItem((e as ResultData).result, list.length);
+                    this.updateValues();
+                });
+            }
+        }
         if (this.isActive) {
             let selectedItem: HTMLElement = this.selectedLI ? <HTMLElement>this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
@@ -1770,10 +1782,6 @@ export class DropDownList extends DropDownBase implements IInput {
         if (Browser.isDevice && ((this.getModuleName() === 'dropdownlist' &&
             !this.isFilterLayout()) || (this.getModuleName() === 'combobox' && !this.allowFiltering && this.isDropDownClick))) {
             this.hidePopup();
-        }
-        if (this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement)) {
-            this.fixedHeaderElement.style.zIndex = '0';
-            this.fixedHeaderElement.style.display = 'none';
         }
     }
 
@@ -2039,6 +2047,9 @@ export class DropDownList extends DropDownBase implements IInput {
         this.inputElement.onchange = (e: UIEvent) => { e.stopImmediatePropagation(); };
         if (this.element.hasAttribute('autofocus')) {
             this.focusIn();
+        }
+        if (!isNullOrUndefined(this.text)) {
+            this.inputElement.setAttribute('value', this.text);
         }
     };
 

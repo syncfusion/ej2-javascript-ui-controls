@@ -742,6 +742,11 @@
     position: relative;
   }
 
+  .e-dialog .e-img-uploadwrap.e-droparea .e-rte-upload-text {
+    display: inline-block;
+    line-height: normal;
+  }
+
   .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap.e-droparea {
     line-height: 4;
   }

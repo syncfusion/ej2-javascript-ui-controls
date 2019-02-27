@@ -2175,7 +2175,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                             context_1.setTransform(matrix_1.Elements[0], matrix_1.Elements[1], matrix_1.Elements[2], matrix_1.Elements[3], matrix_1.Elements[4], matrix_1.Elements[5]);
                             context_1.drawImage(image_1, 0, 0, canvas_1.width, canvas_1.height);
                             _this.showPageLoadingIndicator(pageIndex, false);
-                            if (pageIndex === 0 && _this.getZoomFactor() === 1 && _this.isDocumentLoaded) {
+                            if (pageIndex === 0 && _this.isDocumentLoaded) {
                                 _this.pdfViewer.fireDocumentLoad();
                                 _this.isDocumentLoaded = false;
                             }

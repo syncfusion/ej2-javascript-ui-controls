@@ -84,6 +84,18 @@
           color: $hover-icon-color;
         }
       }
+
+      & .e-file-remove-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-delete-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-pause-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-play-btn.e-icons:not(.e-upload-progress):focus,
+      & .e-file-reload-btn.e-icons:focus,
+      & .e-file-abort-btn.e-icons:not(.e-disabled):focus,
+      & .e-clear-icon-focus {
+        background-color: $clear-icon-focus-color;
+        border-color: transparent;
+        box-shadow: 0 0 0 transparent;
+      }
     }
   }
 

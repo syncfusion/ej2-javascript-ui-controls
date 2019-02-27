@@ -11,6 +11,7 @@ import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompi
 import { getRowHeight } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
+import { IDialogUI } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
@@ -617,6 +618,13 @@ export class EditSettings extends ChildProperty<EditSettings> {
      */
     @Property('Top')
     public newRowPosition: NewRowPosition;
+
+    /**   
+     * Defines the dialog params to edit.
+     * @default {}
+     */
+    @Property({})
+    public dialog: IDialogUI;
 }
 
 /**

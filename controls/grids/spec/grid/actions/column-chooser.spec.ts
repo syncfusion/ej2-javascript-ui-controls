@@ -234,6 +234,49 @@ describe('Column chooser module', () => {
 
     });
 
+    describe('column chooser single field search', () => {
+        let gridObj: Grid;
+        let beforeOpenColumnChooser: () => void;
+        let actionComplete: Function;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' },
+                    { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' }],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                }, done);
+        });
+        it('column chooser single field search', (done: Function) => {
+            setTimeout(() => {
+                gridObj.columnChooserModule.openColumnChooser();
+                let value: any;
+                let target: Object;
+                let keycode: number = 13;
+                let e: Object;
+                e = { target: { value: 'f' } };
+                (gridObj.columnChooserModule as any).columnChooserManualSearch(e);
+                expect(gridObj.element.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
+                gridObj.element.querySelector('.e-check').classList.add('e-uncheck');
+                gridObj.element.querySelector('.e-check').classList.remove('e-check');
+                expect(gridObj.element.querySelector('.e-cc_okbtn').hasAttribute('disabled')).toBeFalsy();
+                (<HTMLElement>gridObj.element.querySelector('.e-cc-cancel')).click();
+                (<any>gridObj).columnChooserModule.destroy();
+                (<any>gridObj).destroy();
+                done();
+            }, 500);
+
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+
+    });
+
     describe('column chooser checkstate', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;

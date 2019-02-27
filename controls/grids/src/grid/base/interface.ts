@@ -585,6 +585,12 @@ export interface IEditCell {
 /**
  * @hidden
  */
+export interface IDialogUI {
+    params?: DialogModel;
+}
+/**
+ * @hidden
+ */
 export interface IFilterUI {
     create?: Element | Function | string;
     read?: Object | Function | string;
@@ -1428,6 +1434,8 @@ export interface SaveEventArgs extends AddEventArgs {
     action?: string;
     /** Added row index */
     index?: number;
+    /** Defines the promise. */
+    promise?: Promise<Object>;
 }
 
 export interface EditEventArgs extends BeginEditArgs {
@@ -1532,6 +1540,7 @@ export interface IEdit {
     saveCell?(isForceSave?: boolean): void;
     addCancelWhilePaging?(): void;
     args?: { requestType?: string };
+    isAdded?: boolean;
 }
 
 /**

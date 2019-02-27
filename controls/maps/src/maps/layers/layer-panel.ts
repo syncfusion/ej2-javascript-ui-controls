@@ -113,7 +113,7 @@ export class LayerPanel {
                 } else if (layer.key && layer.key.length > 1) {
                     let proxy: LayerPanel = this;
                     let bing: BingMap = new BingMap(this.mapObject);
-                    let url: string = 'http://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
+                    let url: string = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
                     let ajax: Ajax = new Ajax({
                         url: url + '?output=json&include=ImageryProviders&key=' + layer.key
                     });

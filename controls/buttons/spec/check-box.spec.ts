@@ -307,12 +307,11 @@ describe('CheckBox', () => {
         it('Keyboard Event', () => {
             checkbox = new CheckBox({}, '#checkbox');
             element.parentElement.parentElement.focus();
-            checkbox.keyDownHandler();
             checkbox.focusHandler();
+            checkbox.keyUpHandler();
             expect(element.parentElement.parentElement.classList.contains('e-focus')).toEqual(true);
-            checkbox.mouseDownHandler();
-            checkbox.clickHandler();
             checkbox.focusHandler();
+            checkbox.clickHandler();
             expect(element.parentElement.parentElement.classList.contains('e-focus')).toEqual(false);
         });
 

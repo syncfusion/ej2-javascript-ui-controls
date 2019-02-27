@@ -3,12 +3,23 @@ import { createGrid, destroy } from '../base/treegridutil.spec';
 import { sampleData, selfEditData } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 
 /**
  * Grid Row Edit spec 
  */
 TreeGrid.Inject(Edit, Toolbar);
 describe('Edit module', () => {
+  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+  });
+
   describe('Hirarchy editing - Add at top', () => {
     let gridObj: TreeGrid;
     let actionBegin: () => void;
@@ -1720,5 +1731,15 @@ describe('Edit module', () => {
       destroy(gridObj);
     });
   });
+ 
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+}); 
 });
 

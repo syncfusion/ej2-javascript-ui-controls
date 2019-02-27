@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 16.4.54 (2019-02-19)
+## 16.4.55 (2019-02-27)
+
+### Maps
+
+#### Bug Fixes
+
+- Changed the OSM and Bing maps URL from http to https.
+
+## 16.4.53 (2019-02-13)
 
 ### Maps
 

@@ -2332,8 +2332,8 @@ describe('Batch Editing module', () => {
 
         it('adding record', () => {
             gridObj.editModule.addRecord({ OrderID: 10246, CustomerID: 'updated' });
-            expect(gridObj.getContentTable().querySelector('.e-emptyrow')).not.toBe(null);
-            expect(gridObj.getContentTable().querySelector('.e-hide')).not.toBe(null);
+            expect(gridObj.getContentTable().querySelector('.e-emptyrow')).toBe(null);
+            expect(gridObj.getContentTable().querySelector('.e-hide')).toBe(null);
         });
 
         it('closing record', () => {
@@ -2673,3 +2673,46 @@ describe('EJ2-22814- Programatic delete not working => ', () => {
     });
 });
 
+describe('EJ2-22944-script error thrown while valiation in batch edit => ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: {
+                    allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition:'Bottom'
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string', validationRules: { required: true }  },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
+                ]
+            }, done);
+    });
+    it('edit cell', (done: Function) => {
+        let cellEdit = (args?: any): void => {
+            expect(gridObj.isEdit).toBeFalsy();
+            gridObj.cellEdit = null;
+            done();
+        };
+        gridObj.cellEdit = cellEdit;
+        gridObj.editModule.editCell(1, 'CustomerID');
+    });
+
+    it('Checking Validation with NewRowPosition as Bottom', () => {
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '';
+        expect(gridObj.editModule.editFormValidate()).toBeFalsy();
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+        expect(gridObj.editModule.editFormValidate()).toBeTruthy();
+    });    
+
+    afterAll(() => {
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+    });
+});

@@ -1,15 +1,27 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData } from '../base/datasource.spec';
+import { sampleData, projectData, newSampledata } from '../base/datasource.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { actionComplete } from '@syncfusion/ej2-grids';
+import { actionComplete, SaveEventArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { Filter } from '../../src/treegrid/actions/filter';
+import { Edit } from '../../src/treegrid/actions/edit';
 import { CellSaveEventArgs } from '../../src';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 /**
  * Grid base spec 
  */
-TreeGrid.Inject(Filter);
+TreeGrid.Inject(Filter, Edit);
 describe('Filter module', () => {
+  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+  });
+
   describe('Hierarchy Filter Mode Testing - Parent', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -694,4 +706,129 @@ describe('Filter module', () => {
         destroy(gridObj);
       });
     });
+
+    describe('EJ2-23098: Editing with Filtering ', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionComplete: ()=> void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: newSampledata,
+            childMapping: 'Children',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              mode: 'Cell',
+              newRowPosition: 'Below'
+            },
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
+                { field: 'TaskName', headerText: 'Task Name', width: 200 },
+                { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+                { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+                { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+            ]
+  
+          },
+          done
+        );
+      });
+  
+      it('Editing', (done: Function) => {
+        let event: MouseEvent = new MouseEvent('dblclick', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+        gridObj.actionComplete = (args?: SaveEventArgs): void => {
+          expect(args.target.textContent).toBe('SP');
+          done();
+        };
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'SP';
+        gridObj.getRows()[0].click();
+      });
+      it('Filter after editing', (done: Function) => {
+        gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+          expect(gridObj.getRows()[1].querySelector('span.e-treecell').innerHTML).toBe('SP');
+          done();
+        };
+        gridObj.filterByColumn('TaskName', 'startswith', 'SP');
+      });
+      it('Clear filtering', (done: Function) => {
+        gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+          expect((<Object[]>(gridObj.grid.dataSource)).length == gridObj.getRows().length).toBe(true);
+          done();
+        };
+        gridObj.clearFiltering();
+      });
+  
+      it('Check filter tree', (done: Function) => {
+        gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+          expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+          expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+          done();
+        };
+        gridObj.filterByColumn('TaskName', 'startswith', 'Task 1');
+      });
+      it('Check filter tree after clearing filtering', (done: Function) => {
+        gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+          expect(!isNullOrUndefined((<HTMLTableRowElement>
+              (gridObj.getRowByIndex(0))).cells[1].querySelector('.e-treegridexpand'))).toBe(true);
+          done();
+        };
+        gridObj.clearFiltering();
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+
+    describe('EJ2-23097: Records are not properly collapsed after filter/search is performed', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionComplete: ()=> void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: newSampledata,
+            childMapping: 'Children',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
+                { field: 'TaskName', headerText: 'Task Name', width: 200 },
+                { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+                { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+                { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+            ]
+          },
+          done
+        );
+      });
+  
+      it('Filtering', () => {
+        gridObj.filterByColumn('TaskName', 'startswith', 'grand');
+        gridObj.collapseRow(<HTMLTableRowElement>(gridObj.getRowByIndex(0)));
+        expect((<HTMLElement>(gridObj.getRowByIndex(2))).style.display).toBe('none');
+        expect((<HTMLElement>(gridObj.getRowByIndex(3))).style.display).toBe('none');
+        expect((<HTMLElement>(gridObj.getRowByIndex(4))).style.display).toBe('none');
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+    it('memory leak', () => {
+      profile.sample();
+      let average: any = inMB(profile.averageChange)
+      //Check average change in memory samples to not be over 10MB
+      expect(average).toBeLessThan(10);
+      let memory: any = inMB(getMemoryProfile())
+      //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+      expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+  });
 });

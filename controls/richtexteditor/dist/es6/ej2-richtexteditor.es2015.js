@@ -820,6 +820,12 @@ let tools = {
         'subCommand': 'Styles'
     }
 };
+let alignmentLocale = [
+    { locale: 'alignmentsDropDownLeft', value: 'JustifyLeft' },
+    { locale: 'alignmentsDropDownCenter', value: 'JustifyCenter' },
+    { locale: 'alignmentsDropDownRight', value: 'JustifyRight' },
+    { locale: 'alignmentsDropDownJustify', value: 'JustifyFull' }
+];
 let alignmentItems = [
     { iconCss: 'e-icons e-justify-left', text: 'Align Left', command: 'Alignments', subCommand: 'JustifyLeft' },
     { iconCss: 'e-icons e-justify-center', text: 'Align Center', command: 'Alignments', subCommand: 'JustifyCenter' },
@@ -831,29 +837,80 @@ let imageAlignItems = [
     { iconCss: 'e-icons e-justify-center', command: 'Images', subCommand: 'JustifyCenter' },
     { iconCss: 'e-icons e-justify-right', command: 'Images', subCommand: 'JustifyRight' },
 ];
+let displayLocale = [
+    { locale: 'imageDisplayDropDownInline', value: 'Inline' },
+    { locale: 'imageDisplayDropDownBreak', value: 'Break' }
+];
 let imageDisplayItems = [
     { text: 'Inline', cssClass: 'e-inline', command: 'Images', subCommand: 'Inline' },
     { text: 'Break', cssClass: 'e-break', command: 'Images', subCommand: 'Break' },
+];
+let tableRowLocale = [
+    { locale: 'tableInsertRowDropDownBefore', value: 'InsertRowBefore' },
+    { locale: 'tableInsertRowDropDownAfter', value: 'InsertRowAfter' },
+    { locale: 'tableInsertRowDropDownDelete', value: 'DeleteRow' }
 ];
 let tableRowsItems = [
     { iconCss: 'e-icons e-insert-row-before', text: 'Insert row before', command: 'Table', subCommand: 'InsertRowBefore' },
     { iconCss: 'e-icons e-insert-row-after', text: 'Insert row after', command: 'Table', subCommand: 'InsertRowAfter' },
     { iconCss: 'e-icons e-delete-row', text: 'Delete row', command: 'Table', subCommand: 'DeleteRow' },
 ];
+let tableColumnLocale = [
+    { locale: 'tableInsertColumnDropDownLeft', value: 'InsertColumnLeft' },
+    { locale: 'tableInsertColumnDropDownRight', value: 'InsertColumnRight' },
+    { locale: 'tableInsertColumnDropDownDelete', value: 'DeleteColumn' }
+];
 let tableColumnsItems = [
     { iconCss: 'e-icons e-insert-column-left', text: 'Insert column left', command: 'Table', subCommand: 'InsertColumnLeft' },
     { iconCss: 'e-icons e-insert-column-right', text: 'Insert column right', command: 'Table', subCommand: 'InsertColumnRight' },
     { iconCss: 'e-icons e-delete-column', text: 'Delete column', command: 'Table', subCommand: 'DeleteColumn' },
+];
+let tableVerticalLocale = [
+    { locale: 'tableVerticalAlignDropDownTop', value: 'AlignTop' },
+    { locale: 'tableVerticalAlignDropDownMiddle', value: 'AlignMiddle' },
+    { locale: 'tableVerticalAlignDropDownBottom', value: 'AlignBottom' }
 ];
 let TableCellVerticalAlignItems = [
     { iconCss: 'e-icons e-align-top', text: 'Align Top', command: 'Table', subCommand: 'AlignTop' },
     { iconCss: 'e-icons e-align-middle', text: 'Align Middle', command: 'Table', subCommand: 'AlignMiddle' },
     { iconCss: 'e-icons e-align-bottom', text: 'Align Bottom', command: 'Table', subCommand: 'AlignBottom' },
 ];
+let tableStyleLocale = [
+    { locale: 'tableStylesDropDownDashedBorder', value: 'Dashed' },
+    { locale: 'tableStylesDropDownAlternateRows', value: 'Alternate' }
+];
 let TableStyleItems = [
     { text: 'Dashed Borders', cssClass: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
     { text: 'Alternate Rows', cssClass: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
 ];
+function getLocale(self, localeItems, item) {
+    for (let i = 0; localeItems.length > i; i++) {
+        if (localeItems[i].value === item.subCommand) {
+            return self.localeObj.getConstant(localeItems[i].locale);
+        }
+    }
+    return item.text;
+}
+function updateDropDownLocale(self) {
+    alignmentItems.forEach((item, i) => {
+        alignmentItems[i].text = getLocale(self, alignmentLocale, alignmentItems[i]);
+    });
+    imageDisplayItems.forEach((item, i) => {
+        imageDisplayItems[i].text = getLocale(self, displayLocale, imageDisplayItems[i]);
+    });
+    tableRowsItems.forEach((item, i) => {
+        tableRowsItems[i].text = getLocale(self, tableRowLocale, tableRowsItems[i]);
+    });
+    tableColumnsItems.forEach((item, i) => {
+        tableColumnsItems[i].text = getLocale(self, tableColumnLocale, tableColumnsItems[i]);
+    });
+    TableCellVerticalAlignItems.forEach((item, i) => {
+        TableCellVerticalAlignItems[i].text = getLocale(self, tableVerticalLocale, TableCellVerticalAlignItems[i]);
+    });
+    TableStyleItems.forEach((item, i) => {
+        TableStyleItems[i].text = getLocale(self, tableStyleLocale, TableStyleItems[i]);
+    });
+}
 
 // tslint:disable
 /**
@@ -934,7 +991,6 @@ let defaultLocale = {
     'imageHeight': 'Height',
     'imageWidth': 'Width',
     'textPlaceholder': 'Enter Text',
-    'tblhead': '1X1',
     'inserttablebtn': 'Insert Table',
     'tabledialogHeader': 'Insert Table',
     'tableWidth': 'Width',
@@ -961,7 +1017,26 @@ let defaultLocale = {
     'deleteRow': 'Delete Row',
     'tableEditHeader': 'Edit Table',
     'TableHeadingText': 'Heading',
-    'TableColText': 'Col'
+    'TableColText': 'Col',
+    'imageInsertLinkHeader': 'Insert Link',
+    'editImageHeader': 'Edit Image',
+    "alignmentsDropDownLeft": 'Align Left',
+    "alignmentsDropDownCenter": 'Align Center',
+    "alignmentsDropDownRight": 'Align Right',
+    "alignmentsDropDownJustify": 'Align Justify',
+    "imageDisplayDropDownInline": 'Inline',
+    "imageDisplayDropDownBreak": 'Break',
+    "tableInsertRowDropDownBefore": 'Insert row before',
+    "tableInsertRowDropDownAfter": 'Insert row after',
+    "tableInsertRowDropDownDelete": 'Delete row',
+    "tableInsertColumnDropDownLeft": 'Insert column left',
+    "tableInsertColumnDropDownRight": 'Insert column right',
+    "tableInsertColumnDropDownDelete": 'Delete column',
+    "tableVerticalAlignDropDownTop": 'Align Top',
+    "tableVerticalAlignDropDownMiddle": 'Align Middle',
+    "tableVerticalAlignDropDownBottom": 'Align Bottom',
+    "tableStylesDropDownDashedBorder": 'Dashed Borders',
+    "tableStylesDropDownAlternateRows": 'Alternate Rows'
 };
 let toolsLocale = {
     'alignments': 'alignments',
@@ -2262,6 +2337,7 @@ class Toolbar$1 {
         this.locator = serviceLocator;
         this.isTransformChild = false;
         this.renderFactory = this.locator.getService('rendererFactory');
+        updateDropDownLocale(this.parent);
         this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent));
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);
@@ -10569,7 +10645,8 @@ class Link {
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
+        this.parent.formatter.process(this.parent, e.args, e.args, {
+            selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
             subCommand: e.args.item.subCommand
         });
         this.contentModule.getEditPanel().focus();
@@ -10591,7 +10668,7 @@ class Link {
             let inputDetails = {
                 url: selectParentEle.href, text: selectParentEle.innerHTML,
                 title: selectParentEle.title, target: selectParentEle.target,
-                header: 'Edit Link', btnText: linkUpdate
+                header: this.i10n.getConstant('editLink'), btnText: linkUpdate
             };
             this.linkDialog(e, inputDetails);
         }
@@ -11312,7 +11389,11 @@ class Image {
                 selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target
             };
             this.dialogObj.setProperties({
-                height: 'initial', width: '290px', header: 'Insert Link', content: linkWrap, position: { X: 'center', Y: 'center' },
+                height: 'initial',
+                width: '290px',
+                header: this.parent.localeObj.getConstant('imageInsertLinkHeader'),
+                content: linkWrap,
+                position: { X: 'center', Y: 'center' },
                 buttons: [{
                         click: (e) => { this.insertlink(linkargs); },
                         buttonModel: {
@@ -11765,8 +11846,10 @@ class Image {
             dialogContent.appendChild(linkHeader);
             dialogContent.appendChild(this.imageUrlPopup(e));
             if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
-                this.dialogObj.setProperties({ header: 'Edit Image', content: dialogContent }, false);
-                this.dialogObj.element.querySelector('.e-insertImage').textContent = 'Update';
+                this.dialogObj.setProperties({
+                    header: this.parent.localeObj.getConstant('editImageHeader'), content: dialogContent
+                });
+                this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
             }
             else {
                 this.dialogObj.setProperties({ content: dialogContent }, false);
@@ -11800,7 +11883,11 @@ class Image {
         let deviceImgUpMsg = this.i10n.getConstant('imageDeviceUploadMessage');
         let imgUpMsg = this.i10n.getConstant('imageUploadMessage');
         let span = this.parent.createElement('span', { className: 'e-droptext' });
-        span.innerHTML = (Browser.isDevice) ? deviceImgUpMsg : imgUpMsg;
+        let spanMsg = this.parent.createElement('span', {
+            className: 'e-rte-upload-text',
+            innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
+        });
+        span.appendChild(spanMsg);
         let btnEle = this.parent.createElement('button', {
             className: 'e-browsebtn', id: this.rteID + '_insertImage',
             attrs: { autofocus: 'true', type: 'button' }
@@ -12819,7 +12906,7 @@ class Table {
             return;
         }
         this.hideTableQuickToolbar();
-        let header = this.l10n.getConstant('tblhead');
+        let header = '1X1';
         let insertbtn = this.l10n.getConstant('inserttablebtn');
         this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup', id: this.rteID + '_table' });
         this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' });
@@ -13812,12 +13899,12 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
         if (this.element.tagName === 'TEXTAREA') {
             let rteOuterWrapper = this.createElement('div', {
-                className: 'e-control e-richtexteditor'
+                className: this.element.getAttribute('class')
             });
             this.element.innerHTML = '';
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element;
-            this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
+            removeClass([this.valueContainer], this.element.getAttribute('class').split(' '));
             this.element = rteOuterWrapper;
         }
         else {

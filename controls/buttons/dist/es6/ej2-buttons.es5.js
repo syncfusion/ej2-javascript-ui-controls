@@ -449,7 +449,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      */
     function CheckBox(options, element) {
         var _this = _super.call(this, options, element) || this;
-        _this.isKeyPressed = false;
+        _this.isFocused = false;
         return _this;
     }
     CheckBox.prototype.changeState = function (state) {
@@ -537,9 +537,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     CheckBox.prototype.focusHandler = function () {
-        if (this.isKeyPressed) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isFocused = true;
     };
     CheckBox.prototype.focusOutHandler = function () {
         this.getWrapper().classList.remove('e-focus');
@@ -614,15 +612,14 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
             this.setText(this.label);
         }
     };
-    CheckBox.prototype.keyDownHandler = function () {
-        this.isKeyPressed = true;
+    CheckBox.prototype.keyUpHandler = function () {
+        if (this.isFocused) {
+            this.getWrapper().classList.add('e-focus');
+        }
     };
     CheckBox.prototype.labelMouseHandler = function (e) {
         var rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
-    };
-    CheckBox.prototype.mouseDownHandler = function () {
-        this.isKeyPressed = false;
     };
     /**
      * Called internally if any of the property value changes.
@@ -758,8 +755,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
         EventHandler.remove(this.element, 'click', this.clickHandler);
-        EventHandler.remove(document, 'keydown', this.keyDownHandler);
-        EventHandler.remove(wrapper, 'mousedown', this.mouseDownHandler);
+        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         var label = wrapper.getElementsByTagName('label')[0];
@@ -775,8 +771,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.wireEvents = function () {
         var wrapper = this.getWrapper();
         EventHandler.add(this.element, 'click', this.clickHandler, this);
-        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
-        EventHandler.add(wrapper, 'mousedown', this.mouseDownHandler, this);
+        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         var label = wrapper.getElementsByTagName('label')[0];

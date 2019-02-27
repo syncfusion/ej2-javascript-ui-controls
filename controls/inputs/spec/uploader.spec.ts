@@ -97,6 +97,79 @@ describe('Uploader Control', () => {
         });        
     });
 
+    describe('prevent file list keyboard navigation testing', () => {
+        let uploadObj: any;
+        beforeEach((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'}); 
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+        })
+        afterEach((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('uploader with disableKeyboardNavigation as false', () => {
+            uploadObj = new Uploader({
+                autoUpload: false
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["2nd File"], "demo.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList[0].querySelector('.e-file-remove-btn').tabIndex).toEqual(0);
+            expect(uploadObj.actionButtons.querySelector('.e-file-clear-btn').tabIndex).toEqual(0);
+            expect(uploadObj.actionButtons.querySelector('.e-file-upload-btn').tabIndex).toEqual(0);            
+        });
+
+        it('Preload files', () => {
+            let preLoadFiles: any = [
+                {name: 'ASP.Net books', size: 500, type: '.png'},
+                {name: 'Movies', size: 12000, type: '.pdf'},
+                {name: 'Study materials', size: 500000, type: '.docx'},
+            ];
+            uploadObj = new Uploader({
+                files: preLoadFiles,
+                autoUpload: false
+             });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let liElements: HTMLElement[] = uploadObj.listParent.querySelectorAll('li');
+            expect(liElements.length).toEqual(3);
+            expect(liElements[0].querySelector('.e-file-status').textContent).toEqual('File uploaded successfully');
+            expect(liElements[2].querySelector('.e-file-status').textContent).toEqual('File uploaded successfully');
+            expect(liElements[1].querySelector('.e-icons').classList.contains('e-file-delete-btn')).toBe(true);
+            expect(liElements[0].querySelector('.e-icons').getAttribute('title')).toEqual('Delete file');
+            expect(uploadObj.getFilesData()[0].name).toEqual('ASP.Net books.png');
+            expect(uploadObj.browseButton.getAttribute('tabindex')).toEqual('0');
+            expect(uploadObj.fileList[0].querySelector('.e-file-delete-btn').tabIndex).toEqual(0);
+            expect(uploadObj.fileList[1].querySelector('.e-file-delete-btn').tabIndex).toEqual(0);
+            expect(uploadObj.actionButtons.querySelector('.e-file-clear-btn').tabIndex).toEqual(0);
+            expect(uploadObj.actionButtons.querySelector('.e-file-upload-btn').tabIndex).toEqual(0);
+        });
+
+        it('Ensure button tabIndex after upload', (done) => {
+            uploadObj = new Uploader({
+                showFileList: true,
+                asyncSettings: {
+                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove',
+                }
+             });
+            uploadObj.appendTo(document.getElementById('upload'));
+            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: { files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            expect(uploadObj.fileList[0].querySelector('.e-file-remove-btn').tabIndex).toEqual(0);
+            expect(uploadObj.getFilesData().length).toEqual(1);
+            setTimeout(() => {
+                expect(uploadObj.filesData[0].status).toEqual('File uploaded successfully');
+                expect(uploadObj.filesData[0].statusCode).toBe('2');
+                expect(uploadObj.fileList[0].querySelector('.e-icons').tabIndex).toEqual(0);
+                done();
+            }, 3000)
+        });
+    });
+
     describe('preload file testing', () => {
         let uploadObj: any;
         beforeEach((): void => {
@@ -1245,73 +1318,17 @@ describe('Uploader Control', () => {
             uploadObj.browseButton.focus();
             expect(document.activeElement).toBe(uploadObj.browseButton);
         });
-        it('remove focus from browse button', () => {
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = uploadObj.browseButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(document.activeElement).not.toBe(uploadObj.browseButton);
-        });
-        it('focus to first element clear icon ', () => {
+        it('upload files to upload', () => {
             let fileList = [{name: "7z938-x64.msi", rawFile: "", size: 15, status: 'Ready to upload', statusCode: '1', type: 'msi', validationMessages:{minsize: "", maxsize: ""}},
                             {name: "default.html", rawFile: "", size:185675, status: 'Ready to upload', statusCode: '1', type: 'html', validationMessages:{minsize: "", maxsize: ""}}];
             uploadObj.createFileList(fileList);
             uploadObj.renderActionButtons();
             uploadObj.filesData = fileList;
-            uploadObj.browseButton.focus();
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = uploadObj.browseButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
             iconElement = uploadObj.listParent.querySelectorAll('.e-icons');
-            expect(iconElement[0].classList.contains('e-clear-icon-focus')).toBe(true);
-            expect(document.activeElement).not.toBe(uploadObj.browseButton);
-        });
-        it('focus to 2nd element clear icon ', () => {
-            expect(document.activeElement).toBe(iconElement[0]);
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = iconElement[0];
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(iconElement[0].classList.contains('e-clear-icon-focus')).toBe(false);
-            expect(iconElement[1].classList.contains('e-clear-icon-focus')).toBe(true);
-        });
-        it('set focus to previous element ', () => {
-            keyboardEventArgs.action = 'previous';
-            keyboardEventArgs.target = iconElement[1];
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(iconElement[0].classList.contains('e-clear-icon-focus')).toBe(true);
-            expect(iconElement[1].classList.contains('e-clear-icon-focus')).toBe(false);
-            expect(document.activeElement).toBe(iconElement[0]);
-        })
-        it('set focus to browse button from list items', () => {
-            keyboardEventArgs.action = 'previous';
-            keyboardEventArgs.target = iconElement[0];
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(iconElement[0].classList.contains('e-clear-icon-focus')).toBe(false);
-            expect(document.activeElement).toBe(uploadObj.browseButton);            
-        })
-        it('Again focus to 2nd element clear icon ', () => {
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = uploadObj.browseButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = iconElement[0];
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(iconElement[1].classList.contains('e-clear-icon-focus')).toBe(true);
-        });
-        it('focus to clear button ', () => {
-            expect(document.activeElement).toBe(iconElement[1]);
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = iconElement[1];
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(iconElement[1].classList.contains('e-clear-icon-focus')).toBe(false);
-            expect(document.activeElement).toBe(uploadObj.clearButton);
-        });
-        it('focus to upload button', () => {
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = uploadObj.clearButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
+            uploadObj.uploadButton.focus();
             expect(document.activeElement).toBe(uploadObj.uploadButton);
         });
-        it('enter key with upload button ', () => {
+        it('enter key with upload button', () => {
             keyboardEventArgs.action = 'enter';
             keyboardEventArgs.target = uploadObj.uploadButton;
             expect(iconElement[0].classList.contains('e-file-delete-btn')).toBe(false);
@@ -1321,13 +1338,7 @@ describe('Uploader Control', () => {
             //     expect(iconElement[1].classList.contains('e-file-delete-btn')).toBe(true);
             //     done();
             // }, 3000);
-        })
-        it('set focus to clear button from upload button', () => {
-            keyboardEventArgs.action = 'previous';
-            keyboardEventArgs.target = uploadObj.uploadButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(document.activeElement).toBe(uploadObj.clearButton);            
-        })
+        })       
         it('enter key on clear button ', () => {
             keyboardEventArgs.action = 'enter';
             keyboardEventArgs.target = uploadObj.clearButton;
@@ -1344,17 +1355,10 @@ describe('Uploader Control', () => {
             uploadObj.clearButton.focus();
             expect(document.activeElement).toBe(uploadObj.clearButton);
         });
-        it('set focus to clear icon from clear button', () => {
-            iconElement = uploadObj.listParent.querySelectorAll('.e-icons');
-            keyboardEventArgs.action = 'previous';
-            keyboardEventArgs.target = uploadObj.clearButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(iconElement[1].classList.contains('e-clear-icon-focus')).toBe(true);
-            expect(document.activeElement).not.toBe(uploadObj.clearButton);
-        });
         it('Enter key with clear icon ', () => {
             keyboardEventArgs.action = 'enter';
-            keyboardEventArgs.target = iconElement[1];
+            keyboardEventArgs.target = uploadObj.fileList[1].querySelector('.e-icons');
+            uploadObj.fileList[1].querySelector('.e-icons').focus();
             uploadObj.keyActionHandler(keyboardEventArgs);
             iconElement = uploadObj.listParent.querySelectorAll('.e-icons');
             expect(iconElement.length).toBe(1);
@@ -1364,19 +1368,6 @@ describe('Uploader Control', () => {
             uploadObj.uploadButton.focus();
             expect(document.activeElement).toBe(uploadObj.uploadButton);
         });
-        it('Focus out from uploader component', () => {
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = uploadObj.uploadButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(document.activeElement).not.toEqual(uploadObj.uploadButton);
-        })
-        it('set focus to clear icon from clear button', () => {
-            uploadObj.browseButton.focus();
-            keyboardEventArgs.action = 'previous';
-            keyboardEventArgs.target = uploadObj.browseButton;
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(document.activeElement).not.toBe(uploadObj.browseButton);
-        });
         it('Enter key with browse button ', () => {
             uploadObj.browseButton.focus();
             expect(document.activeElement).toBe(uploadObj.browseButton);
@@ -1384,15 +1375,6 @@ describe('Uploader Control', () => {
             keyboardEventArgs.target = uploadObj.browseButton;
             uploadObj.keyActionHandler(keyboardEventArgs);
             expect(document.activeElement).toBe(uploadObj.browseButton);
-        });
-        it('Focus out from clear button', () => {
-            uploadObj.clearButton.focus();
-            keyboardEventArgs.action = 'next';
-            keyboardEventArgs.target = uploadObj.clearButton;
-            uploadObj.uploadButton.setAttribute('disabled', 'disabled');
-            uploadObj.keyActionHandler(keyboardEventArgs);
-            expect(document.activeElement).not.toEqual(uploadObj.uploadButton);
-            expect(document.activeElement).not.toEqual(uploadObj.clearButton);
         });
     })
 

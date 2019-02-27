@@ -47,6 +47,7 @@ export class Toolbar {
         this.locator = serviceLocator;
         this.isTransformChild = false;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
+        model.updateDropDownLocale(this.parent);
         this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent));
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);

@@ -303,6 +303,9 @@ let CalendarBase = class CalendarBase extends Component {
         if (this.showTodayButton) {
             let minimum = new Date(+this.min);
             let maximum = new Date(+this.max);
+            let l10nLocale = { today: 'Today' };
+            this.globalize = new Internationalization(this.locale);
+            this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
             this.todayElement = this.createElement('button');
             rippleEffect(this.todayElement);
             this.updateFooter();
@@ -529,9 +532,6 @@ let CalendarBase = class CalendarBase extends Component {
      * @private
      */
     preRender(value) {
-        this.globalize = new Internationalization(this.locale);
-        let l10nLocale = { today: 'Today' };
-        this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
         this.navigateHandler = (e) => {

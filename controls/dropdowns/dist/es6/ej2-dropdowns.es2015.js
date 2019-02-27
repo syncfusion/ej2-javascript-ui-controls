@@ -1476,7 +1476,8 @@ let DropDownList = class DropDownList extends DropDownBase {
     resetValueHandler(e) {
         let formElement = closest(this.inputElement, 'form');
         if (formElement && e.target === formElement) {
-            this.value = null;
+            let val = (this.element.tagName === this.getNgDirective()) ? null : this.inputElement.getAttribute('value');
+            this.text = val;
         }
     }
     wireEvent() {
@@ -2290,6 +2291,17 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.isNotSearchList = false;
             return;
         }
+        if (this.value && this.dataSource instanceof DataManager) {
+            let checkField = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+            let checkVal = list.some((x) => x[checkField] === this.value);
+            if (!checkVal) {
+                let query = this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value));
+                this.dataSource.executeQuery(query).then((e) => {
+                    this.addItem(e.result, list.length);
+                    this.updateValues();
+                });
+            }
+        }
         if (this.isActive) {
             let selectedItem = this.selectedLI ? this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
@@ -2536,10 +2548,6 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (Browser.isDevice && ((this.getModuleName() === 'dropdownlist' &&
             !this.isFilterLayout()) || (this.getModuleName() === 'combobox' && !this.allowFiltering && this.isDropDownClick))) {
             this.hidePopup();
-        }
-        if (this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement)) {
-            this.fixedHeaderElement.style.zIndex = '0';
-            this.fixedHeaderElement.style.display = 'none';
         }
     }
     setSearchBoxPosition() {
@@ -2803,6 +2811,9 @@ let DropDownList = class DropDownList extends DropDownBase {
         this.inputElement.onchange = (e) => { e.stopImmediatePropagation(); };
         if (this.element.hasAttribute('autofocus')) {
             this.focusIn();
+        }
+        if (!isNullOrUndefined(this.text)) {
+            this.inputElement.setAttribute('value', this.text);
         }
     }
     ;
@@ -4609,9 +4620,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     setScrollPosition() {
         if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
             (!isNullOrUndefined(this.value) && (this.value.length > 0))) {
-            let valueEle = this.hideSelectedItem ?
-                this.ulElement.querySelector('li[data-value="' + this.value[this.value.length - 1] + '"]')
-                : this.list.querySelector('li[data-value="' + this.value[this.value.length - 1] + '"]');
+            let valueEle = this.findListElement((this.hideSelectedItem ? this.ulElement : this.list), 'li', 'data-value', this.value[this.value.length - 1]);
             if (!isNullOrUndefined(valueEle)) {
                 this.scrollBottom(valueEle);
             }
@@ -4720,7 +4729,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 predicate = predicate.or(field, 'equal', valuecheck[i]);
             }
         }
-        return new Query().where(predicate);
+        return this.getQuery(this.query).where(predicate);
     }
     onActionComplete(ulElement, list, e, isUpdated) {
         super.onActionComplete(ulElement, list, e);
@@ -4728,8 +4737,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let valuecheck = [];
         if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
             for (let i = 0; i < this.value.length; i++) {
-                let checkEle = ((this.allowFiltering && !isNullOrUndefined(this.mainList)) ?
-                    this.mainList : ulElement).querySelector('li[data-value="' + proxy.value[i] + '"]');
+                let checkEle = this.findListElement(((this.allowFiltering && !isNullOrUndefined(this.mainList)) ? this.mainList : ulElement), 'li', 'data-value', proxy.value[i]);
                 if (!checkEle) {
                     valuecheck.push(proxy.value[i]);
                 }
@@ -4798,7 +4806,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (!isNullOrUndefined(this.value)) {
             for (let index = 0; !isNullOrUndefined(this.value[index]); index++) {
                 value = this.value[index];
-                element = this.list.querySelector('li[data-value="' + value + '"]');
+                element = this.findListElement(this.list, 'li', 'data-value', value);
                 if (element) {
                     addClass([element], className);
                     if (this.hideSelectedItem && element.previousSibling
@@ -4848,7 +4856,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let className = this.hideSelectedItem ?
             HIDE_LIST :
             dropDownBaseClasses.selected;
-        element1 = element = this.ulElement.querySelector('li[data-value="' + value + '"]');
+        element1 = element = this.findListElement(this.ulElement, 'li', 'data-value', value);
         let i = 0;
         let j = 0;
         let temp = true;
@@ -5735,7 +5743,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 this.inputElement.focus();
             }
             this.removeValue(value, e);
-            if (isNullOrUndefined(this.list.querySelector('li[data-value="' + value + '"]')) && this.mainList && this.listData) {
+            if (isNullOrUndefined(this.findListElement(this.list, 'li', 'data-value', value)) && this.mainList && this.listData) {
                 let list = this.mainList.cloneNode ? this.mainList.cloneNode(true) : this.mainList;
                 this.onActionComplete(list, this.mainData);
             }
@@ -5771,7 +5779,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             HIDE_LIST :
             dropDownBaseClasses.selected;
         if (index !== -1) {
-            let element = this.list.querySelector('li[data-value="' + value + '"]');
+            let element = this.findListElement(this.list, 'li', 'data-value', value);
             let val = this.getDataByValue(value);
             let eventArgs = {
                 e: eve,
@@ -5787,7 +5795,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.value.splice(index, 1);
             this.setProperties({ value: [].concat([], this.value) }, true);
             if (element !== null) {
-                let hideElement = this.mainList.querySelector('li[data-value="' + value + '"]');
+                let hideElement = this.findListElement(this.mainList, 'li', 'data-value', value);
                 element.setAttribute('aria-selected', 'false');
                 removeClass([element], className);
                 if (hideElement) {
@@ -5838,7 +5846,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     updateMainList(state, value) {
         if (this.allowFiltering) {
-            let element2 = this.mainList.querySelector('li[data-value="' + value + '"]');
+            let element2 = this.findListElement(this.mainList, 'li', 'data-value', value);
             if (element2) {
                 if (state) {
                     element2.setAttribute('aria-selected', 'false');
@@ -5896,7 +5904,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.value = [];
         }
         this.setProperties({ value: [].concat([], this.value, [value]) }, true);
-        let element = this.list.querySelector('li[data-value="' + value + '"]');
+        let element = this.findListElement(this.list, 'li', 'data-value', value);
         this.removeFocus();
         if (element) {
             this.addListFocus(element);
@@ -6231,7 +6239,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     resetValueHandler(e) {
         let formElement = closest(this.inputElement, 'form');
         if (formElement && e.target === formElement) {
-            this.value = null;
+            let textVal = (this.element.tagName === this.getNgDirective()) ? null : this.element.getAttribute('data-initial-value');
+            this.text = textVal;
         }
     }
     wireEvent() {
@@ -6342,8 +6351,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             if (!isNullOrUndefined(this.value)) {
                 for (let index = 0; !isNullOrUndefined(this.value[index]); index++) {
                     value = this.value[index];
-                    element = this.hideSelectedItem ? this.ulElement.querySelector('li[data-value="' + value + '"]')
-                        : this.list.querySelector('li[data-value="' + value + '"]');
+                    element = this.findListElement(this.hideSelectedItem ? this.ulElement : this.list, 'li', 'data-value', value);
                     text = this.getTextByValue(value);
                     if ((element && (element.getAttribute('aria-selected') !== 'true')) ||
                         (element && (element.getAttribute('aria-selected') === 'true' && this.hideSelectedItem) &&
@@ -6403,7 +6411,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             if (argsCancel) {
                 return;
             }
-            if ((this.allowCustomValue || this.allowFiltering) && !this.mainList.querySelector('li[data-value="' + value + '"]')) {
+            if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
                 let temp = li.cloneNode(true);
                 let data = this.getDataByValue(value);
                 append([temp], this.mainList);
@@ -6832,11 +6840,23 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let length = li.length;
         if (li && li.length) {
             let index = 0;
-            while (index < length) {
+            while (index < length && index <= 50) {
                 this.updateListSelection(li[index], event, length - index);
                 index++;
             }
+            if (length > 50) {
+                setTimeout(() => {
+                    while (index < length) {
+                        this.updateListSelection(li[index], event, length - index);
+                        index++;
+                    }
+                    this.textboxValueUpdate();
+                }, 0);
+            }
         }
+        this.textboxValueUpdate();
+    }
+    textboxValueUpdate() {
         if (this.mode !== 'Box' && !this.isPopupOpen()) {
             this.updateDelimView();
         }
@@ -7237,6 +7257,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         this.initStatus = true;
         this.checkAutoFocus();
+        if (!isNullOrUndefined(this.text)) {
+            this.element.setAttribute('data-initial-value', this.text);
+        }
     }
     checkAutoFocus() {
         if (this.element.hasAttribute('autofocus')) {
@@ -7272,6 +7295,16 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.refreshInputHight();
         this.checkPlaceholderSize();
     }
+    findListElement(list, findNode, attr, value) {
+        let liElement = null;
+        list.querySelectorAll(findNode).forEach((item) => {
+            if (item.getAttribute(attr) === (value + '')) {
+                liElement = item;
+                return;
+            }
+        });
+        return liElement;
+    }
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
      * @method destroy
@@ -7295,6 +7328,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.inputElement.removeAttribute(temp[length - 1]);
             length--;
         }
+        this.element.removeAttribute('data-initial-value');
         this.element.style.display = 'block';
         if (this.overAllWrapper.parentElement) {
             if (this.overAllWrapper.parentElement.tagName === this.getNgDirective()) {

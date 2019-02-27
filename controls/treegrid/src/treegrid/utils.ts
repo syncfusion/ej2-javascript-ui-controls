@@ -103,7 +103,7 @@ export function extendArray(array: Object[]): Object[] {
 }
 
 export function getPlainData(value: ITreeData): ITreeData {
-  delete value.hasChildRecords; delete value.childRecords; delete value.index; delete value.parentItem; delete value.parentIndex;
+  delete value.hasChildRecords; delete value.childRecords; delete value.index; delete value.parentItem;
   delete value.level;
   return value;
 }

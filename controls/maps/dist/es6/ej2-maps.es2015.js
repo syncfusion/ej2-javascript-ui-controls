@@ -2401,7 +2401,7 @@ __decorate$1([
     Property('Geometry')
 ], LayerSettings.prototype, "layerType", void 0);
 __decorate$1([
-    Property('http://a.tile.openstreetmap.org/level/tileX/tileY.png')
+    Property('https://a.tile.openstreetmap.org/level/tileX/tileY.png')
 ], LayerSettings.prototype, "urlTemplate", void 0);
 __decorate$1([
     Property(true)
@@ -3128,7 +3128,7 @@ class LayerPanel {
                 else if (layer.key && layer.key.length > 1) {
                     let proxy = this;
                     let bing = new BingMap(this.mapObject);
-                    let url = 'http://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
+                    let url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
                     let ajax = new Ajax({
                         url: url + '?output=json&include=ImageryProviders&key=' + layer.key
                     });
@@ -5661,7 +5661,7 @@ class NavigationLine {
                         offSet = (isNullOrUndefined(offSet)) ? 0 : offSet;
                         let triId = this.maps.element.id + '_triangle';
                         let defElement = this.maps.renderer.createDefs();
-                        let xmlns = 'http://www.w3.org/2000/svg';
+                        let xmlns = 'https://www.w3.org/2000/svg';
                         let markerEle = document.createElementNS(xmlns, 'marker');
                         markerEle.setAttribute('id', 'triangle' + i);
                         markerEle.setAttribute('markerWidth', (arrowSize.toString()));
@@ -6901,7 +6901,7 @@ class Legend {
     }
     legendGradientColor(colorMap, legendIndex) {
         let legendFillColor;
-        let xmlns = 'http://www.w3.org/2000/svg';
+        let xmlns = 'https://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
             let linerGradientEle = document.createElementNS(xmlns, 'linearGradient');
             let opacity = 1;

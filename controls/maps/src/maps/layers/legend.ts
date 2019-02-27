@@ -1250,7 +1250,7 @@ export class Legend {
 
     public legendGradientColor(colorMap: ColorMappingSettings, legendIndex: number): string {
         let legendFillColor: string;
-        let xmlns: string = 'http://www.w3.org/2000/svg';
+        let xmlns: string = 'https://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
             let linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
             let opacity: number = 1; let position: LegendPosition = this.maps.legendSettings.position;

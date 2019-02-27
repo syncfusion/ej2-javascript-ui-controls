@@ -3,7 +3,7 @@
  * Export items model
  */
 
-import { IToolsItems, IDropDownItemModel } from '../base/interface';
+import { IToolsItems, IDropDownItemModel, IRichTextEditor } from '../base/interface';
 
 export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'tablerows', 'tablecolumns', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles'];
 
@@ -461,6 +461,12 @@ export let tools: { [key: string]: IToolsItems } = {
     }
 };
 
+let alignmentLocale: { [ket: string]: string }[] = [
+    { locale: 'alignmentsDropDownLeft', value: 'JustifyLeft' },
+    { locale: 'alignmentsDropDownCenter', value: 'JustifyCenter' },
+    { locale: 'alignmentsDropDownRight', value: 'JustifyRight' },
+    { locale: 'alignmentsDropDownJustify', value: 'JustifyFull' }
+];
 export let alignmentItems: IDropDownItemModel[] = [
     { iconCss: 'e-icons e-justify-left', text: 'Align Left', command: 'Alignments', subCommand: 'JustifyLeft' },
     { iconCss: 'e-icons e-justify-center', text: 'Align Center', command: 'Alignments', subCommand: 'JustifyCenter' },
@@ -474,30 +480,84 @@ export let imageAlignItems: IDropDownItemModel[] = [
     { iconCss: 'e-icons e-justify-right', command: 'Images', subCommand: 'JustifyRight' },
 ];
 
+let displayLocale: { [ket: string]: string }[] = [
+    { locale: 'imageDisplayDropDownInline', value: 'Inline' },
+    { locale: 'imageDisplayDropDownBreak', value: 'Break' }
+];
 export let imageDisplayItems: IDropDownItemModel[] = [
     { text: 'Inline', cssClass: 'e-inline', command: 'Images', subCommand: 'Inline' },
     { text: 'Break', cssClass: 'e-break', command: 'Images', subCommand: 'Break' },
 ];
 
+let tableRowLocale: { [ket: string]: string }[] = [
+    { locale: 'tableInsertRowDropDownBefore', value: 'InsertRowBefore' },
+    { locale: 'tableInsertRowDropDownAfter', value: 'InsertRowAfter' },
+    { locale: 'tableInsertRowDropDownDelete', value: 'DeleteRow' }
+];
 export let tableRowsItems: IDropDownItemModel[] = [
     { iconCss: 'e-icons e-insert-row-before', text: 'Insert row before', command: 'Table', subCommand: 'InsertRowBefore' },
     { iconCss: 'e-icons e-insert-row-after', text: 'Insert row after', command: 'Table', subCommand: 'InsertRowAfter' },
     { iconCss: 'e-icons e-delete-row', text: 'Delete row', command: 'Table', subCommand: 'DeleteRow' },
 ];
 
+let tableColumnLocale: { [ket: string]: string }[] = [
+    { locale: 'tableInsertColumnDropDownLeft', value: 'InsertColumnLeft' },
+    { locale: 'tableInsertColumnDropDownRight', value: 'InsertColumnRight' },
+    { locale: 'tableInsertColumnDropDownDelete', value: 'DeleteColumn' }
+];
 export let tableColumnsItems: IDropDownItemModel[] = [
     { iconCss: 'e-icons e-insert-column-left', text: 'Insert column left', command: 'Table', subCommand: 'InsertColumnLeft' },
     { iconCss: 'e-icons e-insert-column-right', text: 'Insert column right', command: 'Table', subCommand: 'InsertColumnRight' },
     { iconCss: 'e-icons e-delete-column', text: 'Delete column', command: 'Table', subCommand: 'DeleteColumn' },
 ];
 
+let tableVerticalLocale: { [ket: string]: string }[] = [
+    { locale: 'tableVerticalAlignDropDownTop', value: 'AlignTop' },
+    { locale: 'tableVerticalAlignDropDownMiddle', value: 'AlignMiddle' },
+    { locale: 'tableVerticalAlignDropDownBottom', value: 'AlignBottom' }
+];
 export let TableCellVerticalAlignItems: IDropDownItemModel[] = [
     { iconCss: 'e-icons e-align-top', text: 'Align Top', command: 'Table', subCommand: 'AlignTop' },
     { iconCss: 'e-icons e-align-middle', text: 'Align Middle', command: 'Table', subCommand: 'AlignMiddle' },
     { iconCss: 'e-icons e-align-bottom', text: 'Align Bottom', command: 'Table', subCommand: 'AlignBottom' },
 ];
 
+let tableStyleLocale: { [ket: string]: string }[] = [
+    { locale: 'tableStylesDropDownDashedBorder', value: 'Dashed' },
+    { locale: 'tableStylesDropDownAlternateRows', value: 'Alternate' }
+];
+
 export let TableStyleItems: IDropDownItemModel[] = [
     { text: 'Dashed Borders', cssClass: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
     { text: 'Alternate Rows', cssClass: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
 ];
+
+function getLocale(self: IRichTextEditor, localeItems: { [ket: string]: string }[], item: IDropDownItemModel): string {
+    for (let i: number = 0; localeItems.length > i; i++) {
+        if (localeItems[i].value === item.subCommand) {
+            return self.localeObj.getConstant(localeItems[i].locale);
+        }
+    }
+    return item.text;
+}
+
+export function updateDropDownLocale(self: IRichTextEditor): void {
+    alignmentItems.forEach((item: IDropDownItemModel, i: number) => {
+        alignmentItems[i].text = getLocale(self, alignmentLocale, alignmentItems[i]);
+    });
+    imageDisplayItems.forEach((item: IDropDownItemModel, i: number) => {
+        imageDisplayItems[i].text = getLocale(self, displayLocale, imageDisplayItems[i]);
+    });
+    tableRowsItems.forEach((item: IDropDownItemModel, i: number) => {
+        tableRowsItems[i].text = getLocale(self, tableRowLocale, tableRowsItems[i]);
+    });
+    tableColumnsItems.forEach((item: IDropDownItemModel, i: number) => {
+        tableColumnsItems[i].text = getLocale(self, tableColumnLocale, tableColumnsItems[i]);
+    });
+    TableCellVerticalAlignItems.forEach((item: IDropDownItemModel, i: number) => {
+        TableCellVerticalAlignItems[i].text = getLocale(self, tableVerticalLocale, TableCellVerticalAlignItems[i]);
+    });
+    TableStyleItems.forEach((item: IDropDownItemModel, i: number) => {
+        TableStyleItems[i].text = getLocale(self, tableStyleLocale, TableStyleItems[i]);
+    });
+}

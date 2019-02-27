@@ -12,6 +12,7 @@
 - An issue with recurring events while defining recurrence rule on it that includes both BYMONTH and BYDAY properties together has been fixed.
 - An issue with incorrect casing of `popupOpen` event's parameters that triggers on cell click action has been fixed.
 - An issue with 24 hours format not displaying in time cells of adaptive Scheduler mode has been fixed.
+- An issue with unable to scroll down the browser scroller, when the Scheduler is loaded with Month Agenda as current view has been fixed.
 
 ## 16.4.53 (2019-02-13)
 

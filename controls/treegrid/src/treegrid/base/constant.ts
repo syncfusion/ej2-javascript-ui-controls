@@ -45,6 +45,10 @@ export const printGridInit: string = 'printGrid-Init';
 /** @hidden */
 export const contextMenuOpen: string = 'contextMenuOpen';
 /** @hidden */
+export const contextMenuClick: string = 'contextMenuClick' ;
+/** @hidden */
+export const savePreviousRowPosition: string = 'savePreviousRowPosition' ;
+/** @hidden */
 export const crudAction: string = 'crudAction';
 /** @hidden */
 export const beginEdit: string = 'beginEdit';

@@ -131,7 +131,11 @@ export class NormalEdit {
         };
         gObj.showSpinner();
         gObj.notify(events.updateData, args);
-        gObj.refresh();
+        if (args.promise) {
+            args.promise.then(() => gObj.refresh()).catch((e: ReturnType) => this.edFail(e));
+        } else {
+            gObj.refresh();
+        }
     }
 
     private editFormValidate(): boolean {

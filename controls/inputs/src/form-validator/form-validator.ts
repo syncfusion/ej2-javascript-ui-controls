@@ -11,7 +11,7 @@ import { FormValidatorModel } from './form-validator-model';
 export let regex: any = {
     EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,5}' +
         '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
-    URL: new RegExp('^((ftp|http|https):\/\/)?www\.([A-z]{2,})\.([A-z]{2,})$'),
+    URL: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/m,
     DATE_ISO: new RegExp('^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'),
     DIGITS: new RegExp('^[0-9]*$'),
     PHONE: new RegExp('^[+]?[0-9]{9,13}$'),
@@ -245,7 +245,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
      * @return {HTMLInputElement}
      */
     public getInputElement(name: string): HTMLInputElement {
-        this.inputElement = <HTMLInputElement>(select('[name=' + name + ']', this.element));
+        this.inputElement = <HTMLInputElement>(select('[name="' + name + '"]', this.element));
         return this.inputElement;
     }
 

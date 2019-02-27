@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 16.4.55 (2019-02-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- Document Load event not triggered for lower zoom value issue was fixed.
+
+## 16.4.52 (2019-02-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- Resolved PDF Viewer Session Storage Clear Issue.
+- Resolved single Page Document Rendering Issue.
+- Resolved the script error while accessing invalid link annotation destination.
+- The scrolling when the toolbar is clicked is prevented
+
+## 16.4.48 (2019-01-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- Resolved PDF Viewer Session Storage Clear Issue.
+- Resolved single Page Document Rendering Issue.
+
 ## 16.4.46 (2019-01-08)
 
 ### PDF Viewer

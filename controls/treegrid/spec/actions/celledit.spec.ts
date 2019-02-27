@@ -4,11 +4,21 @@ import { sampleData } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SaveEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 /**
  * Grid Cell Edit spec 
  */
 TreeGrid.Inject(Edit, Toolbar);
 describe('Cell Edit module', () => {
+  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+  });
   describe('Hirarchy editing', () => {
     let gridObj: TreeGrid;
     let actionBegin: () => void;
@@ -162,7 +172,7 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
-      describe('Check the expanding state of record after delete operation', () => {
+    describe('Check the expanding state of record after delete operation', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
     let actionBegin: () => void;
@@ -208,5 +218,15 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
+
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+});
 
 });

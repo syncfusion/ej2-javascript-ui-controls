@@ -297,6 +297,14 @@ describe('Selection Shortcuts testing', () => {
         expect(gridObj.element.querySelectorAll('.e-selectionbackground').length).toBe(gridObj.element.querySelectorAll('.e-rowcell').length);
     });
 
+    it('shiftDown - header', () => {
+        (gridObj.getHeaderContent().querySelector('.e-headercell') as HTMLElement).click()
+        let args: any = { action: 'shiftDown', preventDefault: preventDefault };
+        gridObj.keyboardModule.keyAction(args);
+        expect((<any>gridObj).focusModule.active.constructor.name).toBe('HeaderFocus');
+
+    });
+
     afterAll(() => {
         destroy(gridObj);
     });

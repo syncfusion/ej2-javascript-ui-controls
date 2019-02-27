@@ -31,7 +31,7 @@ const WRAPPER: string = 'e-checkbox-wrapper';
 @NotifyPropertyChanges
 export class CheckBox extends Component<HTMLInputElement> implements INotifyPropertyChanged {
     private tagName: string;
-    private isKeyPressed: boolean = false;
+    private isFocused: boolean = false;
     private keyboardModule: KeyboardEvents;
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
@@ -205,9 +205,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private focusHandler(): void {
-        if (this.isKeyPressed) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isFocused = true;
     }
 
     private focusOutHandler(): void {
@@ -288,17 +286,15 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
     }
 
-    private keyDownHandler(): void {
-        this.isKeyPressed = true;
+    private keyUpHandler(): void {
+        if (this.isFocused) {
+            this.getWrapper().classList.add('e-focus');
+        }
     }
 
     private labelMouseHandler(e: MouseEvent): void {
         let rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
-    }
-
-    private mouseDownHandler(): void {
-        this.isKeyPressed = false;
     }
 
     /**
@@ -435,8 +431,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     protected unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
         EventHandler.remove(this.element, 'click', this.clickHandler);
-        EventHandler.remove(document, 'keydown', this.keyDownHandler);
-        EventHandler.remove(wrapper, 'mousedown', this.mouseDownHandler);
+        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         let label: Element = wrapper.getElementsByTagName('label')[0];
@@ -454,8 +449,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     protected wireEvents(): void {
         let wrapper: Element = this.getWrapper();
         EventHandler.add(this.element, 'click', this.clickHandler, this);
-        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
-        EventHandler.add(wrapper, 'mousedown', this.mouseDownHandler, this);
+        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         let label: Element = wrapper.getElementsByTagName('label')[0];

@@ -4895,4 +4895,45 @@ describe('MultiSelect', () => {
             listObj.dataBind();
         });
     });
+    describe('EJ2-22960 - Exception throws while use datasource string inside string', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: '"JAVA"', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'list6', text: 'GO' }, { id: 'list7', text: 'Haskell' }, { id: 'list8', text: 'Racket' }, { id: 'list8', text: 'F#' }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                dataSource: data,
+                fields: { text:"text", value:"text" }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Value selection', (done) => {
+            listObj.change = (): void => {
+                expect(listObj.value.length).toBe(1);
+                expect(listObj.text).toBe('"JAVA"');
+                done();
+            }
+            listObj.open = (args: PopupEventArgs): void => {
+                setTimeout((): void => {
+                    let liELe: HTMLElement = args.popup.element.querySelector('li');
+                    let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+                    clickEvent.initEvent('mouseup', true, true);
+                    liELe.dispatchEvent(clickEvent);
+                    (<any>listObj).onBlur();
+                }, 200)
+            }
+            listObj.showPopup();
+        });
+    });
 });

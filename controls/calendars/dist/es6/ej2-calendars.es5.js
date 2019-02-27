@@ -319,6 +319,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         if (this.showTodayButton) {
             var minimum = new Date(+this.min);
             var maximum = new Date(+this.max);
+            var l10nLocale = { today: 'Today' };
+            this.globalize = new Internationalization(this.locale);
+            this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
             this.todayElement = this.createElement('button');
             rippleEffect(this.todayElement);
             this.updateFooter();
@@ -546,9 +549,6 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
      */
     CalendarBase.prototype.preRender = function (value) {
         var _this = this;
-        this.globalize = new Internationalization(this.locale);
-        var l10nLocale = { today: 'Today' };
-        this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
         this.navigateHandler = function (e) {

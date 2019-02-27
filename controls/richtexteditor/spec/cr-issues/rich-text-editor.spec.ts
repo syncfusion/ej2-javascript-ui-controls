@@ -668,4 +668,92 @@ describe('EJ2-22524 - Default value should be set while restting form - ', () =>
             done();
         });
     });
+
+    describe('EJ2-22988 - e-lib class not added into control root element, when render RTE using textarea element', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLTextAreaElement;
+        beforeEach((done: Function) => {
+            done();
+        });
+
+        it(' Check the root element class', (done) => {
+            elem = <HTMLTextAreaElement>createElement('textarea',
+                { id: 'rte_test_EJ2-22988' });
+            document.body.appendChild(elem);
+            rteObj = new RichTextEditor({
+                value: '<p class="test-paragraph">RichTextEditor</p>'
+            });
+            rteObj.appendTo(elem);
+            expect(rteObj.element.classList.contains('e-control')).toBe(true);
+            expect(rteObj.element.classList.contains('e-lib')).toBe(true);
+            expect(rteObj.element.classList.contains('e-richtexteditor')).toBe(true);
+            expect((rteObj as any).valueContainer.classList.contains('e-control')).toBe(false);
+            expect((rteObj as any).valueContainer.classList.contains('e-lib')).toBe(false);
+            expect((rteObj as any).valueContainer.classList.contains('e-richtexteditor')).toBe(false);
+            done();
+        });
+
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
+    L10n.load({
+        'de-DE': {
+            'richtexteditor': {
+                imageInsertLinkHeader: 'Link einfügen',
+                editImageHeader: 'Bild bearbeiten',
+                alignmentsDropDownLeft: 'Linksbündig',
+                alignmentsDropDownCenter: 'Im Zentrum anordnen',
+                alignmentsDropDownRight: 'Rechts ausrichten',
+                alignmentsDropDownJustify: 'Justize ausrichten',
+                imageDisplayDropDownInline: 'In der Reihe',
+                imageDisplayDropDownBreak: 'Brechen',
+                tableInsertRowDropDownBefore: 'Reihe vorher einfügen',
+                tableInsertRowDropDownAfter: 'Zeile danach einfügen',
+                tableInsertRowDropDownDelete: 'Zeile löschen',
+                tableInsertColumnDropDownLeft: 'Spalte links einfügen',
+                tableInsertColumnDropDownRight: 'Spalte rechts einfügen',
+                tableInsertColumnDropDownDelete: 'Spalte löschen',
+                tableVerticalAlignDropDownTop: 'Top ausrichten',
+                tableVerticalAlignDropDownMiddle: 'Mitte ausrichten',
+                tableVerticalAlignDropDownBottom: 'Unten ausrichten',
+                tableStylesDropDownDashedBorder: 'Gestrichelte Grenzen',
+                tableStylesDropDownAlternateRows: 'Alternative Zeilen'
+            }
+        }
+    });
+    
+    describe('EJ2-23134 - Localization not applied to dropdown buttons and its item collections', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+              locale:'de-DE'
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Check the alignments dropdown items ', (done) => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Alignments');
+            dispatchEve(item, 'mousedown');
+            dispatchEve(item, 'mouseup');
+            item.click();
+            setTimeout(() => {
+                let items:any = document.querySelectorAll('#'+controlId+'_toolbar_Alignments-popup .e-item');
+                expect(items[0].textContent==='Linksbündig').toBe(true);
+                expect(items[1].textContent==='Im Zentrum anordnen').toBe(true);
+                expect(items[2].textContent==='Rechts ausrichten').toBe(true);
+                expect(items[3].textContent==='Justize ausrichten').toBe(true);
+                done();
+            }, 200)
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+    
 });

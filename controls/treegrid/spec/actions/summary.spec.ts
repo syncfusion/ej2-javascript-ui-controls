@@ -4,6 +4,7 @@ import { projectData, sampleData } from '../base/datasource.spec';
 import { CustomSummaryType, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { Aggregate } from '../../src/treegrid/actions/summary';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 /**
  * Grid Summary spec 
@@ -11,6 +12,15 @@ import { Aggregate } from '../../src/treegrid/actions/summary';
 TreeGrid.Inject(Aggregate);
 
 describe('Summary module', () => {
+  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+  });
+
   describe('Hierarchy Data with summary', () => {
     let TreegridObj: TreeGrid;
     beforeAll((done: Function) => {
@@ -309,6 +319,16 @@ describe('Summary with Sorting', () => {
       destroy(TreegridObj);
     });
   });
+  
+  it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+});
 });
 
 

@@ -37,7 +37,7 @@ export function setTheme(theme: string) {
 }
 describe('Slider Control', () => {
     describe('Slider element', () => {
-        let slider: Slider;
+        let slider: any;
         let ele: HTMLElement
         beforeEach((): void => {
             let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
@@ -450,16 +450,81 @@ describe('Slider Control', () => {
             expect((document.getElementsByClassName('e-second-button')[0] as HTMLElement).getAttribute('aria-label')).toBe('Increase');
         });
 
-        it('Slider tooltip:true testing', () => {
+        it('Slider tooltip  material tooltip (default)', () => {
             slider = new Slider({ showButtons: true, tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+            slider.getTheme = () => 'material';
             slider.appendTo('#slider');
-            expect((document.body.querySelectorAll(".e-tooltip-wrap")).length).toEqual(0);
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            slider.tooltipToggle(slider.getHandle());
+            slider.tooltipToggle(slider.getHandle());
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+            slider.closeMaterialTooltip();
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
             slider.destroy();
         });
-        it('Slider tooltip:true testing', () => {
-            slider = new Slider({ showButtons: true, type: 'Range', tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
-            setTheme('material');
+
+        it('Slider tooltip  material tooltip (minRange)', () => {
+            slider = new Slider({ showButtons: true, type:'MinRange', tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+            slider.getTheme = () => 'material';
             slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            slider.tooltipToggle(slider.getHandle());
+            slider.tooltipToggle(slider.getHandle());
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(true);
+            slider.closeMaterialTooltip();
+            expect(document.body.lastElementChild.classList.contains('e-material-tooltip-open')).toBe(false);
+            slider.destroy();
+        });
+
+        it('Slider tooltip  material tooltip (range)', () => {
+            slider = new Slider({ showButtons: true, type: 'Range', tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+            slider.getTheme = () => 'material';
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-tooltip-wrap')).toBe(false);
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(false);
+            slider.tooltipToggle(slider.getHandle());
+            slider.tooltipToggle(slider.getHandle());
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(true);
+            slider.closeTooltip();
+            slider.destroy();
+        });
+
+        it('Slider tooltip  material tooltip Always mode(range)', () => {
+            slider = new Slider({ showButtons: true, type: 'Range', tooltip: { placement: 'After', isVisible: true, showOn: 'Always' } });
+            slider.getTheme = () => 'material';
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-tooltip-wrap')).toBe(false);
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(false);
+            slider.tooltipToggle(slider.getHandle());
+            slider.tooltipToggle(slider.getHandle());
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(true);
+            slider.closeTooltip();
+            slider.destroy();
+        });
+
+        it('Slider tooltip  bootstrap tooltip (default)', () => {
+            slider = new Slider({ showButtons: true, tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+            slider.getTheme = () => 'bootstrap';
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-tooltip-wrap')).toBe(false);
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(false);
+            slider.tooltipToggle(slider.getHandle());
+            slider.tooltipToggle(slider.getHandle());
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(true);
+            slider.closeTooltip();
+            slider.destroy();
+        });
+
+        it('Slider tooltip  bootstrap tooltip (range)', () => {
+            slider = new Slider({ showButtons: true, type: 'Range', tooltip: { placement: 'After', isVisible: true, showOn: 'Auto' } });
+            slider.getTheme = () => 'bootstrap';
+            slider.appendTo('#slider');
+            expect(document.body.lastElementChild.classList.contains('e-tooltip-wrap')).toBe(false);
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(false);
+            slider.tooltipToggle(slider.getHandle());
+            slider.tooltipToggle(slider.getHandle());
+            expect(document.body.lastElementChild.classList.contains('e-popup-open')).toBe(true);
+            slider.closeTooltip();
             slider.destroy();
         });
 
@@ -584,11 +649,11 @@ describe('Slider Control', () => {
             slider = new Slider({ enabled: false, tooltip: { isVisible: true, showOn: 'Always' } });
             slider.appendTo('#slider');
             slider.enabled = true;
-            slider.firstTooltipObj.open(slider.firstHandle)
+            slider.tooltipObj.open(slider.firstHandle)
             slider.dataBind();
             expect(slider.sliderContainer.classList.contains('e-disabled')).toEqual(false);
             slider.enabled = false;
-            slider.firstTooltipObj.open(slider.firstHandle)
+            slider.tooltipObj.open(slider.firstHandle)
             slider.dataBind();
             expect(slider.sliderContainer.classList.contains('e-disabled')).toEqual(true);
         });
@@ -597,13 +662,11 @@ describe('Slider Control', () => {
             slider = new Slider({ enabled: false, tooltip: { isVisible: true, showOn: 'Always' }, type: 'Range' });
             slider.appendTo('#slider');
             slider.enabled = true;
-            slider.firstTooltipObj.open(slider.firstHandle);
-            slider.secondTooltipObj.open(slider.secondHandle);
+            slider.tooltipObj.open(slider.firstHandle);
             slider.dataBind();
             expect(slider.sliderContainer.classList.contains('e-disabled')).toEqual(false);
             slider.enabled = false;
-            slider.firstTooltipObj.open(slider.firstHandle);
-            slider.secondTooltipObj.open(slider.secondHandle);
+            slider.tooltipObj.open(slider.firstHandle);
             slider.dataBind();
             expect(slider.sliderContainer.classList.contains('e-disabled')).toEqual(true);
         });
@@ -714,7 +777,8 @@ describe('Slider Control', () => {
         });
 
         it('notify property changes testing-type property', () => {
-            slider = new Slider({ value: 0 });
+            slider = new Slider({ value: 0, tooltip: {isVisible: true} });
+            slider.getTheme = () => 'material';
             slider.appendTo('#slider');
             slider.type = "MinRange";
             slider.dataBind()
@@ -1108,89 +1172,6 @@ describe('Slider Control', () => {
             document.body.innerHTML = '';
         });
     })
-    describe('Slider', () => {
-        let slider: Slider;
-        beforeEach((): void => {
-            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
-            Browser.userAgent = Chromebrowser;
-            slider = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'slider' });
-            ele.style.height = '10px';
-            ele.style.width = '10px';
-            document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            document.body.innerHTML = '';
-        });
-        it('parent height and width less than 10px  testing', () => {
-            slider = new Slider({
-                orientation: 'Vertical',
-                value: 30,
-                ticks: { placement: 'Both', largeStep: 15, smallStep: 5, showSmallTicks: true }
-            });
-            slider.appendTo('#slider');
-            expect(document.getElementById('slider').classList.contains('e-slider')).toEqual(true);
-        });
-    })
-    describe('Slider', () => {
-        let slider: any;
-        beforeEach((): void => {
-            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
-            Browser.userAgent = Chromebrowser;
-            slider = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'slider' });
-            ele.style.height = '10px';
-            ele.style.width = '10px';
-            document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            document.body.innerHTML = '';
-        });
-        it('parent height less than 10px  testing', () => {
-            slider = new Slider({
-                orientation: 'Horizontal',
-                value: 30,
-                type: 'Range',
-                ticks: { placement: 'Both', largeStep: 15, smallStep: 5, showSmallTicks: true }
-            });
-            slider.appendTo('#slider');
-            expect(document.getElementById('slider').classList.contains('e-slider')).toEqual(true);
-            let event: any;
-            event = {
-                target: document.querySelectorAll('.e-slider-container')[0] as HTMLElement, preventDefault: function () { }
-            };
-            (<HTMLElement>document.querySelectorAll('.e-handle')[0]).style.left = '10%'
-            expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).style.left).toBe('10%');
-        });
-    })
-    describe('Slider - tick-pos', () => {
-        let slider: any;
-        let ua = Browser.userAgent;
-        beforeEach((): void => {
-            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
-            Browser.userAgent = androidPhoneUa;
-            slider = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'slider' });
-            ele.style.height = '10px';
-            ele.style.width = '10px';
-            document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            document.body.innerHTML = '';
-            Browser.userAgent = ua;
-        });
-        it('tick-pos added', () => {
-            slider = new Slider({
-                orientation: 'Horizontal',
-                value: 30,
-                type: 'Range',
-                ticks: { placement: 'Both', largeStep: 15, smallStep: 5, showSmallTicks: true }
-            });
-            slider.appendTo('#slider');
-            expect(document.getElementsByClassName('e-tick-pos') !== null).toBe(true);
-        });
-    })
 
     describe('Slider in HTML5 forms testing:', () => {
         let slider: Slider;
@@ -1306,6 +1287,89 @@ describe('Slider Control', () => {
             });
     });
 
+    describe('Slider', () => {
+        let slider: Slider;
+        beforeEach((): void => {
+            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+            Browser.userAgent = Chromebrowser;
+            slider = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'slider' });
+            ele.style.height = '10px';
+            ele.style.width = '10px';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('parent height and width less than 10px  testing', () => {
+            slider = new Slider({
+                orientation: 'Vertical',
+                value: 30,
+                ticks: { placement: 'Both', largeStep: 15, smallStep: 5, showSmallTicks: true }
+            });
+            slider.appendTo('#slider');
+            expect(document.getElementById('slider').classList.contains('e-slider')).toEqual(true);
+        });
+    })
+    describe('Slider', () => {
+        let slider: any;
+        beforeEach((): void => {
+            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+            Browser.userAgent = Chromebrowser;
+            slider = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'slider' });
+            ele.style.height = '10px';
+            ele.style.width = '10px';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('parent height less than 10px  testing', () => {
+            slider = new Slider({
+                orientation: 'Horizontal',
+                value: 30,
+                type: 'Range',
+                ticks: { placement: 'Both', largeStep: 15, smallStep: 5, showSmallTicks: true }
+            });
+            slider.appendTo('#slider');
+            expect(document.getElementById('slider').classList.contains('e-slider')).toEqual(true);
+            let event: any;
+            event = {
+                target: document.querySelectorAll('.e-slider-container')[0] as HTMLElement, preventDefault: function () { }
+            };
+            (<HTMLElement>document.querySelectorAll('.e-handle')[0]).style.left = '10%'
+            expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).style.left).toBe('10%');
+        });
+    })
+    describe('Slider - tick-pos', () => {
+        let slider: any;
+        let ua = Browser.userAgent;
+        beforeEach((): void => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+            slider = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'slider' });
+            ele.style.height = '10px';
+            ele.style.width = '10px';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            document.body.innerHTML = '';
+            Browser.userAgent = ua;
+        });
+        it('tick-pos added', () => {
+            slider = new Slider({
+                orientation: 'Horizontal',
+                value: 30,
+                type: 'Range',
+                ticks: { placement: 'Both', largeStep: 15, smallStep: 5, showSmallTicks: true }
+            });
+            slider.appendTo('#slider');
+            expect(document.getElementsByClassName('e-tick-pos') !== null).toBe(true);
+        });
+    })
     describe('Slide related events testing with tooltip with mobile useragent', () => {
         let slider: Slider;
         let dragEle: HTMLElement;
@@ -2350,7 +2414,7 @@ describe('Slider Control', () => {
         });
     });
 
-    describe('Slider bootstrap theme testing', () => {
+    describe('Slider bootstrap/material theme testing', () => {
         let slider: any;
         let element: HTMLElement;
         let eventArgs: any;
@@ -2362,11 +2426,9 @@ describe('Slider Control', () => {
             eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
             slider.keyDown(eventArgs);
             expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
-            slider.bootstrapCollisionArgs.collidedPosition = 'TopCenter';
             slider.tooltipBeforeOpen(eventArgs);
             slider.type = 'Default';
             slider.dataBind();
-            slider.bootstrapCollisionArgs.collidedPosition = 'TopCenter';
             slider.tooltipBeforeOpen(eventArgs);
         });
 
@@ -2378,11 +2440,9 @@ describe('Slider Control', () => {
             eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
             slider.keyDown(eventArgs);
             expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
-            slider.bootstrapCollisionArgs.collidedPosition = 'BottomCenter';
             slider.tooltipBeforeOpen(eventArgs);
             slider.type = 'Default';
             slider.dataBind();
-            slider.bootstrapCollisionArgs.collidedPosition = 'BottomCenter';
             slider.tooltipBeforeOpen(eventArgs);
         });
 
@@ -2394,11 +2454,9 @@ describe('Slider Control', () => {
             eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
             slider.keyDown(eventArgs);
             expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
-            slider.bootstrapCollisionArgs.collidedPosition = 'LeftCenter';
             slider.tooltipBeforeOpen(eventArgs);
             slider.type = 'Default';
             slider.dataBind();
-            slider.bootstrapCollisionArgs.collidedPosition = 'LeftCenter';
             slider.tooltipBeforeOpen(eventArgs);
         });
 
@@ -2410,12 +2468,31 @@ describe('Slider Control', () => {
             eventArgs = { keyCode: 37, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement), target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { } };
             slider.keyDown(eventArgs);
             expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('0 - 100');
-            slider.bootstrapCollisionArgs.collidedPosition = 'RightCenter';
             slider.tooltipBeforeOpen(eventArgs);
             slider.type = 'Default';
             slider.dataBind();
-            slider.bootstrapCollisionArgs.collidedPosition = 'RightCenter';
             slider.tooltipBeforeOpen(eventArgs);
+        });
+
+        it('After tooltip test (material)', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            setTheme('material');
+            slider = new Slider({ value: 9900, min: 9900, max: 10000, tooltip: { isVisible: true, placement: 'After'} }, '#slider');
+            slider.tooltipToggle();
+            slider.value = 10000;
+            slider.dataBind();
+            slider.closeMaterialTooltip();
+            slider.value = 9900;
+            slider.dataBind();
+            slider.tooltipToggle();
+            expect(slider.tooltipCollidedPosition).toBe('BottomCenter');
+            slider.checkTooltipPosition({collidedPosition: 'TopCenter', element: slider.tooltipElement});
+            expect(slider.tooltipCollidedPosition).toBe('TopCenter');
+            slider.checkTooltipPosition({collidedPosition: 'LeftCenter', element: slider.tooltipElement});
+            expect(slider.tooltipCollidedPosition).toBe('LeftCenter');
+            slider.checkTooltipPosition({collidedPosition: 'RightCenter', element: slider.tooltipElement});
+            expect(slider.tooltipCollidedPosition).toBe('RightCenter');
         });
 
         afterEach(() => {
@@ -3372,9 +3449,6 @@ describe('Slider Control', () => {
 
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('70');
             expect((document.getElementsByClassName('e-handle')[1] as HTMLElement).getAttribute('aria-valuenow')).toBe('100');
-
-            slider.firstTooltipElement = true;
-            slider.secondTooltipElement = true;
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 819, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3411,10 +3485,8 @@ describe('Slider Control', () => {
             EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
 
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('0');
-            expect((document.getElementsByClassName('e-handle')[2] as HTMLElement).getAttribute('aria-valuenow')).toBe('30');
+            expect((document.getElementsByClassName('e-handle')[1] as HTMLElement).getAttribute('aria-valuenow')).toBe('30');
 
-            slider.firstTooltipElement.classList.add('e-material-tooltip-open');
-            slider.secondTooltipElement.classList.add('e-material-tooltip-open');
             mousemove = getEventObject('MouseEvents', 'mousemove');
             mousemove = setMouseCoordinates(mousemove, 0, 148);
             mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-slider");
@@ -3655,14 +3727,11 @@ describe('Slider Control', () => {
             expect((document.querySelector('.e-slider-input') as HTMLInputElement).value).toEqual('10,20');
         });
         it('click event testing', () => {
-            slider.round(100);
             slider.step = 2.3;
-            slider.round(33);
         });
         it('setEnabled method specific case test', () => {
             slider = new Slider({ value: 10, showButtons: true, type: 'Range', tooltip: { isVisible: true, showOn: 'Always' } }, '#slider');
-            slider.firstTooltipObj.open(slider.firstHandle);
-            slider.secondTooltipObj.open(slider.secondHandle);
+            slider.tooltipObj.open(slider.firstHandle);
             slider.enabled = false;
             slider.setEnabled();
             expect(document.body.lastElementChild.classList.contains('e-disabled')).toBe(true);
@@ -3691,7 +3760,6 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             setTheme('material');
             let rangeSlider: any = new Slider({ showButtons: true, type: 'Range', tooltip: { placement: 'Before', isVisible: true, }, orientation: 'Vertical' }, '#slider');
-            rangeSlider.openMaterialTooltip();
             jasmine.clock().tick(3000);
             rangeSlider.modifyZindex();
             rangeSlider.activeHandle = 2;
@@ -3704,7 +3772,6 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             setTheme('material');
             let slider: any = new Slider({ value: 20, tooltip: { placement: 'After', isVisible: true, }, orientation: 'Vertical' }, '#slider');
-            slider.openMaterialTooltip();
             jasmine.clock().tick(3000);
             slider.value = 0;
         });
@@ -3903,10 +3970,8 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             let slider: any = new Slider({ type: 'Range', orientation: 'Vertical', ticks: { placement: 'Before' },
             tooltip: { isVisible: true } }, '#slider');
-
             slider.dataBind();
             slider.reposition();
-            slider.openTooltip();
         })
         it('Resize method testing with limits enabled', () => {
             let ele: HTMLElement;
@@ -3916,7 +3981,7 @@ describe('Slider Control', () => {
             slider.isMaterial = true;
             slider.dataBind();
             slider.reposition();
-            slider.firstTooltipElement = undefined;
+            slider.tooltipElement = undefined;
             slider.getTooltipTransformProperties('');
             slider.handleValueAdjust(60, 100, 3);
         })
@@ -3986,7 +4051,7 @@ describe('Slider Control', () => {
             let e: any = { propertyName: 'left' };
             slider.transitionEnd(e);
         });
-        it('transitionEnd event', () => {
+        it('transitionEnd event - material range', () => {
             let ele: HTMLElement;
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
@@ -3996,16 +4061,25 @@ describe('Slider Control', () => {
             let e: any = { propertyName: 'left' };
             slider.transitionEnd(e);
         });
+        it('transitionEnd event material - default', () => {
+            let ele: HTMLElement;
+            ele = createElement('div', { id: 'slider' });
+            document.body.appendChild(ele);
+            setTheme('material');
+            let slider: any = new Slider({ value: [10, 20], type: 'Default', tooltip: { placement: 'Before', isVisible: true, showOn: 'Focus' } }, '#slider');
+            let e: any = { propertyName: 'left' };
+            expect(slider.tooltipElement.style.transition.indexOf('cubic-bezier')).toBe(-1);
+            slider.transitionEnd(e);
+            expect(slider.tooltipElement.style.transition.indexOf('cubic-bezier')).not.toBe(-1);
+        });
         it('TooltipBeforeClose event', () => {
             let ele: HTMLElement;
             ele = createElement('div', { id: 'slider' });
             document.body.appendChild(ele);
             setTheme('material');
             let slider: any = new Slider({ value: [10, 20], type: 'Range', tooltip: { placement: 'Before', isVisible: true, showOn: 'Focus' } }, '#slider');
-            slider.firstTooltipObj.open(slider.firstHandle);
-            slider.secondTooltipObj.open(slider.secondHandle);
-            slider.firstTooltipObj.close();
-            slider.secondTooltipObj.close();
+            slider.tooltipObj.open(slider.firstHandle);
+            slider.tooltipObj.close();
         });
         it('handleOver event', () => {
             let ele: HTMLElement;
@@ -4047,7 +4121,7 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             setTheme('material');
             let slider: any = new Slider({ value: [10, 20], showButtons: true, type: 'Range', tooltip: { placement: 'Before', isVisible: true, showOn: 'Hover' } }, '#slider');
-            slider.firstTooltipObj.open(slider.firstHandle);
+            slider.tooltipObj.open(slider.firstHandle);
             slider.tooltipValue();
         });
         it('tooltip class', () => {
@@ -4056,7 +4130,7 @@ describe('Slider Control', () => {
             document.body.appendChild(ele);
             setTheme('material');
             let slider: any = new Slider({ value: 10, showButtons: true, tooltip: { placement: 'Before', isVisible: true, showOn: 'Hover' } }, '#slider');
-            slider.firstTooltipObj.open(slider.firstHandle);
+            slider.tooltipObj.open(slider.firstHandle);
             slider.tooltipValue();
         });
         it('buttonfocusOut event', () => {
@@ -4082,8 +4156,7 @@ describe('Slider Control', () => {
             setTheme('material');
             let slider: any = new Slider({ type: 'Range', showButtons: true, tooltip: { placement: 'Before', isVisible: true, showOn: 'Hover' } }, '#slider');
             let args: any = { relatedTarget: null };
-            slider.firstTooltipObj.open(slider.firstHandle);
-            slider.secondTooltipObj.open(slider.secondHandle);
+            slider.tooltipObj.open(slider.firstHandle);
             slider.sliderFocusOut(args);
             jasmine.clock().tick(3000);
         });
@@ -4105,8 +4178,7 @@ describe('Slider Control', () => {
             setTheme('material');
             let slider: any = new Slider({ type: 'Range', showButtons: true, orientation: 'Vertical', tooltip: { placement: 'Before', isVisible: true, showOn: 'Hover' } }, '#slider');
             let args: any = { relatedTarget: null };
-            slider.firstTooltipObj.open(slider.firstHandle);
-            slider.secondTooltipObj.open(slider.secondHandle);
+            slider.tooltipObj.open(slider.firstHandle);
             slider.sliderFocusOut(args);
         });
         it('buttonUp event', () => {

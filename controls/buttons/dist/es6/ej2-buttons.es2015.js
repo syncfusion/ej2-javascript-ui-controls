@@ -417,7 +417,7 @@ let CheckBox = class CheckBox extends Component {
      */
     constructor(options, element) {
         super(options, element);
-        this.isKeyPressed = false;
+        this.isFocused = false;
     }
     changeState(state) {
         let ariaState;
@@ -503,9 +503,7 @@ let CheckBox = class CheckBox extends Component {
         }
     }
     focusHandler() {
-        if (this.isKeyPressed) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isFocused = true;
     }
     focusOutHandler() {
         this.getWrapper().classList.remove('e-focus');
@@ -580,15 +578,14 @@ let CheckBox = class CheckBox extends Component {
             this.setText(this.label);
         }
     }
-    keyDownHandler() {
-        this.isKeyPressed = true;
+    keyUpHandler() {
+        if (this.isFocused) {
+            this.getWrapper().classList.add('e-focus');
+        }
     }
     labelMouseHandler(e) {
         let rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
-    }
-    mouseDownHandler() {
-        this.isKeyPressed = false;
     }
     /**
      * Called internally if any of the property value changes.
@@ -723,8 +720,7 @@ let CheckBox = class CheckBox extends Component {
     unWireEvents() {
         let wrapper = this.getWrapper();
         EventHandler.remove(this.element, 'click', this.clickHandler);
-        EventHandler.remove(document, 'keydown', this.keyDownHandler);
-        EventHandler.remove(wrapper, 'mousedown', this.mouseDownHandler);
+        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         let label = wrapper.getElementsByTagName('label')[0];
@@ -740,8 +736,7 @@ let CheckBox = class CheckBox extends Component {
     wireEvents() {
         let wrapper = this.getWrapper();
         EventHandler.add(this.element, 'click', this.clickHandler, this);
-        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
-        EventHandler.add(wrapper, 'mousedown', this.mouseDownHandler, this);
+        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         let label = wrapper.getElementsByTagName('label')[0];

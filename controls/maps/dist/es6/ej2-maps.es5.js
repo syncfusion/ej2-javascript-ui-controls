@@ -2568,7 +2568,7 @@ var LayerSettings = /** @__PURE__ @class */ (function (_super) {
         Property('Geometry')
     ], LayerSettings.prototype, "layerType", void 0);
     __decorate$1([
-        Property('http://a.tile.openstreetmap.org/level/tileX/tileY.png')
+        Property('https://a.tile.openstreetmap.org/level/tileX/tileY.png')
     ], LayerSettings.prototype, "urlTemplate", void 0);
     __decorate$1([
         Property(true)
@@ -3314,7 +3314,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 else if (layer.key && layer.key.length > 1) {
                     var proxy_1 = this;
                     var bing_1 = new BingMap(this.mapObject);
-                    var url = 'http://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
+                    var url = 'https://dev.virtualearth.net/REST/V1/Imagery/Metadata/' + layer.bingMapType;
                     var ajax = new Ajax({
                         url: url + '?output=json&include=ImageryProviders&key=' + layer.key
                     });
@@ -5904,7 +5904,7 @@ var NavigationLine = /** @__PURE__ @class */ (function () {
                         offSet = (isNullOrUndefined(offSet)) ? 0 : offSet;
                         var triId = this.maps.element.id + '_triangle';
                         var defElement = this.maps.renderer.createDefs();
-                        var xmlns = 'http://www.w3.org/2000/svg';
+                        var xmlns = 'https://www.w3.org/2000/svg';
                         var markerEle = document.createElementNS(xmlns, 'marker');
                         markerEle.setAttribute('id', 'triangle' + i);
                         markerEle.setAttribute('markerWidth', (arrowSize.toString()));
@@ -7161,7 +7161,7 @@ var Legend = /** @__PURE__ @class */ (function () {
     };
     Legend.prototype.legendGradientColor = function (colorMap, legendIndex) {
         var legendFillColor;
-        var xmlns = 'http://www.w3.org/2000/svg';
+        var xmlns = 'https://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
             var linerGradientEle = document.createElementNS(xmlns, 'linearGradient');
             var opacity = 1;

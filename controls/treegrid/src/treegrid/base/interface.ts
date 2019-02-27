@@ -26,25 +26,9 @@ export interface ITreeData {
      */
     parentItem?: ITreeData;
     /**
-     * Specifies the index of parent record
-     */
-    parentIndex?: number;
-    /**
      * Specifies the index of current record
      */
     index?: number;
-    /**
-     * Specifies the filtered index of current record
-     */
-    filterIndex?: number;
-    /**
-     * Specifies the filtered root index of current record
-     */
-    filterRootIndex?: number;
-   /**
-    * Specifies the root index of current record
-    */
-    rootIndex?: number;
     /**
      * Specifies the hierarchy level of record
      */
@@ -53,10 +37,6 @@ export interface ITreeData {
      * Specifies the hierarchy level of filtered record
      */
     filterLevel?: number;
-    /**
-     * Specifies the parentID
-     */
-    parentIdMapping?: number;
     /**
      * Specifies the unique ID of a record
      */

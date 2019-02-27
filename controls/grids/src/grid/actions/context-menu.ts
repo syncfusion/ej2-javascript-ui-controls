@@ -353,7 +353,7 @@ export class ContextMenu implements IAction {
             this.eventArgs = args.event;
             args.column = this.targetColumn;
             this.parent.trigger(events.contextMenuOpen, args);
-            if (this.hiddenItems.length === args.items.length) {
+            if (this.hiddenItems.length === args.items.length && !args.parentItem) {
                 this.updateItemStatus();
                 args.cancel = true;
             }

@@ -7,12 +7,22 @@ import { PageEventArgs, RowDataBoundEventArgs, Grid } from '@syncfusion/ej2-grid
 import { DataManipulation } from '../../src/treegrid/base/data';
 import { Render } from '../../src/treegrid/renderer/render';
 import { RowExpandedEventArgs } from '../../src';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 
 /**
  * Grid base spec 
  */
 describe('DataSource onDemand', () => {
-
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+      });
+    
     describe('Remote data', () => {
 
         type MockAjaxReturn = { promise: Promise<Object>, request: JasmineAjaxRequest };
@@ -96,14 +106,10 @@ describe('DataSource onDemand', () => {
             };
             gridObj.expanded = (args?: RowExpandedEventArgs) => {
                 expect(args.row.className.indexOf('e-row') !== -1).toBeTruthy();
-                let inter: number = setInterval((args?: Object) => {
-                    if (document.getElementsByClassName('e-treegridexpand').length === 1) {
-                        clearInterval(inter);
-                        gridObj.collapseRow(gridObj.getRows()[0], gridObj.getCurrentViewRecords()[0]);
-                        expect(document.querySelectorAll('.e-treegridexpand').length).toBe(1);
-                        done();
-                    }
-                },0)
+                gridObj.collapseRow(gridObj.getRows()[0], gridObj.getCurrentViewRecords()[0]);
+                console.log(gridObj.element.querySelectorAll('.e-treegridexpand').length);
+                expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(1);
+                done();
             };
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
@@ -126,10 +132,12 @@ describe('DataSource onDemand', () => {
             ], __count: 15, nextLevel: [true] })
             });
         });
-        it('TR generated local expand testing', () => {
-            gridObj.expanded = undefined;
+        it('TR generated local expand testing', (done: Function) => {
+            gridObj.expanded  = function (args) {
+                expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(1);
+                done();
+            }
             gridObj.expandRow(gridObj.getRows()[0], gridObj.getCurrentViewRecords()[0]);
-            expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(2);
         });
         afterAll(() => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
@@ -244,5 +252,14 @@ describe('DataSource onDemand', () => {
             remove(elem);
         });
 
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });

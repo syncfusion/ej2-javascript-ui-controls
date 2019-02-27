@@ -820,6 +820,12 @@ var tools = {
         'subCommand': 'Styles'
     }
 };
+var alignmentLocale = [
+    { locale: 'alignmentsDropDownLeft', value: 'JustifyLeft' },
+    { locale: 'alignmentsDropDownCenter', value: 'JustifyCenter' },
+    { locale: 'alignmentsDropDownRight', value: 'JustifyRight' },
+    { locale: 'alignmentsDropDownJustify', value: 'JustifyFull' }
+];
 var alignmentItems = [
     { iconCss: 'e-icons e-justify-left', text: 'Align Left', command: 'Alignments', subCommand: 'JustifyLeft' },
     { iconCss: 'e-icons e-justify-center', text: 'Align Center', command: 'Alignments', subCommand: 'JustifyCenter' },
@@ -831,29 +837,80 @@ var imageAlignItems = [
     { iconCss: 'e-icons e-justify-center', command: 'Images', subCommand: 'JustifyCenter' },
     { iconCss: 'e-icons e-justify-right', command: 'Images', subCommand: 'JustifyRight' },
 ];
+var displayLocale = [
+    { locale: 'imageDisplayDropDownInline', value: 'Inline' },
+    { locale: 'imageDisplayDropDownBreak', value: 'Break' }
+];
 var imageDisplayItems = [
     { text: 'Inline', cssClass: 'e-inline', command: 'Images', subCommand: 'Inline' },
     { text: 'Break', cssClass: 'e-break', command: 'Images', subCommand: 'Break' },
+];
+var tableRowLocale = [
+    { locale: 'tableInsertRowDropDownBefore', value: 'InsertRowBefore' },
+    { locale: 'tableInsertRowDropDownAfter', value: 'InsertRowAfter' },
+    { locale: 'tableInsertRowDropDownDelete', value: 'DeleteRow' }
 ];
 var tableRowsItems = [
     { iconCss: 'e-icons e-insert-row-before', text: 'Insert row before', command: 'Table', subCommand: 'InsertRowBefore' },
     { iconCss: 'e-icons e-insert-row-after', text: 'Insert row after', command: 'Table', subCommand: 'InsertRowAfter' },
     { iconCss: 'e-icons e-delete-row', text: 'Delete row', command: 'Table', subCommand: 'DeleteRow' },
 ];
+var tableColumnLocale = [
+    { locale: 'tableInsertColumnDropDownLeft', value: 'InsertColumnLeft' },
+    { locale: 'tableInsertColumnDropDownRight', value: 'InsertColumnRight' },
+    { locale: 'tableInsertColumnDropDownDelete', value: 'DeleteColumn' }
+];
 var tableColumnsItems = [
     { iconCss: 'e-icons e-insert-column-left', text: 'Insert column left', command: 'Table', subCommand: 'InsertColumnLeft' },
     { iconCss: 'e-icons e-insert-column-right', text: 'Insert column right', command: 'Table', subCommand: 'InsertColumnRight' },
     { iconCss: 'e-icons e-delete-column', text: 'Delete column', command: 'Table', subCommand: 'DeleteColumn' },
+];
+var tableVerticalLocale = [
+    { locale: 'tableVerticalAlignDropDownTop', value: 'AlignTop' },
+    { locale: 'tableVerticalAlignDropDownMiddle', value: 'AlignMiddle' },
+    { locale: 'tableVerticalAlignDropDownBottom', value: 'AlignBottom' }
 ];
 var TableCellVerticalAlignItems = [
     { iconCss: 'e-icons e-align-top', text: 'Align Top', command: 'Table', subCommand: 'AlignTop' },
     { iconCss: 'e-icons e-align-middle', text: 'Align Middle', command: 'Table', subCommand: 'AlignMiddle' },
     { iconCss: 'e-icons e-align-bottom', text: 'Align Bottom', command: 'Table', subCommand: 'AlignBottom' },
 ];
+var tableStyleLocale = [
+    { locale: 'tableStylesDropDownDashedBorder', value: 'Dashed' },
+    { locale: 'tableStylesDropDownAlternateRows', value: 'Alternate' }
+];
 var TableStyleItems = [
     { text: 'Dashed Borders', cssClass: 'e-dashed-borders', command: 'Table', subCommand: 'Dashed' },
     { text: 'Alternate Rows', cssClass: 'e-alternate-rows', command: 'Table', subCommand: 'Alternate' }
 ];
+function getLocale(self, localeItems, item) {
+    for (var i = 0; localeItems.length > i; i++) {
+        if (localeItems[i].value === item.subCommand) {
+            return self.localeObj.getConstant(localeItems[i].locale);
+        }
+    }
+    return item.text;
+}
+function updateDropDownLocale(self) {
+    alignmentItems.forEach(function (item, i) {
+        alignmentItems[i].text = getLocale(self, alignmentLocale, alignmentItems[i]);
+    });
+    imageDisplayItems.forEach(function (item, i) {
+        imageDisplayItems[i].text = getLocale(self, displayLocale, imageDisplayItems[i]);
+    });
+    tableRowsItems.forEach(function (item, i) {
+        tableRowsItems[i].text = getLocale(self, tableRowLocale, tableRowsItems[i]);
+    });
+    tableColumnsItems.forEach(function (item, i) {
+        tableColumnsItems[i].text = getLocale(self, tableColumnLocale, tableColumnsItems[i]);
+    });
+    TableCellVerticalAlignItems.forEach(function (item, i) {
+        TableCellVerticalAlignItems[i].text = getLocale(self, tableVerticalLocale, TableCellVerticalAlignItems[i]);
+    });
+    TableStyleItems.forEach(function (item, i) {
+        TableStyleItems[i].text = getLocale(self, tableStyleLocale, TableStyleItems[i]);
+    });
+}
 
 // tslint:disable
 /**
@@ -934,7 +991,6 @@ var defaultLocale = {
     'imageHeight': 'Height',
     'imageWidth': 'Width',
     'textPlaceholder': 'Enter Text',
-    'tblhead': '1X1',
     'inserttablebtn': 'Insert Table',
     'tabledialogHeader': 'Insert Table',
     'tableWidth': 'Width',
@@ -961,7 +1017,26 @@ var defaultLocale = {
     'deleteRow': 'Delete Row',
     'tableEditHeader': 'Edit Table',
     'TableHeadingText': 'Heading',
-    'TableColText': 'Col'
+    'TableColText': 'Col',
+    'imageInsertLinkHeader': 'Insert Link',
+    'editImageHeader': 'Edit Image',
+    "alignmentsDropDownLeft": 'Align Left',
+    "alignmentsDropDownCenter": 'Align Center',
+    "alignmentsDropDownRight": 'Align Right',
+    "alignmentsDropDownJustify": 'Align Justify',
+    "imageDisplayDropDownInline": 'Inline',
+    "imageDisplayDropDownBreak": 'Break',
+    "tableInsertRowDropDownBefore": 'Insert row before',
+    "tableInsertRowDropDownAfter": 'Insert row after',
+    "tableInsertRowDropDownDelete": 'Delete row',
+    "tableInsertColumnDropDownLeft": 'Insert column left',
+    "tableInsertColumnDropDownRight": 'Insert column right',
+    "tableInsertColumnDropDownDelete": 'Delete column',
+    "tableVerticalAlignDropDownTop": 'Align Top',
+    "tableVerticalAlignDropDownMiddle": 'Align Middle',
+    "tableVerticalAlignDropDownBottom": 'Align Bottom',
+    "tableStylesDropDownDashedBorder": 'Dashed Borders',
+    "tableStylesDropDownAlternateRows": 'Alternate Rows'
 };
 var toolsLocale = {
     'alignments': 'alignments',
@@ -2279,6 +2354,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.locator = serviceLocator;
         this.isTransformChild = false;
         this.renderFactory = this.locator.getService('rendererFactory');
+        updateDropDownLocale(this.parent);
         this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent));
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);
@@ -10654,7 +10730,8 @@ var Link = /** @__PURE__ @class */ (function () {
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
-        this.parent.formatter.process(this.parent, e.args, e.args, { selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
+        this.parent.formatter.process(this.parent, e.args, e.args, {
+            selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
             subCommand: e.args.item.subCommand
         });
         this.contentModule.getEditPanel().focus();
@@ -10676,7 +10753,7 @@ var Link = /** @__PURE__ @class */ (function () {
             var inputDetails = {
                 url: selectParentEle.href, text: selectParentEle.innerHTML,
                 title: selectParentEle.title, target: selectParentEle.target,
-                header: 'Edit Link', btnText: linkUpdate
+                header: this.i10n.getConstant('editLink'), btnText: linkUpdate
             };
             this.linkDialog(e, inputDetails);
         }
@@ -11400,7 +11477,11 @@ var Image = /** @__PURE__ @class */ (function () {
                 selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target_1
             };
             this.dialogObj.setProperties({
-                height: 'initial', width: '290px', header: 'Insert Link', content: linkWrap, position: { X: 'center', Y: 'center' },
+                height: 'initial',
+                width: '290px',
+                header: this.parent.localeObj.getConstant('imageInsertLinkHeader'),
+                content: linkWrap,
+                position: { X: 'center', Y: 'center' },
                 buttons: [{
                         click: function (e) { _this.insertlink(linkargs_1); },
                         buttonModel: {
@@ -11856,8 +11937,10 @@ var Image = /** @__PURE__ @class */ (function () {
             dialogContent.appendChild(linkHeader);
             dialogContent.appendChild(this.imageUrlPopup(e));
             if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
-                this.dialogObj.setProperties({ header: 'Edit Image', content: dialogContent }, false);
-                this.dialogObj.element.querySelector('.e-insertImage').textContent = 'Update';
+                this.dialogObj.setProperties({
+                    header: this.parent.localeObj.getConstant('editImageHeader'), content: dialogContent
+                });
+                this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
             }
             else {
                 this.dialogObj.setProperties({ content: dialogContent }, false);
@@ -11892,7 +11975,11 @@ var Image = /** @__PURE__ @class */ (function () {
         var deviceImgUpMsg = this.i10n.getConstant('imageDeviceUploadMessage');
         var imgUpMsg = this.i10n.getConstant('imageUploadMessage');
         var span = this.parent.createElement('span', { className: 'e-droptext' });
-        span.innerHTML = (Browser.isDevice) ? deviceImgUpMsg : imgUpMsg;
+        var spanMsg = this.parent.createElement('span', {
+            className: 'e-rte-upload-text',
+            innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
+        });
+        span.appendChild(spanMsg);
         var btnEle = this.parent.createElement('button', {
             className: 'e-browsebtn', id: this.rteID + '_insertImage',
             attrs: { autofocus: 'true', type: 'button' }
@@ -12914,7 +13001,7 @@ var Table = /** @__PURE__ @class */ (function () {
             return;
         }
         this.hideTableQuickToolbar();
-        var header = this.l10n.getConstant('tblhead');
+        var header = '1X1';
         var insertbtn = this.l10n.getConstant('inserttablebtn');
         this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup', id: this.rteID + '_table' });
         this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' });
@@ -14026,12 +14113,12 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.element.tagName === 'TEXTAREA') {
             var rteOuterWrapper = this.createElement('div', {
-                className: 'e-control e-richtexteditor'
+                className: this.element.getAttribute('class')
             });
             this.element.innerHTML = '';
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
             this.valueContainer = this.element;
-            this.valueContainer.classList.remove('e-control', 'e-richtexteditor');
+            removeClass([this.valueContainer], this.element.getAttribute('class').split(' '));
             this.element = rteOuterWrapper;
         }
         else {

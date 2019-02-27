@@ -2608,6 +2608,42 @@ describe('MultiSelect', () => {
             listObj.selectAll(true);
         });
     });
+    describe('EJ2-22723 - SelectAll performance improvement', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
+        let items: string[] = [];
+        for (let i: number = 0 ; i < 200; i++) {
+            items.push('Items' + i);
+        };
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Value selection', (done) => {
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                dataSource: items,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                showDropDownIcon: true,
+                filterBarPlaceholder: 'Search countries',
+                popupHeight: '350px',
+                selectedAll: (args: ISelectAllEventArgs): void => {
+                    expect(listObj.value.length).toBe(199);
+                    done();
+                }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+            listObj.selectAll(true);
+        });
+    });
     
 });
 

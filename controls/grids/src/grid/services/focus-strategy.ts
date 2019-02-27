@@ -70,7 +70,8 @@ export class FocusStrategy {
         let isFrozen: boolean = !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-frozencontent')) ||
             !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-frozenheader'));
         if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.e-gridheader')) ||
-            (<Element>e.target).classList.contains('e-content')) { return; }
+            (<Element>e.target).classList.contains('e-content') ||
+            !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell'))) { return; }
         this.setActive(isContent, isFrozen);
         if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.e-gridheader')) ||
             (<HTMLElement>e.target).classList.contains('e-filtermenudiv')) { this.clearOutline(); return; }
@@ -373,6 +374,7 @@ export class Matrix {
     public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function): number[] {
         let tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
         rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
+        if (isNullOrUndefined(this.matrix[rowIndex])) { return null; }
         columnIndex = Math.max(0, Math.min(columnIndex + navigator[1], this.matrix[rowIndex].length - 1));
         if (tmp + navigator[1] > this.matrix[rowIndex].length - 1 && validator(rowIndex, columnIndex, action)) { return [rowIndex, tmp]; }
         let first: number = this.first(this.matrix[rowIndex], columnIndex, navigator, true, action);

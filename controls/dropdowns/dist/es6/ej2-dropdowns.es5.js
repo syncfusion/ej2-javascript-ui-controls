@@ -1522,7 +1522,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.resetValueHandler = function (e) {
         var formElement = closest(this.inputElement, 'form');
         if (formElement && e.target === formElement) {
-            this.value = null;
+            var val = (this.element.tagName === this.getNgDirective()) ? null : this.inputElement.getAttribute('value');
+            this.text = val;
         }
     };
     DropDownList.prototype.wireEvent = function () {
@@ -2334,9 +2335,21 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownList.prototype.onActionComplete = function (ulElement, list, e, isUpdated) {
+        var _this = this;
         if (this.isNotSearchList) {
             this.isNotSearchList = false;
             return;
+        }
+        if (this.value && this.dataSource instanceof DataManager) {
+            var checkField_1 = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+            var checkVal = list.some(function (x) { return x[checkField_1] === _this.value; });
+            if (!checkVal) {
+                var query = this.getQuery(this.query).where(new Predicate(checkField_1, 'equal', this.value));
+                this.dataSource.executeQuery(query).then(function (e) {
+                    _this.addItem(e.result, list.length);
+                    _this.updateValues();
+                });
+            }
         }
         if (this.isActive) {
             var selectedItem = this.selectedLI ? this.selectedLI.cloneNode(true) : null;
@@ -2587,10 +2600,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         if (Browser.isDevice && ((this.getModuleName() === 'dropdownlist' &&
             !this.isFilterLayout()) || (this.getModuleName() === 'combobox' && !this.allowFiltering && this.isDropDownClick))) {
             this.hidePopup();
-        }
-        if (this.fields.groupBy && !isNullOrUndefined(this.fixedHeaderElement)) {
-            this.fixedHeaderElement.style.zIndex = '0';
-            this.fixedHeaderElement.style.display = 'none';
         }
     };
     DropDownList.prototype.setSearchBoxPosition = function () {
@@ -2855,6 +2864,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         this.inputElement.onchange = function (e) { e.stopImmediatePropagation(); };
         if (this.element.hasAttribute('autofocus')) {
             this.focusIn();
+        }
+        if (!isNullOrUndefined(this.text)) {
+            this.inputElement.setAttribute('value', this.text);
         }
     };
     
@@ -4718,9 +4730,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.setScrollPosition = function () {
         if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
             (!isNullOrUndefined(this.value) && (this.value.length > 0))) {
-            var valueEle = this.hideSelectedItem ?
-                this.ulElement.querySelector('li[data-value="' + this.value[this.value.length - 1] + '"]')
-                : this.list.querySelector('li[data-value="' + this.value[this.value.length - 1] + '"]');
+            var valueEle = this.findListElement((this.hideSelectedItem ? this.ulElement : this.list), 'li', 'data-value', this.value[this.value.length - 1]);
             if (!isNullOrUndefined(valueEle)) {
                 this.scrollBottom(valueEle);
             }
@@ -4829,7 +4839,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 predicate = predicate.or(field, 'equal', valuecheck[i]);
             }
         }
-        return new Query().where(predicate);
+        return this.getQuery(this.query).where(predicate);
     };
     MultiSelect.prototype.onActionComplete = function (ulElement, list, e, isUpdated) {
         _super.prototype.onActionComplete.call(this, ulElement, list, e);
@@ -4837,8 +4847,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var valuecheck = [];
         if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
             for (var i = 0; i < this.value.length; i++) {
-                var checkEle = ((this.allowFiltering && !isNullOrUndefined(this.mainList)) ?
-                    this.mainList : ulElement).querySelector('li[data-value="' + proxy.value[i] + '"]');
+                var checkEle = this.findListElement(((this.allowFiltering && !isNullOrUndefined(this.mainList)) ? this.mainList : ulElement), 'li', 'data-value', proxy.value[i]);
                 if (!checkEle) {
                     valuecheck.push(proxy.value[i]);
                 }
@@ -4907,7 +4916,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.value)) {
             for (var index = 0; !isNullOrUndefined(this.value[index]); index++) {
                 value = this.value[index];
-                element = this.list.querySelector('li[data-value="' + value + '"]');
+                element = this.findListElement(this.list, 'li', 'data-value', value);
                 if (element) {
                     addClass([element], className);
                     if (this.hideSelectedItem && element.previousSibling
@@ -4957,7 +4966,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var className = this.hideSelectedItem ?
             HIDE_LIST :
             dropDownBaseClasses.selected;
-        element1 = element = this.ulElement.querySelector('li[data-value="' + value + '"]');
+        element1 = element = this.findListElement(this.ulElement, 'li', 'data-value', value);
         var i = 0;
         var j = 0;
         var temp = true;
@@ -5845,7 +5854,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 this.inputElement.focus();
             }
             this.removeValue(value, e);
-            if (isNullOrUndefined(this.list.querySelector('li[data-value="' + value + '"]')) && this.mainList && this.listData) {
+            if (isNullOrUndefined(this.findListElement(this.list, 'li', 'data-value', value)) && this.mainList && this.listData) {
                 var list = this.mainList.cloneNode ? this.mainList.cloneNode(true) : this.mainList;
                 this.onActionComplete(list, this.mainData);
             }
@@ -5881,7 +5890,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             HIDE_LIST :
             dropDownBaseClasses.selected;
         if (index !== -1) {
-            var element = this.list.querySelector('li[data-value="' + value + '"]');
+            var element = this.findListElement(this.list, 'li', 'data-value', value);
             var val = this.getDataByValue(value);
             var eventArgs = {
                 e: eve,
@@ -5897,7 +5906,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.value.splice(index, 1);
             this.setProperties({ value: [].concat([], this.value) }, true);
             if (element !== null) {
-                var hideElement = this.mainList.querySelector('li[data-value="' + value + '"]');
+                var hideElement = this.findListElement(this.mainList, 'li', 'data-value', value);
                 element.setAttribute('aria-selected', 'false');
                 removeClass([element], className);
                 if (hideElement) {
@@ -5948,7 +5957,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.updateMainList = function (state, value) {
         if (this.allowFiltering) {
-            var element2 = this.mainList.querySelector('li[data-value="' + value + '"]');
+            var element2 = this.findListElement(this.mainList, 'li', 'data-value', value);
             if (element2) {
                 if (state) {
                     element2.setAttribute('aria-selected', 'false');
@@ -6006,7 +6015,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.value = [];
         }
         this.setProperties({ value: [].concat([], this.value, [value]) }, true);
-        var element = this.list.querySelector('li[data-value="' + value + '"]');
+        var element = this.findListElement(this.list, 'li', 'data-value', value);
         this.removeFocus();
         if (element) {
             this.addListFocus(element);
@@ -6343,7 +6352,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.resetValueHandler = function (e) {
         var formElement = closest(this.inputElement, 'form');
         if (formElement && e.target === formElement) {
-            this.value = null;
+            var textVal = (this.element.tagName === this.getNgDirective()) ? null : this.element.getAttribute('data-initial-value');
+            this.text = textVal;
         }
     };
     MultiSelect.prototype.wireEvent = function () {
@@ -6454,8 +6464,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(this.value)) {
                 for (var index = 0; !isNullOrUndefined(this.value[index]); index++) {
                     value = this.value[index];
-                    element = this.hideSelectedItem ? this.ulElement.querySelector('li[data-value="' + value + '"]')
-                        : this.list.querySelector('li[data-value="' + value + '"]');
+                    element = this.findListElement(this.hideSelectedItem ? this.ulElement : this.list, 'li', 'data-value', value);
                     text = this.getTextByValue(value);
                     if ((element && (element.getAttribute('aria-selected') !== 'true')) ||
                         (element && (element.getAttribute('aria-selected') === 'true' && this.hideSelectedItem) &&
@@ -6515,7 +6524,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             if (argsCancel) {
                 return;
             }
-            if ((this.allowCustomValue || this.allowFiltering) && !this.mainList.querySelector('li[data-value="' + value + '"]')) {
+            if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
                 var temp = li.cloneNode(true);
                 var data = this.getDataByValue(value);
                 append([temp], this.mainList);
@@ -6937,18 +6946,31 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.overAllClear, 'mousedown', this.ClearAll);
     };
     MultiSelect.prototype.selectAllItem = function (state, event) {
+        var _this = this;
         var li;
         li = this.list.querySelectorAll(state ?
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
             'li[aria-selected="true"]:not(.e-reorder-hide)');
         var length = li.length;
         if (li && li.length) {
-            var index = 0;
-            while (index < length) {
-                this.updateListSelection(li[index], event, length - index);
-                index++;
+            var index_1 = 0;
+            while (index_1 < length && index_1 <= 50) {
+                this.updateListSelection(li[index_1], event, length - index_1);
+                index_1++;
+            }
+            if (length > 50) {
+                setTimeout(function () {
+                    while (index_1 < length) {
+                        _this.updateListSelection(li[index_1], event, length - index_1);
+                        index_1++;
+                    }
+                    _this.textboxValueUpdate();
+                }, 0);
             }
         }
+        this.textboxValueUpdate();
+    };
+    MultiSelect.prototype.textboxValueUpdate = function () {
         if (this.mode !== 'Box' && !this.isPopupOpen()) {
             this.updateDelimView();
         }
@@ -7352,6 +7374,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         this.initStatus = true;
         this.checkAutoFocus();
+        if (!isNullOrUndefined(this.text)) {
+            this.element.setAttribute('data-initial-value', this.text);
+        }
     };
     MultiSelect.prototype.checkAutoFocus = function () {
         if (this.element.hasAttribute('autofocus')) {
@@ -7387,6 +7412,16 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.refreshInputHight();
         this.checkPlaceholderSize();
     };
+    MultiSelect.prototype.findListElement = function (list, findNode, attr, value) {
+        var liElement = null;
+        list.querySelectorAll(findNode).forEach(function (item) {
+            if (item.getAttribute(attr) === (value + '')) {
+                liElement = item;
+                return;
+            }
+        });
+        return liElement;
+    };
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
      * @method destroy
@@ -7410,6 +7445,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.removeAttribute(temp[length - 1]);
             length--;
         }
+        this.element.removeAttribute('data-initial-value');
         this.element.style.display = 'block';
         if (this.overAllWrapper.parentElement) {
             if (this.overAllWrapper.parentElement.tagName === this.getNgDirective()) {

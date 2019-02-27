@@ -174,6 +174,10 @@ const printGridInit = 'printGrid-Init';
 /** @hidden */
 const contextMenuOpen = 'contextMenuOpen';
 /** @hidden */
+const contextMenuClick = 'contextMenuClick';
+/** @hidden */
+const savePreviousRowPosition = 'savePreviousRowPosition';
+/** @hidden */
 const crudAction = 'crudAction';
 /** @hidden */
 const beginEdit = 'beginEdit';
@@ -413,7 +417,6 @@ function getPlainData(value) {
     delete value.childRecords;
     delete value.index;
     delete value.parentItem;
-    delete value.parentIndex;
     delete value.level;
     return value;
 }
@@ -439,10 +442,10 @@ class Render {
         let data = args.data;
         let parentData = data.parentItem;
         let index;
-        if (!isNullOrUndefined(data.parentIndex) &&
+        if (!isNullOrUndefined(data.parentItem) &&
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent)))) {
-            index = data.parentIndex;
+            index = data.parentItem.index;
             let collapsed$$1 = (this.parent.initialRender && (!(isNullOrUndefined(parentData[this.parent.expandStateMapping]) ||
                 parentData[this.parent.expandStateMapping]) || this.parent.enableCollapseAll)) ||
                 !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
@@ -511,7 +514,7 @@ class Render {
                     expand = !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
                 }
                 let collapsed$$1 = true;
-                if (!isNullOrUndefined(data.parentIndex) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
+                if (!isNullOrUndefined(data.parentItem) && (!isNullOrUndefined(data[this.parent.expandStateMapping])
                     && data[this.parent.expandStateMapping])
                     && !(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root'))) {
                     collapsed$$1 = !getExpandStatus(this.parent, args.data, this.parent.grid.getCurrentViewRecords());
@@ -568,7 +571,6 @@ class Sort$1 {
         this.taskIds = [];
         this.flatSortedData = [];
         this.storedIndex = -1;
-        this.rootIndex = -1;
         this.isSelfReference = !isNullOrUndefined(this.parent.parentIdMapping);
         this.addEventListener();
     }
@@ -629,22 +631,15 @@ class Sort$1 {
                 currentSortData.parentItem = parentData;
                 currentSortData.parentUniqueID = parentData.uniqueID;
                 level = parentRecords.level + 1;
-                currentSortData.parentIndex = parentIndex;
             }
             currentSortData.level = level;
-            if (isNullOrUndefined(currentSortData.parentIndex)) {
-                this.rootIndex = currentSortData.index;
-            }
-            else {
-                currentSortData.rootIndex = this.rootIndex;
-            }
             if (isNullOrUndefined(currentSortData[this.parent.parentIdMapping]) ||
                 currentSortData.parentItem) {
                 this.flatSortedData.push(currentSortData);
             }
             if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
                 this.createSortRecords({ modifiedData: currentSortData[this.parent.childMapping], parentRecords: currentSortData,
-                    parentIndex: this.storedIndex, filteredResult: filteredResult });
+                    filteredResult: filteredResult });
             }
         }
         this.parent.notify('Sorting', { sortedData: this.flatSortedData, filteredData: filteredResult });
@@ -720,7 +715,6 @@ class DataManipulation {
         this.parentItems = [];
         this.taskIds = [];
         this.hierarchyData = [];
-        this.rootIndex = -1;
         this.storedIndex = -1;
         this.sortedData = [];
         this.isSortAction = false;
@@ -841,7 +835,12 @@ class DataManipulation {
                     }
                 }
             }
-            this.createRecords(this.hierarchyData);
+            if (!Object.keys(this.hierarchyData).length) {
+                this.parent.flatData = [];
+            }
+            else {
+                this.createRecords(this.hierarchyData);
+            }
             this.storedIndex = -1;
         }
         // else if (data instanceof DataManager && this.parent.isLocalData) {
@@ -933,7 +932,6 @@ class DataManipulation {
                     result[r].level = rowDetails.record.level + 1;
                     result[r].index = Math.ceil(Math.random() * 1000);
                     result[r].parentItem = rowDetails.record;
-                    result[r].parentIndex = rowDetails.record.index;
                     if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
                         && !(haveChild && !haveChild[r])) {
                         result[r].hasChildRecords = true;
@@ -954,7 +952,7 @@ class DataManipulation {
     beginSorting() {
         this.isSortAction = true;
     }
-    createRecords(data, parentRecords, parentIndex) {
+    createRecords(data, parentRecords) {
         for (let i = 0, len = Object.keys(data).length; i < len; i++) {
             let currentData = data[i];
             let level = 0;
@@ -978,24 +976,14 @@ class DataManipulation {
                 currentData.parentItem = parentData;
                 currentData.parentUniqueID = parentData.uniqueID;
                 level = parentRecords.level + 1;
-                currentData.parentIndex = parentIndex;
             }
             currentData.level = level;
-            if (isNullOrUndefined(currentData.parentIndex)) {
-                this.rootIndex = currentData.index;
-            }
-            else {
-                currentData.rootIndex = this.rootIndex;
-            }
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
                 this.parent.flatData.push(currentData);
             }
-            if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
-                this.createRecords(currentData[this.parent.childMapping], currentData, this.storedIndex);
+            if (!isNullOrUndefined(currentData[this.parent.childMapping] && currentData[this.parent.childMapping].length)) {
+                this.createRecords(currentData[this.parent.childMapping], currentData);
             }
-        }
-        if (!Object.keys(data).length) {
-            this.parent.flatData = [];
         }
     }
     sortedRecords(data) {
@@ -1025,8 +1013,9 @@ class DataManipulation {
      * @hidden
      */
     dataProcessor(args) {
-        let results = this.parent.flatData;
-        let count = this.parent.flatData.length;
+        let dataObj = this.parent.grid.dataSource;
+        let results = dataObj instanceof DataManager ? dataObj.dataSource.json : dataObj;
+        let count = results.length;
         if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
             (this.parent.grid.searchSettings.key.length > 0)) {
             let qry = new Query();
@@ -1039,7 +1028,7 @@ class DataManipulation {
             let fltrQuery = gridQuery.queries.filter((q) => q.fn === 'onWhere');
             let srchQuery = gridQuery.queries.filter((q) => q.fn === 'onSearch');
             qry.queries = fltrQuery.concat(srchQuery);
-            let filteredData = new DataManager(this.parent.flatData).executeLocal(qry);
+            let filteredData = new DataManager(results).executeLocal(qry);
             this.parent.notify('updateFilterRecs', { data: filteredData });
             results = this.dataResults.result;
             this.dataResults.result = null;
@@ -1087,7 +1076,7 @@ class DataManipulation {
                 this.parent.notify('createSort', { modifiedData: modifiedData, parent: this.parent, srtQry: srtQry });
                 this.parent.notify('createSortRecords', {
                     modifiedData: modifiedData,
-                    parentRecords: null, parentIndex: null, filteredResult: results
+                    parentRecords: null, filteredResult: results
                 });
             }
             results = this.sortedData;
@@ -1961,8 +1950,9 @@ let TreeGrid = class TreeGrid extends Component {
             if (requestType === 'reorder') {
                 this.notify('getColumnIndex', {});
             }
-            if (!isRemoteData(this) && this.grid.allowFiltering && this.grid.filterSettings.columns.length === 0) {
-                this.notify('clearFilters', { flatData: this.flatData });
+            if (!isRemoteData(this) && !isNullOrUndefined(this.filterModule)
+                && (this.grid.filterSettings.columns.length === 0 || this.grid.searchSettings.key.length === 0)) {
+                this.notify('clearFilters', { flatData: this.grid.dataSource });
                 this.grid.dataSource = this.dataResults.result;
             }
             this.trigger(actionBegin, args);
@@ -2004,7 +1994,10 @@ let TreeGrid = class TreeGrid extends Component {
             }
             treeGrid.renderModule.cellRender(args);
         };
-        this.grid.contextMenuClick = this.triggerEvents.bind(this);
+        this.grid.contextMenuClick = (args) => {
+            this.notify(contextMenuClick, args);
+            this.trigger(contextMenuClick, args);
+        };
         this.grid.contextMenuOpen = (args) => {
             this.notify(contextMenuOpen, args);
             this.trigger(contextMenuOpen, args);
@@ -2218,7 +2211,15 @@ let TreeGrid = class TreeGrid extends Component {
                     this.isLocalData = (!(this.dataSource instanceof DataManager) || (!isNullOrUndefined(this.dataSource.ready))
                         || this.dataSource.adaptor instanceof RemoteSaveAdaptor);
                     this.convertTreeData(this.dataSource);
-                    this.grid.dataSource = this.flatData.slice();
+                    if (this.isLocalData) {
+                        this.grid.dataSource = this.flatData.slice();
+                    }
+                    else {
+                        this.grid.dataSource = this.dataSource;
+                    }
+                    break;
+                case 'query':
+                    this.grid.query = this.query;
                     break;
                 case 'enableCollapseAll':
                     if (newProp[prop]) {
@@ -2922,7 +2923,9 @@ let TreeGrid = class TreeGrid extends Component {
                 }
             }
             else {
-                let childRecords = record.childRecords;
+                let childRecords = this.getCurrentViewRecords().filter((e) => {
+                    return (e.parentUniqueID === record.uniqueID);
+                });
                 let index = childRecords[0].parentItem.index;
                 let rows = gridRows.filter((r) => r.classList.contains('e-gridrowindex' + record.index + 'level' + (record.level + 1)));
                 for (let i = 0; i < rows.length; i++) {
@@ -3478,7 +3481,6 @@ class Filter$1 {
         this.filteredResult = [];
         this.flatFilteredData = [];
         this.filteredParentRecs = [];
-        this.filterRootIndex = -1;
         this.addEventListener();
     }
     /**
@@ -3621,12 +3623,9 @@ class Filter$1 {
             if (isPrst) {
                 let parent = this.filteredResult.filter((e) => { return e.uniqueID === record[c].parentUniqueID; })[0];
                 setValue('filterLevel', parent.filterLevel + 1, record[c]);
-                record[c].filterRootIndex = this.filterRootIndex;
             }
             else {
                 setValue('filterLevel', 0, record[c]);
-                this.filterRootIndex = record[c].filterIndex = c;
-                record[c].filterIndex = this.filterRootIndex;
                 this.filteredParentRecs.push(record[c]);
             }
         }
@@ -3639,14 +3638,10 @@ class Filter$1 {
         for (count; count < len; count++) {
             currentRecord = flatData[count];
             let fLevel = getObject('filterLevel', currentRecord);
-            if (fLevel || fLevel === 0) {
+            if (fLevel || fLevel === 0 || !isNullOrUndefined(getObject('hasFilteredChildRecords', currentRecord))) {
                 let ischild = getObject('childRecords', currentRecord);
-                if (!isNullOrUndefined(ischild) && ischild.length) {
-                    setValue('hasFilteredChildRecords', true, currentRecord);
-                }
+                setValue('hasFilteredChildRecords', null, currentRecord);
                 setValue('filterLevel', null, currentRecord);
-                setValue('filterIndex', null, currentRecord);
-                setValue('filterRootIndex', null, currentRecord);
             }
         }
         this.parent.notify('updateResults', { result: flatData, count: flatData.length });
@@ -3984,6 +3979,20 @@ class Page$1 {
         };
         getValue('grid.renderModule', this.parent).dataManagerSuccess(ret);
     }
+    pageRoot(pagedResults, temp, result) {
+        let newResults = isNullOrUndefined(result) ? [] : result;
+        for (let t = 0; t < temp.length; t++) {
+            newResults.push(temp[t]);
+            let res = [];
+            if (temp[t].hasChildRecords) {
+                res = pagedResults.filter((e) => {
+                    return temp[t].uniqueID === e.parentUniqueID;
+                });
+                newResults = this.pageRoot(pagedResults, res, newResults);
+            }
+        }
+        return newResults;
+    }
     pageAction(pageingDetails) {
         let dm = new DataManager(pageingDetails.result);
         if (this.parent.pageSettings.pageSizeMode === 'Root') {
@@ -3999,21 +4008,8 @@ class Page$1 {
             let skip = size * (current - 1);
             query = query.skip(skip).take(size);
             temp = dm.executeLocal(query);
-            let child = [];
-            for (let r = 0; r < temp.length; r++) {
-                child = pageingDetails.result.filter((e) => {
-                    if (!isNullOrUndefined(temp[r].filterIndex)) {
-                        return e.filterRootIndex === temp[r].filterIndex;
-                    }
-                    else {
-                        return e.rootIndex === temp[r].index;
-                    }
-                });
-                for (let c = 0; c < child.length; c++) {
-                    temp.splice(r + c + 1, 0, child[c]);
-                }
-            }
-            pageingDetails.result = temp;
+            let newResults = this.pageRoot(pageingDetails.result, temp);
+            pageingDetails.result = newResults;
         }
         else {
             let dm = new DataManager(pageingDetails.result);
@@ -4183,7 +4179,6 @@ class Aggregate$1 {
                     let level = getObject('level', summaryParent);
                     setValue('level', level + 1, item);
                     let index = getObject('index', summaryParent);
-                    setValue('parentIndex', index, item);
                     setValue('isSummaryRow', true, item);
                     if (isSort) {
                         let childRecords = getObject('childRecords', parentRecord);
@@ -4323,6 +4318,7 @@ class ContextMenu$1 {
      */
     addEventListener() {
         this.parent.on('contextMenuOpen', this.contextMenuOpen, this);
+        this.parent.on('contextMenuClick', this.contextMenuClick, this);
     }
     /**
      * @hidden
@@ -4332,6 +4328,7 @@ class ContextMenu$1 {
             return;
         }
         this.parent.off('contextMenuOpen', this.contextMenuOpen);
+        this.parent.off('contextMenuClick', this.contextMenuClick);
     }
     contextMenuOpen(args) {
         let addRow = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
@@ -4342,6 +4339,13 @@ class ContextMenu$1 {
             else {
                 addRow.style.display = 'block';
             }
+        }
+    }
+    contextMenuClick(args) {
+        if (args.item.id === 'Above' || args.item.id === 'Below') {
+            this.parent.notify('savePreviousRowPosition', args);
+            this.parent.setProperties({ editSettings: { newRowPosition: args.item.id } }, true);
+            this.parent.addRecord();
         }
     }
     /**
@@ -4383,6 +4387,7 @@ class Edit$1 {
         // this.batchDeleted = {};
         // this.batchRecords = [];
         // this.isAdd = false;
+        this.previousNewRowPosition = null;
         this.addEventListener();
     }
     /**
@@ -4405,6 +4410,7 @@ class Edit$1 {
         this.parent.grid.on(keyPressed, this.keyPressed, this);
         this.parent.on(cellEdit, this.cellEdit, this);
         this.parent.grid.on(doubleTap, this.recordDoubleClick, this);
+        this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
         // this.parent.on(events.cellSaved, this.cellSaved, this);
         // this.parent.on(events.batchDelete, this.batchDelete, this);
@@ -4429,6 +4435,7 @@ class Edit$1 {
         this.parent.grid.off(keyPressed, this.keyPressed);
         this.parent.off(cellEdit, this.cellEdit);
         this.parent.grid.off(doubleTap, this.recordDoubleClick);
+        this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
     }
     /**
      * To destroy the editModule
@@ -4654,6 +4661,11 @@ class Edit$1 {
         //      }
         // }
     }
+    savePreviousRowPosition(args) {
+        if (this.previousNewRowPosition === null) {
+            this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+        }
+    }
     beginAddEdit(args) {
         let value = args.data;
         if (args.action === 'add') {
@@ -4667,7 +4679,6 @@ class Edit$1 {
             let level;
             let dataIndex;
             let idMapping;
-            let parentIndex;
             let parentUniqueID;
             let parentItem;
             let parentIdMapping;
@@ -4675,7 +4686,6 @@ class Edit$1 {
                 level = currentData[this.addRowIndex].level;
                 dataIndex = currentData[this.addRowIndex].index;
                 idMapping = currentData[this.addRowIndex][this.parent.idMapping];
-                parentIndex = currentData[this.addRowIndex].parentIndex;
                 parentIdMapping = currentData[this.addRowIndex][this.parent.parentIdMapping];
                 if (currentData[this.addRowIndex].parentItem) {
                     parentUniqueID = currentData[this.addRowIndex].parentItem.uniqueID;
@@ -4693,7 +4703,6 @@ class Edit$1 {
                 else if (this.parent.editSettings.newRowPosition === 'Child') {
                     position = 'after';
                     if (this.selectedIndex > -1) {
-                        value.parentIndex = dataIndex;
                         value.parentItem = extend({}, currentData[this.addRowIndex]);
                         value.parentUniqueID = value.parentItem.uniqueID;
                         delete value.parentItem.childRecords;
@@ -4703,14 +4712,13 @@ class Edit$1 {
                     value.level = level + 1;
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = idMapping;
-                        if (!isNullOrUndefined(value.parentIndex)) {
+                        if (!isNullOrUndefined(value.parentItem)) {
                             this.updateParentRow(key, value.parentItem, 'add', value);
                         }
                     }
                 }
                 if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                     if (this.selectedIndex > -1 && level) {
-                        value.parentIndex = parentIndex;
                         value.parentUniqueID = parentUniqueID;
                         value.parentItem = extend({}, parentItem);
                         delete value.parentItem.childRecords;
@@ -4719,7 +4727,7 @@ class Edit$1 {
                     value.level = level;
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = parentIdMapping;
-                        if (!isNullOrUndefined(value.parentIndex)) {
+                        if (!isNullOrUndefined(value.parentItem)) {
                             this.updateParentRow(key, value.parentItem, 'add', value);
                         }
                     }
@@ -4867,6 +4875,10 @@ class Edit$1 {
                 }
             }
         }
+        if (action === 'add' && this.previousNewRowPosition != null) {
+            this.parent.setProperties({ editSettings: { newRowPosition: this.previousNewRowPosition } }, true);
+            this.previousNewRowPosition = null;
+        }
     }
     removeChildRecords(childRecords, modifiedData, action, key, originalData, columnName) {
         let isChildAll = false;
@@ -5007,5 +5019,5 @@ class CommandColumn$1 {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelected, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelected, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn };
 //# sourceMappingURL=ej2-treegrid.es2015.js.map

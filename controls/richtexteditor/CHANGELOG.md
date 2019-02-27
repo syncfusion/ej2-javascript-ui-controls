@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 16.4.55 (2019-02-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- Insert image dialog is not rendering properly while setting the `imageUploadMessage` text as long in localization, that issue has been fixed.
+
+- Localization is not applied to static `DropDownButton` items, that issue has been fixed.
+
 ## 16.4.54 (2019-02-19)
 
 ### RichTextEditor
@@ -11,6 +21,8 @@
 - HTML 5 form reset behaviour has been corrected.
 
 - Editor content rendered twice in DOM when using `RichTextEditorFor`, that issue has been fixed.
+
+- EJ2 compatibility styles are not worked while component rendering with `textarea` element, that issue has been fixed.
 
 ## 16.4.53 (2019-02-13)
 
@@ -73,6 +85,8 @@
 - Pasted URL is not converted to links automatically, that issue has been fixed.
 
 - Image paste as twice in Firefox browser, that issue has been fixed.
+
+- The value property and getHtml method will be updated within an interval to `saveInterval` property.
 
 ## 16.4.40-beta (2018-12-10)
 

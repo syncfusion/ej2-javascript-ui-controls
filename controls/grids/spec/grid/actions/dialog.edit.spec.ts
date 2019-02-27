@@ -423,5 +423,38 @@ describe('Dialog Editing module', () => {
     
         });
     });
+    describe('Dialog editing render => ', () => {
+        let gridObj: Grid;      
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, 
+                        mode: 'Dialog', dialog: { params : {height: '500px', width: '400px'} }},
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'EmployeeID', type: 'number', allowEditing: false },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' }
+                    ]
+                }, done);
+        });
+        it('DialogEdit start', () => {
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+
+        });
+        it('Check the dialog height', () => {
+            expect((document.querySelectorAll('.e-popup-open')[0] as any).style.height).toBe('500px');
+            expect((document.querySelectorAll('.e-popup-open')[0] as any).style.width).toBe('400px');
+        });
+        afterAll((done) => {           
+           destroy(gridObj);
+            setTimeout(function () {
+                done();
+            }, 1000);
+    
+        });
+    });
 
 });
