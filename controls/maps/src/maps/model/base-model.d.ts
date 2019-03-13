@@ -146,7 +146,6 @@ export interface TooltipSettingsModel {
 
     /**
      * To customize the fill color of the tooltip.
-     * @default '#363F4C'
      */
     fill?: string;
 
@@ -1140,7 +1139,7 @@ export interface LayerSettingsModel {
      * Specifies the shapePropertyPath for the layer.
      * @default 'name'
      */
-    shapePropertyPath?: string| string[];
+    shapePropertyPath?: string | string[];
 
     /**
      * Specifies the animation duration for the layer.

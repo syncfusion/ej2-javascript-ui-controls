@@ -1,8 +1,9 @@
 /**
  * Helper functions for maps control
  */
-import { SvgRenderer, createElement, isNullOrUndefined, remove, compile as templateComplier, merge } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, remove, compile as templateComplier, merge } from '@syncfusion/ej2-base';
 import { AnimationOptions, Animation } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType } from '../../index';
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
 import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel } from '../index';

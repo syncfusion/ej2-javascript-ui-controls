@@ -32,7 +32,7 @@ export class Line extends ChildProperty<Line> {
      * The color of the axis line, which accepts value in hex, rgba as a valid CSS color string.
      */
 
-    @Property(Theme.axisLineColor)
+    @Property(null)
     public color: string;
 }
 
@@ -230,7 +230,7 @@ export class Tick extends ChildProperty<Tick> {
      * @default null
      */
 
-    @Property(Theme.tickLineColor)
+    @Property(null)
     public color: string;
 
     /**
@@ -260,17 +260,17 @@ export class Cap extends ChildProperty<Cap> {
 
     /**
      * The color of the cap.
-     * @default '#ffffff'
+     * @default null
      */
 
-    @Property('#ffffff')
+    @Property(null)
     public color: string;
 
     /**
      * Options for customizing the border of the cap.
      */
 
-    @Complex<BorderModel>({ color: Theme.pointerColor, width: 8 }, Border)
+    @Complex<BorderModel>({ color: null, width: 8 }, Border)
     public border: BorderModel;
 
     /**
@@ -295,14 +295,14 @@ export class NeedleTail extends ChildProperty<NeedleTail> {
      * @default null
      */
 
-    @Property(Theme.pointerColor)
+    @Property(null)
     public color: string;
 
     /**
      * Options for customizing the border of the back needle.
      */
 
-    @Complex<BorderModel>({ color: Theme.pointerColor, width: 0 }, Border)
+    @Complex<BorderModel>({ color: null, width: 0 }, Border)
     public border: BorderModel;
 
     /**
@@ -470,7 +470,7 @@ export class Pointer extends ChildProperty<Pointer> {
      * The color of the pointer.
      */
 
-    @Property(Theme.pointerColor)
+    @Property(null)
     public color: string;
 
     /**

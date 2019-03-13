@@ -1,7 +1,7 @@
 import { PointModel } from '../primitives/point-model';
 import { Node } from '../objects/node';
 import { Connector, BezierSegment, StraightSegment } from '../objects/connector';
-import { NodeModel, BasicShapeModel } from '../objects/node-model';
+import { NodeModel, BasicShapeModel, SwimLaneModel } from '../objects/node-model';
 import { ConnectorModel, StraightSegmentModel } from '../objects/connector-model';
 import { Point } from '../primitives/point';
 import { BpmnSubEvent } from '../objects/node';
@@ -16,7 +16,7 @@ import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOut
 import { HistoryEntry } from '../diagram/history';
 import { Matrix, transformPointByMatrix, rotateMatrix, identityMatrix } from '../primitives/matrix';
 import { Snap } from './../objects/snapping';
-import { NodeConstraints, DiagramEvent, ObjectTypes } from './../enum/enum';
+import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints } from './../enum/enum';
 import { PointPortModel, PortModel } from './../objects/port-model';
 import { ITouches } from '../objects/interface/interfaces';
 import { SelectorModel } from './selector-model';
@@ -543,7 +543,7 @@ export class ConnectTool extends ToolBase {
             return true;
         } else if (canPortOutConnect(target) && this.endPoint === 'ConnectorSourceEnd') {
             return true;
-        } else if (!canPortInConnect(target) && !canPortOutConnect(target)) {
+        } else if (!(target.constraints & PortConstraints.None) && !canPortInConnect(target) && !canPortOutConnect(target)) {
             return true;
         }
         return false;
@@ -606,7 +606,7 @@ export class MoveTool extends ToolBase {
     }
 
     /**   @private  */
-    public mouseUp(args: MouseEventArgs): void {
+    public mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): void {
         let obj: SelectorModel; let historyAdded: boolean = false; let object: SelectorModel | Node;
         let redoObject: SelectorModel = { nodes: [], connectors: [] };
         if (this.objectType !== 'Port') {
@@ -625,31 +625,36 @@ export class MoveTool extends ToolBase {
                 obj = cloneObject(args.source);
             }
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector;
-            if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
-                let oldValues: SelectorModel; let newValues: SelectorModel;
-                if (args.source) {
-                    newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-                    oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-                }
-                let arg: IDraggingEventArgs = {
-                    source: args.source, state: 'Completed', oldValue: oldValues, newValue: newValues,
-                    target: this.currentTarget, targetPosition: this.currentPosition, allowDrop: true, cancel: false
-                };
-
-                this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
-                this.commandHandler.startGroupAction(); historyAdded = true;
-                let entry: HistoryEntry = {
-                    type: 'PositionChanged',
-                    redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
-                };
-                if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
-                    let entry: HistoryEntry = {
-                        type: 'SizeChanged', category: 'Internal',
-                        undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
+            if (((object as Node).id === 'helper' && !(obj.nodes[0] as Node).isLane && !(obj.nodes[0] as Node).isPhase)
+                || ((object as Node).id !== 'helper')) {
+                if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
+                    let oldValues: SelectorModel; let newValues: SelectorModel;
+                    if (args.source) {
+                        newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                        oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                    }
+                    let arg: IDraggingEventArgs = {
+                        source: args.source, state: 'Completed', oldValue: oldValues, newValue: newValues,
+                        target: this.currentTarget, targetPosition: this.currentPosition, allowDrop: true, cancel: false
                     };
-                    this.commandHandler.addHistoryEntry(entry);
+
+                    this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                    if (!isPreventHistory) {
+                        this.commandHandler.startGroupAction(); historyAdded = true;
+                        let entry: HistoryEntry = {
+                            type: 'PositionChanged',
+                            redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
+                        };
+                        if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
+                            let entry: HistoryEntry = {
+                                type: 'SizeChanged', category: 'Internal',
+                                undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
+                            };
+                            this.commandHandler.addHistoryEntry(entry);
+                        }
+                        this.commandHandler.addHistoryEntry(entry);
+                    }
                 }
-                this.commandHandler.addHistoryEntry(entry);
             }
             let snappedPoint: PointModel = this.commandHandler.snapPoint(
                 this.prevPosition, this.currentPosition, 0, 0);
@@ -664,16 +669,25 @@ export class MoveTool extends ToolBase {
                 };
                 this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
                 if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
-                    let node: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
-                    this.commandHandler.dropChildToContainer(this.currentTarget, node);
-                    this.commandHandler.renderContainerHelper(node as NodeModel);
+                    let nodes: NodeModel[] = (args.source instanceof Selector) ? args.source.nodes : [args.source as NodeModel];
+                    let isEndGroup: boolean = false;
+                    for (let i: number = 0; i < nodes.length; i++) {
+                        if (!nodes[i].container) {
+                            isEndGroup = true;
+                            this.commandHandler.dropChildToContainer(this.currentTarget, nodes[i]);
+                            this.commandHandler.renderContainerHelper(nodes[i]);
+                        }
+                    }
+                    if (historyAdded && this.commandHandler.isContainer && isEndGroup) {
+                        this.commandHandler.endGroupAction();
+                    }
                 }
             }
             if (args.source && this.currentTarget) {
                 this.commandHandler.dropAnnotation(args.source, this.currentTarget);
             }
             this.commandHandler.updateSelector();
-            if (historyAdded) {
+            if (historyAdded && !this.commandHandler.isContainer) {
                 this.commandHandler.endGroupAction();
             }
         } else {
@@ -726,17 +740,13 @@ export class MoveTool extends ToolBase {
         }
         this.currentPosition = args.position;
         if (this.objectType !== 'Port') {
-            let x: number = this.currentPosition.x - this.prevPosition.x;
-            let y: number = this.currentPosition.y - this.prevPosition.y;
-
+            let x: number = this.currentPosition.x - this.prevPosition.x; let y: number = this.currentPosition.y - this.prevPosition.y;
             let diffX: number = this.initialOffset.x + (this.currentPosition.x - this.prevPosition.x);
             let diffY: number = this.initialOffset.y + (this.currentPosition.y - this.prevPosition.y);
-
             this.commandHandler.dragOverElement(args, this.currentPosition);
             this.commandHandler.disConnect(args.source);
             this.commandHandler.removeSnap();
-            let oldValues: SelectorModel;
-            let newValues: SelectorModel;
+            let oldValues: SelectorModel; let newValues: SelectorModel;
             let snappedPoint: PointModel = this.commandHandler.snapPoint(
                 this.prevPosition, this.currentPosition, diffX, diffY);
             this.initialOffset.x = diffX - snappedPoint.x;
@@ -766,9 +776,14 @@ export class MoveTool extends ToolBase {
             this.commandHandler.renderStackHighlighter(args);
             if (this.currentTarget && (args.source !== this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget) && (args.source as Node).id !== 'helper') {
-                if (!this.commandHandler.isParentAsContainer(
-                    (args.source instanceof Selector) ? args.source.nodes[0] : args.source, true)) {
-                    this.commandHandler.drawHighlighter(this.currentTarget as IElement);
+                let object: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
+                if ((!this.commandHandler.isParentAsContainer(object, true))
+                    && (object.shape.type !== 'SwimLane' && !(object.shape as SwimLaneModel).isPhase)) {
+                    if ((this.currentTarget as Node).isLane) {
+                        this.commandHandler.renderStackHighlighter(args, this.currentTarget);
+                    } else {
+                        this.commandHandler.drawHighlighter(this.currentTarget as IElement);
+                    }
                 }
             } else {
                 this.commandHandler.removeHighlighter();
@@ -955,7 +970,7 @@ export class ResizeTool extends ToolBase {
     }
 
     /**   @private  */
-    public mouseUp(args: MouseEventArgs): boolean {
+    public mouseUp(args: MouseEventArgs, isPreventHistory?: boolean): boolean {
         this.commandHandler.removeSnap();
         let object: NodeModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
@@ -977,16 +992,18 @@ export class ResizeTool extends ToolBase {
                 type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
                 childTable: this.childTable
             };
-            this.commandHandler.startGroupAction();
-            this.commandHandler.addHistoryEntry(entry);
-            if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
-                let entry: HistoryEntry = {
-                    type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
-                    undoObject: this.undoParentElement, category: 'Internal'
-                };
+            if (!isPreventHistory) {
+                this.commandHandler.startGroupAction();
                 this.commandHandler.addHistoryEntry(entry);
+                if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
+                    let entry: HistoryEntry = {
+                        type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
+                        undoObject: this.undoParentElement, category: 'Internal'
+                    };
+                    this.commandHandler.addHistoryEntry(entry);
+                }
+                this.commandHandler.endGroupAction();
             }
-            this.commandHandler.endGroupAction();
         }
         super.mouseUp(args);
         return !this.blocked;

@@ -45,21 +45,16 @@ export interface ConnectorModel {
 export interface FontModel {
 
     /**
+     * FontStyle for the text.
+     * @default 'Normal'
+     */
+    fontStyle?: string;
+
+    /**
      * Font size for the text.
      * @default '16px'
      */
     size?: string;
-
-    /**
-     * Color for the text.
-     * @default ''
-     */
-    color?: string;
-
-    /**
-     * FontFamily for the text.
-     */
-    fontFamily?: string;
 
     /**
      * FontWeight for the text.
@@ -68,22 +63,27 @@ export interface FontModel {
     fontWeight?: string;
 
     /**
-     * FontStyle for the text.
-     * @default 'Normal'
+     * Color for the text.
+     * @default ''
      */
-    fontStyle?: string;
-
-    /**
-     * Opacity for the text.
-     * @default 1
-     */
-    opacity?: number;
+    color?: string;
 
     /**
      * text alignment
      * @default 'Center'
      */
     textAlignment?: Alignment;
+
+    /**
+     * FontFamily for the text.
+     */
+    fontFamily?: string;
+
+    /**
+     * Opacity for the text.
+     * @default 1
+     */
+    opacity?: number;
 
     /**
      * Specifies the chart title text overflow
@@ -124,7 +124,7 @@ export interface ChartAreaModel {
 
     /**
      * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
-     * @default transparent
+     * @default 'transparent'
      */
     background?: string;
 

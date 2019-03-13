@@ -2,7 +2,7 @@ import { NodeSelection } from './../../selection/index';
 
 import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
-
+import { detach } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
 
 /**
@@ -10,7 +10,6 @@ import { InsertMethods } from './insert-methods';
  * @hidden
  */
 export class InsertHtml {
-
     public static Insert(docElement: Document, insertNode: Node | string, editNode?: Element): void {
         let node: Node;
         if (typeof insertNode === 'string') {
@@ -51,8 +50,23 @@ export class InsertHtml {
             if (sibNode) {
                 InsertMethods.AppendBefore(node as HTMLElement, sibNode as HTMLElement, true);
             } else {
+                let previousNode: Node = null;
+                while (parentNode !== editNode && parentNode.firstChild &&
+                    (parentNode.textContent.trim() === '')) {
+                    let parentNode1: Node = parentNode.parentNode;
+                    previousNode = parentNode;
+                    parentNode = parentNode1;
+                }
+                if (previousNode !== null) {
+                    parentNode = previousNode;
+                }
                 if (parentNode.firstChild) {
-                    InsertMethods.AppendBefore(node as HTMLElement, parentNode.firstChild as HTMLElement, false);
+                    if (parentNode.textContent.trim() === '') {
+                        InsertMethods.AppendBefore(node as HTMLElement, parentNode as HTMLElement, false);
+                        detach(parentNode);
+                    } else {
+                        InsertMethods.AppendBefore(node as HTMLElement, parentNode.firstChild as HTMLElement, false);
+                    }
                 } else {
                     parentNode.appendChild(node);
                 }

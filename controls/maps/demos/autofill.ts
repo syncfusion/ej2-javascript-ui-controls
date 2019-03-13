@@ -3,6 +3,7 @@
  */
 import { Maps, Legend, Marker, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { dafaultData } from './MapData/salesCountry';
+import { world_Map } from './MapData/worldMap';
 
 //tslint:disable:max-func-body-length
     let maps: Maps = new Maps({
@@ -17,10 +18,10 @@ import { dafaultData } from './MapData/salesCountry';
         },
         layers: [
             {
-                shapeData:new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
+                shapeData: world_Map,
                 shapePropertyPath: 'continent',
                 shapeDataPath: 'continent',
-                shapeSettings:{
+                shapeSettings: {
                     autofill: true
                 }
             },

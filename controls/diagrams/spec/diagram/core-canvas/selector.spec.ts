@@ -4,6 +4,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { SelectorModel } from '../../../src/diagram/interaction/selector-model';
 import { SelectorConstraints } from '../../../src/diagram/enum/enum';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 
 /**
@@ -16,6 +17,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramik' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -50,6 +57,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramim' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -77,6 +90,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramin' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -104,6 +123,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramio' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -131,6 +156,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramil' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -156,7 +187,6 @@ describe('Diagram Control', () => {
             expect(selectorModel.wrapper.actualSize.width === 100 && selectorModel.wrapper.actualSize.height === 100 && selectorModel.offsetX === 150 && selectorModel.offsetY === 150).toBe(true);
             done();
         });
-
     });
 
     describe('Multiple Selection for connectors', () => {
@@ -164,6 +194,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramiweebb' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -212,6 +248,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram98' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -243,6 +285,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram99' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -277,6 +325,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram100' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -313,6 +367,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagrameee' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -350,6 +410,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramSelectorConstraintsIssue' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -374,5 +440,14 @@ describe('Diagram Control', () => {
             expect(document.getElementsByClassName('e-diagram-endpoint-handle e-targetend')[1].getAttribute('visibility') == 'visible').toBe(true);
             done();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

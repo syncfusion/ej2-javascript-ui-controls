@@ -4,7 +4,7 @@ import { DiagramRenderer } from './rendering/renderer';
 import { ConnectorModel } from './objects/connector-model';
 import { NodeModel, ImageModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { DiagramRegions } from './enum/enum';
+import { DiagramRegions, SnapConstraints, PageOrientation } from './enum/enum';
 import { setAttributeHtml, setAttributeSvg, createHtmlElement } from './utility/dom-util';
 import { Rect } from './primitives/rect';
 import { MarginModel } from './core/appearance-model';
@@ -15,6 +15,9 @@ import { BackgroundModel } from './diagram/page-settings-model';
 import { IExportOptions } from './objects/interface/interfaces';
 import { DiagramHtmlElement } from './core/elements/html-element';
 import { DiagramNativeElement } from './core/elements/native-element';
+import { DiagramElement } from './core/elements/diagram-element';
+import { Container } from './core/containers/container';
+
 
 
 /**
@@ -108,25 +111,33 @@ export class PrintAndExport {
     private setCanvas(
         options: IExportOptions, bounds: Rect, margin: MarginModel, mode: string, customBounds: boolean,
         region: DiagramRegions, fileName: string): string {
-        let fileType: string;
         let content: string;
         options.bounds = bounds;
         options.region = region;
         let scaleX: string = 'scaleX';
         let scaleY: string = 'scaleY';
-        let images: HTMLElement | string[] = [];
+        let scaleOffsetX: string = 'scaleOffsetX';
+        let scaleOffsetY: string = 'scaleOffsetY';
         this.setScaleValueforCanvas(options, bounds);
         let canvas: HTMLCanvasElement = this.diagramAsCanvas(
             {
                 bounds: bounds, margin: margin, region: region, scaleX: options[scaleX],
-                scaleY: options[scaleY]
+                scaleY: options[scaleY], scaleOffsetX: options[scaleOffsetX], scaleOffsetY: options[scaleOffsetY]
             } as IExportOptions,
             customBounds);
-        fileType = options.format || 'JPG';
         let image: string = content = canvas.toDataURL();
         if (mode === 'Data') {
             return content;
         }
+        this.canvasMultiplePage(options, canvas, margin, image, fileName);
+        return null;
+    }
+
+    private canvasMultiplePage(
+        options: IExportOptions, canvas: HTMLCanvasElement, margin: MarginModel, image: string, fileName: string): void {
+        let images: HTMLElement | string[] = [];
+        let fileType: string = options.format || 'JPG';
+
         if (options.multiplePage) {
             options.pageHeight = options.pageHeight ? options.pageHeight : this.diagram.pageSettings.height;
             options.pageWidth = options.pageWidth ? options.pageWidth : this.diagram.pageSettings.width;
@@ -155,13 +166,11 @@ export class PrintAndExport {
             img.onload = () => {
                 images = this.getMultipleImage(img, options, true);
                 this.exportImage(images, fileName, fileType, image);
-
             };
         } else {
             images = [image];
             this.exportImage(images, fileName, fileType, image);
         }
-        return null;
     }
 
     private exportImage(images: string[] | HTMLElement, fileName: string, fileType: string, image: string): void {
@@ -232,7 +241,9 @@ export class PrintAndExport {
         }
         return nodebounds || new Rect(0, 0, 0, 0);
     }
-    private getDiagramBounds(mode?: string, options?: IExportOptions): Rect {
+
+    /**   @private  */
+    public getDiagramBounds(mode?: string, options?: IExportOptions): Rect {
         let rect: Rect = this.getObjectsBound(options);
         let left: number = rect.left;
         let top: number = rect.top;
@@ -280,10 +291,34 @@ export class PrintAndExport {
     private setScaleValueforCanvas(options: IExportOptions, bounds: Rect): void {
         let scaleX: string = 'scaleX';
         let scaleY: string = 'scaleY';
+        let scaleOffsetX: string = 'scaleOffsetX';
+        let scaleOffsetY: string = 'scaleOffsetY';
         options[scaleX] = 1;
         options[scaleY] = 1;
+        options[scaleOffsetX] = 0;
+        options[scaleOffsetY] = 0;
         options.pageHeight = options.pageHeight || this.diagram.pageSettings.height;
         options.pageWidth = options.pageWidth || this.diagram.pageSettings.width;
+        let pageOrientation: PageOrientation = options.pageOrientation || this.diagram.pageSettings.orientation;
+        if (!pageOrientation) {
+            pageOrientation = 'Portrait';
+        }
+        if (pageOrientation === 'Portrait') {
+            if (options.pageWidth > options.pageHeight) {
+                let temp: number = options.pageHeight;
+                options.pageHeight = options.pageWidth;
+                options.pageWidth = temp;
+            }
+        } else {
+            if (options.pageHeight > options.pageWidth) {
+                let temp: number = options.pageWidth;
+                options.pageWidth = options.pageHeight;
+                options.pageHeight = temp;
+            }
+        }
+        if (options.pageWidth && options.pageHeight && !options.multiplePage) {
+            options.stretch = 'Meet';
+        }
         let height: number = options.pageHeight || bounds.height;
         let width: number = options.pageWidth || bounds.width;
         if (options.stretch === 'Stretch' || options.stretch === 'Meet' || options.stretch === 'Slice') {
@@ -291,6 +326,8 @@ export class PrintAndExport {
             options[scaleY] = height / bounds.height;
             if (options.stretch === 'Meet') {
                 options[scaleX] = options[scaleY] = Math.min(options[scaleX], options[scaleY]);
+                options[scaleOffsetY] = (options.pageHeight - bounds.height * options[scaleX]) / 2;
+                options[scaleOffsetX] = (options.pageWidth - bounds.width * options[scaleX]) / 2;
             } else if (options.stretch === 'Slice') {
                 options[scaleX] = options[scaleY] = Math.max(options[scaleX], options[scaleY]);
             }
@@ -361,11 +398,13 @@ export class PrintAndExport {
     }
     private setTransform(element: HTMLElement | SVGElement, bounds: Rect, margin: MarginModel): void {
         element.setAttribute('transform', 'translate(' + (-bounds.x + margin.left) + ', ' +
-                        (-bounds.y + margin.top) + ')');
+            (-bounds.y + margin.top) + ')');
     }
     private diagramAsCanvas(options: IExportOptions, customBounds: boolean): HTMLCanvasElement {
         let scaleX: string = 'scaleX';
         let scaleY: string = 'scaleY';
+        let scaleOffsetX: string = 'scaleOffsetX';
+        let scaleOffsetY: string = 'scaleOffsetY';
         let element: NodeModel | ConnectorModel;
         let elements: NodeModel[] | ConnectorModel[] = [];
         let region: Rect = options.bounds;
@@ -439,8 +478,52 @@ export class PrintAndExport {
         context.restore();
         let htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
         let renderer: DiagramRenderer = new DiagramRenderer('', null, false);
+        this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], true);
         this.diagram.renderDiagramElements(canvas, renderer, htmlLayer, false, true);
+        this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], false);
         return canvas;
+    }
+
+    private updateWrapper(
+        canvas: Container | DiagramElement[], value: number,
+        scaleOffsetX: number, scaleOffsetY: number, isExport: boolean): void {
+        if (canvas && (canvas as DiagramElement[]).length > 0) {
+            for (let j: number = 0; j < (canvas as DiagramElement[]).length; j++) {
+                if (canvas[j].children) {
+                    this.updateWrapper(canvas[j].children, value, scaleOffsetX, scaleOffsetY, isExport);
+                }
+                canvas[j].exportScaleValue.x = value;
+                canvas[j].exportScaleValue.y = value;
+                canvas[j].exportScaleOffset.x = scaleOffsetX;
+                canvas[j].exportScaleOffset.y = scaleOffsetY;
+                canvas[j].isExport = isExport;
+            }
+        }
+    }
+
+    private updateObjectValue(value: number, scaleOffsetX: number, scaleOffsetY: number, isExport: boolean): void {
+        let wrapper: Container;
+        for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+            wrapper = this.diagram.nodes[i].wrapper;
+            this.updateWrapper(wrapper.children, value, scaleOffsetX, scaleOffsetY, isExport);
+            wrapper.exportScaleValue.x = value;
+            wrapper.exportScaleValue.y = value;
+            wrapper.exportScaleOffset.x = scaleOffsetX;
+            wrapper.exportScaleOffset.y = scaleOffsetY;
+            wrapper.isExport = isExport;
+        }
+        for (let j: number = 0; j < this.diagram.connectors.length; j++) {
+            wrapper = this.diagram.connectors[j].wrapper;
+            for (let k: number = 0; k < wrapper.children.length; k++) {
+                wrapper.children[k].isExport = isExport;
+                if (isExport) {
+                    wrapper.children[k].exportScaleValue.x = value;
+                    wrapper.children[k].exportScaleValue.y = value;
+                    wrapper.children[k].exportScaleOffset.x = scaleOffsetX;
+                    wrapper.children[k].exportScaleOffset.y = scaleOffsetY;
+                }
+            }
+        }
     }
     private isImageExportable(backgroundImage: BackgroundModel | ImageModel): boolean {
         let state: boolean = true;
@@ -595,12 +678,17 @@ export class PrintAndExport {
 
     public print(options: IExportOptions): void {
         options.mode = 'Data';
-        options.margin = { top: 0, bottom: 0, right: 0, left: 0 };
         let url: string | SVGElement = this.exportDiagram(options);
+        this.printImages(url, options);
+
+    }
+
+    private printImages(url: string | SVGElement, options: IExportOptions): void {
         let attr: Object = {
             'id': this.diagram.element.id + '_printImage',
             'src': url,
         };
+        options.margin = { top: 0, bottom: 0, right: 0, left: 0 };
         let img: HTMLImageElement = createHtmlElement('img', attr) as HTMLImageElement;
         img.onload = () => {
             let div: HTMLElement | string[] = this.getMultipleImage(img, options);
@@ -620,6 +708,109 @@ export class PrintAndExport {
         };
     }
 
+    /** @private */
+    public getDiagramContent(styleSheets?: StyleSheetList): string {
+        let container: HTMLElement = document.getElementById(this.diagram.element.id + 'content');
+        let scrollerX: number = container.scrollLeft;
+        let scrollerY: number = container.scrollTop;
+        let oldZoom: number = this.diagram.scrollSettings.currentZoom;
+        let oldHorizontalOffset: number = this.diagram.scroller.horizontalOffset;
+        let oldVerticalOffset: number = this.diagram.scroller.verticalOffset;
+        let oldWidth: number = Number(String(this.diagram.width).split('px')[0]);
+        let oldHeight: number = Number(String(this.diagram.height).split('px')[0]);
+        let bounds: Rect = this.getDiagramBounds('', {});
+        this.diagram.scroller.zoom((1 / oldZoom));
+        let scrollX: number = 0;
+        let scrollY: number = 0;
+        scrollX = bounds.x;
+        scrollY = bounds.y;
+        this.diagram.scroller.transform = {
+            tx: -scrollX,
+            ty: -scrollY,
+            scale: this.diagram.scroller.currentZoom
+        };
+        this.diagram.scroller.horizontalOffset = -scrollX;
+        this.diagram.scroller.verticalOffset = -scrollY;
+        this.diagram.scroller.setSize();
+        this.diagram.setSize(bounds.width, bounds.height);
+        let snapConstraints: SnapConstraints = this.diagram.snapSettings.constraints;
+        this.diagram.snapSettings.constraints = (this.diagram.snapSettings.constraints & ~SnapConstraints.ShowLines);
+        this.diagram.dataBind();
+        this.diagram.clearSelection();
+        styleSheets = styleSheets || document.styleSheets;
+        let styleSheetRef: string = '';
+        for (let i: number = 0; i < styleSheets.length; i++) {
+            if (styleSheets[i].href || typeof styleSheets[i] === 'string') {
+                styleSheetRef += '<link href=\'' + (styleSheets[i].href || styleSheets[i]) + '\' rel=\'stylesheet\' />';
+            }
+        }
+        let htmlData: string = document.getElementById(this.diagram.element.id + 'content').innerHTML;
+        let marginStyle: string = 'margin-left:' + 0 + 'px;margin-top:' + 0 + 'px;margin-right:'
+            + 0 + 'px;margin-bottom:' + 0 + 'px;';
+        htmlData = styleSheetRef + '<body style="margin: 0px; padding: 0px"><div style=\'' +
+            marginStyle + '\'>' + htmlData + '</div></body>';
+        htmlData = htmlData.replace(/ transform: t/g, ' -webkit-transform: t');
+        this.diagram.setSize(oldWidth, oldHeight);
+        this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
+        this.diagram.snapSettings.constraints = snapConstraints;
+        this.diagram.dataBind();
+        if (scrollerX || scrollerY) {
+            this.diagram.setOffset(scrollerX, scrollerY);
+        } else {
+            this.diagram.scroller.transform = {
+                tx: (oldHorizontalOffset) / this.diagram.scroller.currentZoom,
+                ty: (oldVerticalOffset) / this.diagram.scroller.currentZoom,
+                scale: this.diagram.scroller.currentZoom
+            };
+            this.diagram.scroller.horizontalOffset = oldHorizontalOffset;
+            this.diagram.scroller.verticalOffset = oldVerticalOffset;
+        }
+        this.diagram.renderSelector(false);
+        return htmlData;
+    }
+
+    /** @private */
+    public exportImages(image: string, options: IExportOptions): void {
+        let region: DiagramRegions = options && options.region ? options.region : 'Content';
+        let margin: MarginModel = options.margin || {};
+        margin = {
+            top: !isNaN(margin.top) ? margin.top : 0,
+            bottom: !isNaN(margin.bottom) ? margin.bottom : 0,
+            left: !isNaN(margin.left) ? margin.left : 0,
+            right: !isNaN(margin.right) ? margin.right : 0
+        };
+        let bounds: Rect = this.getDiagramBounds(region, {});
+        if (options.bounds) {
+            bounds.x = (!isNaN(options.bounds.x) ? options.bounds.x : bounds.x);
+            bounds.y = (!isNaN(options.bounds.y) ? options.bounds.y : bounds.y);
+            bounds.width = (options.bounds.width || bounds.width);
+            bounds.height = (options.bounds.height || bounds.height);
+        }
+        let img: HTMLImageElement = document.createElement('img');
+        let attr: {} = {
+            'src': image
+        };
+        setAttributeHtml(img, attr);
+        let context: PrintAndExport = this;
+        img.onload = () => {
+            let canvas: HTMLCanvasElement = CanvasRenderer.createCanvas(
+                context.diagram.element.id + 'innerImage', bounds.width + (margin.left + margin.right),
+                bounds.height + (margin.top + margin.bottom));
+            let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+            ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
+            ctx.drawImage(
+                img, bounds.x, bounds.y, bounds.width, bounds.height,
+                margin.left, margin.top, bounds.width, bounds.height);
+            image = canvas.toDataURL();
+            if (options.printOptions) {
+                context.printImages(image, options);
+                return;
+            }
+            ctx.restore();
+            let fileName: string = options.fileName || 'diagram';
+            this.canvasMultiplePage(options, canvas, margin, image, fileName);
+        };
+    }
 
     /**
      * To destroy the Print and Export module

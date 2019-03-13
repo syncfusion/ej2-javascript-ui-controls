@@ -1,4 +1,5 @@
 //normal
+$skin-name: 'bootstrap-dark' !default;
 $btn-color: $grey-dark-font !default;
 $btn-font-size: 14px !default;
 $btn-border: 1px solid !default;
@@ -77,6 +78,8 @@ $btn-outline-disabled-bgcolor: $btn-disabled-bgcolor !default;
 $btn-outline-disabled-border-color: $btn-disabled-border-color !default;
 $btn-outline-disabled-color: $btn-disabled-color !default;
 $btn-outline-primary-color: lighten($brand-primary, 15%) !default;
+$btn-outline-primary-focus-bgcolor: $btn-primary-focus-bgcolor !default;
+$btn-outline-primary-focus-color: $btn-primary-focus-color !default;
 
 //endoutline
 //flat

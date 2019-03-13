@@ -634,20 +634,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private eleFocus(closest: HTEle, pos: Str): void {
         let sib: HTEle = Object(closest)[pos + 'ElementSibling'];
         let contains: Function = (el: HTEle) => {
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE);
+            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled');
         };
         if (sib) {
             let skipEle: boolean = contains(sib);
             if (skipEle) {
-                if (Object(sib)[pos + 'ElementSibling']) {
-                    sib = <HTEle>Object(sib)[pos + 'ElementSibling'];
-                    skipEle = contains(sib);
-                    if (skipEle) {
-                        this.eleFocus(sib, pos); return;
-                    }
-                } else {
-                    return;
-                }
+                this.eleFocus(sib, pos); return;
             }
             this.elementFocus(sib);
         } else if (this.tbarAlign) {
@@ -1690,7 +1682,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let iconCss: Str;
         let iconPos: Str;
         item.id ? (dom.id = item.id) : dom.id = getUniqueID('e-tbr-btn');
-        let btnTxt: HTEle = this.createElement('div', { className: 'e-tbar-btn-text' });
+        let btnTxt: HTEle = this.createElement('span', { className: 'e-tbar-btn-text' });
         if (textStr) {
             btnTxt.innerHTML = textStr;
             dom.appendChild(btnTxt);
@@ -1823,8 +1815,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.destroyScroll();
             let multirowele: HTEle = ele.querySelector('.' + CLS_ITEMS);
             if (!isNOU(multirowele)) {
-            this.remove(multirowele, CLS_MULTIROWPOS);
-            if (this.tbarAlign) { this.add(multirowele, CLS_TBARPOS); }
+                this.remove(multirowele, CLS_MULTIROWPOS);
+                if (this.tbarAlign) { this.add(multirowele, CLS_TBARPOS); }
             }
         }
         if (checkOverflow && this.scrollModule && (this.offsetWid === ele.offsetWidth)) { return; }
@@ -1920,19 +1912,22 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Shows or hides the Toolbar item that is in the specified index.
-     * @param  {number} index - Index value of target item.
+     * @param  {number | HTMLElement} index - Index value of target item or DOM element  of items to be hidden or shown.
      * @param  {boolean} value - Based on this Boolean value, item will be hide (true) or show (false). By default, value is false.
      * @returns void.
      */
-    public hideItem(index: number, value?: boolean): void {
-        if (this.tbarEle[index]) {
+    public hideItem(index: number| HTMLElement | Element, value?: boolean): void {
+        let isElement: boolean = (typeof (index) === 'object') ? true : false;
+        let eleIndex: number = index as number;
+        let ele: HTMLElement;
+        if (isElement) {
+            ele = (index as HTMLElement);
+        } else if (this.tbarEle[eleIndex]) {
             let innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
-            if (value === true) {
-                innerItems[index].classList.add(CLS_HIDDEN);
-            } else {
-                innerItems[index].classList.remove(CLS_HIDDEN);
-            }
-            this.refreshOverflow();
+            ele = innerItems[eleIndex];
         }
+        if (ele) {
+        value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
+        this.refreshOverflow(); }
     }
 }

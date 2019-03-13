@@ -1,6 +1,7 @@
 @include export-module('button-group-layout') {
 // sass-lint:disable-all
-  &.e-btn-group {
+  &.e-btn-group,
+  &.e-css.e-btn-group {
     display: -webkit-inline-flex;
     display: inline-flex;
     border-radius: $btn-grp-wrapper-border;
@@ -275,7 +276,9 @@
   }
 
   .e-bigger .e-btn-group,
-  .e-bigger.e-btn-group {
+  .e-bigger.e-btn-group,
+  .e-bigger .e-css.e-btn-group,
+  .e-bigger.e-css.e-btn-group,  {
     .e-btn-icon {
       font-size: $btn-grp-icon-font-size-bigger;
     }

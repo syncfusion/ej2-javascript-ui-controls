@@ -34,7 +34,7 @@ export interface TooltipModel extends ComponentModel{
     /**
      * It is used to set the height of Tooltip component which accepts both string and number values.
      * When Tooltip content gets overflow due to height value then the scroll mode will be enabled.
-     * Refer the documentation [here](../../tooltip/setting-dimension/)
+     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/setting-dimension.html?lang=typescript)
      *  to know more about this property with demo.
      * @default 'auto'
      */
@@ -42,7 +42,7 @@ export interface TooltipModel extends ComponentModel{
 
     /**
      * It is used to display the content of Tooltip which can be both string and HTML Elements.
-     * Refer the documentation [here](../../tooltip/content/)
+     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
@@ -94,7 +94,7 @@ export interface TooltipModel extends ComponentModel{
      * When it sets to auto, the tip pointer auto adjusts within the space of target's length
      *  and does not point outside.
      * Refer the documentation
-     *  [here](../../tooltip/position/#tip-pointer-positioning)
+     *  [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#tip-pointer-positioning)
      *  to know more about this property with demo.
      * @default 'Auto'
      */
@@ -112,7 +112,7 @@ export interface TooltipModel extends ComponentModel{
 
     /**
      * It allows the Tooltip to follow the mouse pointer movement over the specified target element.
-     * Refer the documentation [here](../../tooltip/position/#mouse-trailing)
+     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/position.html?lang=typescript#mouse-trailing)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/offsetX-api/index.ts" %}{% endcodeBlock %}
@@ -122,7 +122,7 @@ export interface TooltipModel extends ComponentModel{
 
     /**
      * It is used to display the Tooltip in an open state until closed by manually.
-     * Refer the documentation [here](../../tooltip/open-mode/#sticky-mode)
+     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/open-mode.html?lang=typescript#sticky-mode)
      *  to know more about this property with demo.
      * @default false
      */
@@ -130,7 +130,7 @@ export interface TooltipModel extends ComponentModel{
 
     /**
      * We can set the same or different animation option to Tooltip while it is in open or close state.
-     * Refer the documentation [here](../../tooltip/animation/)
+     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/tooltip/animation.html?lang=typescript)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/animation-api/index.ts" %}{% endcodeBlock %}
@@ -169,7 +169,7 @@ export interface TooltipModel extends ComponentModel{
      * This event is mainly used for the purpose of customizing the Tooltip before it shows up on the screen.
      * For example, to load the AJAX content or to set new animation effects on the Tooltip, this event can be opted.
      * Refer the documentation
-     *  [here](../../tooltip/content/#dynamic-content-via-ajax)
+     *  [here](https://ej2.syncfusion.com/documentation/tooltip/content.html?lang=typescript#dynamic-content-via-ajax)
      *  to know more about this property with demo.
      * @event
      */

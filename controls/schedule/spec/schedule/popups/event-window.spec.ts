@@ -13,8 +13,10 @@ import { EJ2Instance, PopupOpenEventArgs, ActionEventArgs } from '../../../src/s
 import { triggerMouseEvent, loadCultureFiles, disableScheduleAnimation } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { stringData } from '../base/datasource.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Week);
+
 describe('Schedule event window initial load', () => {
     let appointments: Object[] = [{
         Id: 1,
@@ -57,6 +59,17 @@ describe('Schedule event window initial load', () => {
         OwnerId: [1, 3],
         Description: 'Enjoying Holiday in Paris'
     }];
+
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 
     describe('Schedule event window initial load with group', () => {
         let schObj: Schedule;
@@ -133,6 +146,7 @@ describe('Schedule event window initial load', () => {
             schObj.dataBound = dataBound;
         });
     });
+
     describe('Schedule event window initial load without group', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -218,6 +232,7 @@ describe('Schedule event window initial load', () => {
             schObj.dataBound = dataBound;
         });
     });
+
     describe('Schedule event window initial load without group and with group edit enabled', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -306,6 +321,7 @@ describe('Schedule event window initial load', () => {
             schObj.dataBound = dataBound;
         });
     });
+
     describe('Schedule event window initial load', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -554,7 +570,7 @@ describe('Schedule event window initial load', () => {
             triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_6"]')[3] as HTMLElement, 'click');
             triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_6"]')[3] as HTMLElement, 'dblclick');
             let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
-            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-edit-event') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
             editButton.click();
             let dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
@@ -582,7 +598,7 @@ describe('Schedule event window initial load', () => {
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
-            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-edit-series')).click();
+            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-series-event')).click();
             let dataBound: (args: Object) => void = (args: Object) => {
                 expect(schObj.eventsData.length).toEqual(5);
                 done();
@@ -722,11 +738,13 @@ describe('Schedule event window initial load', () => {
             triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_4"]') as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let startTZDropDown: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_TZ_CLASS);
+            // tslint:disable-next-line:no-any
             let keyEventArgs: any = {
                 preventDefault: (): void => { /** NO Code */ },
                 keyCode: 74,
                 metaKey: false
             };
+            // tslint:disable-next-line:no-any
             let listObj: any = (startTZDropDown as EJ2Instance).ej2_instances[0] as DropDownList;
             listObj.showPopup();
             listObj.filterInput.value = 'Maw';
@@ -814,7 +832,7 @@ describe('Schedule event window initial load', () => {
             triggerMouseEvent(appointmentElement, 'click');
             triggerMouseEvent(appointmentElement, 'dblclick');
             let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
-            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-edit-event') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
             editButton.click();
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
@@ -836,7 +854,7 @@ describe('Schedule event window initial load', () => {
             triggerMouseEvent(appointmentElement, 'click');
             triggerMouseEvent(appointmentElement, 'dblclick');
             let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
-            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-edit-event') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
             editButton.click();
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
@@ -850,7 +868,7 @@ describe('Schedule event window initial load', () => {
             let agendaElement: HTMLElement = closest(recurrenceEle, '.e-appointment') as HTMLElement;
             triggerMouseEvent(agendaElement, 'click');
             triggerMouseEvent(agendaElement, 'dblclick');
-            (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-edit-series')).click();
+            (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-series-event')).click();
             (<HTMLElement>schObj.eventWindow.dialogObject.element.querySelector('.e-event-delete')).click();
             (<HTMLElement>schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-delete')).click();
         });
@@ -868,7 +886,7 @@ describe('Schedule event window initial load', () => {
             triggerMouseEvent(appointmentElement, 'click');
             triggerMouseEvent(appointmentElement, 'dblclick');
             let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
-            let editEvent: HTMLElement = eventDialog.querySelector('.e-quick-dialog-edit-event') as HTMLElement;
+            let editEvent: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
             editEvent.click();
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
@@ -886,7 +904,7 @@ describe('Schedule event window initial load', () => {
             cancelButton.click();
             triggerMouseEvent(appointmentElement, 'click');
             triggerMouseEvent(appointmentElement, 'dblclick');
-            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-edit-series') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-series-event') as HTMLElement;
             editButton.click();
             saveButton.click();
             okButton.click();
@@ -899,7 +917,7 @@ describe('Schedule event window initial load', () => {
             expect(eventPopup).toBeTruthy();
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
             let eventDialog: HTMLElement = document.body.querySelector('.e-quick-dialog') as HTMLElement;
-            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-edit-event')).click();
+            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-occurrence-event')).click();
             let dataBound: (args: Object) => void = (args: Object) => {
                 expect(schObj.eventsData.length).toEqual(5);
                 done();
@@ -913,7 +931,7 @@ describe('Schedule event window initial load', () => {
             expect(eventPopup).toBeTruthy();
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
             let eventDialog: HTMLElement = document.body.querySelector('.e-quick-dialog') as HTMLElement;
-            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-edit-series')).click();
+            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-series-event')).click();
             let dataBound: (args: Object) => void = (args: Object) => {
                 expect(schObj.eventsData.length).toEqual(4);
                 done();
@@ -1139,7 +1157,7 @@ describe('Schedule event window initial load', () => {
                 if (schObj) {
                     schObj.destroy();
                 }
-                remove(document.querySelector('#Schedule'));;
+                remove(document.querySelector('#Schedule'));
             });
 
             it('dialog checking cell click and add event', () => {
@@ -1204,14 +1222,16 @@ describe('Schedule event window initial load', () => {
                 if (schObj) {
                     schObj.destroy();
                 }
-                remove(document.querySelector('#Schedule'));;
+                remove(document.querySelector('#Schedule'));
             });
 
             it('dialog checking event tapHold', () => {
                 let firstEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
+                // tslint:disable-next-line:no-any
                 let e: any = {}; e.originalEvent = {};
                 e.originalEvent.target = firstEvent;
                 e.originalEvent.type = 'touchstart';
+                // tslint:disable-next-line:no-any
                 (schObj.scheduleTouchModule as any).tapHoldHandler(e);
                 let eventPopup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
                 expect(eventPopup).toBeTruthy();
@@ -1260,9 +1280,11 @@ describe('Schedule event window initial load', () => {
 
             it('dialog checking cell tabHold for desktop', () => {
                 let firstEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
+                // tslint:disable-next-line:no-any
                 let e: any = {}; e.originalEvent = {};
                 e.originalEvent.target = firstEvent;
                 e.originalEvent.type = 'touchstart';
+                // tslint:disable-next-line:no-any
                 (schObj.scheduleTouchModule as any).tapHoldHandler(e);
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 expect(dialogElement).toBeTruthy();
@@ -1331,6 +1353,7 @@ describe('Schedule event window initial load', () => {
 
         it('add event', (done: Function) => {
             let dataBound: (args: Object) => void = () => {
+                // tslint:disable-next-line:no-any
                 expect((schObj.eventsData[0] as any).Subject).toEqual('add');
                 expect(schObj.eventsData.length).toEqual(1);
                 done();
@@ -1347,6 +1370,7 @@ describe('Schedule event window initial load', () => {
 
         it('edit event', (done: Function) => {
             let dataBound: (args: Object) => void = () => {
+                // tslint:disable-next-line:no-any
                 expect((schObj.eventsData[0] as any).Subject).toEqual('edit');
                 expect(schObj.eventsData.length).toEqual(1);
                 done();
@@ -1440,6 +1464,7 @@ describe('Schedule event window initial load', () => {
 
         it('add event', (done: Function) => {
             let dataBound: (args: Object) => void = () => {
+                // tslint:disable-next-line:no-any
                 expect((schObj.eventsData[0] as any).Subject).toEqual('add');
                 expect(schObj.eventsData.length).toEqual(1);
                 done();
@@ -1456,6 +1481,7 @@ describe('Schedule event window initial load', () => {
 
         it('edit event', (done: Function) => {
             let dataBound: (args: Object) => void = () => {
+                // tslint:disable-next-line:no-any
                 expect((schObj.eventsData[0] as any).Subject).toEqual('edit');
                 expect(schObj.eventsData.length).toEqual(1);
                 done();
@@ -1504,7 +1530,8 @@ describe('Schedule event window initial load', () => {
                     if (!recurrenceEditor.classList.contains('e-recurrenceeditor')) {
                         let recurrObject: RecurrenceEditor = new RecurrenceEditor();
                         recurrObject.appendTo(recurrenceEditor);
-                        let obj = (((document.querySelector('#Schedule') as EJ2Instance).ej2_instances[0] as Schedule) as any);
+                        // tslint:disable-next-line:no-any
+                        let obj: any = (((document.querySelector('#Schedule') as EJ2Instance).ej2_instances[0] as Schedule) as any);
                         obj.eventWindow.recurrenceEditor = recurrObject;
                     }
                 }
@@ -1593,7 +1620,6 @@ describe('Schedule event window initial load', () => {
         });
     });
 
-
     describe('Editor window validation', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -1655,6 +1681,7 @@ describe('Schedule event window initial load', () => {
             triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             (((document.querySelector('.' + cls.FORM_CLASS) as EJ2Instance)
+                // tslint:disable-next-line:no-any
                 .ej2_instances[0] as FormValidator) as any).errorRules = [];
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let subjectElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
@@ -1707,6 +1734,7 @@ describe('Schedule event window initial load', () => {
                 let toolbarElement: HTMLElement = schObj.element.querySelector('.e-schedule-toolbar') as HTMLElement;
                 firstWorkCell.click();
                 (<HTMLElement>toolbarElement.querySelector('.e-add .e-tbar-btn')).click();
+                // tslint:disable:no-any
                 (<any>schObj).eventWindow.repeatStatus.element.parentElement.click();
                 (<any>schObj).eventWindow.onRepeatChange(true);
                 (<any>schObj).eventWindow.repeatOpenDialog();
@@ -1726,6 +1754,7 @@ describe('Schedule event window initial load', () => {
                 (<any>schObj).eventWindow.repeatOpenDialog();
                 (<any>schObj).eventWindow.repeatTempRule = '';
                 (<any>schObj).eventWindow.repeatCancelDialog();
+                // tslint:enable:no-any
             });
         });
     });
@@ -1871,5 +1900,17 @@ describe('Schedule event window initial load', () => {
             endDate.dataBind();
             (<HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS)).click();
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

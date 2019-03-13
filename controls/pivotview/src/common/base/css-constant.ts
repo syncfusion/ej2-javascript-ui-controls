@@ -426,3 +426,75 @@ export const BACK_ICON: string = 'e-field-list-back-icon';
 export const TITLE_MOBILE_HEADER: string = 'e-title-mobile-header';
 /** @hidden */
 export const TITLE_MOBILE_CONTENT: string = 'e-title-mobile-content';
+/** @hidden */
+export const ROW_CELL_CLASS: string = 'e-rowcell';
+/** @hidden */
+export const CELL_ACTIVE_BGCOLOR: string = 'e-active';
+/** @hidden */
+export const SPAN_CLICKED: string = 'e-spanclicked';
+/** @hidden */
+export const ROW_SELECT: string = 'e-rowselect';
+/** @hidden */
+export const GRID_HEADER: string = 'e-gridheader';
+/** @hidden */
+export const GRID_EXPORT: string = 'e-export';
+/** @hidden */
+export const GRID_PDF_EXPORT: string = 'e-pivotview-pdf-export';
+/** @hidden */
+export const GRID_EXCEL_EXPORT: string = 'e-pivotview-excel-export';
+/** @hidden */
+export const GRID_CSV_EXPORT: string = 'e-pivotview-csv-export';
+/** @hidden */
+export const GRID_LOAD: string = 'e-load-report';
+/** @hidden */
+export const GRID_NEW: string = 'e-new-report';
+/** @hidden */
+export const GRID_RENAME: string = 'e-rename-report';
+/** @hidden */
+export const GRID_REMOVE: string = 'e-remove-report';
+/** @hidden */
+export const GRID_SAVEAS: string = 'e-saveas-report';
+/** @hidden */
+export const GRID_SAVE: string = 'e-save-report';
+/** @hidden */
+export const GRID_SUB_TOTAL: string = 'e-sub-total';
+/** @hidden */
+export const GRID_GRAND_TOTAL: string = 'e-grand-total';
+/** @hidden */
+export const GRID_FORMATTING: string = 'e-toolbar-formatting';
+/** @hidden */
+export const GRID_TOOLBAR: string = 'e-pivot-toolbar';
+/** @hidden */
+export const GRID_REPORT_LABEL: string = 'e-pivotview-report-label';
+/** @hidden */
+export const GRID_REPORT_INPUT: string = 'e-pivotview-report-input';
+/** @hidden */
+export const GRID_REPORT_OUTER: string = 'e-report-outer';
+/** @hidden */
+export const GRID_REPORT_DIALOG: string = 'e-pivotview-report-dialog';
+/** @hidden */
+export const TOOLBAR_FIELDLIST: string = 'e-toolbar-fieldlist';
+/** @hidden */
+export const TOOLBAR_GRID: string = 'e-toolbar-grid';
+/** @hidden */
+export const TOOLBAR_CHART: string = 'e-toolbar-chart';
+/** @hidden */
+export const REPORT_LIST_DROP: string = 'e-reportlist-drop';
+/** @hidden */
+export const PIVOTCHART: string = 'e-pivotchart';
+/** @hidden */
+export const GROUP_CHART_ROW: string = 'e-group-chart-rows';
+/** @hidden */
+export const GROUP_CHART_COLUMN: string = 'e-group-chart-columns';
+/** @hidden */
+export const GROUP_CHART_VALUE: string = 'e-group-chart-values';
+/** @hidden */
+export const GROUP_CHART_MULTI_VALUE: string = 'e-group-chart-multi-values';
+/** @hidden */
+export const GROUP_CHART_FILTER: string = 'e-group-chart-filters';
+/** @hidden */
+export const GROUP_CHART_VALUE_DROPDOWN_DIV: string = 'e-group-chart-values-drodown-div';
+/** @hidden */
+export const GROUP_CHART_VALUE_DROPDOWN: string = 'e-group-chart-values-drodown';
+/** @hidden */
+export const CHART_GROUPING_BAR_CLASS: string = 'e-chart-grouping-bar';

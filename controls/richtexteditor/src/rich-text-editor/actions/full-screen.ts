@@ -22,7 +22,8 @@ export class FullScreen {
         this.scrollableParent = getScrollableParent(this.parent.element);
         if (!this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.parent.trigger(events.actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
-            if (this.parent.toolbarSettings.enableFloating && this.parent.toolbarSettings.enable) {
+            if (this.parent.toolbarSettings.enableFloating &&
+                !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
                 (this.parent.getToolbarElement() as HTMLElement).style.width = '100%';
                 (this.parent.getToolbarElement() as HTMLElement).style.top = '0px';
             }

@@ -26,8 +26,13 @@ export class AxisFields {
     public render(): void {
         this.pivotButton = new PivotButton(this.parent);
         this.createPivotButtons();
-        let pivotButtons: HTMLElement[] = [].slice.call(this.parent.element.querySelector('.' + cls.GROUP_ROW_CLASS)
-            .querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS));
+        let pivotButtons: HTMLElement[] = [];
+        /* tslint:disable:no-any */
+        for (let element of this.parent.element.querySelectorAll('.' + cls.GROUP_ROW_CLASS) as any) {
+            if (!element.classList.contains(cls.GROUP_CHART_ROW)) {
+                pivotButtons = pivotButtons.concat([].slice.call(element.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS)));
+            }
+        }
         let vlen: number = pivotButtons.length;
         for (let j: number = 0; j < vlen; j++) {
             let indentWidth: number = 24;
@@ -41,10 +46,13 @@ export class AxisFields {
     private createPivotButtons(): void {
         let fields: IFieldOptions[][] =
             [this.parent.dataSource.rows, this.parent.dataSource.columns, this.parent.dataSource.values, this.parent.dataSource.filters];
-        this.parent.element.querySelector('.' + cls.GROUP_ROW_CLASS).innerHTML = '';
-        this.parent.element.querySelector('.' + cls.GROUP_COLUMN_CLASS).innerHTML = '';
-        this.parent.element.querySelector('.' + cls.GROUP_VALUE_CLASS).innerHTML = '';
-        this.parent.element.querySelector('.' + cls.GROUP_FILTER_CLASS).innerHTML = '';
+        for (let element of this.parent.element.querySelectorAll(
+            '.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.'
+            + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS) as any) {
+            if (this.parent.dataSource.values.length > 0 ? !element.classList.contains(cls.GROUP_CHART_VALUE) : true) {
+                element.innerHTML = '';
+            }
+        }
         let axis: String[] = ['rows', 'columns', 'values', 'filters'];
         let count: number = axis.length;
         for (let i: number = 0, lnt: number = fields.length; i < lnt; i++) {

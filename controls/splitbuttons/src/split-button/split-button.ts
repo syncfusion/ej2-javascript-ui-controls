@@ -347,7 +347,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * @param  {SplitButtonModel} oldProp
      * @returns void
      */
-    public onPropertyChanged(newProp: SplitButton, oldProp: SplitButton): void {
+    public onPropertyChanged(newProp: SplitButtonModel, oldProp: SplitButtonModel): void {
         let model: string[] = ['content', 'iconCss', 'iconPosition', 'cssClass', 'disabled', 'enableRtl'];
         this.primaryBtnObj.setProperties(getModel(newProp, model));
         model = ['items', 'beforeOpen', 'beforeItemRender', 'select', 'open',

@@ -2,7 +2,7 @@ import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } fr
 import { EmitType, Event, EventHandler, KeyboardEvents, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
-import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs } from './../common/common';
+import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
 
 export type LabelPosition = 'After' | 'Before';
 
@@ -32,6 +32,7 @@ const WRAPPER: string = 'e-checkbox-wrapper';
 export class CheckBox extends Component<HTMLInputElement> implements INotifyPropertyChanged {
     private tagName: string;
     private isFocused: boolean = false;
+    private isMouseClick: boolean = false;
     private keyboardModule: KeyboardEvents;
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
@@ -160,7 +161,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private clickHandler(event: Event): void {
-        this.focusOutHandler();
+        if (this.isMouseClick) {
+            this.focusOutHandler();
+            this.isMouseClick = false;
+        }
         if (this.indeterminate) {
             this.changeState(this.checked ? 'check' : 'uncheck');
             this.indeterminate = false;
@@ -210,6 +214,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private focusOutHandler(): void {
         this.getWrapper().classList.remove('e-focus');
+        this.isFocused = false;
     }
 
     /**
@@ -271,6 +276,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
         wrapper.appendChild(label);
         label.appendChild(this.element);
+        setHiddenInput(this, label);
         label.appendChild(frameSpan);
         if (isRippleEnabled) {
             let rippleSpan: HTMLElement = this.createElement('span', { className: RIPPLE });
@@ -293,6 +299,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private labelMouseHandler(e: MouseEvent): void {
+        this.isMouseClick = true;
         let rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
     }

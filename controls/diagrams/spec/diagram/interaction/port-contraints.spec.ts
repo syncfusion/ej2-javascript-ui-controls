@@ -9,6 +9,7 @@ import { PortConstraints } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
 import { PortVisibility, DiagramTools } from '../../../src/diagram/index';
 import { NodeConstraints } from '../../../src/index';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 /**
 * Test cases for port constraints
@@ -22,6 +23,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -99,7 +106,7 @@ describe('Diagram Control', () => {
             expect((diagram.tool & DiagramTools.SingleSelect) != 0).toBe(true);
             done();
         })
-    })
+       })
 
     describe('Ports with constraints undo redo ', () => {
         let diagram: Diagram;
@@ -108,6 +115,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -150,6 +163,15 @@ describe('Diagram Control', () => {
             diagram.redo();
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
 
 
@@ -161,6 +183,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -262,6 +290,62 @@ describe('Diagram Control', () => {
             expect(diagram.connectors[1].targetPortID).toBe('');
             diagram.undo();
             diagram.clearSelection();
+            done();
+        });
+    });
+
+    describe('Ports with group undo redo ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram5' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node3', width: 50, height: 100, offsetX: 300, annotations: [{ id: 'text1', content: 'Child1' }],
+                    offsetY: 300,
+                }, {
+                    id: 'node4', width: 50, height: 100, offsetX: 400, annotations: [{ id: 'text1', content: 'Child2' }],
+                    offsetY: 300
+                },
+                {
+                    id: 'group', children: ['node3', 'node4'], annotations: [{ id: 'group1', content: 'Group' }],
+                    ports: [{ id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0, y: 0.5 } },
+                    { id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+                    { id: 'port3', visibility: PortVisibility.Hidden, shape: 'Circle', offset: { x: 1, y: 0.5 } },
+                    { id: 'port4', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0.5, y: 1 } }
+                    ]
+                },
+            ]
+
+            diagram = new Diagram({
+                width: '500px', height: '500px', nodes: nodes,
+            });
+
+            diagram.appendTo('#diagram5');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Group node with ports undo redo', (done: Function) => {
+            diagram.select([diagram.nodes[2]]);
+            diagram.copy();
+            diagram.paste();
+            diagram.undo();
+            expect(document.getElementById("groupgroup_container_groupElement").children.length).toEqual(6)
             done();
         });
     });

@@ -2,143 +2,40 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
 
 ### Grid
 
 #### Bug Fixes
 
-- Script error throws when validating the column in Batch Editing is resolved.
-- script error is thrown when press for Tab key in batch edit mode is resolved.
-- Need to provide argument as `isInteracted` in `rowDeselected` event is fixed.
-- Grid `ContextMenu` shows unrelated items in its target is resolved.
-- Script error throws while does the key press event with frozen is resolved.
-- Delete Confirmation dialog loses focus when using command column for delete is resolved.
-- Problem in updating data with `updateRow` method when using remote data is resolved.
-- Grid copied rows pasted in single column in excel sheet randomly is resolved.
-- Column chooser not working when we select or unselect the searched columns is resolved.
+- Excluded template from `pageSettings` while get persist data in Grid.
+- Edit cells are focused when enabling `multiselect` dropdown with checkbox mode.
+- Grid `validationRules` works fine while using min and max value for `NumericTextBox`.
+- Script error is resolved when opening `contextmenu` in stacked header.
+- In `FilterBar` mode, the specified format is applied to date column value while performing initial filtering.
+- Grid exports current view columns alone when column `virtualization` is enabled.
 
 #### New Features
 
-- Need to provide support to set the Edit Dialog height by using API is fixed.
+- Provided `virtualization` support while expand or collapse the grouped records when `virtualization` is enabled.
+- Provided support to edit next row cell while pressing the tab key in Batch edit mode.
+- Provided support to add new row in bottom while pressing the tab key in last cell of last row in current page.
+- Provided support to trigger `actionComplete` event after calling `expandAll` and `collapseAll` methods.
+- Provided support to implement 'Angular deep watch pipe'.
+- Add and Delete operation changes are updated in the grid UI when `virtualization` is used.
+- Provided internal event to change the edit form elements for tree grid team.
 
-## 16.4.54 (2019-02-19)
-
-### Grid
-
-#### Bug Fixes
-
-- Custom command content is not working in edited state when it is used in Multiple Columns issue is fixed.
-- Selection is not maintained when using `rowselected` and `rowdeselected` event is resolved.
-- Reactive aggregate is updating aggregate with current view data on cell editing is fixed.
-- Grid gets refreshed twice when we change the values through `setProperties` method is fixed.
-
-## 16.4.53 (2019-02-13)
+## 17.1.1-beta (2019-01-29)
 
 ### Grid
-
-#### Bug Fixes
-
-- Persisted row selection is not cleared in other pages while calling `clearSelection` method is resolved.
-- Grid cells with value '0' are exported as an empty cells in excel exporting is fixed.
-- Multiple requests are sent to server for each checkbox selection is fixed.
-- Additional parameter is not passed to the server when getting checkbox selection state is resolved.
-- Script error thrown while dragging the row to outside of the Grid content issue is fixed.
-- Auto generated columns not working when we change the Grid dataSource dynamically and also it throws Script error is fixed.
-- Programmatic deletion is not working in batch edit mode is fixed.
-- Grid shows invalid result while clearing string column values in Batch mode is fixed.
-- Mouse event is passed as a parameter for `rowDrag` event.
-- Editing misbehaves with `allowResizing` and `frozenColumns` enabled is fixed.
-- Need to maintain edit state when exception thrown with custom binding is fixed.
-- Grid `getRowInfo` method throws script Error on Expand and Collapse is fixed.
-
-## 16.4.52 (2019-02-05)
-
-### Grid
-
-#### Bug Fixes
-
-- `selectCell` event throws script error when two grid refresh requests are made simultaneously is fixed.
-- Promise is not resolved while perform CRUD operation with Observables is fixed.
-- Validation message misplaced in dialog editing when we render the new row at bottom issue is fixed.
-- Argument is not returned well in `rowDragStart` Event is resolved.
-- Column chooser dialog not getting hidden while click outside of the Grid is fixed.
-- Selecting cell using arrow keys with frozen column and cell selection is `misfocused` issue is fixed.
-- Provide property change handling for `selectedRowIndex` is resolved.
-- Edit dialog does not destroyed after perform add operation with custom binding is resolved.
-- Server requests sent twice when column is not defined in the grid is resolved.
-- custom attribute is missing in stacked header issue is fixed.
-- Column `allowEditing` false is working for `datepicker` edit when it is specified as primary key column is resolved.
-- `allowEditing` property is not working in identity column is resolved.
-- Provided support to `addparams` for filtering.
-- Misalignment occurs when `footer aggreagate` in grid and also while editing is resolved.
-- Script error thrown when reorder header template column in grid using angular is fixed.
-- `RemoteSaveAdaptor` returns empty row while perform adding in Grid is resolved.
-- Filtering the localized date column throws script error is fixed.
-- Provided support for dynamic property change handling for `selectedRowIndex`.
-- Filtering after grouping any column focuses out of the `filterbar` is resolved.
-- `Deselecting` event is not triggered after double clicking a particular row and select different row is resolved.
-- Column data `stringify` is not working properly when persistence enabled is resolved.
 
 #### New Features
 
-- Property change handling for `SelectedRowIndex` is provided.
-- Support to add `params` for `filtering` is added.
-
-## 16.4.48 (2019-01-22)
-
-### Grid
-
-#### Bug Fixes
-
-- Argument is not returned well in `rowDragStart` Event is resolved.
-- Column chooser dialog not getting hidden while click outside of the Grid is fixed.
-- Selecting cell using arrow keys with frozen column and cell selection is `misfocused` issue is fixed.
-
-## 16.4.47 (2019-01-16)
-
-### Grid
-
-#### Bug Fixes
-
-- Provide property change handling for `selectedRowIndex` is resolved.
-
-## 16.4.46 (2019-01-08)
-
-### Grid
-
-#### Bug Fixes
-
-- Edit dialog does not destroyed after perform add operation with custom binding is resolved.
-
-## 16.4.45 (2019-01-02)
-
-### Grid
-
-#### Bug Fixes
-
-- Server requests sent twice when column is not defined in the grid is resolved.
-- custom attribute is missing in stacked header issue is fixed.
-- Column `allowEditing` false is working for `datepicker` edit when it is specified as primary key column is resolved.
-- `allowEditing` property is not working in identity column is resolved.
-- Provided support to `addparams` for filtering.
-
-## 16.4.44 (2018-12-24)
-
-### Grid
-
-#### Bug Fixes
-
-- Misalignment occurs when `footer aggreagate` in grid and also while editing is resolved.
-- Script error thrown when reorder header template column in grid using angular is fixed.
-- `RemoteSaveAdaptor` returns empty row while perform adding in Grid is resolved.
-- Filtering the localized date column throws script error is fixed.
-- Provided support for dynamic property change handling for `selectedRowIndex`.
-- Filtering after grouping any column focuses out of the `filterbar` is resolved.
-- `Deselecting` event is not triggered after double clicking a particular row and select different row is resolved.
-- Column data `stringify` is not working properly when persistence enabled is resolved.
-
-## 16.4.42 (2018-12-14)
+- Provided support for toggle selection on row and cells.
+- Provided reorder position support for the target field index.
+- Provided support to restrict the searching in column level
+- Provided set model support for `selectedRowIndex` property.
+- Provided add `params` support to customize the controls which are used in Menu filter.
 
 ### Grid
 

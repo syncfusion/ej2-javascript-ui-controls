@@ -1,6 +1,6 @@
 import { TreeMap } from '../../treemap/treemap';
 import { BorderModel } from '../model/base-model';
-import { LegendShape } from '../utils/enum';
+import { LegendShape, LegendPosition } from '../utils/enum';
 import { Size } from '../utils/helper';
 
 
@@ -61,6 +61,24 @@ export interface IDrillStartEventArgs extends ITreeMapEventArgs {
      * Define the current element of drillDown.
      */
     element: Element;
+    /**
+     * Defines the level of the treemap item.
+     */
+    groupIndex: number;
+    /**
+     * Defines the parent name of the treemap item.
+     */
+    groupName: string;
+    /**
+     * return the boolean value whether it is right or not.
+     */
+    rightClick: boolean;
+    /**
+     * return the child values to process the onDemand support.
+     */
+    childItems: Object;
+
+
 }
 
 export interface IDrillEndEventArgs extends ITreeMapEventArgs {
@@ -83,6 +101,14 @@ export interface IItemClickEventArgs extends ITreeMapEventArgs {
      * Define the mouse event.
      */
     mouseEvent: PointerEvent;
+    /**
+     * Defines the level of the treemap item.
+     */
+    groupIndex: number;
+    /**
+     * Defines the parent name of the treemap item.
+     */
+    groupName: string;
 }
 
 export interface IItemMoveEventArgs extends ITreeMapEventArgs {
@@ -99,6 +125,24 @@ export interface IItemMoveEventArgs extends ITreeMapEventArgs {
 }
 
 export interface IClickEventArgs extends ITreeMapEventArgs {
+    /** Defines the current TreeMap instance */
+    treemap: TreeMap;
+    /**
+     * Define the mouse event.
+     */
+    mouseEvent: PointerEvent;
+}
+
+export interface IDoubleClickEventArgs extends ITreeMapEventArgs {
+    /** Defines the current TreeMap instance */
+    treemap: TreeMap;
+    /**
+     * Define the mouse event.
+     */
+    mouseEvent: PointerEvent;
+}
+
+export interface IRightClickEventArgs extends ITreeMapEventArgs {
     /** Defines the current TreeMap instance */
     treemap: TreeMap;
     /**
@@ -188,6 +232,25 @@ export interface ILegendItemRenderingEventArgs extends ITreeMapEventArgs {
      */
     imageUrl: string;
 }
+
+/**
+ * Specifies legendRendering event arguments for maps.
+ */
+export interface ILegendRenderingEventArgs extends ITreeMapEventArgs {
+    /**
+     * maps instance event argument
+     */
+    treemap?: TreeMap;
+    /**
+     * Customize the legend position of the maps.
+     */
+    position?: LegendPosition;
+    /**
+     * Customize the legend position of the maps.
+     */
+    _changePosition?: LegendPosition;
+}
+
 
 /**
  * TreeMap Resize event arguments.

@@ -7,6 +7,7 @@ import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { FormValidator, Input, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { ListBase } from '@syncfusion/ej2-lists';
+import { Workbook } from '@syncfusion/ej2-excel-export';
 
 /**
  * Constants
@@ -492,13 +493,17 @@ const MORE_EVENT_WRAPPER_CLASS = 'e-more-appointment-wrapper';
 /** @hidden */
 const QUICK_DIALOG_CLASS = 'e-quick-dialog';
 /** @hidden */
-const QUICK_DIALOG_EDIT_EVENT_CLASS = 'e-quick-dialog-edit-event';
+const QUICK_DIALOG_OCCURRENCE_CLASS = 'e-quick-dialog-occurrence-event';
 /** @hidden */
-const QUICK_DIALOG_EDIT_SERIES_CLASS = 'e-quick-dialog-edit-series';
+const QUICK_DIALOG_SERIES_CLASS = 'e-quick-dialog-series-event';
 /** @hidden */
 const QUICK_DIALOG_DELETE_CLASS = 'e-quick-dialog-delete';
 /** @hidden */
 const QUICK_DIALOG_CANCEL_CLASS = 'e-quick-dialog-cancel';
+/** @hidden */
+const QUICK_DIALOG_ALERT_OK = 'e-quick-alertok';
+/** @hidden */
+const QUICK_DIALOG_ALERT_CANCEL = 'e-quick-alertcancel';
 /** @hidden */
 const QUICK_DIALOG_ALERT_BTN_CLASS = 'e-quick-dialog-alert-btn';
 /** @hidden */
@@ -619,6 +624,8 @@ const DATE_TIME_ICON_CLASS = 'e-date-time-icon';
 const VIRTUAL_SCROLL_CLASS = 'e-virtual-scroll';
 /** @hidden */
 const ICON_DISABLE_CLASS = 'e-icon-disable';
+/** @hidden */
+const AUTO_HEIGHT = 'e-auto-height';
 
 /**
  * Header module
@@ -2571,14 +2578,15 @@ class Islamic {
 /**
  * Date Generator from Recurrence Rule
  */
-function generateSummary(rule, localeObject, locale, calendarMode = 'gregorian') {
+function generateSummary(rule, localeObject, locale, calendarType = 'Gregorian') {
     let ruleObject = extractObjectFromRule(rule);
     let summary = localeObject.getConstant(EVERY) + ' ';
     let cldrObj;
     let cldrObj1;
+    let calendarMode = calendarType.toLowerCase();
     if (locale === 'en' || locale === 'en-US') {
-        cldrObj1 = (getValue('months.stand-alone.abbreviated', getDefaultDateObject()));
-        cldrObj = (getValue('days.stand-alone.abbreviated', getDefaultDateObject()));
+        cldrObj1 = (getValue('months.stand-alone.abbreviated', getDefaultDateObject(calendarMode)));
+        cldrObj = (getValue('days.stand-alone.abbreviated', getDefaultDateObject(calendarMode)));
     }
     else {
         cldrObj1 =
@@ -2748,7 +2756,7 @@ function weeklyType(startDate, endDate, data, ruleObject) {
                 break;
             }
             tempDate.setDate((tempDate.getDate()) + 1 + ((interval - 1) * 7));
-            insertWeekCollection(weekCollection, weekState, startDate, endDate, data, ruleObject);
+            insertDataCollection(weekCollection, weekState, startDate, endDate, data, ruleObject);
             weekCollection = [];
         }
     }
@@ -2764,7 +2772,7 @@ function weeklyType(startDate, endDate, data, ruleObject) {
             }
             tempDate.setDate(tempDate.getDate() + (interval * 7));
         }
-        insertWeekCollection(weekCollection, weekState, startDate, endDate, data, ruleObject);
+        insertDataCollection(weekCollection, weekState, startDate, endDate, data, ruleObject);
         weekCollection = [];
     }
 }
@@ -2793,8 +2801,14 @@ function monthlyType(startDate, endDate, data, ruleObject) {
             break;
         case 'both':
         case 'date':
-            monthlyDateTypeProcess(startDate, endDate, data, ruleObject);
-            break;
+            switch (ruleObject.freq) {
+                case 'MONTHLY':
+                    monthlyDateTypeProcessforMonthFreq(startDate, endDate, data, ruleObject);
+                    break;
+                case 'YEARLY':
+                    monthlyDateTypeProcess(startDate, endDate, data, ruleObject);
+                    break;
+            }
     }
 }
 function yearlyType(startDate, endDate, data, ruleObject) {
@@ -2822,6 +2836,8 @@ function processWeekNo(startDate, endDate, data, ruleObject) {
     let weekNo;
     let maxDate;
     let minDate;
+    let weekCollection = [];
+    let expectedDays = ruleObject.day;
     while (compareDates(stDate, endDate)) {
         startDay = dayIndex.indexOf(DAYINDEX[stDate.getDay()]);
         firstWeekSpan = (6 - startDay) + 1;
@@ -2832,17 +2848,25 @@ function processWeekNo(startDate, endDate, data, ruleObject) {
             minDate = (weekNo === 1) ? firstWeekSpan - 7 : firstWeekSpan + ((weekNo - 2) * 7);
             while (minDate < maxDate) {
                 tempDate = new Date(stDate.getTime() + (MS_PER_DAY * minDate));
-                state = validateRules(tempDate, ruleObject);
-                if ((tempDate >= startDate) && state && compareDates(tempDate, endDate)) {
-                    excludeDateHandler(data, tempDate.getTime());
-                    if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
-                        return;
+                if (expectedDays.length === 0 || expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1) {
+                    if (isNullOrUndefined(ruleObject.setPosition)) {
+                        insertDateCollection(state, startDate, endDate, data, ruleObject, tempDate.getTime());
+                    }
+                    else {
+                        weekCollection.push([tempDate.getTime()]);
                     }
                 }
                 minDate++;
             }
         }
+        if (!isNullOrUndefined(ruleObject.setPosition)) {
+            insertDatasIntoExistingCollection(weekCollection, state, startDate, endDate, data, ruleObject);
+        }
+        if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+            return;
+        }
         stDate = calendarUtil.getYearLastDate(tempDate, ruleObject.interval);
+        weekCollection = [];
     }
 }
 function processYearDay(startDate, endDate, data, ruleObject) {
@@ -2850,7 +2874,9 @@ function processYearDay(startDate, endDate, data, ruleObject) {
     let tempDate;
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
     let state;
+    let dateCollection = [];
     let date;
+    let expectedDays = ruleObject.day;
     while (compareDates(stDate, endDate)) {
         for (let index = 0; index < ruleObject.yearDay.length; index++) {
             date = ruleObject.yearDay[index];
@@ -2862,15 +2888,23 @@ function processYearDay(startDate, endDate, data, ruleObject) {
             }
             tempDate.setDate(tempDate.getDate() + ((date < 0) ?
                 calendarUtil.getYearDaysCount(tempDate, 1) + 1 + date : date));
-            state = validateRules(tempDate, ruleObject);
-            if ((tempDate >= startDate) && state && compareDates(tempDate, endDate)) {
-                excludeDateHandler(data, tempDate.getTime());
-                if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
-                    return;
+            if (expectedDays.length === 0 || expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1) {
+                if (ruleObject.setPosition == null) {
+                    insertDateCollection(state, startDate, endDate, data, ruleObject, tempDate.getTime());
+                }
+                else {
+                    dateCollection.push([tempDate.getTime()]);
                 }
             }
         }
+        if (!isNullOrUndefined(ruleObject.setPosition)) {
+            insertDatasIntoExistingCollection(dateCollection, state, startDate, endDate, data, ruleObject);
+        }
+        if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
+            return;
+        }
         stDate = calendarUtil.getYearLastDate(tempDate, ruleObject.interval);
+        dateCollection = [];
     }
 }
 function checkYearlyType(ruleObject) {
@@ -2882,47 +2916,105 @@ function checkYearlyType(ruleObject) {
     }
     return 'MONTH';
 }
-function monthlyDateTypeProcess(startDate, endDate, data, ruleObject) {
-    let tempDate = new Date(startDate.getTime());
-    let mainDate = new Date(startDate.getTime());
-    let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
-    let interval = ruleObject.interval;
-    let monthInit = 0;
-    let date;
-    let state;
-    let beginDate;
-    tempDate = calendarUtil.getMonthStartDate(tempDate);
-    mainDate = calendarUtil.getMonthStartDate(mainDate);
+function initializeRecRuleVariables(startDate, ruleObject) {
+    let ruleData = {
+        monthCollection: [],
+        index: 0,
+        tempDate: new Date(startDate.getTime()),
+        mainDate: new Date(startDate.getTime()),
+        expectedCount: ruleObject.count ? ruleObject.count : maxOccurrence,
+        monthInit: 0,
+        dateCollection: [],
+    };
     if (ruleObject.month.length) {
-        calendarUtil.setMonth(tempDate, ruleObject.month[0], 1);
+        calendarUtil.setMonth(ruleData.tempDate, ruleObject.month[0], ruleData.tempDate.getDate());
     }
-    while (compareDates(tempDate, endDate)) {
-        beginDate = new Date(tempDate.getTime());
-        for (let index = 0; index < ruleObject.monthDay.length; index++) {
-            tempDate = calendarUtil.getMonthStartDate(tempDate);
-            date = ruleObject.monthDay[index];
-            let maxDate = calendarUtil.getMonthDaysCount(tempDate);
-            date = date > 0 ? date : (maxDate + date + 1);
-            if ((date > 0) && validateProperDate(tempDate, date, mainDate)) {
-                calendarUtil.setDate(tempDate, date);
-                if (endDate && tempDate > endDate) {
-                    return;
+    return ruleData;
+}
+function monthlyDateTypeProcess(startDate, endDate, data, ruleObject) {
+    if (ruleObject.month.length) {
+        monthlyDateTypeProcessforMonthFreq(startDate, endDate, data, ruleObject);
+        return;
+    }
+    let ruleData = initializeRecRuleVariables(startDate, ruleObject);
+    let currentMonthDate;
+    ruleData.tempDate = ruleData.mainDate = calendarUtil.getMonthStartDate(ruleData.tempDate);
+    while (compareDates(ruleData.tempDate, endDate)) {
+        currentMonthDate = new Date(ruleData.tempDate.getTime());
+        while (calendarUtil.isSameYear(currentMonthDate, ruleData.tempDate) &&
+            (ruleData.expectedCount && (data.length + tempExcludeDate.length) <= ruleData.expectedCount)) {
+            if (ruleObject.month.length === 0 || (ruleObject.month.length > 0
+                && !calendarUtil.checkMonth(ruleData.tempDate, ruleObject.month))) {
+                processDateCollectionForByMonthDay(ruleObject, ruleData, endDate, false);
+                ruleData.beginDate = new Date(ruleData.tempDate.getTime());
+                ruleData.monthInit = setNextValidDate(ruleData.tempDate, ruleObject, ruleData.monthInit, ruleData.beginDate);
+            }
+            else {
+                calendarUtil.setValidDate(ruleData.tempDate, 1, 1);
+                ruleData.tempDate = getStartDateForWeek(ruleData.tempDate, ruleObject.day);
+                break;
+            }
+        }
+        ruleData.tempDate.setFullYear(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), currentMonthDate.getDate());
+        insertDataCollection(ruleData.dateCollection, ruleData.state, startDate, endDate, data, ruleObject);
+        if (calendarUtil.isLastMonth(ruleData.tempDate)) {
+            calendarUtil.setValidDate(ruleData.tempDate, 1, 1);
+            ruleData.tempDate = getStartDateForWeek(ruleData.tempDate, ruleObject.day);
+        }
+        if (ruleData.expectedCount && (data.length + tempExcludeDate.length) >= ruleData.expectedCount) {
+            return;
+        }
+        ruleData.tempDate.setFullYear(ruleData.tempDate.getFullYear() + ruleObject.interval - 1);
+        ruleData.tempDate = getStartDateForWeek(ruleData.tempDate, ruleObject.day);
+        ruleData.monthInit = setNextValidDate(ruleData.tempDate, ruleObject, ruleData.monthInit, ruleData.beginDate);
+        ruleData.dateCollection = [];
+    }
+}
+function monthlyDateTypeProcessforMonthFreq(startDate, endDate, data, ruleObject) {
+    let ruleData = initializeRecRuleVariables(startDate, ruleObject);
+    ruleData.tempDate = ruleData.mainDate = calendarUtil.getMonthStartDate(ruleData.tempDate);
+    while (compareDates(ruleData.tempDate, endDate)) {
+        ruleData.beginDate = new Date(ruleData.tempDate.getTime());
+        processDateCollectionForByMonthDay(ruleObject, ruleData, endDate, true, startDate, data);
+        if (!isNullOrUndefined(ruleObject.setPosition)) {
+            insertDatasIntoExistingCollection(ruleData.dateCollection, ruleData.state, startDate, endDate, data, ruleObject);
+        }
+        if (ruleData.expectedCount && (data.length + tempExcludeDate.length) >= ruleData.expectedCount) {
+            return;
+        }
+        ruleData.monthInit = setNextValidDate(ruleData.tempDate, ruleObject, ruleData.monthInit, ruleData.beginDate);
+        ruleData.dateCollection = [];
+    }
+}
+// To process date collection for Monthly & Yearly based on BYMONTH Day property
+function processDateCollectionForByMonthDay(ruleObject, recRuleVariables, endDate, isByMonth, startDate, data) {
+    for (let index = 0; index < ruleObject.monthDay.length; index++) {
+        recRuleVariables.date = ruleObject.monthDay[index];
+        recRuleVariables.tempDate = calendarUtil.getMonthStartDate(recRuleVariables.tempDate);
+        let maxDate = calendarUtil.getMonthDaysCount(recRuleVariables.tempDate);
+        recRuleVariables.date = recRuleVariables.date > 0 ? recRuleVariables.date : (maxDate + recRuleVariables.date + 1);
+        if (validateProperDate(recRuleVariables.tempDate, recRuleVariables.date, recRuleVariables.mainDate)
+            && (recRuleVariables.date > 0)) {
+            calendarUtil.setDate(recRuleVariables.tempDate, recRuleVariables.date);
+            if (endDate && recRuleVariables.tempDate > endDate) {
+                return;
+            }
+            if (ruleObject.day.length === 0 || ruleObject.day.indexOf(DAYINDEX[recRuleVariables.tempDate.getDay()]) > -1) {
+                if (isByMonth && isNullOrUndefined(ruleObject.setPosition) && (recRuleVariables.expectedCount
+                    && (data.length + tempExcludeDate.length) < recRuleVariables.expectedCount)) {
+                    insertDateCollection(recRuleVariables.state, startDate, endDate, data, ruleObject, recRuleVariables.tempDate.getTime());
                 }
-                state = validateRules(tempDate, ruleObject);
-                if ((tempDate >= startDate) && state && compareDates(tempDate, endDate)) {
-                    excludeDateHandler(data, tempDate.getTime());
-                    if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
-                        return;
-                    }
+                else {
+                    recRuleVariables.dateCollection.push([recRuleVariables.tempDate.getTime()]);
                 }
             }
         }
-        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
     }
 }
-function setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate = null) {
+function setNextValidDate(tempDate, ruleObject, monthInit, beginDate = null, interval) {
     let monthData = beginDate ? beginDate.getMonth() : 0;
     let startDate = calendarUtil.getMonthStartDate(tempDate);
+    interval = isNullOrUndefined(interval) ? ruleObject.interval : interval;
     tempDate.setFullYear(startDate.getFullYear());
     tempDate.setMonth(startDate.getMonth());
     tempDate.setDate(startDate.getDate());
@@ -2947,7 +3039,6 @@ function getMonthCollection(startDate, endDate, data, ruleObject) {
     let expectedDays = ruleObject.day;
     let tempDate = new Date(startDate.getTime());
     tempDate = calendarUtil.getMonthStartDate(tempDate);
-    let interval = ruleObject.interval;
     let monthCollection = [];
     let dateCollection = [];
     let dates = [];
@@ -2971,7 +3062,7 @@ function getMonthCollection(startDate, endDate, data, ruleObject) {
                 tempDate = new Date(tempDate.getTime());
                 tempDate = calendarUtil.getMonthStartDate(tempDate);
                 tempDate = getStartDateForWeek(tempDate, expectedDays);
-                currentMonthDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+                currentMonthDate.setFullYear(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
                 while (calendarUtil.isSameYear(currentMonthDate, tempDate) && calendarUtil.isSameMonth(currentMonthDate, tempDate)) {
                     if (expectedDaysArray[expectedDaysArray.length - 1] === DAYINDEX[currentMonthDate.getDay()]) {
                         monthCollection.push([currentMonthDate.getTime()]);
@@ -2987,8 +3078,8 @@ function getMonthCollection(startDate, endDate, data, ruleObject) {
                 }
                 index = isNaN(index) ? 0 : index;
                 if (monthCollection.length > 0) {
-                    (ruleObject.setPosition === null) ?
-                        insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) :
+                    (isNullOrUndefined(ruleObject.setPosition)) ?
+                        insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index) :
                         dateCollection = [(filterDateCollectionByIndex(monthCollection, index, dates))];
                 }
                 if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
@@ -2996,18 +3087,18 @@ function getMonthCollection(startDate, endDate, data, ruleObject) {
                 }
                 monthCollection = [];
             }
-            if (ruleObject.setPosition !== null) {
+            if (!isNullOrUndefined(ruleObject.setPosition)) {
                 insertDateCollectionBasedonBySetPos(dateCollection, state, startDate, endDate, data, ruleObject);
                 dates = [];
             }
-            monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
+            monthInit = setNextValidDate(tempDate, ruleObject, monthInit, beginDate);
             tempDate = getStartDateForWeek(tempDate, ruleObject.day);
             monthCollection = [];
         }
         else {
             let weekCollection = [];
             let dayCycleData = processWeekDays(expectedDays);
-            currentMonthDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+            currentMonthDate.setFullYear(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
             let initialDate = new Date(tempDate.getTime());
             beginDate = new Date(tempDate.getTime());
             while (calendarUtil.isSameMonth(initialDate, tempDate)) {
@@ -3020,7 +3111,7 @@ function getMonthCollection(startDate, endDate, data, ruleObject) {
                     + dayCycleData[DAYINDEX[tempDate.getDay()]]);
             }
             index = ((ruleObject.setPosition < 1) ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-            if (ruleObject.setPosition === null) {
+            if (isNullOrUndefined(ruleObject.setPosition)) {
                 index = 0;
                 let datas = [];
                 for (let week = 0; week < monthCollection.length; week++) {
@@ -3031,12 +3122,12 @@ function getMonthCollection(startDate, endDate, data, ruleObject) {
                 monthCollection = [datas];
             }
             if (monthCollection.length > 0) {
-                insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+                insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index);
             }
             if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
                 return;
             }
-            monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
+            monthInit = setNextValidDate(tempDate, ruleObject, monthInit, beginDate);
             tempDate = getStartDateForWeek(tempDate, ruleObject.day);
             monthCollection = [];
         }
@@ -3052,7 +3143,6 @@ function monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject)
     }
     let tempDate = new Date(startDate.getTime());
     let expectedCount = ruleObject.count ? ruleObject.count : maxOccurrence;
-    let interval = ruleObject.interval;
     let monthCollection = [];
     let beginDate;
     let monthInit = 0;
@@ -3070,7 +3160,7 @@ function monthlyDayTypeProcessforMonthFreq(startDate, endDate, data, ruleObject)
         }
         // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
         insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
-        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, interval, beginDate);
+        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, beginDate);
         tempDate = getStartDateForWeek(tempDate, ruleObject.day);
         monthCollection = [];
     }
@@ -3095,12 +3185,10 @@ function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
     let monthCollection = [];
     if (ruleObject.month.length) {
         calendarUtil.setMonth(tempDate, ruleObject.month[0], tempDate.getDate());
-        let compareTempDate = new Date(tempDate.getTime());
-        resetTime(compareTempDate);
     }
     // Set the date as start date of the yeear if yearly freq having ByDay property alone
-    if (ruleObject.setPosition === null && ruleObject.month.length === 0 && ruleObject.weekNo.length === 0) {
-        tempDate = new Date(startDate.getFullYear(), 0, 1);
+    if (isNullOrUndefined(ruleObject.setPosition) && ruleObject.month.length === 0 && ruleObject.weekNo.length === 0) {
+        tempDate.setFullYear(startDate.getFullYear(), 0, 1);
     }
     tempDate = calendarUtil.getMonthStartDate(tempDate);
     tempDate = getStartDateForWeek(tempDate, ruleObject.day);
@@ -3146,7 +3234,7 @@ function monthlyDayTypeProcess(startDate, endDate, data, ruleObject) {
                 }
             }
         }
-        tempDate = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), currentMonthDate.getDate());
+        tempDate.setFullYear(currentMonthDate.getFullYear(), currentMonthDate.getMonth(), currentMonthDate.getDate());
         // To filter date collection based on BYDAY Index, then BYSETPOS and to insert datas into existing collection
         insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, data, ruleObject);
         if (calendarUtil.isLastMonth(tempDate)) {
@@ -3196,7 +3284,7 @@ function processDateCollectionforByDayWithInteger(startDate, endDate, data, rule
                             (ruleObject.month.length > 0 && ruleObject.month[i] === calendarUtil.getMonth(currentMonthDate))) {
                             let expectedDaysArray = expectedDays[j].match(SPLITNUMBERANDSTRING);
                             let position = parseInt(expectedDaysArray[0], 10);
-                            currentDate = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+                            currentDate = new Date(tempDate.getTime());
                             while (calendarUtil.isSameYear(currentDate, tempDate)
                                 && calendarUtil.isSameMonth(currentDate, tempDate)) {
                                 if (expectedDaysArray[expectedDaysArray.length - 1] === DAYINDEX[currentDate.getDay()]) {
@@ -3213,14 +3301,14 @@ function processDateCollectionforByDayWithInteger(startDate, endDate, data, rule
                             }
                             index = isNaN(index) ? 0 : index;
                         }
-                        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, 1, beginDate);
+                        monthInit = setNextValidDate(tempDate, ruleObject, monthInit, beginDate, 1);
                         tempDate = getStartDateForWeek(tempDate, ruleObject.day);
                     }
                 }
                 tempDate = j === 0 && currentDate ? new Date(currentDate.getTime()) : new Date(currentMonthDate.getTime());
                 if (monthCollection.length > 0) {
-                    (ruleObject.setPosition === null) ?
-                        insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) :
+                    (isNullOrUndefined(ruleObject.setPosition)) ?
+                        insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index) :
                         dateCollection = [(filterDateCollectionByIndex(monthCollection, index, datas))];
                 }
                 if (expectedCount && (data.length + tempExcludeDate.length) >= expectedCount) {
@@ -3228,7 +3316,7 @@ function processDateCollectionforByDayWithInteger(startDate, endDate, data, rule
                 }
             }
         }
-        if (ruleObject.setPosition !== null) {
+        if (!isNullOrUndefined(ruleObject.setPosition)) {
             insertDateCollectionBasedonBySetPos(dateCollection, state, startDate, endDate, data, ruleObject);
             datas = [];
         }
@@ -3273,15 +3361,15 @@ function getRecurrenceCollection(monthCollection, expectedDays) {
     recurrenceCollectionObject.index = index;
     return recurrenceCollectionObject;
 }
-function insertWeekCollection(weekCollection, state, startDate, endDate, data, ruleObject) {
+function insertDataCollection(dateCollection, state, startDate, endDate, data, ruleObject) {
     let index = ((ruleObject.setPosition < 1) ?
-        (weekCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-    if (ruleObject.setPosition === null) {
+        (dateCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+    if (isNullOrUndefined(ruleObject.setPosition)) {
         index = 0;
-        weekCollection = getDateCollectionforBySetPosNull(weekCollection);
+        dateCollection = getDateCollectionforBySetPosNull(dateCollection);
     }
-    if (weekCollection.length > 0) {
-        insertDatasIntoExistingCollection(weekCollection, index, state, startDate, endDate, data, ruleObject);
+    if (dateCollection.length > 0) {
+        insertDatasIntoExistingCollection(dateCollection, state, startDate, endDate, data, ruleObject, index);
     }
 }
 // To process month collection if BYSETPOS is null
@@ -3312,7 +3400,7 @@ function insertDateCollectionBasedonIndex(monthCollection, startDate, endDate, d
     }
     else {
         if (monthCollection.length > 0) {
-            insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject);
+            insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index);
         }
     }
     datas = [];
@@ -3347,9 +3435,12 @@ function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, 
     }
 }
 // To insert datas into existing collection which is processed from previous loop.
-function insertDatasIntoExistingCollection(monthCollection, index, state, startDate, endDate, data, ruleObject) {
+function insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index) {
+    index = !isNullOrUndefined(index) ? index :
+        ((ruleObject.setPosition < 1)
+            ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+    monthCollection[index].sort();
     for (let week = 0; week < monthCollection[index].length; week++) {
-        monthCollection[index].sort();
         let dayData = monthCollection[index][week];
         insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
     }
@@ -3682,6 +3773,19 @@ class EventBase {
         this.parent.blockProcessed = this.filterEvents(start, end, blockData);
         return eventData;
     }
+    getProcessedEvents(eventCollection = this.parent.eventsData) {
+        let processed = [];
+        for (let event of eventCollection) {
+            if (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) &&
+                isNullOrUndefined(event[this.parent.eventFields.recurrenceID])) {
+                processed = processed.concat(this.parent.eventBase.generateOccurrence(event));
+            }
+            else {
+                processed.push(event);
+            }
+        }
+        return processed;
+    }
     timezonePropertyChange(oldTimezone) {
         let processed = this.processData(this.parent.eventsData, true, oldTimezone);
         this.parent.notify(dataReady, { processedData: processed });
@@ -3755,6 +3859,24 @@ class EventBase {
             filter = this.filterEventsByResource(resourceTdData, filter);
         }
         return this.sortByTime(filter);
+    }
+    filterEventsByRange(eventCollection, startDate, endDate) {
+        let filteredEvents = [];
+        if (startDate && endDate) {
+            filteredEvents = this.filterEvents(startDate, endDate, eventCollection);
+        }
+        else if (startDate && !endDate) {
+            let predicate = new Predicate(this.parent.eventFields.startTime, 'greaterthanorequal', startDate);
+            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+        }
+        else if (!startDate && endDate) {
+            let predicate = new Predicate(this.parent.eventFields.endTime, 'lessthanorequal', endDate);
+            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+        }
+        else {
+            filteredEvents = eventCollection;
+        }
+        return this.sortByTime(filteredEvents);
     }
     filterEventsByResource(resourceTdData, appointments = this.parent.eventsProcessed) {
         let predicate;
@@ -4498,13 +4620,17 @@ class Crud {
                     query = new Query().where(fields.recurrenceID, 'equal', parentEvent[fields.id]);
                     let delApp = new DataManager(this.parent.eventsData).executeLocal(query);
                     data[fields.id] = parentEvent[fields.id];
-                    data[fields.recurrenceException] = null;
+                    data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence ?
+                        parentEvent[fields.recurrenceException] : null;
                     data[fields.recurrenceID] = null;
                     this.processCrudTimezone(data);
                     editParms.changedRecords.push(data);
-                    for (let event of delApp) {
-                        editParms.deletedRecords.push(event);
+                    if (!this.parent.uiStateValues.isIgnoreOccurrence) {
+                        for (let event of delApp) {
+                            editParms.deletedRecords.push(event);
+                        }
                     }
+                    this.parent.uiStateValues.isIgnoreOccurrence = false;
                     break;
             }
             promise =
@@ -4790,7 +4916,11 @@ class QuickPopups {
             animationSettings: { effect: 'Zoom' },
             buttons: [
                 { buttonModel: { cssClass: 'e-quick-alertok e-flat', isPrimary: true }, click: this.dialogButtonClick.bind(this) },
-                { buttonModel: { cssClass: 'e-quick-alertcancel e-flat', isPrimary: false }, click: this.dialogButtonClick.bind(this) }
+                { buttonModel: { cssClass: 'e-quick-alertcancel e-flat', isPrimary: false }, click: this.dialogButtonClick.bind(this) },
+                {
+                    buttonModel: { cssClass: 'e-quick-dialog-cancel e-disable e-flat', isPrimary: false },
+                    click: this.dialogButtonClick.bind(this)
+                }
             ],
             cssClass: QUICK_DIALOG_CLASS,
             closeOnEscape: true,
@@ -4806,11 +4936,11 @@ class QuickPopups {
         let dialogElement = createElement('div', { id: this.parent.element.id + 'QuickDialog' });
         this.parent.element.appendChild(dialogElement);
         this.quickDialog.appendTo(dialogElement);
-        let okButton = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.setAttribute('aria-label', this.l10n.getConstant('occurrence'));
         }
-        let cancelButton = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.setAttribute('aria-label', this.l10n.getConstant('series'));
         }
@@ -4827,24 +4957,25 @@ class QuickPopups {
     }
     quickDialogClass(action) {
         let classList$$1 = [
-            QUICK_DIALOG_EDIT_EVENT_CLASS, QUICK_DIALOG_EDIT_SERIES_CLASS, QUICK_DIALOG_DELETE_CLASS,
+            QUICK_DIALOG_OCCURRENCE_CLASS, QUICK_DIALOG_SERIES_CLASS, QUICK_DIALOG_DELETE_CLASS,
             QUICK_DIALOG_CANCEL_CLASS, QUICK_DIALOG_ALERT_BTN_CLASS, DISABLE_CLASS
         ];
-        let okButton = this.quickDialog.element.querySelector('.e-quick-alertok');
-        let cancelButton = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
+        let cancelButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
         removeClass([okButton, cancelButton], classList$$1);
+        addClass([this.quickDialog.element.querySelector('.' + QUICK_DIALOG_CANCEL_CLASS)], DISABLE_CLASS);
         switch (action) {
             case 'Recurrence':
-                addClass([okButton], QUICK_DIALOG_EDIT_EVENT_CLASS);
-                addClass([cancelButton], QUICK_DIALOG_EDIT_SERIES_CLASS);
+                addClass([okButton], QUICK_DIALOG_OCCURRENCE_CLASS);
+                addClass([cancelButton], QUICK_DIALOG_SERIES_CLASS);
                 break;
             case 'Delete':
                 addClass([okButton], QUICK_DIALOG_DELETE_CLASS);
                 addClass([cancelButton], QUICK_DIALOG_CANCEL_CLASS);
                 break;
             case 'Alert':
-                addClass([okButton], QUICK_DIALOG_ALERT_BTN_CLASS);
-                addClass([cancelButton], DISABLE_CLASS);
+                addClass([okButton], [QUICK_DIALOG_ALERT_OK, QUICK_DIALOG_ALERT_BTN_CLASS]);
+                addClass([cancelButton], [QUICK_DIALOG_ALERT_CANCEL, DISABLE_CLASS]);
                 break;
         }
     }
@@ -4855,11 +4986,11 @@ class QuickPopups {
         this.fieldValidator.renderFormValidator(form, rules, this.quickPopup.element);
     }
     openRecurrenceAlert() {
-        let editDeleteOnly = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let editDeleteOnly = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
         if (editDeleteOnly) {
             editDeleteOnly.innerHTML = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteEvent' : 'editEvent');
         }
-        let editDeleteSeries = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let editDeleteSeries = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
         if (editDeleteSeries) {
             editDeleteSeries.innerHTML = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteSeries' : 'editSeries');
         }
@@ -4870,10 +5001,10 @@ class QuickPopups {
         this.showQuickDialog('RecurrenceAlert');
     }
     openRecurrenceValidationAlert(type) {
-        let okButton = this.quickDialog.element.querySelector('.e-quick-alertok');
-        removeClass([okButton], QUICK_DIALOG_EDIT_EVENT_CLASS);
+        this.quickDialogClass('Alert');
+        let okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
         okButton.innerHTML = this.l10n.getConstant('ok');
-        let cancelButton = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
         cancelButton.innerHTML = this.l10n.getConstant('cancel');
         this.quickDialog.header = this.l10n.getConstant('alert');
         switch (type) {
@@ -4883,6 +5014,7 @@ class QuickPopups {
                 break;
             case 'dateValidation':
                 removeClass([cancelButton], DISABLE_CLASS);
+                addClass([cancelButton], QUICK_DIALOG_CANCEL_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('recurrenceDateValidation');
                 break;
             case 'createError':
@@ -4894,12 +5026,13 @@ class QuickPopups {
                 this.quickDialog.content = this.l10n.getConstant('sameDayAlert');
                 break;
             case 'seriesChangeAlert':
-                removeClass([cancelButton], DISABLE_CLASS);
+                let dialogCancel = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_CANCEL_CLASS);
+                removeClass([cancelButton, dialogCancel], DISABLE_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('seriesChangeAlert');
+                okButton.innerHTML = this.l10n.getConstant('yes');
+                cancelButton.innerHTML = this.l10n.getConstant('no');
+                dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
-        }
-        if (!cancelButton.classList.contains(DISABLE_CLASS)) {
-            addClass([cancelButton], 'e-quick-alert-cancelpresent');
         }
         this.showQuickDialog('RecurrenceValidationAlert');
     }
@@ -4907,11 +5040,11 @@ class QuickPopups {
         if (this.parent.activeViewOptions.readonly) {
             return;
         }
-        let okButton = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.innerHTML = this.l10n.getConstant('delete');
         }
-        let cancelButton = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
         }
@@ -4925,11 +5058,11 @@ class QuickPopups {
     openValidationError(type) {
         this.quickDialog.header = this.l10n.getConstant('alert');
         this.quickDialog.content = this.l10n.getConstant(type);
-        let okButton = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.innerHTML = this.l10n.getConstant('ok');
         }
-        let cancelButton = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
         }
@@ -5453,15 +5586,10 @@ class QuickPopups {
         this.morePopup.hide();
     }
     dialogButtonClick(event) {
-        let cancelButton = this.quickDialog.element.querySelector('.e-quick-alertcancel');
-        if (event.target.classList.contains('e-quick-alertok') &&
-            (cancelButton.classList.contains('e-quick-alert-cancelpresent'))) {
-            removeClass([cancelButton], 'e-quick-alert-cancelpresent');
-            this.parent.eventWindow.eventSave(this.l10n.getConstant('ok'));
-            return;
-        }
         this.quickDialog.hide();
-        if (event.target.classList.contains(QUICK_DIALOG_EDIT_EVENT_CLASS)) {
+        let target = event.target;
+        let cancelButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
+        if (target.classList.contains(QUICK_DIALOG_OCCURRENCE_CLASS)) {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteOccurrence' : 'EditOccurrence';
             switch (this.parent.currentAction) {
                 case 'EditOccurrence':
@@ -5472,7 +5600,7 @@ class QuickPopups {
                     break;
             }
         }
-        else if (event.target.classList.contains(QUICK_DIALOG_EDIT_SERIES_CLASS)) {
+        else if (target.classList.contains(QUICK_DIALOG_SERIES_CLASS)) {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteSeries' : 'EditSeries';
             switch (this.parent.currentAction) {
                 case 'EditSeries':
@@ -5484,8 +5612,14 @@ class QuickPopups {
                     break;
             }
         }
-        else if (event.target.classList.contains(QUICK_DIALOG_DELETE_CLASS)) {
+        else if (target.classList.contains(QUICK_DIALOG_DELETE_CLASS)) {
             this.crudAction.deleteEvent(this.parent.activeEventData.event, this.parent.currentAction);
+        }
+        else if (!cancelButton.classList.contains(DISABLE_CLASS) && (target.classList.contains(QUICK_DIALOG_ALERT_OK) ||
+            (target.classList.contains(QUICK_DIALOG_ALERT_CANCEL) &&
+                !cancelButton.classList.contains(QUICK_DIALOG_CANCEL_CLASS)))) {
+            this.parent.uiStateValues.isIgnoreOccurrence = target.classList.contains(QUICK_DIALOG_ALERT_CANCEL);
+            this.parent.eventWindow.eventSave(this.l10n.getConstant('ok'));
         }
     }
     updateTapHoldEventPopup(target) {
@@ -5601,7 +5735,15 @@ class QuickPopups {
         this.quickPopup.show();
     }
     applyEventColor() {
-        let color = this.parent.activeEventData.element.style.backgroundColor;
+        let colorField = '';
+        if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
+            colorField = this.parent.enableRtl ? 'border-right-color' : 'border-left-color';
+        }
+        else {
+            colorField = 'background-color';
+        }
+        // tslint:disable-next-line:no-any
+        let color = this.parent.activeEventData.element.style[colorField];
         if (color === '') {
             return;
         }
@@ -6470,7 +6612,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         let cldrObj;
         this.rotateArray(weekday, this.firstDayOfWeek);
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = (getValue('days.stand-alone.' + format, getDefaultDateObject()));
+            cldrObj = (getValue('days.stand-alone.' + format, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
             cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format, cldrData));
@@ -6484,7 +6626,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         let monthData = [];
         let cldrObj;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = (getValue('months.stand-alone.wide', getDefaultDateObject()));
+            cldrObj = (getValue('months.stand-alone.wide', getDefaultDateObject(this.getCalendarMode())));
         }
         else {
             cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide', cldrData));
@@ -6640,6 +6782,9 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         }
     }
     getUntilData() {
+        if (!this.untilDateObj.value) {
+            return '';
+        }
         let tempStr = getRecurrenceStringFromDate(this.untilDateObj.value);
         return RULEUNTIL + EQUAL + tempStr + SEMICOLON;
     }
@@ -6692,7 +6837,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
         return this.calendarMode.toLowerCase();
     }
     getRuleSummary(rule = this.getRecurrenceRule()) {
-        return generateSummary(rule, this.localeObj, this.locale, this.getCalendarMode());
+        return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
     }
     getRecurrenceDates(startDate, rule, excludeDate, maximumCount, viewDate) {
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;
@@ -7522,7 +7667,10 @@ class EventWindow {
             addClass([deleteButton], DISABLE_CLASS);
         }
         if (this.recurrenceEditor) {
-            this.recurrenceEditor.setProperties({ startDate: eventObj[this.fields.startTime], selectedType: repeatType || 0 });
+            this.recurrenceEditor.setProperties({
+                startDate: eventObj[this.fields.startTime],
+                selectedType: repeatType || 0
+            });
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             let element = this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
@@ -7682,7 +7830,7 @@ class EventWindow {
     getFormat(formatType) {
         let format;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-            format = getValue(formatType + '.short', getDefaultDateObject());
+            format = getValue(formatType + '.short', getDefaultDateObject(this.parent.getCalendarMode()));
         }
         else {
             format = getValue(
@@ -7854,7 +8002,11 @@ class EventWindow {
         }
         if (this.recurrenceEditor && this.recurrenceEditor.value && this.recurrenceEditor.value !== '') {
             alertType = this.recurrenceValidation(eventObj[this.fields.startTime], eventObj[this.fields.endTime], alert);
-            if (!isNullOrUndefined(alertType)) {
+            let isShowAlert = true;
+            if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
+                isShowAlert = false;
+            }
+            if (!isNullOrUndefined(alertType) && isShowAlert) {
                 this.parent.quickPopup.openRecurrenceValidationAlert(alertType);
                 return;
             }
@@ -8347,6 +8499,7 @@ class VirtualScroll {
         this.itemSize = 60;
         this.bufferCount = 3;
         this.renderedLength = 0;
+        this.averageRowHeight = 0;
         this.parent = parent;
         this.addEventListener();
     }
@@ -8370,6 +8523,21 @@ class VirtualScroll {
         let wrap = createElement('div', { className: VIRTUAL_TRACK_CLASS });
         wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
         contentWrap.appendChild(wrap);
+    }
+    updateVirtualScrollHeight() {
+        let virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
+        let lastResourceIndex = this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
+        let lastRenderIndex = this.parent.resourceBase.renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
+        if (lastRenderIndex !== lastResourceIndex) {
+            let conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
+            this.renderedLength = conTable.querySelector('tbody').children.length;
+            virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
+                conTable.offsetHeight / this.renderedLength) + 'px';
+        }
+        else {
+            virtual.style.height = '';
+        }
+        this.averageRowHeight = virtual.offsetHeight / this.parent.resourceBase.expandedResources.length;
     }
     updateVirtualTrackHeight(wrap) {
         let resourceCount = this.parent.resourceBase.renderedResources.length;
@@ -8400,40 +8568,47 @@ class VirtualScroll {
         let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         let eventWrap = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
         let timeIndicator = this.parent.element.querySelector('.' + CURRENT_TIMELINE_CLASS);
+        let conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
         this.renderedLength = resWrap.querySelector('tbody').children.length;
+        let firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
+        let scrollHeight = (this.parent.enableAdaptiveRows) ?
+            (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection = [];
         if ((conWrap.scrollTop) - this.translateY < 0) {
-            resCollection = this.upScroll(resWrap, conWrap);
+            resCollection = this.upScroll(conWrap, firstTDIndex);
         }
-        else if ((conWrap.scrollTop - this.translateY > this.bufferCount * this.itemSize)) {
-            resCollection = this.downScroll(conWrap);
+        else if (conWrap.scrollTop - this.translateY > scrollHeight) {
+            resCollection = this.downScroll(conWrap, firstTDIndex);
         }
         if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
             this.updateContent(resWrap, conWrap, eventWrap, resCollection);
+            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
             this.parent.notify(dataReady, {});
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
-            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
         }
     }
-    upScroll(resWrap, conWrap) {
+    upScroll(conWrap, firstTDIndex) {
         let index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
+        if (this.parent.enableAdaptiveRows) {
+            index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
+        }
         index = (index > 0) ? index : 0;
         let prevSetCollection = this.getBufferCollection(index, index + this.renderedLength);
         this.parent.resourceBase.renderedResources = prevSetCollection;
-        let firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
         if (firstTDIndex === 0) {
             this.translateY = conWrap.scrollTop;
         }
         else {
-            this.translateY = (conWrap.scrollTop - (this.bufferCount * this.itemSize) > 0) ?
-                conWrap.scrollTop - (this.bufferCount * this.itemSize) : 0;
+            let height = (this.parent.enableAdaptiveRows) ? this.averageRowHeight : this.itemSize;
+            this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
+                conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
         return prevSetCollection;
     }
-    downScroll(conWrap) {
+    downScroll(conWrap, firstTDIndex) {
         let lastResource = this.parent.resourceBase.
             renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
         let lastResourceIndex = this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
@@ -8441,6 +8616,10 @@ class VirtualScroll {
             return null;
         }
         let nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
+        if (this.parent.enableAdaptiveRows) {
+            nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
+            nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
+        }
         let lastIndex = nextSetResIndex + this.renderedLength;
         lastIndex = (lastIndex > this.parent.resourceBase.expandedResources.length) ?
             nextSetResIndex + (this.parent.resourceBase.expandedResources.length - nextSetResIndex) : lastIndex;
@@ -8944,6 +9123,10 @@ class ResourceBase {
         let resColl = this.resourceCollection;
         let resDiv = createElement('div', { className: RESOURCE_COLUMN_WRAP_CLASS });
         let tbl = this.parent.activeView.createTableLayout(RESOURCE_COLUMN_TABLE_CLASS);
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.enableAdaptiveRows && this.parent.activeView.isTimelineView()
+            && this.parent.activeViewOptions.group.resources.length > 0) {
+            addClass([tbl], AUTO_HEIGHT);
+        }
         let tBody = tbl.querySelector('tbody');
         let resData = this.generateTreeData(true);
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
@@ -9937,7 +10120,7 @@ let Schedule = class Schedule extends Component {
         let culShortNames = [];
         let cldrObj;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = (getValue('days.stand-alone.' + type, getDefaultDateObject()));
+            cldrObj = (getValue('days.stand-alone.' + type, getDefaultDateObject(this.getCalendarMode())));
         }
         else {
             cldrObj = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type, cldrData));
@@ -9949,7 +10132,7 @@ let Schedule = class Schedule extends Component {
     }
     setCldrTimeFormat() {
         if (this.locale === 'en' || this.locale === 'en-US') {
-            this.timeFormat = (getValue('timeFormats.short', getDefaultDateObject()));
+            this.timeFormat = (getValue('timeFormats.short', getDefaultDateObject(this.getCalendarMode())));
         }
         else {
             this.timeFormat = (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.timeFormats.short', cldrData));
@@ -10056,6 +10239,18 @@ let Schedule = class Schedule extends Component {
                 args: [this]
             });
         }
+        modules.push({
+            member: 'excelExport',
+            args: [this]
+        });
+        modules.push({
+            member: 'iCalendarExport',
+            args: [this]
+        });
+        modules.push({
+            member: 'iCalendarImport',
+            args: [this]
+        });
         return modules;
     }
     /**
@@ -10071,6 +10266,7 @@ let Schedule = class Schedule extends Component {
             left: 0,
             top: 0,
             isGroupAdaptive: false,
+            isIgnoreOccurrence: false,
             groupIndex: 0,
             action: false,
             isBlock: false
@@ -10126,8 +10322,8 @@ let Schedule = class Schedule extends Component {
             deleteButton: 'Delete',
             recurrence: 'Recurrence',
             wrongPattern: 'The recurrence pattern is not valid.',
-            seriesChangeAlert: 'The changes made to specific instances of this series will be cancelled ' +
-                'and those events will match the series again.',
+            seriesChangeAlert: 'Do you want to cancel the changes made to specific ' +
+                'instances of this series and match it to the whole series again?',
             createError: 'The duration of the event must be shorter than how frequently it occurs. ' +
                 'Shorten the duration, or change the recurrence pattern in the recurrence event editor.',
             recurrenceDateValidation: 'Some months have fewer than the selected date. For these months, ' +
@@ -10140,6 +10336,8 @@ let Schedule = class Schedule extends Component {
             invalidDateError: 'The entered date value is invalid.',
             blockAlert: 'Events cannot be scheduled within the blocked time range.',
             ok: 'Ok',
+            yes: 'Yes',
+            no: 'No',
             occurrence: 'Occurrence',
             series: 'Series',
             previous: 'Previous',
@@ -10185,8 +10383,10 @@ let Schedule = class Schedule extends Component {
             cell.setAttribute('aria-selected', 'true');
         }
         addClass(cells, SELECTED_CELL_CLASS);
-        focusCell.setAttribute('tabindex', '0');
-        focusCell.focus();
+        if (focusCell) {
+            focusCell.setAttribute('tabindex', '0');
+            focusCell.focus();
+        }
     }
     selectCell(element) {
         this.removeSelectedClass();
@@ -10431,6 +10631,9 @@ let Schedule = class Schedule extends Component {
                     break;
                 case 'enableRtl':
                     state.isRefresh = true;
+                    break;
+                case 'enableAdaptiveRows':
+                    state.isLayout = true;
                     break;
                 default:
                     this.extendedPropertyChange(prop, newProp, oldProp, state);
@@ -10734,6 +10937,36 @@ let Schedule = class Schedule extends Component {
         }
     }
     /**
+     * Exports the Scheduler events to a calendar (.ics) file. By default, the calendar is exported with a file name `Calendar.ics`.
+     * To change this file name on export, pass the custom string value as `fileName` to get the file downloaded with this provided name.
+     * @method exportToICalendar
+     * @param {string} fileName Accepts the string value.
+     * @returns {void}
+     */
+    exportToICalendar(fileName) {
+        if (this.iCalendarExportModule) {
+            this.iCalendarExportModule.initializeCalendarExport(fileName);
+        }
+        else {
+            throw Error('Inject ICalendarExport module');
+        }
+    }
+    /**
+     * Imports the events from an .ics file downloaded from any of the calendars like Google or Outlook into the Scheduler.
+     * This method accepts the blob object of an .ics file to be imported as a mandatory argument.
+     * @method importICalendar
+     * @param {Blob} fileContent Accepts the file object.
+     * @returns {void}
+     */
+    importICalendar(fileContent) {
+        if (this.iCalendarImportModule) {
+            this.iCalendarImportModule.initializeCalendarImport(fileContent);
+        }
+        else {
+            throw Error('Inject ICalendarImport module');
+        }
+    }
+    /**
      * Adds the newly created event into the Schedule dataSource.
      * @method addEvent
      * @param {Object | Object[]} data Single or collection of event objects to be added into Schedule.
@@ -10741,6 +10974,30 @@ let Schedule = class Schedule extends Component {
      */
     addEvent(data) {
         this.crudModule.addEvent(data);
+    }
+    /**
+     * Allows the Scheduler events data to be exported as an Excel file either in .xlsx or .csv file formats.
+     * By default, the whole event collection bound to the Scheduler gets exported as an Excel file.
+     * To export only the specific events of Scheduler, you need to pass the custom data collection as
+     * a parameter to this `exportToExcel` method. This method accepts the export options as arguments such as fileName,
+     * exportType, fields, customData, and includeOccurrences. The `fileName` denotes the name to be given for the exported
+     * file and the `exportType` allows you to set the format of an Excel file to be exported either as .xlsx or .csv.
+     * The custom or specific field collection of event dataSource to be exported can be provided through `fields` option
+     * and the custom data collection can be exported by passing them through the `customData` option. There also exists
+     * option to export each individual instances of the recurring events to an Excel file, by setting true or false to the
+     * `includeOccurrences` option, denoting either to include or exclude the occurrences as separate instances on an exported Excel file.
+     * @method exportToExcel
+     * @param  {ExportOptions} excelExportOptions The export options to be set before start with
+     * exporting the Scheduler events to an Excel file.
+     * @return {void}
+     */
+    exportToExcel(excelExportOptions) {
+        if (this.excelExportModule) {
+            this.excelExportModule.initializeExcelExport(excelExportOptions || {});
+        }
+        else {
+            throw Error('Inject ExcelExport module');
+        }
     }
     /**
      * Updates the changes made in the event object by passing it as an parameter into the dataSource.
@@ -10771,8 +11028,16 @@ let Schedule = class Schedule extends Component {
      * @method getEvents
      * @returns {Object[]} Returns the collection of event objects from the Schedule.
      */
-    getEvents() {
-        return this.eventsData;
+    getEvents(startDate, endDate, includeOccurrences) {
+        let eventCollections = [];
+        if (includeOccurrences) {
+            eventCollections = this.eventBase.getProcessedEvents();
+        }
+        else {
+            eventCollections = this.eventsData;
+        }
+        eventCollections = this.eventBase.filterEventsByRange(eventCollections, startDate, endDate);
+        return eventCollections;
     }
     /**
      * Retrieves the occurrences of a single recurrence event based on the provided parent ID.
@@ -10867,15 +11132,6 @@ let Schedule = class Schedule extends Component {
             this.activeEventData.event = data;
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
-    }
-    /**
-     * This method has been added to adjust the size of the outer event wrapper class that holds the collection of events,
-     *  while trying to set manual height and width to the Schedule cells.
-     * @method adjustEventWrapper
-     * @returns {void}
-     */
-    adjustEventWrapper() {
-        this.activeView.adjustEventWrapper();
     }
     /**
      * Adds the resources to the specified index.
@@ -11001,6 +11257,9 @@ __decorate([
 __decorate([
     Property(false)
 ], Schedule.prototype, "showWeekNumber", void 0);
+__decorate([
+    Property(false)
+], Schedule.prototype, "enableAdaptiveRows", void 0);
 __decorate([
     Property()
 ], Schedule.prototype, "editorTemplate", void 0);
@@ -11791,7 +12050,7 @@ class DragAndDrop extends ActionBase {
             leftValue = e.left;
         }
         if (this.parent.activeView.isTimelineView()) {
-            leftValue = formatUnit(Math.floor(leftOffset / cellWidth) * cellWidth);
+            leftValue = formatUnit(Math.round(leftOffset / cellWidth) * cellWidth);
         }
         let topValue;
         if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable ||
@@ -12315,8 +12574,10 @@ class DragAndDrop extends ActionBase {
         let trCollection = this.parent.element.querySelectorAll('.e-content-wrap .e-content-table tr:not(.e-hidden)');
         let translateY = getTranslateY(dragArea.querySelector('table'));
         translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
+        let rowHeight = (this.parent.enableAdaptiveRows) ?
+            ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
         let rowIndex = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
-            dragArea.getBoundingClientRect().top) / this.actionObj.cellHeight);
+            dragArea.getBoundingClientRect().top) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;
         let eventContainer = this.parent.element.querySelectorAll('.e-appointment-container:not(.e-hidden)').item(rowIndex);
@@ -12329,7 +12590,16 @@ class DragAndDrop extends ActionBase {
         let td = closest(e.target, 'td');
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
-        this.actionObj.clone.style.top = formatUnit(trCollection.item(rowIndex).offsetTop);
+        let top = trCollection.item(rowIndex).offsetTop;
+        if (this.parent.enableAdaptiveRows) {
+            let cursorElement = this.getCursorElement(e);
+            if (cursorElement) {
+                top = cursorElement.classList.contains(WORK_CELLS_CLASS) ? cursorElement.offsetTop :
+                    cursorElement.offsetParent.classList.contains(APPOINTMENT_CLASS) ?
+                        cursorElement.offsetParent.offsetTop : top;
+            }
+        }
+        this.actionObj.clone.style.top = formatUnit(top);
     }
     appendCloneElement(element) {
         if (this.parent.eventDragArea) {
@@ -12541,9 +12811,6 @@ class ViewBase {
     getDatesHeaderElement() {
         return this.element.querySelector('.' + DATE_HEADER_CONTAINER_CLASS);
     }
-    adjustEventWrapper() {
-        // Here adjust the events wrapper width based in work cells
-    }
     getDateSlots(renderDates, workDays) {
         // Here getDateSlots only need in vertical and month views
         return [];
@@ -12685,7 +12952,7 @@ class ViewBase {
         let formattedStr;
         let longDateFormat;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-            longDateFormat = getValue('dateFormats.long', getDefaultDateObject());
+            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(this.parent.getCalendarMode()));
         }
         else {
             longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.dateFormats.long', cldrData);
@@ -12761,6 +13028,12 @@ class ViewBase {
         }
         this.parent.resourceBase.renderResourceHeader();
         this.parent.resourceBase.renderResourceTree();
+    }
+    addAutoHeightClass(element) {
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.enableAdaptiveRows && this.parent.activeView.isTimelineView()
+            && this.parent.activeViewOptions.group.resources.length > 0) {
+            addClass([element], AUTO_HEIGHT);
+        }
     }
 }
 
@@ -13491,6 +13764,7 @@ class MonthEvent extends EventBase {
         for (let wrap of appointmentWrapper) {
             remove(wrap);
         }
+        this.removeHeightProperty(CONTENT_TABLE_CLASS);
         if (!this.element.querySelector('.' + WORK_CELLS_CLASS)) {
             return;
         }
@@ -13501,11 +13775,34 @@ class MonthEvent extends EventBase {
         else {
             this.monthHeaderHeight = 0;
         }
+        let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        let scrollTop = conWrap.scrollTop;
+        if (this.parent.enableAdaptiveRows && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
+            conWrap.scrollTop = conWrap.scrollTop - 1;
+        }
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.renderResourceEvents();
         }
         else {
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays);
+        }
+        if (this.parent.enableAdaptiveRows) {
+            this.updateBlockElements();
+            let data = {
+                cssProperties: this.parent.getCssProperties(),
+                module: this.parent.getModuleName(),
+                isPreventScrollUpdate: true
+            };
+            if (this.parent.virtualScrollModule) {
+                if (this.parent.currentAction) {
+                    conWrap.scrollTop = scrollTop;
+                    this.parent.currentAction = null;
+                }
+                else {
+                    this.parent.virtualScrollModule.updateVirtualScrollHeight();
+                }
+            }
+            this.parent.notify(scrollUiUpdate, data);
         }
     }
     renderEventsHandler(dateRender, workDays, resData) {
@@ -13792,12 +14089,17 @@ class MonthEvent extends EventBase {
             let appWidth = (diffInDays * this.cellWidth) - 3;
             let cellTd = this.workCells[day];
             let appTop = (overlapCount * (appHeight + EVENT_GAP));
-            if (this.cellHeight > this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
+            let height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
+            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
                 let appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
+                if (this.parent.enableAdaptiveRows) {
+                    let firstChild = cellTd.parentElement.firstChild;
+                    this.updateCellHeight(firstChild, height);
+                }
             }
             else {
                 for (let i = 0; i < diffInDays; i++) {
@@ -13821,6 +14123,21 @@ class MonthEvent extends EventBase {
                     }
                 }
             }
+        }
+    }
+    updateCellHeight(cell, height) {
+        if ((height > cell.offsetHeight)) {
+            setStyleAttribute(cell, { 'height': height + 'px' });
+        }
+    }
+    updateBlockElements() {
+        let blockElement = [].slice.call(this.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS));
+        for (let element of blockElement) {
+            let target = closest(element, 'tr');
+            element.style.height = ((target.offsetHeight - 1) - this.monthHeaderHeight) + 'px';
+            let firstChild = target.firstChild;
+            let width = Math.round(element.offsetWidth / firstChild.offsetWidth);
+            element.style.width = (firstChild.offsetWidth * width) + 'px';
         }
     }
     getFilteredEvents(startDate, endDate, groupIndex) {
@@ -13900,6 +14217,12 @@ class MonthEvent extends EventBase {
             }
         });
         return moreIndicatorElement;
+    }
+    removeHeightProperty(selector) {
+        let rows = [].slice.call(this.element.querySelectorAll('.' + selector + ' tbody tr'));
+        for (let row of rows) {
+            row.firstChild.style.height = '';
+        }
     }
 }
 
@@ -13986,12 +14309,15 @@ class VerticalView extends ViewBase {
             header.style[args.cssProperties.padding] = '';
         }
         // tslint:enable:no-any
-        if (this.parent.uiStateValues.isInitial || this.isTimelineView()) {
-            this.scrollToWorkHour();
-            this.parent.uiStateValues.isInitial = this.isTimelineView();
-        }
-        else {
-            content.scrollTop = this.parent.uiStateValues.top;
+        if (!args.isPreventScrollUpdate) {
+            if (this.parent.uiStateValues.isInitial) {
+                this.scrollToWorkHour();
+                this.parent.uiStateValues.isInitial = false;
+            }
+            else {
+                content.scrollTop = this.parent.uiStateValues.top;
+                content.scrollLeft = this.parent.uiStateValues.left;
+            }
         }
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
@@ -14390,6 +14716,7 @@ class VerticalView extends ViewBase {
     renderContentArea() {
         let wrap = createElement('div', { className: CONTENT_WRAP_CLASS });
         let tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
+        this.addAutoHeightClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);
@@ -14951,6 +15278,7 @@ class Month extends ViewBase {
     }
     renderContentArea() {
         let tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
+        this.addAutoHeightClass(tbl);
         if (this.parent.currentView === 'TimelineMonth') {
             this.createColGroup(tbl, this.colLevels[this.colLevels.length - 1]);
         }
@@ -15512,8 +15840,10 @@ class Agenda extends ViewBase {
         let agendaDate = resetTime(this.parent.selectedDate);
         this.agendaBase.renderEmptyContent(tBody, agendaDate);
         this.wireEvents();
-        if (this.parent.uiStateValues.isGroupAdaptive && !this.parent.element.querySelector('.' + RESOURCE_TOOLBAR_CONTAINER)) {
+        if (this.parent.resourceBase) {
             this.parent.resourceBase.generateResourceLevels([{ renderDates: this.parent.activeView.renderDates }]);
+        }
+        if (this.parent.uiStateValues.isGroupAdaptive && !this.parent.element.querySelector('.' + RESOURCE_TOOLBAR_CONTAINER)) {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(contentReady, {});
@@ -16079,6 +16409,7 @@ class TimelineEvent extends MonthEvent {
         return appointmentsList;
     }
     renderResourceEvents() {
+        this.removeHeightProperty(RESOURCE_COLUMN_TABLE_CLASS);
         let resources = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.renderedResources;
@@ -16112,7 +16443,8 @@ class TimelineEvent extends MonthEvent {
             let appTop = (top + EVENT_GAP$1) + (overlapCount * (appHeight + EVENT_GAP$1));
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
-            if (this.cellHeight > ((overlapCount + 1) * (appHeight + EVENT_GAP$1)) + this.moreIndicatorHeight) {
+            let height = ((overlapCount + 1) * (appHeight + EVENT_GAP$1)) + this.moreIndicatorHeight;
+            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
                 let appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 setStyleAttribute(appointmentElement, {
@@ -16120,6 +16452,10 @@ class TimelineEvent extends MonthEvent {
                 });
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 this.renderEventElement(event, appointmentElement, cellTd);
+                if (this.parent.enableAdaptiveRows) {
+                    let firstChild = this.getFirstChild(resIndex);
+                    this.updateCellHeight(firstChild, height);
+                }
             }
             else {
                 for (let i = 0; i < diffInDays; i++) {
@@ -16161,6 +16497,41 @@ class TimelineEvent extends MonthEvent {
                     }
                 }
             }
+        }
+    }
+    updateCellHeight(cell, height) {
+        if ((height > cell.offsetHeight)) {
+            setStyleAttribute(cell, { 'height': height + 'px' });
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                let resourceCell = this.parent.element.querySelector('.' + RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +
+                    cell.getAttribute('data-group-index') + '"]');
+                setStyleAttribute(resourceCell, { 'height': height + 'px' });
+            }
+        }
+    }
+    getFirstChild(index) {
+        let query = '.' + CONTENT_TABLE_CLASS + ' tbody td';
+        let groupIndex = '';
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            groupIndex = '[data-group-index="' + index.toString() + '"]';
+        }
+        let td = this.parent.element.querySelector(query + groupIndex);
+        return td;
+    }
+    updateBlockElements() {
+        let blockElement = [].slice.call(this.element.querySelectorAll('.' + BLOCK_APPOINTMENT_CLASS));
+        for (let element of blockElement) {
+            let resIndex = parseInt(element.getAttribute('data-group-index'), 10);
+            let firstChild = this.getFirstChild(resIndex);
+            element.style.height = firstChild.offsetHeight + 'px';
+            let width = Math.round(element.offsetWidth / firstChild.offsetWidth);
+            element.style.width = (firstChild.offsetWidth * width) + 'px';
+        }
+        let blockIndicator = [].slice.call(this.element.querySelectorAll('.' + BLOCK_INDICATOR_CLASS));
+        for (let element of blockIndicator) {
+            let resIndex = parseInt(element.getAttribute('data-group-index'), 10);
+            element.style.top = this.getRowTop(resIndex) +
+                this.getFirstChild(resIndex).offsetHeight - BLOCK_INDICATOR_HEIGHT + 'px';
         }
     }
     getStartTime(event, eventData) {
@@ -16318,6 +16689,9 @@ class TimelineEvent extends MonthEvent {
         position = (Math.floor(position / this.cellWidth) * this.cellWidth) + this.cellWidth - BLOCK_INDICATOR_WIDTH;
         if (!this.isAlreadyAvail(position, cellTd)) {
             let blockIndicator = createElement('div', { className: 'e-icons ' + BLOCK_INDICATOR_CLASS });
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                blockIndicator.setAttribute('data-group-index', resIndex.toString());
+            }
             if (this.parent.enableRtl) {
                 blockIndicator.style.right = position + 'px';
             }
@@ -16795,6 +17169,373 @@ class TimelineMonth extends Month {
 }
 
 /**
+ * Excel Export Module
+ */
+class ExcelExport {
+    constructor(parent) {
+        this.parent = parent;
+    }
+    initializeExcelExport(excelExportOptions) {
+        let exportFields = excelExportOptions.fields || Object.keys(this.parent.eventFields).map((field) => this.parent.eventFields[field]);
+        let exportName = excelExportOptions.fileName || 'Schedule';
+        let exportType = excelExportOptions.exportType || 'xlsx';
+        let isIncludeOccurrences = excelExportOptions.includeOccurrences || false;
+        let eventCollection;
+        if (excelExportOptions.customData) {
+            eventCollection = !isIncludeOccurrences ? excelExportOptions.customData :
+                this.parent.eventBase.getProcessedEvents(excelExportOptions.customData);
+        }
+        else {
+            eventCollection = (!isIncludeOccurrences ? this.parent.eventsData : this.parent.eventsProcessed);
+        }
+        this.processWorkbook(exportFields, exportName, exportType, eventCollection);
+    }
+    processWorkbook(fields, name, type, eventCollection) {
+        let columns = [];
+        let rows = [];
+        let columnHeader = [];
+        fields.forEach((field, i) => columns.push({ index: i + 1, width: (field === 'Id' ? 20 : 150) }));
+        let style = { fontSize: 12, borders: { color: '#E0E0E0' }, bold: true };
+        fields.forEach((field, i) => columnHeader.push({ index: i + 1, value: field, style: style }));
+        rows.push({ index: 1, cells: columnHeader });
+        let i = 2;
+        for (let event of eventCollection) {
+            let columnData = [];
+            fields.forEach((field, n) => {
+                let columnRule = { index: n + 1, value: event[field || ''] };
+                if (field === this.parent.eventFields.startTime || field === this.parent.eventFields.endTime) {
+                    let styleRule = { fontSize: 12, numberFormat: 'm/d/yyyy h:mm AM/PM' };
+                    columnRule = extend({}, columnRule, { style: styleRule }, true);
+                }
+                columnData.push(columnRule);
+            });
+            rows.push({ index: i, cells: columnData });
+            i++;
+        }
+        let workSheet = [{ columns: columns, rows: rows }];
+        let book = new Workbook({ worksheets: workSheet }, type, this.parent.locale);
+        book.save(name + '.' + type);
+    }
+    getModuleName() {
+        return 'excelExport';
+    }
+    destroy() {
+        this.parent = null;
+    }
+}
+
+/**
+ * ICalendar Export Module
+ */
+class ICalendarExport {
+    constructor(parent) {
+        this.parent = parent;
+        this.timezone = new Timezone();
+    }
+    initializeCalendarExport(fileName) {
+        let eventsData = extend([], this.parent.eventsData, null, true);
+        eventsData = this.parent.eventBase.sortByTime(eventsData);
+        const SEPARATOR = (navigator.appVersion.indexOf('Win') !== -1) ? '\r\n' : '\n';
+        let iCalendarEvents = [];
+        let filterCollection = [];
+        let timeZone = this.parent.timezone || this.timezone.getLocalTimezoneName();
+        let fields = this.parent.eventFields;
+        eventsData.forEach((eventObj) => {
+            let uId = this.parent.eventBase.generateGuid();
+            let editedExDate = [];
+            if (eventObj[fields.recurrenceID]) {
+                let filter = this.filterEvents(filterCollection, fields.id, eventObj[fields.recurrenceID]);
+                uId = filter[0].UID;
+            }
+            if (!eventObj[fields.recurrenceID] && eventObj[fields.recurrenceRule] && eventObj[fields.recurrenceException]) {
+                let exceptionDateList;
+                let exDate = (eventObj[fields.recurrenceException]).split(',');
+                let editedObj = this.filterEvents(eventsData, fields.recurrenceID, eventObj[fields.id]);
+                editedObj.forEach((edited) => {
+                    editedExDate.push(getRecurrenceStringFromDate(edited[fields.startTime]));
+                });
+                exceptionDateList = exDate.filter((value) => (editedExDate.indexOf(value) === -1));
+                eventObj[fields.recurrenceException] = (exceptionDateList.length > 0) ? (exceptionDateList.join(',') + ',') : '';
+            }
+            let startZone = (eventObj[fields.startTimezone] || timeZone);
+            let endZone = (eventObj[fields.endTimezone] || timeZone);
+            let calendarEvent = [
+                'BEGIN:VEVENT',
+                'DTEND;TZID="' + endZone + '":' + this.convertDateToString(eventObj[fields.endTime]),
+                'DTSTART;TZID="' + startZone + '":' + this.convertDateToString(eventObj[fields.startTime]),
+                'LOCATION:' + (eventObj[fields.location] || ''),
+                'SUMMARY:' + (eventObj[fields.subject] || ''),
+                'UID:' + uId,
+                'DESCRIPTION:' + (eventObj[fields.description] || ''),
+                'END:VEVENT'
+            ];
+            if (eventObj[fields.recurrenceRule]) {
+                calendarEvent.splice(4, 0, 'RRULE:' + eventObj[fields.recurrenceRule]);
+            }
+            if (eventObj[fields.recurrenceException]) {
+                let exDate = eventObj[fields.recurrenceException].split(',');
+                for (let i = 0; i < exDate.length - 1; i++) {
+                    calendarEvent.splice(5, 0, 'EXDATE:' +
+                        this.convertDateToString(getDateFromRecurrenceDateString(exDate[i])));
+                }
+            }
+            if (eventObj[fields.recurrenceID]) {
+                calendarEvent.splice(4, 0, 'RECURRENCE-ID;TZID="' + startZone + '":'
+                    + this.convertDateToString(eventObj[fields.startTime]));
+            }
+            let customFields = this.customFieldFilter(eventObj, fields);
+            if (customFields.length > 0) {
+                customFields.forEach((customField) => calendarEvent.splice(4, 0, customField + ':' + (eventObj[customField] || '')));
+            }
+            let app = extend({}, eventObj);
+            app.UID = uId;
+            filterCollection.push(app);
+            iCalendarEvents.push(calendarEvent.join(SEPARATOR));
+        });
+        let iCalendar = [
+            'BEGIN:VCALENDAR',
+            'PRODID:-//Syncfusion Inc//Scheduler//EN',
+            'VERSION:2.0',
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+            'X-WR-CALNAME:' + (fileName || 'Calendar'),
+            'X-WR-TIMEZONE:' + timeZone,
+        ].join(SEPARATOR);
+        let icsString = iCalendar + SEPARATOR + iCalendarEvents.join(SEPARATOR) + SEPARATOR + 'END:VCALENDAR';
+        this.download(icsString, fileName);
+    }
+    customFieldFilter(eventObj, fields) {
+        let defaultFields = Object.keys(fields).map((key) => fields[key]);
+        let eventFields = Object.keys(eventObj);
+        return eventFields.filter((value) => (defaultFields.indexOf(value) === -1) && (value !== 'Guid'));
+    }
+    convertDateToString(eventDate) {
+        let year = ('0000' + (eventDate.getFullYear().toString())).slice(-4);
+        let month = ('00' + ((eventDate.getMonth() + 1).toString())).slice(-2);
+        let date = ('00' + ((eventDate.getDate()).toString())).slice(-2);
+        let hours = ('00' + (eventDate.getHours().toString())).slice(-2);
+        let minutes = ('00' + (eventDate.getMinutes().toString())).slice(-2);
+        let seconds = ('00' + (eventDate.getSeconds().toString())).slice(-2);
+        let timeString = year + month + date + 'T' + hours + minutes + seconds;
+        return timeString;
+    }
+    download(icsString, fileName) {
+        let buffer = new Blob([icsString], { type: 'data:text/calendar;charset=utf8' });
+        fileName = (fileName || 'Calendar') + '.ics';
+        if (!(!navigator.msSaveBlob)) {
+            navigator.msSaveBlob(buffer, fileName);
+        }
+        else {
+            let downloadLink = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+            downloadLink.download = fileName;
+            downloadLink.href = URL.createObjectURL(buffer);
+            let event = document.createEvent('MouseEvent');
+            event.initEvent('click', true, true);
+            downloadLink.dispatchEvent(event);
+            setTimeout(() => {
+                URL.revokeObjectURL(downloadLink.href);
+                downloadLink.href = undefined;
+            });
+        }
+    }
+    filterEvents(data, field, value) {
+        return new DataManager({ json: data }).executeLocal(new Query().where(field, 'equal', value));
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'iCalendarExport';
+    }
+    /**
+     * To destroy the ICalendarExport.
+     * @return {void}
+     * @private
+     */
+    destroy() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        if (this.timezone) {
+            this.timezone = null;
+        }
+    }
+}
+
+/**
+ * ICalendar Import Module
+ */
+class ICalendarImport {
+    constructor(parent) {
+        this.allDay = false;
+        this.parent = parent;
+    }
+    initializeCalendarImport(fileContent) {
+        let fileReader = new FileReader();
+        fileReader.onload = (event) => {
+            let iCalString = fileReader.result;
+            this.iCalendarParser(iCalString);
+        };
+        fileReader.readAsText(fileContent);
+    }
+    iCalendarParser(iCalString) {
+        let fields = this.parent.eventFields;
+        let events = [];
+        let uId = 'UID';
+        let calArray = iCalString.replace(new RegExp('\\r', 'g'), '').split('\n');
+        let isEvent = false;
+        let curEvent = null;
+        let id = this.parent.eventBase.getEventMaxID();
+        calArray.forEach((element) => {
+            let index;
+            let type;
+            let value;
+            if (!isEvent && element === 'BEGIN:VEVENT') {
+                isEvent = true;
+                curEvent = {};
+            }
+            if (isEvent && element === 'END:VEVENT') {
+                isEvent = false;
+                events.push(curEvent);
+                curEvent = null;
+            }
+            if (isEvent) {
+                index = element.indexOf(':');
+                type = element.substr(0, index).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+                value = element.substr(index + 1, element.length - (index + 1)).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+                if (element.indexOf('SUMMARY') !== -1) {
+                    type = 'SUMMARY';
+                }
+                if (element.indexOf('DTSTART') !== -1) {
+                    curEvent[fields.startTime] = this.dateParsing(element);
+                    curEvent[fields.isAllDay] = this.allDay;
+                    this.allDay = false;
+                }
+                else if (element.indexOf('DTEND') !== -1) {
+                    curEvent[fields.endTime] = this.dateParsing(element);
+                }
+                else if (element.indexOf('EXDATE') !== -1) {
+                    value = getRecurrenceStringFromDate(this.dateParsing(element));
+                    curEvent[fields.recurrenceException] = (isNullOrUndefined(curEvent[fields.recurrenceException])) ?
+                        value : curEvent[fields.recurrenceException] + ',' + value;
+                }
+                else if (element.indexOf('RECURRENCE-ID') !== -1) {
+                    value = getRecurrenceStringFromDate(this.dateParsing(element));
+                    curEvent[fields.recurrenceException] = value;
+                    curEvent[fields.recurrenceID] = value;
+                }
+                else {
+                    switch (type) {
+                        case 'BEGIN':
+                            break;
+                        case 'UID':
+                            curEvent[uId] = value;
+                            curEvent[fields.id] = id++;
+                            break;
+                        case 'SUMMARY':
+                            curEvent[fields.subject] = value;
+                            break;
+                        case 'LOCATION':
+                            curEvent[fields.location] = value;
+                            break;
+                        case 'DESCRIPTION':
+                            curEvent[fields.description] = value;
+                            break;
+                        case 'RRULE':
+                            curEvent[fields.recurrenceRule] = value;
+                            break;
+                        default:
+                            curEvent[type] = value;
+                    }
+                }
+            }
+        });
+        let app = extend([], events, null, true);
+        this.parent.addEvent(this.processOccurrence(app));
+    }
+    processOccurrence(app) {
+        let appoint = [];
+        let uId = 'UID';
+        let fields = this.parent.eventFields;
+        app.forEach((eventObj) => {
+            let parentObj;
+            let id;
+            if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
+                parentObj = eventObj;
+                id = eventObj[fields.id];
+            }
+            let data = (new DataManager({ json: app }).executeLocal(new Query().where('UID', 'equal', eventObj[uId])));
+            if (data.length > 1 && isNullOrUndefined(eventObj[fields.recurrenceID])) {
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i].hasOwnProperty(fields.recurrenceID)) {
+                        let exdate = data[i][fields.recurrenceID];
+                        data[i][fields.recurrenceID] = id;
+                        data[i][fields.recurrenceException] = null;
+                        parentObj[fields.recurrenceException] = (isNullOrUndefined(parentObj[fields.recurrenceException])) ?
+                            exdate : parentObj[fields.recurrenceException] + ',' + exdate;
+                        appoint.push(data[i]);
+                    }
+                }
+                appoint.push(parentObj);
+            }
+            else if (!eventObj.hasOwnProperty(fields.recurrenceID)) {
+                appoint.push(eventObj);
+            }
+        });
+        return appoint;
+    }
+    getDateString(value) {
+        value = value || '';
+        return (value
+            .replace(/\\\,/g, ',')
+            .replace(/\\\;/g, ';')
+            .replace(/\\[nN]/g, '\n')
+            .replace(/\\\\/g, '\\'));
+    }
+    dateParsing(element) {
+        let expression = /([^':;]+)((?:;(?:[^':;]+)(?:=(?:(?:'[^']*')|(?:[^':;]+))))*):(.*)/;
+        let split = (element.match(expression)).slice(1);
+        let value = split[split.length - 1];
+        let newDate = new Date(this.getDateString(value));
+        if (element && element.indexOf('VALUE=DATE') > -1) {
+            let data = /^(\d{4})(\d{2})(\d{2})$/.exec(value);
+            if (data !== null) {
+                newDate = new Date(parseInt(data[1], 10), parseInt(data[2], 10) - 1, parseInt(data[3], 10));
+            }
+            if (element.indexOf('DTSTART') > -1) {
+                this.allDay = true;
+            }
+        }
+        let data = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/.exec(value);
+        if (data !== null) {
+            if (data[7] === 'Z') {
+                newDate = new Date(Date.UTC(parseInt(data[1], 10), parseInt(data[2], 10) - 1, parseInt(data[3], 10), parseInt(data[4], 10), parseInt(data[5], 10), parseInt(data[6], 10)));
+            }
+            else {
+                newDate = new Date(parseInt(data[1], 10), parseInt(data[2], 10) - 1, parseInt(data[3], 10), parseInt(data[4], 10), parseInt(data[5], 10), parseInt(data[6], 10));
+            }
+        }
+        return newDate;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'iCalendarImport';
+    }
+    /**
+     * To destroy the ICalendarImport.
+     * @return {void}
+     * @private
+     */
+    destroy() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+    }
+}
+
+/**
  * Schedule component exported items
  */
 
@@ -16810,5 +17551,5 @@ class TimelineMonth extends Month {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, RecurrenceEditor, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ExcelExport, ICalendarExport, ICalendarImport, RecurrenceEditor, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

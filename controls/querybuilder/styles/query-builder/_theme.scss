@@ -12,7 +12,7 @@
     }
 
     & .e-rule-container {
-      background-color: $groupfill-color;
+      background-color: $groupfill-bgcolor;
       border-color: $groupborder-color;
     }
 
@@ -35,8 +35,22 @@
       color: $qrybldr-btngroup-active-color;
         }
 
+    & .e-btn-group input + label.e-btn,
+    & .e-group-action .e-btn,
+    & .e-removerule.e-btn.e-round,
+    & .e-removerule.e-btn.e-round:hover {
+      @if $skin-name == 'bootstrap4' {
+        background: $qrybldr-btngroup-bgcolor;
+        border-color: $qrybldr-brdr-color;
+        color: $qrybldr-btngroup-color;
+        }
+    }
+
     & .e-removerule.e-btn.e-round {
       background-color: $groupfill-color;
+      @if $skin-name == 'bootstrap4' {
+        background-color:  $qrybldr-btngroup-bgcolor;
+      }
     }
 
     & .e-summary-content textarea {

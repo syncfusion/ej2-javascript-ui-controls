@@ -159,9 +159,6 @@ export class ViewBase {
     public getDatesHeaderElement(): HTMLElement {
         return this.element.querySelector('.' + cls.DATE_HEADER_CONTAINER_CLASS) as HTMLElement;
     }
-    public adjustEventWrapper(): void {
-        // Here adjust the events wrapper width based in work cells
-    }
     public getDateSlots(renderDates: Date[], workDays: number[]): TdData[] {
         // Here getDateSlots only need in vertical and month views
         return [];
@@ -303,7 +300,7 @@ export class ViewBase {
         let formattedStr: string;
         let longDateFormat: string;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-            longDateFormat = getValue('dateFormats.long', getDefaultDateObject());
+            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(this.parent.getCalendarMode()));
         } else {
             longDateFormat = getValue(
                 'main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.dateFormats.long', cldrData);
@@ -374,5 +371,11 @@ export class ViewBase {
         }
         this.parent.resourceBase.renderResourceHeader();
         this.parent.resourceBase.renderResourceTree();
+    }
+    public addAutoHeightClass(element: Element): void {
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.enableAdaptiveRows && this.parent.activeView.isTimelineView()
+            && this.parent.activeViewOptions.group.resources.length > 0) {
+            addClass([element], cls.AUTO_HEIGHT);
+        }
     }
 }

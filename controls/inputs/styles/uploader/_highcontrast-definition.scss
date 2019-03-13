@@ -140,6 +140,8 @@ $remove-icon-top: 50% !default;
 $clear-icon-focus-color: $hover-bg !default;
 $remove-icon-height: 26px !default;
 $remove-icon-width: 26px !default;
+$remove-bigger-icon-height: 26px !default;
+$remove-bigger-icon-width: 26px !default;
 $remove-icon-margin-top: -24px !default;
 $remove-icon-margin-top-smaller: -21px !default;
 $remove-icon-padding-smaller: 16px !default;
@@ -153,7 +155,9 @@ $upload-failure-color: $error-alt !default;
 $progress-background-color: $bg-base-20 !default;
 $upload-border: 1px solid $border-default !default;
 $remove-icon-color: $content-font !default;
-$hover-icon-color: $hover-font !default;
+$upload-hover-icon-color: $hover-font !default;
 $progress-text-color: $content-font !default;
 
 $disabled-state: rgba($content-font, .38) !default;
+
+$uploader-icons-hover-radius: 50% !default;

@@ -74,10 +74,12 @@
         & .e-file-play-btn.e-icons,
         & .e-file-pause-btn.e-icons {
           font-size: $remove-icon-font-size;
+          height: $remove-bigger-icon-height;
           margin: $remove-icon-margin;
           margin-top: $remove-icon-margin-top;
           padding: $delete-icon-padding;
           top: $remove-icon-top-smaller;
+          width: $remove-bigger-icon-width;
         }
 
         & .e-file-remove-btn.e-msie.e-icons,
@@ -175,7 +177,7 @@
 
             & .e-file-play-btn,
             & .e-file-reload-btn,
-            & .e-file-pause-btn, {
+            & .e-file-pause-btn {
               &.e-icons {
                 left: $pause-play-button-right-value-bigger-rtl;
               }
@@ -358,7 +360,7 @@
       & .e-clear-icon-focus {
         background-color: $clear-icon-focus-color;
         border-color: transparent;
-        border-radius: 50%;
+        border-radius: $uploader-icons-hover-radius;
         box-shadow: 0 0 0 transparent;
       }
 
@@ -369,7 +371,7 @@
       & .e-file-reload-btn.e-icons:focus,
       & .e-file-abort-btn.e-icons:not(.e-disabled):focus,
       & .e-clear-icon-focus {
-        border-radius: 50%;
+        border-radius: $uploader-icons-hover-radius;
       }
 
       & .e-file-delete-btn.e-icons {
@@ -487,7 +489,7 @@
 
           & .e-file-play-btn,
           & .e-file-reload-btn,
-          & .e-file-pause-btn, {
+          & .e-file-pause-btn {
             &.e-icons {
               left: $pause-play-button-right-value;
             }

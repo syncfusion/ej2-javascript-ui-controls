@@ -56,24 +56,18 @@ export class Connector extends ChildProperty<Connector> {
 export class Font extends ChildProperty<Font> {
 
     /**
+     * FontStyle for the text.
+     * @default 'Normal'
+     */
+    @Property('Normal')
+    public fontStyle: string;
+
+    /**
      * Font size for the text.
      * @default '16px'
      */
     @Property('16px')
     public size: string;
-
-    /**
-     * Color for the text.
-     * @default ''
-     */
-    @Property('')
-    public color: string;
-
-    /**
-     * FontFamily for the text.
-     */
-    @Property('Segoe UI')
-    public fontFamily: string;
 
     /**
      * FontWeight for the text.
@@ -83,18 +77,11 @@ export class Font extends ChildProperty<Font> {
     public fontWeight: string;
 
     /**
-     * FontStyle for the text.
-     * @default 'Normal'
+     * Color for the text.
+     * @default ''
      */
-    @Property('Normal')
-    public fontStyle: string;
-
-    /**
-     * Opacity for the text.
-     * @default 1
-     */
-    @Property(1)
-    public opacity: number;
+    @Property('')
+    public color: string;
 
     /**
      * text alignment
@@ -102,6 +89,19 @@ export class Font extends ChildProperty<Font> {
      */
     @Property('Center')
     public textAlignment: Alignment;
+
+    /**
+     * FontFamily for the text.
+     */
+    @Property('Segoe UI')
+    public fontFamily: string;
+
+    /**
+     * Opacity for the text.
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
 
     /**
      * Specifies the chart title text overflow
@@ -144,7 +144,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
 
     /**
      * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
-     * @default transparent
+     * @default 'transparent'
      */
     @Property('transparent')
     public background: string;

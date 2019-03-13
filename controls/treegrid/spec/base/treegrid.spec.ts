@@ -1,12 +1,13 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, treeMappedData, multiLevelSelfRef1, emptyChildData } from './datasource.spec';
+import { sampleData, projectData, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData } from './datasource.spec';
 import { PageEventArgs, extend, Page, doesImplementInterface } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+
 
 /**
  * Grid base spec 
@@ -15,6 +16,7 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 TreeGrid.Inject(ColumnMenu, Toolbar);
 
 describe('TreeGrid base module', () => {
+  
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
     if (!isDef(window.performance)) {
@@ -23,6 +25,7 @@ describe('TreeGrid base module', () => {
         return;
     }
   });
+
   describe('Hierarchy Data Basic Rendering', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -375,28 +378,6 @@ describe('TreeGrid base module', () => {
     });
   });
 
-  describe('columnMenu, setmodel', () => {
-    let gridObj: TreeGrid;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          showColumnMenu: true,
-          treeColumnIndex: 1,
-          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
-        },
-        done
-      );
-    });
-    it('setmodel', () => {
-      gridObj.columnMenuItems = [{text:'Clear Sorting', id:'gridclearsorting'}];
-      expect(gridObj.columnMenuModule.getColumnMenu().children.length).toBeGreaterThan(0);
-    });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
   describe('Self Reference -multiple child levels', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -425,6 +406,7 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+
 
   describe('Set height and width as 100%', () => {
     let gridObj: TreeGrid;
@@ -475,7 +457,8 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
-      describe('Checking dataSource property after updating', () => {
+
+    describe('Checking dataSource property after updating', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
     let actionComplete: () => void;
@@ -486,7 +469,6 @@ describe('TreeGrid base module', () => {
           childMapping: 'subtasks',
           treeColumnIndex: 1,
           columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
-
         },
         done
       );
@@ -507,8 +489,30 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
-  
-  describe('Checking dataSource when Children property is empty', () => {
+
+  describe('columnMenu, setmodel', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          showColumnMenu: true,
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('setmodel', () => {
+      gridObj.columnMenuItems = [{text:'Clear Sorting', id:'gridclearsorting'}];
+      expect(gridObj.columnMenuModule.getColumnMenu().children.length).toBeGreaterThan(0);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+    describe('Checking dataSource when Children property is empty', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
       gridObj = createGrid(
@@ -524,6 +528,97 @@ describe('TreeGrid base module', () => {
     it('Checking dataSource when Children property is empty', () => {
       expect(gridObj.getRows().length != 0).toBe(true);
     });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Check ParentData for Hierarchy data', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('check parentdata length after rendering', () => {
+      expect(gridObj.flatData.length).toBe(36);
+      expect(gridObj.parentData.length).toBe(3);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Check ParentData for Selfreference data', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: multiLevelSelfRef1,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          columns: ['TaskID', 'TaskName', 'Duration', 'Progress'],
+        },
+        done
+      );
+    });
+    it('check parentdata length after rendering for selfreference data', () => {
+      expect(gridObj.flatData.length).toBe(12);
+      expect(gridObj.parentData.length).toBe(2);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+   describe('EJ2-22983: DataSource is not proper whose parentIDMapping record is not defined', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: allysonData,
+          idMapping: 'AreaId',
+          parentIdMapping: 'AreaPaiId',
+          treeColumnIndex: 1,
+          columns: ['AreaPaiId', 'AreaId', 'Nome']
+        },
+        done
+      );
+    });
+
+    it('Rendering of unordered list', () => {
+      expect(Object(gridObj.dataSource).length === gridObj.getCurrentViewRecords().length).toBe(true);
+      expect(gridObj.getRows().length === gridObj.getCurrentViewRecords().length).toBe(true);
+      gridObj.collapseAtLevel(1);
+      let h: number = 0;
+      (<any>(gridObj.element.querySelectorAll('.e-treegridcollapse')))
+        .forEach((args: any) => {
+           if (args.closest('tr').style['display'] != 'none') {
+              h++;
+            }
+          });
+      expect(h === 2).toBe(true);
+      gridObj.expandAtLevel(1);
+    });
+    it('Collapsing testing', () => {
+      let h: number = 0;
+      expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(18);
+      gridObj.collapseRow(<HTMLTableRowElement>(gridObj.getRowByIndex(2)));
+      (<any>(gridObj.element.querySelectorAll('.e-gridrowindex2level3')))
+        .forEach((args: any) => {
+           if (args.style['display'] === 'none') {
+              h++;
+            }
+          });
+      expect(h === 3).toBe(true);
+    })
     afterAll(() => {
       destroy(gridObj);
     });

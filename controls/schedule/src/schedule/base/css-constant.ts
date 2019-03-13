@@ -290,13 +290,17 @@ export const MORE_EVENT_WRAPPER_CLASS: string = 'e-more-appointment-wrapper';
 /** @hidden */
 export const QUICK_DIALOG_CLASS: string = 'e-quick-dialog';
 /** @hidden */
-export const QUICK_DIALOG_EDIT_EVENT_CLASS: string = 'e-quick-dialog-edit-event';
+export const QUICK_DIALOG_OCCURRENCE_CLASS: string = 'e-quick-dialog-occurrence-event';
 /** @hidden */
-export const QUICK_DIALOG_EDIT_SERIES_CLASS: string = 'e-quick-dialog-edit-series';
+export const QUICK_DIALOG_SERIES_CLASS: string = 'e-quick-dialog-series-event';
 /** @hidden */
 export const QUICK_DIALOG_DELETE_CLASS: string = 'e-quick-dialog-delete';
 /** @hidden */
 export const QUICK_DIALOG_CANCEL_CLASS: string = 'e-quick-dialog-cancel';
+/** @hidden */
+export const QUICK_DIALOG_ALERT_OK: string = 'e-quick-alertok';
+/** @hidden */
+export const QUICK_DIALOG_ALERT_CANCEL: string = 'e-quick-alertcancel';
 /** @hidden */
 export const QUICK_DIALOG_ALERT_BTN_CLASS: string = 'e-quick-dialog-alert-btn';
 /** @hidden */
@@ -417,3 +421,5 @@ export const DATE_TIME_ICON_CLASS: string = 'e-date-time-icon';
 export const VIRTUAL_SCROLL_CLASS: string = 'e-virtual-scroll';
 /** @hidden */
 export const ICON_DISABLE_CLASS: string = 'e-icon-disable';
+/** @hidden */
+export const AUTO_HEIGHT: string = 'e-auto-height';

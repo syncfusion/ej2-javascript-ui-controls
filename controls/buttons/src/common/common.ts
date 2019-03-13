@@ -110,6 +110,18 @@ export function rippleMouseHandler(e: MouseEvent, rippleSpan: Element): void {
     }
 }
 
+/**
+ * Append hidden input to given element
+ * @private
+ */
+export function setHiddenInput(proxy: Switch | CheckBox, wrap: Element): void {
+    if (proxy.element.getAttribute('ejs-for')) {
+        wrap.appendChild(proxy.createElement('input', {
+            attrs: { 'name': proxy.name || proxy.element.name, 'value': 'false', 'type': 'hidden' }
+        }));
+    }
+}
+
 export interface CheckBoxUtilModel {
     checked?: boolean;
     label?: string;

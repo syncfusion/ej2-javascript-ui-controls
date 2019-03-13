@@ -1,7 +1,7 @@
 import { ScrollBar } from './scrollbar';
 import { Chart } from '../../chart/chart';
-import { Rect, PathOption, RectOption, CircleOption } from '../utils/helper';
-import { SvgRenderer } from '@syncfusion/ej2-base';
+import { RectOption, CircleOption } from '../utils/helper';
+import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { IScrollbarThemeStyle } from '../../chart/index';
 
 /**

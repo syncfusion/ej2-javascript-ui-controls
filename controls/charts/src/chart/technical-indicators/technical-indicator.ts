@@ -4,7 +4,8 @@ import { TechnicalIndicators, FinancialDataFields, MacdType } from './../utils/e
 import { ConnectorModel } from '../../common/model/base-model';
 import { Connector } from '../../common/model/base';
 import { Series, SeriesBase } from '../series/chart-series';
-import { Rect, firstToLowerCase } from '../../common/utils/helper';
+import { firstToLowerCase } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 
 /**

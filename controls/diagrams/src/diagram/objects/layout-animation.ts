@@ -5,6 +5,8 @@ import { ConnectorModel } from '../objects/connector-model';
 import { NodeModel } from '../objects/node-model';
 import { Container } from '../core/containers/container';
 import { DiagramEvent } from '../enum/enum';
+import { IExpandStateChangeEventArgs } from '../objects/interface/IElement';
+import { cloneObject as clone } from '../utility/base-util';
 
 /**
  * Layout Animation function to enable or disable layout animation
@@ -22,7 +24,7 @@ export class LayoutAnimation {
         setIntervalObject[i] = setInterval(
             () => {
                 j++;
-                return this.layoutAnimation(objects, setIntervalObject, j === 6, diagram);
+                return this.layoutAnimation(objects, setIntervalObject, j === 6, diagram, node);
             },
             20);
         if (node.isExpanded) {
@@ -33,15 +35,16 @@ export class LayoutAnimation {
             //let objects: ILayout = diagram.doLayout();
             let setIntervalObjects: Object = {};
             let x: number = 0;
-            this.updateOpacity(node, opacity, diagram);
-            let current: LayoutAnimation = this;
-            setIntervalObjects[x] = setInterval(
-                () => {
-                    opacity <= 1 ? this.updateOpacity(node, opacity, diagram) : clearInterval(setIntervalObjects[0]);
-                    opacity += .2;
-                },
-                20);
-
+            if (animation) {
+                this.updateOpacity(node, opacity, diagram);
+                let current: LayoutAnimation = this;
+                setIntervalObjects[x] = setInterval(
+                    () => {
+                        opacity <= 1 ? this.updateOpacity(node, opacity, diagram) : clearInterval(setIntervalObjects[0]);
+                        opacity += .2;
+                    },
+                    20);
+            }
         }
     }
 
@@ -50,7 +53,7 @@ export class LayoutAnimation {
      * Setinterval and Clear interval for layout animation 
      */
     /** @private */
-    public layoutAnimation(objValue: ILayout, layoutTimer: Object, stop: boolean, diagram: Diagram): void {
+    public layoutAnimation(objValue: ILayout, layoutTimer: Object, stop: boolean, diagram: Diagram, node?: NodeModel): void {
         if (!stop) {
             for (let k: number = 0; k < objValue.objects.length; k++) {
                 let node: NodeModel = diagram.nameTable[objValue.objects[k].id];
@@ -65,6 +68,10 @@ export class LayoutAnimation {
             diagram.organizationalChartModule.isAnimation = false;
             diagram.layout.fixedNode = '';
             diagram.protectPropertyChange(this.protectChange);
+            let arg: IExpandStateChangeEventArgs = {
+                element: clone(node), state: (node.isExpanded) ? true : false
+            };
+            diagram.triggerEvent(DiagramEvent.expandStateChange, arg);
         }
     }
 

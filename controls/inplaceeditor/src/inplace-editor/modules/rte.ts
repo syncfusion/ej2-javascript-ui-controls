@@ -30,7 +30,9 @@ export class Rte implements IComponent {
 
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'RTE') {
-            this.parent.setProperties({ value: this.compObj.value }, true);
+            let rteValue: string = this.compObj.contentModule.getEditPanel().innerHTML === '<p><br></p>' ?
+                '' : this.compObj.contentModule.getEditPanel().innerHTML;
+            this.parent.setProperties({ value: rteValue }, true);
         }
     }
 

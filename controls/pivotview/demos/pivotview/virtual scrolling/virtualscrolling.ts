@@ -6,6 +6,7 @@ import { IDataSet } from '../../../src/base/engine';
 import { PivotView } from '../../../src/pivotview/base/pivotview';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { VirtualScroll } from '../../../src/pivotview/actions/virtualscroll';
+import { FieldList, GroupingBar, CalculatedField } from '../../../src/common/index';
 
 
 let names: string[] = ['TOM', 'Hawk', 'Jon', 'Chandler', 'Monica', 'Rachel', 'Phoebe', 'Gunther',
@@ -32,23 +33,27 @@ let data: Function = (count: number) => {
     return result;
 };
 
-PivotView.Inject(VirtualScroll);
+PivotView.Inject(VirtualScroll, FieldList, GroupingBar, CalculatedField);
 let pivotGridObj: PivotView = new PivotView({
     dataSource: {
         data: [],
-        expandAll: true,
-        formatSettings: [{ name: 'balance', format: 'C' }],
-        rows: [{ name: 'TaskID' }],
+        expandAll: false,
+        formatSettings: [{ name: 'Estimation', format: 'C' }],
+        rows: [{ name: 'TaskID' }, { name: 'Status' }],
         columns: [{ name: 'Designation' }],
         values: [{ name: 'Estimation' }, { name: 'Rating' }],
     },
     width: 800,
     height: 300,
-    enableVirtualization: true
+    enableVirtualization: true,
+    showFieldList: true,
+    showGroupingBar: true,
+    enableValueSorting: true,
+    allowCalculatedField: true
 });
 pivotGridObj.appendTo('#PivotView');
 document.getElementById('load').onclick = function () {
     if ((pivotGridObj.dataSource.data as IDataSet[]).length === 0) {
-        pivotGridObj.dataSource.data = data(100000) as IDataSet[];
+        pivotGridObj.dataSource.data = data(1000000) as IDataSet[];
     }
 };

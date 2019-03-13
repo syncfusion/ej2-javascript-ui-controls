@@ -6,6 +6,7 @@ import { SortOrder } from '@syncfusion/ej2-lists/src/common';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { DropDownBase } from '../../src/drop-down-base/drop-down-base';
 import '../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
 { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' }];
@@ -22,6 +23,14 @@ L10n.load({
     }
 });
 describe('DropDownBase', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 
     //Local data bindng with default values
     describe('Local data bindng with default values', () => {
@@ -689,4 +698,13 @@ describe('DropDownBase', () => {
             //expect();
         });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

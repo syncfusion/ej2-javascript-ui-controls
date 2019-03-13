@@ -163,4 +163,12 @@ export class Point extends ChildProperty<Point> {
     //     this.y = Math.round(this.y);
     // }
 
+    /**
+     * @private
+     * Returns the name of class Point
+     */
+    public getClassName(): string {
+        return 'Point';
+    }
+
 }

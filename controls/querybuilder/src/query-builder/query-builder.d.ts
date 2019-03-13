@@ -4,7 +4,7 @@
 import { Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { ChildProperty } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RulesModel, RuleModel } from './query-builder-model';
-import { EmitType } from '@syncfusion/ej2-base';
+import { EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Query, Predicate, DataManager } from '@syncfusion/ej2-data';
 export declare class Columns extends ChildProperty<Columns> {
     /**
@@ -165,67 +165,17 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Triggers when the component is created.
      * @event
      */
-    created: EmitType<Object>;
+    created: EmitType<Event>;
     /**
-     * Triggers before the condition (And/Or) is changed.
+     * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
      */
-    beforeConditionChange: EmitType<Object>;
+    beforeChange: EmitType<ChangeEventArgs>;
     /**
-     * Triggers before the field is changed.
+     * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
      */
-    beforeFieldChange: EmitType<Object>;
-    /**
-     * Triggers before the operator is changed. (e.g., equal, less etc.).
-     * @event
-     */
-    beforeOperatorChange: EmitType<Object>;
-    /**
-     * Triggers before the value is changed.
-     * @event
-     */
-    beforeValueChange: EmitType<Object>;
-    /**
-     * Triggers when changing the condition(AND/OR) in button group.
-     * @event
-     */
-    conditionChanged: EmitType<Object>;
-    /**
-     * Triggers when changing the fields using the drop-down list.
-     * @event
-     */
-    fieldChanged: EmitType<Object>;
-    /**
-     * Triggers when changing the rule value.
-     * @event
-     */
-    valueChanged: EmitType<Object>;
-    /**
-     * Triggers when changing the operator value.
-     * @event
-     */
-    operatorChanged: EmitType<Object>;
-    /**
-     * Triggers when deleting a group.
-     * @event
-     */
-    groupDelete: EmitType<Object>;
-    /**
-     * Triggers when deleting the rule.
-     * @event
-     */
-    ruleDelete: EmitType<Object>;
-    /**
-     * Triggers when adding a Group.
-     * @event
-     */
-    groupInsert: EmitType<Object>;
-    /**
-     * Triggers when adding the rule.
-     * @event
-     */
-    ruleInsert: EmitType<Object>;
+    change: EmitType<ChangeEventArgs>;
     /**
      * Specifies the showButtons settings of the query builder component.
      * The showButtons can be enable Enables or disables the ruleDelete, groupInsert, and groupDelete buttons.
@@ -311,6 +261,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getWrapper;
     protected getModuleName(): string;
     private initialize;
+    private triggerEvents;
     private clickEventHandler;
     private selectBtn;
     private addRuleElement;
@@ -320,6 +271,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @returns boolean.
      */
     validateFields(): boolean;
+    private refreshLevelColl;
+    private refreshLevel;
     private groupTemplate;
     private ruleTemplate;
     private addGroupElement;
@@ -331,6 +284,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private templateDestroy;
     private getDistinctValues;
     private renderMultiSelect;
+    private closePopup;
     private processTemplate;
     private renderStringValue;
     private renderNumberValue;
@@ -388,7 +342,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Deletes the group or groups based on the group ID.
      * @returns void.
      */
-    deleteGroups(groupID: string[]): void;
+    deleteGroups(groupIdColl: string[]): void;
     /**
      * Gets the predicate from collection of rules.
      * @returns object.
@@ -398,7 +352,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Deletes the rule or rules based on the rule ID.
      * @returns void.
      */
-    deleteRules(ruleID: string[]): void;
+    deleteRules(ruleIdColl: string[]): void;
     /**
      * Gets the query for Data Manager.
      * @returns string.
@@ -470,4 +424,15 @@ export interface Validation {
      * @default true
      */
     isRequired: boolean;
+}
+/**
+ * Interface for change event.
+ */
+export interface ChangeEventArgs extends BaseEventArgs {
+    groupID: string;
+    ruleID?: string;
+    value?: string | number | Date | boolean | string[];
+    selectedIndex?: number;
+    cancel?: boolean;
+    type?: string;
 }

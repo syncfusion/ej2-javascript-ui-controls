@@ -51,21 +51,30 @@
         <option value="Cancel">Cancel</option>
         <option value="Ignore">Ignore</option>
     </select>
-    <input id="rtl" type="checkbox" />
-    <input id="persist" type="checkbox" />
-    <input id="disabled" type="checkbox" />
-    <input id="showButtons" type="checkbox" />
-    <input id="openEditor" type="checkbox" />
-    <input id="enterSubmit" type="checkbox" />
-    <br /><br />
-    <div class="container">
+    <input id="rtl" type="checkbox" /> Enable RTL
+    <input id="persist" type="checkbox" /> Enable Persistence
+    <input id="disabled" type="checkbox" /> Disable Editor
+    <input id="showButtons" type="checkbox" checked /> ShowButtons
+    <input id="openEditor" type="checkbox" /> EnableEditMode
+    <input id="enterSubmit" type="checkbox" checked /> SubmitOnEnter
+    <input id="enableTitle" type="checkbox" checked /> Enable Title
+    <div class="sample-separator"></div>
+    <div class="sample-container">
         <div id="element">
         </div>
     </div>
     <style>
-        .container {
-            margin: 100px auto 0;
-            display: table;
+        .sample-container {
+            position: relative;
+            height: 500px;
+            margin: 5px auto;
+            width: 900px;
+        }
+        .sample-separator {
+            margin-top: 60px;
+        }
+        #element {
+            margin-left: 400px;
         }
     </style>
 </body>

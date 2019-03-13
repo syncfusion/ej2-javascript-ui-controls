@@ -84,6 +84,7 @@ export class PdfExport {
         this.processExport(parent, returnType as ReturnType, pdfExportProperties, isMultipleExport).then(() => {
             this.isExporting = false;
             parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+            this.parent.log('exporting_complete', this.getModuleName());
             resolve(this.pdfDocument);
         });
     }
@@ -110,6 +111,7 @@ export class PdfExport {
                 return resolve();
             });
         }
+        this.parent.log('exporting_begin', this.getModuleName());
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
         && pdfExportProperties.dataSource instanceof DataManager) {
             return new Promise((resolve: Function, reject: Function) => {
@@ -132,6 +134,7 @@ export class PdfExport {
                     this.processExport(parent, e[0], pdfExportProperties, isMultipleExport).then(() => {
                         this.isExporting = false;
                         parent.trigger(events.pdfExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+                        this.parent.log('exporting_complete', this.getModuleName());
                         resolve(this.pdfDocument);
                     });
                 });
@@ -189,7 +192,7 @@ export class PdfExport {
         }
         let helper: ExportHelper = new ExportHelper(gObj);
         let dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
-        let columns: Column[] = gObj.enableColumnVirtualization ? gObj.getColumns() : gObj.columns as Column[];
+        let columns: Column[] = gObj.columns as Column[];
         let isGrouping: boolean = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;

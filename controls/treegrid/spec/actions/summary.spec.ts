@@ -46,7 +46,6 @@ describe('Summary module', () => {
             }, {
                type: 'Max',
                field: 'startDate',
-               columnName: 'startDate',
                format: 'yMd',
                footerTemplate: '${Max}'
             }]

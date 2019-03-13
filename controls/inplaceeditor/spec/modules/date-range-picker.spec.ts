@@ -378,7 +378,7 @@ describe('DateRangePicker module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-daterangepicker', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual('');
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "null" with initial render testing', () => {
@@ -426,7 +426,7 @@ describe('DateRangePicker module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-daterangepicker', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual('');
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "undefined" string with initial render testing', () => {
@@ -474,7 +474,7 @@ describe('DateRangePicker module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-daterangepicker', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual('');
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as empty string with initial render testing', () => {
@@ -498,7 +498,7 @@ describe('DateRangePicker module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-daterangepicker', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual('');
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = [new Date('4/9/2018'), new Date('6/9/2018')];
             editorObj.dataBind();
@@ -522,7 +522,7 @@ describe('DateRangePicker module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-daterangepicker', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual('');
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Defined value with initial render testing', () => {
@@ -557,7 +557,7 @@ describe('DateRangePicker module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-daterangepicker', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual('');
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = [new Date('6/9/2018'), new Date('8/9/2018')];
             editorObj.dataBind();
@@ -604,7 +604,7 @@ describe('DateRangePicker module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLInputElement>select('.e-daterangepicker', document.body)).value).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual('');
+            expect(editorObj.value).toEqual(null);
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = [new Date('6/9/2018'), new Date('8/9/2018')];
             editorObj.dataBind();

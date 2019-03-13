@@ -302,7 +302,7 @@ export class Resize extends ActionBase {
     private getLeftRightStyles(e: MouseEvent & TouchEvent, isLeft: boolean): { [key: string]: Object } {
         let styles: { [key: string]: Object } = {};
         let isTimelineView: boolean = this.parent.activeView.isTimelineView();
-        let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
+        let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1  &&
             this.parent.activeViewOptions.timeScale.enable;
         let slotInterval: number = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
         let pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);

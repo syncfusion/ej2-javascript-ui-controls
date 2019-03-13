@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Trendline } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields } from '../../chart/utils/enum';import { Anchor, ZIndex, sizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { CornerRadius } from '../../common/model/base';import { TextOverflow, Alignment, Regions, Units, Position } from '../../common/utils/enum';import { Theme } from '../../common/model/theme';import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, FontModel } from '../../index';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Trendline } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType, EmptyPointMode, TechnicalIndicators, MacdType, FinancialDataFields } from '../../chart/utils/enum';import { Anchor, ZIndex, sizeType, LabelIntersectAction, LabelPlacement, AxisPosition, IntervalType } from '../../chart/utils/enum';import { SkeletonType, ChartRangePadding, EdgeLabelPlacement, ValueType, LegendShape, TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { CornerRadius } from '../../common/model/base';import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';import { Theme } from '../../common/model/theme';import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../index';
 
 /**
  * Interface for a class StockChartFont
@@ -85,7 +85,7 @@ export interface StockChartAreaModel {
 
     /**
      * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
-     * @default transparent
+     * @default 'transparent'
      */
     background?: string;
 
@@ -287,7 +287,7 @@ export interface StockChartStripLineSettingsModel {
     /**
      * Options to customize the strip line text.
      */
-    textStyle?: FontModel;
+    textStyle?: StockChartFontModel;
 
     /**
      * The option to delay animation of the series.
@@ -909,7 +909,7 @@ export interface StockChartAxisModel {
      * Options to customize the axis label.
      */
 
-    labelStyle?: FontModel;
+    labelStyle?: StockChartFontModel;
 
     /**
      * Specifies the title of an axis.
@@ -922,7 +922,7 @@ export interface StockChartAxisModel {
      * Options for customizing the axis title.
      */
 
-    titleStyle?: FontModel;
+    titleStyle?: StockChartFontModel;
 
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
@@ -1381,14 +1381,14 @@ export interface StockChartAnnotationSettingsModel {
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     y?: string | number;
 
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     x?: string | Date | number;
 
@@ -1478,5 +1478,76 @@ export interface StockChartIndexesModel {
      * @aspType int
      */
     series?: number;
+
+}
+
+/**
+ * Interface for a class StockEventsSettings
+ */
+export interface StockEventsSettingsModel {
+
+    /**
+     * Specifies type of stock events
+     * * Circle 
+     * * Square
+     * * Flag
+     * * Text
+     * * Sign
+     * * Triangle
+     * * InvertedTriangle
+     * * ArrowUp
+     * * ArrowDown
+     * * ArrowLeft
+     * * ArrowRight
+     * @default 'Circle'
+     */
+    type?: FlagType;
+
+    /**
+     * Specifies the text for the stock chart text.
+     */
+    text?: string;
+
+    /**
+     * Specifies the description for the chart which renders in tooltip for stock event.
+     */
+    description?: string;
+
+    /**
+     * Date value of stock event in which stock event shows.
+     */
+    date?: Date;
+
+    /**
+     * Options to customize the border of the stock events.
+     */
+    border?: StockChartBorderModel;
+
+    /**
+     * The background of the stock event that accepts value in hex and rgba as a valid CSS color string.
+     * @default 'transparent'
+     */
+    background?: string;
+
+    /**
+     * Enables the stock events to be render on series. If it disabled, stock event rendered on primaryXAxis.
+     * @default true
+     */
+    showOnSeries?: boolean;
+
+    /**
+     * Corresponding values in which stock event placed.
+     * * Close
+     * * Open
+     * * High
+     * * Close
+     * @default 'close'
+     */
+    placeAt?: string;
+
+    /**
+     * Options to customize the styles for stock events text.
+     */
+    textStyle?: StockChartFontModel;
 
 }

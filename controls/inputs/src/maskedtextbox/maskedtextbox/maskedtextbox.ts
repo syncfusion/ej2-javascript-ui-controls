@@ -496,7 +496,6 @@ export interface MaskFocusEventArgs extends BaseEventArgs {
     /** Returns the MaskedTextBox container element */
     container?: HTMLElement;
 }
-
 export interface MaskBlurEventArgs extends BaseEventArgs {
     /** Returns the original event arguments. */
     event?: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent;
@@ -507,3 +506,5 @@ export interface MaskBlurEventArgs extends BaseEventArgs {
     /** Returns the MaskedTextBox container element */
     container?: HTMLElement;
 }
+
+

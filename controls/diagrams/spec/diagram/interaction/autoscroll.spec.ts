@@ -10,6 +10,7 @@ import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
 import { MouseEvents } from './mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { SnapConstraints, BasicShapeModel, DiagramConstraints } from '../../../src/diagram/index';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(BpmnDiagrams, DiagramContextMenu, UndoRedo);
 describe('Diagram Control', () => {
     describe('Auto Scroll left and right', () => {
@@ -66,8 +67,6 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseUpEvent(diagramCanvas, center.x + 50 + 25 + 10 + 10, center.y + 50 + 25 + 10 + 10);
             }, 110);
         });
-
-
     });
 
     describe('Auto Scroll top and bottom', () => {
@@ -180,6 +179,56 @@ describe('Diagram Control', () => {
             }, 110);
         });
     });
+    describe('Auto Scroll top and bottom with enabled ruler - Check Horizontal offset and vertical offset', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '400px', height: '400px',
+                connectors: [{
+                    id: 'connector1',
+                    type: 'Straight',
+                    sourcePoint: { x: 200, y: 200 },
+                    targetPoint: { x: 300, y: 300 },
+                },
+                {
+                    id: 'connector2',
+                    type: 'Orthogonal',
+                    sourcePoint: { x: 300, y: 100 },
+                    targetPoint: { x: 400, y: 200 },
+                }],
+                nodes: [{ id: 'node1', width: 100, height: 100, offsetX: 50, offsetY: 150 }],
+                scrollSettings: { canAutoScroll: true, scrollLimit: 'Infinity' },
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Autoscroll top and check the zoom is consider the viewport center point', (done: Function) => {
+            let dgm: Diagram = diagram;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let center: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.center;
+            mouseEvents.clickEvent(diagramCanvas, center.x, center.x);
+            mouseEvents.mouseDownEvent(diagramCanvas, center.x, center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50, center.y - 50);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50 - 100, center.y - 150 - 25);
+            mouseEvents.mouseMoveEvent(diagramCanvas, center.x - 50 - 120 - 10, center.y - 50 - 150 - 10);
+            setTimeout(function () {
+                mouseEvents.mouseUpEvent(diagramCanvas, center.x - 50 - 120 - 10, center.y - 50 - 150 - 10);
+                console.log('dgm.scroller.horizontalOffset'+ dgm.scroller.horizontalOffset);
+                expect(dgm.scroller.horizontalOffset === 10).toBe(true);
+                diagram.zoom(2);
+                console.log('dgm.scroller.horizontalOffset'+ dgm.scroller.horizontalOffset);
+                expect(dgm.scroller.horizontalOffset === -180).toBe(true);
+                done();
+            }, 110);
+        });
+    });
     describe('Virtualization in Canvas mode', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -257,7 +306,6 @@ describe('Diagram Control', () => {
                 expect(((value === 'position: absolute; left: 20px; top: 0px; transform: scale(0.666667); transform-origin: 0px 0px;') ||
                     (value === "position: absolute; left: 20px; top: 0px; transform: scale(0.666667); transform-origin: 0px 0px 0px;")
                 )).toBe(true);
-
                 done();
             }, 250);
 
@@ -277,11 +325,10 @@ describe('Diagram Control', () => {
             var selecelement2 = document.getElementById('borderRect');
             var xvalue2 = selecelement2.getAttribute("x");
             var yvalue2 = selecelement2.getAttribute("y");
-  
-            expect(xvalue2 === '72.95' && yvalue2 === '92.95').toBe(true);
+
+            expect(xvalue2 === '74.95' && yvalue2 === '92.95').toBe(true);
             done();
         });
-
     });
     describe('Virtualization in SVG mode', () => {
         let diagram: Diagram;
@@ -390,6 +437,15 @@ describe('Diagram Control', () => {
                 }, 200)
             }, 1550);
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
     });
 });

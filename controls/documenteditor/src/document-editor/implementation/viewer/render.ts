@@ -485,7 +485,7 @@ export class Renderer {
         let format: WCharacterFormat = elementBox.listLevel.characterFormat;
         let breakCharacterFormat: WCharacterFormat = elementBox.line.paragraph.characterFormat;
         let color: string = format.fontColor === '#000000' ? breakCharacterFormat.fontColor : format.fontColor;
-        this.pageContext.textBaseline = 'top';
+        this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
         let italic: string = '';
         let fontFamily: string = format.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily : format.fontFamily;
@@ -511,6 +511,8 @@ export class Renderer {
         if (baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
+        let baselineOffset: number = elementBox.baselineOffset;
+        topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         let text: string = elementBox.text;
         let followCharacter: boolean = text === '\t' || text === ' ';
         if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
@@ -559,7 +561,7 @@ export class Renderer {
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
         let color: string = format.fontColor;
-        this.pageContext.textBaseline = 'top';
+        this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
         let italic: string = '';
         let fontSize: number = 11;
@@ -570,6 +572,8 @@ export class Renderer {
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
+        let baselineOffset: number = elementBox.baselineOffset;
+        topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         this.pageContext.fillStyle = this.getColor(color);
 
         let scaledWidth: number = this.getScaledValue(elementBox.width);

@@ -123,7 +123,8 @@ export class NodeSelection {
         for (let index: number = 0; index < nodeCollection.length; index++) {
             if ((nodeCollection.indexOf(nodeCollection[index].parentNode) !== -1)
                 || (nodeCollection[index].nodeType === 3 &&
-                    range.startContainer !== range.endContainer)) {
+                    range.startContainer !== range.endContainer &&
+                    range.startContainer.parentNode !== range.endContainer.parentNode)) {
                 nodeCollection.splice(index, 1);
                 index--;
             } else if (nodeCollection[index].nodeType === 3) {

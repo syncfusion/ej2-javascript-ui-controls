@@ -1,10 +1,10 @@
 import { Chart } from '../chart';
 import { AnimationOptions, Animation, Browser } from '@syncfusion/ej2-base';
 import {
-    measureText, findDirection, textElement, getValueXByPoint, stopTimer,
-    getValueYByPoint, TextOption, Size, Rect, ChartLocation, PathOption, withInBounds,
-    removeElement
+    textElement, getValueXByPoint, stopTimer,
+    getValueYByPoint, ChartLocation, withInBounds, removeElement
 } from '../../common/utils/helper';
+import { PathOption, Rect, Size, TextOption, findDirection, measureText } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../axis/axis';
 import { CrosshairSettingsModel } from '../chart-model';
 

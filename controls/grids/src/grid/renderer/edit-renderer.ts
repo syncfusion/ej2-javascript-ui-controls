@@ -13,6 +13,7 @@ import { IModelGenerator, ICellRenderer } from '../base/interface';
 import { Cell } from '../models/cell';
 import { FocusStrategy } from '../services/focus-strategy';
 import { getComplexFieldID, getObject, appendChildren } from '../base/util';
+import * as events from '../base/constant';
 /**
  * Edit render module is used to render grid edit row.
  * @hidden
@@ -46,6 +47,7 @@ export class EditRender {
 
     public update(args: Object): void {
         this.renderer.update(this.getEditElements(args), args);
+        this.parent.notify(events.beforeStartEdit, args);
         this.convertWidget(args);
     }
 

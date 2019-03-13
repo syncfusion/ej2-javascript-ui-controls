@@ -30,7 +30,7 @@ describe('Linear gauge events spec', () => {
         browser.compareScreen(element(By.id('container')), 'AnnotationEvent-Annotation-Customization');
     });
     it('Axis Label Event text spec', (done: Function) => {
-        browser.load("/demos/events/axisLabelEvent-1.html");
+        browser.load("/demos/linear-gauge/testing/axisLabelEvent-1.html");
         if(browser.browserName === 'internet explorer') {
             browser.executeScript('window.onload.call(this);');
         }
@@ -38,7 +38,7 @@ describe('Linear gauge events spec', () => {
         done();
     });
     it('Annotation Event textStyle spec', (done: Function) => {
-        browser.load("/demos/events/annotationEvent-1.html");
+        browser.load("/demos/linear-gauge/testing/annotationEvent-1.html");
         if(browser.browserName === 'internet explorer') {
             browser.executeScript('window.onload.call(this);');
         }
@@ -46,7 +46,7 @@ describe('Linear gauge events spec', () => {
         done();
     });
     it('Annotation Event content spec', (done: Function) => {
-        browser.load("/demos/events/annotationEvent-2.html");
+        browser.load("/demos/linear-gauge/testing/annotationEvent-2.html");
         if(browser.browserName === 'internet explorer') {
             browser.executeScript('window.onload.call(this);');
         }

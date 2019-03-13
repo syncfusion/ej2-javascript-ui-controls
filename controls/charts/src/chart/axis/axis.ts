@@ -3,7 +3,8 @@ import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
 import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';
 import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';
-import { Size, Rect, measureText, rotateTextSize, firstToLowerCase, valueToCoefficient, inside } from '../../common/utils/helper';
+import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside } from '../../common/utils/helper';
+import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { Chart } from '../chart';
 import { MajorGridLinesModel, MinorGridLinesModel, CrosshairTooltipModel } from '../axis/axis-model';
@@ -1020,28 +1021,37 @@ export class Axis extends ChildProperty<Axis> {
      * @private
      */
     public getMaxLabelWidth(chart: Chart): void {
-        let prevSize: Size = new Size(0, 0);
-        let rotatedLabel: string;
         let pointX: number; let previousEnd: number = 0;
         let isIntersect: boolean = false;
         this.angle = this.labelRotation;
         this.maxLabelSize = new Size(0, 0);
         let action: LabelIntersectAction = this.labelIntersectAction;
-        let label: VisibleLabels;
+        let label: VisibleLabels; let breakLabels: string;
         for (let i: number = 0; i < this.visibleLabels.length; i++) {
             label = this.visibleLabels[i];
-            label.size = measureText(<string>label.text, this.labelStyle);
-            if (label.size.width > this.maxLabelSize.width) {
-                this.maxLabelSize.width = label.size.width;
+            breakLabels = label.originalText.indexOf('<br>') !== -1 ? label.originalText : <string>label.text;
+            if (breakLabels.indexOf('<br>') !== -1) {
+                let labelText: string = this.enableTrim ? breakLabels : breakLabels.replace(/<br>/g, ' ');
+                label.size = measureText(labelText, this.labelStyle);
+                label.breakLabelSize = measureText(breakLabels, this.labelStyle);
+            } else {
+                label.size = measureText(<string>label.text, this.labelStyle);
+            }
+            let width: number = (breakLabels.indexOf('<br>') !== -1) ? label.breakLabelSize.width : label.size.width;
+            if (width > this.maxLabelSize.width) {
+                this.maxLabelSize.width = width;
                 this.rotatedLabel = <string>label.text;
             }
-            if (label.size.height > this.maxLabelSize.height) {
-                this.maxLabelSize.height = label.size.height;
+            let height: number = (breakLabels.indexOf('<br>') !== -1) ? label.breakLabelSize.height : label.size.height;
+            if (height > this.maxLabelSize.height) {
+                this.maxLabelSize.height = height;
+            }
+            if (breakLabels.indexOf('<br>') !== -1) {
+                label.text = this.enableTrim ? label.text : this.getLineBreakText(breakLabels);
             }
             if (action === 'None' || action === 'Hide' || action === 'Trim') {
                 continue;
             }
-
             if ((<LabelIntersectAction>action !== 'None' || this.angle % 360 === 0) && this.orientation === 'Horizontal' &&
                 this.rect.width > 0 && !isIntersect) {
                 pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
@@ -1068,10 +1078,28 @@ export class Axis extends ChildProperty<Axis> {
                         }
                         break;
                     default:
-                        label.text = textWrap(
-                            <string>label.text,
-                            this.rect.width / this.visibleLabels.length, this.labelStyle
-                        );
+                        if (breakLabels.indexOf('<br>') !== -1) {
+                            let result: string[]; let result1: string[] = []; let str: string;
+                            for (let index: number = 0; index < label.text.length; index++) {
+                                result = textWrap(
+                                    label.text[index],
+                                    this.rect.width / this.visibleLabels.length, this.labelStyle);
+                                if (result.length > 1) {
+                                    for (let j: number = 0; j < result.length; j++) {
+                                        str = result[j];
+                                        result1.push(str);
+                                    }
+                                } else {
+                                    result1.push(result[0]);
+                                }
+                            }
+                            label.text = result1;
+                        } else {
+                            label.text = textWrap(
+                                <string>label.text,
+                                this.rect.width / this.visibleLabels.length, this.labelStyle
+                            );
+                        }
                         let height: number = (label.size.height * label.text.length);
                         if (height > this.maxLabelSize.height) {
                             this.maxLabelSize.height = height;
@@ -1082,11 +1110,30 @@ export class Axis extends ChildProperty<Axis> {
             }
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
-            this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+            if (this.rotatedLabel.indexOf('<br>') !== -1) {
+                this.maxLabelSize.height = measureText(this.rotatedLabel, this.labelStyle).width;
+                this.maxLabelSize.width = measureText(this.rotatedLabel, this.labelStyle).height;
+            } else {
+                this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+            }
         }
         if (chart.multiLevelLabelModule && this.multiLevelLabels.length > 0) {
             chart.multiLevelLabelModule.getMultilevelLabelsHeight(this);
         }
+    }
+    /**
+     * To get line break text collection
+     * @param breakLabels 
+     */
+    private getLineBreakText(breakLabels: string): string[] {
+        let breakLabelCollection: string[];
+        let breakLabelCollection1: string[] = [];
+        breakLabelCollection = breakLabels.split('<br>');
+        for (let i: number = 0, len: number = breakLabelCollection.length; i < len; i++) {
+            breakLabelCollection1.push(breakLabelCollection[i]);
+            //breakLabelCollection1.push(textTrim(220, breakLabelCollection[i], this.labelStyle));
+        }
+        return breakLabelCollection1;
     }
 
     /**
@@ -1153,17 +1200,23 @@ export class VisibleLabels {
 
     public size: Size;
 
+    public breakLabelSize: Size;
+
     public index: number;
 
     public originalText: string;
 
-    constructor(text: string | string[], value: number, labelStyle: FontModel, originalText: string | string[],
-                size: Size = new Size(0, 0), index: number = 1) {
+    constructor(
+        text: string | string[], value: number, labelStyle: FontModel,
+        originalText: string | string[], size: Size = new Size(0, 0),
+        breakLabelSize: Size = new Size(0, 0), index: number = 1
+        ) {
         this.text = text;
         this.originalText = <string>originalText;
         this.value = value;
         this.labelStyle = labelStyle;
         this.size = size;
+        this.breakLabelSize = breakLabelSize;
         this.index = 1;
     }
 }

@@ -332,3 +332,5 @@ export const exportRowDataBound: string = 'export-RowDataBound';
 export const rowPositionChanged: string = 'row-position-changed';
 /** @hidden */
 export const batchForm: string = 'batchedit-form';
+/** @hidden */
+export const beforeStartEdit: string = 'edit-form';

@@ -17,6 +17,10 @@
           box-shadow: $cmenu-parent-ul-box-shadow;
         }
 
+        &.e-ul {
+          font-family: $font-family;
+        }
+
         & .e-menu-item  {
           @include li-layout;
           @include li-size;

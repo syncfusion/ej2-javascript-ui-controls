@@ -5,7 +5,7 @@
     box-shadow: $toast-box-shadow;
     color: $toast-font-color;
 
-    @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap4' {
       border: 1px solid  $toast-border-color;
     }
 
@@ -13,7 +13,7 @@
       background-color: $toast-success-bg-color;
       color: $toast-success-color;
 
-      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         border-color: $toast-success-border-color;
       }
 
@@ -34,7 +34,7 @@
         box-shadow: $toast-success-hover-box-shadow;
         color: $toast-success-hover-color;
 
-        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           border-color: $toast-success-hover-border-color;
         }
       }
@@ -44,7 +44,7 @@
       background-color: $toast-info-bg-color;
       color: $toast-info-color;
 
-      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         border-color: $toast-info-border-color;
       }
 
@@ -65,7 +65,7 @@
         box-shadow: $toast-info-hover-box-shadow;
         color: $toast-info-hover-color;
 
-        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           border-color: $toast-info-hover-border-color;
         }
       }
@@ -75,7 +75,7 @@
       background-color: $toast-warning-bg-color;
       color: $toast-warning-color;
 
-      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+      @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         border-color: $toast-warning-border-color;
       }
 
@@ -96,7 +96,7 @@
         box-shadow: $toast-warning-hover-box-shadow;
         color: $toast-warning-hover-color;
 
-        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           border-color: $toast-warning-hover-border-color;
         }
       }
@@ -127,7 +127,7 @@
         box-shadow: $toast-danger-hover-box-shadow;
         color: $toast-danger-hover-color;
 
-        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           border-color: $toast-danger-hover-border-color;
         }
       }

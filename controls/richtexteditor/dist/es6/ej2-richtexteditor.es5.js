@@ -3,7 +3,7 @@ import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-popups';
 import { ColorPicker, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
-import { Button, CheckBox } from '@syncfusion/ej2-buttons';
+import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
 /** @hidden */
 var created = 'create';
@@ -176,6 +176,8 @@ var tableToolbarAction = 'table-toolbar-action';
 var checkUndo = 'checkUndoStack';
 /** @hidden */
 var readOnlyMode = 'readOnlyMode';
+/** @hidden */
+var pasteClean = 'pasteClean';
 
 /**
  * RichTextEditor classes defined here.
@@ -332,6 +334,18 @@ var CLS_TB_ROW_RES = 'e-row-resize';
 var CLS_TB_BOX_RES = 'e-table-box';
 /** @hidden */
 var CLS_RTE_HIDDEN = 'e-rte-hidden';
+/** @hidden */
+var CLS_RTE_PASTE_KEEP_FORMAT = 'e-rte-keepformat';
+/** @hidden */
+var CLS_RTE_PASTE_REMOVE_FORMAT = 'e-rte-removeformat';
+/** @hidden */
+var CLS_RTE_PASTE_PLAIN_FORMAT = 'e-rte-plainformat';
+/** @hidden */
+var CLS_RTE_PASTE_OK = 'e-rte-pasteok';
+/** @hidden */
+var CLS_RTE_PASTE_CANCEL = 'e-rte-pastecancel';
+/** @hidden */
+var CLS_RTE_DIALOG_MIN_HEIGHT = 'e-rte-dialog-minheight';
 
 /**
  * Defines types of Render
@@ -638,7 +652,7 @@ var tools = {
         'subCommand': 'OpenImageLink'
     },
     'editimagelink': {
-        'id': 'EditIamgeLink',
+        'id': 'EditImageLink',
         'icon': 'e-edit-link',
         'tooltip': 'Edit Link',
         'command': 'Images',
@@ -1036,7 +1050,12 @@ var defaultLocale = {
     "tableVerticalAlignDropDownMiddle": 'Align Middle',
     "tableVerticalAlignDropDownBottom": 'Align Bottom',
     "tableStylesDropDownDashedBorder": 'Dashed Borders',
-    "tableStylesDropDownAlternateRows": 'Alternate Rows'
+    "tableStylesDropDownAlternateRows": 'Alternate Rows',
+    'pasteFormat': 'Paste Format',
+    'pasteFormatContent': 'Choose the formatting action',
+    'plainText': 'Plain Text',
+    'cleanFormat': 'Clean',
+    'keepFormat': 'Keep'
 };
 var toolsLocale = {
     'alignments': 'alignments',
@@ -1225,7 +1244,8 @@ function setToolbarStatus(e, isPopToolbar) {
                     var result = '';
                     switch (key) {
                         case 'formats':
-                            if (isNullOrUndefined(dropDown.formatDropDown) || isPopToolbar) {
+                            if (isNullOrUndefined(dropDown.formatDropDown) || isPopToolbar ||
+                                (!isNullOrUndefined(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) {
                                 return;
                             }
                             var formatItems = e.parent.format.types;
@@ -1240,7 +1260,8 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.formatDropDown.dataBind();
                             break;
                         case 'alignments':
-                            if (isNullOrUndefined(dropDown.alignDropDown)) {
+                            if (isNullOrUndefined(dropDown.alignDropDown) ||
+                                (!isNullOrUndefined(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) {
                                 return;
                             }
                             var alignItems = alignmentItems;
@@ -1249,7 +1270,8 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.alignDropDown.dataBind();
                             break;
                         case 'fontname':
-                            if (isNullOrUndefined(dropDown.fontNameDropDown) || isPopToolbar) {
+                            if (isNullOrUndefined(dropDown.fontNameDropDown) || isPopToolbar ||
+                                (!isNullOrUndefined(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) {
                                 return;
                             }
                             var fontNameItems = e.parent.fontFamily.items;
@@ -1265,7 +1287,8 @@ function setToolbarStatus(e, isPopToolbar) {
                             dropDown.fontNameDropDown.dataBind();
                             break;
                         case 'fontsize':
-                            if (isNullOrUndefined(dropDown.fontSizeDropDown)) {
+                            if (isNullOrUndefined(dropDown.fontSizeDropDown) ||
+                                (!isNullOrUndefined(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) {
                                 return;
                             }
                             var fontSizeItems = e.parent.fontSize.items;
@@ -1348,6 +1371,18 @@ function parseHtml(value) {
     else {
         return document.createRange().createContextualFragment(value);
     }
+}
+function getTextNodesUnder(docElement, node) {
+    var nodes = [];
+    for (node = node.firstChild; node; node = node.nextSibling) {
+        if (node.nodeType === 3) {
+            nodes.push(node);
+        }
+        else {
+            nodes = nodes.concat(getTextNodesUnder(docElement, node));
+        }
+    }
+    return nodes;
 }
 function toObjectLowerCase(obj) {
     var convertedValue = {};
@@ -1873,7 +1908,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                 switch (item) {
                     case 'formats':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_Formats', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         var formatItem = _this.parent.format.types.slice();
@@ -1893,7 +1928,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                         break;
                     case 'fontname':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_FontName', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         var fontItem = _this.parent.fontFamily.items.slice();
@@ -1916,7 +1951,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                         break;
                     case 'fontsize':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_FontSize', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         var fontsize = _this.parent.fontSize.items.slice();
@@ -1938,7 +1973,7 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                         break;
                     case 'alignments':
                         targetElement = select('#' + _this.parent.getID() + '_' + type + '_Alignments', tbElement);
-                        if (targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(CLS_DROPDOWN_BTN)) {
                             return;
                         }
                         _this.alignDropDown = _this.toolbarRenderer.renderDropDownButton({
@@ -2372,9 +2407,11 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.editPanel = this.contentRenderer.getPanel();
     };
     Toolbar$$1.prototype.toolbarBindEvent = function () {
-        this.keyBoardModule = new KeyboardEvents(this.getToolbarElement(), {
-            keyAction: this.toolBarKeyDown.bind(this), keyConfigs: this.parent.formatter.keyConfig, eventName: 'keydown'
-        });
+        if (!this.parent.inlineMode.enable) {
+            this.keyBoardModule = new KeyboardEvents(this.getToolbarElement(), {
+                keyAction: this.toolBarKeyDown.bind(this), keyConfigs: this.parent.formatter.keyConfig, eventName: 'keydown'
+            });
+        }
     };
     Toolbar$$1.prototype.toolBarKeyDown = function (e) {
         switch (e.action) {
@@ -2439,7 +2476,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         });
         this.parent.notify(renderColorPicker, {
             container: this.tbElement,
-            containerType: 'toolbar',
+            containerType: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
             items: this.parent.toolbarSettings.items
         });
         return true;
@@ -2595,18 +2632,20 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.updateToolbarStatus = function (args) {
-        var options = {
-            args: args,
-            dropDownModule: this.dropDownModule,
-            parent: this.parent,
-            tbElements: selectAll('.' + CLS_TB_ITEM, this.tbElement),
-            tbItems: this.baseToolbar.toolbarObj.items
-        };
-        if (this.parent.inlineMode.enable) {
-            setToolbarStatus(options, true);
-        }
-        else {
-            setToolbarStatus(options, false);
+        if (!this.parent.inlineMode.enable) {
+            var options = {
+                args: args,
+                dropDownModule: this.dropDownModule,
+                parent: this.parent,
+                tbElements: selectAll('.' + CLS_TB_ITEM, this.tbElement),
+                tbItems: this.baseToolbar.toolbarObj.items
+            };
+            if (this.parent.inlineMode.enable) {
+                setToolbarStatus(options, true);
+            }
+            else {
+                setToolbarStatus(options, false);
+            }
         }
     };
     Toolbar$$1.prototype.fullScreen = function (e) {
@@ -2706,8 +2745,10 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.scrollHandler = function (e) {
-        if (this.parent.toolbarSettings.enableFloating) {
-            this.toggleFloatClass(e.args);
+        if (!this.parent.inlineMode.enable) {
+            if (this.parent.toolbarSettings.enableFloating) {
+                this.toggleFloatClass(e.args);
+            }
         }
     };
     Toolbar$$1.prototype.mouseDownHandler = function () {
@@ -2756,11 +2797,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.dropDownModule = new DropDownButtons(this.parent, this.locator);
         this.toolbarActionModule = new ToolbarAction(this.parent);
         this.parent.on(initialEnd, this.renderToolbar, this);
-        if (!this.parent.inlineMode.enable) {
-            this.parent.on(scroll, this.scrollHandler, this);
-            this.parent.on(bindOnEnd, this.toolbarBindEvent, this);
-            this.parent.on(toolbarUpdated, this.updateToolbarStatus, this);
-        }
+        this.parent.on(scroll, this.scrollHandler, this);
+        this.parent.on(bindOnEnd, this.toolbarBindEvent, this);
+        this.parent.on(toolbarUpdated, this.updateToolbarStatus, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
         this.parent.on(refreshBegin, this.onRefresh, this);
         this.parent.on(destroy, this.destroy, this);
@@ -2778,11 +2817,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.off(initialEnd, this.renderToolbar);
-        if (!this.parent.inlineMode.enable) {
-            this.parent.off(scroll, this.scrollHandler);
-            this.parent.off(bindOnEnd, this.toolbarBindEvent);
-            this.parent.off(toolbarUpdated, this.updateToolbarStatus);
-        }
+        this.parent.off(scroll, this.scrollHandler);
+        this.parent.off(bindOnEnd, this.toolbarBindEvent);
+        this.parent.off(toolbarUpdated, this.updateToolbarStatus);
         this.parent.off(modelChanged, this.onPropertyChanged);
         this.parent.off(destroy, this.destroy);
         this.parent.off(enableFullScreen, this.parent.fullScreenModule.showFullScreen);
@@ -2803,9 +2840,22 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Toolbar$$1.prototype.onPropertyChanged = function (e) {
+        if (!isNullOrUndefined(e.newProp.inlineMode)) {
+            for (var _i = 0, _a = Object.keys(e.newProp.inlineMode); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'enable':
+                        this.refreshToolbar();
+                        break;
+                }
+            }
+        }
         if (e.module !== this.getModuleName()) {
             return;
         }
+        this.refreshToolbar();
+    };
+    Toolbar$$1.prototype.refreshToolbar = function () {
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();
         }
@@ -3514,8 +3564,30 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.on(destroy, this.destroy, this);
+        this.parent.on(modelChanged, this.onPropertyChanged, this);
         if (this.parent.inlineMode.enable) {
             this.parent.on(toolbarUpdated, this.updateStatus, this);
+        }
+    };
+    /**
+     * Called internally if any of the property value changed.
+     * @hidden
+     */
+    BaseQuickToolbar.prototype.onPropertyChanged = function (e) {
+        if (!isNullOrUndefined(e.newProp.inlineMode)) {
+            for (var _i = 0, _a = Object.keys(e.newProp.inlineMode); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'enable':
+                        if (e.newProp.inlineMode.enable) {
+                            this.parent.on(toolbarUpdated, this.updateStatus, this);
+                        }
+                        else {
+                            this.parent.off(toolbarUpdated, this.updateStatus);
+                        }
+                        break;
+                }
+            }
         }
     };
     BaseQuickToolbar.prototype.removeEventListener = function () {
@@ -3523,6 +3595,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.off(destroy, this.destroy);
+        this.parent.off(modelChanged, this.onPropertyChanged);
         if (this.parent.inlineMode.enable) {
             this.parent.off(toolbarUpdated, this.updateStatus);
         }
@@ -3664,10 +3737,12 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         }
     };
     QuickToolbar.prototype.renderInlineQuickToolbar = function () {
-        addClass([this.parent.element], [CLS_INLINE]);
-        this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
-        this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
-        EventHandler.add(this.inlineQTBar.element, 'mousedown', this.onMouseDown, this);
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            addClass([this.parent.element], [CLS_INLINE]);
+            this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
+            this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
+            EventHandler.add(this.inlineQTBar.element, 'mousedown', this.onMouseDown, this);
+        }
     };
     QuickToolbar.prototype.showInlineQTBar = function (x, y, target) {
         this.inlineQTBar.showPopup(x, y, target);
@@ -3700,43 +3775,49 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         this.deBouncer = window.setTimeout(function () { _this.showInlineQTBar(x, y, target); }, 1000);
     };
     QuickToolbar.prototype.mouseUpHandler = function (e) {
-        var args = e.args;
-        var range = this.parent.getRange();
-        var target = args.target;
-        if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
-            this.hideInlineQTBar();
-            this.offsetX = args.pageX;
-            this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
-            if (target.nodeName === 'TEXTAREA') {
-                this.showInlineQTBar(this.offsetX, this.offsetY, target);
-            }
-            else {
-                if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
-                    if (this.parent.inlineMode.onSelection && range.collapsed) {
-                        return;
-                    }
-                    this.target = target;
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            var args = e.args;
+            var range = this.parent.getRange();
+            var target = args.target;
+            if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+                this.hideInlineQTBar();
+                this.offsetX = args.pageX;
+                this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
+                if (target.nodeName === 'TEXTAREA') {
                     this.showInlineQTBar(this.offsetX, this.offsetY, target);
+                }
+                else {
+                    var closestAnchor = closest(target, 'a');
+                    target = closestAnchor ? closestAnchor : target;
+                    if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
+                        if (this.parent.inlineMode.onSelection && range.collapsed) {
+                            return;
+                        }
+                        this.target = target;
+                        this.showInlineQTBar(this.offsetX, this.offsetY, target);
+                    }
                 }
             }
         }
     };
     QuickToolbar.prototype.keyDownHandler = function () {
-        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     };
     QuickToolbar.prototype.inlineQTBarMouseDownHandler = function () {
-        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     };
     QuickToolbar.prototype.keyUpHandler = function (e) {
-        if (this.parent.inlineMode.onSelection) {
-            return;
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            if (this.parent.inlineMode.onSelection) {
+                return;
+            }
+            var args = e.args;
+            this.deBounce(this.offsetX, this.offsetY, args.target);
         }
-        var args = e.args;
-        this.deBounce(this.offsetX, this.offsetY, args.target);
     };
     QuickToolbar.prototype.getInlineBaseToolbar = function () {
         return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
@@ -3803,9 +3884,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         this.parent.on(initialEnd, this.initializeQuickToolbars, this);
         this.parent.on(mouseDown, this.renderQuickToolbars, this);
         this.parent.on(toolbarUpdated, this.toolbarUpdated, this);
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            this.wireInlineQTBarEvents();
-        }
+        this.wireInlineQTBarEvents();
         this.parent.on(modelChanged, this.onPropertyChanged, this);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.on(scroll, this.hideQuickToolbars, this);
@@ -3846,9 +3925,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         this.parent.off(initialEnd, this.initializeQuickToolbars);
         this.parent.off(mouseDown, this.renderQuickToolbars);
         this.parent.off(toolbarUpdated, this.toolbarUpdated);
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            this.unWireInlineQTBarEvents();
-        }
+        this.unWireInlineQTBarEvents();
         this.parent.off(modelChanged, this.onPropertyChanged);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.off(scroll, this.hideQuickToolbars);
@@ -3886,10 +3963,10 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
             removeClass([this.parent.element], [CLS_INLINE]);
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
-            if (this.parent.inlineMode.enable && !Browser.isDevice) {
-                addClass([this.parent.element], [CLS_INLINE]);
-                this.wireInlineQTBarEvents();
-            }
+        }
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            addClass([this.parent.element], [CLS_INLINE]);
+            this.wireInlineQTBarEvents();
         }
     };
     /**
@@ -4290,6 +4367,14 @@ var MODEL_CHANGED_PLUGIN = 'model_changed_plugin';
  * @hidden
  */
 var MODEL_CHANGED = 'model_changed';
+/* PasteCleanup plugin for MSWord content
+ * @hidden
+ */
+var MS_WORD_CLEANUP_PLUGIN = 'ms_word_cleanup_plugin';
+/* PasteCleanup for MSWord content
+ * @hidden
+ */
+var MS_WORD_CLEANUP = 'ms_word_cleanup';
 
 /**
  * Formatter
@@ -4324,6 +4409,12 @@ var Formatter = /** @__PURE__ @class */ (function () {
             var action = event.action;
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {
                 args = {};
+                if (self.editorMode === 'Markdown' && action === 'insert-table') {
+                    value = {
+                        'headingText': self.localeObj.getConstant('TableHeadingText'),
+                        'colText': self.localeObj.getConstant('TableColText')
+                    };
+                }
                 var items = {
                     originalEvent: event, cancel: false,
                     requestType: action || (event.key + 'Key'),
@@ -5261,6 +5352,7 @@ var htmlKeyConfig = {
     'escape': '27',
     'insert-link': 'ctrl+k',
     'insert-image': 'ctrl+shift+i',
+    'insert-table': 'ctrl+shift+e',
     'undo': 'ctrl+z',
     'redo': 'ctrl+y',
     'copy': 'ctrl+c',
@@ -5299,6 +5391,7 @@ var markdownKeyConfig = {
     'escape': '27',
     'insert-link': 'ctrl+k',
     'insert-image': 'ctrl+shift+i',
+    'insert-table': 'ctrl+shift+e',
     'undo': 'ctrl+z',
     'redo': 'ctrl+y',
     'copy': 'ctrl+c',
@@ -5314,6 +5407,24 @@ var markdownKeyConfig = {
     'full-screen': 'ctrl+shift+f',
     'ordered-list': 'ctrl+shift+o',
     'unordered-list': 'ctrl+alt+o'
+};
+/**
+ * PasteCleanup Grouping of similar functionality tags
+ */
+var pasteCleanupGroupingTags = {
+    'b': ['strong'],
+    'strong': ['b'],
+    'i': ['emp', 'cite'],
+    'emp': ['i', 'cite'],
+    'cite': ['i', 'emp']
+};
+/**
+ * PasteCleanup Grouping of similar functionality tags
+ */
+var listConversionFilters = {
+    'first': 'MsoListParagraphCxSpFirst',
+    'middle': 'MsoListParagraphCxSpMiddle',
+    'last': 'MsoListParagraphCxSpLast'
 };
 
 /**
@@ -5532,41 +5643,48 @@ var MDTable = /** @__PURE__ @class */ (function () {
      * Constructor for creating the Formats plugin
      * @hidden
      */
-    function MDTable(parent) {
-        this.parent = parent;
+    function MDTable(options) {
+        extend(this, this, options, true);
         this.selection = this.parent.markdownSelection;
         this.addEventListener();
     }
     MDTable.prototype.addEventListener = function () {
         this.parent.observer.on(MD_TABLE, this.createTable, this);
+        this.parent.observer.on(KEY_DOWN_HANDLER, this.onKeyDown, this);
     };
     MDTable.prototype.removeEventListener = function () {
         this.parent.observer.off(MD_TABLE, this.createTable);
+        this.parent.observer.off(KEY_DOWN_HANDLER, this.onKeyDown);
     };
     MDTable.prototype.destroy = function () {
         this.removeEventListener();
     };
+    MDTable.prototype.onKeyDown = function (e) {
+        if (e.event.action === 'insert-table') {
+            e.item = e.value;
+            this.createTable(e);
+        }
+    };
     MDTable.prototype.createTable = function (e) {
-        var dummy = document;
-        var textArea = this.parent.element;
-        textArea.focus();
-        var start = textArea.selectionStart;
-        var end = textArea.selectionEnd;
-        var end3;
-        var text = this.selection.getSelectedText(textArea);
-        var end1;
-        var textEmpty;
+        this.element = this.parent.element;
+        var start = this.element.selectionStart;
+        var end = this.element.selectionEnd;
         var textAreaInitial;
-        if (start !== end) { // It will check start !== end and will clear the text selected.
-            textEmpty = text.replace(text, '');
-            end1 = end;
-            end3 = start;
-            text = textEmpty;
-        }
-        else {
-            end3 = end;
-        }
-        text += this.textUnEmpty(start, end3, dummy, text, end1, textArea);
+        textAreaInitial = this.element.value;
+        this.locale = e;
+        this.selection.save(start, end);
+        this.restore(this.element.selectionStart, this.element.selectionEnd, null);
+        this.insertTable(start, end, textAreaInitial, e);
+    };
+    MDTable.prototype.getTable = function () {
+        var table = '';
+        table += this.textNonEmpty();
+        table += this.tableHeader(this.locale);
+        table += this.tableCell(this.locale);
+        return table;
+    };
+    MDTable.prototype.tableHeader = function (e) {
+        var text = '';
         for (var i = 1; i <= 2; i++) {
             text += '|';
             for (var j = 1; j <= 2; j++) {
@@ -5577,251 +5695,117 @@ var MDTable = /** @__PURE__ @class */ (function () {
                     text += '---------|';
                 }
             }
-            var dummyElement = dummy.createElement('div');
-            dummyElement.innerHTML = '\n';
-            var text1 = dummyElement.textContent;
-            text += text1;
+            text += this.insertLine();
         }
+        return text;
+    };
+    MDTable.prototype.tableCell = function (e) {
+        var text = '';
         for (var i = 1; i <= 2; i++) {
             text += '|';
             for (var j = 1; j <= 2; j++) {
                 text += e.item.colText + ' ' + this.convertToLetters(i) + j + '|';
             }
-            var dummyElement = dummy.createElement('div');
-            dummyElement.innerHTML = '\n';
-            var text1 = dummyElement.textContent;
-            text += text1;
+            text += this.insertLine();
         }
-        text = this.textUnEmpty(start, end3, dummy, text, end1, textArea);
-        textAreaInitial = textArea.value;
-        if (start !== end) {
-            this.startNotEqualEnd(start, end, text, textArea, textAreaInitial, e);
+        text += this.insertLine();
+        return text;
+    };
+    MDTable.prototype.insertLine = function () {
+        var dummyElement = document.createElement('div');
+        dummyElement.innerHTML = '\n';
+        return dummyElement.textContent;
+    };
+    MDTable.prototype.insertTable = function (start, end, textAreaInitial, e) {
+        var parentText = this.selection.getSelectedParentPoints(this.element);
+        var lastLineSplit = parentText[parentText.length - 1].text.split(' ', 2);
+        var syntaxArr = this.getFormatTag();
+        if (lastLineSplit.length < 2) {
+            this.element.value = this.updateValue(this.getTable());
+            this.makeSelection(textAreaInitial, start, end);
         }
-        else if (start === 0 && end === 0) {
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-            if (textAreaInitial.length) {
-                this.restore(textArea, start + 3, end + 12, e);
+        else {
+            if (this.ensureFormatApply(parentText[parentText.length - 1].text)) {
+                this.checkValid(start, end, this.getTable(), textAreaInitial, e, lastLineSplit, parentText, syntaxArr);
             }
             else {
-                this.restore(textArea, start + 1, end + 10, e);
+                this.element.value = this.updateValue(this.getTable());
+                this.makeSelection(textAreaInitial, start, end);
             }
         }
-        else {
-            this.startEqualEnd(start, end, text, textArea, textAreaInitial, e);
-        }
+        this.restore(this.element.selectionStart, this.element.selectionEnd, e);
     };
-    MDTable.prototype.startEqualEnd = function (start, end, text, textArea, textAreaInitial, e) {
-        var parentText = this.selection.getSelectedParentPoints(textArea);
-        var selectedLine = parentText.length - 1;
-        var formatSplit;
-        formatSplit = parentText[selectedLine].text.split(' ', 2);
-        var textApplyFormat;
-        var parentTextLength;
-        if (formatSplit.length > 1) {
-            parentTextLength = formatSplit[0].length + formatSplit[1].length + 1;
+    MDTable.prototype.makeSelection = function (textAreaInitial, start, end) {
+        end = start + (textAreaInitial.length > 0 ? 12 : 10); //end is added 12 or 10 because to make the table heading selected
+        start += textAreaInitial.length > 0 ? 3 : 1; // Start is added 3 or 1 because new lines are added when inserting table
+        this.selection.setSelection(this.element, start, end);
+    };
+    MDTable.prototype.getFormatTag = function () {
+        var syntaxFormatKey = Object.keys(this.syntaxTag.Formats);
+        var syntaxListKey = Object.keys(this.syntaxTag.List);
+        var syntaxArr = [];
+        for (var i = 0; i < syntaxFormatKey.length; i++) {
+            syntaxArr.push(this.syntaxTag.Formats[syntaxFormatKey[i]]);
         }
-        textApplyFormat = textArea.value.substring(end, textArea.value.length);
-        if (start === parentTextLength) {
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-            this.callRestore(textArea, start, end, e, textAreaInitial);
+        for (var j = 0; j < syntaxListKey.length; j++) {
+            syntaxArr.push(this.syntaxTag.List[syntaxListKey[j]]);
         }
-        else if (textArea.value[start] === '2' && textArea.value[start + 1] === '.') {
-            text = '';
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
-        else if (!(textArea.value[start] === '#' || textArea.value[start - 1] === '#' ||
-            textArea.value[start - 2] === '#' || textArea.value[start] === '2.' ||
-            textArea.value[start - 1] === '2.' || textArea.value[start - 2] === '2.' || (textArea.value[start - 1] === '2' &&
-            textArea.value[start] === '.') || (textArea.value[start - 1] === '.' && textArea.value[start] === ' ') ||
-            (textArea.value[start - 1] === ' ' &&
-                textArea.value[start - 2] === '.' && textArea.value[start - 3] === '2') ||
-            textArea.value[start] === '>' || textArea.value[start - 1] === '>' || textArea.value[start - 2] === '>' ||
-            textArea.value[start] === '+' || textArea.value[start - 1] === '+' || textArea.value[start - 2] === '+')) {
-            if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                parentText[0].text.match('2.'))) {
-                formatSplit[0] = '';
+        return syntaxArr;
+    };
+    MDTable.prototype.ensureFormatApply = function (line) {
+        var formatTags = this.getFormatTag();
+        var formatSplitZero = line.split(' ', 2)[0] + ' ';
+        for (var i = 0; i < formatTags.length; i++) {
+            if (formatSplitZero === formatTags[i]) {
+                return true;
             }
-            text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-            textArea.value = textArea.value.substr(0, start)
-                + text;
-            this.callRestore(textArea, start, end, e, textAreaInitial);
         }
-        else {
-            text = '';
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
+        return false;
     };
-    MDTable.prototype.startNotEqualEnd = function (start, end, text, textArea, textAreaInitial, e) {
-        var parentText = this.selection.getSelectedParentPoints(textArea);
-        var textApplyFormat;
-        textApplyFormat = textArea.value.substring(end, textArea.value.length);
-        if (parentText.length < 2) {
-            this.singleLine(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
-        }
-        else {
-            this.multipleLines(start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e);
-        }
-    };
-    MDTable.prototype.singleLine = function (start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e) {
-        var formatSplit;
-        formatSplit = parentText[0].text.split(' ', 2);
-        var selectedText;
-        selectedText = this.selection.getSelectedText(textArea);
-        var selectedTextSplit;
-        selectedTextSplit = selectedText.split(' ', 2);
-        if (selectedTextSplit.length === 2) {
-            this.selectedSplitText(start, end, text, textArea, selectedText, parentText, formatSplit, textApplyFormat, e, textAreaInitial, selectedTextSplit);
-        }
-        else {
-            if (textArea.value[start - 1] === ' ' && (textArea.value[start - 2] === '.' || textArea.value[start - 2] === '#' ||
-                textArea.value[start - 2] === '>' || textArea.value[start - 2] === '+')) {
-                text = '';
-                start += selectedText.length;
-                textArea.value = textArea.value.substr(0, start)
-                    + text + textArea.value.substr(end, textArea.value.length);
+    MDTable.prototype.ensureStartValid = function (firstLine, parentText) {
+        var firstLineSplit = parentText[0].text.split(' ', 2);
+        for (var i = firstLine + 1; i <= firstLine + firstLineSplit[0].length + 1; i++) {
+            if (this.element.selectionStart === i || this.element.selectionEnd === i) {
+                return false;
             }
-            else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
-                textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
-                if (textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '2' ||
-                    textArea.value[end - 1] === '#' || (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') ||
-                    (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
-                        textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+'))) {
-                    text = '';
-                    start += selectedText.length;
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
+        }
+        return true;
+    };
+    MDTable.prototype.ensureEndValid = function (lastLine, formatSplitLength) {
+        for (var i = lastLine + 1; i <= lastLine + formatSplitLength + 1; i++) {
+            if (this.element.selectionEnd === i) {
+                return false;
+            }
+        }
+        return true;
+    };
+    MDTable.prototype.updateValueWithFormat = function (formatSplit, text) {
+        var textApplyFormat = this.element.value.substring(this.element.selectionEnd, this.element.value.length);
+        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
+        return this.element.value.substr(0, this.element.selectionStart) + text;
+    };
+    MDTable.prototype.updateValue = function (text) {
+        return this.element.value.substr(0, this.element.selectionStart) + text +
+            this.element.value.substr(this.element.selectionEnd, this.element.value.length);
+    };
+    MDTable.prototype.checkValid = function (start, end, text, textAreaInitial, e, formatSplit, parentText, syntaxArr) {
+        if (this.ensureStartValid(parentText[0].start, parentText) &&
+            this.ensureEndValid(parentText[parentText.length - 1].start, formatSplit[0].length)) {
+            if (start === parentText[0].start) {
+                if (start !== end && end !== (parentText[parentText.length - 1].end - 1)) {
+                    this.element.value = this.updateValueWithFormat(formatSplit, text);
                 }
                 else {
-                    if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                        parentText[0].text.match('2.'))) {
-                        formatSplit[0] = '';
-                    }
-                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                    textArea.value = textArea.value.substr(0, start)
-                        + text;
-                    this.callRestore(textArea, start, end, e, textAreaInitial);
+                    this.element.value = this.updateValue(text);
                 }
+            }
+            else if (end === parentText[parentText.length - 1].end - 1) {
+                this.element.value = this.updateValue(text);
             }
             else {
-                if (end === formatSplit[0].length + formatSplit[1].length + 1) {
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
-                    this.callRestore(textArea, start, end, e, textAreaInitial);
-                }
-                else {
-                    if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                        parentText[0].text.match('2.'))) {
-                        formatSplit[0] = '';
-                    }
-                    text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                    textArea.value = textArea.value.substr(0, start)
-                        + text;
-                    this.callRestore(textArea, start, end, e, textAreaInitial);
-                }
+                this.element.value = this.updateValueWithFormat(formatSplit, text);
             }
-        }
-    };
-    MDTable.prototype.selectedSplitText = function (start, end, text, textArea, selectedText, parentText, formatSplit, textApplyFormat, e, textAreaInitial, selectedTextSplit) {
-        if (selectedTextSplit[0] === '') {
-            if (textArea.value[start - 1] === '#' || textArea.value[start - 1] === '.' ||
-                textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+') {
-                text = '';
-                start += selectedText.length;
-                textArea.value = textArea.value.substr(0, start)
-                    + text + textArea.value.substr(end, textArea.value.length);
-            }
-            else {
-                if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                    parentText[0].text.match('2.'))) {
-                    formatSplit[0] = '';
-                }
-                text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                textArea.value = textArea.value.substr(0, start)
-                    + text;
-                this.callRestore(textArea, start, end, e, textAreaInitial);
-            }
-        }
-        else {
-            if (textArea.value[start] === '>' || textArea.value[start] === '+' || textArea.value[start] === '#' ||
-                textArea.value[start] === '2' || (textArea.value[start] === '.' && textArea.value[start - 1] === '2')) {
-                if (selectedText.length === (formatSplit[0].length + formatSplit[1].length + 1)) {
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
-                }
-                else if (textArea.value[start] === '>' || textArea.value[start] === '+' || (textArea.value[start] === '2' &&
-                    textArea.value[start + 1] === '.') || (textArea.value[start] === '#' && textArea.value[start - 1] !== '#')) {
-                    if (!(textArea.value[end - 2] === '>' || textArea.value[end - 1] === '+' || textArea.value[end - 1] === '#' ||
-                        (textArea.value[end - 1] === '.' && textArea.value[end - 2] === '2') || (textArea.value[end - 1] === ' ' &&
-                        (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' || textArea.value[end - 2] === '>' ||
-                            textArea.value[end - 2] === '+')))) {
-                        if (!(parentText[0].text.match('#') || parentText[0].text.match('>') ||
-                            parentText[0].text.match('2.'))) {
-                            formatSplit[0] = '';
-                        }
-                        text += textApplyFormat.replace(textApplyFormat, (formatSplit[0] + ' ' + textApplyFormat));
-                        textArea.value = textArea.value.substr(0, start)
-                            + text;
-                        this.callRestore(textArea, start, end, e, textAreaInitial);
-                    }
-                    else {
-                        text = '';
-                        start += selectedText.length;
-                        textArea.value = textArea.value.substr(0, start)
-                            + text + textArea.value.substr(end, textArea.value.length);
-                    }
-                }
-                else {
-                    text = '';
-                    start += selectedText.length;
-                    textArea.value = textArea.value.substr(0, start)
-                        + text + textArea.value.substr(end, textArea.value.length);
-                }
-            }
-        }
-    };
-    MDTable.prototype.multipleLines = function (start, end, text, textArea, parentText, textApplyFormat, textAreaInitial, e) {
-        var lastSelectedLineIndex = parentText.length - 1;
-        var formatLastLine;
-        formatLastLine = parentText[lastSelectedLineIndex].text.split(' ', 2);
-        var formatFirstLine;
-        formatFirstLine = parentText[0].text.split(' ', 2);
-        var selectedText;
-        selectedText = this.selection.getSelectedText(textArea);
-        if (textArea.value[start - 1] === '#' || (textArea.value[start - 1] === '.' && textArea.value[start - 2] === '2') ||
-            textArea.value[start - 1] === '>' || textArea.value[start - 1] === '+' ||
-            textArea.value[start - 1] === '2' || (textArea.value[start - 1] === ' ' &&
-            (textArea.value[start - 2] === '#' || textArea.value[start - 2] === '>' ||
-                textArea.value[start - 2] === '+' || textArea.value[start - 2] === '.'))) {
-            text = '';
-            start += selectedText.length;
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
-        else if (textArea.value[end] === '#' || textArea.value[end] === '>' || textArea.value[end] === '+' ||
-            textArea.value[end] === '2' || (textArea.value[end] === '.' && textArea.value[end - 1] === '2') ||
-            (textArea.value[end - 1] === ' ' && (textArea.value[end - 2] === '.' || textArea.value[end - 2] === '#' ||
-                textArea.value[end - 2] === '>' || textArea.value[end - 2] === '+')) || (textArea.value[end] === ' ' &&
-            (textArea.value[end - 1] === '#' || textArea.value[end - 1] === '>' || textArea.value[end - 1] === '+' ||
-                textArea.value[end - 1] === '.'))) {
-            text = '';
-            start += selectedText.length;
-            textArea.value = textArea.value.substr(0, start)
-                + text + textArea.value.substr(end, textArea.value.length);
-        }
-        else {
-            if (!(parentText[lastSelectedLineIndex].text.match('#') ||
-                parentText[lastSelectedLineIndex].text.match('>') ||
-                parentText[lastSelectedLineIndex].text.match('2.'))) {
-                formatLastLine[0] = '';
-            }
-            text += textApplyFormat.replace(textApplyFormat, (formatLastLine[0] + ' ' + textApplyFormat));
-            textArea.value = textArea.value.substr(0, start)
-                + text;
-            this.callRestore(textArea, start, end, e, textAreaInitial);
+            this.makeSelection(textAreaInitial, start, end);
         }
     };
     MDTable.prototype.convertToLetters = function (rowNumber) {
@@ -5834,42 +5818,29 @@ var MDTable = /** @__PURE__ @class */ (function () {
         } while (rowNumber > 0);
         return letters;
     };
-    MDTable.prototype.textUnEmpty = function (start, end, dummy, text, end1, textArea) {
-        if (start === end && ((start !== 0 && end !== 0) || end1 !== 0)) {
-            var dummyElement = dummy.createElement('div');
-            if (!(text.length > 0)) {
-                if (textArea.value.length > 0) {
-                    dummyElement.innerHTML = '\n\n';
-                }
-                else {
-                    dummyElement.innerHTML = '';
-                }
+    MDTable.prototype.textNonEmpty = function () {
+        var emptyText = '';
+        if (this.isCursorBased() || this.isSelectionBased()) {
+            if (this.element.value.length > 0) {
+                emptyText += this.insertLine();
+                emptyText += this.insertLine(); // to append two new line when textarea having content.               
             }
-            else {
-                dummyElement.innerHTML = '\n';
-            }
-            var text1 = dummyElement.textContent;
-            return text += text1;
         }
-        else {
-            return text;
-        }
+        return emptyText;
     };
-    MDTable.prototype.callRestore = function (textArea, start, end, e, textAreaInitial) {
-        if (textAreaInitial.length) {
-            this.restore(textArea, start + 3, start + 12, e);
-        }
-        else {
-            this.restore(textArea, start + 1, end + 10, e);
-        }
+    MDTable.prototype.isCursorBased = function () {
+        return this.element.selectionStart === this.element.selectionEnd;
     };
-    MDTable.prototype.restore = function (textArea, start, end, event) {
+    MDTable.prototype.isSelectionBased = function () {
+        return this.element.selectionStart !== this.element.selectionEnd;
+    };
+    MDTable.prototype.restore = function (start, end, event) {
         this.selection.save(start, end);
-        this.selection.restore(textArea);
+        this.selection.restore(this.element);
         if (event && event.callBack) {
             event.callBack({
                 requestType: event.subCommand,
-                selectedText: this.selection.getSelectedText(textArea),
+                selectedText: this.selection.getSelectedText(this.element),
                 editorMode: 'Markdown',
                 event: event.event
             });
@@ -5934,6 +5905,9 @@ var ClearFormat = /** @__PURE__ @class */ (function () {
     };
     ClearFormat.prototype.clearFormatTags = function (text) {
         var lines = text.split('\n');
+        return this.clearFormatLines(lines);
+    };
+    ClearFormat.prototype.clearFormatLines = function (lines) {
         var tags = [this.parent.formatTags, this.parent.listTags];
         var str = '';
         for (var len = 0; len < lines.length; len++) {
@@ -5945,6 +5919,7 @@ var ClearFormat = /** @__PURE__ @class */ (function () {
                     if (data.hasOwnProperty(key) && data[key] !== '') {
                         if (lines[len].indexOf(data[key]) === 0) {
                             lines[len] = lines[len].replace(data[key], '');
+                            lines[len] = this.clearFormatLines([lines[len]]);
                         }
                     }
                 }
@@ -6000,7 +5975,7 @@ var MarkdownParser = /** @__PURE__ @class */ (function () {
         this.undoRedoManager = new UndoRedoCommands(this, options.options);
         this.mdSelectionFormats = new MDSelectionFormats({ parent: this, syntax: this.selectionTags });
         this.linkObj = new MDLink(this);
-        this.tableObj = new MDTable(this);
+        this.tableObj = new MDTable({ parent: this, syntaxTag: ({ Formats: this.formatTags, List: this.listTags }) });
         this.clearObj = new ClearFormat(this);
         this.wireEvents();
     }
@@ -6121,17 +6096,16 @@ var MarkdownRender = /** @__PURE__ @class */ (function () {
      */
     function MarkdownRender(parent) {
         this.parent = parent;
-        this.rteID = this.parent.element.id;
     }
     /**
      * The function is used to render RichTextEditor content div
      */
     MarkdownRender.prototype.renderPanel = function () {
         var rteObj = this.parent;
-        var div = this.parent.createElement('div', { id: this.rteID + '_view', className: 'e-rte-content' });
+        var div = this.parent.createElement('div', { id: this.parent.getID() + '_view', className: 'e-rte-content' });
         this.editableElement = this.parent.createElement('textarea', {
             className: 'e-content',
-            id: this.rteID + '_editable-content'
+            id: this.parent.getID() + '_editable-content'
         });
         div.appendChild(this.editableElement);
         this.setPanel(div);
@@ -6378,6 +6352,10 @@ var SELECTION_TYPE = 'selection-type';
  * @hidden
  */
 var INSERTHTML_TYPE = 'inserthtml-type';
+/* Insert Text plugin events
+ * @hidden
+ */
+var INSERT_TEXT_TYPE = 'insert-text-type';
 /* Clear Format HTML plugin events
  * @hidden
  */
@@ -6484,7 +6462,8 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         for (var index = 0; index < nodeCollection.length; index++) {
             if ((nodeCollection.indexOf(nodeCollection[index].parentNode) !== -1)
                 || (nodeCollection[index].nodeType === 3 &&
-                    range.startContainer !== range.endContainer)) {
+                    range.startContainer !== range.endContainer &&
+                    range.startContainer.parentNode !== range.endContainer.parentNode)) {
                 nodeCollection.splice(index, 1);
                 index--;
             }
@@ -6813,9 +6792,14 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         divNode.innerText = value;
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     };
-    DOMNode.prototype.saveMarker = function (save) {
+    DOMNode.prototype.saveMarker = function (save, action) {
         var start = this.parent.querySelector('.' + markerClassName.startSelection);
+        var end = this.parent.querySelector('.' + markerClassName.endSelection);
         var startTextNode;
+        var endTextNode;
+        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab') {
+            start.innerHTML = '&#65279;&#65279;';
+        }
         if (this.hasClass(start, markerClassName.startSelection) && start.classList.length > 1) {
             var replace = this.createTagString(DEFAULT_TAG, start, this.encode(start.textContent));
             this.replaceWith(start, replace);
@@ -6826,8 +6810,6 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         else {
             startTextNode = this.unWrap(start)[0];
         }
-        var endTextNode;
-        var end = this.parent.querySelector('.' + markerClassName.endSelection);
         if (this.hasClass(end, markerClassName.endSelection) && end.classList.length > 1) {
             var replace = this.createTagString(DEFAULT_TAG, end, this.encode(end.textContent));
             this.replaceWith(end, replace);
@@ -7105,6 +7087,12 @@ var Lists = /** @__PURE__ @class */ (function () {
                             event: e.event
                         });
                     }
+                }
+            }
+            else {
+                if (!(e.event.action && e.event.action === 'indent')) {
+                    this.saveSelection = this.domNode.saveMarker(this.saveSelection, e.event.action);
+                    this.saveSelection.restore();
                 }
             }
         }
@@ -7758,8 +7746,24 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
                 InsertMethods.AppendBefore(node, sibNode, true);
             }
             else {
+                var previousNode = null;
+                while (parentNode !== editNode && parentNode.firstChild &&
+                    (parentNode.textContent.trim() === '')) {
+                    var parentNode1 = parentNode.parentNode;
+                    previousNode = parentNode;
+                    parentNode = parentNode1;
+                }
+                if (previousNode !== null) {
+                    parentNode = previousNode;
+                }
                 if (parentNode.firstChild) {
-                    InsertMethods.AppendBefore(node, parentNode.firstChild, false);
+                    if (parentNode.textContent.trim() === '') {
+                        InsertMethods.AppendBefore(node, parentNode, false);
+                        detach(parentNode);
+                    }
+                    else {
+                        InsertMethods.AppendBefore(node, parentNode.firstChild, false);
+                    }
                 }
                 else {
                     parentNode.appendChild(node);
@@ -7831,20 +7835,28 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
         }
     };
     LinkCommand.prototype.createLink = function (e) {
-        if (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0 &&
-            e.item.selectParent[0].tagName === 'A') {
-            var anchorEle = e.item.selectParent[0];
+        var closestAnchor = (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) &&
+            closest(e.item.selectParent[0], 'a');
+        closestAnchor = !isNullOrUndefined(closestAnchor) ? closestAnchor :
+            (!isNullOrUndefined(e.item.selectParent) && e.item.selectParent.length > 0) ? (e.item.selectParent[0]) : null;
+        if (!isNullOrUndefined(closestAnchor) && closestAnchor.tagName === 'A') {
+            var anchorEle = closestAnchor;
             anchorEle.setAttribute('href', e.item.url);
             anchorEle.setAttribute('title', e.item.title);
             anchorEle.innerHTML = e.item.text;
-            anchorEle.setAttribute('target', e.item.target);
+            if (!isNullOrUndefined(e.item.target)) {
+                anchorEle.setAttribute('target', e.item.target);
+            }
+            else {
+                anchorEle.removeAttribute('target');
+            }
             e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
         }
         else {
             var anchor = createElement('a', {
                 className: 'e-rte-anchor', attrs: {
                     href: e.item.url,
-                    title: e.item.title === '' ? e.item.url : e.item.title
+                    title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
                 }
             });
             if (!isNullOrUndefined(e.item.target)) {
@@ -7852,7 +7864,7 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
             }
             anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
             e.item.selection.restore();
-            InsertHtml.Insert(this.parent.currentDocument, anchor);
+            InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
             if (e.event && e.event.type === 'keydown' && e.event.keyCode === 32) {
                 var startContainer = e.item.selection.range.startContainer;
                 startContainer.textContent = this.removeText(startContainer.textContent, e.item.url);
@@ -7887,16 +7899,20 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
         this.callBack(e);
     };
     LinkCommand.prototype.removeLink = function (e) {
-        var parent = e.item.selectParent[0].parentNode;
+        this.parent.domNode.setMarker(e.item.selection);
+        var closestAnchor = closest(e.item.selectParent[0], 'a');
+        var selectParent = closestAnchor ? closestAnchor : e.item.selectParent[0];
+        var parent = selectParent.parentNode;
         var child = [];
-        for (; e.item.selectParent[0].firstChild; null) {
-            child.push(parent.insertBefore(e.item.selectParent[0].firstChild, e.item.selectParent[0]));
+        for (; selectParent.firstChild; null) {
+            child.push(parent.insertBefore(selectParent.firstChild, selectParent));
         }
-        parent.removeChild(e.item.selectParent[0]);
+        parent.removeChild(selectParent);
         if (child && child.length === 1) {
             e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
             e.item.selection.endContainer = e.item.selection.startContainer;
         }
+        e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         e.item.selection.restore();
         this.callBack(e);
     };
@@ -8173,7 +8189,7 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(e.item.selection)) {
                 e.item.selection.restore();
             }
-            InsertHtml.Insert(this.parent.currentDocument, imgElement);
+            InsertHtml.Insert(this.parent.currentDocument, imgElement, this.parent.editableElement);
         }
         if (e.callBack) {
             e.callBack({
@@ -8188,12 +8204,14 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
     ImageCommand.prototype.insertImageLink = function (e) {
         var anchor = createElement('a', {
             attrs: {
-                href: e.item.url,
-                target: e.item.target
+                href: e.item.url
             }
         });
         anchor.appendChild(e.item.selectNode[0]);
-        InsertHtml.Insert(this.parent.currentDocument, anchor);
+        if (!isNullOrUndefined(e.item.target)) {
+            anchor.setAttribute('target', e.item.target);
+        }
+        InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
         this.callBack(e);
     };
     ImageCommand.prototype.openImageLink = function (e) {
@@ -8202,12 +8220,17 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
     };
     ImageCommand.prototype.removeImageLink = function (e) {
         detach(closest(e.item.selectParent[0], 'a'));
-        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement);
+        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);
         this.callBack(e);
     };
     ImageCommand.prototype.editImageLink = function (e) {
         e.item.selectNode[0].parentElement.href = e.item.url;
-        e.item.selectNode[0].parentElement.target = e.item.target;
+        if (isNullOrUndefined(e.item.target)) {
+            e.item.selectNode[0].parentElement.removeAttribute('target');
+        }
+        else {
+            e.item.selectNode[0].parentElement.target = e.item.target;
+        }
         this.callBack(e);
     };
     ImageCommand.prototype.removeImage = function (e) {
@@ -8235,7 +8258,7 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
         this.callBack(e);
     };
     ImageCommand.prototype.imageCaption = function (e) {
-        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement);
+        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);
         this.callBack(e);
     };
     ImageCommand.prototype.imageJustifyLeft = function (e) {
@@ -8374,6 +8397,7 @@ var TableCommand = /** @__PURE__ @class */ (function () {
         table.appendChild(tblBody);
         e.item.selection.restore();
         InsertHtml.Insert(this.parent.currentDocument, table, this.parent.editableElement);
+        this.removeEmptyNode();
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
@@ -8386,6 +8410,24 @@ var TableCommand = /** @__PURE__ @class */ (function () {
             });
         }
         return table;
+    };
+    TableCommand.prototype.removeEmptyNode = function () {
+        var emptyUl = this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
+        for (var i = 0; i < emptyUl.length; i++) {
+            detach(emptyUl[i]);
+        }
+        var emptyLiChild = this.parent.editableElement.querySelectorAll('li *:empty');
+        for (var i = 0; i < emptyLiChild.length; i++) {
+            detach(emptyLiChild[i]);
+            if (emptyLiChild.length === i + 1) {
+                emptyLiChild = this.parent.editableElement.querySelectorAll('li *:empty');
+                i = -1;
+            }
+        }
+        var emptyLi = this.parent.editableElement.querySelectorAll('li:empty');
+        for (var i = 0; i < emptyLi.length; i++) {
+            detach(emptyLi[i]);
+        }
     };
     TableCommand.prototype.insertAfter = function (newNode, referenceNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
@@ -9043,7 +9085,7 @@ var InsertHtmlExec = /** @__PURE__ @class */ (function () {
         this.parent.observer.on(INSERTHTML_TYPE, this.applyHtml, this);
     };
     InsertHtmlExec.prototype.applyHtml = function (e) {
-        InsertHtml.Insert(this.parent.currentDocument, e.value);
+        InsertHtml.Insert(this.parent.currentDocument, e.value, this.parent.editableElement);
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,
@@ -9446,6 +9488,303 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * PasteCleanup for MsWord content
+ * @hidden
+ */
+var MsWordPaste = /** @__PURE__ @class */ (function () {
+    function MsWordPaste(parent) {
+        this.olData = [
+            'decimal',
+            'lower-alpha',
+            'lower-roman',
+            'upper-alpha',
+            'upper-roman',
+            'lower-greek'
+        ];
+        this.ulData = [
+            'disc',
+            'square',
+            'circle',
+            'disc',
+            'square',
+            'circle'
+        ];
+        this.ignorableNodes = ['A', 'APPLET', 'B', 'BLOCKQUOTE', 'BR',
+            'BUTTON', 'CENTER', 'CODE', 'COL', 'COLGROUP', 'DD', 'DEL', 'DFN', 'DIR', 'DIV',
+            'DL', 'DT', 'EM', 'FIELDSET', 'FONT', 'FORM', 'FRAME', 'FRAMESET', 'H1', 'H2',
+            'H3', 'H4', 'H5', 'H6', 'HR', 'I', 'IMG', 'IFRAME', 'INPUT', 'INS', 'LABEL',
+            'LI', 'OL', 'OPTION', 'P', 'PARAM', 'PRE', 'Q', 'S', 'SELECT', 'SPAN', 'STRIKE',
+            'STRONG', 'SUB', 'SUP', 'TABLE', 'TBODY', 'TD', 'TEXTAREA', 'TFOOT', 'TH',
+            'THEAD', 'TITLE', 'TR', 'TT', 'U', 'UL'];
+        this.blockNode = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'address', 'blockquote', 'button', 'center', 'dd', 'dir', 'dl', 'dt', 'fieldset',
+            'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
+            'object', 'ol', 'pre', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul',
+            'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
+        this.listContents = [];
+        this.parent = parent;
+        this.addEventListener();
+    }
+    MsWordPaste.prototype.addEventListener = function () {
+        this.parent.observer.on(MS_WORD_CLEANUP_PLUGIN, this.wordCleanup, this);
+    };
+    MsWordPaste.prototype.wordCleanup = function (e) {
+        var listNodes = [];
+        var tempHTMLContent = e.args.clipboardData.getData('text/HTML');
+        var elm = createElement('p');
+        elm.innerHTML = tempHTMLContent;
+        var patern = /class='?Mso|style='[^ ]*\bmso-/i;
+        if (patern.test(tempHTMLContent)) {
+            tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
+            listNodes = this.cleanUp(elm, listNodes);
+            this.listConverter(listNodes);
+            e.callBack(elm.innerHTML);
+        }
+        else {
+            e.callBack(elm.innerHTML);
+        }
+    };
+    MsWordPaste.prototype.cleanUp = function (node, listNodes) {
+        var tempCleaner = [];
+        var prevflagState;
+        for (var index = 0; index < node.childNodes.length; index++) {
+            if (this.ignorableNodes.indexOf(node.childNodes[index].nodeName) === -1 ||
+                (node.childNodes[index].nodeType === 3 && node.childNodes[index].textContent.trim() === '')) {
+                tempCleaner.push(node.childNodes[index]);
+                continue;
+            }
+            else if (node.childNodes[index].className &&
+                node.childNodes[index].className.toLowerCase().indexOf('msolistparagraph') !== -1) {
+                listNodes.push(node.childNodes[index]);
+            }
+            if (prevflagState && (this.blockNode.indexOf(node.childNodes[index].nodeName.toLowerCase()) !== -1) &&
+                !(node.childNodes[index].className &&
+                    node.childNodes[index].className.toLowerCase().indexOf('msolistparagraph') !== -1)) {
+                listNodes.push(null);
+            }
+            if (this.blockNode.indexOf(node.childNodes[index].nodeName.toLowerCase()) !== -1) {
+                if (node.childNodes[index].className &&
+                    node.childNodes[index].className.toLowerCase().indexOf('msolistparagraph') !== -1) {
+                    prevflagState = true;
+                }
+                else {
+                    prevflagState = false;
+                }
+            }
+        }
+        if (listNodes.length && (listNodes[listNodes.length - 1] !== null)) {
+            listNodes.push(null);
+        }
+        return listNodes;
+    };
+    MsWordPaste.prototype.listConverter = function (listNodes) {
+        var level;
+        var data = [];
+        var collection = [];
+        var content = '';
+        var stNode;
+        for (var i = 0; i < listNodes.length; i++) {
+            if (listNodes[i] === null) {
+                data.push({ content: this.makeConversion(collection), node: listNodes[i - 1] });
+                collection = [];
+                continue;
+            }
+            content = listNodes[i].getAttribute('style');
+            if (content && content.indexOf('level') !== -1) {
+                level = parseInt(content.charAt(content.indexOf('level') + 5), null);
+            }
+            else {
+                level = 1;
+            }
+            this.listContents = [];
+            this.getListContent(listNodes[i]);
+            var type = void 0;
+            type = this.listContents[0].trim().length > 1 ? 'ol' : 'ul';
+            var tempNode = [];
+            for (var j = 1; j < this.listContents.length; j++) {
+                tempNode.push(this.listContents[j]);
+            }
+            collection.push({ listType: type, content: tempNode, nestedLevel: level });
+        }
+        stNode = listNodes.shift();
+        while (stNode) {
+            var elemColl = [];
+            for (var temp1 = 0; temp1 < data.length; temp1++) {
+                if (data[temp1].node === stNode) {
+                    for (var index = 0; index < data[temp1].content.childNodes.length; index++) {
+                        elemColl.push(data[temp1].content.childNodes[index]);
+                    }
+                    for (var index = 0; index < elemColl.length; index++) {
+                        stNode.parentElement.insertBefore(elemColl[index], stNode);
+                    }
+                    break;
+                }
+            }
+            stNode.remove();
+            stNode = listNodes.shift();
+            if (!stNode) {
+                stNode = listNodes.shift();
+            }
+        }
+    };
+    MsWordPaste.prototype.makeConversion = function (collection) {
+        var root = createElement('div');
+        var temp;
+        var pLevel = 1;
+        var prevList;
+        var listCount = 0;
+        var elem;
+        for (var index = 0; index < collection.length; index++) {
+            var pElement = createElement('p');
+            for (var i = 0; i < collection[index].content.length; i++) {
+                var imgPattern = /<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>/i;
+                if (imgPattern.test(collection[index].content[i])) {
+                    var imgSpanElement = createElement('span');
+                    imgSpanElement.innerHTML = collection[index].content[i];
+                    pElement.appendChild(imgSpanElement);
+                }
+                else {
+                    pElement.appendChild(document.createTextNode(collection[index].content[i].trim()));
+                }
+            }
+            if ((collection[index].nestedLevel === 1) && listCount === 0 && collection[index].content) {
+                root.appendChild(temp = createElement(collection[index].listType));
+                prevList = createElement('li');
+                prevList.appendChild(pElement);
+                temp.appendChild(prevList);
+                temp.setAttribute('level', collection[index].nestedLevel.toString());
+                temp.style.listStyle = this.getListStyle(collection[index].listType, collection[index].nestedLevel);
+            }
+            else if (collection[index].nestedLevel === pLevel) {
+                if (prevList.parentElement.tagName.toLowerCase() === collection[index].listType) {
+                    prevList.parentElement.appendChild(prevList = createElement('li'));
+                    prevList.appendChild(pElement);
+                }
+                else {
+                    temp = createElement(collection[index].listType);
+                    prevList.parentElement.parentElement.appendChild(temp);
+                    prevList = createElement('li');
+                    prevList.appendChild(pElement);
+                    temp.appendChild(prevList);
+                    temp.setAttribute('level', collection[index].nestedLevel.toString());
+                }
+            }
+            else if (collection[index].nestedLevel > pLevel) {
+                for (var j = 0; j < collection[index].nestedLevel - pLevel; j++) {
+                    prevList.appendChild(temp = createElement(collection[index].listType));
+                    prevList = createElement('li', { styles: 'list-style-type: none;' });
+                    temp.appendChild(prevList);
+                }
+                prevList.appendChild(pElement);
+                temp.setAttribute('level', collection[index].nestedLevel.toString());
+                temp.style.listStyle = this.getListStyle(collection[index].listType, collection[index].nestedLevel);
+                temp.childNodes[0].style.listStyle =
+                    this.getListStyle(collection[index].listType, collection[index].nestedLevel);
+            }
+            else if (collection[index].nestedLevel === 1) {
+                if (root.lastChild.tagName.toLowerCase() === collection[index].listType) {
+                    temp = root.lastChild;
+                }
+                else {
+                    root.appendChild(temp = createElement(collection[index].listType));
+                }
+                prevList = createElement('li');
+                prevList.appendChild(pElement);
+                temp.appendChild(prevList);
+                temp.setAttribute('level', collection[index].nestedLevel.toString());
+                temp.style.listStyle = this.getListStyle(collection[index].listType, collection[index].nestedLevel);
+            }
+            else {
+                elem = prevList;
+                while (elem.parentElement) {
+                    elem = elem.parentElement;
+                    if (elem.attributes.getNamedItem('level')) {
+                        if (parseInt(elem.attributes.getNamedItem('level').textContent, null) === collection[index].nestedLevel) {
+                            prevList = createElement('li');
+                            prevList.appendChild(pElement);
+                            elem.appendChild(prevList);
+                            break;
+                        }
+                        else if (collection[index].nestedLevel > parseInt(elem.attributes.getNamedItem('level').textContent, null)) {
+                            elem.appendChild(temp = createElement(collection[index].listType));
+                            prevList = createElement('li');
+                            prevList.appendChild(pElement);
+                            temp.appendChild(prevList);
+                            temp.setAttribute('level', collection[index].nestedLevel.toString());
+                            temp.style.listStyle = this.getListStyle(collection[index].listType, collection[index].nestedLevel);
+                            break;
+                        }
+                    }
+                    continue;
+                }
+            }
+            pLevel = collection[index].nestedLevel;
+            listCount++;
+        }
+        return root;
+    };
+    MsWordPaste.prototype.getListStyle = function (listType, nestedLevel) {
+        nestedLevel = (nestedLevel > 0) ? nestedLevel - 1 : nestedLevel;
+        if (listType === 'ol') {
+            return (nestedLevel < this.olData.length ? this.olData[nestedLevel] : this.olData[0]);
+        }
+        else {
+            return (nestedLevel < this.ulData.length ? this.ulData[nestedLevel] : this.ulData[0]);
+        }
+    };
+    MsWordPaste.prototype.getListContent = function (elem) {
+        if (elem.nodeType === 3 && elem.textContent.trim().length > 0) {
+            this.listContents.push(elem.textContent.trim());
+        }
+        else if (elem.tagName === 'IMG') {
+            var tempElem = createElement('div');
+            tempElem.appendChild(elem);
+            this.listContents.push(tempElem.innerHTML);
+        }
+        if (elem.firstChild) {
+            elem = elem.firstChild;
+            do {
+                this.getListContent(elem);
+                elem = elem.nextSibling;
+            } while (elem);
+        }
+    };
+    return MsWordPaste;
+}());
+
+/**
+ * Insert a Text Node or Text
+ * @hidden
+ */
+var InsertTextExec = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for creating the InsertText plugin
+     * @hidden
+     */
+    function InsertTextExec(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    InsertTextExec.prototype.addEventListener = function () {
+        this.parent.observer.on(INSERT_TEXT_TYPE, this.insertText, this);
+    };
+    InsertTextExec.prototype.insertText = function (e) {
+        var node = document.createTextNode(e.value);
+        InsertHtml.Insert(this.parent.currentDocument, node);
+        if (e.callBack) {
+            e.callBack({
+                requestType: e.subCommand,
+                editorMode: 'HTML',
+                event: e.event,
+                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)
+            });
+        }
+    };
+    return InsertTextExec;
+}());
+
+/**
  * EditorManager internal component
  * @hidden
  */
@@ -9468,9 +9807,11 @@ var EditorManager = /** @__PURE__ @class */ (function () {
         this.imgObj = new ImageCommand(this);
         this.selectionObj = new SelectionBasedExec(this);
         this.inserthtmlObj = new InsertHtmlExec(this);
+        this.insertTextObj = new InsertTextExec(this);
         this.clearObj = new ClearFormatExec(this);
         this.tableObj = new TableCommand(this);
         this.undoRedoManager = new UndoRedoManager(this, options.options);
+        this.msWordPaste = new MsWordPaste(this);
         this.wireEvents();
     }
     EditorManager.prototype.wireEvents = function () {
@@ -9478,6 +9819,10 @@ var EditorManager = /** @__PURE__ @class */ (function () {
         this.observer.on(KEY_UP, this.editorKeyUp, this);
         this.observer.on(KEY_UP, this.editorKeyUp, this);
         this.observer.on(MODEL_CHANGED, this.onPropertyChanged, this);
+        this.observer.on(MS_WORD_CLEANUP, this.onWordPaste, this);
+    };
+    EditorManager.prototype.onWordPaste = function (e) {
+        this.observer.notify(MS_WORD_CLEANUP_PLUGIN, e);
     };
     EditorManager.prototype.onPropertyChanged = function (props) {
         this.observer.notify(MODEL_CHANGED_PLUGIN, props);
@@ -9547,7 +9892,10 @@ var EditorManager = /** @__PURE__ @class */ (function () {
                 this.observer.notify(SELECTION_TYPE, { subCommand: value, event: event, callBack: callBack, value: text });
                 break;
             case 'inserthtml':
-                this.observer.notify(INSERTHTML_TYPE, { callBack: callBack, value: text });
+                this.observer.notify(INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text });
+                break;
+            case 'inserttext':
+                this.observer.notify(INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });
                 break;
             case 'clear':
                 this.observer.notify(CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack });
@@ -10019,7 +10367,14 @@ var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
      * @return {Element}
      */
     IframeContentRender.prototype.getEditPanel = function () {
-        return this.contentPanel.contentDocument.body;
+        var editNode;
+        if (!isNullOrUndefined(this.contentPanel.contentDocument)) {
+            editNode = this.contentPanel.contentDocument.body;
+        }
+        else {
+            editNode = this.parent.inputElement;
+        }
+        return editNode;
     };
     /**
      * Get the document of RichTextEditor
@@ -10302,8 +10657,8 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
      * @private
      */
     HtmlEditor.prototype.selectAll = function () {
-        this.parent.contentModule.getEditPanel().focus();
-        this.parent.contentModule.getDocument().execCommand('selectAll', false, null);
+        var nodes = getTextNodesUnder(this.parent.contentModule.getDocument(), this.parent.contentModule.getEditPanel());
+        this.parent.formatter.editorManager.nodeSelection.setSelectionText(this.parent.contentModule.getDocument(), nodes[0], nodes[nodes.length - 1], 0, nodes[nodes.length - 1].textContent.length);
     };
     /**
      * For selecting all content in RTE
@@ -10320,6 +10675,341 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         e.callBack(this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument()).toString());
     };
     return HtmlEditor;
+}());
+
+/**
+ * PasteCleanup module called when pasting content in RichTextEditor
+ */
+var PasteCleanup = /** @__PURE__ @class */ (function () {
+    function PasteCleanup(parent, serviceLocator) {
+        this.parent = parent;
+        this.locator = serviceLocator;
+        this.renderFactory = this.locator.getService('rendererFactory');
+        this.i10n = serviceLocator.getService('rteLocale');
+        this.addEventListener();
+    }
+    PasteCleanup.prototype.addEventListener = function () {
+        this.nodeSelectionObj = new NodeSelection();
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(pasteClean, this.pasteClean, this);
+        this.parent.on(destroy, this.destroy, this);
+    };
+    PasteCleanup.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    PasteCleanup.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(pasteClean, this.pasteClean);
+        this.parent.off(destroy, this.destroy);
+    };
+    PasteCleanup.prototype.pasteClean = function (e) {
+        var _this = this;
+        var args = {
+            requestType: 'Paste',
+            editorMode: this.parent.editorMode,
+            event: e
+        };
+        var value = null;
+        if (e.args && !isNullOrUndefined(e.args.clipboardData)) {
+            value = e.args.clipboardData.getData('text/html');
+        }
+        if (e.args && value !== null && this.parent.editorMode === 'HTML') {
+            var regex = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+            if (value.length === 0 || value.match(regex)) {
+                value = e.args.clipboardData.getData('text/plain');
+                var file = e && e.args.clipboardData &&
+                    e.args.clipboardData.items.length > 0 ?
+                    e.args.clipboardData.items[0].getAsFile() : null;
+                this.parent.notify(paste, { file: file, args: e.args, text: value });
+            }
+            else if (value.length > 0) {
+                this.parent.formatter.editorManager.observer.notify(MS_WORD_CLEANUP, {
+                    args: e.args,
+                    text: e.text,
+                    callBack: function (a) {
+                        value = a;
+                    }
+                });
+                this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
+                var currentDocument = this.contentRenderer.getDocument();
+                var range = this.nodeSelectionObj.getRange(currentDocument);
+                this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
+                if (this.parent.pasteCleanupSettings.prompt) {
+                    e.args.preventDefault();
+                    this.pasteDialog(value);
+                }
+                else if (this.parent.pasteCleanupSettings.plainText) {
+                    e.args.preventDefault();
+                    this.plainFormatting(value);
+                }
+                else if (this.parent.pasteCleanupSettings.keepFormat) {
+                    e.args.preventDefault();
+                    this.formatting(value, false);
+                }
+                else {
+                    e.args.preventDefault();
+                    this.formatting(value, true);
+                }
+            }
+        }
+        setTimeout(function () { _this.parent.formatter.onSuccess(_this.parent, args); }, 0);
+    };
+    PasteCleanup.prototype.radioRender = function () {
+        var keepRadioButton = new RadioButton({ label: 'Keep', name: 'pasteOption', checked: true });
+        var keepFormatElement = this.parent.element.querySelector('#keepFormating');
+        keepRadioButton.appendTo(keepFormatElement);
+        var cleanRadioButton = new RadioButton({ label: 'Clean', name: 'pasteOption' });
+        var cleanFormatElement = this.parent.element.querySelector('#cleanFormat');
+        cleanRadioButton.appendTo(cleanFormatElement);
+        var plainTextRadioButton = new RadioButton({ label: 'Plain Text', name: 'pasteOption' });
+        var plainTextElement = this.parent.element.querySelector('#plainTextFormat');
+        plainTextRadioButton.appendTo(plainTextElement);
+    };
+    PasteCleanup.prototype.selectFormatting = function (value) {
+        var keepFormatElement = this.parent.element.querySelector('#keepFormating');
+        var cleanFormatElement = this.parent.element.querySelector('#cleanFormat');
+        if (keepFormatElement.checked) {
+            this.formatting(value, false);
+        }
+        else if (cleanFormatElement.checked) {
+            this.formatting(value, true);
+        }
+        else {
+            this.plainFormatting(value);
+        }
+    };
+    PasteCleanup.prototype.pasteDialog = function (value) {
+        var _this = this;
+        var dialog = new Dialog({
+            buttons: [
+                {
+                    click: function () {
+                        if (!dialog.isDestroyed) {
+                            _this.selectFormatting(value);
+                            dialog.hide();
+                            dialog.destroy();
+                        }
+                    },
+                    buttonModel: {
+                        isPrimary: true,
+                        cssClass: 'e-flat ' + CLS_RTE_PASTE_OK,
+                        content: 'ok'
+                    }
+                },
+                {
+                    click: function () {
+                        if (!dialog.isDestroyed) {
+                            dialog.hide();
+                            dialog.destroy();
+                        }
+                    },
+                    buttonModel: {
+                        cssClass: 'e-flat ' + CLS_RTE_PASTE_CANCEL,
+                        content: 'cancel'
+                    }
+                }
+            ],
+            header: this.i10n.getConstant('pasteFormat'),
+            content: this.i10n.getConstant('pasteFormatContent') + '<br/><div><div style="padding-top:24px;">' +
+                '<input type="radio" class="' + CLS_RTE_PASTE_KEEP_FORMAT + '" id="keepFormating"/>' +
+                '</div><div style="padding-top:20px;"><input type="radio" class="' + CLS_RTE_PASTE_REMOVE_FORMAT + '" id="cleanFormat"/></div>' +
+                '<div style="padding-top:20px;"><input type="radio" class="' + CLS_RTE_PASTE_PLAIN_FORMAT + '" id="plainTextFormat"/></div></div>',
+            target: this.parent.element,
+            width: '300px',
+            height: '265px',
+            cssClass: CLS_RTE_DIALOG_MIN_HEIGHT,
+            isModal: true
+        });
+        var rteDialogWrapper = this.parent.element.querySelector('#' + this.parent.getID()
+            + '_pasteCleanupDialog');
+        if (rteDialogWrapper !== null && rteDialogWrapper.innerHTML !== '') {
+            this.destroyDialog(rteDialogWrapper);
+        }
+        if (rteDialogWrapper === null) {
+            rteDialogWrapper = this.parent.createElement('div', {
+                id: this.parent.getID() + '_pasteCleanupDialog'
+            });
+            this.parent.element.appendChild(rteDialogWrapper);
+        }
+        dialog.appendTo(rteDialogWrapper);
+        this.radioRender();
+        dialog.show();
+    };
+    PasteCleanup.prototype.destroyDialog = function (rteDialogWrapper) {
+        var rteDialogContainer = this.parent.element.querySelector('.e-dlg-container');
+        detach(rteDialogContainer);
+        var rteDialogWrapperChildLength = rteDialogWrapper.children.length;
+        for (var i = 0; i < rteDialogWrapperChildLength; i++) {
+            detach(rteDialogWrapper.children[0]);
+        }
+    };
+    PasteCleanup.prototype.formatting = function (value, clean) {
+        var clipBoardElem = this.parent.createElement('span');
+        clipBoardElem.innerHTML = value;
+        if (this.parent.pasteCleanupSettings.deniedTags !== null) {
+            clipBoardElem = this.deniedTags(clipBoardElem);
+        }
+        if (clean) {
+            clipBoardElem = this.deniedAttributes(clipBoardElem, clean);
+        }
+        else if (this.parent.pasteCleanupSettings.deniedAttrs !== null) {
+            clipBoardElem = this.deniedAttributes(clipBoardElem, clean);
+        }
+        if (this.parent.pasteCleanupSettings.allowedStyleProps !== null) {
+            clipBoardElem = this.allowedStyle(clipBoardElem);
+        }
+        this.saveSelection.restore();
+        this.parent.executeCommand('insertHTML', clipBoardElem);
+        this.parent.notify(toolbarRefresh, {});
+    };
+    //Plain Formatting
+    PasteCleanup.prototype.plainFormatting = function (value) {
+        var clipBoardElem = this.parent.createElement('span');
+        clipBoardElem.innerHTML = value;
+        var text = this.getTextContent(clipBoardElem);
+        var resultElement = this.parent.createElement('span');
+        resultElement.innerHTML = text;
+        this.saveSelection.restore();
+        this.parent.executeCommand('insertHTML', resultElement);
+    };
+    PasteCleanup.prototype.getTextContent = function (element) {
+        var result;
+        var text;
+        result = '';
+        for (var i = 0; i < element.childNodes.length; i++) {
+            text = null;
+            if (element.childNodes[i].nodeType === 1) {
+                text = this.getTextContent(element.childNodes[i]);
+            }
+            else if (element.childNodes[i].nodeType === 3) {
+                text = element.childNodes[i].nodeValue;
+            }
+            if (text) {
+                if (/\S$/.test(result) && /^\S/.test(text)) {
+                    text = ' ' + text;
+                }
+                result += text;
+            }
+        }
+        return result;
+    };
+    //GroupingTags
+    PasteCleanup.prototype.tagGrouping = function (deniedTags) {
+        var groupingTags = deniedTags.slice();
+        var keys = Object.keys(pasteCleanupGroupingTags);
+        var values = keys.map(function (key) { return pasteCleanupGroupingTags[key]; });
+        var addTags = [];
+        for (var i = 0; i < groupingTags.length; i++) {
+            //The value split using '[' because to reterive the tag name from the user given format which may contain tag with attributes
+            if (groupingTags[i].split('[').length > 1) {
+                groupingTags[i] = groupingTags[i].split('[')[0].trim();
+            }
+            if (keys.indexOf(groupingTags[i]) > -1) {
+                for (var j = 0; j < values[keys.indexOf(groupingTags[i])].length; j++) {
+                    if (groupingTags.indexOf(values[keys.indexOf(groupingTags[i])][j]) < 0 &&
+                        addTags.indexOf(values[keys.indexOf(groupingTags[i])][j]) < 0) {
+                        addTags.push(values[keys.indexOf(groupingTags[i])][j]);
+                    }
+                }
+            }
+        }
+        return deniedTags = deniedTags.concat(addTags);
+    };
+    //Filter Attributes in Denied Tags
+    PasteCleanup.prototype.attributesfilter = function (deniedTags) {
+        for (var i = 0; i < deniedTags.length; i++) {
+            if (deniedTags[i].split('[').length > 1) {
+                var userAttributes = deniedTags[i].split('[')[1].split(']')[0].split(',');
+                var allowedAttributeArray = [];
+                var deniedAttributeArray = [];
+                for (var j = 0; j < userAttributes.length; j++) {
+                    userAttributes[j].indexOf('!') < 0 ? allowedAttributeArray.push(userAttributes[j].trim())
+                        : deniedAttributeArray.push(userAttributes[j].split('!')[1].trim());
+                }
+                var allowedAttribute = allowedAttributeArray.length > 1 ?
+                    (allowedAttributeArray.join('][')) : (allowedAttributeArray.join());
+                var deniedAttribute = deniedAttributeArray.length > 1 ? deniedAttributeArray.join('][') : (deniedAttributeArray.join());
+                if (deniedAttribute.length > 0) {
+                    var select$$1 = allowedAttribute !== '' ? deniedTags[i].split('[')[0] +
+                        '[' + allowedAttribute + ']' : deniedTags[i].split('[')[0];
+                    deniedTags[i] = select$$1 + ':not([' + deniedAttribute + '])';
+                }
+                else {
+                    deniedTags[i] = deniedTags[i].split('[')[0] + '[' + allowedAttribute + ']';
+                }
+            }
+        }
+        return deniedTags;
+    };
+    //Denied Tags
+    PasteCleanup.prototype.deniedTags = function (clipBoardElem) {
+        var deniedTags = isNullOrUndefined(this.parent.pasteCleanupSettings.deniedTags) ? [] : this.parent.pasteCleanupSettings.deniedTags.slice();
+        deniedTags = this.attributesfilter(deniedTags);
+        deniedTags = this.tagGrouping(deniedTags);
+        for (var i = 0; i < deniedTags.length; i++) {
+            var removableElement = clipBoardElem.querySelectorAll(deniedTags[i]);
+            for (var j = removableElement.length - 1; j >= 0; j--) {
+                var parentElem = removableElement[j].parentNode;
+                while (removableElement[j].firstChild) {
+                    parentElem.insertBefore(removableElement[j].firstChild, removableElement[j]);
+                }
+                parentElem.removeChild(removableElement[j]);
+            }
+        }
+        return clipBoardElem;
+    };
+    //Denied Attributes
+    PasteCleanup.prototype.deniedAttributes = function (clipBoardElem, clean) {
+        var deniedAttrs = isNullOrUndefined(this.parent.pasteCleanupSettings.deniedAttrs) ? [] : this.parent.pasteCleanupSettings.deniedAttrs.slice();
+        if (clean) {
+            deniedAttrs.push('style');
+        }
+        for (var i = 0; i < deniedAttrs.length; i++) {
+            var removableAttrElement = clipBoardElem.
+                querySelectorAll('[' + deniedAttrs[i] + ']');
+            for (var j = 0; j < removableAttrElement.length; j++) {
+                removableAttrElement[j].removeAttribute(deniedAttrs[i]);
+            }
+        }
+        return clipBoardElem;
+    };
+    //Allowed Style Properties
+    PasteCleanup.prototype.allowedStyle = function (clipBoardElem) {
+        var allowedStyleProps = isNullOrUndefined(this.parent.pasteCleanupSettings.allowedStyleProps) ? [] : this.parent.pasteCleanupSettings.allowedStyleProps.slice();
+        allowedStyleProps.push('list-style-type', 'list-style');
+        var styleElement = clipBoardElem.querySelectorAll('[style]');
+        for (var i = 0; i < styleElement.length; i++) {
+            var allowedStyleValue = '';
+            var allowedStyleValueArray = [];
+            var styleValue = styleElement[i].getAttribute('style').split(';');
+            for (var k = 0; k < allowedStyleProps.length; k++) {
+                for (var j = 0; j < styleValue.length; j++) {
+                    if (!styleElement[i].getAttribute('style').split(';')[j]
+                        .trim().indexOf(allowedStyleProps[k] + ':')) {
+                        allowedStyleValueArray.push(styleElement[i].getAttribute('style').split(';')[j]);
+                        k++;
+                    }
+                }
+            }
+            styleElement[i].removeAttribute('style');
+            allowedStyleValue = allowedStyleValueArray.join(';');
+            if (allowedStyleValue) {
+                styleElement[i].setAttribute('style', allowedStyleValue);
+            }
+        }
+        return clipBoardElem;
+    };
+    /**
+     * For internal use only - Get the module name.
+     */
+    PasteCleanup.prototype.getModuleName = function () {
+        return 'pasteCleanup';
+    };
+    return PasteCleanup;
 }());
 
 /**
@@ -10507,6 +11197,7 @@ var Link = /** @__PURE__ @class */ (function () {
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             var target = args.target;
+            target = this.getAnchorNode(target);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             var isPopupOpen = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && !target.contains(target.querySelector('img'))) {
@@ -10618,7 +11309,7 @@ var Link = /** @__PURE__ @class */ (function () {
             cssClass: CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px', height: 'initial',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px', height: 'inherit',
             isModal: Browser.isDevice,
             buttons: [{
                     click: this.insertlink.bind(selectObj),
@@ -10644,7 +11335,7 @@ var Link = /** @__PURE__ @class */ (function () {
         });
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(linkDialogEle);
-        linkDialogEle.style.maxHeight = 'initial';
+        linkDialogEle.style.maxHeight = 'inherit';
         if (!isNullOrUndefined(inputDetails)) {
             linkUrl.value = inputDetails.url;
             linkText.value = inputDetails.text;
@@ -10738,20 +11429,25 @@ var Link = /** @__PURE__ @class */ (function () {
         this.hideLinkQuickToolbar();
     };
     Link.prototype.openLink = function (e) {
-        if (e.selectParent[0].classList.contains('e-rte-anchor') || e.selectParent[0].tagName === 'A') {
+        var selectParentEle = this.getAnchorNode(e.selectParent[0]);
+        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             this.parent.formatter.process(this.parent, e.args, e.args, {
-                url: e.selectParent[0].href,
-                target: e.selectParent[0].target === '' ? '_self' : '_blank', selectNode: e.selectNode,
+                url: selectParentEle.href,
+                target: selectParentEle.target === '' ? '_self' : '_blank', selectNode: e.selectNode,
                 subCommand: e.args.item.subCommand
             });
         }
     };
+    Link.prototype.getAnchorNode = function (element) {
+        var selectParent = closest(element, 'a');
+        return (selectParent ? selectParent : element);
+    };
     Link.prototype.editLink = function (e) {
-        if (e.selectParent[0].classList.contains('e-rte-anchor') || e.selectParent[0].tagName === 'A') {
-            var selectParentEle = e.selectParent[0];
+        var selectParentEle = this.getAnchorNode(e.selectParent[0]);
+        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             var linkUpdate = this.i10n.getConstant('dialogUpdate');
             var inputDetails = {
-                url: selectParentEle.href, text: selectParentEle.innerHTML,
+                url: selectParentEle.href, text: selectParentEle.innerText,
                 title: selectParentEle.title, target: selectParentEle.target,
                 header: this.i10n.getConstant('editLink'), btnText: linkUpdate
             };
@@ -10823,6 +11519,7 @@ var Image = /** @__PURE__ @class */ (function () {
         this.parent.on(dropDownSelect, this.alignmentSelect, this);
         this.parent.on(initialEnd, this.afterRender, this);
         this.parent.on(paste, this.imagePaste, this);
+        this.parent.on(destroy, this.removeEventListener, this);
     };
     Image.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -10842,6 +11539,7 @@ var Image = /** @__PURE__ @class */ (function () {
         this.parent.off(dropDownSelect, this.alignmentSelect);
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(paste, this.imagePaste);
+        this.parent.off(destroy, this.removeEventListener);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(checkUndo, this.undoStack);
@@ -10955,7 +11653,7 @@ var Image = /** @__PURE__ @class */ (function () {
                 this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
             }
         }
-        if (e.target.tagName === 'A' ||
+        if (e.target.tagName === 'IMG' &&
             e.target.parentElement.tagName === 'A') {
             e.preventDefault();
         }
@@ -11021,10 +11719,12 @@ var Image = /** @__PURE__ @class */ (function () {
         imgResizeDiv.querySelector('.e-rte-topLeft').style.top = (top - borWid) + 'px';
     };
     Image.prototype.calcPos = function (elem) {
+        var ignoreOffset = ['TD', 'TH', 'TABLE'];
         var parentOffset = { top: 0, left: 0 };
         var offset = elem.getBoundingClientRect();
         var doc = elem.ownerDocument;
-        var offsetParent = ((elem.offsetParent && elem.offsetParent.classList.contains('e-img-caption')) ?
+        var offsetParent = ((elem.offsetParent && (elem.offsetParent.classList.contains('e-img-caption') ||
+            ignoreOffset.indexOf(elem.offsetParent.tagName) > -1)) ?
             closest(elem, '#' + this.parent.getID() + '_rte-edit-view') : elem.offsetParent) || doc.documentElement;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
@@ -11463,13 +12163,13 @@ var Image = /** @__PURE__ @class */ (function () {
                         target_1 = '_blank';
                     }
                     else {
-                        target_1 = '';
+                        target_1 = null;
                     }
                 }
             });
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
-            var target_1 = this.checkBoxObj.checked ? '_blank' : '';
+            var target_1 = this.checkBoxObj.checked ? '_blank' : null;
             var linkUpdate = this.i10n.getConstant('dialogUpdate');
             var linkargs_1 = {
                 args: e.args,
@@ -11477,7 +12177,7 @@ var Image = /** @__PURE__ @class */ (function () {
                 selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target_1
             };
             this.dialogObj.setProperties({
-                height: 'initial',
+                height: 'inherit',
                 width: '290px',
                 header: this.parent.localeObj.getConstant('imageInsertLinkHeader'),
                 content: linkWrap,
@@ -11494,7 +12194,7 @@ var Image = /** @__PURE__ @class */ (function () {
                 (inputDetails.target) ? this.checkBoxObj.checked = true : this.checkBoxObj.checked = false;
                 this.dialogObj.header = inputDetails.header;
             }
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             this.dialogObj.content.querySelector('input').focus();
         }
     };
@@ -11522,7 +12222,7 @@ var Image = /** @__PURE__ @class */ (function () {
                 alt: inputAlt
             };
             this.dialogObj.setProperties({
-                height: 'initial', width: '290px', header: altHeader, content: altWrap, position: { X: 'center', Y: 'center' },
+                height: 'inherit', width: '290px', header: altHeader, content: altWrap, position: { X: 'center', Y: 'center' },
                 buttons: [{
                         click: function (e) { _this.insertAlt(altArgs_1); },
                         buttonModel: {
@@ -11530,7 +12230,7 @@ var Image = /** @__PURE__ @class */ (function () {
                         }
                     }]
             });
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             this.dialogObj.content.querySelector('input').focus();
         }
     };
@@ -11574,14 +12274,14 @@ var Image = /** @__PURE__ @class */ (function () {
         }
         if (e.selectNode[0].parentElement.nodeName === 'A') {
             proxy.parent.formatter.process(proxy.parent, e.args, e.args, {
-                url: url, target: proxy.checkBoxObj.checked ? '_blank' : '', selectNode: e.selectNode,
+                url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, selectNode: e.selectNode,
                 subCommand: e.args.item.subCommand
             });
             proxy.dialogObj.hide({ returnValue: true });
             return;
         }
         proxy.parent.formatter.process(proxy.parent, e.args, e.args, {
-            url: url, target: e.target, selectNode: e.selectNode,
+            url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, selectNode: e.selectNode,
             subCommand: e.args.item.subCommand
         });
         proxy.dialogObj.hide({ returnValue: false });
@@ -11680,7 +12380,7 @@ var Image = /** @__PURE__ @class */ (function () {
             var dialogContent = this.imgsizeInput(e);
             var selectObj_1 = { args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
-                height: 'initial', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
+                height: 'inherit', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
                 buttons: [{
                         click: function (e) { _this.insertSize(selectObj_1); },
                         buttonModel: {
@@ -11688,7 +12388,7 @@ var Image = /** @__PURE__ @class */ (function () {
                         }
                     }]
             });
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             this.dialogObj.content.querySelector('input').focus();
         }
     };
@@ -11741,7 +12441,7 @@ var Image = /** @__PURE__ @class */ (function () {
             cssClass: CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'initial',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'inherit',
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: Browser.isDevice,
             buttons: [{
@@ -11771,7 +12471,7 @@ var Image = /** @__PURE__ @class */ (function () {
         });
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(imgDialog);
-        imgDialog.style.maxHeight = 'none';
+        imgDialog.style.maxHeight = 'inherit';
         if (this.quickToolObj) {
             if (this.quickToolObj.imageQTBar && document.body.contains(this.quickToolObj.imageQTBar.element)) {
                 this.quickToolObj.imageQTBar.hidePopup();
@@ -11945,7 +12645,7 @@ var Image = /** @__PURE__ @class */ (function () {
             else {
                 this.dialogObj.setProperties({ content: dialogContent }, false);
             }
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
                 || this.parent.editorMode === 'HTML') {
                 dialogContent.querySelector('#' + this.rteID + '_insertImage').focus();
@@ -12316,7 +13016,7 @@ var Table = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.on(createTable, (Browser.isDevice || this.parent.inlineMode.enable) ? this.insertTableDialog : this.renderDlgContent, this);
+        this.parent.on(createTable, this.renderDlgContent, this);
         this.parent.on(initialEnd, this.afterRender, this);
         this.parent.on(docClick, this.docClick, this);
         this.parent.on(editAreaClick, this.editAreaClickHandler, this);
@@ -12328,8 +13028,7 @@ var Table = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(createTable, (Browser.isDevice || this.parent.inlineMode.enable) ?
-            this.insertTableDialog : this.renderDlgContent);
+        this.parent.off(createTable, this.renderDlgContent);
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(docClick, this.docClick);
         this.parent.off(editAreaClick, this.editAreaClickHandler);
@@ -12388,6 +13087,29 @@ var Table = /** @__PURE__ @class */ (function () {
     Table.prototype.keyDown = function (e) {
         var event = e.args;
         var proxy = this;
+        switch (event.action) {
+            case 'escape':
+                break;
+            case 'insert-table':
+                if (this.parent.editorMode === 'HTML') {
+                    var docElement = this.parent.contentModule.getDocument();
+                    var range = this.parent.formatter.editorManager.nodeSelection.getRange(docElement);
+                    var selection = this.parent.formatter.editorManager.nodeSelection.save(range, docElement);
+                    var args = {
+                        originalEvent: e.args,
+                        item: {
+                            command: 'Table',
+                            subCommand: 'CreateTable'
+                        }
+                    };
+                    this.insertTableDialog({
+                        self: this,
+                        args: args, selection: selection
+                    });
+                }
+                event.preventDefault();
+                break;
+        }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
             var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             var selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
@@ -12996,6 +13718,10 @@ var Table = /** @__PURE__ @class */ (function () {
     };
     Table.prototype.renderDlgContent = function (args) {
         var _this = this;
+        if (Browser.isDevice || this.parent.inlineMode.enable) {
+            this.insertTableDialog(args);
+            return;
+        }
         if (this.popupObj) {
             this.popupObj.hide();
             return;
@@ -13210,7 +13936,10 @@ var Table = /** @__PURE__ @class */ (function () {
     Table.prototype.customTable = function (args, e) {
         var proxy = (this.self) ? this.self : this;
         if (proxy.rowTextBox.value && proxy.columnTextBox.value) {
-            var argument = ((Browser.isDevice || proxy.parent.inlineMode.enable) ? args : this);
+            var argument = ((Browser.isDevice || (!isNullOrUndefined(args.args)
+                && !isNullOrUndefined(args.args.originalEvent) &&
+                args.args.originalEvent.action === 'insert-table')
+                || proxy.parent.inlineMode.enable) ? args : this);
             proxy.tableInsert(proxy.rowTextBox.value, proxy.columnTextBox.value, e, argument);
         }
     };
@@ -13403,8 +14132,8 @@ var executeGroup = {
         value: ''
     },
     'insertText': {
-        command: 'InsertHTML',
-        subCommand: 'InsertHTML',
+        command: 'InsertText',
+        subCommand: 'InsertText',
         value: ''
     },
     'insertHorizontalRule': {
@@ -13423,11 +14152,11 @@ var executeGroup = {
         value: '<br/>'
     },
     'insertOrderedList': {
-        command: 'Formats',
+        command: 'Lists',
         value: 'OL'
     },
     'insertUnorderedList': {
-        command: 'Formats',
+        command: 'Lists',
         value: 'UL'
     },
     'insertParagraph': {
@@ -13509,7 +14238,7 @@ var backgroundColor = {
     ]
 };
 /**
- * Configures the toolbar settings of the RTE.
+ * Configures the toolbar settings of the RichTextEditor.
  */
 var ToolbarSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$5(ToolbarSettings, _super);
@@ -13534,7 +14263,7 @@ var ToolbarSettings = /** @__PURE__ @class */ (function (_super) {
     return ToolbarSettings;
 }(ChildProperty));
 /**
- * Configures the image settings of the RTE.
+ * Configures the image settings of the RichTextEditor.
  */
 var ImageSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$5(ImageSettings, _super);
@@ -13602,7 +14331,7 @@ var TableSettings = /** @__PURE__ @class */ (function (_super) {
     return TableSettings;
 }(ChildProperty));
 /**
- * Configures the quick toolbar settings of the RTE.
+ * Configures the quick toolbar settings of the RichTextEditor.
  */
 var QuickToolbarSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$5(QuickToolbarSettings, _super);
@@ -13630,7 +14359,35 @@ var QuickToolbarSettings = /** @__PURE__ @class */ (function (_super) {
     return QuickToolbarSettings;
 }(ChildProperty));
 /**
- * Configures the font family settings of the RTE.
+ * Configures the Paste Cleanup settings of the RichTextEditor.
+ */
+var PasteCleanupSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$5(PasteCleanupSettings, _super);
+    function PasteCleanupSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        Property(false)
+    ], PasteCleanupSettings.prototype, "prompt", void 0);
+    __decorate$2([
+        Property(null)
+    ], PasteCleanupSettings.prototype, "deniedAttrs", void 0);
+    __decorate$2([
+        Property(null)
+    ], PasteCleanupSettings.prototype, "allowedStyleProps", void 0);
+    __decorate$2([
+        Property(null)
+    ], PasteCleanupSettings.prototype, "deniedTags", void 0);
+    __decorate$2([
+        Property(true)
+    ], PasteCleanupSettings.prototype, "keepFormat", void 0);
+    __decorate$2([
+        Property(false)
+    ], PasteCleanupSettings.prototype, "plainText", void 0);
+    return PasteCleanupSettings;
+}(ChildProperty));
+/**
+ * Configures the font family settings of the RichTextEditor.
  */
 var FontFamily = /** @__PURE__ @class */ (function (_super) {
     __extends$5(FontFamily, _super);
@@ -13649,7 +14406,7 @@ var FontFamily = /** @__PURE__ @class */ (function (_super) {
     return FontFamily;
 }(ChildProperty));
 /**
- * Configures the font size settings of the RTE.
+ * Configures the font size settings of the RichTextEditor.
  */
 var FontSize = /** @__PURE__ @class */ (function (_super) {
     __extends$5(FontSize, _super);
@@ -13668,7 +14425,7 @@ var FontSize = /** @__PURE__ @class */ (function (_super) {
     return FontSize;
 }(ChildProperty));
 /**
- * Configures the format settings of the RTE.
+ * Configures the format settings of the RichTextEditor.
  */
 var Format = /** @__PURE__ @class */ (function (_super) {
     __extends$5(Format, _super);
@@ -13687,7 +14444,7 @@ var Format = /** @__PURE__ @class */ (function (_super) {
     return Format;
 }(ChildProperty));
 /**
- * Configures the font Color settings of the RTE.
+ * Configures the font Color settings of the RichTextEditor.
  */
 var FontColor = /** @__PURE__ @class */ (function (_super) {
     __extends$5(FontColor, _super);
@@ -13712,7 +14469,7 @@ var FontColor = /** @__PURE__ @class */ (function (_super) {
     return FontColor;
 }(ChildProperty));
 /**
- * Configures the background Color settings of the RTE.
+ * Configures the background Color settings of the RichTextEditor.
  */
 var BackgroundColor = /** @__PURE__ @class */ (function (_super) {
     __extends$5(BackgroundColor, _super);
@@ -13883,7 +14640,8 @@ var FullScreen = /** @__PURE__ @class */ (function () {
         this.scrollableParent = getScrollableParent(this.parent.element);
         if (!this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
             this.parent.trigger(actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
-            if (this.parent.toolbarSettings.enableFloating && this.parent.toolbarSettings.enable) {
+            if (this.parent.toolbarSettings.enableFloating &&
+                !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
                 this.parent.getToolbarElement().style.width = '100%';
                 this.parent.getToolbarElement().style.top = '0px';
             }
@@ -14022,6 +14780,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
          */
         _this.isBlur = true;
         _this.needsID = true;
+        _this.onBlurHandler = _this.blurHandler.bind(_this);
+        _this.onFocusHandler = _this.focusHandler.bind(_this);
+        _this.onResizeHandler = _this.resizeHandler.bind(_this);
         return _this;
     }
     /**
@@ -14057,6 +14818,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.editorMode === 'HTML') {
             modules.push({ member: 'htmlEditor', args: [this, this.serviceLocator] });
+            modules.push({ member: 'pasteCleanup', args: [this, this.serviceLocator] });
         }
         return modules;
     };
@@ -14086,6 +14848,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RichTextEditor.prototype.preRender = function () {
+        this.clickPoints = { clientX: 0, clientY: 0 };
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setContainer();
@@ -14239,7 +15002,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
-        if (e.action || e.which === 9) {
+        if (e.action && e.action !== 'paste' || e.which === 9) {
             this.formatter.process(this, null, e);
             switch (e.action) {
                 case 'toolbar-focus':
@@ -14281,12 +15044,15 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RichTextEditor.prototype.mouseUp = function (e) {
+        var touch = (e.touches ? e.changedTouches[0] : e);
         this.notify(mouseUp, { member: 'mouseUp', args: e });
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
             (this.editorMode === 'Markdown' && this.inputElement.value.length !== 0))) {
             this.notify(toolbarRefresh, { args: e });
         }
-        this.notify(editAreaClick, { member: 'editAreaClick', args: e });
+        if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
+            this.notify(editAreaClick, { member: 'editAreaClick', args: e });
+        }
     };
     /**
      * @hidden
@@ -14302,21 +15068,34 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.onPaste = function (e) {
         var _this = this;
-        var args = { requestType: 'Paste', editorMode: this.editorMode, event: e };
-        var value = null;
-        if (e && !isNullOrUndefined(e.clipboardData)) {
-            value = e.clipboardData.getData('text/plain');
+        var evenArgs = {
+            originalEvent: e,
+            cancel: false,
+            requestType: 'Paste'
+        };
+        this.trigger(actionBegin, evenArgs);
+        if (!evenArgs.cancel) {
+            if (!isNullOrUndefined(this.pasteCleanupModule)) {
+                this.notify(pasteClean, { args: e });
+            }
+            else {
+                var args_1 = { requestType: 'Paste', editorMode: this.editorMode, event: e };
+                var value = null;
+                if (e && !isNullOrUndefined(e.clipboardData)) {
+                    value = e.clipboardData.getData('text/plain');
+                }
+                var file = e && e.clipboardData && e.clipboardData.items.length > 0 ?
+                    e.clipboardData.items[0].getAsFile() : null;
+                if (value !== null) {
+                    this.notify(paste, {
+                        file: file,
+                        args: e,
+                        text: value
+                    });
+                }
+                setTimeout(function () { _this.formatter.onSuccess(_this, args_1); }, 0);
+            }
         }
-        var file = e && e.clipboardData && e.clipboardData.items.length > 0 ?
-            e.clipboardData.items[0].getAsFile() : null;
-        if (value !== null) {
-            this.notify(paste, {
-                file: file,
-                args: e,
-                text: value
-            });
-        }
-        setTimeout(function () { _this.formatter.onSuccess(_this, args); }, 0);
     };
     /**
      * @hidden
@@ -14352,6 +15131,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     RichTextEditor.prototype.destroy = function () {
         this.notify(destroy, {});
         this.destroyDependentModules();
+        if (!isNullOrUndefined(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
         this.unWireEvents();
         if (this.originalElement.tagName === 'TEXTAREA') {
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
@@ -14375,7 +15158,6 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.placeholder && this.placeHolderWrapper) {
-            detach(this.placeHolderWrapper);
             this.placeHolderWrapper = null;
         }
         if (!isNullOrUndefined(this.cssClass)) {
@@ -14464,6 +15246,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'width':
                     this.setWidth(newProp[prop]);
+                    if (this.toolbarSettings.enable) {
+                        this.toolbarModule.refreshToolbarOverflow();
+                        this.resizeHandler();
+                    }
                     break;
                 case 'height':
                     this.setHeight(newProp[prop]);
@@ -14922,9 +15708,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         return (this.originalElement.tagName === 'TEXTAREA' ? this.valueContainer.id : this.element.id);
     };
     RichTextEditor.prototype.mouseDownHandler = function (e) {
+        var touch = (e.touches ? e.changedTouches[0] : e);
         addClass([this.element], [CLS_FOCUS]);
         this.preventDefaultResize(e);
         this.notify(mouseDown, { args: e });
+        this.clickPoints = { clientX: touch.clientX, clientY: touch.clientY };
     };
     RichTextEditor.prototype.preventImgResize = function (e) {
         if (e.target.nodeName.toLocaleLowerCase() === 'img') {
@@ -14950,7 +15738,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RichTextEditor.prototype.resizeHandler = function () {
-        var isExpand = (this.toolbarSettings.type === ToolbarType.Expand) ? true : false;
+        var isExpand = false;
+        if (this.toolbarSettings.enable && !this.inlineMode.enable) {
+            this.toolbarModule.refreshToolbarOverflow();
+            isExpand = this.toolbarModule.baseToolbar.toolbarObj.element.classList.contains(CLS_EXPAND_OPEN);
+        }
         this.setContentHeight('', isExpand);
     };
     RichTextEditor.prototype.scrollHandler = function (e) {
@@ -15036,6 +15828,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.trigger('blur', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
             if (!isNullOrUndefined(this.timeInterval)) {
                 clearInterval(this.timeInterval);
+                this.timeInterval = null;
             }
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         }
@@ -15099,8 +15892,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         element.style.overflow = 'hidden';
     };
     RichTextEditor.prototype.wireEvents = function () {
-        this.element.addEventListener('focusin', this.focusHandler.bind(this), true);
-        this.element.addEventListener('focusout', this.blurHandler.bind(this), true);
+        this.element.addEventListener('focusin', this.onFocusHandler, true);
+        this.element.addEventListener('focusout', this.onBlurHandler, true);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -15119,7 +15912,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
         this.formatter.editorManager.observer.on(KEY_DOWN_HANDLER, this.editorKeyDown, this);
-        window.addEventListener('resize', this.resizeHandler.bind(this), true);
+        this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
@@ -15149,8 +15942,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RichTextEditor.prototype.unWireEvents = function () {
-        this.element.removeEventListener('focusin', this.focusHandler.bind(this), false);
-        this.element.removeEventListener('focusout', this.blurHandler.bind(this), false);
+        this.element.removeEventListener('focusin', this.onFocusHandler, true);
+        this.element.removeEventListener('focusout', this.onBlurHandler, true);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -15171,7 +15964,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         if (this.formatter) {
             this.formatter.editorManager.observer.off(KEY_DOWN_HANDLER, this.editorKeyDown);
         }
-        window.removeEventListener('resize', this.resizeHandler.bind(this), false);
+        this.element.ownerDocument.defaultView.removeEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);
@@ -15185,6 +15978,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Complex({}, QuickToolbarSettings)
     ], RichTextEditor.prototype, "quickToolbarSettings", void 0);
+    __decorate$1([
+        Complex({}, PasteCleanupSettings)
+    ], RichTextEditor.prototype, "pasteCleanupSettings", void 0);
     __decorate$1([
         Complex({}, IFrameSettings)
     ], RichTextEditor.prototype, "iframeSettings", void 0);
@@ -15361,5 +16157,5 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
  * RichTextEditor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, actionSuccess, popupOpen, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, actionSuccess, popupOpen, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es5.js.map

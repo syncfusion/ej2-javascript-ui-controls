@@ -20,6 +20,7 @@ export class DockComponent {
     public dockSize: string = '72px';
 
      positionChange(event: any) {
+        debugger
           this.dockBar.position = event.currentTarget.defaultValue == "left" ? "Left" : "Right";
       }
       toggleClick() {

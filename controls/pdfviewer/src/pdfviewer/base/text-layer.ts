@@ -23,21 +23,22 @@ export class TextLayer {
     /** 
      * @private
      */
-    public addTextLayer(pageNumber: number, pageWidth: number, pageHeight: number, pageDiv: HTMLElement): void {
+    public addTextLayer(pageNumber: number, pageWidth: number, pageHeight: number, pageDiv: HTMLElement): HTMLElement {
         let textDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
+        let textLayer: HTMLElement;
         if (!textDiv) {
-            // tslint:disable-next-line:max-line-length
-            let textLayer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_textLayer_' + pageNumber, className: 'e-pv-text-layer' });
+            textLayer = createElement('div', { id: this.pdfViewer.element.id + '_textLayer_' + pageNumber, className: 'e-pv-text-layer' });
             textLayer.style.width = pageWidth + 'px';
             textLayer.style.height = pageHeight + 'px';
             pageDiv.appendChild(textLayer);
         }
+        return textLayer;
     }
     /**
      * @private
      */
     // tslint:disable-next-line
-    public renderTextContents(pageNumber: number, textContents: any, textBounds: any): void {
+    public renderTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any): void {
         let textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageNumber);
         let canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageNumber);
         if (canvasElement && textLayer.childNodes.length === 0) {
@@ -45,7 +46,7 @@ export class TextLayer {
                 // tslint:disable-next-line
                 let bounds: any = textBounds[i];
                 // tslint:disable-next-line:max-line-length
-                let textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text' });
+                let textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text', attrs: { 'tabindex': '0' } });
                 let textContent: string = textContents[i];
                 textContent = textContent.replace(/</g, '&lt;');
                 textContent = textContent.replace(/>/g, '&gt;');
@@ -55,13 +56,13 @@ export class TextLayer {
                 if (newLine !== ' ') {
                     textDiv.style.whiteSpace = 'pre';
                 }
-                this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height, bounds);
+                this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
                 this.setTextElementProperties(textDiv);
                 let context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
                 context.font = textDiv.style.fontSize + ' ' + textDiv.style.fontFamily;
                 let contextWidth: number = context.measureText(textContents[i].replace(/(\r\n|\n|\r)/gm, '')).width;
                 let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
-                textDiv.style.transform = 'scaleX(' + scale + ')';
+                this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
                 textLayer.appendChild(textDiv);
                 this.resizeExcessDiv(textLayer, textDiv);
                 // tslint:disable-next-line:max-line-length
@@ -75,7 +76,7 @@ export class TextLayer {
      * @private
      */
     // tslint:disable-next-line
-    public resizeTextContents(pageNumber: number, textContents: any, textBounds: any): void {
+    public resizeTextContents(pageNumber: number, textContents: any, textBounds: any, rotation: any): void {
         let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
         let canvasElement: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + pageNumber);
         if (canvasElement) {
@@ -85,7 +86,7 @@ export class TextLayer {
                 let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + i);
                 if (textBounds) {
                     bounds = textBounds[i];
-                    this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height, textBounds);
+                    this.setStyleToTextDiv(textDiv, bounds.X, bounds.Y, bounds.Bottom, bounds.Width, bounds.Height);
                 }
                 this.setTextElementProperties(textDiv);
                 let context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
@@ -97,11 +98,46 @@ export class TextLayer {
                     contextWidth = context.measureText(textDiv.textContent.replace(/(\r\n|\n|\r)/gm, '')).width;
                 }
                 let scale: number = bounds.Width * this.pdfViewerBase.getZoomFactor() / contextWidth;
-                textDiv.style.transform = 'scaleX(' + scale + ')';
+                this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation);
                 this.resizeExcessDiv(textLayer, textDiv);
             }
         } else {
             textLayer.parentElement.removeChild(textLayer);
+        }
+    }
+
+    private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number): void {
+        let scaleString: string = 'scale(' + scale + ')';
+        if (rotation === 0) {
+            if (textRotation === 0) {
+                textDiv.style.transform = scaleString;
+            } else {
+                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+            }
+        } else if (rotation === 1) {
+            if (textRotation === 0) {
+                textDiv.style.transform = 'rotate(90deg) ' + scaleString;
+            } else if (textRotation === -90) {
+                textDiv.style.transform = scaleString;
+            } else {
+                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+            }
+        } else if (rotation === 2) {
+            if (textRotation === 0) {
+                textDiv.style.transform = 'rotate(180deg) ' + scaleString;
+            } else if (textRotation === 180) {
+                textDiv.style.transform = scaleString;
+            } else {
+                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+            }
+        } else if (rotation === 3) {
+            if (textRotation === 0) {
+                textDiv.style.transform = 'rotate(-90deg) ' + scaleString;
+            } else if (textRotation === 90) {
+                textDiv.style.transform = scaleString;
+            } else {
+                textDiv.style.transform = 'rotate(' + textRotation + 'deg) ' + scaleString;
+            }
         }
     }
 
@@ -118,6 +154,8 @@ export class TextLayer {
         // tslint:disable-next-line
         let textBounds: any[] = [];
         let textContents: string[] = [];
+        // tslint:disable-next-line
+        let rotation: any;
         if (renderObject) {
             // tslint:disable-next-line
             let data: any = JSON.parse(renderObject);
@@ -125,10 +163,12 @@ export class TextLayer {
             textBounds = data['textBounds'];
             // tslint:disable-next-line
             textContents = data['textContent'];
+            // tslint:disable-next-line
+            rotation = data['rotation'];
         }
         if (textBounds.length !== 0) {
             this.textBoundsArray.push({ pageNumber: pageNumber, textBounds: textBounds });
-            this.resizeTextContents(pageNumber, textContents, textBounds);
+            this.resizeTextContents(pageNumber, textContents, textBounds, rotation);
         } else {
             // tslint:disable-next-line
             let textElements: any = this.textBoundsArray.filter(obj => {
@@ -138,7 +178,7 @@ export class TextLayer {
                 if (textElements.length !== 0) {
                     // tslint:disable-next-line
                     textBounds = textElements[0]['textBounds'];
-                    this.resizeTextContents(pageNumber, null, textBounds);
+                    this.resizeTextContents(pageNumber, null, textBounds, rotation);
                 }
             }
         }
@@ -276,20 +316,12 @@ export class TextLayer {
     }
 
     // tslint:disable-next-line
-    private setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, bottom: number, width: number, height: number, textBounds: any): void {
+    private setStyleToTextDiv(textDiv: HTMLElement, left: number, top: number, bottom: number, width: number, height: number): void {
         textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
         textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
-        textDiv.style.bottom = bottom * this.pdfViewerBase.getZoomFactor() + 'px';
-        textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
         let textHeight: number = height * this.pdfViewerBase.getZoomFactor();
         textDiv.style.height = textHeight + 'px';
-        if (textHeight > 11 && textBounds) {
-            textDiv.style.top = (parseFloat(textDiv.style.top) + 2) + 'px';
-            // tslint:disable-next-line:radix
-            textDiv.style.fontSize = (parseInt(height.toString()) * this.pdfViewerBase.getZoomFactor() - 2.6) + 'px';
-        } else {
-            textDiv.style.fontSize = height * this.pdfViewerBase.getZoomFactor() + 'px';
-        }
+        textDiv.style.fontSize = height * this.pdfViewerBase.getZoomFactor() + 'px';
     }
 
     private getTextSelectionStatus(): boolean {
@@ -315,6 +347,58 @@ export class TextLayer {
                 }
             }
         }
+    }
+
+    /**
+     * @private
+     */
+    public isBackWardSelection(selection: Selection): boolean {
+        let position: number = selection.anchorNode.compareDocumentPosition(selection.focusNode);
+        let backward: boolean = false;
+        if (!position && selection.anchorOffset > selection.focusOffset || position === Node.DOCUMENT_POSITION_PRECEDING) {
+            backward = true;
+        }
+        return backward;
+    }
+
+    /**
+     * @private
+     */
+    public getPageIndex(element: Node): number {
+        let pageId: number;
+         // tslint:disable-next-line
+        let parentElement: any = element.parentElement;
+        if (!parentElement) {
+            parentElement = element.parentNode;
+        }
+        if (parentElement.className === 'e-pv-text-layer') {
+            // tslint:disable-next-line:radix
+            pageId = parseInt((element as HTMLElement).id.split('_text_')[1]);
+        } else {
+            // tslint:disable-next-line:radix
+            pageId = parseInt(parentElement.id.split('_text_')[1]);
+        }
+        return pageId;
+    }
+
+    /**
+     * @private
+     */
+    public getTextIndex(element: Node, pageIndex: number): number {
+        let textIndex: number;
+         // tslint:disable-next-line
+        let parentElement: any = element.parentElement;
+        if (!parentElement) {
+            parentElement = element.parentNode;
+        }
+        if (parentElement.className === 'e-pv-text-layer') {
+            // tslint:disable-next-line:radix
+            textIndex = parseInt((element as HTMLElement).id.split('_text_' + pageIndex + '_')[1]);
+        } else {
+            // tslint:disable-next-line:radix
+            textIndex = parseInt(parentElement.id.split('_text_' + pageIndex + '_')[1]);
+        }
+        return textIndex;
     }
 
     private getPreviousZoomFactor(): number {
@@ -348,7 +432,7 @@ export class TextLayer {
                 buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
                 click: this.closeNotification.bind(this)
             }],
-            content: '<div class="e-pv-notification-popup-content">' + text + '</div>', target: this.pdfViewer.element,
+            content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
             beforeClose: (): void => {
                 this.notifyDialog.destroy();
                 this.pdfViewer.element.removeChild(popupElement);
@@ -357,6 +441,9 @@ export class TextLayer {
                 }
             }
         });
+        if (this.pdfViewer.enableRtl) {
+            this.notifyDialog.enableRtl = true;
+        }
         this.notifyDialog.appendTo(popupElement);
     }
 

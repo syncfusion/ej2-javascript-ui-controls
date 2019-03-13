@@ -103,7 +103,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
-            let td: Element = cellRenderer.render(row.cells[i], row.data, attrs);
+            let td: Element = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand);
             if (row.cells[i].cellType !== CellType.Filter) {
                 if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
                     this.parent.trigger(queryCellInfo, extend(

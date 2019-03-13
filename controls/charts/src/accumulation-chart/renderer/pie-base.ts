@@ -3,7 +3,8 @@
  */
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AccumulationChart } from '../accumulation';
-import { stringToNumber, ChartLocation, degreeToLocation, Rect, getAnimationFunction, getElement } from '../../common/utils/helper';
+import { stringToNumber, ChartLocation, degreeToLocation, getAnimationFunction, getElement } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { animationComplete } from '../../common/model/constants';
 import { AccumulationLabelPosition } from '../model/enum';
 import { AccumulationSeries, AccPoints } from '../model/acc-base';
@@ -203,18 +204,21 @@ export class PieBase extends AccumulationBase {
      */
     protected doAnimation(slice: Element, series: AccumulationSeries): void {
         let startAngle: number = series.startAngle - 90;
+        let duration: number = this.accumulation.duration ? this.accumulation.duration : series.animation.duration;
         let value: number;
+        this.center.x += 1;
         let radius: number = Math.max(this.accumulation.availableSize.height, this.accumulation.availableSize.width) * 0.75;
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)
         let effect: Function = getAnimationFunction('Linear'); // need to check animation type
         new Animation({}).animate(<HTMLElement>slice, {
-            duration: series.animation.duration,
+            duration: duration,
             delay: series.animation.delay,
             progress: (args: AnimationOptions): void => {
                 value = effect(args.timeStamp, startAngle, this.totalAngle, args.duration);
                 slice.setAttribute('d', this.getPathArc(this.center, startAngle, value, radius, 0));
             },
             end: (args: AnimationOptions) => {
+                this.center.x -= 1;
                 slice.setAttribute('d', this.getPathArc(this.center, 0, 359.99999, radius, 0));
                 this.accumulation.trigger(animationComplete, { series: series, accumulation: this.accumulation, chart: this.accumulation });
                 let datalabelGroup: Element = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);

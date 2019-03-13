@@ -1,5 +1,5 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -125,10 +125,10 @@ __decorate$1([
     Property(false)
 ], TooltipSettings.prototype, "enable", void 0);
 __decorate$1([
-    Property('#000000')
+    Property('')
 ], TooltipSettings.prototype, "fill", void 0);
 __decorate$1([
-    Complex({ color: '#ffffff', size: '13px' }, Font)
+    Complex({ color: '', size: '13px' }, Font)
 ], TooltipSettings.prototype, "textStyle", void 0);
 __decorate$1([
     Property(null)
@@ -1533,7 +1533,7 @@ class AxisRenderer extends Animations {
         if (axis.line.width > 0) {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
-            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color, axis.line.width, axis.line.color, 1, axis.line.dashArray, path);
+            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color || this.gauge.themeStyle.lineColor, axis.line.width, axis.line.color || this.gauge.themeStyle.lineColor, 1, axis.line.dashArray, path);
             axisObject.appendChild(this.gauge.renderer.drawPath(options));
         }
     }
@@ -1544,6 +1544,8 @@ class AxisRenderer extends Animations {
         let options;
         let range = axis.visibleRange;
         let line = axis.lineBounds;
+        let tickColor = (tickID === 'MajorTicks') ? ticks.color || this.gauge.themeStyle.majorTickColor :
+            ticks.color || this.gauge.themeStyle.minorTickColor;
         let interval = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
         for (let i = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
@@ -1560,7 +1562,7 @@ class AxisRenderer extends Animations {
                 }
             }
         }
-        options = new PathOption(this.gauge.element.id + '_' + tickID + 'Line_' + 0, ticks.color, ticks.width, ticks.color, 1, null, tickPath);
+        options = new PathOption(this.gauge.element.id + '_' + tickID + 'Line_' + 0, tickColor, ticks.width, tickColor, 1, null, tickPath);
         axisObject.appendChild(this.gauge.renderer.drawPath(options));
     }
     drawAxisLabels(axis, axisObject) {
@@ -1582,7 +1584,7 @@ class AxisRenderer extends Animations {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color || this.gauge.themeStyle.labelColor : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
@@ -1632,7 +1634,7 @@ class AxisRenderer extends Animations {
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
-        options = new PathOption(pointerID, pointer.color, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
+        options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options)
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
@@ -1657,13 +1659,13 @@ class AxisRenderer extends Animations {
             remove(getElement(pointerID));
         }
         if (this.gauge.container.type === 'Normal') {
-            rectOptions = new RectOption(pointerID, pointer.color, pointer.border, pointer.opacity, pointer.bounds, null, null);
+            rectOptions = new RectOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions);
         }
         else {
             path = getBox(pointer.bounds, this.gauge.container.type, this.gauge.orientation, new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.gauge.container.width, axis, pointer.roundedCornerRadius);
-            options = new PathOption(pointerID, pointer.color, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
+            options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
             pointerElement = this.gauge.renderer.drawPath(options);
             box = getPathToRect(pointerElement.cloneNode(true), size, this.gauge.element);
         }
@@ -1752,6 +1754,7 @@ class Annotations {
             cancel: false, name: annotationRender, content: annotation.content,
             annotation: annotation, textStyle: annotation.font
         };
+        argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
         this.gauge.trigger(annotationRender, argsData);
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
@@ -1915,8 +1918,8 @@ class GaugeTooltip {
             }
             let themes = this.gauge.theme.toLowerCase();
             if (!args.cancel) {
-                args['tooltip']['properties']['textStyle']['color'] =
-                    (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#00000' : '#FFFFFF';
+                args['tooltip']['properties']['textStyle']['color'] = this.tooltip.textStyle.color ||
+                    this.gauge.themeStyle.tooltipFontColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -1928,7 +1931,7 @@ class GaugeTooltip {
                     palette: [],
                     inverted: !(args.gauge.orientation === 'Horizontal'),
                     enableAnimation: args.tooltip.enableAnimation,
-                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : args.tooltip.fill,
+                    fill: this.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
                     areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
                     textStyle: args.tooltip.textStyle,
                     border: args.tooltip.border,
@@ -2039,6 +2042,69 @@ class GaugeTooltip {
     }
 }
 
+/** @private */
+function getThemeStyle(theme) {
+    let style;
+    switch (theme) {
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            style = {
+                backgroundColor: '#333232',
+                titleFontColor: '#ffffff',
+                tooltipFillColor: '#FFFFFF',
+                tooltipFontColor: '#000000',
+                labelColor: '#DADADA',
+                lineColor: '#C8C8C8',
+                majorTickColor: '#C8C8C8',
+                minorTickColor: '#9A9A9A',
+                pointerColor: '#9A9A9A'
+            };
+            break;
+        case 'Highcontrast':
+        case 'HighContrast':
+            style = {
+                backgroundColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                tooltipFillColor: '#ffffff',
+                tooltipFontColor: '#000000',
+                labelColor: '#FFFFFF',
+                lineColor: '#FFFFFF',
+                majorTickColor: '#FFFFFF',
+                minorTickColor: '#FFFFFF',
+                pointerColor: '#FFFFFF'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                backgroundColor: '#F8F9FA',
+                titleFontColor: '#212529',
+                tooltipFillColor: '#000000',
+                tooltipFontColor: '#FFFFFF',
+                labelColor: '#212529',
+                lineColor: '#ADB5BD',
+                majorTickColor: '#ADB5BD',
+                minorTickColor: '#CED4DA',
+                pointerColor: '#6C757D'
+            };
+            break;
+        default:
+            style = {
+                backgroundColor: '#FFFFFF',
+                titleFontColor: '#424242',
+                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#FFFFFF',
+                labelColor: '#686868',
+                lineColor: '#a6a6a6',
+                majorTickColor: '#a6a6a6',
+                minorTickColor: '#a6a6a6',
+                pointerColor: '#a6a6a6'
+            };
+            break;
+    }
+    return style;
+}
+
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2078,50 +2144,13 @@ let LinearGauge = class LinearGauge extends Component {
     preRender() {
         this.unWireEvents();
         this.trigger(load, { gauge: this });
-        this.themeEffect();
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
         this.wireEvents();
     }
-    themeEffect() {
-        let theme = this.theme.toLowerCase();
-        if (theme === 'highcontrast') {
-            this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
-            this.setThemeColors('#FFFFFF', '#FFFFFF');
-            this.background = this.background || '#000000';
-        }
-        else if (theme.indexOf('dark') > -1) {
-            for (let axis of this.axes) {
-                axis.line.color = axis.line.color || '#C8C8C8';
-                axis.labelStyle.font.color = axis.labelStyle.font.color || '#DADADA';
-                axis.majorTicks.color = axis.majorTicks.color || '#C8C8C8';
-                axis.minorTicks.color = axis.minorTicks.color || '#9A9A9A';
-                for (let pointer of axis.pointers) {
-                    pointer.color = pointer.color || '#9A9A9A';
-                }
-            }
-            this.background = this.background || '#333232';
-        }
-        else {
-            this.titleStyle.color = this.titleStyle.color || '#424242';
-            this.setThemeColors('#686868', '#a6a6a6');
-            this.background = this.background || '#FFFFFF';
-        }
-    }
-    setThemeColors(labelcolor, others) {
-        for (let axis of this.axes) {
-            axis.line.color = axis.line.color || others;
-            axis.labelStyle.font.color = axis.labelStyle.font.color || labelcolor;
-            axis.majorTicks.color = axis.majorTicks.color || others;
-            axis.minorTicks.color = axis.minorTicks.color || others;
-            for (let pointer of axis.pointers) {
-                pointer.color = pointer.color || others;
-            }
-        }
-        for (let annotation of this.annotations) {
-            annotation.font.color = annotation.font.color || labelcolor;
-        }
+    setTheme() {
+        this.themeStyle = getThemeStyle(this.theme);
     }
     initPrivateVariable() {
         if (this.element.id === '') {
@@ -2173,6 +2202,7 @@ let LinearGauge = class LinearGauge extends Component {
      * To Initialize the control rendering
      */
     render() {
+        this.setTheme();
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
@@ -2186,6 +2216,7 @@ let LinearGauge = class LinearGauge extends Component {
         this.appendSecondaryElement();
         this.renderBorder();
         this.renderTitle();
+        this.renderArea();
         this.renderContainer();
     }
     appendSecondaryElement() {
@@ -2195,6 +2226,15 @@ let LinearGauge = class LinearGauge extends Component {
             secondaryElement.setAttribute('style', 'position: relative');
             this.element.appendChild(secondaryElement);
         }
+    }
+    /**
+     * Render the map area border
+     */
+    renderArea() {
+        let size = measureText(this.title, this.titleStyle);
+        let rectSize = new Rect(this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
+        let rect = new RectOption(this.element.id + 'LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, rectSize);
+        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
     }
     /**
      * @private
@@ -2217,7 +2257,7 @@ let LinearGauge = class LinearGauge extends Component {
     renderBorder() {
         let width = this.border.width;
         if (width > 0) {
-            let rect = new RectOption(this.element.id + '_LinearGaugeBorder', this.background, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);
+            let rect = new RectOption(this.element.id + '_LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);
             this.svgObject.appendChild(this.renderer.drawRectangle(rect));
         }
     }
@@ -2236,7 +2276,7 @@ let LinearGauge = class LinearGauge extends Component {
                 width: size.width,
                 height: size.height
             };
-            let element = textElement(options, this.titleStyle, this.titleStyle.color, this.svgObject);
+            let element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
             element.setAttribute('aria-label', this.description || this.title);
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
@@ -2553,7 +2593,7 @@ let LinearGauge = class LinearGauge extends Component {
         let process = withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer');
         if (withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer')) {
             this.triggerDragEvent(this.mouseElement);
-            options = new PathOption('pointerID', pointer.color, pointer.border.width, pointer.border.color, pointer.opacity, null, null, '');
+            options = new PathOption('pointerID', pointer.color || this.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, '');
             if (this.orientation === 'Vertical') {
                 pointer.bounds.y = this.mouseY;
             }

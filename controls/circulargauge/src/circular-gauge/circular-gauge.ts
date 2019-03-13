@@ -3,10 +3,11 @@
  */
 import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Event, EmitType, SvgRenderer, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { Event, EmitType, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, createElement } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { CircularGaugeModel } from './circular-gauge-model';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer } from './model/interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer, IThemeStyle } from './model/interface';
 import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs, IPointerDragEventArgs, IResizeEventArgs } from './model/interface';
 import { ITooltipRenderEventArgs, IAnnotationRenderEventArgs, IMouseEventArgs } from './model/interface';
 import { TextOption, textElement, RectOption, getAngleFromLocation, getValueFromAngle, removeElement } from './utils/helper';
@@ -22,6 +23,7 @@ import { AxisModel } from './axes/axis-model';
 import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown } from './model/constants';
 import { gaugeMouseUp, dragEnd, dragMove, dragStart, resized } from './model/constants';
 import { AxisLayoutPanel } from './axes/axis-panel';
+import { getThemeStyle } from './model/theme';
 
 /**
  * Represents the Circular gauge control.
@@ -75,9 +77,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     /**
      * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
-     * @default 'transparent'
+     * @default null
      */
-    @Property('transparent')
+    @Property(null)
     public background: string;
 
     /**
@@ -318,6 +320,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @hidden
      */
     public gaugeAxisLayoutPanel: AxisLayoutPanel;
+    /**
+     * @private
+     */
+    public themeStyle: IThemeStyle;
 
     /**
      * Constructor for creating the widget
@@ -333,58 +339,27 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     protected preRender(): void {
         this.unWireEvents();
         this.trigger(load, { gauge: this });
-        this.themeEffect();
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
         this.wireEvents();
-    }
-    private themeEffect(): void {
-        let themes: string = this.theme.toLowerCase();
-        if (themes === 'highcontrast') {
-            this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
-            this.setThemeColors('#FFFFFF', '#FFFFFF');
-        } else if (themes.indexOf('dark') > -1) {
-            for (let axis of this.axes) {
-                axis.labelStyle.font.color = axis.labelStyle.font.color || '#DADADA ';
-                axis.majorTicks.color = axis.majorTicks.color || '#C8C8C8';
-                axis.minorTicks.color = axis.minorTicks.color || '#9A9A9A';
-                for (let pointer of axis.pointers) {
-                    pointer.color = pointer.color || '#DADADA';
-                    pointer.needleTail.color = pointer.needleTail.color || '#9A9A9A';
-                    pointer.needleTail.border.color = pointer.needleTail.border.color || '#9A9A9A';
-                    pointer.cap.color = pointer.cap.color || '#9A9A9A';
-                    pointer.cap.border.color = pointer.cap.border.color || '#9A9A9A';
-                }
-            }
-        } else {
-            this.titleStyle.color = this.titleStyle.color || '#424242';
-            this.setThemeColors('#212121', '#757575');
-        }
-    }
-    private setThemeColors(labelcolor: string, others: string): void {
-        for (let axis of this.axes) {
-            axis.lineStyle.color = axis.lineStyle.color || others;
-            axis.labelStyle.font.color = axis.labelStyle.font.color || labelcolor;
-            axis.majorTicks.color = axis.majorTicks.color || others;
-            axis.minorTicks.color = axis.minorTicks.color || others;
-            for (let pointer of axis.pointers) {
-                pointer.color = pointer.color || others;
-                pointer.needleTail.color = pointer.needleTail.color || others;
-                pointer.needleTail.border.color = pointer.needleTail.border.color || others;
-                pointer.cap.color = pointer.cap.color || others;
-                pointer.cap.border.color = pointer.cap.border.color || others;
-            }
-        }
     }
     /**
      * To render the circular gauge elements
      */
     protected render(): void {
 
+        this.setTheme();
+
         this.calculateBounds();
 
         this.renderElements();
+
+    }
+
+    private setTheme(): void {
+
+        this.themeStyle = getThemeStyle(this.theme);
 
     }
 
@@ -497,7 +472,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         );
         if (value >= range.min && value <= range.max) {
             this.activePointer.currentValue = value;
-            this.activePointer.value = value;
             this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, this.activePointer, value);
         }
     }
@@ -548,6 +522,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 pointer: this.activePointer,
                 currentValue: this.activePointer.currentValue
             } as IPointerDragEventArgs);
+            this.activePointer.value = this.activePointer.currentValue;
             this.activeAxis = null;
             this.activePointer = null;
         }
@@ -743,7 +718,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 this.margin.top + 3 * (size.height / 4),
                 'middle', this.title
             );
-            let element: Element = textElement(options, this.titleStyle, this.titleStyle.color, this.svgObject, '');
+            let element: Element = textElement(
+                options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject, ''
+            );
             element.setAttribute('aria-label', this.description || this.title);
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
@@ -754,10 +731,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     private renderBorder(): void {
         let borderWidth: number = this.border.width;
-        if (borderWidth > 0 || (this.background !== null && this.background !== 'transparent')) {
+        if (borderWidth > 0 || (this.background || this.themeStyle.backgroundColor)) {
             this.svgObject.appendChild(this.renderer.drawRectangle(
                 new RectOption(
-                    this.element.id + '_CircularGaugeBorder', this.background, this.border, null,
+                    this.element.id + '_CircularGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, null,
                     new Rect(
                         borderWidth / 2, borderWidth / 2, this.availableSize.width - borderWidth,
                         this.availableSize.height - borderWidth
@@ -807,8 +784,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 }
             }
         });
+        this.isProtectedOnChange = true;
         pointer.currentValue = value;
         pointer.value = value;
+        this.isProtectedOnChange = false;
     }
 
     /**
@@ -930,6 +909,29 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         let refreshWithoutAnimation: boolean = false;
+        let axisIndex: string = null; let pointerIndex: string = null; let pointerValue: string = null;
+        let changedProperties: string = JSON.stringify(newProp);
+        let splitProperties: string[] = changedProperties.split('},');
+        if (splitProperties) {
+            for (let j: number = 0; j < splitProperties.length; j++) {
+                if (splitProperties[j].indexOf('pointers') > -1) {
+                    let properties: string[] = splitProperties[j].split('{');
+                    for (let k: number = 0; k < properties.length; k++) {
+                        let value: string = properties[k].replace(/([^a-z0-9]+)/gi, '');
+                        axisIndex = axisIndex === null && (value === 'axes') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') : axisIndex;
+                        pointerIndex = pointerIndex === null && (value === 'pointers') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') :
+                            pointerIndex;
+                        pointerValue = (value.indexOf('value') > -1) ? properties[k].replace(/[value&\/\\#,+()$~%'":*?<>{}]/g, '') :
+                            pointerValue;
+                    }
+                }
+            }
+        }
+        let samePointerValue: boolean = false;
+        if (axisIndex && pointerIndex && pointerValue) {
+            samePointerValue = (this.axes[parseFloat(axisIndex)].pointers[parseFloat(pointerIndex)] as Pointer).currentValue
+                === parseFloat(pointerValue);
+        }
         let isPointerValueSame: boolean = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
             !isNullOrUndefined(this.activePointer));
         for (let prop of Object.keys(newProp)) {

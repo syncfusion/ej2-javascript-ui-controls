@@ -96,7 +96,7 @@ export class Font extends ChildProperty<Font> {
     /**
      * Font size for the text.
      */
-    @Property(null)
+    @Property('12px')
     public size: string;
 
     /**
@@ -108,19 +108,19 @@ export class Font extends ChildProperty<Font> {
     /**
      * FontFamily for the text.
      */
-    @Property(null)
+    @Property('Roboto, Noto, Sans-serif')
     public fontFamily: string;
 
     /**
      * FontWeight for the text.
      */
-    @Property(null)
+    @Property('Medium')
     public fontWeight: string;
 
     /**
      * FontStyle for the text.
      */
-    @Property(null)
+    @Property('Medium')
     public fontStyle: string;
 
     /**
@@ -166,9 +166,8 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public template: string;
     /**
      * To customize the fill color of the tooltip.
-     * @default '#363F4C'
      */
-    @Property('#363F4C')
+    @Property('')
     public fill: string;
 
     /**
@@ -534,7 +533,7 @@ export class SubTitleSettings extends CommonTitleSettings {
     /**
      * Options for customizing title styles of the Maps.
      */
-    @Complex<FontModel>({}, Font)
+    @Complex<FontModel>({ size: Theme.mapsSubTitleFont.size }, Font)
     public textStyle: FontModel;
     /**
      * text alignment
@@ -550,7 +549,7 @@ export class TitleSettings extends CommonTitleSettings {
     /**
      * Options for customizing title styles of the Maps.
      */
-    @Complex<FontModel>({}, Font)
+    @Complex<FontModel>({ size: Theme.mapsTitleFont.size }, Font)
     public textStyle: FontModel;
     /**
      * text alignment
@@ -1196,7 +1195,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      * @default 'name'
      */
     @Property('name')
-    public shapePropertyPath: string| string[];
+    public shapePropertyPath: string | string[];
     /**
      * Specifies the animation duration for the layer.
      * @default 0

@@ -17,7 +17,6 @@ let lastHistoryLen: number = 0;
 export abstract class Component<ElementType extends HTMLElement> extends Base<ElementType> {
 
     public element: ElementType;
-    private detectFunction: Function;
     private randomId: string = uniqueID();
     /**
      * Enable or disable persisting component's state between page reloads.
@@ -202,7 +201,6 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.moduleLoader = new ModuleLoader(this);
         this.localObserver = new Observer(this);
         // tslint:disable-next-line:no-function-constructor-with-string-args
-        this.detectFunction = new Function('args', 'var prop = Object.keys(args); if(prop.length){this[prop[0]] = args[prop[0]];}');
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
         if (!isUndefined(selector)) {
             this.appendTo();
@@ -220,6 +218,13 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     private injectModules(): void {
         if (this.injectedModules && this.injectedModules.length) {
             this.moduleLoader.inject(this.requiredModules(), this.injectedModules);
+        }
+    }
+
+    private detectFunction(args: Object): void {
+        let prop: string[] = Object.keys(args);
+        if (prop.length) {
+            this[prop[0]] = args[prop[0]];
         }
     }
 

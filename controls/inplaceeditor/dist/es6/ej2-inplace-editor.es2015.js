@@ -916,7 +916,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
     }
     scrollResizeHandler() {
-        if (this.mode === 'Popup' && this.tipObj) {
+        if (this.mode === 'Popup' && this.tipObj && !(Browser.isDevice)) {
             this.removeEditor();
         }
     }
@@ -1435,7 +1435,9 @@ class Rte {
     }
     updateValue(e) {
         if (this.compObj && e.type === 'RTE') {
-            this.parent.setProperties({ value: this.compObj.value }, true);
+            let rteValue = this.compObj.contentModule.getEditPanel().innerHTML === '<p><br></p>' ?
+                '' : this.compObj.contentModule.getEditPanel().innerHTML;
+            this.parent.setProperties({ value: rteValue }, true);
         }
     }
     refresh() {

@@ -168,35 +168,51 @@ btnObj.appendTo('#bootstrapdark');
 // btnObj.appendTo('#highcontrastlight');
 
 document.getElementById('material').onclick = (e : Event) => {
+    enableRipple(true);
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material.css');
+    switchRippleHandler();
+    refresh();
 };
 document.getElementById('fabric').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric.css');
+    refresh();
 };
 document.getElementById('bootstrap').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap.css');
+    refresh();
 };
 document.getElementById('highcontrast').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
+    refresh();
 };
 
 document.getElementById('materialdark').onclick = (e : Event) => {
+    enableRipple(true);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
+    switchRippleHandler();
+    refresh();
 };
 
 document.getElementById('fabricdark').onclick = (e : Event) => {
+    enableRipple(true);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
+    refresh();
 };
 
 document.getElementById('bootstrapdark').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
+    refresh();
 };
 
 // document.getElementById('highcontrastlight').onclick = (e : Event) => {
@@ -204,6 +220,16 @@ document.getElementById('bootstrapdark').onclick = (e : Event) => {
 //     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast-light.css');
 // };
 
+function refresh(): void {
+    setTimeout(() => {
+        let ele: NodeListOf<HTMLInputElement> = document.getElementById('basic').getElementsByTagName('input');
+        for (let i: number = 0; i < ele.length; i++) {
+            (ele[i] as any).ej2_instances[0].refresh();
+        }
+    }, 1000);
+}
+
+function switchRippleHandler(): void {
     let elemArray: NodeListOf<Element> = document.querySelectorAll('.switch-control label');
     for (let i: number = 0, len: number = elemArray.length; i < len; i++) {
         let switchInst: Switch = getValue('ej2_instances', elemArray[i].parentElement.nextElementSibling.querySelector('.e-switch'))[0];
@@ -216,3 +242,4 @@ document.getElementById('bootstrapdark').onclick = (e : Event) => {
             rippleMouseHandler(e, rippleSpan);
         });
     }
+}

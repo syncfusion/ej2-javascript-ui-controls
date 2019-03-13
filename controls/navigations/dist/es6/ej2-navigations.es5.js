@@ -165,7 +165,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Specifies the value to disable/enable the HScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, HScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -638,7 +638,7 @@ var VScroll = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Specifies the value to disable/enable the VScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, VScroll will be enabled (false) or disabled (true).
      * @returns void.
      */
@@ -2922,22 +2922,13 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.eleFocus = function (closest$$1, pos) {
         var sib = Object(closest$$1)[pos + 'ElementSibling'];
         var contains = function (el) {
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2);
+            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled');
         };
         if (sib) {
             var skipEle = contains(sib);
             if (skipEle) {
-                if (Object(sib)[pos + 'ElementSibling']) {
-                    sib = Object(sib)[pos + 'ElementSibling'];
-                    skipEle = contains(sib);
-                    if (skipEle) {
-                        this.eleFocus(sib, pos);
-                        return;
-                    }
-                }
-                else {
-                    return;
-                }
+                this.eleFocus(sib, pos);
+                return;
             }
             this.elementFocus(sib);
         }
@@ -4097,7 +4088,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         var iconCss;
         var iconPos;
         item.id ? (dom.id = item.id) : dom.id = getUniqueID('e-tbr-btn');
-        var btnTxt = this.createElement('div', { className: 'e-tbar-btn-text' });
+        var btnTxt = this.createElement('span', { className: 'e-tbar-btn-text' });
         if (textStr) {
             btnTxt.innerHTML = textStr;
             dom.appendChild(btnTxt);
@@ -4349,19 +4340,23 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Shows or hides the Toolbar item that is in the specified index.
-     * @param  {number} index - Index value of target item.
+     * @param  {number | HTMLElement} index - Index value of target item or DOM element  of items to be hidden or shown.
      * @param  {boolean} value - Based on this Boolean value, item will be hide (true) or show (false). By default, value is false.
      * @returns void.
      */
     Toolbar.prototype.hideItem = function (index, value) {
-        if (this.tbarEle[index]) {
+        var isElement = (typeof (index) === 'object') ? true : false;
+        var eleIndex = index;
+        var ele;
+        if (isElement) {
+            ele = index;
+        }
+        else if (this.tbarEle[eleIndex]) {
             var innerItems = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
-            if (value === true) {
-                innerItems[index].classList.add(CLS_HIDDEN);
-            }
-            else {
-                innerItems[index].classList.remove(CLS_HIDDEN);
-            }
+            ele = innerItems[eleIndex];
+        }
+        if (ele) {
+            value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
             this.refreshOverflow();
         }
     };
@@ -7433,6 +7428,7 @@ var FOCUS = 'e-node-focus';
 var IMAGE = 'e-list-img';
 var BIGGER = 'e-bigger';
 var SMALL = 'e-small';
+var CHILD = 'e-has-child';
 var treeAriaAttr = {
     treeRole: 'tree',
     itemRole: 'treeitem',
@@ -7551,6 +7547,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         _this.preventExpand = false;
         _this.checkedElement = [];
         _this.disableNode = [];
+        _this.parentNodeCheck = [];
+        _this.expandChildren = [];
         _this.mouseDownStatus = false;
         return _this;
     }
@@ -7614,6 +7612,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.treeList = [];
         this.isLoaded = false;
         this.isInitalExpand = false;
+        this.expandChildren = [];
         this.index = 0;
         this.setTouchClass();
         if (isNullOrUndefined(this.selectedNodes)) {
@@ -7812,6 +7811,199 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         else {
             this.finalizeNode(this.element);
         }
+        this.parentNodeCheck = [];
+        this.updateCheckedStateFromDS();
+        if (this.autoCheck && this.showCheckBox && !this.isLoaded) {
+            this.updateParentCheckState();
+        }
+    };
+    /**
+     * Update the checkedNodes from datasource at initial rendering
+     */
+    TreeView.prototype.updateCheckedStateFromDS = function (id) {
+        if (this.treeData && this.showCheckBox) {
+            if (this.dataType === 1) {
+                var mapper = this.fields;
+                var resultData = new DataManager(this.treeData).executeLocal(new Query().where(mapper.isChecked, 'equal', true, false));
+                for (var i = 0; i < resultData.length; i++) {
+                    var resultId = resultData[i][this.fields.id] ? resultData[i][this.fields.id].toString() : null;
+                    var resultPId = resultData[i][this.fields.parentID] ? resultData[i][this.fields.parentID].toString() : null;
+                    if (this.checkedNodes.indexOf(resultId) === -1 && !(this.isLoaded)) {
+                        this.checkedNodes.push(resultId);
+                    }
+                    if (resultData[i][this.fields.hasChildren]) {
+                        var id_1 = resultData[i][this.fields.id];
+                        var childData = new DataManager(this.treeData).
+                            executeLocal(new Query().where(mapper.parentID, 'equal', id_1, false));
+                        for (var child = 0; child < childData.length; child++) {
+                            var childId = childData[child][this.fields.id] ? childData[child][this.fields.id].toString() : null;
+                            if (this.checkedNodes.indexOf(childId) === -1 && this.autoCheck) {
+                                this.checkedNodes.push(childId);
+                            }
+                        }
+                    }
+                }
+                for (var i = 0; i < this.checkedNodes.length; i++) {
+                    var mapper_1 = this.fields;
+                    var checkState = new DataManager(this.treeData).
+                        executeLocal(new Query().where(mapper_1.id, 'equal', parseInt(this.checkedNodes[i], 10), false));
+                    if (checkState[0] && this.autoCheck) {
+                        this.getCheckedNodeDetails(mapper_1, checkState);
+                        this.checkIndeterminateState(checkState[0]);
+                    }
+                    var checkedData = new DataManager(this.treeData).
+                        executeLocal(new Query().where(mapper_1.parentID, 'equal', parseInt(this.checkedNodes[i], 10), false));
+                    for (var index = 0; index < checkedData.length; index++) {
+                        var checkedId = checkedData[index][this.fields.id] ? checkedData[index][this.fields.id].toString() : null;
+                        if (this.checkedNodes.indexOf(checkedId) === -1 && this.autoCheck) {
+                            this.checkedNodes.push(checkedId);
+                        }
+                    }
+                }
+            }
+            else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
+                this.fields.dataSource.dataSource.offline)) {
+                for (var index = 0; index < this.treeData.length; index++) {
+                    var fieldId = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
+                    if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
+                        this.checkedNodes.push(fieldId);
+                    }
+                    var childItems = getValue(this.fields.child.toString(), this.treeData[index]);
+                    if (childItems) {
+                        this.updateChildCheckState(childItems, this.treeData[index]);
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * To check whether the list data has sub child and to change the parent check state accordingly
+     */
+    TreeView.prototype.getCheckedNodeDetails = function (mapper, checkNodes) {
+        var id = checkNodes[0][this.fields.parentID] ? checkNodes[0][this.fields.parentID].toString() : null;
+        var count = 0;
+        var element = this.element.querySelector('[data-uid="' + checkNodes[0][this.fields.id] + '"]');
+        var parentEle = this.element.querySelector('[data-uid="' + checkNodes[0][this.fields.parentID] + '"]');
+        if (!element && !parentEle) {
+            var len = this.parentNodeCheck.length;
+            if (this.parentNodeCheck.indexOf(id) === -1) {
+                this.parentNodeCheck.push(id);
+            }
+            var childNodes = this.getChildNodes(this.treeData, id);
+            for (var i = 0; i < childNodes.length; i++) {
+                var childId = childNodes[i][this.fields.id] ? childNodes[i][this.fields.id].toString() : null;
+                if (this.checkedNodes.indexOf(childId) !== -1) {
+                    count++;
+                }
+                if (count === childNodes.length && this.checkedNodes.indexOf(id) === -1) {
+                    this.checkedNodes.push(id);
+                }
+            }
+            var preElement = new DataManager(this.treeData).
+                executeLocal(new Query().where(mapper.id, 'equal', parseInt(id, 10), false));
+            this.getCheckedNodeDetails(mapper, preElement);
+        }
+        else if (parentEle) {
+            var check = select('.' + CHECK, parentEle);
+            if (!check) {
+                this.changeState(parentEle, 'indeterminate', null);
+            }
+        }
+    };
+    /**
+     * Update the checkedNodes and parent state when all the child Nodes are in checkedstate at initial rendering
+     */
+    TreeView.prototype.updateParentCheckState = function () {
+        var indeterminate = selectAll('.' + INDETERMINATE, this.element);
+        var childCheckedElement;
+        for (var i = 0; i < indeterminate.length; i++) {
+            var node = closest(indeterminate[i], '.' + LISTITEM);
+            var parentData = this.getTreeData(node);
+            var id = parentData[0][this.fields.id].toString();
+            if (this.dataType === 1) {
+                childCheckedElement = this.getChildNodes(this.treeData, id);
+            }
+            else {
+                childCheckedElement = getValue(this.fields.child.toString(), parentData[0]);
+            }
+            var count = 0;
+            if (childCheckedElement) {
+                for (var j = 0; j < childCheckedElement.length; j++) {
+                    var childId = childCheckedElement[j][this.fields.id].toString();
+                    if (this.checkedNodes.indexOf(childId) !== -1) {
+                        count++;
+                    }
+                }
+                if (count === childCheckedElement.length) {
+                    var nodeCheck = node.getAttribute('data-uid');
+                    if (this.checkedNodes.indexOf(nodeCheck) === -1) {
+                        this.checkedNodes.push(nodeCheck);
+                    }
+                    this.changeState(node, 'check', null);
+                }
+                else if (count === 0 && this.checkedNodes.length === 0) {
+                    this.changeState(node, 'uncheck', null);
+                }
+            }
+        }
+    };
+    /**
+     * Change the parent to indeterminate state whenever the child is in checked state which is not rendered in DOM
+     */
+    TreeView.prototype.checkIndeterminateState = function (data) {
+        var element;
+        if (this.dataType === 1) {
+            element = this.element.querySelector('[data-uid="' + data[this.fields.parentID] + '"]');
+        }
+        else {
+            element = this.element.querySelector('[data-uid="' + data[this.fields.id] + '"]');
+        }
+        if (element) {
+            var ariaChecked = element.querySelector('.' + CHECKBOXWRAP).getAttribute('aria-checked');
+            if (ariaChecked !== 'true') {
+                this.changeState(element, 'indeterminate', null, true, true);
+            }
+        }
+        else if (this.dataType === 2) {
+            var len = this.parentNodeCheck.length;
+            if (this.parentNodeCheck.indexOf(data[this.fields.id].toString()) === -1) {
+                this.parentNodeCheck.push(data[this.fields.id].toString());
+            }
+        }
+    };
+    /**
+     * Update the checkedNodes for child and subchild from datasource (hierarchical datasource) at initial rendering
+     */
+    TreeView.prototype.updateChildCheckState = function (childItems, treeData) {
+        var count = 0;
+        var checkedParent = treeData[this.fields.id] ? treeData[this.fields.id].toString() : '';
+        for (var index = 0; index < childItems.length; index++) {
+            var checkedChild = childItems[index][this.fields.id] ? childItems[index][this.fields.id].toString() : '';
+            if (childItems[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(checkedChild) === -1) {
+                this.checkedNodes.push(checkedChild);
+            }
+            if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1 && this.autoCheck) {
+                this.checkedNodes.push(checkedChild);
+            }
+            if (this.checkedNodes.indexOf(checkedChild) !== -1 && this.autoCheck) {
+                count++;
+            }
+            var subChildItems = getValue(this.fields.child.toString(), childItems[index]);
+            if (subChildItems) {
+                this.parentCheckData = treeData;
+                this.updateChildCheckState(subChildItems, childItems[index]);
+            }
+            if (count === childItems.length && this.autoCheck && this.checkedNodes.indexOf(checkedParent) === -1) {
+                this.checkedNodes.push(checkedParent);
+            }
+        }
+        if (count !== 0 && this.autoCheck) {
+            this.checkIndeterminateState(treeData);
+            if ((treeData !== this.parentCheckData) && (this.parentCheckData)) {
+                this.checkIndeterminateState(this.parentCheckData);
+            }
+        }
+        this.parentCheckData = null;
     };
     TreeView.prototype.beforeNodeCreate = function (e) {
         if (this.showCheckBox) {
@@ -7937,16 +8129,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.updateCheckedProp = function () {
-        var _this = this;
         if (this.showCheckBox) {
-            var nodes_1 = [].concat([], this.checkedNodes);
-            this.checkedNodes.forEach(function (value, index) {
-                var checkBox = _this.element.querySelector('[data-uid="' + value + '"]');
-                if (isNullOrUndefined(checkBox)) {
-                    nodes_1 = nodes_1.filter(function (e) { return e !== value; });
-                }
-            });
-            this.setProperties({ checkedNodes: nodes_1 }, true);
+            var nodes = [].concat([], this.checkedNodes);
+            this.setProperties({ checkedNodes: nodes }, true);
         }
     };
     TreeView.prototype.ensureIndeterminate = function () {
@@ -7982,12 +8167,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 ulElement = select('.' + PARENTITEM, element);
             }
             var checkedNodes = selectAll('.' + CHECK, ulElement);
+            var indeterminateNodes = selectAll('.' + INDETERMINATE, ulElement);
             var nodes = selectAll('.' + LISTITEM, ulElement);
             var checkBoxEle = element.getElementsByClassName(CHECKBOXWRAP)[0];
             if (nodes.length === checkedNodes.length) {
                 this.changeState(checkBoxEle, 'check', null, true, true);
             }
-            else if (checkedNodes.length > 0) {
+            else if (checkedNodes.length > 0 || indeterminateNodes.length > 0) {
                 this.changeState(checkBoxEle, 'indeterminate', null, true, true);
             }
             else if (checkedNodes.length === 0) {
@@ -8007,6 +8193,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(childElement)) {
                 checkBoxes = selectAll('.' + CHECKBOXWRAP, childElement);
                 var isChecked = element.getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
+                var parentCheck = element.getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(INDETERMINATE);
+                var childCheck = childElement.querySelectorAll('li');
+                var expandState = childElement.parentElement.getAttribute('aria-expanded');
                 var checkedState = void 0;
                 for (var index = 0; index < checkBoxes.length; index++) {
                     if (!isNullOrUndefined(this.currentLoadData) && !isNullOrUndefined(getValue(this.fields.isChecked, this.currentLoadData[index]))) {
@@ -8017,18 +8206,75 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     }
                     else {
                         var isNodeChecked = checkBoxes[index].getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
-                        checkedState = (!this.isLoaded && isNodeChecked) ? 'check' : (isChecked ? 'check' : 'uncheck');
+                        var childId = childCheck[index].getAttribute('data-uid');
+                        if (isChecked) {
+                            checkedState = 'check';
+                        }
+                        else if (isNodeChecked && !this.isLoaded) {
+                            checkedState = 'check';
+                        }
+                        else if (this.checkedNodes.indexOf(childId) !== -1 && this.isLoaded && (parentCheck || isChecked)) {
+                            checkedState = 'check';
+                        }
+                        else if (childCheck[index].classList.contains(CHILD) && (!isUndefined(this.parentNodeCheck) && this.autoCheck
+                            && (isChecked || parentCheck) && this.parentNodeCheck.indexOf(childId) !== -1)) {
+                            checkedState = 'indeterminate';
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(childId), 1);
+                        }
+                        else if (this.dataType === 1 && (!isUndefined(this.parentNodeCheck) && this.autoCheck &&
+                            (isChecked || parentCheck) && this.parentNodeCheck.indexOf(childId) !== -1)) {
+                            checkedState = 'indeterminate';
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(childId), 1);
+                        }
+                        else {
+                            checkedState = 'uncheck';
+                        }
                     }
                     this.changeState(checkBoxes[index], checkedState, e, true, true);
                 }
             }
+            if (this.autoCheck && this.isLoaded) {
+                this.updateParentCheckState();
+            }
         }
     };
     TreeView.prototype.doCheckBoxAction = function (nodes, doCheck) {
+        var li = selectAll('.' + LISTITEM, this.element);
         if (!isNullOrUndefined(nodes)) {
-            for (var i = 0, len = nodes.length; i < len; i++) {
-                var liEle = this.getElement(nodes[i]);
+            for (var len = nodes.length; len >= 0; len--) {
+                var liEle = void 0;
+                if (nodes.length === 1) {
+                    liEle = this.getElement(nodes[len - 1]);
+                }
+                else {
+                    liEle = this.getElement(nodes[len]);
+                }
                 if (isNullOrUndefined(liEle)) {
+                    var node = void 0;
+                    node = nodes[len - nodes.length] ? nodes[len - nodes.length].toString() : nodes[len] ? nodes[len].toString() : null;
+                    if (node !== '' && doCheck && node) {
+                        this.setValidCheckedNode(node);
+                        this.dynamicCheckState(node, doCheck);
+                    }
+                    else if (this.checkedNodes.indexOf(node) !== -1 && node !== '' && !doCheck) {
+                        this.checkedNodes.splice(this.checkedNodes.indexOf(node), 1);
+                        var childItems = this.getChildNodes(this.treeData, node);
+                        if (childItems) {
+                            for (var i = 0; i < childItems.length; i++) {
+                                var id = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : null;
+                                if (this.checkedNodes.indexOf(id) !== -1) {
+                                    this.checkedNodes.splice(this.checkedNodes.indexOf(id), 1);
+                                }
+                            }
+                            if (this.parentNodeCheck.indexOf(node) !== -1) {
+                                this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(node), 1);
+                            }
+                        }
+                        if (node) {
+                            this.dynamicCheckState(node, doCheck);
+                        }
+                        this.updateField(this.treeData, this.fields, node, 'isChecked', null);
+                    }
                     continue;
                 }
                 var checkBox = select('.' + PARENTITEM + ' .' + CHECKBOXWRAP, liEle);
@@ -8039,6 +8285,184 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             var checkBoxes = selectAll('.' + CHECKBOXWRAP, this.element);
             for (var index = 0; index < checkBoxes.length; index++) {
                 this.changeState(checkBoxes[index], doCheck ? 'check' : 'uncheck');
+            }
+            for (var i = 0; i < li.length; i++) {
+                this.ensureStateChange(li[i], doCheck);
+            }
+        }
+        if (nodes) {
+            for (var j = 0; j < nodes.length; j++) {
+                var node = nodes[j] ? nodes[j].toString() : '';
+                if (!doCheck) {
+                    this.updateField(this.treeData, this.fields, node, 'isChecked', null);
+                }
+            }
+        }
+        if (this.autoCheck) {
+            this.updateParentCheckState();
+        }
+    };
+    /**
+     * Changes the parent and child  check state while changing the checkedNodes via setmodel
+     */
+    TreeView.prototype.dynamicCheckState = function (node, doCheck) {
+        if (this.dataType === 1) {
+            var count = 0;
+            var resultId = new DataManager(this.treeData).executeLocal(new Query().where(this.fields.id, 'equal', parseInt(node, 10), false));
+            if (resultId[0]) {
+                var id = resultId[0][this.fields.id] ? resultId[0][this.fields.id].toString() : null;
+                var parent_1 = resultId[0][this.fields.parentID] ? resultId[0][this.fields.parentID].toString() : null;
+                var parentElement = this.element.querySelector('[data-uid="' + parent_1 + '"]');
+                var indeterminate = parentElement ? select('.' + INDETERMINATE, parentElement) : null;
+                var check = parentElement ? select('.' + CHECK, parentElement) : null;
+                var element = this.element.querySelector('[data-uid="' + id + '"]');
+                var childNodes = this.getChildNodes(this.treeData, parent_1);
+                if (childNodes) {
+                    for (var i = 0; i < childNodes.length; i++) {
+                        var childId = childNodes[i][this.fields.id] ? childNodes[i][this.fields.id].toString() : null;
+                        if (this.checkedNodes.indexOf(childId) !== -1) {
+                            count++;
+                        }
+                    }
+                }
+                if (this.checkedNodes.indexOf(node) !== -1 && parentElement && (id === node) && this.autoCheck) {
+                    this.changeState(parentElement, 'indeterminate', null);
+                }
+                else if (this.checkedNodes.indexOf(node) === -1 && element && (id === node) && !doCheck) {
+                    this.changeState(element, 'uncheck', null);
+                }
+                else if (this.checkedNodes.indexOf(node) !== -1 && element && (id === node) && doCheck) {
+                    this.changeState(element, 'check', null);
+                }
+                else if (this.checkedNodes.indexOf(node) === -1 && !element && parentElement && (id === node) && this.autoCheck
+                    && count !== 0) {
+                    this.changeState(parentElement, 'indeterminate', null);
+                }
+                else if (this.checkedNodes.indexOf(node) === -1 && !element && parentElement && (id === node) && this.autoCheck
+                    && count === 0) {
+                    this.changeState(parentElement, 'uncheck', null);
+                }
+                else if (!element && !parentElement && (id === node) && this.autoCheck) {
+                    this.updateIndeterminate(node, doCheck);
+                }
+            }
+        }
+        else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
+            this.fields.dataSource.dataSource.offline)) {
+            var id = void 0;
+            var parentElement = void 0;
+            var check = void 0;
+            for (var i = 0; i < this.treeData.length; i++) {
+                id = this.treeData[i][this.fields.id] ? this.treeData[i][this.fields.id].toString() : '';
+                parentElement = this.element.querySelector('[data-uid="' + id + '"]');
+                check = parentElement ? select('.' + CHECK, parentElement) : null;
+                if (this.checkedNodes.indexOf(id) === -1 && parentElement && check && !doCheck) {
+                    this.changeState(parentElement, 'uncheck', null);
+                }
+                var subChild = getValue(this.fields.child.toString(), this.treeData[i]);
+                if (subChild) {
+                    this.updateChildIndeterminate(subChild, id, node, doCheck, id);
+                }
+            }
+        }
+    };
+    /**
+     * updates the parent and child  check state while changing the checkedNodes via setmodel for listData
+     */
+    TreeView.prototype.updateIndeterminate = function (node, doCheck) {
+        var indeterminateData = this.getTreeData(node);
+        var count = 0;
+        var parent;
+        if (this.dataType === 1) {
+            parent = indeterminateData[0][this.fields.parentID] ? indeterminateData[0][this.fields.parentID].toString() : null;
+        }
+        var childNodes = this.getChildNodes(this.treeData, parent);
+        if (childNodes) {
+            for (var i = 0; i < childNodes.length; i++) {
+                var childId = childNodes[i][this.fields.id] ? childNodes[i][this.fields.id].toString() : null;
+                if (this.checkedNodes.indexOf(childId) !== -1) {
+                    count++;
+                }
+            }
+        }
+        var parentElement = this.element.querySelector('[data-uid="' + parent + '"]');
+        if (parentElement && doCheck) {
+            this.changeState(parentElement, 'indeterminate', null);
+        }
+        else if (!doCheck && parentElement && this.parentNodeCheck.indexOf(parent) === -1 && count !== 0) {
+            this.changeState(parentElement, 'indeterminate', null);
+        }
+        else if (!doCheck && parentElement && this.parentNodeCheck.indexOf(parent) === -1 && count === 0) {
+            this.changeState(parentElement, 'uncheck', null);
+        }
+        else if (!parentElement) {
+            if (!doCheck && this.checkedNodes.indexOf(parent) === -1 && this.parentNodeCheck.indexOf(parent) !== -1) {
+                this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(parent), 1);
+            }
+            else if (doCheck && this.checkedNodes.indexOf(parent) === -1 && this.parentNodeCheck.indexOf(parent) === -1) {
+                this.parentNodeCheck.push(parent);
+            }
+            this.updateIndeterminate(parent, doCheck);
+            if (this.checkedNodes.indexOf(parent) !== -1 && !doCheck) {
+                this.checkedNodes.splice(this.checkedNodes.indexOf(parent), 1);
+            }
+        }
+    };
+    /**
+     * updates the parent and child  check state while changing the checkedNodes via setmodel for hierarchical data
+     */
+    TreeView.prototype.updateChildIndeterminate = function (subChild, parent, node, doCheck, child) {
+        var count = 0;
+        for (var j = 0; j < subChild.length; j++) {
+            var subId = subChild[j][this.fields.id] ? subChild[j][this.fields.id].toString() : '';
+            if (this.checkedNodes.indexOf(subId) !== -1) {
+                count++;
+            }
+            var parentElement = this.element.querySelector('[data-uid="' + parent + '"]');
+            var indeterminate = parentElement ? select('.' + INDETERMINATE, parentElement) : null;
+            var check = parentElement ? select('.' + CHECK, parentElement) : null;
+            var element = this.element.querySelector('[data-uid="' + subId + '"]');
+            if (this.checkedNodes.indexOf(node) !== -1 && parentElement && (subId === node) && this.autoCheck) {
+                this.changeState(parentElement, 'indeterminate', null);
+            }
+            else if (this.checkedNodes.indexOf(node) === -1 && parentElement && !element && (subId === node) && !doCheck) {
+                if (this.autoCheck) {
+                    this.changeState(parentElement, 'uncheck', null);
+                }
+                else {
+                    if (count !== 0) {
+                        this.changeState(parentElement, 'indeterminate', null);
+                    }
+                    else {
+                        this.changeState(parentElement, 'uncheck', null);
+                    }
+                }
+            }
+            else if (this.checkedNodes.indexOf(node) === -1 && element && (subId === node) && !doCheck) {
+                this.changeState(element, 'uncheck', null);
+            }
+            else if (this.checkedNodes.indexOf(node) === -1 && indeterminate && (subId === node) && this.autoCheck && count === 0
+                && !doCheck) {
+                indeterminate.classList.remove(INDETERMINATE);
+            }
+            else if (this.checkedNodes.indexOf(node) === -1 && !element && check && (subId === node) && count === 0) {
+                this.changeState(parentElement, 'uncheck', null);
+            }
+            else if (!element && !parentElement && (subId === node) || (this.parentNodeCheck.indexOf(parent) !== -1) && this.autoCheck) {
+                var childElement = this.element.querySelector('[data-uid="' + child + '"]');
+                if (doCheck && count !== 0) {
+                    this.changeState(childElement, 'indeterminate', null);
+                }
+                else if (doCheck && count === subChild.length && this.checkedNodes.indexOf(parent) === -1) {
+                    this.checkedNodes.push(parent);
+                }
+                if (this.parentNodeCheck.indexOf(parent) === -1) {
+                    this.parentNodeCheck.push(parent);
+                }
+            }
+            var innerChild = getValue(this.fields.child.toString(), subChild[j]);
+            if (innerChild) {
+                this.updateChildIndeterminate(innerChild, subId, node, doCheck, child);
             }
         }
     };
@@ -8137,6 +8561,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                             this.expandAction(eNode, icon, null);
                         }
                     }
+                    else {
+                        if (eUids[i] && this.expandChildren.indexOf(eUids[i]) === -1) {
+                            this.expandChildren.push(eUids[i].toString());
+                        }
+                        continue;
+                    }
                 }
                 this.afterFinalized();
             }
@@ -8188,7 +8618,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ selectedNodes: [] }, true);
             for (var i = 0; i < sUids.length; i++) {
                 var sNode = select('[data-uid="' + sUids[i] + '"]', this.element);
-                this.selectNode(sNode, null, true);
+                if (sNode && !(sNode.classList.contains('e-active'))) {
+                    this.selectNode(sNode, null, true);
+                }
+                else {
+                    this.selectedNodes.push(sUids[i]);
+                }
                 if (!this.allowMultiSelection) {
                     break;
                 }
@@ -8441,8 +8876,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var childItems;
         if (this.fields.dataSource instanceof DataManager) {
             var level = this.parents(parentLi, '.' + PARENTITEM).length;
-            var mapper_1 = this.getChildFields(this.fields, level, 1);
-            if (isNullOrUndefined(mapper_1) || isNullOrUndefined(mapper_1.dataSource)) {
+            var mapper_2 = this.getChildFields(this.fields, level, 1);
+            if (isNullOrUndefined(mapper_2) || isNullOrUndefined(mapper_2.dataSource)) {
                 detach(eicon);
                 this.removeExpand(parentLi, true);
                 return;
@@ -8451,13 +8886,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
-                this.loadChild(childItems, mapper_1, eicon, parentLi, expandChild, callback, loaded);
+                this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
             }
             else {
-                mapper_1.dataSource.executeQuery(this.getQuery(mapper_1, parentLi.getAttribute('data-uid'))).then(function (e) {
+                mapper_2.dataSource.executeQuery(this.getQuery(mapper_2, parentLi.getAttribute('data-uid'))).then(function (e) {
                     _this.treeList.pop();
                     childItems = e.result;
-                    _this.loadChild(childItems, mapper_1, eicon, parentLi, expandChild, callback, loaded);
+                    _this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
                 });
             }
         }
@@ -8473,6 +8908,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
                 parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
                 this.expandNode(parentLi, eicon, loaded);
+                this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
                 this.disableTreeNodes(childItems);
@@ -8496,6 +8932,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
             parentLi.appendChild(ListBase.createList(this.createElement, childItems, this.listBaseOption));
             this.expandNode(parentLi, eicon, loaded);
+            this.setSelectionForChildNodes(childItems);
             this.ensureCheckNode(parentLi);
             this.finalizeNode(parentLi);
             this.disableTreeNodes(childItems);
@@ -8516,6 +8953,18 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 this.doDisableAction([id]);
             }
             i++;
+        }
+    };
+    /**
+     * Sets the child Item in selectedState while rendering the child node
+     */
+    TreeView.prototype.setSelectionForChildNodes = function (nodes) {
+        var i;
+        for (i = 0; i < nodes.length; i++) {
+            var id = nodes[i][this.fields.id].toString();
+            if (this.selectedNodes !== undefined && this.selectedNodes.indexOf(id) !== -1) {
+                this.doSelectionAction();
+            }
         }
     };
     TreeView.prototype.ensureCheckNode = function (element) {
@@ -8782,6 +9231,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.renderChildNodes(currLi, expandChild, callback);
+            var liEles = selectAll('.' + LISTITEM, currLi);
+            for (var i = 0; i < liEles.length; i++) {
+                var id = this.getId(liEles[i]);
+                if (this.expandChildren.indexOf(id) !== -1 && this.expandChildren !== undefined) {
+                    var icon_1 = select('.' + EXPANDABLE, select('.' + TEXTWRAP, liEles[i]));
+                    if (!isNullOrUndefined(icon_1)) {
+                        this.expandAction(liEles[i], icon_1, null);
+                    }
+                    this.expandChildren.splice(this.expandChildren.indexOf(id), 1);
+                }
+            }
         }
     };
     TreeView.prototype.keyActionHandler = function (e) {
@@ -8936,7 +9396,136 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             this.ensureChildCheckState(li);
             this.ensureParentCheckState(closest(closest(li, '.' + PARENTITEM), '.' + LISTITEM));
         }
+        if (this.autoCheck) {
+            this.ensureStateChange(li);
+        }
         this.nodeCheckedEvent(checkWrap, isCheck, e);
+    };
+    /**
+     * Update checkedNodes when UI interaction happens before the child node renders in DOM
+     */
+    TreeView.prototype.ensureStateChange = function (li, doCheck) {
+        var childElement = select('.' + PARENTITEM, li);
+        var parentIndex = li.getAttribute('data-uid');
+        var mapper = this.fields;
+        if (this.dataType === 1 && this.autoCheck) {
+            var resultData = new DataManager(this.treeData).executeLocal(new Query().where(mapper.parentID, 'equal', parseInt(parentIndex, 10), false));
+            for (var i = 0; i < resultData.length; i++) {
+                var resultId = resultData[i][this.fields.id] ? resultData[i][this.fields.id].toString() : null;
+                var isCheck = resultData[i][this.fields.isChecked] ? resultData[i][this.fields.isChecked].toString() : null;
+                if (this.checkedNodes.indexOf(parentIndex) !== -1 && this.checkedNodes.indexOf(resultId) === -1) {
+                    this.checkedNodes.push(resultId);
+                    var childItems = this.getChildNodes(this.treeData, resultId);
+                    this.getChildItems(childItems, doCheck);
+                    if (this.parentNodeCheck.indexOf(resultId) !== -1) {
+                        this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(resultId), 1);
+                    }
+                }
+                else if (this.checkedNodes.indexOf(parentIndex) === -1 && childElement === null &&
+                    this.checkedNodes.indexOf(resultId) !== -1) {
+                    this.checkedNodes.splice(this.checkedNodes.indexOf(resultId), 1);
+                    if (isCheck === 'true') {
+                        this.updateField(this.treeData, this.fields, resultId, 'isChecked', null);
+                    }
+                    if (this.checkedNodes.indexOf(parentIndex) === -1 && childElement === null ||
+                        this.parentNodeCheck.indexOf(resultId) !== -1) {
+                        var childNodes = this.getChildNodes(this.treeData, resultId);
+                        this.getChildItems(childNodes, doCheck);
+                        if (this.parentNodeCheck.indexOf(resultId) !== -1) {
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(resultId), 1);
+                        }
+                    }
+                }
+            }
+        }
+        else if (this.dataType === 1 && !this.autoCheck) {
+            if (!doCheck) {
+                var checkedData = new DataManager(this.treeData).executeLocal(new Query().where(mapper.isChecked, 'equal', true, false));
+                for (var i = 0; i < checkedData.length; i++) {
+                    var id = checkedData[i][this.fields.id] ? checkedData[i][this.fields.id].toString() : null;
+                    if (this.checkedNodes.indexOf(id) !== -1) {
+                        this.checkedNodes.splice(this.checkedNodes.indexOf(id), 1);
+                    }
+                    this.updateField(this.treeData, this.fields, id, 'isChecked', null);
+                }
+                this.checkedNodes = [];
+            }
+            else {
+                for (var i = 0; i < this.treeData.length; i++) {
+                    var checkedId = this.treeData[i][this.fields.id] ? this.treeData[i][this.fields.id].toString() : null;
+                    if (this.checkedNodes.indexOf(checkedId) === -1) {
+                        this.checkedNodes.push(checkedId);
+                    }
+                }
+            }
+        }
+        else {
+            var childItems = this.getChildNodes(this.treeData, parentIndex);
+            if (childItems) {
+                this.childStateChange(childItems, parentIndex, childElement, doCheck);
+            }
+        }
+    };
+    TreeView.prototype.getChildItems = function (childItems, doCheck) {
+        for (var i = 0; i < childItems.length; i++) {
+            var childId = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : null;
+            var childIsCheck = childItems[i][this.fields.isChecked] ? childItems[i][this.fields.isChecked].toString() :
+                null;
+            if (this.checkedNodes.indexOf(childId) !== -1 && !doCheck) {
+                this.checkedNodes.splice(this.checkedNodes.indexOf(childId), 1);
+            }
+            if (this.checkedNodes.indexOf(childId) === -1 && doCheck) {
+                this.checkedNodes.push(childId);
+            }
+            if (childIsCheck === 'true' && !doCheck) {
+                this.updateField(this.treeData, this.fields, childId, 'isChecked', null);
+            }
+            var subChildItems = this.getChildNodes(this.treeData, childId);
+            if (subChildItems.length > 0) {
+                this.getChildItems(subChildItems);
+            }
+        }
+    };
+    /**
+     * Update checkedNodes when UI interaction happens before the child node renders in DOM for hierarchical DS
+     */
+    TreeView.prototype.childStateChange = function (childItems, parent, childElement, doCheck) {
+        for (var i = 0; i < childItems.length; i++) {
+            var checkedChild = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : '';
+            var isCheck = childItems[i][this.fields.isChecked] ? childItems[i][this.fields.isChecked].toString() : null;
+            if (this.autoCheck) {
+                if (this.checkedNodes.indexOf(parent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1) {
+                    this.checkedNodes.push(checkedChild);
+                    if (this.parentNodeCheck.indexOf(checkedChild) !== -1) {
+                        this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(checkedChild), 1);
+                    }
+                }
+                else if (this.checkedNodes.indexOf(parent) === -1 && childElement === null && !doCheck) {
+                    this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
+                    if (isCheck === 'true') {
+                        this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);
+                    }
+                }
+            }
+            else if (!this.autoCheck) {
+                if (!doCheck) {
+                    if (this.checkedNodes.indexOf(checkedChild) !== -1) {
+                        this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
+                    }
+                    this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);
+                    this.checkedNodes = [];
+                }
+                else {
+                    if (this.checkedNodes.indexOf(checkedChild) === -1) {
+                        this.checkedNodes.push(checkedChild);
+                    }
+                }
+            }
+            var subChild = this.getChildNodes(this.treeData, checkedChild);
+            if (subChild) {
+                this.childStateChange(subChild, parent, childElement, doCheck);
+            }
+        }
     };
     //This method can be used to get all child nodes of a parent by passing the children of a parent along with 'validateCheck' set to false
     TreeView.prototype.allCheckNode = function (child, newCheck, checked, childCheck, validateCheck) {
@@ -9832,12 +10421,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             targetParent = dropLi;
             if (drop !== true) {
                 level = ++level;
-                var parent_1 = targetParent ? select('.e-list-parent', targetParent) : null;
-                indexValue = (parent_1) ? parent_1.children.length : 0;
-                if (!(this.fields.dataSource instanceof DataManager) && parent_1 === null && targetParent) {
-                    var parent_2 = targetParent.hasAttribute('data-uid') ?
+                var parent_2 = targetParent ? select('.e-list-parent', targetParent) : null;
+                indexValue = (parent_2) ? parent_2.children.length : 0;
+                if (!(this.fields.dataSource instanceof DataManager) && parent_2 === null && targetParent) {
+                    var parent_3 = targetParent.hasAttribute('data-uid') ?
                         this.getChildNodes(this.fields.dataSource, targetParent.getAttribute('data-uid').toString()) : null;
-                    indexValue = (parent_2) ? parent_2.length : 0;
+                    indexValue = (parent_3) ? parent_3.length : 0;
                 }
             }
         }
@@ -10402,8 +10991,106 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     TreeView.prototype.setCheckedNodes = function (nodes) {
         nodes = JSON.parse(JSON.stringify(nodes));
         this.uncheckAll(this.checkedNodes);
+        this.setIndeterminate(nodes);
         if (nodes.length > 0) {
             this.checkAll(nodes);
+        }
+    };
+    /**
+     * Checks whether the checkedNodes entered are valid and sets the valid checkedNodes while changing via setmodel
+     */
+    TreeView.prototype.setValidCheckedNode = function (node) {
+        if (this.dataType === 1) {
+            var mapper = this.fields;
+            var resultData = new DataManager(this.treeData).executeLocal(new Query().where(mapper.id, 'equal', parseInt(node, 10), false));
+            if (resultData[0]) {
+                this.setChildCheckState(resultData, node, resultData[0]);
+                if (this.autoCheck) {
+                    var parent_4 = resultData[0][this.fields.parentID] ? resultData[0][this.fields.parentID].toString() : null;
+                    var childNodes = this.getChildNodes(this.treeData, parent_4);
+                    var count = 0;
+                    for (var len = 0; len < childNodes.length; len++) {
+                        var childId = childNodes[len][this.fields.id].toString();
+                        if (this.checkedNodes.indexOf(childId) !== -1) {
+                            count++;
+                        }
+                    }
+                    if (count === childNodes.length && this.checkedNodes.indexOf(parent_4) === -1 && parent_4) {
+                        this.checkedNodes.push(parent_4);
+                    }
+                }
+            }
+        }
+        else if (this.dataType === 2) {
+            for (var a = 0; a < this.treeData.length; a++) {
+                var index = this.treeData[a][this.fields.id] ? this.treeData[a][this.fields.id].toString() : '';
+                if (index === node && this.checkedNodes.indexOf(node) === -1) {
+                    this.checkedNodes.push(node);
+                    break;
+                }
+                var childItems = getValue(this.fields.child.toString(), this.treeData[a]);
+                if (childItems) {
+                    this.setChildCheckState(childItems, node, this.treeData[a]);
+                }
+            }
+        }
+    };
+    /**
+     * Checks whether the checkedNodes entered are valid and sets the valid checkedNodes while changing via setmodel(for hierarchical DS)
+     */
+    TreeView.prototype.setChildCheckState = function (childItems, node, treeData) {
+        var checkedParent;
+        var count = 0;
+        if (this.dataType === 1) {
+            if (treeData) {
+                checkedParent = treeData[this.fields.id] ? treeData[this.fields.id].toString() : null;
+            }
+            for (var index = 0; index < childItems.length; index++) {
+                var checkNode = childItems[index][this.fields.id] ? childItems[index][this.fields.id].toString() : null;
+                if (treeData && checkedParent && this.autoCheck) {
+                    if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkNode) === -1) {
+                        this.checkedNodes.push(checkNode);
+                    }
+                }
+                if (checkNode === node && this.checkedNodes.indexOf(node) === -1) {
+                    this.checkedNodes.push(node);
+                }
+                var subChildItems = this.getChildNodes(this.treeData, checkNode);
+                if (subChildItems) {
+                    this.setChildCheckState(subChildItems, node, treeData);
+                }
+            }
+        }
+        else {
+            if (treeData) {
+                checkedParent = treeData[this.fields.id] ? treeData[this.fields.id].toString() : '';
+            }
+            for (var index = 0; index < childItems.length; index++) {
+                var checkedChild = childItems[index][this.fields.id] ? childItems[index][this.fields.id].toString() : '';
+                if (treeData && checkedParent && this.autoCheck) {
+                    if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1) {
+                        this.checkedNodes.push(checkedChild);
+                    }
+                }
+                if (checkedChild === node && this.checkedNodes.indexOf(node) === -1) {
+                    this.checkedNodes.push(node);
+                }
+                var subChildItems = getValue(this.fields.child.toString(), childItems[index]);
+                if (subChildItems) {
+                    this.setChildCheckState(subChildItems, node, childItems[index]);
+                }
+                if (this.checkedNodes.indexOf(checkedChild) !== -1 && this.autoCheck) {
+                    count++;
+                }
+                if (count === childItems.length && this.checkedNodes.indexOf(checkedParent) === -1 && this.autoCheck) {
+                    this.checkedNodes.push(checkedParent);
+                }
+            }
+        }
+    };
+    TreeView.prototype.setIndeterminate = function (nodes) {
+        for (var i = 0; i < nodes.length; i++) {
+            this.setValidCheckedNode(nodes[i]);
         }
     };
     /**
@@ -10575,6 +11262,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
+        if (this.showCheckBox && dropLi) {
+            this.ensureParentCheckState(dropLi);
+        }
         if (this.fields.dataSource instanceof DataManager === false) {
             this.preventExpand = false;
             this.triggerEvent();
@@ -10702,7 +11392,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     checked = 1;
                 }
                 childNode = this.getChildNodes(this.treeData, this.treeData[i][id].toString());
-                (childNode !== null) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
+                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
             }
         }
         i = 0;
@@ -11101,7 +11791,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             this.show();
         }
         else if (!this.isOpen) {
-            this.setProperties({ isOpen: false }, true);
             addClass([this.element], CLOSE);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
@@ -11133,8 +11822,14 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Hide the Sidebar component, if it is in an open state.
      * @returns void
      */
-    Sidebar.prototype.hide = function () {
-        var closeArguments = { model: this, element: this.element, cancel: false };
+    Sidebar.prototype.hide = function (e) {
+        var closeArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -11157,7 +11852,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                 this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
             }
             this.destroyBackDrop();
-            this.setCloseOnDocumentClick();
             this.setAnimation();
             if (this.type === 'Slide') {
                 document.body.classList.remove('e-sidebar-overflow');
@@ -11169,8 +11863,14 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * Shows the Sidebar component, if it is in closed state.
      * @returns void
      */
-    Sidebar.prototype.show = function () {
-        var openArguments = { model: this, element: this.element, cancel: false };
+    Sidebar.prototype.show = function (e) {
+        var openArguments = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -11188,7 +11888,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             var elementWidth = this.element.getBoundingClientRect().width;
             this.setType(this.type);
             this.createBackDrop();
-            this.setCloseOnDocumentClick();
             this.setAnimation();
             if (this.type === 'Slide') {
                 document.body.classList.add('e-sidebar-overflow');
@@ -11250,11 +11949,20 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         return this.element.classList.contains(OPEN) ? true : false;
     };
     Sidebar.prototype.setMediaQuery = function () {
-        if (this.mediaQuery && this.mediaQuery.matches) {
-            this.show();
-        }
-        else if (this.mediaQuery && this.getState()) {
-            this.hide();
+        if (this.mediaQuery) {
+            var media = false;
+            if (typeof (this.mediaQuery) === 'string') {
+                media = window.matchMedia(this.mediaQuery).matches;
+            }
+            else {
+                media = (this.mediaQuery).matches;
+            }
+            if (media) {
+                this.show();
+            }
+            else if (this.getState()) {
+                this.hide();
+            }
         }
     };
     Sidebar.prototype.resize = function (e) {
@@ -11272,7 +11980,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
             return;
         }
-        this.hide();
+        this.hide(e);
     };
     Sidebar.prototype.enableGestureHandler = function (args) {
         if (this.position === 'Left' && args.swipeDirection === 'Right' &&

@@ -91,7 +91,7 @@ export class DiagramContextMenu {
      * @hidden
      * @private
      */
-    public addEventListener() : void {
+    public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on('initial-load', this.render, this);
     }
@@ -100,7 +100,7 @@ export class DiagramContextMenu {
      * @hidden
      * @private
      */
-    public removeEventListener() : void {
+    public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off('initial-load', this.render);
     }
@@ -260,18 +260,23 @@ export class DiagramContextMenu {
         }
         this.eventArgs = args.event;
         this.parent.trigger(contextMenuOpen, diagramArgs);
-        if (diagramArgs.items.length === diagramArgs.hiddenItems.length) {
-            diagramArgs.cancel = true;
-            diagramArgs.hiddenItems = [];
-        } else {
-            this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
-            this.contextMenu.enableItems(this.disableItems, false, true);
-            let contextItems: DiagramContextMenu = this;
-            args.items.forEach((item: MenuItemModel) => {
-                if (contextItems.hiddenItems.indexOf(item.id) > -1) {
-                    contextItems.contextMenu.hideItems([item.id], true);
-                }
-            });
+        let hidden: boolean = true;
+        this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
+        this.contextMenu.enableItems(this.disableItems, false, true);
+        let contextItems: DiagramContextMenu = this;
+        args.items.forEach((item: MenuItemModel) => {
+            if (contextItems.hiddenItems.indexOf(item.id) > -1) {
+                contextItems.contextMenu.hideItems([item.id], true);
+            }
+        });
+        contextItems.contextMenu.items.forEach((item: MenuItemModel) => {
+            if (contextItems.hiddenItems.indexOf(item.id) === -1) {
+                hidden = false;
+            }
+        });
+        if (hidden) {
+            diagramArgs.cancel = hidden;
+            this.hiddenItems = [];
         }
     }
 

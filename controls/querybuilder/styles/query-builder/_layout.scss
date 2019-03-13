@@ -329,6 +329,7 @@
     & .e-summary-text {
       border-style: none;
       font-family: $font-family;
+      font-size: $qrybldr-smrytxt-font-size;
       line-height: 1.5em;
       padding: $qrybldr-summary-padding;
       resize: none;
@@ -468,6 +469,7 @@
       }
 
     & .e-summary-text {
+      font-size: $qrybldr-bigger-smrytxt-font-size;
       line-height: $qrybldr-summary-line-height;
       padding: $qrybldr-bigger-summary-padding;
     }

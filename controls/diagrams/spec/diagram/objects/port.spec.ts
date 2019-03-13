@@ -6,6 +6,7 @@ import { ConnectorModel} from '../../../src/diagram/objects/connector-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { PortVisibility, PortConstraints } from '../../../src/diagram/enum/enum';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
@@ -21,6 +22,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram101' });
             document.body.appendChild(ele);
             let node: NodeModel = { shape: {}, style: {} };
@@ -190,6 +197,15 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[2] as Node).ports[0].pathData === 'M6.805,0L13.61,10.703L0,10.703z').toBe(true);
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 
     describe('Port drag issue', () => {
@@ -234,6 +250,48 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Port constraint issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramPortDragIssue' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: "node", offsetX: 250, offsetY: 250, width: 100, height: 100, rotateAngle: 180, annotations: [{ content: "Test" }],
+                ports: [
+                    {
+                        id: "port", width: 25, height: 25, offset: { x: 0.5, y: 1 },
+                        visibility: PortVisibility.Visible, constraints: PortConstraints.Drag
+                    }
+                ]
+            };
+            let connector: ConnectorModel = { sourceID: "node", sourcePortID: "port", targetPoint: { x: 350, y: 250 } };
+            diagram = new Diagram({ width: 800, height: 800, nodes: [node], connectors: [connector] });
+            diagram.appendTo('#diagramPortDragIssue');
+        });
 
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking drag port with constraints', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let nodePort: PointPortModel = diagram.nodes[0].ports[0];
+            let connectorSourcePoint: PointModel = diagram.connectors[0].sourcePoint;
+            expect(diagram.connectors[0].sourcePortID == "port").toBe(true);
+            done();
+        });
 
+        it('Checking port with serialization', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let nodePort: PointPortModel = diagram.nodes[0].ports[0];
+            let connectorSourcePoint: PointModel = diagram.connectors[0].sourcePoint;
+            let saveData = '{"width":"100%","height":"700px","nodes":[{"shape":{"type":"Flow","shape":"Process"},"id":"Meeting","height":60,"offsetX":309,"offsetY":160,"annotations":[{"content":"Start Transaction","style":{"strokeWidth":0,"strokeColor":"transparent","fill":"transparent","color":"white","bold":false,"textWrapping":"WrapWithOverflow","whiteSpace":"CollapseSpace","fontFamily":"Arial","fontSize":12,"italic":false,"opacity":1,"strokeDashArray":"","textAlign":"Center","textOverflow":"Wrap","textDecoration":"None"},"id":"0annotation","hyperlink":{"link":"","content":"","textDecoration":"None"},"constraints":4,"visibility":true,"rotateAngle":0,"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center","offset":{"x":0.5,"y":0.5}}],"zIndex":1,"width":145,"style":{"fill":"#357BD2","strokeColor":"white","strokeWidth":1,"strokeDashArray":"","opacity":1,"gradient":{"type":"None"}},"ports":[{"id":"port1","shape":"Circle","offset":{"x":0,"y":0.5},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port2","shape":"Circle","offset":{"x":0.5,"y":1},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port3","shape":"Circle","offset":{"x":1,"y":0.5},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port4","shape":"Circle","offset":{"x":0.5,"y":0},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8,"constraints":1}],            "container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{},"flip":"None","wrapper":{"actualSize":{"width":145,"height":60},"offsetX":309,"offsetY":160},"constraints":5240814,"isExpanded":true,"expandIcon":{"shape":"None"},"inEdges":[],"outEdges":["connector2"],"parentId":"","processId":"","umlIndex":-1},{"shape":{"type":"Flow","shape":"Process"},"id":"BoardDecision","height":60,"offsetX":309,"offsetY":240,"annotations":[{"content":"Verification","style":{"strokeWidth":0,"strokeColor":"transparent","fill":"transparent","color":"white","bold":false,"textWrapping":"WrapWithOverflow","whiteSpace":"CollapseSpace","fontFamily":"Arial","fontSize":12,"italic":false,"opacity":1,"strokeDashArray":"","textAlign":"Center","textOverflow":"Wrap","textDecoration":"None"},"id":"0annotation","hyperlink":{"link":"","content":"","textDecoration":"None"},"constraints":4,"visibility":true,"rotateAngle":0,"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center","offset":{"x":0.5,"y":0.5}}],"zIndex":2,"width":145,"style":{"fill":"#357BD2","strokeColor":"white","strokeWidth":1,"strokeDashArray":"","opacity":1,"gradient":{"type":"None"}},"ports":[{"id":"port1","shape":"Circle","offset":{"x":0,"y":0.5},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port2","shape":"Circle","offset":{"x":0.5,"y":1},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8,"constraints":1},{"id":"port3","shape":"Circle","offset":{"x":1,"y":0.5},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port4","shape":"Circle","offset":{"x":0.5,"y":0},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8}],"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{},"flip":"None","wrapper":{"actualSize":{"width":145,"height":60},"offsetX":309,"offsetY":240},"constraints":5240814,"isExpanded":true,"expandIcon":{"shape":"None"},"inEdges":["connector2"],"outEdges":[],"parentId":"","processId":"","umlIndex":-1},{"shape":{"type":"Flow","shape":"Process"},"id":"node11","height":60,"offsetX":539,"offsetY":330,"annotations":[{"content":"Enter payment method","style":{"strokeWidth":0,"strokeColor":"transparent","fill":"transparent","color":"white","bold":false,"textWrapping":"WrapWithOverflow","whiteSpace":"CollapseSpace","fontFamily":"Arial","fontSize":12,"italic":false,"opacity":1,"strokeDashArray":"","textAlign":"Center","textOverflow":"Wrap","textDecoration":"None"},"id":"0annotation","hyperlink":{"link":"","content":"","textDecoration":"None"},"constraints":4,"visibility":true,"rotateAngle":0,"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center","offset":{"x":0.5,"y":0.5}}],"zIndex":5,"width":145,"style":{"fill":"#357BD2","strokeColor":"white","strokeWidth":1,"strokeDashArray":"","opacity":1,"gradient":{"type":"None"}},"ports":[{"id":"port1","shape":"Circle","offset":{"x":0,"y":0.5},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port2","shape":"Circle","offset":{"x":0.5,"y":1},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port3","shape":"Circle","offset":{"x":1,"y":0.5},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8},{"id":"port4","shape":"Circle","offset":{"x":0.5,"y":0},"height":12,"width":12,"margin":{"right":0,"bottom":0,"left":0,"top":0},"style":{"fill":"white","strokeColor":"black","opacity":1,"strokeDashArray":"","strokeWidth":1},"horizontalAlignment":"Center","verticalAlignment":"Center","visibility":8}],"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{},"flip":"None","wrapper":{"actualSize":{"width":145,"height":60},"offsetX":539,"offsetY":330},"constraints":5240814,"isExpanded":true,"expandIcon":{"shape":"None"},"inEdges":[],"outEdges":[],"parentId":"","processId":"","umlIndex":-1}],"connectors":[{"shape":{"type":"None"},"id":"connector2","sourceID":"Meeting","targetID":"BoardDecision","zIndex":12,"type":"Orthogonal","targetDecorator":{"shape":"Arrow","width":10,"height":10,"pivot":{"x":0,"y":0.5},"style":{"fill":"black","strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1,"gradient":{"type":"None"}}},"segments":[{"type":"Orthogonal","direction":null}],"sourcePortID":"","targetPortID":"","sourcePoint":{"x":309,"y":190},"targetPoint":{"x":309,"y":210},"sourceDecorator":{"shape":"None","width":10,"height":10,"pivot":{"x":0,"y":0.5},"style":{"fill":"black","strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1,"gradient":{"type":"None"}}},"style":{"strokeWidth":1,"strokeColor":"black","fill":"transparent","strokeDashArray":"","opacity":1,"gradient":{"type":"None"}},"cornerRadius":0,"wrapper":{"actualSize":{"width":0,"height":20},"offsetX":309,"offsetY":200},"annotations":[],"visible":true,"constraints":11838,"hitPadding":10,"parentId":""}],"snapSettings":{"horizontalGridlines":{"lineColor":"#e0e0e0","lineIntervals":[1,9,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75],"snapIntervals":[20],"lineDashArray":""},"verticalGridlines":{"lineColor":"#e0e0e0","lineIntervals":[1,9,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75,0.25,9.75],"snapIntervals":[20],"lineDashArray":""},"constraints":31},"getNodeDefaults":{},"getConnectorDefaults":{},"dragEnter":{},"enableRtl":false,"locale":"en-US","enablePersistence":false,"scrollSettings":{"viewPortWidth":463,"viewPortHeight":700,"currentZoom":1,"horizontalOffset":0,"verticalOffset":16,"minZoom":0.2,"maxZoom":30,"scrollLimit":"Diagram"},"rulerSettings":{"showRulers":false},"backgroundColor":"transparent","constraints":500,"layout":{"type":"None","enableAnimation":true},"contextMenuSettings":{},"dataSourceSettings":{"dataManager":null,"crudAction":{"read":""},"connectionDataSource":{"crudAction":{"read":""}}},"mode":"SVG","layers":[{"id":"default_layer","visible":true,"lock":false,"objects":["Meeting","BoardDecision","node11","connector2"],"zIndex":0}],"pageSettings":{"boundaryConstraints":"Infinity","orientation":"Landscape","height":null,"width":null,"background":{"source":"","color":"transparent"},"showPageBreaks":false},"selectedItems":{"nodes":[],"connectors":[],"wrapper":null,"constraints":16382,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"width":145,"height":60,"offsetX":489,"offsetY":630,"userHandles":[]},"basicElements":[],"tooltip":{"content":"","relativeMode":"Mouse"},"commandManager":{"commands":[]},"tool":3}'
+            diagram.loadDiagram(saveData);
+            let value = JSON.parse(saveData)
+            expect(value.nodes.length > 0).toBe(true);
+            done();
+        });
+
+    });
 });

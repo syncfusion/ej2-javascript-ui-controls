@@ -123,7 +123,12 @@ export let defaultLocale: { [key: string]: string } = {
     "tableVerticalAlignDropDownMiddle": 'Align Middle',
     "tableVerticalAlignDropDownBottom": 'Align Bottom',
     "tableStylesDropDownDashedBorder": 'Dashed Borders',
-    "tableStylesDropDownAlternateRows": 'Alternate Rows'
+    "tableStylesDropDownAlternateRows": 'Alternate Rows',
+    'pasteFormat': 'Paste Format',
+    'pasteFormatContent': 'Choose the formatting action',
+    'plainText': 'Plain Text',
+    'cleanFormat': 'Clean',
+    'keepFormat': 'Keep'
 };
 
 export let toolsLocale: { [key: string]: string } = {

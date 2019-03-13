@@ -512,6 +512,17 @@ let DropDownBase = class DropDownBase extends Component {
     updateListValues() {
         // Used this method in component side.
     }
+    findListElement(list, findNode, attribute, value) {
+        let liElement = null;
+        let listArr = [].slice.call(list.querySelectorAll(findNode));
+        for (let index = 0; index < listArr.length; index++) {
+            if (listArr[index].getAttribute(attribute) === (value + '')) {
+                liElement = listArr[index];
+                break;
+            }
+        }
+        return liElement;
+    }
     raiseDataBound(listItems, e) {
         this.hideSpinner();
         this.trigger('dataBound', { items: listItems, e: e });
@@ -1041,6 +1052,9 @@ __decorate([
     Property(false)
 ], DropDownBase.prototype, "ignoreAccent", void 0);
 __decorate([
+    Property()
+], DropDownBase.prototype, "locale", void 0);
+__decorate([
     Event()
 ], DropDownBase.prototype, "actionBegin", void 0);
 __decorate([
@@ -1205,7 +1219,6 @@ let DropDownList = class DropDownList extends DropDownBase {
     resetHandler(e) {
         e.preventDefault();
         this.clear(e);
-        this.onChangeEvent(e);
     }
     resetFocusElement() {
         this.removeHover();
@@ -1267,6 +1280,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         this.setSelection(null, null);
         this.isSelectCustom = false;
         this.updateIconState();
+        this.cloneElements();
     }
     setHTMLAttributes() {
         if (Object.keys(this.htmlAttributes).length) {
@@ -1843,7 +1857,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             }
             let proxy = this;
             if (!this.isSecondClick) {
-                setTimeout(() => { proxy.cloneElements(); }, 100);
+                setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, 100);
             }
         }
         else {
@@ -1856,7 +1870,6 @@ let DropDownList = class DropDownList extends DropDownBase {
             if (ulElement) {
                 ulElement = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
                 this.actionCompleteData.ulElement = ulElement;
-                this.isSecondClick = true;
             }
         }
     }
@@ -2291,17 +2304,6 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.isNotSearchList = false;
             return;
         }
-        if (this.value && this.dataSource instanceof DataManager) {
-            let checkField = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
-            let checkVal = list.some((x) => x[checkField] === this.value);
-            if (!checkVal) {
-                let query = this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value));
-                this.dataSource.executeQuery(query).then((e) => {
-                    this.addItem(e.result, list.length);
-                    this.updateValues();
-                });
-            }
-        }
         if (this.isActive) {
             let selectedItem = this.selectedLI ? this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
@@ -2324,6 +2326,19 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.updateValues();
                 this.initRemoteRender = false;
                 this.initial = false;
+                if (this.value && this.dataSource instanceof DataManager) {
+                    let checkField = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+                    let checkVal = list.some((x) => x[checkField] === this.value);
+                    if (!checkVal) {
+                        this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value)))
+                            .then((e) => {
+                            if (e.result.length > 0) {
+                                this.addItem(e.result, list.length);
+                                this.updateValues();
+                            }
+                        });
+                    }
+                }
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
@@ -2366,7 +2381,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     focusIndexItem() {
         let value = this.getItemData().value;
         this.activeIndex = this.getIndexByValue(value);
-        let element = this.list.querySelector('[data-value="' + value + '"]');
+        let element = this.findListElement(this.list, 'li', 'data-value', value);
         this.selectedLI = element;
         this.activeItem(element);
         this.removeFocus();
@@ -4462,6 +4477,7 @@ const dropdownIcon = 'e-input-group-icon e-ddl-icon';
 const iconAnimation = 'e-icon-anim';
 const TOTAL_COUNT_WRAPPER = 'e-delim-total';
 const BOX_ELEMENT = 'e-multiselect-box';
+const FILTERPARENT = 'e-filter-parent';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -4511,7 +4527,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.allowCustomValue = false;
             this.hideSelectedItem = false;
             this.closePopupOnSelect = false;
-            this.allowFiltering = true;
             modules.push({
                 member: 'CheckBoxSelection',
                 args: [this]
@@ -4713,7 +4728,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     targetElement() {
         this.targetInputElement = this.inputElement;
-        if (this.mode === 'CheckBox') {
+        if (this.mode === 'CheckBox' && this.allowFiltering) {
             this.notify('targetElement', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
         }
         return this.targetInputElement.value;
@@ -5072,36 +5087,35 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     wrapperClick(e) {
         this.setDynValue = false;
-        if (this.readonly || !this.enabled) {
+        if (!this.enabled) {
             return;
         }
         if (e.target === this.overAllClear) {
             e.preventDefault();
             return;
         }
-        if (!this.inputFocus && this.mode !== 'CheckBox') {
-            this.dispatchEvent(this.inputElement, 'focus');
+        if (!this.inputFocus) {
+            this.inputElement.focus();
         }
-        if (!this.inputFocus && this.mode === 'CheckBox') {
-            this.focusIn(e);
-        }
-        if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
-            if (this.isPopupOpen()) {
-                this.refreshPopup();
+        if (!this.readonly) {
+            if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
+                if (this.isPopupOpen()) {
+                    this.refreshPopup();
+                }
+                return;
             }
-            return;
-        }
-        if (!this.isPopupOpen() &&
-            (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
-            this.showPopup();
-        }
-        else {
-            this.hidePopup();
-            if (this.mode === 'CheckBox') {
-                this.showOverAllClear();
-                this.inputFocus = true;
-                if (!this.overAllWrapper.classList.contains(FOCUS)) {
-                    this.overAllWrapper.classList.add(FOCUS);
+            if (!this.isPopupOpen() &&
+                (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
+                this.showPopup();
+            }
+            else {
+                this.hidePopup();
+                if (this.mode === 'CheckBox') {
+                    this.showOverAllClear();
+                    this.inputFocus = true;
+                    if (!this.overAllWrapper.classList.contains(FOCUS)) {
+                        this.overAllWrapper.classList.add(FOCUS);
+                    }
                 }
             }
         }
@@ -5171,7 +5185,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.refreshInputHight();
         floatLabelBlur(this.overAllWrapper, this.componentWrapper, this.value, this.floatLabelType, this.placeholder);
         this.refreshPlaceHolder();
-        if (this.allowFiltering && !isNullOrUndefined(this.mainList)) {
+        if ((this.allowFiltering || (this.enableSelectionOrder === true && this.mode === 'CheckBox'))
+            && !isNullOrUndefined(this.mainList)) {
             this.ulElement = this.mainList;
         }
         this.checkPlaceholderSize();
@@ -5242,7 +5257,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             + ':not(.' + HIDE_LIST + ')') : null;
     }
     focusIn(e) {
-        if (this.enabled && !this.readonly) {
+        if (this.enabled) {
             this.showOverAllClear();
             this.inputFocus = true;
             if (!this.value) {
@@ -5267,7 +5282,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             }
             this.checkPlaceholderSize();
             if (this.focused) {
-                this.inputElement.focus();
                 let args = { isInteracted: e ? true : false, event: e };
                 this.trigger('focus', args);
                 this.focused = false;
@@ -5345,6 +5359,16 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.inputElement.setAttribute('aria-activedescendant', focusedItem.id);
         }
     }
+    homeNavigation(isHome) {
+        this.removeFocus();
+        let scrollEle = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
+            + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+        if (scrollEle.length > 0) {
+            let element = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
+            element.classList.add(dropDownBaseClasses.focus);
+            this.scrollBottom(element);
+        }
+    }
     onKeyDown(e) {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
             return;
@@ -5362,7 +5386,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let activeIndex;
             switch (e.keyCode) {
                 case 36:
-                case 35: break;
+                case 35:
+                    this.homeNavigation((e.keyCode === 36) ? true : false);
+                    break;
                 case 33:
                     e.preventDefault();
                     if (focusedItem) {
@@ -5440,7 +5466,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         e.preventDefault();
         this.moveByList(1);
         this.keyAction = true;
-        if (document.activeElement.classList.contains('e-input-filter')) {
+        if (document.activeElement.classList.contains('e-input-filter')
+            || (this.mode === 'CheckBox' && !this.allowFiltering && document.activeElement !== this.list)) {
             this.list.focus();
             EventHandler.add(this.list, 'keydown', this.onKeyDown, this);
         }
@@ -5454,7 +5481,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
         let focuseElem = this.list.querySelector('li.' + dropDownBaseClasses.focus);
         let index = Array.prototype.slice.call(list).indexOf(focuseElem);
-        if (index <= 0) {
+        if (index <= 0 && (this.mode === 'CheckBox' && this.allowFiltering)) {
             this.keyAction = false;
             this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
         }
@@ -5604,7 +5631,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.refreshPlaceHolder();
     }
     refreshListItems(data) {
-        if ((this.allowFiltering || this.allowCustomValue) && this.mainList && this.listData) {
+        if ((this.allowFiltering || (this.mode === 'CheckBox' && this.enableSelectionOrder === true)
+            || this.allowCustomValue) && this.mainList && this.listData) {
             let list;
             if (this.sortOrder === 'Descending' || this.sortOrder === 'Ascending') {
                 list = this.ulElement.cloneNode ? this.ulElement.cloneNode(true) : this.ulElement;
@@ -5873,7 +5901,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     removeChip(value) {
         if (this.chipCollectionWrapper) {
-            let element = this.chipCollectionWrapper.querySelector('span[data-value="' + value + '"]');
+            let element = this.findListElement(this.chipCollectionWrapper, 'span', 'data-value', value);
             if (element) {
                 remove(element);
             }
@@ -6083,6 +6111,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 return;
             }
             document.body.appendChild(this.popupWrapper);
+            let checkboxFilter = this.popupWrapper.querySelector('.' + FILTERPARENT);
+            if (this.mode === 'CheckBox' && !this.allowFiltering && checkboxFilter && this.filterParent) {
+                checkboxFilter.remove();
+                this.filterParent = null;
+            }
             let overAllHeight = parseInt(this.popupHeight, 10);
             this.popupWrapper.style.visibility = 'hidden';
             if (this.headerTemplate) {
@@ -6118,8 +6151,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     enable: this.mode === 'CheckBox',
                     popupElement: this.popupWrapper
                 };
-                this.notify('searchBox', args);
-                overAllHeight -= this.searchBoxHeight;
+                if (this.allowFiltering) {
+                    this.notify('searchBox', args);
+                    overAllHeight -= this.searchBoxHeight;
+                }
                 addClass([this.popupWrapper], 'e-checkbox');
             }
             if (this.popupHeight !== 'auto') {
@@ -6149,12 +6184,14 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     }
                     this.loadTemplate();
                     this.setScrollPosition();
-                    this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
+                    if (this.allowFiltering) {
+                        this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
+                    }
                 }
             });
             this.popupObj.close();
             this.popupWrapper.style.visibility = '';
-            if (this.mode === 'CheckBox' && Browser.isDevice) {
+            if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
                 this.notify('deviceSearchBox', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
             }
         }
@@ -6271,6 +6308,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.keyDownStatus = false;
     }
     preRender() {
+        if (this.allowFiltering === null) {
+            this.allowFiltering = (this.mode === 'CheckBox') ? true : false;
+        }
         this.initializeData();
         this.updateDataAttribute(this.htmlAttributes);
         super.preRender();
@@ -6712,7 +6752,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     data += temp;
                     temp = this.viewWrapper.innerHTML;
                     this.viewWrapper.innerHTML = data;
-                    wrapperleng = this.viewWrapper.offsetWidth;
+                    wrapperleng = this.viewWrapper.offsetWidth +
+                        parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
@@ -6778,7 +6819,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let overAllContainer = this.componentWrapper.offsetWidth -
             parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
             parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
-        let wrapperleng = this.viewWrapper.offsetWidth;
+        let wrapperleng = this.viewWrapper.offsetWidth + parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
         if (((wrapperleng + downIconWidth) >= overAllContainer) && wrapperleng !== 0 && this.viewWrapper.firstChild &&
             this.viewWrapper.firstChild.nodeType === 3) {
             while (((wrapperleng + downIconWidth) > overAllContainer) && wrapperleng !== 0 && this.viewWrapper.firstChild &&
@@ -6974,7 +7015,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     this.refreshPlaceHolder();
                     break;
                 case 'filterBarPlaceholder':
-                    this.notify('filterBarPlaceholder', { filterBarPlaceholder: newProp.filterBarPlaceholder });
+                    if (this.allowFiltering) {
+                        this.notify('filterBarPlaceholder', { filterBarPlaceholder: newProp.filterBarPlaceholder });
+                    }
                     break;
                 case 'delimiterChar':
                     if (this.mode !== 'Box') {
@@ -7020,11 +7063,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 case 'popupHeight':
                 case 'headerTemplate':
                 case 'footerTemplate':
-                    if (this.popupObj) {
-                        this.popupObj.destroy();
-                        this.popupObj = null;
+                    this.reInitializePoup();
+                    break;
+                case 'allowFiltering':
+                    if (this.mode === 'CheckBox' && this.popupObj) {
+                        this.reInitializePoup();
                     }
-                    this.renderPopup();
                     break;
                 default:
                     let msProps;
@@ -7033,6 +7077,13 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     break;
             }
         }
+    }
+    reInitializePoup() {
+        if (this.popupObj) {
+            this.popupObj.destroy();
+            this.popupObj = null;
+        }
+        this.renderPopup();
     }
     updateVal(newProp, oldProp, prop) {
         if (!this.list) {
@@ -7073,7 +7124,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.overAllWrapper.classList.remove(iconAnimation);
             this.popupObj.hide(new Animation(eventArgs.animation));
             attributes(this.inputElement, { 'aria-expanded': 'false' });
-            this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'clear' });
+            if (this.allowFiltering) {
+                this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'clear' });
+            }
             this.popupObj.hide();
             removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
             EventHandler.remove(this.list, 'keydown', this.onKeyDown);
@@ -7216,7 +7269,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let textCol = '';
             for (let index = 0, optionsLen = optionsElement.length; index < optionsLen; index++) {
                 let opt = optionsElement[index];
-                if (opt.selected) {
+                if (!isNullOrUndefined(opt.getAttribute('selected'))) {
                     (opt.getAttribute('value')) ? valueCol.push(opt.getAttribute('value')) : textCol += (opt.text + this.delimiterChar);
                 }
             }
@@ -7263,7 +7316,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     checkAutoFocus() {
         if (this.element.hasAttribute('autofocus')) {
-            this.focusIn();
+            this.inputElement.focus();
         }
     }
     setFloatLabelType() {
@@ -7294,16 +7347,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.updateReadonly(this.readonly);
         this.refreshInputHight();
         this.checkPlaceholderSize();
-    }
-    findListElement(list, findNode, attr, value) {
-        let liElement = null;
-        list.querySelectorAll(findNode).forEach((item) => {
-            if (item.getAttribute(attr) === (value + '')) {
-                liElement = item;
-                return;
-            }
-        });
-        return liElement;
     }
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
@@ -7376,7 +7419,7 @@ __decorate$4([
     Property(null)
 ], MultiSelect.prototype, "itemTemplate", void 0);
 __decorate$4([
-    Property(false)
+    Property(null)
 ], MultiSelect.prototype, "allowFiltering", void 0);
 __decorate$4([
     Property(false)
@@ -7596,16 +7639,16 @@ class CheckBoxSelection {
                 this.setLocale();
                 this.checboxCreate(this.checkAllParent);
                 if (this.parent.headerTemplate) {
-                    if (!isNullOrUndefined(this.filterParent)) {
-                        append([this.checkAllParent], this.filterParent);
+                    if (!isNullOrUndefined(this.parent.filterParent)) {
+                        append([this.checkAllParent], this.parent.filterParent);
                     }
                     else {
                         append([this.checkAllParent], this.parent.popupWrapper);
                     }
                 }
                 if (!this.parent.headerTemplate) {
-                    if (!isNullOrUndefined(this.filterParent)) {
-                        this.filterParent.parentNode.insertBefore(this.checkAllParent, this.filterParent.nextSibling);
+                    if (!isNullOrUndefined(this.parent.filterParent)) {
+                        this.parent.filterParent.parentNode.insertBefore(this.checkAllParent, this.parent.filterParent.nextSibling);
                     }
                     else {
                         prepend([this.checkAllParent], this.parent.popupWrapper);
@@ -7699,8 +7742,8 @@ class CheckBoxSelection {
         }
     }
     setSearchBox(args) {
-        if (isNullOrUndefined(this.filterParent)) {
-            this.filterParent = this.parent.createElement('span', {
+        if (isNullOrUndefined(this.parent.filterParent)) {
+            this.parent.filterParent = this.parent.createElement('span', {
                 className: filterParent
             });
             this.filterInput = this.parent.createElement('input', {
@@ -7718,8 +7761,8 @@ class CheckBoxSelection {
                 buttons: backIcon ? [searchBackIcon, filterBarClearIcon] : [filterBarClearIcon],
                 properties: { placeholder: this.parent.filterBarPlaceholder }
             }, this.parent.createElement);
-            append([this.filterInputObj.container], this.filterParent);
-            prepend([this.filterParent], args.popupElement);
+            append([this.filterInputObj.container], this.parent.filterParent);
+            prepend([this.parent.filterParent], args.popupElement);
             attributes(this.filterInput, {
                 'aria-disabled': 'false',
                 'aria-owns': this.parent.element.id + '_options',
@@ -7798,11 +7841,12 @@ class CheckBoxSelection {
         if (!Browser.isIE) {
             target = !isNullOrUndefined(e) && e.relatedTarget;
         }
-        if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE) {
+        if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE
+            && this.filterInput) {
             this.filterInput.focus();
             return;
         }
-        if (this.parent.scrollFocusStatus) {
+        if (this.parent.scrollFocusStatus && this.filterInput) {
             e.preventDefault();
             this.filterInput.focus();
             this.parent.scrollFocusStatus = false;
@@ -7845,7 +7889,12 @@ class CheckBoxSelection {
         }
         if (!this.parent.overAllWrapper.contains(e.target) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            this.parent.onBlur(e);
+            if (Browser.isIE) {
+                this.parent.onBlur();
+            }
+            else {
+                this.parent.inputElement.blur();
+            }
         }
         if (this.filterInput === target) {
             this.filterInput.focus();

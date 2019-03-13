@@ -5,11 +5,12 @@ import {
     findChildren, Location, Rect, Size, measureText,
     TextOption, PathOption, RectOption, drawSymbol, orderByArea
 } from '../utils/helper';
-import { Browser, isNullOrUndefined, SvgRenderer, EventHandler, GradientColor, LinearGradient, extend } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, EventHandler, extend } from '@syncfusion/ej2-base';
+import { SvgRenderer, GradientColor, LinearGradient } from '@syncfusion/ej2-svg-base';
 import { renderTextElement, textTrim } from '../utils/helper';
-import { ILegendItemRenderingEventArgs } from '../model/interface';
+import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs } from '../model/interface';
 import { LegendMode, LegendPosition, LegendOrientation, LabelPlacement, LabelIntersectAction } from '../utils/enum';
-import { legendItemRendering } from '../model/constants';
+import { legendItemRendering, legendRendering } from '../model/constants';
 
 /**
  * Legend module class
@@ -58,6 +59,15 @@ export class TreeMapLegend {
         this.heightIncrement = 0;
         this.defsElement = this.treemap.renderer.createDefs();
         this.treemap.svgObject.appendChild(this.defsElement);
+        let eventArgs: ILegendRenderingEventArgs;
+        eventArgs = {
+            cancel: false, name: legendRendering, treemap: this.treemap, _changePosition: this.treemap.legendSettings.position,
+            position: this.treemap.legendSettings.position
+        };
+        this.treemap.trigger(legendRendering, eventArgs);
+        if (!eventArgs.cancel && eventArgs._changePosition !== this.treemap.legendSettings.position) {
+            this.treemap.legendSettings.position = eventArgs._changePosition;
+        }
         this.calculateLegendBounds();
         if (this.legendCollections.length > 0) {
             this.drawLegend();
@@ -79,7 +89,8 @@ export class TreeMapLegend {
             let legendMode: LegendMode = legend.mode; let shapeX: number = 0; let shapeY: number = 0;
             let textX: number = 0; let textY: number = 0; let shapeHeight: number = legend.shapeHeight;
             let shapeWidth: number = legend.shapeWidth; let shapeLocation: Location[] = []; let textLocation: Rect[] = [];
-            let orientation: LegendOrientation = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom')
+            let orientation: LegendOrientation = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom'
+                || (position === 'Auto' && treemap.availableSize.width <= treemap.availableSize.height))
                 ? 'Horizontal' : 'Vertical') : legend.orientation;
             let leftPadding: number = 10; let topPadding: number = 10; let spacing: number = 10;
             let legendWidth: number = (legend.width.length > 1) ? (legend.width.indexOf('%') > -1) ? (treemap.availableSize.width / 100)
@@ -272,9 +283,26 @@ export class TreeMapLegend {
     }
 
     private findPaletteLegendItems(data: Object, type: string): void {
-        let child: Object[];
+        let child: Object[]; let legendFillColor: string;
+        if (!isNullOrUndefined(this.treemap.drilledItems)) {
+            if (this.treemap.drilledItems.length === 0 && !isNullOrUndefined(this.treemap.initialDrillDown.groupName)
+                && isNullOrUndefined(this.treemap.drilledLegendItems)) {
+                let items: Object[] = findChildren(data)['values'];
+                for (let k: number = 0; k < items.length; k++) {
+                    if (items[k]['Name'] === this.treemap.initialDrillDown.groupName) {
+                        items[k]['isDrilled'] = !items[k]['isDrilled'];
+                        data = items[k];
+                        this.treemap.currentLevel = this.treemap.initialDrillDown.groupIndex;
+                        legendFillColor = this.treemap.palette.length > 0 ? this.treemap.palette[k % this.treemap.palette.length] :
+                            items[k]['data'][this.treemap.colorValuePath];
+                        break;
+                    }
+                }
+            }
+        }
         if (this.treemap.enableDrillDown && !isNullOrUndefined(this.treemap.drilledLegendItems)) {
             let childElement: Object = this.treemap.drilledLegendItems;
+            legendFillColor = childElement['data']['options']['fill'];
             if (childElement['data']['isDrilled']) {
                 child = findChildren(childElement['data'])['values'];
             } else {
@@ -297,7 +325,8 @@ export class TreeMapLegend {
                     if (!isDuplicate) {
                         this.legendCollections.push({
                             legendName: legendName,
-                            legendFill: this.treemap.palette.length > 0 ? this.treemap.palette[i % this.treemap.palette.length] :
+                            legendFill: this.treemap.palette.length > 0 ? !isNullOrUndefined(this.treemap.currentLevel)
+                                ? legendFillColor : this.treemap.palette[i % this.treemap.palette.length] :
                                 child[i]['data'][this.treemap.colorValuePath],
                             legendData: [],
                             itemArea: child[i]['weight']
@@ -308,7 +337,8 @@ export class TreeMapLegend {
             this.legendCollections.sort(orderByArea);
             if (this.treemap.palette.length > 0) {
                 for (let j: number = 0; j < this.legendCollections.length; j++) {
-                    this.legendCollections[j]['legendFill'] = this.treemap.palette[j % this.treemap.palette.length];
+                    this.legendCollections[j]['legendFill'] = !isNullOrUndefined(this.treemap.currentLevel)
+                        ? legendFillColor : this.treemap.palette[j % this.treemap.palette.length];
                 }
             }
         }
@@ -483,6 +513,23 @@ export class TreeMapLegend {
                 let bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
                 let textLocation: Location = new Location(item['textX'], item['textY']);
                 let rectOptions: RectOption = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
+                if (this.treemap.enableRtl) {
+                    if (treemap.legendSettings.position === 'Left' || treemap.legendSettings.position === 'Right'
+                        || (treemap.legendSettings.position === 'Auto'
+                            && this.treemap.availableSize.width >= this.treemap.availableSize.height)) {
+                        rectOptions.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                            - (this.translate.y + rectOptions.height) - Math.abs(this.legendBorderRect.y - rectOptions.y);
+                        textLocation.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                            - (this.translate.y) + (item['textHeight'] / 2)
+                            - Math.abs(this.legendBorderRect.y - textLocation.y);
+                    } else {
+                        rectOptions.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+                            - (this.translate.x + rectOptions.width)
+                            - Math.abs(this.legendBorderRect.x - rectOptions.x);
+                        textLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+                            - this.translate.x - Math.abs(this.legendBorderRect.x - textLocation.x);
+                    }
+                }
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 renderTextElement(textOptions, textFont, textFont.color || this.treemap.themeStyle.legendTextColor, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
@@ -490,16 +537,33 @@ export class TreeMapLegend {
         }
     }
 
+    private defaultLegendRtlLocation(collection: Object, spacing: number, treemap: TreeMap, legend: LegendSettingsModel): Object {
+        let shapeLocation: Location = collection['Shape'];
+        let textLocation: Location = collection['Text'];
+        let legendText: string = collection['DisplayText'];
+        let textSize: Size = measureText(legendText, legend.textStyle);
+        shapeLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+            - (this.translate.x + spacing) - Math.abs(this.legendBorderRect.x - shapeLocation.x);
+        textLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+            - (this.translate.x + textSize.width + spacing) - Math.abs(this.legendBorderRect.x - textLocation.x);
+        if (treemap.legendSettings.position === 'Left' || treemap.legendSettings.position === 'Right'
+            || (treemap.legendSettings.position === 'Auto'
+                && this.treemap.availableSize.width >= this.treemap.availableSize.height)) {
+            shapeLocation.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                - this.translate.y - Math.abs(Math.abs(this.legendBorderRect.y) - shapeLocation.y) - (legend.shapeHeight / 2);
+            textLocation.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                - this.translate.y - Math.abs(Math.abs(this.legendBorderRect.y) - textLocation.y);
+        }
+        return { shapeLocation: shapeLocation, textLocation: textLocation };
+    }
+
     private drawLegendItem(page: number): void {
-        let treemap: TreeMap = this.treemap;
+        let treemap: TreeMap = this.treemap; let spacing: number = 10;
         let legend: LegendSettingsModel = <LegendSettingsModel>treemap.legendSettings;
-        let spacing: number = 10;
         let shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
-        let textOptions: TextOption;
-        let renderOptions: PathOption | RectOption;
-        let render: SvgRenderer = treemap.renderer;
-        let shapeBorder: BorderModel = legend.shapeBorder;
-        let eventArgs: ILegendItemRenderingEventArgs;
+        let textOptions: TextOption; let legendRtlLocation: Object;
+        let renderOptions: PathOption | RectOption; let render: SvgRenderer = treemap.renderer;
+        let shapeBorder: BorderModel = legend.shapeBorder; let eventArgs: ILegendItemRenderingEventArgs;
         if (page >= 0 && page < this.totalPages.length) {
             if (document.getElementById(this.legendGroup.id)) {
                 document.getElementById(this.legendGroup.id).remove();
@@ -515,10 +579,16 @@ export class TreeMapLegend {
                 let textId: string = treemap.element.id + '_Legend_Text_Index_' + i;
                 let shapeLocation: Location = collection['Shape'];
                 let textLocation: Location = collection['Text'];
+                if (treemap.enableRtl) {
+                    legendRtlLocation = this.defaultLegendRtlLocation(collection, spacing, treemap, legend);
+                    shapeLocation = legendRtlLocation['shapeLocation'];
+                    textLocation = legendRtlLocation['textLocation'];
+                }
                 eventArgs = {
                     cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
+                this.treemap.trigger(legendItemRendering, eventArgs);
                 let renderOptions: PathOption = new PathOption(
                     shapeId, eventArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, ''
                 );
@@ -531,12 +601,10 @@ export class TreeMapLegend {
                 );
                 this.legendGroup.appendChild(legendElement);
             }
-            let pagingGroup: Element;
-            let width: number = spacing; let height: number = (spacing / 2);
+            let pagingGroup: Element; let width: number = spacing; let height: number = (spacing / 2);
             if (this.page !== 0) {
                 let pagingText: string = (page + 1) + '/' + this.totalPages.length;
-                let pagingFont: FontModel = legend.textStyle;
-                let pagingTextSize: Size = measureText(pagingText, pagingFont);
+                let pagingFont: FontModel = legend.textStyle; let pagingTextSize: Size = measureText(pagingText, pagingFont);
                 let leftPageX: number = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
                     (width * 2) - spacing;
                 let rightPageX: number = (this.legendItemRect.x + this.legendItemRect.width);
@@ -722,35 +790,36 @@ export class TreeMapLegend {
         let areaWidth: number = totalRect.width;
         let totalWidth: number = treemap.availableSize.width;
         let totalHeight: number = treemap.availableSize.height;
+        let position: string = legend.position === 'Auto' ? (totalWidth > totalHeight) ? 'Right' : 'Bottom' : legend.position;
         if (legend.position === 'Float') {
             this.translate = legend.location;
         } else {
-            switch (legend.position) {
+            switch (position) {
                 case 'Top':
                 case 'Bottom':
                     totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
-                    totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
+                    y = (position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
+                    totalRect.y = (position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':
                 case 'Right':
                     totalRect.width = (areaWidth - width);
-                    x = (legend.position === 'Left') ? areaX : areaX + totalRect.width;
+                    x = (position === 'Left') ? areaX : areaX + totalRect.width;
                     y = (totalHeight / 2) - (height / 2);
-                    totalRect.x = (legend.position === 'Left') ? areaX + width : areaX;
+                    totalRect.x = (position === 'Left') ? areaX + width : areaX;
                     break;
             }
             switch (legend.alignment) {
                 case 'Near':
-                    if (legend.position === 'Top' || legend.position === 'Bottom') {
+                    if (position === 'Top' || position === 'Bottom') {
                         x = totalRect.x;
                     } else {
                         y = totalRect.y;
                     }
                     break;
                 case 'Far':
-                    if (legend.position === 'Top' || legend.position === 'Bottom') {
+                    if (position === 'Top' || position === 'Bottom') {
                         x = totalWidth - width;
                     } else {
                         y = totalHeight - height;

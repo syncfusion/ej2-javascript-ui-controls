@@ -15,6 +15,23 @@ export interface ISparklineEventArgs {
     cancel: boolean;
 }
 /**
+ * Specifies the interface for themes.
+ */
+export interface IThemes {
+    /** Defines the color of the axis line */
+    axisLineColor: string;
+    /** Defines the color of the range band */
+    rangeBandColor: string;
+    /** Defines the font color of the data labels */
+    dataLabelColor: string;
+    /** Defines the background color of the tooltip */
+    tooltipFill: string;
+    /** Defines the font color of the tooltip */
+    tooltipFontColor: string;
+    /** Defines the color of the tracker line */
+    trackerLineColor: string;
+}
+/**
  * Specifies the Loaded Event arguments.
  */
 export interface ISparklineLoadedEventArgs extends ISparklineEventArgs {

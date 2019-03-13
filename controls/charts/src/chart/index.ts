@@ -23,6 +23,7 @@ export * from './series/stacking-column-series';
 export * from './series/step-line-series';
 export * from './series/step-area-series';
 export * from './series/stacking-area-series';
+export * from './series/stacking-line-series';
 export * from './series/scatter-series';
 export * from './series/range-column-series';
 export * from './series/waterfall-series';

@@ -218,6 +218,7 @@ export class DetailRow {
      */
     public expandAll(): void {
         this.expandCollapse(true);
+        this.parent.trigger(events.actionComplete, { requestType: 'expandAllComplete', type: events.actionComplete, moduleObj: this });
     }
 
     /** 
@@ -226,6 +227,7 @@ export class DetailRow {
      */
     public collapseAll(): void {
         this.expandCollapse(false);
+        this.parent.trigger(events.actionComplete, { requestType: 'collapseAllComplete', type: events.actionComplete, moduleObj: this });
     }
 
     private expandCollapse(isExpand: boolean): void {

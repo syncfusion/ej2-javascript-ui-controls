@@ -4,13 +4,21 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
 
 ### CircularGauge
 
 #### Bug Fixes
 
-- Gauge is rendering fine now even in small size, when it is moved to the center position.
+- Issue with the ng-template on using with annotation option has been fixed.
+
+## 16.4.54 (2019-02-19)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- Now, the gauge is rendered properly even in small size when it is moved to the center position.
 
 ## 16.4.53 (2019-02-13)
 
@@ -18,7 +26,7 @@
 
 #### Bug Fixes
 
-- Range bar pointer drag is working fine now.
+- Now, the range bar pointer can be dragged properly.
 
 ## 17.1.1-beta (2019-01-29)
 
@@ -26,11 +34,11 @@
 
 #### New Features
 
-- Provided rounding places support for the axis labels and tooltip text in circular gauge.
+- Support has been provided to round off the axis label values and tooltip text.
 
-- Provided support to display the last axis label, even if it is not in the interval value.
+- Support has been provided to display the last label even if it is not in the visible range.
 
-- Provided event to get and set the calculated radius of the circular gauge.
+- An event has been provided to get or set the Circular Gauge radius dynamically.
 
 - Provided support to assign percentage values for pointer width, ranges width and axis line width.
 
@@ -44,7 +52,7 @@
 
 #### Bug Fixes
 
-- Issue with annotation is not properly resolved now.
+- Now, the annotation is rendered properly with multiple div elements.
 
 ## 16.4.45 (2019-01-02)
 
@@ -115,7 +123,7 @@
 
 - Provided one way binding support for Axes properties in Angular platform.
 
-## 16.1.24
+## 16.1.24 (2018-02-22)
 
 ### Common
 

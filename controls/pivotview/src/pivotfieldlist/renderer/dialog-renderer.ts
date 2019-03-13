@@ -7,7 +7,6 @@ import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import * as events from '../../common/base/constant';
 import { IDataOptions, IFieldListOptions } from '../../base/engine';
-
 /**
  * Module to render Pivot Field List Dialog
  */
@@ -22,7 +21,6 @@ export class DialogRenderer {
     public deferUpdateCheckBox: CheckBox;
     /** @hidden */
     public adaptiveElement: Tab;
-
     private deferUpdateApplyButton: Button;
     private deferUpdateCancelButton: Button;
 
@@ -177,6 +175,7 @@ export class DialogRenderer {
     }
     private applyButtonClick(): void {
         this.parent.updateDataSource(false);
+        this.parent.axisFieldModule.render();
         this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true) as IDataOptions;
         this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
     }
@@ -332,24 +331,7 @@ export class DialogRenderer {
             items: items,
             height: '100%',
             enableRtl: this.parent.enableRtl,
-            selected: (e: SelectEventArgs) => {
-                if (fieldListWrappper.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)) {
-                    if (e.selectedIndex !== 4) {
-                        addClass([fieldListWrappper.querySelector('.' + cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], cls.ICON_DISABLE);
-                        removeClass([fieldListWrappper.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], cls.ICON_DISABLE);
-                    } else {
-                        removeClass([fieldListWrappper.querySelector('.' + cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], cls.ICON_DISABLE);
-                        addClass([fieldListWrappper.querySelector('.' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], cls.ICON_DISABLE);
-                    }
-                }
-                if (e.selectedIndex === 4) {
-                    this.adaptiveElement.items[4].content = '';
-                    this.adaptiveElement.dataBind();
-                    this.parent.notify(events.initCalculatedField, {});
-                } else {
-                    this.parent.axisFieldModule.render();
-                }
-            }
+            selected: this.tabSelect.bind(this)
         });
         if (this.parent.renderMode === 'Fixed') {
             layoutFooter.appendChild(this.createAddButton());
@@ -358,6 +340,32 @@ export class DialogRenderer {
             this.parentElement.appendChild(layoutFooter);
         } else {
             this.adaptiveElement.appendTo(this.parentElement);
+        }
+    }
+    private tabSelect(e: SelectEventArgs): void {
+        if (this.parentElement.querySelector('.' + cls.WRAPPER_CLASS + ' .' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)) {
+            if (e.selectedIndex !== 4) {
+                addClass(
+                    [this.parentElement.querySelector('.' + cls.WRAPPER_CLASS + ' .' + cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)],
+                    cls.ICON_DISABLE);
+                removeClass(
+                    [this.parentElement.querySelector('.' + cls.WRAPPER_CLASS + ' .' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)],
+                    cls.ICON_DISABLE);
+            } else {
+                removeClass(
+                    [this.parentElement.querySelector('.' + cls.WRAPPER_CLASS + ' .' + cls.ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)],
+                    cls.ICON_DISABLE);
+                addClass(
+                    [this.parentElement.querySelector('.' + cls.WRAPPER_CLASS + ' .' + cls.ADAPTIVE_FIELD_LIST_BUTTON_CLASS)],
+                    cls.ICON_DISABLE);
+            }
+        }
+        if (e.selectedIndex === 4) {
+            this.adaptiveElement.items[4].content = '';
+            this.adaptiveElement.dataBind();
+            this.parent.notify(events.initCalculatedField, {});
+        } else {
+            this.parent.axisFieldModule.render();
         }
     }
     private createCalculatedButton(): HTMLElement {

@@ -15,7 +15,7 @@ import { Filter } from '../../../src/grid/actions/filter';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
-
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 
 Grid.Inject(Group, Sort,DetailRow, Filter, Reorder, CommandColumn, Edit);
@@ -27,6 +27,11 @@ describe('Command Column ', () => {
         let grid: Grid;
         let element: Element = createElement('div', { id: 'Grid' });
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             grid = createGrid(
                 {
                     columns: [
@@ -425,6 +430,15 @@ describe('Command Column ', () => {
             (gridObj.editModule as any).editModule.endEdit();
             expect(gridObj.isEdit).toBeFalsy();     
            });
+           it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
         afterAll(function () {
             destroy(gridObj);
         });

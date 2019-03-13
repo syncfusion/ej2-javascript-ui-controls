@@ -62,7 +62,11 @@ export class ClearFormat {
 
     private clearFormatTags(text: string): string {
         let lines: string[] = text.split('\n');
-        let tags: { [key: string]: string }[] = [ this.parent.formatTags , this.parent.listTags ];
+        return this.clearFormatLines(lines);
+    }
+
+    private clearFormatLines(lines: string[]): string {
+        let tags: { [key: string]: string }[] = [this.parent.formatTags, this.parent.listTags];
         let str: string = '';
         for (let len: number = 0; len < lines.length; len++) {
             for (let num: number = 0; num < tags.length; num++) {
@@ -73,6 +77,7 @@ export class ClearFormat {
                     if (data.hasOwnProperty(key) && data[key] !== '') {
                         if (lines[len].indexOf(data[key]) === 0) {
                             lines[len] = lines[len].replace(data[key], '');
+                            lines[len] = this.clearFormatLines([lines[len]]);
                         }
                     }
                 }

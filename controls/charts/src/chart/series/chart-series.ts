@@ -1,9 +1,10 @@
-import { Property, ChildProperty, Complex, Collection, SvgRenderer, DateFormatOptions, getValue } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegmentModel } from '../series/chart-series-model';
 import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
-import { firstToLowerCase, ChartLocation, Rect, CircleOption, IHistogramValues } from '../../common/utils/helper';
+import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues } from '../../common/utils/helper';
+import { Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';
 import { ChartDrawType } from '../utils/enum';
 import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel } from '../../common/model/base-model';
@@ -789,6 +790,13 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public segmentAxis: Segment;
 
     /**
+     * This property used to improve chart performance via data mapping for series dataSource.
+     * @default true
+     */
+    @Property(true)
+    public improveChartPerformance: boolean;
+
+    /**
      * Process data for the series.
      * @hidden
      */
@@ -879,22 +887,25 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.points[i] = new Points();
         point = <Points>this.points[i];
         let currentViewData: Object = this.currentViewData;
-        point.x = getValue(xName, currentViewData[i]);
-        point.high = getValue(this.high, currentViewData[i]);
-        point.low = getValue(this.low, currentViewData[i]);
-        point.open = getValue(this.open, currentViewData[i]);
-        point.close = getValue(this.close, currentViewData[i]);
-        point.volume = getValue(this.volume, currentViewData[i]);
-        point.interior = getValue(this.pointColorMapping, currentViewData[i]);
+        let getObjectValueByMappingString: Function = this.improveChartPerformance ? this.getObjectValue : getValue;
+        point.x = getObjectValueByMappingString(xName, currentViewData[i]);
+        point.high = getObjectValueByMappingString(this.high, currentViewData[i]);
+        point.low = getObjectValueByMappingString(this.low, currentViewData[i]);
+        point.open = getObjectValueByMappingString(this.open, currentViewData[i]);
+        point.close = getObjectValueByMappingString(this.close, currentViewData[i]);
+        point.volume = getObjectValueByMappingString(this.volume, currentViewData[i]);
+        point.interior = getObjectValueByMappingString(this.pointColorMapping, currentViewData[i]) as string;
         if (this instanceof Series) {
-            point.y = getValue(this.yName, currentViewData[i]);
-            point.size = getValue(this.size, currentViewData[i]);
-            point.text = getValue(textMappingName, currentViewData[i]);
-            point.tooltip = getValue(this.tooltipMappingName, currentViewData[i]);
+            point.y = getObjectValueByMappingString(this.yName, currentViewData[i]);
+            point.size = getObjectValueByMappingString(this.size, currentViewData[i]);
+            point.text = getObjectValueByMappingString(textMappingName, currentViewData[i]) as string;
+            point.tooltip = getObjectValueByMappingString(this.tooltipMappingName, currentViewData[i]) as string;
         }
         return point;
     }
-
+    private getObjectValue(mappingName: string, data: Object): Object {
+        return data[mappingName];
+    }
     /**
      * To set empty point value based on empty point mode
      * @private

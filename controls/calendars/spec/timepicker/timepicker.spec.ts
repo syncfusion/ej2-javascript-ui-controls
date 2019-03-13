@@ -6,6 +6,7 @@ import { cldrData, loadCldr, Touch, SwipeEventArgs } from '@syncfusion/ej2-base'
 import { createElement, removeClass, remove, addClass, setStyleAttribute, detach } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, merge, getEnumValue, getValue, getUniqueID } from '@syncfusion/ej2-base';
 import '../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 /**
  * @param  {} 'TimePicker'
  * @param  {} function(
@@ -93,6 +94,14 @@ describe('TimePicker', () => {
     let timeObj1: any;
     let timeObj2: any;
     let timeObj3: any;
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('DOM Wrapper Testing without default value', () => {
         beforeEach(() => {
             let ele: HTMLElement = createElement('input', { id: 'timepicker' });
@@ -558,6 +567,16 @@ describe('TimePicker', () => {
             timeObj.appendTo('#timepicker2');
             expect(timeObj.getText()).toEqual(timeObj.getValue(timeObj.min));
         });
+        it('Error Class for start value before 1905-Chrome testing',()=>{
+            timeObj = new TimePicker({ min: new Date("1/1/1900 12:00 AM")});
+            timeObj.appendTo('#timepicker2');
+            timeObj.inputElement.value = '12:00 AM';
+            timeObj.dataBind();
+            timeObj.inputBlurHandler();
+            expect((<HTMLElement>document.getElementsByClassName('e-time-wrapper')[0]).classList.contains('e-error')).toBe(false);
+            expect(timeObj.getValue(timeObj.value)).toEqual('12:00 AM');
+            expect(timeObj.getText()).toEqual('12:00 AM');
+        });
         it('popup last element value end with max value', () => {
             if (!timeObj.isPopupOpen()) {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon  e-icons')[0]).dispatchEvent(clickEvent);
@@ -731,6 +750,36 @@ describe('TimePicker', () => {
         it('while give tab index to the timepicker element', () => {
             timeObj.element.tabIndex = '4';
             expect(timeObj.inputWrapper.container.children[0].getAttribute('tabindex') === '4').toBe(true);
+        });
+    });
+    describe('tab index testing', () => {
+        beforeEach(() => {
+            /*no code */
+        });
+        afterEach(() => {
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Tab index checking while destroy the component', () => {
+            let inputEle: HTMLElement = createElement('input', { id: 'timepicker', attrs: { "tabindex": "1" } });
+            document.body.appendChild(inputEle);
+            timepicker = new TimePicker({});
+            timepicker.appendTo('#timepicker');
+            timepicker.destroy();
+            expect(inputEle.getAttribute('tabindex') === '1').toBe(true);
+            timepicker = null;
+        });
+        it('Tab index checking while destroy the Angular component', () => {
+            let element: any = createElement('ejs-timepicker', { id: 'time' });
+            element.setAttribute('tabindex', '1');
+            document.body.appendChild(element);
+            timepicker = new TimePicker();
+            timepicker.appendTo(element);
+            timepicker.destroy();
+            expect(element.getAttribute('tabindex') === null).toBe(true);
+            timepicker = null;
         });
     });
     describe('DOM Wrapper Testing enableRtl properites', () => {
@@ -2015,7 +2064,7 @@ describe('TimePicker', () => {
             timeObj = new TimePicker({
                 value: <any>'1/1/2019 1:00 AM',
                 change: function (args) {
-                    expect(args.value).toBe(null);
+                    expect(+args.value).toBe((new Date()).setHours(1,0,0,0));
                 }
              });
             timeObj.appendTo('#timepicker10');
@@ -2090,6 +2139,20 @@ describe('TimePicker', () => {
             timeObj.appendTo('#timepicker10');
             expect(timeObj.element.value != '').toBe(true);
             expect(timeObj.value !== null).toBe(true);
+        });
+        it('string type with value test case and format', () => {
+            timeObj = new TimePicker({ value: <any>"11-10",format: 'HH-mm'});
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe("11-10");
+            expect(+timeObj.value).toBe((new Date()).setHours(11,10,0,0));
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        });
+        it('string type with value test case and format', () => {
+            timeObj = new TimePicker({ value: <any>"11:10",format: 'mm:HH'});
+            timeObj.appendTo('#timepicker10');
+            expect(timeObj.element.value).toBe("11:10");
+            expect(+timeObj.value).toBe((new Date()).setHours(10,11,0,0));
+            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
         });
         it('null testing', () => {
             timeObj = new TimePicker({ value: null });
@@ -3108,9 +3171,9 @@ describe('TimePicker', () => {
             timepicker.appendTo('#timepicker');
         });
     });
-        /**
-    * Model dialog test case
-    */
+    /**
+     * Model dialog test case
+     */
     describe('Model dialog', function () {
         let timepicker: any;
         beforeEach(()=>{
@@ -3186,5 +3249,14 @@ describe('TimePicker', () => {
             expect(timepicker.popupObj.relateTo).toBe(document.body)
         });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });
 

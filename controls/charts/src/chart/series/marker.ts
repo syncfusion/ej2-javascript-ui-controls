@@ -1,7 +1,8 @@
 import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement } from '../../common/utils/helper';
-import { findlElement, drawSymbol, PathOption, Size, Rect, markerAnimate, CircleOption,  } from '../../common/utils/helper';
+import { findlElement, drawSymbol, markerAnimate, CircleOption,  } from '../../common/utils/helper';
+import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
-import { SvgRenderer, isNullOrUndefined, BaseAttibutes } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BorderModel } from '../../common/model/base-model';
 import { MarkerSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
@@ -122,7 +123,7 @@ export class Marker extends MarkerExplode {
                 );
                 appendChildElement(
                     parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
-                    previousLocation, previousPath
+                    previousLocation, previousPath, false, false, null, series.chart.duration
                 );
             }
             point.marker = {
@@ -202,16 +203,17 @@ export class Marker extends MarkerExplode {
             series.type === 'HiloOpenClose' || (series.chart.chartAreaType === 'PolarRadar' && (series.drawType === 'Scatter')))) {
             let markerElements: NodeList = series.symbolElement.childNodes;
             let delay: number = series.animation.delay + series.animation.duration;
+            let duration: number = series.chart.animated ? series.chart.duration : 200;
             let j: number = 1;
             let incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn') ? 2 : 1;
             for (let i: number = 0; i < series.points.length; i++) {
                 if (!series.points[i].symbolLocations.length || !markerElements[j]) {
                     continue;
                 }
-                markerAnimate(markerElements[j] as HTMLElement, delay, 200, series, i, series.points[i].symbolLocations[0], false);
+                markerAnimate(markerElements[j] as HTMLElement, delay, duration, series, i, series.points[i].symbolLocations[0], false);
                 if (incFactor === 2) {
                     let lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i].regions[0], series);
-                    markerAnimate(markerElements[j + 1] as HTMLElement, delay, 200, series, i, lowPoint, false);
+                    markerAnimate(markerElements[j + 1] as HTMLElement, delay, duration, series, i, lowPoint, false);
                 }
                 j += incFactor;
             }

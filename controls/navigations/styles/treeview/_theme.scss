@@ -35,13 +35,26 @@
 
     .e-list-text {
       font-size: $treeview-big-font-size;
+
+      @if $treeview-skin-name == 'bootstrap4' {
+        color: $treeview-big-text-color;
+        font-family: $treeview-big-font-face;
+      }
     }
 
     .e-icon-collapsible::before,
     .e-icon-expandable::before {
       font-size: $treeview-big-icon-font-size;
     }
+
+    &.e-drag-item {
+      .e-list-text {
+        @if $treeview-skin-name == 'bootstrap4' {
+          padding: $treeview-big-drag-text-padding;
+      }
+    }
   }
+}
 
   #{&}.e-treeview {
     -webkit-tap-highlight-color: transparent;
@@ -54,6 +67,9 @@
     .e-list-text {
       color: $treeview-text-color;
       font-size: $treeview-font-size;
+      @if $treeview-skin-name == 'bootstrap4' {
+        font-family: $treeview-font-face;
+      }
 
       .e-input {
         @include active-font-weight;
@@ -184,6 +200,9 @@
 
     .e-sibling::before {
       background: $treeview-drag-line-color;
+      @if $treeview-skin-name == 'bootstrap4' {
+        border: 1px;
+      }
     }
 
     .e-popup {
@@ -253,6 +272,15 @@
       .e-list-text {
         @include active-font-weight;
         color: $treeview-drag-item-color;
+        @if $treeview-skin-name == 'bootstrap4' {
+          padding: $treeview-drag-text-padding;
+      }
+    }
+
+      .e-text-content {
+        @if $treeview-skin-name == 'bootstrap4' {
+          box-shadow:  $treeview-drag-item-box-shadow;
+        }
       }
 
       .e-icons {
@@ -263,15 +291,15 @@
         background-color: $treeview-drop-count-bg;
         border-color: $treeview-drop-count-border;
         color: $treeview-drop-count-color;
-      }
     }
 
-    &.e-rtl {
+      &.e-rtl {
 
-      .e-sibling {
-        @include sibling-theme(right, left);
+        .e-sibling {
+          @include sibling-theme(right, left);
+        }
       }
-    }
   }
-  // sass-lint:enable no-vendor-prefixes
+    // sass-lint:enable no-vendor-prefixes
+  }
 }

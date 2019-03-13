@@ -1,9 +1,9 @@
-import { Toolbar } from '../../../src/rich-text-editor/index';
+import { Toolbar, ActionBeginEventArgs, PasteCleanup } from '../../../src/rich-text-editor/index';
 import { dispatchEvent } from '../../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
 import { NodeSelection } from '../../../src/selection/index';
 
-import { renderRTE, destroy } from './../render.spec';
+import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
 import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { QuickToolbar, MarkdownEditor, HtmlEditor, Link, Image } from "../../../src/rich-text-editor/index";
 import { editLink } from '../../../src/rich-text-editor';
@@ -767,7 +767,6 @@ describe('RTE base module', () => {
             beforeCount = false;
         });
 
-
         it(' trigger the actionBegin and actionComplete while pressing the action key in copy', () => {
             editNode.focus();
             selectNode = editNode.querySelector('.first-p');
@@ -797,7 +796,6 @@ describe('RTE base module', () => {
             selectNode = editNode.querySelector('.first-p');
             setCursorPoint(curDocument, selectNode, 0);
             keyBoardEvent.action = "paste";
-            (rteObj as any).keyDown(keyBoardEvent);
             (rteObj as any).onPaste(keyBoardEvent);
             setTimeout(() => {
                 expect(beforeCount).toBe(true);
@@ -814,7 +812,7 @@ describe('RTE base module', () => {
             setCursorPoint(curDocument, selectNode, 0);
             keyBoardEvent.action = "paste";
             keyBoardEvent.pastePrevent = true;
-            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).onPaste(keyBoardEvent); // Change the event from keydown to paste 
             setTimeout(() => {
                 expect(beforeCount).toBe(true);
                 expect(afterCount).toBe(false);
@@ -1069,7 +1067,7 @@ describe('RTE base module', () => {
             selectNode = editNode.querySelector('.first-p');
             setCursorPoint(curDocument, selectNode, 0);
             keyBoardEvent.action = "paste";
-            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).onPaste(keyBoardEvent);
             expect(beforeCount).toBe(true);
             expect(afterCount).toBe(false);
             afterCount = false;
@@ -1957,6 +1955,19 @@ describe('RTE base module', () => {
             expect(!isNullOrUndefined(rteObj.element.querySelector('.e-content'))).toBe(true);
         });
 
+        it('insert-table: ctrl+shift+e', () => {
+            editNode.innerHTML = innerHTML;
+            editNode.focus();
+            selectNode = editNode.querySelector('.first-p');
+            setCursorPoint(curDocument, selectNode, 0);
+            keyBoardEvent.ctrlKey = true;
+            keyBoardEvent.shiftKey = true;
+            keyBoardEvent.action = 'insert-table';
+            (rteObj as any).keyDown(keyBoardEvent);
+            let dialog: HTMLElement = document.getElementById(elem.id + '_tabledialog');
+            expect(!isNullOrUndefined(dialog)).toBe(true);
+        });
+
         afterAll(() => {
             destroy(rteObj);
         });
@@ -2131,6 +2142,18 @@ describe('RTE base module', () => {
             let selection: string = rteObj.getSelection();
             expect(selection.length).toBe((rteObj.contentModule.getEditPanel() as HTMLTextAreaElement).value.length);
         });
+        it('insert-table: ctrl+shift+e', () => {
+            editNode.value = innerHTML;
+            rteObj.formatter.editorManager.markdownSelection.save(0, 5);
+            rteObj.formatter.editorManager.markdownSelection.restore(editNode);
+            keyBoardEvent.ctrlKey = true;
+            keyBoardEvent.shiftKey = true;
+            keyBoardEvent.action = 'insert-table';
+            (rteObj as any).keyDown(keyBoardEvent);
+            let line = rteObj.formatter.editorManager.markdownSelection.getSelectedLine(editNode);
+            expect(/^(|Heading 1|Heading 2|)/gim.test(line)).toBe(true);
+        });
+
         afterAll(() => {
             destroy(rteObj);
         });
@@ -2341,6 +2364,7 @@ describe("RTE ExecuteCommand public method testing", () => {
         nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
         rteObj.executeCommand('insertOrderedList');
         expect(document.getElementById("pnode2").nextSibling.nodeName.toLocaleLowerCase()).toBe('ol');
+        expect((document.getElementById("pnode2").nextSibling as HTMLElement).querySelectorAll('li').length === 1).toBe(true);
     });
     it('check Font color Executecommand public method', () => {
         let nodeSelection: NodeSelection = new NodeSelection();
@@ -2349,6 +2373,21 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.executeCommand('fontColor', 'rgb(102, 102, 0)');
         expect(node.childNodes[0].nodeName.toLocaleLowerCase()).toBe('span');
         expect((node.childNodes[0] as HTMLElement).style.color).toBe('rgb(102, 102, 0)');
+    });
+    it(' EJ2-19209: insertText cursor point Executecommand public method', () => {
+        let nodeSelection: NodeSelection = new NodeSelection();
+        let node: HTMLElement = document.getElementById("pnode4");
+        nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
+        rteObj.executeCommand('insertText', 'RichTextEditor');
+        expect(node.textContent === 'SampleRichTextEditor').toBe(true);
+    });
+
+    it(' EJ2-19209: insertText selection points Executecommand public method', () => {
+        let nodeSelection: NodeSelection = new NodeSelection();
+        let nodes: any = (rteObj as any).inputElement.querySelectorAll("p");
+        nodeSelection.setSelectionText(document, nodes[1].childNodes[0], nodes[2].childNodes[0], 1, 1);
+        rteObj.executeCommand('insertText', 'RichTextEditor');
+        expect(nodes[1].textContent === 'SampleRichTextEditor').toBe(true);
     });
 });
 
@@ -2761,6 +2800,7 @@ describe('RTE textarea with innerText', () => {
         detach(element);
     });
 });
+
 describe(' Paste url', () => {
     let rteObj: RichTextEditor;
     let rteEle: HTMLElement;
@@ -2789,10 +2829,157 @@ describe(' Paste url', () => {
         setTimeout(() => {
             selectNode = (rteObj as any).inputElement.querySelector('a');
             expect(!isNullOrUndefined(selectNode)).toBe(true);
+            expect(selectNode.getAttribute('title') === 'https://ej2.syncfusion.com').toBe(true);
             done();
         }, 10);
     });
     afterAll(() => {
         destroy(rteObj);
     });
-})
+});
+describe(' Paste action events', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 64, key: '' };
+    let curDocument: Document;
+    let selectNode: Element;
+    let actionBegin: boolean;
+    let actionComplete: boolean;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<div><p class='first-p'>First p node-0</p></div>`,
+            placeholder: 'Type something',
+            actionBegin: (e: any) => {
+                actionBegin = true;
+            },
+            actionComplete: (e: any) => {
+                actionComplete = true;
+            }
+        });
+        curDocument = rteObj.contentModule.getDocument();
+        done();
+    });
+    it(" clipboard action in actionBegin and actionComplete", (done) => {
+        selectNode = (rteObj as any).inputElement.querySelector('.first-p');
+        setCursorPoint(curDocument, selectNode, 0);
+        (rteObj as any).inputElement.dispatchEvent(new ClipboardEvent('paste', keyBoardEvent));
+        setTimeout(() => {
+            expect(actionBegin).toBe(true);
+            expect(actionComplete).toBe(true);
+            done();
+        }, 10);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('EJ2-23205 Revert the headings and blockquotes format while applying the inline code in Markdown editor', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    let editNode: HTMLTextAreaElement;
+    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
+    let innerHTML: string = `Lists are a piece of cake
+        They even auto continue as you type
+        A double enter will end them
+        Tabs and shift-tabs work too`;
+    let controlId: string;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            editorMode: 'Markdown', value: innerHTML, toolbarSettings: {
+                items: ['Formats', 'UnorderedList', 'ClearFormat']
+            }
+        });
+        elem = rteObj.element;
+        controlId = elem.id;
+        editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
+    });
+
+    it(' Remove the all applied format synatx', () => {
+        rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
+        rteObj.formatter.editorManager.markdownSelection.restore(editNode);
+        let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Formats');
+        item.click();
+        let popup: HTMLElement = document.getElementById(controlId + '_toolbar_Formats-popup');
+        dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
+        item = <HTMLElement>popup.querySelectorAll('.e-item')[3];
+        item.click();
+        item = rteObj.element.querySelector('#' + controlId + '_toolbar_UnorderedList');
+        item.click();
+        item = rteObj.element.querySelector('#' + controlId + '_toolbar_ClearFormat');
+        item.click();
+        let lines: string[] = editNode.value.split('\n');
+        expect(new RegExp('^(#)|^(>)', 'gim').test(lines[1])).toBe(false);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+
+    describe('EJ2-23858 Iframe angular destroy issue', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let editNode: HTMLTextAreaElement;
+        let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
+        let innerHTML: string = `Lists are a piece of cake
+            They even auto continue as you type
+            A double enter will end them
+            Tabs and shift-tabs work too`;
+        let controlId: string;
+        let isDestroyed: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: { enable: true },
+                value: innerHTML, toolbarSettings: {
+                    items: ['Formats', 'UnorderedList', 'ClearFormat']
+                },
+                destroyed: () => {
+                    isDestroyed = true;
+                }
+            });
+            elem = rteObj.element;
+            controlId = elem.id;
+            editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
+        });
+
+        it(' Check the destroyed event after remove the element from DOM ', () => {
+            rteObj.element.remove();
+            rteObj.destroy();
+            expect(isDestroyed).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+});
+
+describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE reactive form ', () => {
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
+    let rteObj: RichTextEditor;
+    let curDocument: Document;
+    let editNode: Element;
+    let rteEle: Element;
+    let selectNode: Element;
+    let isChanged: boolean=false;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
+                    'FontName']
+            },
+            change: (e): void => {
+                isChanged = true;
+            }
+        });
+        rteEle = rteObj.element;
+        editNode = rteObj.contentModule.getEditPanel();
+        curDocument = rteObj.contentModule.getDocument();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        detach(rteEle);
+    });
+    it(' tab key navigation from RTE content without text', () => {
+        selectNode = editNode.querySelector('br');
+        setCursorPoint(curDocument, selectNode, 0);
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(isChanged).toBe(false);
+    });
+});

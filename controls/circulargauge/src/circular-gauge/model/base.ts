@@ -119,17 +119,17 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * The fill color of the tooltip, which accepts value in hex, rgba as a valid CSS color string.
-     * @default '#000000'
+     * @default null
      */
 
-    @Property('#000000')
+    @Property(null)
     public fill: string;
 
     /**
      * Options to customize the tooltip text.
      */
 
-    @Complex<FontModel>({ color: '#ffffff', size: '13px' }, Font)
+    @Complex<FontModel>({ size: '13px' }, Font)
     public textStyle: FontModel;
 
     /**

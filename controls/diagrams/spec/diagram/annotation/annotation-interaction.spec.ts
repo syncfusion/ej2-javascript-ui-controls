@@ -14,6 +14,7 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from '../../../src/diagram/primitives/matrix';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 
 function getOutput(label: DiagramElement) {
@@ -83,7 +84,14 @@ describe('Diagram Control', () => {
             let ele: HTMLElement;
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
+            
             beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
                 ele = createElement('div', { id: 'NodesAnnotationInteraction' });
                 document.body.appendChild(ele);
                 let nodes: NodeModel[] = [{
@@ -265,6 +273,12 @@ describe('Diagram Control', () => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
             beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
                 ele = createElement('div', { id: 'NodesAnnotationInteraction1' });
                 document.body.appendChild(ele);
                 let nodes: NodeModel[] = [{
@@ -396,6 +410,12 @@ describe('Diagram Control', () => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
             beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
                 ele = createElement('div', { id: 'NodesAnnotationInteraction2' });
                 document.body.appendChild(ele);
                 let nodes: NodeModel[] = [{
@@ -605,6 +625,12 @@ describe('Diagram Control', () => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
             beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
                 ele = createElement('div', { id: 'ConnectorsAnnotationInteraction' });
                 document.body.appendChild(ele);
                 let connectors: ConnectorModel[] = [{
@@ -752,6 +778,12 @@ describe('Diagram Control', () => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
             beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
                 ele = createElement('div', { id: 'NodesAnnotationInteraction' });
                 document.body.appendChild(ele);
                 diagram = new Diagram({
@@ -858,6 +890,12 @@ describe('Diagram Control', () => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
             beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
                 ele = createElement('div', { id: 'NodesAnnotationInteraction' });
                 document.body.appendChild(ele);
                 diagram = new Diagram({
@@ -1137,6 +1175,12 @@ describe('Diagram Control', () => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement; let left: number; let top: number;
             beforeAll((): void => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
                 ele = createElement('div', { id: 'NodesAnnotationInteraction' });
                 document.body.appendChild(ele);
                 diagram = new Diagram({
@@ -1203,9 +1247,6 @@ describe('Diagram Control', () => {
                     expect(label.offsetX == 206.25 && label.offsetY == 165 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                     done();
             });
-
-        
-
         });
     });
     describe('Annotation Issues', () => {
@@ -1214,6 +1255,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'NodesAnnotationInteraction' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1258,6 +1305,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'NodesAnnotationInteraction' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -1303,6 +1356,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'NodesAnnotationInteraction2' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -1344,13 +1403,19 @@ describe('Diagram Control', () => {
             diagram.redo()
             done();
         });
-    })
+         })
     describe('Annotation interaction mouse leave ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'NodesAnnotationInteraction2' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -1383,7 +1448,7 @@ describe('Diagram Control', () => {
             diagram.redo()
             done();
         });
-    })
+      })
 
     describe('Annotation with template interaction', () => {
         let diagram: Diagram;
@@ -1391,6 +1456,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement; let left: number; let top: number;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'templateAnnotationInteraction' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -1479,5 +1550,15 @@ describe('Diagram Control', () => {
             expect(label.offsetX == 350 && label.offsetY == 310 && label.width == 100.00000000000006 && label.height == 100 && label.rotateAngle == 20).toBe(true);
             done();
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
+    
     });
 });

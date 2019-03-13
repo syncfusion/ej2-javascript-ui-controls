@@ -250,12 +250,12 @@ describe('Map component test spec', function () {
      // time out for load the map data
      browser.driver.sleep(5000);
     // to select the red color region
-    property=element(by.id("container_LayerIndex_0_ShapeIndex_14_dataIndex_50"));
+    property=element(by.id("container_LayerIndex_0_shapeIndex_14_dataIndex_50"));
     browser.actions().click(property).perform();
     // take and compare screen shots.
     browser.compareScreen(element(By.id('container')),'map_selection_red');
     //to select the blue color region
-    property=element(by.id("container_LayerIndex_0_ShapeIndex_10_dataIndex_28"));
+    property=element(by.id("container_LayerIndex_0_shapeIndex_10_dataIndex_28"));
     browser.actions().click(property).perform();
     // take and compare screen shots.
     browser.compareScreen(element(By.id('container')),'map_selection_blue');
@@ -301,7 +301,7 @@ describe('Map component test spec', function () {
         browser.actions().click(property_singletap).perform();
         property =element(by.id('mapszooming_Zooming_ToolBar_Zoom_Rect'));
         browser.actions().click(property).perform();
-        zoom_continent=element(by.id("mapszooming_LayerIndex_0_ShapeIndex_134_dataIndex_1"));
+        zoom_continent=element(by.id("mapszooming_LayerIndex_0_shapeIndex_134_dataIndex_1"));
         browser.actions().click(zoom_continent).perform();
         // take and compare screen shots.
         browser.compareScreen(element(By.id('mapszooming')),'map_zoom_singletap');
@@ -319,7 +319,7 @@ it('HeatMap-selection Sample', function () {
     browser.load('/demos/heatmap.html');
      // time out for load the map data
      browser.driver.sleep(5000);
-    property = element(by.id('container_LayerIndex_0_ShapeIndex_61_dataIndex_0'));
+    property = element(by.id('container_LayerIndex_0_shapeIndex_61_dataIndex_0'));
     browser.actions().click(property).perform();
     // take and compare screen shots.
     browser.compareScreen(element(By.id('container')),'heat_map_selection');
@@ -369,7 +369,7 @@ it('Seat Selection and clear', function () {
     browser.load('/demos/seatSelection.html');
      // time out for load the map data
      browser.driver.sleep(5000);
-    property=element(by.id("maps_LayerIndex_0_ShapeIndex_20_dataIndex_null"));
+    property=element(by.id("maps_LayerIndex_0_shapeIndex_20_dataIndex_null"));
     browser.actions().click(property).perform();
       // take and compare screen shots.
     browser.compareScreen(element(By.id('border')),'seat_selection_dynamic');
@@ -392,7 +392,7 @@ it('Drilldown-asia Sample', function () {
     browser.load('/demos/drilldown.html');
      // time out for load the map data
      browser.driver.sleep(5000);
-    property =element(by.id('mapdrilldown_LayerIndex_0_ShapeIndex_29_dataIndex_4'));
+    property =element(by.id('mapdrilldown_LayerIndex_0_shapeIndex_29_dataIndex_4'));
     browser.actions().click(property).perform();
      // time out for load the map data
      browser.driver.sleep(5000);
@@ -404,7 +404,7 @@ it('Drilldown-australia Sample', function () {
     browser.load('/demos/drilldown.html');
      // time out for load the map data
      browser.driver.sleep(5000);
-    property =element(by.id('mapdrilldown_LayerIndex_0_ShapeIndex_119_dataIndex_5'));
+    property =element(by.id('mapdrilldown_LayerIndex_0_shapeIndex_119_dataIndex_5'));
     browser.actions().click(property).perform();
      // time out for load the map data
      browser.driver.sleep(5000);
@@ -416,7 +416,7 @@ it('Drilldown-africa Sample', function () {
     browser.load('/demos/drilldown.html');
       // time out for load the map data
       browser.driver.sleep(5000);
-    property =element(by.id('mapdrilldown_LayerIndex_0_ShapeIndex_32_dataIndex_2'));
+    property =element(by.id('mapdrilldown_LayerIndex_0_shapeIndex_32_dataIndex_2'));
     browser.actions().click(property).perform();
     // time out for load the map data
     browser.driver.sleep(5000);
@@ -428,7 +428,7 @@ it('Drilldown-europe Sample', function () {
     browser.load('/demos/drilldown.html');
      // time out for load the map data
      browser.driver.sleep(5000);
-    property =element(by.id('mapdrilldown_LayerIndex_0_ShapeIndex_48_dataIndex_3'));
+    property =element(by.id('mapdrilldown_LayerIndex_0_shapeIndex_48_dataIndex_3'));
     browser.actions().click(property).perform();
      // time out for load the map data
      browser.driver.sleep(5000);
@@ -440,7 +440,7 @@ it('Drilldown-north-america Sample', function () {
     browser.load('/demos/drilldown.html');
      // time out for load the map data
      browser.driver.sleep(5000);
-    property =element(by.id('mapdrilldown_LayerIndex_0_ShapeIndex_167_dataIndex_0'));
+    property =element(by.id('mapdrilldown_LayerIndex_0_shapeIndex_167_dataIndex_0'));
     browser.actions().click(property).perform();
      // time out for load the map data
      browser.driver.sleep(5000);
@@ -452,7 +452,7 @@ it('Drilldown-south-america Sample', function () {
     browser.load('/demos/drilldown.html');
      // time out for load the map data
      browser.driver.sleep(5000);
-    property =element(by.id('mapdrilldown_LayerIndex_0_ShapeIndex_130_dataIndex_1'));
+    property =element(by.id('mapdrilldown_LayerIndex_0_shapeIndex_130_dataIndex_1'));
     browser.actions().click(property).perform();
      // time out for load the map data
      browser.driver.sleep(5000);

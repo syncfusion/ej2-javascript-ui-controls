@@ -5,6 +5,10 @@
   color: $btn-focus-color;
   outline: $btn-focus-outline;
   outline-offset: $btn-focus-outline-offset;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-focus-bgcolor, 50%), $btn-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin button-active {
@@ -14,6 +18,10 @@
   color: $btn-active-color;
   outline: $btn-active-outline;
   outline-offset: $btn-active-outline-offset;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin primary-focus {
@@ -22,6 +30,10 @@
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-primary-focus-color;
   outline: $btn-primary-outline;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-primary-focus-bgcolor, 50%), $btn-primary-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin primary-active {
@@ -30,6 +42,10 @@
   box-shadow: $btn-active-box-shadow;
   color: $btn-primary-active-color;
   outline: $btn-active-outline;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-primary-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin primary-disabled {
@@ -44,6 +60,10 @@
   border-color: $btn-outline-default-focus-border-color;
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-outline-focus-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-outline-focus-bgcolor, 50%), $btn-outline-default-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-active {
@@ -51,12 +71,20 @@
   border-color: $btn-outline-active-border-color;
   box-shadow: $btn-outline-active-box-shadow;
   color: $btn-outline-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-outline-active-bgcolor, 50%), $btn-outline-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-primary-focus {
-  background-color: $btn-primary-focus-bgcolor;
+  background-color: $btn-outline-primary-focus-bgcolor;
   border-color: $btn-outline-primary-focus-border-color;
-  color: $btn-primary-focus-color;
+  color: $btn-outline-primary-focus-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-outline-primary-focus-bgcolor, 50%), $btn-outline-primary-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-primary-active {
@@ -64,12 +92,20 @@
   border-color: $btn-outline-primary-active-border-color;
   box-shadow: $btn-outline-active-box-shadow;
   color: $btn-primary-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-outline-primary-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-success-focus {
   background-color: $btn-success-focus-bgcolor;
   border-color: $btn-success-focus-border-color;
   color: $btn-success-focus-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-success-active {
@@ -77,12 +113,20 @@
   border-color: $btn-success-active-border-color;
   box-shadow: $btn-outline-active-box-shadow;
   color: $btn-success-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-info-focus {
   background-color: $btn-info-hover-bgcolor;
   border-color: $btn-info-focus-border-color;
   color: $btn-info-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-info-hover-bgcolor, 50%), $btn-info-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-info-active {
@@ -90,12 +134,20 @@
   border-color: $btn-info-active-border-color;
   box-shadow: $btn-outline-active-box-shadow;
   color: $btn-info-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-warning-focus {
   background-color: $btn-warning-hover-bgcolor;
   border-color: $btn-warning-focus-border-color;
   color: $btn-warning-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-warning-hover-bgcolor, 50%), $btn-warning-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-warning-active {
@@ -103,12 +155,20 @@
   border-color: $btn-warning-active-border-color;
   box-shadow: $btn-outline-active-box-shadow;
   color: $btn-warning-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-danger-focus {
   background-color: $btn-danger-hover-bgcolor;
   border-color: $btn-danger-focus-border-color;
   color: $btn-danger-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-danger-hover-bgcolor, 50%), $btn-danger-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-danger-active {
@@ -116,6 +176,10 @@
   border-color: $btn-danger-active-border-color;
   box-shadow: $btn-outline-active-box-shadow;
   color: $btn-danger-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin outline-disabled {
@@ -165,6 +229,10 @@
   border-color: $btn-success-focus-border-color;
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-success-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-success-focus-bgcolor, 50%), $btn-success-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin success-active {
@@ -172,6 +240,10 @@
   border-color: $btn-success-active-border-color;
   box-shadow: $btn-active-box-shadow;
   color: $btn-success-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin info-focus {
@@ -179,6 +251,10 @@
   border-color: $btn-info-focus-border-color;
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-info-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-info-focus-bgcolor, 50%), $btn-info-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin info-active {
@@ -186,6 +262,10 @@
   border-color: $btn-info-active-border-color;
   box-shadow: $btn-active-box-shadow;
   color: $btn-info-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin warning-focus {
@@ -193,6 +273,10 @@
   border-color: $btn-warning-focus-border-color;
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-warning-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-warning-focus-bgcolor, 50%), $btn-warning-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin warning-active {
@@ -200,6 +284,10 @@
   border-color: $btn-warning-active-border-color;
   box-shadow: $btn-active-box-shadow;
   color: $btn-warning-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin danger-focus {
@@ -207,6 +295,10 @@
   border-color: $btn-danger-focus-border-color;
   box-shadow: $btn-hover-focus-box-shadow;
   color: $btn-danger-hover-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-danger-focus-bgcolor, 50%), $btn-danger-focus-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin danger-active {
@@ -214,6 +306,10 @@
   border-color: $btn-danger-active-border-color;
   box-shadow: $btn-active-box-shadow;
   color: $btn-danger-active-color;
+  @if $skin-name == 'bootstrap4' {
+    $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, .15), .5);
+    box-shadow: 0 0 0 .2rem $color-rgba;
+  }
 }
 
 @mixin link-focus {

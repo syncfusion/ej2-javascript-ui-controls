@@ -30,7 +30,8 @@ const ICONS: string = 'e-icons';
 const OPENDURATION: number = 300;
 const CLOSEDURATION: number = 200;
 const OFFSETVALUE: number = 4;
-
+const SELECTED: string = 'e-selected';
+const NONEDIT: string = 'e-non-edit';
 export interface FormatObject {
     skeleton?: string;
 }
@@ -70,7 +71,7 @@ export class DatePicker extends Calendar implements IInput {
     protected isAltKeyPressed: boolean = false;
     private index: number;
     private formElement: HTMLElement;
-    private invalidValueString: string = null;
+    protected invalidValueString: string = null;
     private checkPreviousValue: Date = null;
     protected formatString: string;
     protected tabIndex: string;
@@ -273,15 +274,24 @@ export class DatePicker extends Calendar implements IInput {
             attributes(this.inputElement, { 'readonly': '' });
         }
     }
+    private updateIconState(): void {
+        if (!this.allowEdit) {
+            if (this.inputElement.value === '') {
+                removeClass([this.inputWrapper.container], [NONEDIT]);
+            } else {
+                addClass([this.inputWrapper.container], [NONEDIT]);
+            }
+        }
+    }
     private initialize(): void {
         this.checkInvalidValue(this.value);
         this.createInput();
         this.setAllowEdit();
         this.updateInput();
         this.previousElementValue = this.inputElement.value;
+        this.previousDate = new Date(+this.value);
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputValueCopy = this.value;
-        this.previousDate = new Date(+this.value);
     }
 
     private createInput(): void {
@@ -335,7 +345,7 @@ export class DatePicker extends Calendar implements IInput {
         if (this.value && !this.isCalendar()) {
             this.disabledDates();
         }
-        if (!+new Date('' + this.value)) {
+        if (!+new Date(this.checkValue(this.value))) {
             this.setProperties({ value: null }, true);
         }
         if (this.strictMode) {
@@ -383,6 +393,7 @@ export class DatePicker extends Calendar implements IInput {
         }
         this.changedArgs = { value: this.value };
         this.errorClass();
+        this.updateIconState();
     };
     protected minMaxUpdates(): void {
         if (!isNullOrUndefined(this.value) && this.value < this.min && this.min <= this.max && this.strictMode) {
@@ -395,30 +406,84 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
     }
-    private checkInvalidValue(value: Date): void {
-        if (typeof value !== 'object' && !isNullOrUndefined(value) && !this.strictMode) {
+    private checkStringValue(val: string): Date {
+        let returnDate: Date = null;
+        let formatOptions: object = null;
+        let formatDateTime: object = null;
+        if (this.getModuleName() === 'datetimepicker') {
+            let culture: Internationalization = new Internationalization(this.locale);
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
+                formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+            } else {
+                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime', calendar: 'islamic' };
+            }
+        } else {
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+            } else {
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
+        }
+        returnDate = this.checkDateValue(this.globalize.parseDate(val, formatOptions));
+        if (isNullOrUndefined(returnDate) && (this.getModuleName() === 'datetimepicker')) {
+            returnDate = this.checkDateValue(this.globalize.parseDate(val, formatDateTime));
+        }
+        return returnDate;
+    }
+    protected checkInvalidValue(value: Date): void {
+        if (!(value instanceof Date) && !isNullOrUndefined(value)) {
+            let valueDate: Date = null;
             let valueString: string = <string>value;
             if (typeof value === 'number') {
                 valueString = (value as string).toString();
             }
             let formatOptions: object = null;
-            if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
-            } else {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
-            }
-            if (!this.checkDateValue(this.globalize.parseDate(valueString, formatOptions))) {
-                let extISOString: RegExp = null;
-                let basicISOString: RegExp = null;
-                // tslint:disable-next-line
-                extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
-                // tslint:disable-next-line
-                basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
-                if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
-                    && !isNaN(parseInt(valueString, 10)) || isNaN(+new Date('' + valueString))) {
-                    this.invalidValueString = valueString;
-                    this.setProperties({ value: null }, true);
+            let formatDateTime: object = null;
+            if (this.getModuleName() === 'datetimepicker') {
+                let culture: Internationalization = new Internationalization(this.locale);
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
+                    formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+                } else {
+                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime', calendar: 'islamic' };
                 }
+            } else {
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                } else {
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                }
+            }
+            let invalid: boolean = false;
+            if (typeof valueString !== 'string') {
+                valueString = null;
+                invalid = true;
+            } else {
+                if (typeof valueString === 'string') { valueString = valueString.trim(); }
+                valueDate = this.checkStringValue(valueString);
+                if (!valueDate) {
+                    let extISOString: RegExp = null;
+                    let basicISOString: RegExp = null;
+                    // tslint:disable-next-line
+                    extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                    // tslint:disable-next-line
+                    basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                    if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
+                        || (/^[a-zA-Z0-9- ]*$/).test(valueString) || isNaN(+new Date(this.checkValue(valueString)))) {
+                        invalid = true;
+                    } else {
+                        valueDate = new Date(valueString);
+                    }
+                }
+            }
+            if (invalid) {
+                if (!this.strictMode) { this.invalidValueString = valueString; }
+                this.setProperties({ value: null }, true);
+            } else {
+                this.setProperties({ value: valueDate }, true);
             }
         }
     };
@@ -464,11 +529,11 @@ export class DatePicker extends Calendar implements IInput {
                 this.inputElement.setAttribute('value', '');
             }
             this.setProperties({ value: this.inputValueCopy }, true);
+            this.restoreValue();
             if (this.inputElement) {
                 Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
                 this.errorClass();
             }
-            this.restoreValue();
         }
     }
     protected restoreValue(): void {
@@ -491,7 +556,9 @@ export class DatePicker extends Calendar implements IInput {
     private clear(event: MouseEvent): void {
         this.setProperties({ value: null }, true);
         Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        this.invalidValueString = '';
         this.updateInput();
+        this.popupUpdate();
         this.changeEvent(event);
     }
 
@@ -546,6 +613,7 @@ export class DatePicker extends Calendar implements IInput {
         };
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
+        this.updateIconState();
     }
     private inputBlurHandler(e: MouseEvent): void {
         this.strictModeUpdate();
@@ -554,6 +622,7 @@ export class DatePicker extends Calendar implements IInput {
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
         }
         this.updateInput();
+        this.popupUpdate();
         this.changeTrigger(e);
         this.errorClass();
         if (this.isCalendar() && document.activeElement === this.inputElement) {
@@ -606,6 +675,7 @@ export class DatePicker extends Calendar implements IInput {
             case 'enter':
                 this.strictModeUpdate();
                 this.updateInput();
+                this.popupUpdate();
                 this.changeTrigger(e);
                 this.errorClass();
                 if (!this.isCalendar() && document.activeElement === this.inputElement) {
@@ -619,6 +689,7 @@ export class DatePicker extends Calendar implements IInput {
             case 'tab':
                 this.strictModeUpdate();
                 this.updateInput();
+                this.popupUpdate();
                 this.changeTrigger(e);
                 this.errorClass();
                 this.hide(e);
@@ -634,7 +705,22 @@ export class DatePicker extends Calendar implements IInput {
         this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
         if (this.isCalendar()) {
             super.keyActionHandle(e);
-
+        }
+    }
+    protected popupUpdate(): void {
+        if ((isNullOrUndefined(this.value)) && (!isNullOrUndefined(this.previousDate)) ||
+            (+this.value !== +this.previousDate)) {
+            if (this.popupObj) {
+                if (this.popupObj.element.querySelectorAll('.' + SELECTED).length > 0) {
+                    removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED), [SELECTED]);
+                }
+            }
+            if (!isNullOrUndefined(this.value)) {
+                if ((+this.value >= +this.min) && (+this.value <= +this.max)) {
+                    let targetdate: Date = new Date(this.checkValue(this.value));
+                    super.navigateTo('Month', targetdate);
+                }
+            }
         }
     }
     protected strictModeUpdate(): void {
@@ -674,6 +760,7 @@ export class DatePicker extends Calendar implements IInput {
             dateOptions = formatOptions;
         }
         let date: Date;
+        if (typeof this.inputElement.value === 'string') { this.inputElement.value = this.inputElement.value.trim(); }
         if ((this.getModuleName() === 'datetimepicker')) {
             if (this.checkDateValue(this.globalize.parseDate(this.inputElement.value, dateOptions))) {
                 date = this.globalize.parseDate(this.inputElement.value, dateOptions);
@@ -810,7 +897,7 @@ export class DatePicker extends Calendar implements IInput {
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
                 this.trigger('change', this.changedArgs);
                 this.previousElementValue = this.inputElement.value;
-                this.previousDate = !isNaN(+new Date('' + this.value)) ? new Date('' + this.value) : null;
+                this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
             }
         }
     }
@@ -895,7 +982,7 @@ export class DatePicker extends Calendar implements IInput {
             let prevent: boolean = true;
             let outOfRange: Date;
             if (!isNullOrUndefined(this.value) && !(+this.value >= +this.min && +this.value <= +this.max)) {
-                outOfRange = new Date('' + this.value);
+                outOfRange = new Date(this.checkValue(this.value));
                 this.setProperties({ 'value': null }, true);
             } else {
                 outOfRange = this.value || null;
@@ -968,7 +1055,6 @@ export class DatePicker extends Calendar implements IInput {
                 removeClass(this.inputWrapper.buttons, ACTIVE);
             }
             this.setAriaAttributes();
-            this.previousElementValue = this.inputElement.value;
             if (Browser.isDevice && this.modal) {
                 this.modal.style.display = 'none';
                 this.modal.outerHTML = '';
@@ -979,6 +1065,7 @@ export class DatePicker extends Calendar implements IInput {
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
+        this.updateIconState();
     }
     /**
      * Sets the focus to widget for interaction.
@@ -1164,6 +1251,7 @@ export class DatePicker extends Calendar implements IInput {
     private checkHtmlAttributes(): void {
         this.globalize = new Internationalization(this.locale);
         this.checkFormat();
+        this.checkView();
         let attributes: string[] = ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
         let options: object;
         if (this.getModuleName() === 'datetimepicker') {
@@ -1247,7 +1335,7 @@ export class DatePicker extends Calendar implements IInput {
         let valueCopy: Date;
         let formatOptions: DateFormatOptions;
         let globalize: string;
-        valueCopy = this.checkDateValue(this.value) ? new Date(+this.value) : new Date('' + this.value);
+        valueCopy = this.checkDateValue(this.value) ? new Date(+this.value) : new Date(this.checkValue(this.value));
         let previousValCopy: Date = this.previousDate;
         //calls the Calendar render method to check the disabled dates through renderDayCell event and update the input value accordingly.
         this.minMaxUpdates();
@@ -1338,10 +1426,7 @@ export class DatePicker extends Calendar implements IInput {
                 case 'value':
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
-                    if (typeof newProp.value === 'string' && !this.invalidValueString) {
-                        newProp.value = this.checkDateValue(this.globalize.parseDate(newProp.value, options));
-                        this.setProperties({ value: newProp.value }, true);
-                    }
+                    newProp.value = this.value;
                     this.previousElementValue = this.inputElement.value;
                     if (isNullOrUndefined(this.value)) {
                         Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
@@ -1385,6 +1470,13 @@ export class DatePicker extends Calendar implements IInput {
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
+                    break;
+                case 'start':
+                case 'depth':
+                    this.checkView();
+                    if (this.calendarElement) {
+                        super.onPropertyChanged(newProp, oldProp);
+                    }
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);

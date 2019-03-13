@@ -1,11 +1,35 @@
 import { createCheckBox } from './../src/common/common';
 import { CheckBox } from './../src/check-box/check-box';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, EventHandler, attributes } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /**
  * CheckBox Spec document
  */
+function copyObject(source: any, destination: any): Object {
+    for (let prop in source) {
+        destination[prop] = source[prop];
+    }
+    return destination;
+}
+
+function setMouseCoordinates(eventarg: any, x: number, y: number, target: Element): Object {
+    eventarg.pageX = x;
+    eventarg.pageY = y;
+    eventarg.clientX = x;
+    eventarg.clientY = y;
+    eventarg.target = target;
+    return eventarg;
+}
+
+function getEventObject(eventType: string, eventName: string): Object {
+    let tempEvent: any = document.createEvent(eventType);
+    tempEvent.initEvent(eventName, true, true);
+    let returnObject: any = copyObject(tempEvent, {});
+    returnObject.preventDefault = () => { return true; };
+    return returnObject;
+}
+
 describe('CheckBox', () => {
     beforeAll(() => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
@@ -121,6 +145,16 @@ describe('CheckBox', () => {
             checkbox.checked = true;
             checkbox.dataBind();
             expect(element.parentElement.parentElement.getAttribute('aria-checked')).toEqual('true');
+        });
+
+        it('Hidden input', () => {
+            attributes(element, { 'ejs-for': 'true', 'name': 'check' });
+            checkbox = new CheckBox({}, '#checkbox');
+            expect(element.parentElement.children[1].tagName).toEqual('INPUT');
+            expect(element.parentElement.children[1].getAttribute('name')).toEqual('check');
+            expect(element.parentElement.children[1].getAttribute('type')).toEqual('hidden');
+            expect(element.parentElement.children[1].getAttribute('value')).toEqual('false');
+            element.removeAttribute('ejs-for');
         });
     });
 
@@ -311,6 +345,11 @@ describe('CheckBox', () => {
             checkbox.keyUpHandler();
             expect(element.parentElement.parentElement.classList.contains('e-focus')).toEqual(true);
             checkbox.focusHandler();
+            let wrapper: Element = checkbox.element.parentElement.parentElement;
+            let label: Element =  wrapper.getElementsByTagName('label')[0];
+            let cbox: any = getEventObject('MouseEvents', 'mouseup');
+            cbox = setMouseCoordinates(checkbox, 5, 5, label);
+            EventHandler.trigger(label as HTMLElement, 'mouseup', cbox);
             checkbox.clickHandler();
             expect(element.parentElement.parentElement.classList.contains('e-focus')).toEqual(false);
         });

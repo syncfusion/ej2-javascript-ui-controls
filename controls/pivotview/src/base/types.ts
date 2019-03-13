@@ -148,3 +148,34 @@ export type Condition =
     'NotEquals' |
     'Between' |
     'NotBetween';
+
+/** 
+ * Defines group of date field
+ * * Years - Specifies the group as years.
+ * * Quarters - Specifies the group as quarters.
+ * * Months - Specifies the group as months.
+ * * Days - Specifies the group as days.
+ * * Hours - Specifies the group as hours.
+ * * Minutes - Specifies the group as minutes.
+ * * Seconds - Specifies the group as seconds.
+ */
+export type DateGroup =
+    /**  Defines group as 'Years' of date field */
+    'Years' |
+    /**  Defines group as 'Quarters' of date field */
+    'Quarters' |
+    /**  Defines group as 'Months' of date field */
+    'Months' |
+    /**  Defines group as 'Days' of date field */
+    'Days' |
+    /**  Defines group as 'Hours' of date field */
+    'Hours' |
+    /**  Defines group as 'Minutes' of date field */
+    'Minutes' |
+    /**  Defines group as 'Seconds' of date field */
+    'Seconds';
+export type GroupType =
+    /**  Defines group type as 'Date' for date field */
+    'Date' |
+    /**  Defines group type as 'Number' for numeric field */
+    'Number';

@@ -33,7 +33,7 @@ let importRules: RuleModel = {
         'condition': 'and',
             'rules': [{
                 'label': 'in stock',
-                'field': 'in stock',
+                'field': 'in_stock',
                 'type': 'string',
                 'operator': 'equal',
                 'value': ['Yes']
@@ -69,7 +69,7 @@ document.getElementById('addrules').onclick = (): void => {
     queryBldrObj.addRules([
         {'label': 'CustomerID', 'field': 'CustomerID', 'type': 'string',  'operator': 'equal', 'value': 'ALFKI'},
         {'label': 'OrderID', 'field': 'OrderID', 'type': 'number', 'operator': 'notequal', 'value': 10260 }
-    ], 'querybuilder_e_group0');
+    ], 'group0');
 };
 
 //addgroup
@@ -104,7 +104,7 @@ document.getElementById('addgroups').onclick = (): void => {
                 'operator': 'equal',
                 'value': 10260
             }]
-        }], 'querybuilder_e_group0');
+        }], 'group0');
 };
 
 //deleterules
@@ -112,7 +112,7 @@ buttonElem = queryBldrObj.createElement('Button', { attrs: {type: 'button', clas
 buttonElem.textContent = 'DeleteRule';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('deleterule').onclick = (): void => {
-    queryBldrObj.deleteRules(['querybuilder_e_group4_e_rule9']);
+    queryBldrObj.deleteRules(['group4_rule7']);
 };
 
 //deleteGroup
@@ -120,7 +120,7 @@ buttonElem = queryBldrObj.createElement('Button',{ attrs: {type: 'button', class
 buttonElem.textContent = 'DeleteGroup';
 document.getElementById('property').appendChild(buttonElem);
 document.getElementById('deletegroup').onclick = (): void => {
-    queryBldrObj.deleteGroups(['querybuilder_e_group4']);
+    queryBldrObj.deleteGroups(['group4']);
 };
 
 //reset rules

@@ -5,6 +5,7 @@ import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '
 import { AutoComplete } from '../../src/auto-complete/index';
 import { FilteringEventArgs } from '../../src/drop-down-base';
 import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 let languageData: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
 { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'PYTHON' }, { id: 'list5', text: 'HTMLCSS' }];
@@ -18,6 +19,14 @@ let filterData: { [key: string]: Object }[] = [
 let sportsData: string[] = ['Badminton', 'Basketball', 'Tennis', 'Cricket', 'Football', 'Golf', 'Gymnastics', 'Hockey', 'Rugby', 'Snooker', 'Tennis'];
 let mouseEventArgs: any = { preventDefault: function () { }, target: null };
 describe('AutoComplete', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let css: string = ".e-spinner-pane::after { content: 'Material'; display: none;} ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -1820,4 +1829,13 @@ describe('AutoComplete', () => {
             });
         });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

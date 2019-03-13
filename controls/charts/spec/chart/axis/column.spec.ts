@@ -9,9 +9,19 @@ import { definition5, definition6, definition3, definition1, definition4 } from 
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
-Chart.Inject(LineSeries);
+import { Category } from '../../../src/chart/axis/category-axis';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+Chart.Inject(LineSeries, Category);
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let ele: HTMLElement;
     let svg: HTMLElement;
     let loaded: EmitType<ILoadedEventArgs>;
@@ -308,4 +318,103 @@ describe('Chart Control', () => {
             chartEle.refresh();
         });
     });
+    describe('Checking line break axis labels with columns', () => {
+        let chart: Chart;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    primaryYAxis: { },
+                    axes: [
+                        {
+                            columnIndex: 1, name: 'xAxis1', valueType: 'Category'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: 'series1', type: 'Line',
+                            dataSource: [
+                                { x: "India", y: 61.3 },
+                                { x: "United<br>States<br>of<br>America", y: 31 },
+                                { x: "South<br>Korea", y: 39.4 },
+                                { x: "United<br>Arab<br>Emirates", y: 65.1 },
+                                { x: "United<br>Kingdom", y: 75.9 }
+                            ], xName: 'x', yName: 'y', animation: { enable: false }
+                        },
+                        {
+                            name: 'series2', type: 'Line', xAxisName: 'xAxis1',
+                            dataSource: [
+                                { x: "India", y: 61.3 },
+                                { x: "United<br>States<br>of<br>America", y: 31 },
+                                { x: "South<br>Korea", y: 39.4 },
+                                { x: "United<br>Arab<br>Emirates", y: 65.1 },
+                                { x: "United<br>Kingdom", y: 75.9 }
+                            ], xName: 'x', yName: 'y', animation: { enable: false }
+                        },
+                    ],
+                    columns: [
+                        {
+                            width: '50%',
+                        },
+                        {
+                            width: '50%',
+                        }
+                    ], legendSettings: { visible: false }
+                },'#container');
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('Line break label checking ', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById("containerAxisLabels2");
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Line break label child element checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                label = document.getElementById("container2_AxisLabel_1");
+                expect(label.childElementCount == 3).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking line break labels with inversed axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById("containerAxisLabels2");
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = true;
+            chart.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

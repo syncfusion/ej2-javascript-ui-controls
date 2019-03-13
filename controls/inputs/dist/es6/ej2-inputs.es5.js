@@ -47,13 +47,14 @@ var Input;
                 parent.classList.remove('e-input-focus');
             }
         });
-        if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) && args.properties.showClearButton) {
+        if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
+            args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
             if (inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT)) {
                 addClass([inputObject.container], CLASSNAMES.INPUTGROUP);
             }
         }
-        if (!isNullOrUndefined(args.buttons)) {
+        if (!isNullOrUndefined(args.buttons) && args.element.tagName !== 'TEXTAREA') {
             for (var i = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
             }
@@ -71,7 +72,8 @@ var Input;
     }
     function _blurFn() {
         var parent = getParentNode(this);
-        if (parent.getElementsByTagName('input')[0].value === '') {
+        if ((parent.getElementsByTagName('input')[0]) ? parent.getElementsByTagName('input')[0].value === '' :
+            parent.getElementsByTagName('textarea')[0].value === '') {
             var label = parent.getElementsByClassName('e-float-text')[0];
             if (label.classList.contains(CLASSNAMES.LABELTOP)) {
                 removeClass([label], CLASSNAMES.LABELTOP);
@@ -496,7 +498,8 @@ var Input;
     function removeFloating(input) {
         var container = input.container;
         if (!isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
-            var inputEle = container.querySelector('input');
+            var inputEle = container.querySelector('input') ? container.querySelector('input') :
+                container.querySelector('textarea');
             var placeholder = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
             var clearButton = container.querySelector('.e-clear-icon') !== null;
             detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));
@@ -505,7 +508,7 @@ var Input;
             unwireFloatingEvents(inputEle);
             attributes(inputEle, { 'placeholder': placeholder });
             inputEle.classList.add(CLASSNAMES.INPUT);
-            if (!clearButton) {
+            if (!clearButton && inputEle.tagName === 'INPUT') {
                 inputEle.removeAttribute('required');
             }
         }
@@ -2240,6 +2243,7 @@ function maskInputKeyPressHandler(event) {
     }
 }
 function triggerMaskChangeEvent(event, oldValue) {
+    var prevOnChange = this.isProtectedOnChange;
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         var eventArgs = {};
         this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false, isInteracted: false };
@@ -2251,6 +2255,9 @@ function triggerMaskChangeEvent(event, oldValue) {
             this.changeEventArgs.isInteraction = true;
             this.changeEventArgs.event = event;
         }
+        this.isProtectedOnChange = true;
+        this.value = this.changeEventArgs.value;
+        this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
         this.trigger('change', eventArgs);
     }
@@ -3133,6 +3140,7 @@ var TooltipData = /** @__PURE__ @class */ (function (_super) {
     return TooltipData;
 }(ChildProperty));
 var bootstrapTooltipOffset = 6;
+var bootstrap4TooltipOffset = 3;
 var classNames = {
     root: 'e-slider',
     rtl: 'e-rtl',
@@ -3415,6 +3423,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     Slider.prototype.getThemeInitialization = function () {
         this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
         this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     };
     Slider.prototype.createRangeBar = function () {
@@ -3749,19 +3758,20 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.tooltipCollision = function (position) {
-        if (this.isBootstrap || (this.isMaterial && !this.isMaterialTooltip)) {
+        if (this.isBootstrap || this.isBootstrap4 || (this.isMaterial && !this.isMaterialTooltip)) {
+            var tooltipOffsetValue = this.isBootstrap4 ? bootstrap4TooltipOffset : bootstrapTooltipOffset;
             switch (position) {
                 case 'TopCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': -(bootstrapTooltipOffset) }, false);
+                    this.tooltipObj.setProperties({ 'offsetY': -(tooltipOffsetValue) }, false);
                     break;
                 case 'BottomCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': bootstrapTooltipOffset }, false);
+                    this.tooltipObj.setProperties({ 'offsetY': tooltipOffsetValue }, false);
                     break;
                 case 'LeftCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': -(bootstrapTooltipOffset) }, false);
+                    this.tooltipObj.setProperties({ 'offsetX': -(tooltipOffsetValue) }, false);
                     break;
                 case 'RightCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': bootstrapTooltipOffset }, false);
+                    this.tooltipObj.setProperties({ 'offsetX': tooltipOffsetValue }, false);
                     break;
             }
         }
@@ -3879,7 +3889,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     };
     Slider.prototype.renderTooltip = function () {
         this.tooltipObj = new Tooltip({
-            showTipPointer: this.isBootstrap || this.isMaterial,
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4,
             cssClass: classNames.sliderTooltip,
             height: this.isMaterial ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
@@ -5564,6 +5574,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                         if (this.firstBtn && this.secondBtn) {
                             this.sliderContainer.removeChild(this.firstBtn);
                             this.sliderContainer.removeChild(this.secondBtn);
+                            this.sliderContainer.classList.remove(classNames.sliderButtonClass);
                             this.firstBtn = undefined;
                             this.secondBtn = undefined;
                         }
@@ -6882,7 +6893,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
         this.browseButton.setAttribute('tabindex', this.tabIndex);
         if (typeof (this.buttons.browse) === 'string') {
-            this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
                 this.localizedTexts('Browse') : this.buttons.browse;
             this.browseButton.setAttribute('title', this.browseButton.innerText);
         }
@@ -6923,9 +6934,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     Uploader.prototype.renderButtonTemplates = function () {
         if (typeof (this.buttons.browse) === 'string') {
-            this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
                 this.localizedTexts('Browse') : this.buttons.browse;
-            this.browseButton.setAttribute('title', this.browseButton.innerText);
+            this.browseButton.setAttribute('title', this.browseButton.textContent);
         }
         else {
             this.browseButton.innerHTML = '';
@@ -6936,9 +6947,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             uploadText = isNullOrUndefined(this.buttons.upload) ? 'Upload' : this.buttons.upload;
             this.buttons.upload = uploadText;
             if (typeof (this.buttons.upload) === 'string') {
-                this.uploadButton.innerText = (this.buttons.upload === 'Upload') ?
+                this.uploadButton.textContent = (this.buttons.upload === 'Upload') ?
                     this.localizedTexts('Upload') : this.buttons.upload;
-                this.uploadButton.setAttribute('title', this.uploadButton.innerText);
+                this.uploadButton.setAttribute('title', this.uploadButton.textContent);
             }
             else {
                 this.uploadButton.innerHTML = '';
@@ -6950,9 +6961,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             clearText = isNullOrUndefined(this.buttons.clear) ? 'Clear' : this.buttons.clear;
             this.buttons.clear = clearText;
             if (typeof (this.buttons.clear) === 'string') {
-                this.clearButton.innerText = (this.buttons.clear === 'Clear') ?
+                this.clearButton.textContent = (this.buttons.clear === 'Clear') ?
                     this.localizedTexts('Clear') : this.buttons.clear;
-                this.clearButton.setAttribute('title', this.clearButton.innerText);
+                this.clearButton.setAttribute('title', this.clearButton.textContent);
             }
             else {
                 this.clearButton.innerHTML = '';
@@ -7002,7 +7013,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.filesData.push(fileData);
         }
         this.createFileList(filesData);
-        if (!this.autoUpload && this.listParent && !this.actionButtons && !this.isForm && this.showFileList) {
+        if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
             this.renderActionButtons();
         }
         this.checkActionButtonStatus();
@@ -7577,14 +7588,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     this.checkExtension(eventArgs.modifiedFilesData);
                 this.updateSortedFileList(dataFiles);
                 this.filesData = dataFiles;
-                if (!this.isForm) {
+                if (!this.isForm || this.allowUpload()) {
                     this.checkAutoUpload(dataFiles);
                 }
             }
             else {
                 this.createFileList(fileData);
                 this.filesData = this.filesData.concat(fileData);
-                if (!this.isForm) {
+                if (!this.isForm || this.allowUpload()) {
                     this.checkAutoUpload(fileData);
                 }
             }
@@ -7599,6 +7610,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.raiseActionComplete();
+    };
+    Uploader.prototype.allowUpload = function () {
+        var allowFormUpload = false;
+        if (this.isForm && (!isNullOrUndefined(this.asyncSettings.saveUrl) && this.asyncSettings.saveUrl !== '')) {
+            allowFormUpload = true;
+        }
+        return allowFormUpload;
     };
     Uploader.prototype.clearData = function (singleUpload) {
         if (!isNullOrUndefined(this.listParent)) {
@@ -10964,6 +10982,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.previousValue = null;
         _this.isAngular = false;
+        _this.isHiddenInput = false;
         _this.isForm = false;
         return _this;
     }
@@ -10977,10 +10996,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'floatLabelType':
                     Input.removeFloating(this.textboxWrapper);
-                    Input.addFloating(this.element, this.floatLabelType, this.placeholder);
+                    Input.addFloating(this.respectiveElement, this.floatLabelType, this.placeholder);
                     break;
                 case 'enabled':
-                    Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                    Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
                     break;
                 case 'value':
                     var prevOnChange = this.isProtectedOnChange;
@@ -10989,25 +11008,32 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                         this.value = this.value.toString();
                     }
                     this.isProtectedOnChange = prevOnChange;
-                    Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
+                    Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+                    if (this.isHiddenInput) {
+                        this.element.value = this.respectiveElement.value;
+                    }
                     this.raiseChangeEvent();
                     break;
                 case 'readonly':
-                    Input.setReadonly(this.readonly, this.element);
+                    Input.setReadonly(this.readonly, this.respectiveElement);
                     break;
                 case 'type':
-                    this.element.setAttribute('type', this.type);
-                    this.raiseChangeEvent();
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                        this.respectiveElement.setAttribute('type', this.type);
+                        this.raiseChangeEvent();
+                    }
                     break;
                 case 'showClearButton':
-                    Input.setClearButton(this.showClearButton, this.element, this.textboxWrapper);
-                    this.bindClearEvent();
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                        Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
+                        this.bindClearEvent();
+                    }
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
                     break;
                 case 'placeholder':
-                    Input.setPlaceholder(this.placeholder, this.element);
+                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
                 case 'cssClass':
                     Input.setCssClass(this.cssClass, [this.textboxWrapper.container]);
@@ -11016,7 +11042,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     this.globalize = new Internationalization(this.locale);
                     this.l10n.setLocale(this.locale);
                     this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                    Input.setPlaceholder(this.placeholder, this.element);
+                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
             }
         }
@@ -11040,7 +11066,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         /* istanbul ignore next */
         if (this.element.tagName === 'EJS-TEXTBOX') {
             var ejInstance = getValue('ej2_instances', this.element);
-            var inputElement = this.createElement('input');
+            var inputElement = this.multiline ?
+                this.createElement('textarea') :
+                this.createElement('input');
             var index = 0;
             for (index; index < this.element.attributes.length; index++) {
                 inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
@@ -11052,7 +11080,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
         var attributes$$1 = this.element.attributes;
         this.checkAttributes(attributes$$1);
-        this.element.setAttribute('type', this.type);
+        if (this.element.tagName !== 'TEXTAREA') {
+            this.element.setAttribute('type', this.type);
+        }
         this.globalize = new Internationalization(this.locale);
         var localeText = { placeholder: this.placeholder };
         this.l10n = new L10n('textbox', localeText, this.locale);
@@ -11064,6 +11094,14 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
         if (!this.element.hasAttribute('name')) {
             this.element.setAttribute('name', this.element.getAttribute('id'));
+        }
+        if (this.element.tagName === 'INPUT' && this.multiline) {
+            this.isHiddenInput = true;
+            this.textarea = this.createElement('textarea');
+            this.element.parentNode.insertBefore(this.textarea, this.element);
+            this.element.setAttribute('type', 'hidden');
+            this.textarea.setAttribute('name', this.element.getAttribute('name'));
+            this.element.removeAttribute('name');
         }
     };
     TextBox.prototype.checkAttributes = function (attrs) {
@@ -11085,8 +11123,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     TextBox.prototype.render = function () {
+        this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
         this.textboxWrapper = Input.createInput({
-            element: this.element,
+            element: this.respectiveElement,
             floatLabelType: this.floatLabelType,
             properties: {
                 enabled: this.enabled,
@@ -11098,11 +11137,14 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             }
         });
         this.wireEvents();
-        if (this.element.value !== '') {
-            this.value = this.element.value;
+        if (this.respectiveElement.value !== '') {
+            this.value = this.respectiveElement.value;
         }
         if (!isNullOrUndefined(this.value)) {
-            Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
+            Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+                this.element.value = this.respectiveElement.value;
+            }
         }
         if (!isNullOrUndefined(this.value)) {
             this.initialValue = this.value;
@@ -11115,10 +11157,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TextBox.prototype.wireEvents = function () {
-        EventHandler.add(this.element, 'focus', this.focusHandler, this);
-        EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
-        EventHandler.add(this.element, 'input', this.inputHandler, this);
-        EventHandler.add(this.element, 'change', this.changeHandler, this);
+        EventHandler.add(this.respectiveElement, 'focus', this.focusHandler, this);
+        EventHandler.add(this.respectiveElement, 'blur', this.focusOutHandler, this);
+        EventHandler.add(this.respectiveElement, 'input', this.inputHandler, this);
+        EventHandler.add(this.respectiveElement, 'change', this.changeHandler, this);
         if (this.isForm) {
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
@@ -11158,8 +11200,8 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         this.trigger('focus', eventArgs);
     };
     TextBox.prototype.focusOutHandler = function (args) {
-        if (!(this.previousValue === null && this.value === null && this.element.value === '') &&
-            (this.previousValue !== this.element.value)) {
+        if (!(this.previousValue === null && this.value === null && this.respectiveElement.value === '') &&
+            (this.previousValue !== this.respectiveElement.value)) {
             this.raiseChangeEvent(args, true);
         }
         var eventArgs = {
@@ -11170,23 +11212,17 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         this.trigger('blur', eventArgs);
     };
     TextBox.prototype.inputHandler = function (args) {
-        // tslint:disable-next-line
-        var textboxObj = this;
         var eventArgs = {
             event: args,
-            value: this.element.value,
+            value: this.respectiveElement.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
-        if (this.isAngular) {
-            textboxObj.localChange({ value: this.element.value });
-            this.preventChange = true;
-        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     };
     TextBox.prototype.changeHandler = function (args) {
-        this.setProperties({ value: this.element.value }, true);
+        this.setProperties({ value: this.respectiveElement.value }, true);
         this.raiseChangeEvent(args, true);
         args.stopPropagation();
     };
@@ -11199,17 +11235,11 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
-        if (this.isAngular && this.preventChange !== true) {
-            this.trigger('change', eventArgs);
-        }
-        else if (isNullOrUndefined(this.isAngular) || !this.isAngular) {
-            this.trigger('change', eventArgs);
-        }
-        this.preventChange = false;
+        this.trigger('change', eventArgs);
         this.previousValue = this.value;
     };
     TextBox.prototype.bindClearEvent = function () {
-        if (this.showClearButton) {
+        if (this.showClearButton && this.respectiveElement.tagName !== 'TEXTAREA') {
             EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
         }
     };
@@ -11217,11 +11247,14 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
             var previousValue = this.value;
-            Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
+            Input.setValue('', this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+                this.element.value = this.respectiveElement.value;
+            }
             this.value = '';
             var eventArgs = {
                 event: event,
-                value: this.element.value,
+                value: this.respectiveElement.value,
                 previousValue: previousValue,
                 container: this.textboxWrapper.container
             };
@@ -11229,10 +11262,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TextBox.prototype.unWireEvents = function () {
-        EventHandler.remove(this.element, 'focus', this.focusHandler);
-        EventHandler.remove(this.element, 'blur', this.focusOutHandler);
-        EventHandler.remove(this.element, 'input', this.inputHandler);
-        EventHandler.remove(this.element, 'change', this.changeHandler);
+        EventHandler.remove(this.respectiveElement, 'focus', this.focusHandler);
+        EventHandler.remove(this.respectiveElement, 'blur', this.focusOutHandler);
+        EventHandler.remove(this.respectiveElement, 'input', this.inputHandler);
+        EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
         }
@@ -11245,9 +11278,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
      */
     TextBox.prototype.destroy = function () {
         this.unWireEvents();
-        this.element.classList.remove('e-input');
+        this.respectiveElement.classList.remove('e-input');
         this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.parentElement.appendChild(this.element);
+        this.textboxWrapper.container.parentElement.appendChild(this.respectiveElement);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
         _super.prototype.destroy.call(this);
@@ -11270,21 +11303,24 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             var key = _a[_i];
             if (key === 'disabled') {
                 this.setProperties({ enabled: false }, true);
-                Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
             }
             else if (key === 'readonly') {
                 this.setProperties({ readonly: true }, true);
-                Input.setReadonly(this.readonly, this.element);
+                Input.setReadonly(this.readonly, this.respectiveElement);
             }
             else if (key === 'class') {
-                this.element.classList.add(attributes$$1[key]);
+                this.respectiveElement.classList.add(attributes$$1[key]);
             }
             else if (key === 'placeholder') {
                 this.setProperties({ placeholder: attributes$$1[key] }, true);
-                Input.setPlaceholder(this.placeholder, this.element);
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
+            }
+            else if (key === 'rows' && this.respectiveElement.tagName === 'TEXTAREA') {
+                this.respectiveElement.setAttribute(key, attributes$$1[key]);
             }
             else {
-                this.element.setAttribute(key, attributes$$1[key]);
+                this.respectiveElement.setAttribute(key, attributes$$1[key]);
             }
         }
     };
@@ -11298,18 +11334,18 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             var key = attributes_1[_i];
             if (key === 'disabled') {
                 this.setProperties({ enabled: true }, true);
-                Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
             }
             else if (key === 'readonly') {
                 this.setProperties({ readonly: false }, true);
-                Input.setReadonly(this.readonly, this.element);
+                Input.setReadonly(this.readonly, this.respectiveElement);
             }
             else if (key === 'placeholder') {
                 this.setProperties({ placeholder: null }, true);
-                Input.setPlaceholder(this.placeholder, this.element);
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
             }
             else {
-                this.element.removeAttribute(key);
+                this.respectiveElement.removeAttribute(key);
             }
         }
     };
@@ -11334,6 +11370,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property(false)
     ], TextBox.prototype, "enableRtl", void 0);
+    __decorate$6([
+        Property(false)
+    ], TextBox.prototype, "multiline", void 0);
     __decorate$6([
         Property(true)
     ], TextBox.prototype, "enabled", void 0);

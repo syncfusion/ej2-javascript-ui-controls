@@ -49,6 +49,7 @@
     &:checked {
       +label {
         &::before {
+          background-color: $radio-btn-checked-background-color;
           border-color: $radio-btn-checked-border-color;
         }
 
@@ -128,6 +129,11 @@
 
       &:checked {
         +label {
+          &::before {
+            background-color: $radio-btn-disabled-background-color;
+            border-color: $radio-btn-disabled-checked-border-color;
+          }
+
           &::after {
             background-color: $radio-btn-disabled-checked-color;
             border-color: $radio-btn-disabled-checked-color;

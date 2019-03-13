@@ -18,6 +18,7 @@ import { firstSeries, secondSeries, thirdSeries } from '../base/data.spec';
 import { unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IDragCompleteEventArgs } from '../../../src/common/model/interface';
 Chart.Inject(LineSeries, StepLineSeries, ColumnSeries, AreaSeries, StackingAreaSeries, Selection, StackingColumnSeries, Legend,
     Zoom);
@@ -57,6 +58,14 @@ seriesCollection = [
     }
 ];
 describe('Chart Control Selection ', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let id: string = 'ej2Container';
     let selection: string = id + '_ej2_chart_selection_series_';
     let chartObj: Chart;
@@ -812,4 +821,13 @@ describe('Chart Control Selection ', () => {
         chartObj.series[0].dataSource[2].y = 0;
         chartObj.refresh();
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

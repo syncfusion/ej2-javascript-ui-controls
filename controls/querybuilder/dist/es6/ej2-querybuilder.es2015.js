@@ -104,7 +104,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let bodeElem = this.element.querySelector('.e-group-body');
         bodeElem.innerHTML = '';
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
-        this.levelColl[this.element.id + '_e_group0'] = [0];
+        this.levelColl[this.element.id + '_group0'] = [0];
         this.rule = { condition: 'and', rules: [] };
     }
     getWrapper() {
@@ -165,9 +165,23 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
     }
+    triggerEvents(args, type) {
+        if (this.isImportRules) {
+            return args;
+        }
+        if (type === 'before') {
+            this.trigger('beforeChange', args);
+        }
+        else {
+            this.trigger('change', args);
+        }
+        return args;
+    }
     clickEventHandler(event) {
         let target = event.target;
+        let args;
         this.isImportRules = false;
+        let groupID;
         if (target.tagName === 'SPAN') {
             target = target.parentElement;
         }
@@ -214,12 +228,15 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
             let element = closest(target, '.e-group-container');
-            let args = { groupID: element.id, selectedItem: target, cancel: false };
-            this.trigger('beforeConditionChange', args);
+            groupID = element.id.replace(this.element.id + '_', '');
+            args = { groupID: groupID, cancel: false, type: 'condition', value: target.textContent.toLowerCase() };
+            args = this.triggerEvents(args, 'before');
+            if (args.cancel) {
+                return;
+            }
             let rule = this.getGroup(element);
-            rule.condition = target.textContent.toLowerCase();
-            args = { groupID: element.id, selectedItem: target };
-            this.trigger('conditionChanged', args);
+            rule.condition = args.value;
+            this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
         }
     }
     selectBtn(target, event) {
@@ -239,6 +256,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     addRuleElement(target, rule) {
+        let args = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertRule' };
+        args = this.triggerEvents(args, 'before');
+        if (args.cancel) {
+            return;
+        }
         let ruleElem = this.ruleElem.cloneNode(true);
         if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
             ruleElem.className = 'e-rule-container e-vertical-mode';
@@ -267,7 +289,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
             ruleElem.querySelector('button').appendChild(element);
         }
-        ruleElem.setAttribute('id', target.id + '_e_rule' + this.ruleIdCounter);
+        ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
         this.ruleIdCounter++;
         ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
         ruleListElem.appendChild(ruleElem);
@@ -315,6 +337,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 itemData: this.columns[this.filterIndex]
             });
         }
+        this.triggerEvents({ groupID: target.id.replace(this.element.id + '_', ''), type: 'insertRule' });
     }
     renderToolTip(element) {
         let tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
@@ -401,6 +424,35 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         return isValid;
     }
+    refreshLevelColl() {
+        this.levelColl = {};
+        let groupElem = this.element.querySelector('.e-group-container');
+        this.levelColl[groupElem.id] = [0];
+        let obj = { groupElement: groupElem, level: [0] };
+        this.refreshLevel(obj);
+    }
+    refreshLevel(obj) {
+        let ruleList = obj.groupElement.querySelector('.e-rule-list').children;
+        let childElem;
+        let groupElem = obj.groupElement;
+        let i;
+        let iLen = ruleList.length;
+        let groupCount = 0;
+        for (i = 0; i < iLen; i++) {
+            childElem = ruleList[i];
+            if (childElem.className.indexOf('e-group-container') > -1) {
+                obj.level.push(groupCount);
+                this.levelColl[childElem.id] = obj.level.slice();
+                groupCount++;
+                obj.groupElement = childElem;
+                obj = this.refreshLevel(obj);
+            }
+        }
+        let ruleListElem = groupElem.closest('.e-rule-list');
+        obj.groupElement = ruleListElem ? ruleListElem.closest('.e-group-container') : groupElem;
+        obj.level = this.levelColl[obj.groupElement.id].slice();
+        return obj;
+    }
     groupTemplate() {
         let groupElem;
         let grpBodyElem;
@@ -467,12 +519,14 @@ let QueryBuilder = class QueryBuilder extends Component {
         return ruleElem;
     }
     addGroupElement(isGroup, target, condition, isBtnClick) {
-        if (this.element.querySelectorAll('.e-group-container').length >= this.maxGroupCount) {
+        let args = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertGroup' };
+        args = this.triggerEvents(args, 'before');
+        if (args.cancel || (this.element.querySelectorAll('.e-group-container').length >= this.maxGroupCount)) {
             return;
         }
         let dltGroupBtn;
         let groupElem = this.groupElem.cloneNode(true);
-        groupElem.setAttribute('id', this.element.id + '_e_group' + this.groupIdCounter);
+        groupElem.setAttribute('id', this.element.id + '_group' + this.groupIdCounter);
         this.groupIdCounter++;
         let andInpElem = groupElem.querySelector('.e-btngroup-and');
         let orInpElem = groupElem.querySelector('.e-btngroup-or');
@@ -495,13 +549,19 @@ let QueryBuilder = class QueryBuilder extends Component {
             rippleEffect(dltGroupBtn, { selector: '.deletegroup' });
             groupElem.querySelector('.e-group-action').appendChild(dltGroupBtn);
             let ruleList = target.querySelector('.e-rule-list');
-            let grpLen = target.querySelectorAll('.e-group-container').length;
+            let childElems = ruleList.children;
+            let grpLen = 0;
+            for (let j = 0, jLen = childElems.length; j < jLen; j++) {
+                if (childElems[j].className.indexOf('e-group-container') > -1) {
+                    grpLen += 1;
+                }
+            }
             ruleList.appendChild(groupElem);
             let level = this.levelColl[target.id].slice(0);
             level.push(grpLen);
             this.levelColl[groupElem.id] = level;
             if (!this.isImportRules) {
-                this.addGroups([], target.id);
+                this.addGroups([], target.id.replace(this.element.id + '_', ''));
                 if (isBtnClick) {
                     this.addRuleElement(groupElem, {});
                 }
@@ -525,6 +585,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         });
         btnObj.appendTo(groupBtn);
         rippleEffect(groupBtn, { selector: '.e-round' });
+        this.triggerEvents({ groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
     }
     notifyChange(value, element) {
         let tempColl = closest(element, '.e-rule-value').querySelectorAll('.e-template');
@@ -540,6 +601,8 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     changeValue(i, args) {
         let eventsArgs;
+        let groupID;
+        let ruleID;
         let element;
         if (args.event) {
             element = args.event.target;
@@ -554,6 +617,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         let groupElem = closest(element, '.e-group-container');
         let ruleElem = closest(element, '.e-rule-container');
+        groupID = groupElem.id.replace(this.element.id + '_', '');
+        ruleID = ruleElem.id.replace(this.element.id + '_', '');
         let dateElement = args;
         if (dateElement.element && dateElement.element.className.indexOf('e-datepicker') > -1) {
             element = dateElement.element;
@@ -568,11 +633,13 @@ let QueryBuilder = class QueryBuilder extends Component {
         else {
             value = args.value;
         }
-        eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: value, cancel: false };
-        this.trigger('beforeValueChange', eventsArgs);
-        this.updateRules(element, value, i);
-        eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: value, cancel: false };
-        this.trigger('valueChanged', eventsArgs);
+        eventsArgs = { groupID: groupID, ruleID: ruleID, value: value, cancel: false, type: 'value' };
+        eventsArgs = this.triggerEvents(eventsArgs, 'before');
+        if (eventsArgs.cancel) {
+            return;
+        }
+        this.updateRules(element, eventsArgs.value, i);
+        this.triggerEvents({ groupID: groupID, ruleID: ruleID, value: eventsArgs.value, cancel: false, type: 'value' });
     }
     changeField(args) {
         if (args.isInteracted) {
@@ -593,9 +660,10 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         let tempRule = {};
         let ddlObj;
-        let inOperator = ['in', 'notin'];
+        let ruleElem;
         let operatorList;
-        let betweenOperator = ['between', 'notbetween'];
+        let groupID;
+        let ruleID;
         let filterElem;
         let operatorElem;
         let oprElem;
@@ -604,32 +672,42 @@ let QueryBuilder = class QueryBuilder extends Component {
         operatorElem = closest(args.element, '.e-rule-operator');
         let dropDownObj = getComponent(args.element, 'dropdownlist');
         let element = closest(args.element, '.e-group-container');
+        groupID = element.id.replace(this.element.id + '_', '');
+        let eventsArgs;
         if (filterElem) {
-            let ruleElem = closest(filterElem, '.e-rule-container');
-            let eventsArgs = {
-                groupID: element.id, ruleID: ruleElem.id, selectedItem: args.item, cancel: false
-            };
-            this.trigger('beforeFieldChange', eventsArgs);
+            ruleElem = closest(filterElem, '.e-rule-container');
+            ruleID = ruleElem.id.replace(this.element.id + '_', '');
+            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedIndex: dropDownObj.index, cancel: false, type: 'field' };
+            eventsArgs = this.triggerEvents(eventsArgs, 'before');
+            if (eventsArgs.cancel) {
+                return;
+            }
+            if (dropDownObj.index !== eventsArgs.selectedIndex) {
+                dropDownObj.index = eventsArgs.selectedIndex;
+            }
             tempRule.type = this.columns[dropDownObj.index].type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
         }
         if (operatorElem) {
-            let ruleElem = closest(operatorElem, '.e-rule-container');
-            let eventsArgs = {
-                groupID: element.id, ruleID: ruleElem.id, selectedItem: args.item, cancel: false
-            };
-            this.trigger('beforeOperatorChange', eventsArgs);
-            tempRule.operator = args.itemData.value;
+            ruleElem = closest(operatorElem, '.e-rule-container');
+            ruleID = ruleElem.id.replace(this.element.id + '_', '');
+            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedIndex: dropDownObj.index, cancel: false, type: 'operator' };
+            eventsArgs = this.triggerEvents(eventsArgs, 'before');
+            if (eventsArgs.cancel) {
+                return;
+            }
+            if (dropDownObj.index !== eventsArgs.selectedIndex) {
+                dropDownObj.index = eventsArgs.selectedIndex;
+            }
+            tempRule.operator = dropDownObj.value;
             let currOper = tempRule.operator.toLowerCase();
-            if (inOperator.indexOf(currOper) > -1 || betweenOperator.indexOf(currOper) > -1) {
+            if (tempRule.operator.toLowerCase().indexOf('between') > -1 || (tempRule.operator.toLowerCase().indexOf('in') > -1
+                && tempRule.operator.toLowerCase().indexOf('contains') < 0)) {
                 filterElem = operatorElem.previousElementSibling;
                 tempRule.type = rule.type;
-                if (!(inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) &&
-                    !(betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
-                    rule.value = [];
-                }
+                rule.value = [];
             }
             else if (typeof rule.value === 'object') {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
@@ -641,8 +719,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                     tempRule.type = rule.type;
                 }
             }
-            if ((inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) ||
-                (betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
+            if ((prevOper.indexOf('in') > -1 && prevOper.indexOf('in') < 5) && (currOper.indexOf('in') > -1
+                && currOper.indexOf('in') < 5)) {
                 filterElem = null;
             }
         }
@@ -779,9 +857,15 @@ let QueryBuilder = class QueryBuilder extends Component {
             value: selectedValue,
             mode: 'CheckBox',
             width: '100%',
-            change: this.changeValue.bind(this, i)
+            change: this.changeValue.bind(this, i),
+            close: this.closePopup.bind(this, i)
         });
         multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+    }
+    closePopup(i, args) {
+        let element = document.getElementById(args.popup.element.id.replace('_popup', ''));
+        let value = getComponent(element, 'multiselect').value;
+        this.updateRules(element, value, i);
     }
     processTemplate(target, itemData, rule, tempRule) {
         let tempElements = closest(target, '.e-rule-container').querySelectorAll('.e-template');
@@ -860,7 +944,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             itemData = this.columns[fieldObj.index];
             let min = (itemData.validation && itemData.validation.min) ? itemData.validation.min : 0;
             let max = (itemData.validation && itemData.validation.max) ? itemData.validation.max : Number.MAX_VALUE;
-            let format = itemData.format ? itemData.format : '#';
+            let format = itemData.format ? itemData.format : 'n';
             if (length > 1 && rule) {
                 selectedValue = rule.value[idx] ? rule.value[idx] : 0;
             }
@@ -938,14 +1022,25 @@ let QueryBuilder = class QueryBuilder extends Component {
                                     let format;
                                     let column = this.getColumn(rule.field);
                                     selVal = (length > 1) ? rule.value[i] : rule.value;
-                                    format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
-                                    selectedValue = this.intl.parseDate(selVal, format);
+                                    if (column.format) {
+                                        let dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+                                        format = { type: 'dateTime', format: column.format };
+                                        if (selectedValue.toLocaleDateString() === 'Invalid Date') {
+                                            selectedValue = dParser(selVal);
+                                            if (isNullOrUndefined(selectedValue)) {
+                                                selectedValue = this.intl.parseDate(selVal, format);
+                                            }
+                                        }
+                                    }
                                 }
-                                let format = itemData.format ? itemData.format : 'MM/dd/yyyy';
-                                let datepick = new DatePicker({
-                                    value: selectedValue, format: format,
-                                    change: this.changeValue.bind(this, i)
-                                });
+                                let datepick;
+                                if (itemData.format) {
+                                    datepick =
+                                        new DatePicker({ value: selectedValue, format: itemData.format, change: this.changeValue.bind(this, i) });
+                                }
+                                else {
+                                    datepick = new DatePicker({ value: selectedValue, change: this.changeValue.bind(this, i) });
+                                }
                                 datepick.appendTo('#' + parentId + '_valuekey' + i);
                             }
                             break;
@@ -1049,9 +1144,12 @@ let QueryBuilder = class QueryBuilder extends Component {
                 break;
             case 'datepicker':
                 let column = this.getColumn(rule.field);
-                let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                let format = { type: 'dateTime', format: column.format };
                 if (rule.operator.indexOf('between') > -1) {
                     rule.value[i] = getComponent(element, controlName).value;
+                }
+                else if (isNullOrUndefined(format.format)) {
+                    rule.value = this.intl.formatDate(getComponent(element, controlName).value);
                 }
                 else {
                     rule.value = this.intl.formatDate(getComponent(element, controlName).value, format);
@@ -1066,11 +1164,14 @@ let QueryBuilder = class QueryBuilder extends Component {
         let index = 0;
         let dropDownObj;
         let eventsArgs;
+        let groupID = groupElem.id.replace(this.element.id + '_', '');
+        let ruleID;
         while (ruleElem && ruleElem.previousElementSibling !== null) {
             ruleElem = ruleElem.previousElementSibling;
             index++;
         }
         ruleElem = closest(target, '.e-rule-container');
+        ruleID = ruleElem.id.replace(this.element.id + '_', '');
         if (closest(target, '.e-rule-filter')) {
             dropDownObj = getComponent(target, 'dropdownlist');
             rule.rules[index].field = this.columns[dropDownObj.index].field;
@@ -1084,9 +1185,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (!element) {
                 element = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control');
             }
-            eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue, cancel: false };
+            eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
             this.updateValues(element, rule.rules[index]);
-            this.trigger('fieldChanged', eventsArgs);
+            this.triggerEvents(eventsArgs);
             if (this.allowValidation && rule.rules[index].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
             }
@@ -1097,7 +1198,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let inputElem;
             let parentElem = target.parentElement;
             inputElem = ruleElem.querySelectorAll('.e-rule-value input.e-control');
-            eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue, cancel: false };
+            eventsArgs = { groupID: groupID, ruleID: ruleID, value: dropDownObj.value, type: 'operator' };
             if (this.allowValidation && rule.rules[index].operator && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
             }
@@ -1107,7 +1208,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             for (let i = 0; i < inputElem.length; i++) {
                 this.updateValues(inputElem[i], rule.rules[index]);
             }
-            this.trigger('operatorChanged', eventsArgs);
+            this.triggerEvents(eventsArgs);
         }
         else if (closest(target, '.e-rule-value')) {
             this.ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i);
@@ -1115,7 +1216,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i) {
         let eventsArgs;
-        let arrOperator = ['in', 'between'];
+        let arrOperator = ['in', 'between', 'notin', 'notbetween'];
         if (selectedValue !== null) {
             let oper = rule.rules[index].operator.toLowerCase();
             if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number') {
@@ -1142,8 +1243,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                 else {
                     rule.rules[index].value = selectedValue;
                 }
-                eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue, cancel: false };
-                this.trigger('valueChanged', eventsArgs);
+                eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value, type: 'value' };
+                this.triggerEvents(eventsArgs);
             }
             else if (target.className.indexOf('e-spin') > -1 || target.className.indexOf('e-numeric') > -1) {
                 if (arrOperator.indexOf(oper) > -1) {
@@ -1203,19 +1304,15 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     findGroupByIdx(groupIdx, rule, isRoot) {
         let ruleColl = rule.rules;
-        if (!isRoot && ruleColl[groupIdx]) {
-            rule = ruleColl[groupIdx];
-            if (rule.rules) {
-                return rule;
-            }
-            else {
-                for (let j = groupIdx + 1, jLen = ruleColl.length; j < jLen; j++) {
-                    rule = ruleColl[j];
-                    if (rule.rules) {
-                        return rule;
-                    }
+        let dupRuleColl = [];
+        if (!isRoot) {
+            for (let j = 0, jLen = ruleColl.length; j < jLen; j++) {
+                rule = ruleColl[j];
+                if (rule.rules) {
+                    dupRuleColl.push(rule);
                 }
             }
+            return dupRuleColl[groupIdx];
         }
         return rule;
     }
@@ -1254,7 +1351,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         this.isImportRules = false;
         this.unWireEvents();
-        this.levelColl[this.element.id + '_e_group0'] = [0];
+        this.levelColl[this.element.id + '_group0'] = [0];
         this.rule = { condition: 'and', rules: [] };
         this.element.innerHTML = '';
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
@@ -1264,21 +1361,20 @@ let QueryBuilder = class QueryBuilder extends Component {
      * @returns void.
      */
     addRules(rule, groupID) {
-        let args = { groupID: groupID };
+        groupID = this.element.id + '_' + groupID;
         for (let i = 0, len = rule.length; i < len; i++) {
             this.addRuleElement(document.getElementById(groupID), rule[i]);
         }
-        this.trigger('ruleInsert', args);
     }
     /**
      * Adds single or multiple groups, which contains the collection of rules.
      * @returns void.
      */
     addGroups(groups, groupID) {
+        groupID = this.element.id + '_' + groupID;
         let groupElem = document.getElementById(groupID);
         let rule = this.getGroup(groupElem);
         let grouplen = groups.length;
-        let args = { groupID: groupID };
         if (grouplen) {
             for (let i = 0, len = groups.length; i < len; i++) {
                 this.importRules(groups[i], groupElem);
@@ -1287,7 +1383,6 @@ let QueryBuilder = class QueryBuilder extends Component {
         else {
             rule.rules.push({ 'condition': 'and', rules: [] });
         }
-        this.trigger('groupInsert', args);
     }
     initWrapper() {
         if (this.cssClass) {
@@ -1470,6 +1565,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     break;
                 case 'locale':
                     this.locale = newProp.locale;
+                    this.intl = new Internationalization(this.locale);
                     break;
             }
         }
@@ -1501,7 +1597,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             SummaryViewTitle: 'Summary View'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
-        this.intl = new Internationalization();
+        this.intl = new Internationalization(this.locale);
         this.groupIdCounter = 0;
         this.ruleIdCounter = 0;
         this.btnGroupId = 0;
@@ -1611,13 +1707,16 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     deleteGroup(target) {
         let groupElem = target;
-        let groupId = groupElem.id;
+        let groupId = groupElem.id.replace(this.element.id + '_', '');
         let rule = this.getGroup(groupElem, true);
         let index = 0;
         let i;
         let len;
-        let args = { groupID: groupId };
-        this.trigger('groupDelete', args);
+        let args = { groupID: groupId, cancel: false, type: 'deleteGroup' };
+        args = this.triggerEvents(args, 'before');
+        if (args.cancel) {
+            return;
+        }
         let nextElem = groupElem.nextElementSibling;
         let prevElem = groupElem.previousElementSibling;
         let element = groupElem.querySelectorAll('.e-group-container');
@@ -1643,15 +1742,25 @@ let QueryBuilder = class QueryBuilder extends Component {
         rule.rules.splice(index, 1);
         delete this.levelColl[groupId];
         detach(target);
+        this.refreshLevelColl();
+        this.triggerEvents(args);
     }
     deleteRule(target) {
         let groupElem = closest(target, '.e-group-container');
+        let ruleID;
+        let groupID;
         let rule = this.getGroup(groupElem);
         let ruleElem = closest(target, '.e-rule-container');
+        groupID = groupElem.id.replace(this.element.id + '_', '');
+        ruleID = target.closest('.e-rule-container').id.replace(this.element.id + '_', '');
+        let args = { groupID: groupID, ruleID: ruleID, cancel: false, type: 'deleteRule' };
+        args = this.triggerEvents(args, 'before');
+        if (args.cancel) {
+            return;
+        }
         let clnruleElem = ruleElem;
         let nextElem = ruleElem.nextElementSibling;
         let prevElem = ruleElem.previousElementSibling;
-        let args = { groupID: groupElem.id, ruleID: ruleElem.id };
         let index = 0;
         let valElem = ruleElem.querySelectorAll('.e-tooltip');
         let i;
@@ -1664,7 +1773,6 @@ let QueryBuilder = class QueryBuilder extends Component {
             index++;
         }
         rule.rules.splice(index, 1);
-        this.trigger('ruleDelete', args);
         if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
             if (nextElem) {
                 removeClass([nextElem], 'e-joined-rule');
@@ -1676,6 +1784,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         detach(clnruleElem);
+        this.triggerEvents(args);
     }
     setGroupRules(rule) {
         this.reset();
@@ -1705,11 +1814,13 @@ let QueryBuilder = class QueryBuilder extends Component {
      * Deletes the group or groups based on the group ID.
      * @returns void.
      */
-    deleteGroups(groupID) {
+    deleteGroups(groupIdColl) {
         let i;
-        let len = groupID.length;
+        let len = groupIdColl.length;
+        let groupID;
         for (i = 0; i < len; i++) {
-            this.deleteGroup(document.getElementById(groupID[i]));
+            groupID = this.element.id + '_' + groupIdColl[i];
+            this.deleteGroup(document.getElementById(groupID));
         }
     }
     /**
@@ -1724,11 +1835,13 @@ let QueryBuilder = class QueryBuilder extends Component {
      * Deletes the rule or rules based on the rule ID.
      * @returns void.
      */
-    deleteRules(ruleID) {
+    deleteRules(ruleIdColl) {
         let i;
-        let len = ruleID.length;
+        let len = ruleIdColl.length;
+        let ruleID;
         for (i = 0; i < len; i++) {
-            this.deleteRule(document.getElementById(ruleID[i]));
+            ruleID = this.element.id + '_' + ruleIdColl[i];
+            this.deleteRule(document.getElementById(ruleID));
         }
     }
     /**
@@ -1906,14 +2019,16 @@ let QueryBuilder = class QueryBuilder extends Component {
             parentElem = this.renderGroup(rule.condition, parentElem);
         }
         let ruleColl = rule.rules;
-        for (let i = 0, len = ruleColl.length; i < len; i++) {
-            let keys = Object.keys(ruleColl[i]);
-            if (keys.indexOf('rules') > -1) {
-                parentElem = this.renderGroup(ruleColl[i].condition, parentElem);
-                parentElem = this.importRules(ruleColl[i], parentElem, true);
-            }
-            else {
-                this.renderRule(ruleColl[i], parentElem);
+        if (!isNullOrUndefined(ruleColl)) {
+            for (let i = 0, len = ruleColl.length; i < len; i++) {
+                let keys = Object.keys(ruleColl[i]);
+                if (!isNullOrUndefined(ruleColl[i].rules) && keys.indexOf('rules') > -1) {
+                    parentElem = this.renderGroup(ruleColl[i].condition, parentElem);
+                    parentElem = this.importRules(ruleColl[i], parentElem, true);
+                }
+                else {
+                    this.renderRule(ruleColl[i], parentElem);
+                }
             }
         }
         parentElem = closest(parentElem, '.e-rule-list');
@@ -1953,15 +2068,20 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let rule = rules.rules[j];
                 let valueStr = '';
                 if (rule.value instanceof Array) {
-                    if (typeof rule.value[0] === 'string') {
-                        valueStr += '("' + rule.value[0] + '"';
-                        for (let k = 1, kLen = rule.value.length; k < kLen; k++) {
-                            valueStr += ',"' + rule.value[k] + '"';
-                        }
-                        valueStr += ')';
+                    if (rule.operator.indexOf('between') > -1) {
+                        valueStr += rule.value[0] + ' AND ' + rule.value[1];
                     }
                     else {
-                        valueStr += '(' + rule.value + ')';
+                        if (typeof rule.value[0] === 'string') {
+                            valueStr += '("' + rule.value[0] + '"';
+                            for (let k = 1, kLen = rule.value.length; k < kLen; k++) {
+                                valueStr += ',"' + rule.value[k] + '"';
+                            }
+                            valueStr += ')';
+                        }
+                        else {
+                            valueStr += '(' + rule.value + ')';
+                        }
                     }
                 }
                 else {
@@ -2142,6 +2262,14 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
                             }
+                            else if (operator === 'between') {
+                                if (parser[j][0] === 'Literal' || parser[j][0] === 'Left') {
+                                    break;
+                                }
+                                if (parser[j][0] === 'Number') {
+                                    numVal.push(Number(parser[j][1]));
+                                }
+                            }
                             else {
                                 if (parser[j][0] === 'Number') {
                                     numVal.push(Number(parser[j][1]));
@@ -2160,6 +2288,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         else if (parser[j - 1][0] === 'String') {
                             rule.value = strVal;
                             rule.type = 'string';
+                        }
+                        else if (operator === 'between' && parser[j - 1][0] === 'Conditions') {
+                            rule.value = numVal;
+                            rule.type = 'number';
                         }
                     }
                 }
@@ -2215,40 +2347,10 @@ __decorate([
 ], QueryBuilder.prototype, "created", void 0);
 __decorate([
     Event()
-], QueryBuilder.prototype, "beforeConditionChange", void 0);
+], QueryBuilder.prototype, "beforeChange", void 0);
 __decorate([
     Event()
-], QueryBuilder.prototype, "beforeFieldChange", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "beforeOperatorChange", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "beforeValueChange", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "conditionChanged", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "fieldChanged", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "valueChanged", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "operatorChanged", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "groupDelete", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "ruleDelete", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "groupInsert", void 0);
-__decorate([
-    Event()
-], QueryBuilder.prototype, "ruleInsert", void 0);
+], QueryBuilder.prototype, "change", void 0);
 __decorate([
     Property({ ruleDelete: true, groupInsert: true, groupDelete: true })
 ], QueryBuilder.prototype, "showButtons", void 0);

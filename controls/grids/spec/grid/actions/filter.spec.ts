@@ -18,6 +18,7 @@ import { createGrid, destroy, getKeyUpObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { ColumnMenu } from '../../../src/grid/actions/column-menu';
 import * as events from '../../../src/grid/base/constant';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Filter, Page, Selection, Group, Freeze, Reorder, ColumnMenu);
 
@@ -65,6 +66,11 @@ describe('Filtering module => ', () => {
         let orderIDElement: any;
         let actionComplete: () => void;
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: filterData,
@@ -1338,9 +1344,52 @@ describe('Filtering module => ', () => {
             (<any>gridObj).element.querySelector('.e-headercell:nth-child(1)').querySelector('.e-filtermenudiv').click();
             (<any>gridObj).filterByColumn('OrderID','equal',10248);        
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
         afterAll(() => {
             destroy(gridObj);
         });
     });
 
+    describe('Initial filtering => ', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let actionComplete: () => void;
+        let filterElement: HTMLInputElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    pageSettings: { currentPage: 1 },
+                    filterSettings: {
+                        type: 'FilterBar', columns: [
+                            { field: 'OrderDate', matchCase: false, operator: 'equal', predicate: 'and', value: new Date('7/12/1996') }
+                        ],
+                        showFilterBarStatus: true
+                    },
+                    columns: [
+                        { field: 'OrderID', type: 'number', visible: true },
+                        { field: 'EmployeeID', type: 'number' },
+                        { field: 'Freight', format: 'C2', type: 'number' },
+                        { field: 'ShipCity' }, { field: 'Verified', type: 'boolean' },
+                        { field: 'OrderDate', format: 'yMd', type: 'date' }],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Filter a column', () => {
+                expect((gridObj as any).getHeaderContent().querySelectorAll('.e-filtertext')[5].value).toBe('7/12/1996');
+        });
+    });
 });

@@ -8,6 +8,7 @@ import { TouchModel, SwipeSettingsModel } from './touch-model';
 
 /**
  * SwipeSettings is a framework module that provides support to handle swipe event like swipe up, swipe right, etc..,
+ * @private
  */
 export class SwipeSettings extends ChildProperty<SwipeSettings> {
     /**

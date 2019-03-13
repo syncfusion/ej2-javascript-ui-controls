@@ -13,7 +13,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { AriaService } from '../services/aria-service';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
-import { getScrollBarWidth } from '../base/util';
+import { getScrollBarWidth, isGroupAdaptive } from '../base/util';
 
 
 /**
@@ -168,6 +168,13 @@ export class ContentRender implements IRenderer {
         let fCont: Element = this.getPanel().querySelector('.e-frozencontent');
         let mCont: HTMLElement = this.getPanel().querySelector('.e-movablecontent') as HTMLElement;
         let cont: HTMLElement = this.getPanel().querySelector('.e-content') as HTMLElement;
+        if (isGroupAdaptive(gObj)) {
+            if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
+                .some((value: string) => { return args.requestType === value; })) {
+                gObj.vcRows = [];
+                gObj.vRows = [];
+            }
+        }
         let modelData: Row<Column>[] = this.generator.generateRows(dataSource, args);
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
@@ -195,8 +202,35 @@ export class ContentRender implements IRenderer {
         } else {
             this.tbody = this.getTable().querySelector('tbody');
         }
-        for (let i: number = 0, len: number = modelData.length; i < len; i++) {
+        let startIndex: number = 0;
+        if (isGroupAdaptive(gObj) && gObj.vcRows.length) {
+            let top: string = 'top';
+            let scrollTop: number = !isNullOrUndefined(args.virtualInfo.offsets) ? args.virtualInfo.offsets.top :
+                (!isNullOrUndefined(args.scrollTop) ? args.scrollTop[top] : 0);
+            if (scrollTop !== 0) {
+                let offsets: { [x: number]: number } = gObj.vGroupOffsets;
+                let bSize: number = gObj.pageSettings.pageSize / 2;
+                let values: number[] = Object.keys(offsets).map((key: string) => offsets[key]);
+                for (let m: number = 0; m < values.length; m++) {
+                    if (scrollTop < values[m]) {
+                        if (!isNullOrUndefined(args.virtualInfo) && args.virtualInfo.direction === 'up') {
+                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m - 1, m];
+                            startIndex = m === 0 || m === 1 ? 0 : (m * bSize);
+                            break;
+                        } else {
+                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m, m + 1];
+                            startIndex = m === 0 || m === 1 ? 0 : (m) * bSize;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
+            if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize)) {
+                break;
+            }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
                 if (gObj.frozenRows && i < gObj.frozenRows) {

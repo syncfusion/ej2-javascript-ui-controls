@@ -47,13 +47,14 @@ var Input;
                 parent.classList.remove('e-input-focus');
             }
         });
-        if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) && args.properties.showClearButton) {
+        if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
+            args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
             if (inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT)) {
                 addClass([inputObject.container], CLASSNAMES.INPUTGROUP);
             }
         }
-        if (!isNullOrUndefined(args.buttons)) {
+        if (!isNullOrUndefined(args.buttons) && args.element.tagName !== 'TEXTAREA') {
             for (let i = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
             }
@@ -71,7 +72,8 @@ var Input;
     }
     function _blurFn() {
         let parent = getParentNode(this);
-        if (parent.getElementsByTagName('input')[0].value === '') {
+        if ((parent.getElementsByTagName('input')[0]) ? parent.getElementsByTagName('input')[0].value === '' :
+            parent.getElementsByTagName('textarea')[0].value === '') {
             let label = parent.getElementsByClassName('e-float-text')[0];
             if (label.classList.contains(CLASSNAMES.LABELTOP)) {
                 removeClass([label], CLASSNAMES.LABELTOP);
@@ -493,7 +495,8 @@ var Input;
     function removeFloating(input) {
         let container = input.container;
         if (!isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
-            let inputEle = container.querySelector('input');
+            let inputEle = container.querySelector('input') ? container.querySelector('input') :
+                container.querySelector('textarea');
             let placeholder = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
             let clearButton = container.querySelector('.e-clear-icon') !== null;
             detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));
@@ -502,7 +505,7 @@ var Input;
             unwireFloatingEvents(inputEle);
             attributes(inputEle, { 'placeholder': placeholder });
             inputEle.classList.add(CLASSNAMES.INPUT);
-            if (!clearButton) {
+            if (!clearButton && inputEle.tagName === 'INPUT') {
                 inputEle.removeAttribute('required');
             }
         }
@@ -2210,6 +2213,7 @@ function maskInputKeyPressHandler(event) {
     }
 }
 function triggerMaskChangeEvent(event, oldValue) {
+    let prevOnChange = this.isProtectedOnChange;
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         let eventArgs = {};
         this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false, isInteracted: false };
@@ -2221,6 +2225,9 @@ function triggerMaskChangeEvent(event, oldValue) {
             this.changeEventArgs.isInteraction = true;
             this.changeEventArgs.event = event;
         }
+        this.isProtectedOnChange = true;
+        this.value = this.changeEventArgs.value;
+        this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
         this.trigger('change', eventArgs);
     }
@@ -3054,6 +3061,7 @@ __decorate$2([
     Property(null)
 ], TooltipData.prototype, "format", void 0);
 const bootstrapTooltipOffset = 6;
+const bootstrap4TooltipOffset = 3;
 const classNames = {
     root: 'e-slider',
     rtl: 'e-rtl',
@@ -3334,6 +3342,7 @@ let Slider = class Slider extends Component {
     getThemeInitialization() {
         this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
         this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }
     createRangeBar() {
@@ -3667,19 +3676,20 @@ let Slider = class Slider extends Component {
         }
     }
     tooltipCollision(position) {
-        if (this.isBootstrap || (this.isMaterial && !this.isMaterialTooltip)) {
+        if (this.isBootstrap || this.isBootstrap4 || (this.isMaterial && !this.isMaterialTooltip)) {
+            const tooltipOffsetValue = this.isBootstrap4 ? bootstrap4TooltipOffset : bootstrapTooltipOffset;
             switch (position) {
                 case 'TopCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': -(bootstrapTooltipOffset) }, false);
+                    this.tooltipObj.setProperties({ 'offsetY': -(tooltipOffsetValue) }, false);
                     break;
                 case 'BottomCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': bootstrapTooltipOffset }, false);
+                    this.tooltipObj.setProperties({ 'offsetY': tooltipOffsetValue }, false);
                     break;
                 case 'LeftCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': -(bootstrapTooltipOffset) }, false);
+                    this.tooltipObj.setProperties({ 'offsetX': -(tooltipOffsetValue) }, false);
                     break;
                 case 'RightCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': bootstrapTooltipOffset }, false);
+                    this.tooltipObj.setProperties({ 'offsetX': tooltipOffsetValue }, false);
                     break;
             }
         }
@@ -3795,7 +3805,7 @@ let Slider = class Slider extends Component {
     }
     renderTooltip() {
         this.tooltipObj = new Tooltip({
-            showTipPointer: this.isBootstrap || this.isMaterial,
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4,
             cssClass: classNames.sliderTooltip,
             height: this.isMaterial ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
@@ -5474,6 +5484,7 @@ let Slider = class Slider extends Component {
                         if (this.firstBtn && this.secondBtn) {
                             this.sliderContainer.removeChild(this.firstBtn);
                             this.sliderContainer.removeChild(this.secondBtn);
+                            this.sliderContainer.classList.remove(classNames.sliderButtonClass);
                             this.firstBtn = undefined;
                             this.secondBtn = undefined;
                         }
@@ -6731,7 +6742,7 @@ let Uploader = class Uploader extends Component {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
         this.browseButton.setAttribute('tabindex', this.tabIndex);
         if (typeof (this.buttons.browse) === 'string') {
-            this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
                 this.localizedTexts('Browse') : this.buttons.browse;
             this.browseButton.setAttribute('title', this.browseButton.innerText);
         }
@@ -6772,9 +6783,9 @@ let Uploader = class Uploader extends Component {
     }
     renderButtonTemplates() {
         if (typeof (this.buttons.browse) === 'string') {
-            this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
                 this.localizedTexts('Browse') : this.buttons.browse;
-            this.browseButton.setAttribute('title', this.browseButton.innerText);
+            this.browseButton.setAttribute('title', this.browseButton.textContent);
         }
         else {
             this.browseButton.innerHTML = '';
@@ -6785,9 +6796,9 @@ let Uploader = class Uploader extends Component {
             uploadText = isNullOrUndefined(this.buttons.upload) ? 'Upload' : this.buttons.upload;
             this.buttons.upload = uploadText;
             if (typeof (this.buttons.upload) === 'string') {
-                this.uploadButton.innerText = (this.buttons.upload === 'Upload') ?
+                this.uploadButton.textContent = (this.buttons.upload === 'Upload') ?
                     this.localizedTexts('Upload') : this.buttons.upload;
-                this.uploadButton.setAttribute('title', this.uploadButton.innerText);
+                this.uploadButton.setAttribute('title', this.uploadButton.textContent);
             }
             else {
                 this.uploadButton.innerHTML = '';
@@ -6799,9 +6810,9 @@ let Uploader = class Uploader extends Component {
             clearText = isNullOrUndefined(this.buttons.clear) ? 'Clear' : this.buttons.clear;
             this.buttons.clear = clearText;
             if (typeof (this.buttons.clear) === 'string') {
-                this.clearButton.innerText = (this.buttons.clear === 'Clear') ?
+                this.clearButton.textContent = (this.buttons.clear === 'Clear') ?
                     this.localizedTexts('Clear') : this.buttons.clear;
-                this.clearButton.setAttribute('title', this.clearButton.innerText);
+                this.clearButton.setAttribute('title', this.clearButton.textContent);
             }
             else {
                 this.clearButton.innerHTML = '';
@@ -6850,7 +6861,7 @@ let Uploader = class Uploader extends Component {
             this.filesData.push(fileData);
         }
         this.createFileList(filesData);
-        if (!this.autoUpload && this.listParent && !this.actionButtons && !this.isForm && this.showFileList) {
+        if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
             this.renderActionButtons();
         }
         this.checkActionButtonStatus();
@@ -7412,14 +7423,14 @@ let Uploader = class Uploader extends Component {
                     this.checkExtension(eventArgs.modifiedFilesData);
                 this.updateSortedFileList(dataFiles);
                 this.filesData = dataFiles;
-                if (!this.isForm) {
+                if (!this.isForm || this.allowUpload()) {
                     this.checkAutoUpload(dataFiles);
                 }
             }
             else {
                 this.createFileList(fileData);
                 this.filesData = this.filesData.concat(fileData);
-                if (!this.isForm) {
+                if (!this.isForm || this.allowUpload()) {
                     this.checkAutoUpload(fileData);
                 }
             }
@@ -7434,6 +7445,13 @@ let Uploader = class Uploader extends Component {
             }
         }
         this.raiseActionComplete();
+    }
+    allowUpload() {
+        let allowFormUpload = false;
+        if (this.isForm && (!isNullOrUndefined(this.asyncSettings.saveUrl) && this.asyncSettings.saveUrl !== '')) {
+            allowFormUpload = true;
+        }
+        return allowFormUpload;
     }
     clearData(singleUpload) {
         if (!isNullOrUndefined(this.listParent)) {
@@ -10733,6 +10751,7 @@ let TextBox = class TextBox extends Component {
         super(options, element);
         this.previousValue = null;
         this.isAngular = false;
+        this.isHiddenInput = false;
         this.isForm = false;
     }
     /**
@@ -10744,10 +10763,10 @@ let TextBox = class TextBox extends Component {
             switch (prop) {
                 case 'floatLabelType':
                     Input.removeFloating(this.textboxWrapper);
-                    Input.addFloating(this.element, this.floatLabelType, this.placeholder);
+                    Input.addFloating(this.respectiveElement, this.floatLabelType, this.placeholder);
                     break;
                 case 'enabled':
-                    Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                    Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
                     break;
                 case 'value':
                     let prevOnChange = this.isProtectedOnChange;
@@ -10756,25 +10775,32 @@ let TextBox = class TextBox extends Component {
                         this.value = this.value.toString();
                     }
                     this.isProtectedOnChange = prevOnChange;
-                    Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
+                    Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+                    if (this.isHiddenInput) {
+                        this.element.value = this.respectiveElement.value;
+                    }
                     this.raiseChangeEvent();
                     break;
                 case 'readonly':
-                    Input.setReadonly(this.readonly, this.element);
+                    Input.setReadonly(this.readonly, this.respectiveElement);
                     break;
                 case 'type':
-                    this.element.setAttribute('type', this.type);
-                    this.raiseChangeEvent();
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                        this.respectiveElement.setAttribute('type', this.type);
+                        this.raiseChangeEvent();
+                    }
                     break;
                 case 'showClearButton':
-                    Input.setClearButton(this.showClearButton, this.element, this.textboxWrapper);
-                    this.bindClearEvent();
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                        Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
+                        this.bindClearEvent();
+                    }
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
                     break;
                 case 'placeholder':
-                    Input.setPlaceholder(this.placeholder, this.element);
+                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
                 case 'cssClass':
                     Input.setCssClass(this.cssClass, [this.textboxWrapper.container]);
@@ -10783,7 +10809,7 @@ let TextBox = class TextBox extends Component {
                     this.globalize = new Internationalization(this.locale);
                     this.l10n.setLocale(this.locale);
                     this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                    Input.setPlaceholder(this.placeholder, this.element);
+                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
             }
         }
@@ -10807,7 +10833,9 @@ let TextBox = class TextBox extends Component {
         /* istanbul ignore next */
         if (this.element.tagName === 'EJS-TEXTBOX') {
             let ejInstance = getValue('ej2_instances', this.element);
-            let inputElement = this.createElement('input');
+            let inputElement = this.multiline ?
+                this.createElement('textarea') :
+                this.createElement('input');
             let index = 0;
             for (index; index < this.element.attributes.length; index++) {
                 inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
@@ -10819,7 +10847,9 @@ let TextBox = class TextBox extends Component {
         }
         let attributes$$1 = this.element.attributes;
         this.checkAttributes(attributes$$1);
-        this.element.setAttribute('type', this.type);
+        if (this.element.tagName !== 'TEXTAREA') {
+            this.element.setAttribute('type', this.type);
+        }
         this.globalize = new Internationalization(this.locale);
         let localeText = { placeholder: this.placeholder };
         this.l10n = new L10n('textbox', localeText, this.locale);
@@ -10831,6 +10861,14 @@ let TextBox = class TextBox extends Component {
         }
         if (!this.element.hasAttribute('name')) {
             this.element.setAttribute('name', this.element.getAttribute('id'));
+        }
+        if (this.element.tagName === 'INPUT' && this.multiline) {
+            this.isHiddenInput = true;
+            this.textarea = this.createElement('textarea');
+            this.element.parentNode.insertBefore(this.textarea, this.element);
+            this.element.setAttribute('type', 'hidden');
+            this.textarea.setAttribute('name', this.element.getAttribute('name'));
+            this.element.removeAttribute('name');
         }
     }
     checkAttributes(attrs) {
@@ -10852,8 +10890,9 @@ let TextBox = class TextBox extends Component {
      * @private
      */
     render() {
+        this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
         this.textboxWrapper = Input.createInput({
-            element: this.element,
+            element: this.respectiveElement,
             floatLabelType: this.floatLabelType,
             properties: {
                 enabled: this.enabled,
@@ -10865,11 +10904,14 @@ let TextBox = class TextBox extends Component {
             }
         });
         this.wireEvents();
-        if (this.element.value !== '') {
-            this.value = this.element.value;
+        if (this.respectiveElement.value !== '') {
+            this.value = this.respectiveElement.value;
         }
         if (!isNullOrUndefined(this.value)) {
-            Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
+            Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+                this.element.value = this.respectiveElement.value;
+            }
         }
         if (!isNullOrUndefined(this.value)) {
             this.initialValue = this.value;
@@ -10882,10 +10924,10 @@ let TextBox = class TextBox extends Component {
         }
     }
     wireEvents() {
-        EventHandler.add(this.element, 'focus', this.focusHandler, this);
-        EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
-        EventHandler.add(this.element, 'input', this.inputHandler, this);
-        EventHandler.add(this.element, 'change', this.changeHandler, this);
+        EventHandler.add(this.respectiveElement, 'focus', this.focusHandler, this);
+        EventHandler.add(this.respectiveElement, 'blur', this.focusOutHandler, this);
+        EventHandler.add(this.respectiveElement, 'input', this.inputHandler, this);
+        EventHandler.add(this.respectiveElement, 'change', this.changeHandler, this);
         if (this.isForm) {
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
@@ -10925,8 +10967,8 @@ let TextBox = class TextBox extends Component {
         this.trigger('focus', eventArgs);
     }
     focusOutHandler(args) {
-        if (!(this.previousValue === null && this.value === null && this.element.value === '') &&
-            (this.previousValue !== this.element.value)) {
+        if (!(this.previousValue === null && this.value === null && this.respectiveElement.value === '') &&
+            (this.previousValue !== this.respectiveElement.value)) {
             this.raiseChangeEvent(args, true);
         }
         let eventArgs = {
@@ -10937,23 +10979,17 @@ let TextBox = class TextBox extends Component {
         this.trigger('blur', eventArgs);
     }
     inputHandler(args) {
-        // tslint:disable-next-line
-        let textboxObj = this;
         let eventArgs = {
             event: args,
-            value: this.element.value,
+            value: this.respectiveElement.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
-        if (this.isAngular) {
-            textboxObj.localChange({ value: this.element.value });
-            this.preventChange = true;
-        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     }
     changeHandler(args) {
-        this.setProperties({ value: this.element.value }, true);
+        this.setProperties({ value: this.respectiveElement.value }, true);
         this.raiseChangeEvent(args, true);
         args.stopPropagation();
     }
@@ -10966,17 +11002,11 @@ let TextBox = class TextBox extends Component {
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
-        if (this.isAngular && this.preventChange !== true) {
-            this.trigger('change', eventArgs);
-        }
-        else if (isNullOrUndefined(this.isAngular) || !this.isAngular) {
-            this.trigger('change', eventArgs);
-        }
-        this.preventChange = false;
+        this.trigger('change', eventArgs);
         this.previousValue = this.value;
     }
     bindClearEvent() {
-        if (this.showClearButton) {
+        if (this.showClearButton && this.respectiveElement.tagName !== 'TEXTAREA') {
             EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
         }
     }
@@ -10984,11 +11014,14 @@ let TextBox = class TextBox extends Component {
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
             let previousValue = this.value;
-            Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
+            Input.setValue('', this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+                this.element.value = this.respectiveElement.value;
+            }
             this.value = '';
             let eventArgs = {
                 event: event,
-                value: this.element.value,
+                value: this.respectiveElement.value,
                 previousValue: previousValue,
                 container: this.textboxWrapper.container
             };
@@ -10996,10 +11029,10 @@ let TextBox = class TextBox extends Component {
         }
     }
     unWireEvents() {
-        EventHandler.remove(this.element, 'focus', this.focusHandler);
-        EventHandler.remove(this.element, 'blur', this.focusOutHandler);
-        EventHandler.remove(this.element, 'input', this.inputHandler);
-        EventHandler.remove(this.element, 'change', this.changeHandler);
+        EventHandler.remove(this.respectiveElement, 'focus', this.focusHandler);
+        EventHandler.remove(this.respectiveElement, 'blur', this.focusOutHandler);
+        EventHandler.remove(this.respectiveElement, 'input', this.inputHandler);
+        EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
         }
@@ -11012,9 +11045,9 @@ let TextBox = class TextBox extends Component {
      */
     destroy() {
         this.unWireEvents();
-        this.element.classList.remove('e-input');
+        this.respectiveElement.classList.remove('e-input');
         this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.parentElement.appendChild(this.element);
+        this.textboxWrapper.container.parentElement.appendChild(this.respectiveElement);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
         super.destroy();
@@ -11036,21 +11069,24 @@ let TextBox = class TextBox extends Component {
         for (let key of Object.keys(attributes$$1)) {
             if (key === 'disabled') {
                 this.setProperties({ enabled: false }, true);
-                Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
             }
             else if (key === 'readonly') {
                 this.setProperties({ readonly: true }, true);
-                Input.setReadonly(this.readonly, this.element);
+                Input.setReadonly(this.readonly, this.respectiveElement);
             }
             else if (key === 'class') {
-                this.element.classList.add(attributes$$1[key]);
+                this.respectiveElement.classList.add(attributes$$1[key]);
             }
             else if (key === 'placeholder') {
                 this.setProperties({ placeholder: attributes$$1[key] }, true);
-                Input.setPlaceholder(this.placeholder, this.element);
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
+            }
+            else if (key === 'rows' && this.respectiveElement.tagName === 'TEXTAREA') {
+                this.respectiveElement.setAttribute(key, attributes$$1[key]);
             }
             else {
-                this.element.setAttribute(key, attributes$$1[key]);
+                this.respectiveElement.setAttribute(key, attributes$$1[key]);
             }
         }
     }
@@ -11063,18 +11099,18 @@ let TextBox = class TextBox extends Component {
         for (let key of attributes$$1) {
             if (key === 'disabled') {
                 this.setProperties({ enabled: true }, true);
-                Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
             }
             else if (key === 'readonly') {
                 this.setProperties({ readonly: false }, true);
-                Input.setReadonly(this.readonly, this.element);
+                Input.setReadonly(this.readonly, this.respectiveElement);
             }
             else if (key === 'placeholder') {
                 this.setProperties({ placeholder: null }, true);
-                Input.setPlaceholder(this.placeholder, this.element);
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
             }
             else {
-                this.element.removeAttribute(key);
+                this.respectiveElement.removeAttribute(key);
             }
         }
     }
@@ -11100,6 +11136,9 @@ __decorate$6([
 __decorate$6([
     Property(false)
 ], TextBox.prototype, "enableRtl", void 0);
+__decorate$6([
+    Property(false)
+], TextBox.prototype, "multiline", void 0);
 __decorate$6([
     Property(true)
 ], TextBox.prototype, "enabled", void 0);

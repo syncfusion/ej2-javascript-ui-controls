@@ -3,8 +3,8 @@ import { HeatMap } from '../heatmap';
 import { Rect, TextBasic, Path, PathAttributes, RectOption, CircleOption, TextOption, CurrentRect, DrawSvgCanvas } from '../utils/helper';
 import { convertHexToColor, colorNameToHex, formatValue } from '../utils/helper';
 import { CellColor, RgbColor } from '../utils/colorMapping';
-import { BorderModel, FontModel } from '../model/base-model';
-import { Border, Font, BubbleTooltipData } from '../model/base';
+import { BorderModel, FontModel, BubbleSizeModel } from '../model/base-model';
+import { Border, Font, BubbleTooltipData, BubbleSize } from '../model/base';
 import { IThemeStyle, ICellEventArgs } from '../model/interface';
 import { Theme } from '../model/theme';
 import { CellType, BubbleType } from '../utils/enum';
@@ -38,6 +38,13 @@ export class CellSettings extends ChildProperty<CellSettings> {
      */
     @Property(true)
     public enableCellHighlighting: Boolean;
+
+    /**
+     * Specifies the minimum and maximum radius value of the cell in percentage.
+     * @default ''
+     */
+    @Complex<BubbleSizeModel>({}, BubbleSize)
+    public bubbleSize: BubbleSizeModel;
 
     /**
      * Specifies the cell border style. 
@@ -114,9 +121,9 @@ export class Series {
      * @return {void}
      * @private
      */
-    //tslint:disable:max-line-length
+    // tslint:disable-next-line:max-func-body-length
     public renderRectSeries(): void {
-        this.createSeriesGroup(); let heatMap: HeatMap = this.heatMap;
+        this.createSeriesGroup(); let heatMap: HeatMap = this.heatMap; let isValueInRange: boolean = false;
         heatMap.xLength = heatMap.axisCollections[0].axisLabelSize;
         heatMap.yLength = heatMap.axisCollections[1].axisLabelSize; // Series Part
         let tempX: number = Math.round(heatMap.initialClipRect.x * 100) / 100;
@@ -135,7 +142,7 @@ export class Series {
         circleRadius = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x: number = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
             this.setTextAndColor(dataXIndex, dataYIndex);
-            let rectPosition: CurrentRect = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '');
+            let rectPosition: CurrentRect = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '', true);
             borderColor = tempBorder.color;
             if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
                 cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
@@ -176,6 +183,10 @@ export class Series {
                 }
             }
             tempRectPosition.push(rectPosition);
+            if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
+                isValueInRange = this.isCellValueInRange(dataXIndex, dataYIndex);
+                rectPosition.visible = isValueInRange;
+            }
             if (cellSetting.showLabel && this.checkLabelYDisplay && this.checkLabelXDisplay) {
                 let themeCellTextStyle: FontModel = cellSetting.textStyle;
                 let options: TextOption = new TextOption(
@@ -185,7 +196,7 @@ export class Series {
                     themeCellTextStyle, themeCellTextStyle.color || this.getSaturatedColor(this.color));
                 rectPosition.textId = options.id;
                 if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
-                    this.toggleCellTextColor(rectPosition, options, dataXIndex, dataYIndex);
+                    options.fill = isValueInRange ? options.fill : this.heatMap.themeStyle.toggledColor;
                 }
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     options.dy = this.heatMap.cellSettings.tileType === 'Bubble' ? '0.5ex' : '1ex';
@@ -220,28 +231,39 @@ export class Series {
     /**
      * To toggle the cell text color based on legend selection.
      */
-    private toggleCellTextColor(rectPosition: CurrentRect, options: TextOption, dataXIndex: number, dataYIndex: number): void {
+    private isCellValueInRange(dataXIndex: number, dataYIndex: number): boolean {
+        let isValueInRange: boolean = false;
         for (let i: number = 0; i < this.heatMap.toggleValue.length; i++) {
-            let minValue: number = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
-            let maxValue: number = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
-                this.heatMap.toggleValue[i + 1].value - 0.01;
+            let minValue: number;
+            let maxValue: number;
+            minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
+            if (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor') {
+                maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.maxColorValue :
+                    this.heatMap.toggleValue[i + 1].value - 0.01;
+            } else {
+                maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
+                    this.heatMap.toggleValue[i + 1].value - 0.01;
+            }
             // tslint:disable-next-line:no-any
             let clonedDataSource: any[] = this.heatMap.clonedDataSource;
             let bubbleText: number = !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
                 clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '';
-            let text: number = this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
-                bubbleText : this.text;
-            if (text && text >= minValue && text <= maxValue) {
+            let text: number = parseFloat(
+                this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
+                    bubbleText.toString() : this.text.toString());
+            if (isNaN(text)) {
+                isValueInRange = true;
+            } else if (!isNaN(text) && text >= minValue && text <= maxValue) {
                 if (!this.heatMap.toggleValue[i].visible) {
-                    options.fill = this.heatMap.themeStyle.toggledColor;
-                    rectPosition.visible = false;
+                    isValueInRange = false;
                     break;
                 } else {
-                    options.fill = options.fill;
+                    isValueInRange = true;
                     break;
                 }
             }
         }
+        return isValueInRange;
     }
 
     /**
@@ -502,13 +524,25 @@ export class Series {
      * @private
      */
     private getRadiusBypercentage(text: number, min: number, max: number, radius: number): number {
+        let minimum: number = parseInt(this.heatMap.cellSettings.bubbleSize.minimum, 10);
+        let maximum: number = parseInt(this.heatMap.cellSettings.bubbleSize.maximum, 10);
+        if (minimum < 0 || minimum > 100 || isNaN(minimum)) {
+            minimum = 0;
+        }
+        if (maximum < 0 || maximum > 100 || isNaN(maximum)) {
+            maximum = 100;
+        }
         let valueInPrecentage: number = ((text - min) /
             (max - min)) * 100;
         valueInPrecentage = isNaN(valueInPrecentage) ? 100 : valueInPrecentage;
-        radius = ((this.heatMap.bubbleSizeWithColor ||
-            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))
-            && this.heatMap.cellSettings.isInversedBubbleSize) ? radius - (radius * (valueInPrecentage / 100))
-            : radius * (valueInPrecentage / 100);
+        if ((this.heatMap.bubbleSizeWithColor ||
+            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))) {
+            if (this.heatMap.cellSettings.isInversedBubbleSize) {
+                valueInPrecentage = 100 - valueInPrecentage;
+            }
+            valueInPrecentage = ((valueInPrecentage * (maximum - minimum)) / 100) + minimum;
+        }
+        radius = radius * (valueInPrecentage / 100);
         return (Math.round(radius * 100) / 100) < 0 ? 0 : (Math.round(radius * 100) / 100);
     }
 

@@ -33,7 +33,6 @@ export class CheckBoxSelection {
     private checkAllParent: HTMLElement;
     private selectAllSpan: HTMLElement;
     public filterInput: HTMLInputElement;
-    private filterParent: HTMLElement;
     private filterInputObj: InputObject;
     private backIconElement: Element;
     private clearIconElement: Element;
@@ -136,15 +135,15 @@ export class CheckBoxSelection {
                 this.setLocale();
                 this.checboxCreate(this.checkAllParent as { [key: string]: HTMLElement } | HTMLElement);
                 if (this.parent.headerTemplate) {
-                    if (!isNullOrUndefined(this.filterParent)) {
-                        append([this.checkAllParent], this.filterParent);
+                    if (!isNullOrUndefined(this.parent.filterParent)) {
+                        append([this.checkAllParent], this.parent.filterParent);
                     } else {
                         append([this.checkAllParent], this.parent.popupWrapper);
                     }
                 }
                 if (!this.parent.headerTemplate) {
-                    if (!isNullOrUndefined(this.filterParent)) {
-                        this.filterParent.parentNode.insertBefore(this.checkAllParent, this.filterParent.nextSibling);
+                    if (!isNullOrUndefined(this.parent.filterParent)) {
+                        this.parent.filterParent.parentNode.insertBefore(this.checkAllParent, this.parent.filterParent.nextSibling);
                     } else {
                         prepend([this.checkAllParent], this.parent.popupWrapper);
                     }
@@ -237,8 +236,8 @@ export class CheckBoxSelection {
         }
     }
     protected setSearchBox(args: IUpdateListArgs): InputObject | void {
-        if (isNullOrUndefined(this.filterParent)) {
-            this.filterParent = this.parent.createElement('span', {
+        if (isNullOrUndefined(this.parent.filterParent)) {
+            this.parent.filterParent = this.parent.createElement('span', {
                 className: filterParent
             });
             this.filterInput = <HTMLInputElement>this.parent.createElement('input', {
@@ -259,8 +258,8 @@ export class CheckBoxSelection {
                 },
                 this.parent.createElement
             );
-            append([this.filterInputObj.container], this.filterParent);
-            prepend([this.filterParent], args.popupElement);
+            append([this.filterInputObj.container], this.parent.filterParent);
+            prepend([this.parent.filterParent], args.popupElement);
             attributes(this.filterInput, {
                 'aria-disabled': 'false',
                 'aria-owns': this.parent.element.id + '_options',
@@ -341,11 +340,12 @@ export class CheckBoxSelection {
         if (!Browser.isIE) {
             target = !isNullOrUndefined(e) && <HTMLElement>e.relatedTarget;
         }
-        if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE) {
+        if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE
+            && this.filterInput) {
             this.filterInput.focus();
             return;
         }
-        if (this.parent.scrollFocusStatus) {
+        if (this.parent.scrollFocusStatus && this.filterInput) {
             e.preventDefault();
             this.filterInput.focus();
             this.parent.scrollFocusStatus = false;
@@ -387,7 +387,11 @@ export class CheckBoxSelection {
         }
         if (!this.parent.overAllWrapper.contains(e.target as Node) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            this.parent.onBlur(e);
+            if (Browser.isIE) {
+                this.parent.onBlur();
+            } else {
+                this.parent.inputElement.blur();
+            }
         }
         if (this.filterInput === target) { this.filterInput.focus(); }
     }

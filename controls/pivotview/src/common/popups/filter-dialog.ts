@@ -1,14 +1,14 @@
-import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute, EmitType } from '@syncfusion/ej2-base';
+import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
-import { Dialog } from '@syncfusion/ej2-popups';
+import { Dialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { IFilter, IFieldOptions, IFormatSettings } from '../../base/engine';
 import { Operators, FilterType } from '../../base/types';
-import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
+import { ChangedEventArgs, DateTimePicker } from '@syncfusion/ej2-calendars';
 
 /**
  * `FilterDialog` module to create filter dialog.
@@ -51,6 +51,7 @@ export class FilterDialog {
             attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
             styles: 'visibility:hidden;'
         });
+        let filterCaption: string = this.parent.engineModule.fieldList[fieldName].caption;
         let headerTemplate: string = this.parent.localeObj.getConstant('filter') + ' ' +
             '"' + fieldCaption + '"' + ' ' + this.parent.localeObj.getConstant('by');
         this.filterObject = this.getFilterObject(fieldName);
@@ -59,7 +60,7 @@ export class FilterDialog {
         this.dialogPopUp = new Dialog({
             animationSettings: { effect: (this.allowExcelLikeFilter ? 'None' : 'Fade') },
             allowDragging: false,
-            header: (this.allowExcelLikeFilter ? headerTemplate : fieldCaption),
+            header: (this.allowExcelLikeFilter ? headerTemplate : filterCaption),
             content: (this.allowExcelLikeFilter ? '' : this.createTreeView(treeData, fieldCaption, fieldName)),
             isModal: this.parent.renderMode === 'Popup' ? true : this.parent.isAdaptive ? true : false,
             visible: true,
@@ -90,11 +91,7 @@ export class FilterDialog {
             target: target,
             close: this.removeFilterDialog.bind(this),
             /* tslint:disable-next-line:typedef */
-            open: function (args: EmitType<Object>) {
-                if (this.element.querySelector('.e-editor-label-wrapper')) {
-                    this.element.querySelector('.e-editor-label-wrapper').style.width = this.element.offsetWidth + 'px';
-                }
-            }
+            open: this.dialogOpen.bind(this)
         });
         this.dialogPopUp.appendTo(editorDialog);
         if (this.allowExcelLikeFilter) {
@@ -111,6 +108,12 @@ export class FilterDialog {
             return;
         }
     }
+    private dialogOpen(args: BeforeOpenEventArgs): void {
+        if (args.element.querySelector('.e-editor-label-wrapper')) {
+            (args.element.querySelector('.e-editor-label-wrapper') as HTMLElement).style.width =
+                (args.element as HTMLElement).offsetWidth + 'px';
+        }
+    }
     private createTreeView(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName?: string): HTMLElement {
         let editorTreeWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + 'EditorDiv',
@@ -120,6 +123,7 @@ export class FilterDialog {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
             className: cls.EDITOR_SEARCH_WRAPPER_CLASS
         });
+        let filterCaption: string = this.parent.engineModule.fieldList[fieldName].caption;
         let editorSearch: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
         let labelWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_LabelDiv', attrs: { 'tabindex': '-1' },
@@ -147,7 +151,7 @@ export class FilterDialog {
         editorTreeWrapper.appendChild(selectAllWrapper);
         editorTreeWrapper.appendChild(promptDiv);
         this.editorSearch = new MaskedTextBox({
-            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + fieldCaption + '"',
+            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + filterCaption + '"',
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
             showClearButton: true,
@@ -196,6 +200,7 @@ export class FilterDialog {
         let types: FilterType[] = ['Label', 'Value', 'Include', 'Exclude'];
         let regx: string = '((-|\\+)?[0-9]+(\\.[0-9]+)?)+';
         let member: string = Object.keys(this.parent.engineModule.fieldList[fieldName].members)[0];
+        let fieldType: string = this.parent.engineModule.fieldList[fieldName].type;
         let formatObj: IFormatSettings = this.parent.eventBase.getFormatItemByName(fieldName);
         let items: TabItemModel[] = [
             {
@@ -210,7 +215,7 @@ export class FilterDialog {
             if (((type === 'Label') && this.parent.dataSource.allowLabelFilter) ||
                 (type === 'Value' && this.parent.dataSource.allowValueFilter)) {
                 let filterType: FilterType = (type === 'Label' && ((member).match(regx) &&
-                    (member).match(regx)[0].length === (member).length)) ? 'Number' :
+                    (member).match(regx)[0].length === (member).length) && fieldType === 'number') ? 'Number' :
                     (type === 'Label' && (new Date(member).toString() !== 'Invalid Date') &&
                         ((formatObj && formatObj.type) || (this.filterObject && this.filterObject.type === 'Date'))) ? 'Date' : type;
                 let item: TabItemModel = {
@@ -370,10 +375,10 @@ export class FilterDialog {
         });
         optionWrapper.appendTo(optionDiv2);
         if (type === 'date') {
-            let inputObj1: DatePicker = new DatePicker({
+            let inputObj1: DateTimePicker = new DateTimePicker({
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
-                format: 'dd/MM/yyyy',
+                format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value1 as Date : null),
                 change: (e: ChangedEventArgs) => {
@@ -386,10 +391,10 @@ export class FilterDialog {
                 },
                 width: '100%',
             });
-            let inputObj2: DatePicker = new DatePicker({
+            let inputObj2: DateTimePicker = new DateTimePicker({
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
-                format: 'dd/MM/yyyy',
+                format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value2 as Date : null),
                 change: (e: ChangedEventArgs) => {
@@ -481,8 +486,8 @@ export class FilterDialog {
         let value1: string;
         let value2: string;
         if (type === 'date') {
-            let inputObj1: DatePicker = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as DatePicker;
-            let inputObj2: DatePicker = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as DatePicker;
+            let inputObj1: DateTimePicker = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            let inputObj2: DateTimePicker = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as DateTimePicker;
             value1 = !isNullOrUndefined(inputObj1.value) ? inputObj1.value.toString() : '';
             value2 = !isNullOrUndefined(inputObj2.value) ? inputObj2.value.toString() : '';
         } else {

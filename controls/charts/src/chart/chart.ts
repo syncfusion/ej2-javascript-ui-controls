@@ -1,10 +1,10 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization, BaseAttibutes } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, L10n } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, L10n, setValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';
 import { remove, extend } from '@syncfusion/ej2-base';
-import { INotifyPropertyChanged, SvgRenderer, Browser, Touch } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';
 import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';
-import { findClipRect, measureText, TextOption, showTooltip, removeElement, appendChildElement } from '../common/utils/helper';
+import { findClipRect, showTooltip, removeElement, appendChildElement } from '../common/utils/helper';
 import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement } from '../common/utils/helper';
 import { appendClipElement } from '../common/utils/helper';
 import { ChartModel, CrosshairSettingsModel, ZoomSettingsModel } from './chart-model';
@@ -21,7 +21,7 @@ import { DateTimeCategory } from './axis/date-time-category-axis';
 import { CandleSeries } from './series/candle-series';
 import { ErrorBar } from './series/error-bar';
 import { Logarithmic } from './axis/logarithmic-axis';
-import { Size, Rect } from '../common/utils/helper';
+import { Rect, measureText, TextOption, Size, SvgRenderer, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { ChartData } from './utils/get-data';
 import { SelectionMode, LineType, ZoomMode, ToolbarItems, ChartTheme } from './utils/enum';
 import { Series, SeriesBase } from './series/chart-series';
@@ -38,6 +38,7 @@ import { ParetoSeries } from './series/pareto-series';
 import { StackingColumnSeries } from './series/stacking-column-series';
 import { StackingBarSeries } from './series/stacking-bar-series';
 import { StackingAreaSeries } from './series/stacking-area-series';
+import { StackingLineSeries } from './series/stacking-line-series';
 import { ScatterSeries } from './series/scatter-series';
 import { SplineSeries } from './series/spline-series';
 import { SplineAreaSeries } from './series/spline-area-series';
@@ -292,6 +293,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `stackingAreaSeriesModule` is used to add stacking area series to the chart.
      */
     public stackingAreaSeriesModule: StackingAreaSeries;
+    /**
+     * `stackingLineSeriesModule` is used to add stacking line series to the chart.
+     */
+    public stackingLineSeriesModule: StackingLineSeries;
     /**
      * 'CandleSeriesModule' is used to add candle series in the chart.
      */
@@ -1053,6 +1058,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public animateSeries: boolean;
     /** @private */
     public redraw: boolean;
+    /** @public */
+    public animated: boolean = false;
+    /** @public */
+    public duration: number;
     /** @private */
     public availableSize: Size;
     /** @private */
@@ -1109,6 +1118,26 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     constructor(options?: ChartModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        setValue('mergePersistData', this.mergePersistChartData, this);
+    }
+    /**
+     * To manage persist chart data
+     */
+    private mergePersistChartData(): void {
+        let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        if (!(isNullOrUndefined(data) || (data === ''))) {
+            let dataObj: Chart = JSON.parse(data);
+            let keys: string[] = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (let key of keys) {
+                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
+                    extend(this[key], dataObj[key]);
+                } else {
+                    this[key] = dataObj[key];
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
     }
 
     /**
@@ -1176,6 +1205,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public getLocalizedLabel(key: string): string {
         return this.localeObject.getConstant(key);
+    }
+
+    /**
+     * Animate the series bounds.
+     * @private
+     */
+    public animate(duration ?: number): void {
+        this.redraw = true;
+        this.animated = true; //used to set duration as 1000 for animation at default 300
+        this.duration = duration ? duration : 1000;
     }
 
     /**
@@ -1409,12 +1448,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.redraw
             );
         }
+        if (this.stockChart) {
+            this.stockChart.calculateStockEvents();
+        }
     }
     private applyZoomkit(): void {
-        if (
-            !this.redraw && this.zoomModule && this.zoomModule.isZoomed &&
-            (!this.zoomSettings.enablePan || this.zoomModule.performedUI)
-        ) {
+        /**
+         * Issue: Zoomkit not visible after performing refresh()
+         * Fix: this method called without checking `zoomModule.isZoomed`
+         */
+        if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI)) {
             this.zoomModule.applyZoomToolkit(this, this.axisCollections);
         }
     }
@@ -1560,7 +1603,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let axis: Axis; let series: Series;
         let axes: AxisModel[] = [this.primaryXAxis, this.primaryYAxis];
         axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
-        if (this.paretoSeriesModule) {
+        if (this.paretoSeriesModule && this.series[0].type === 'Pareto') {
             axes = axes.concat(this.paretoSeriesModule.paretoAxes);
         }
         this.axisCollections = [];
@@ -1653,6 +1696,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let count: number = colors.length;
         for (let i: number = 0, len: number = this.series.length; i < len; i++) {
             series = <Series>this.series[i];
+            // for y axis label issue during chart navigation
+            series.category = this.series[0].type === 'Pareto' ? 'Pareto' : 'Series';
             series.index = i;
             series.interior = series.fill || colors[i % count];
             switch (series.type) {
@@ -1838,7 +1883,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @private
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['loaded', 'animationComplete'];
+        let keyEntity: string[] = ['loaded', 'animationComplete', 'primaryXAxis', 'primaryYAxis'];
         return this.addOnPersist(keyEntity);
     }
 
@@ -1876,7 +1921,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         );
 
         /**
-         * To fix memory issue 
+         * To fix memory issue
          */
         if (this.touchObject) {
             this.touchObject.destroy();
@@ -2610,7 +2655,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             axis.rect = new Rect(undefined, undefined, 0, 0, );
             axis.isStack100 = false;
         }
-        if (this.paretoSeriesModule) {
+        if (this.paretoSeriesModule && this.series[0].type === 'Pareto') {
             for (let item of this.paretoSeriesModule.paretoAxes) {
                 axis = <Axis>item;
                 axis.rect = new Rect(undefined, undefined, 0, 0);
@@ -2801,6 +2846,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this });
+                this.redraw = false;
+                this.animated = false;
             }
         }
     }

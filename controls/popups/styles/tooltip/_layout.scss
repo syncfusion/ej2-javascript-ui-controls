@@ -13,31 +13,31 @@
       position: absolute;
 
       &.e-tip-bottom {
-        height: 8px;
-        left: 50%;
-        top: 100%;
-        width: 16px;
+        height: $tooltip-tip-bottom-height;
+        left: $tooltip-tip-bottom-left;
+        top: $tooltip-tip-bottom-top;
+        width: $tooltip-tip-bottom-width;
       }
 
       &.e-tip-top {
-        height: 8px;
-        left: 50%;
-        top: -9px;
-        width: 16px;
+        height: $tooltip-tip-top-height;
+        left: $tooltip-tip-top-left;
+        top: $tooltip-tip-top-top;
+        width: $tooltip-tip-top-width;
       }
 
       &.e-tip-left {
-        height: 16px;
-        left: -9px;
-        top: 48%;
-        width: 8px;
+        height: $tooltip-tip-left-height;
+        left: $tooltip-tip-left-left;
+        top: $tooltip-tip-left-top;
+        width: $tooltip-tip-left-width;
       }
 
       &.e-tip-right {
-        height: 16px;
-        left: 100%;
-        top: 50%;
-        width: 8px;
+        height: $tooltip-tip-right-height;
+        left: $tooltip-tip-right-left;
+        top: $tooltip-tip-right-top;
+        width: $tooltip-tip-right-width;
       }
     }
 
@@ -47,6 +47,7 @@
       position: absolute;
       right: -9px;
       top: -9px;
+      z-index: inherit;
     }
 
     /*! tooltip content area */
@@ -62,6 +63,9 @@
       width: 100%;
       word-break: break-word;
       z-index: 1;
+      @if $skin-name == 'bootstrap4' {
+        border-radius: inherit;
+      }
     }
   }
 
@@ -70,6 +74,8 @@
   &#{&}.e-tooltip-wrap.e-bigger .e-tip-content {
     line-height: 20px;
     padding: $tooltip-mobile-horizontal-padding $tooltip-mobile-vertical-padding;
+    @if $skin-name == 'bootstrap4' {
+      line-height: 1.5;
+    }
   }
-
 }

@@ -98,8 +98,8 @@ export class AxisRenderer extends Animations {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
             options = new PathOption(
-                this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color,
-                axis.line.width, axis.line.color, 1, axis.line.dashArray, path);
+                this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color || this.gauge.themeStyle.lineColor,
+                axis.line.width, axis.line.color || this.gauge.themeStyle.lineColor, 1, axis.line.dashArray, path);
             axisObject.appendChild(this.gauge.renderer.drawPath(options) as HTMLElement);
         }
     }
@@ -110,6 +110,8 @@ export class AxisRenderer extends Animations {
         let options: PathOption;
         let range: VisibleRange = axis.visibleRange;
         let line: Rect = axis.lineBounds;
+        let tickColor: string = (tickID === 'MajorTicks') ? ticks.color || this.gauge.themeStyle.majorTickColor :
+            ticks.color || this.gauge.themeStyle.minorTickColor;
         let interval: number = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
         for (let i: number = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
@@ -126,8 +128,8 @@ export class AxisRenderer extends Animations {
             }
         }
         options = new PathOption(
-            this.gauge.element.id + '_' + tickID + 'Line_' + 0, ticks.color, ticks.width,
-            ticks.color, 1, null, tickPath);
+            this.gauge.element.id + '_' + tickID + 'Line_' + 0, tickColor, ticks.width,
+            tickColor, 1, null, tickPath);
         axisObject.appendChild(this.gauge.renderer.drawPath(options) as SVGElement);
     }
 
@@ -148,7 +150,7 @@ export class AxisRenderer extends Animations {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, <Range[]>axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color || this.gauge.themeStyle.labelColor : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
@@ -203,7 +205,7 @@ export class AxisRenderer extends Animations {
             remove(getElement(pointerID));
         }
         options = new PathOption(
-            pointerID, pointer.color,
+            pointerID, pointer.color || this.gauge.themeStyle.pointerColor,
             pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(
             pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
@@ -234,7 +236,8 @@ export class AxisRenderer extends Animations {
         }
         if (this.gauge.container.type === 'Normal') {
             rectOptions = new RectOption(
-                pointerID, pointer.color, pointer.border, pointer.opacity, pointer.bounds, null, null);
+                pointerID, pointer.color || this.gauge.themeStyle.pointerColor,
+                pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions) as SVGAElement;
         } else {
@@ -243,7 +246,8 @@ export class AxisRenderer extends Animations {
                 new Size(pointer.bounds.width, pointer.bounds.height), 'bar',
                 this.gauge.container.width, axis, pointer.roundedCornerRadius);
             options = new PathOption(
-                pointerID, pointer.color, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
+                pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width,
+                pointer.border.color, pointer.opacity, null, path);
             pointerElement = this.gauge.renderer.drawPath(options) as SVGAElement;
             box = getPathToRect(<SVGPathElement>pointerElement.cloneNode(true), size, this.gauge.element);
         }

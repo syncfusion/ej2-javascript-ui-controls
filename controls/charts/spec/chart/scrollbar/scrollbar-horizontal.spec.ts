@@ -10,6 +10,7 @@ import { ILoadedEventArgs } from '../../../src/common/model/interface';
 import { ScrollBar } from '../../../src/common/scrollbar/scrollbar';
 import { load } from '../../../src';
 import { MouseEvents } from '../base/events.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { chartData } from '../series/spline-area-series.spec';
 
 
@@ -29,6 +30,14 @@ export interface wheel {
 
 let trigger: MouseEvents = new MouseEvents();
 describe('Scrollbar Chart ', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let ele: HTMLElement;
     describe('Horizontal Scrollbar Default', () => {
         let chartObj: Chart;
@@ -1022,7 +1031,7 @@ describe('Scrollbar Chart ', () => {
                     };
                     chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                     let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                    expect(thumbEle.getAttribute('x') === '36.89999999999999' || thumbEle.getAttribute('x') === '308.65883495145636').toBe(true);
+                    expect(thumbEle.getAttribute('x') === '308.64485436893204' || thumbEle.getAttribute('x') === '308.65883495145636').toBe(true);
                     expect(thumbEle.getAttribute('width') === '99.89999999999999' ||
                         thumbEle.getAttribute('width') === '100.38').toBe(true);
                    
@@ -1046,7 +1055,7 @@ describe('Scrollbar Chart ', () => {
                 };
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseWheel(<WheelEvent>wheelArgs);
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '36.21525773195876' || thumbEle.getAttribute('x') === '307.9592473225904').toBe(true);
+                expect(thumbEle.getAttribute('x') === '307.96011210089085' || thumbEle.getAttribute('x') === '307.9592473225904').toBe(true);
                 expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38' ).toBe(true);
                 done();
             };
@@ -1061,7 +1070,7 @@ describe('Scrollbar Chart ', () => {
                     let currentTarget: Element = document.getElementById('container_scrollBarBackRect_primaryXAxis');
                     chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 500, 390)));
                     let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                    expect(thumbEle.getAttribute('x') === '117.86525773195876' || thumbEle.getAttribute('x') === '390.0092473225904').toBe(true);
+                    expect(thumbEle.getAttribute('x') === '389.6101121008909' || thumbEle.getAttribute('x') === '390.0092473225904').toBe(true);
                     expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38').toBe(true);
                     done();
                 }
@@ -1072,7 +1081,7 @@ describe('Scrollbar Chart ', () => {
                 let currentTarget: Element = document.getElementById('container_scrollBarBackRect_primaryXAxis');
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 140, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '36.21525773195876' || thumbEle.getAttribute('x') === '307.9592473225904').toBe(true);
+                expect(thumbEle.getAttribute('x') === '307.9601121008909' || thumbEle.getAttribute('x') === '307.9592473225904').toBe(true);
                 expect(thumbEle.getAttribute('width') === '99.89999999999999' || thumbEle.getAttribute('width') === '100.38').toBe(true);
                 done();
             });
@@ -1081,8 +1090,8 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 550, 390, true)));
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 650, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '36.21525773195876' || thumbEle.getAttribute('x') === '307.9592473225904').toBe(true);
-                expect(thumbEle.getAttribute('width') === '551.499587628866' || thumbEle.getAttribute('width') === '280.5407526774096' ).toBe(true);
+                expect(thumbEle.getAttribute('x') === '307.96011210089085' || thumbEle.getAttribute('x') === '307.9592473225904').toBe(true);
+                expect(thumbEle.getAttribute('width') === '276.5398878991091' || thumbEle.getAttribute('width') === '280.5407526774096' ).toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 650, 390)));
                 done();
             });
@@ -1091,8 +1100,8 @@ describe('Scrollbar Chart ', () => {
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 120, 390)));
                 let thumbEle: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
-                expect(thumbEle.getAttribute('x') === '36.21525773195876' || thumbEle.getAttribute('x') === '127.95924732259039').toBe(true);
-                expect(thumbEle.getAttribute('width') === '551.499587628866' || thumbEle.getAttribute('width') === '460.5407526774096').toBe(true);
+                expect(thumbEle.getAttribute('x') === '127.96011210089091' || thumbEle.getAttribute('x') === '127.95924732259039').toBe(true);
+                expect(thumbEle.getAttribute('width') === '456.5398878991091' || thumbEle.getAttribute('width') === '460.5407526774096').toBe(true);
                 chartObj.axisCollections[0].zoomingScrollBar.scrollMouseUp(<PointerEvent>(trigger.onTouchEnd(currentTarget, 0, 0, 0, 0, 120, 390)));
                 done();
             });
@@ -1135,7 +1144,7 @@ describe('Inversed Scrollbar ', function () {
                     var backRectEle = svgChildEle.children[0].children[0];
                     var width = backRectEle.getAttribute('width');
                     expect(svgChildEle.id === 'container_scrollBar_primaryXAxis').toBe(true);
-                    expect(svgChildEle.getAttribute('transform') === 'translate(836.5,16) rotate(180)').toBe(true);
+                    expect(svgChildEle.getAttribute('transform') === 'translate(832.5,16) rotate(180)' || svgChildEle.getAttribute('transform') === 'translate(836.5,16) rotate(180)').toBe(true);
                     expect(backRectEle.getAttribute('x') === '0').toBe(true);
                     expect(backRectEle.getAttribute('y') === '0').toBe(true);
                     expect(backRectEle.getAttribute('height') === '16').toBe(true);
@@ -1177,15 +1186,14 @@ describe('Inversed Scrollbar ', function () {
             });
            
         });
-    
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
      
-
-
-
-
-		
-		
-    
-    
-
 });

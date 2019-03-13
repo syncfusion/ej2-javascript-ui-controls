@@ -28,7 +28,7 @@
     &.e-badge-warning:not(.e-badge-ghost):not([href]),
     &.e-badge-warning[href]:not(.e-badge-ghost) {
       background-color: $badge-warning-bg-color;
-      color: $badge-dark-font-color;
+      color: $badge-warning-font-color;
     }
 
     &.e-badge-info:not(.e-badge-ghost):not([href]),

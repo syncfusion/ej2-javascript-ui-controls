@@ -2,24 +2,6 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
-
-### Chart
-
-#### Bug Fixes
-
-- Pie animation starting angle issue fixed.
-
-## 16.4.53 (2019-02-13)
-
-### Chart
-
-#### Bug Fixes
-
-- Data bind issues in series properties fixed.
-- Memory increasing while refreshing the chart for long period of time with time interval datasource change issue fixed.
-- Scrollbar with huge data performance lack has been fixed.
-
 ## 17.1.1-beta (2019-01-29)
 
 ### Sparkline

@@ -7,6 +7,7 @@ import { DropDownList } from '../../src/drop-down-list/drop-down-list';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 import '../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 
 L10n.load({
@@ -29,6 +30,14 @@ let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon
 let datasource2: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
 { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'Phython' }, { id: 'list5', text: 'Oracle' }];
 describe('DDList', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let css: string = ".e-spinner-pane::after { content: 'Material'; display: none;} ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -4432,7 +4441,6 @@ describe('DDList', () => {
             expect(element.childNodes[0].textContent === 'Cricket').toBe(true);
         });
     });
-
     describe('EJ2-22523: Form reset', () => {
         let element: HTMLInputElement;
         let data: { [key: string]: Object }[] = [
@@ -4466,5 +4474,85 @@ describe('DDList', () => {
             });
         });
     });
+    describe('EJ2-23180 - preselect value not selected when select the value not in the list', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let originalTimeout: number;
+        beforeEach((done) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: new DataManager({ url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
+                query: new Query().from('Customers').select('ContactName').take(2),
+                fields: { text: 'ContactName' },
+                value: "Hanna Moos"
+            });
+            listObj.appendTo(element);
+            done();
+        });
+        afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('get selected value ', (done) => {
+            setTimeout(() => {
+                expect(listObj.element.value === listObj.value).toBe(true);
+                expect(listObj.liCollections.length === 3).toBe(true);
+                done();
+            }, 4000);
+        });
+    });
+    describe('DDL-Clear button', () => {
+        let count =0;
+        let ddlObj: any;
+        let isChangeCalled: boolean = false;
+        let ddlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl' });
+        let empList: { [key: string]: Object }[] = [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' }
 
+        ];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle);
+            ddlObj = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'Game', value: 'Id' },
+                value: "Game3",
+                showClearButton: true,
+                change: function () {
+                    isChangeCalled = true;
+                    count++;
+                }
+            });
+            ddlObj.appendTo(ddlEle);
+        });
+        afterAll(() => {
+            ddlObj.destroy();
+            ddlEle.remove();
+        });
+
+        it('Change event triggered once- checking', () => {
+            ddlObj.focusIn();
+            var event = new Event('mousedown');
+            ddlObj.inputWrapper.clearButton.dispatchEvent(event);
+            expect(isChangeCalled).toBe(true)
+            expect(count).toBe(1);
+        });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

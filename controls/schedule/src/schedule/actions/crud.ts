@@ -145,13 +145,17 @@ export class Crud {
                     query = new Query().where(fields.recurrenceID, 'equal', parentEvent[fields.id] as number);
                     let delApp: Object[] = new DataManager(this.parent.eventsData).executeLocal(query);
                     data[fields.id] = parentEvent[fields.id];
-                    data[fields.recurrenceException] = null;
+                    data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence ?
+                        parentEvent[fields.recurrenceException] : null;
                     data[fields.recurrenceID] = null;
                     this.processCrudTimezone(data as { [key: string]: Object });
                     editParms.changedRecords.push(data as Object);
-                    for (let event of delApp) {
-                        editParms.deletedRecords.push(event);
+                    if (!this.parent.uiStateValues.isIgnoreOccurrence) {
+                        for (let event of delApp) {
+                            editParms.deletedRecords.push(event);
+                        }
                     }
+                    this.parent.uiStateValues.isIgnoreOccurrence = false;
                     break;
             }
             promise =

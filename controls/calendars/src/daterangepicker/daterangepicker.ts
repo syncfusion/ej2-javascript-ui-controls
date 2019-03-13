@@ -19,6 +19,8 @@ const RIGHTCALENDER: string = 'e-right-calendar';
 const LEFTCONTAINER: string = 'e-left-container';
 const RIGHTCONTAINER: string = 'e-right-container';
 const ROOT: string = 'e-daterangepicker';
+const LIBRARY: string = 'e-lib';
+const CONTROL: string = 'e-control';
 const ERROR: string = 'e-error';
 const ACTIVE: string = 'e-active';
 const STARTENDCONTAINER: string = 'e-start-end';
@@ -66,8 +68,7 @@ const OFFSETVALUE: number = 4;
 const PRIMARY: string = 'e-primary';
 const FLAT: string = 'e-flat';
 const CSS: string = 'e-css';
-const LIBRARY: string = 'e-lib';
-const CONTROL: string = 'e-control';
+const ZOOMIN: string = 'e-zoomin';
 
 export class Presets extends ChildProperty<Presets> {
     /** 
@@ -228,11 +229,12 @@ export class DateRangePicker extends CalendarBase {
     private closeEventArgs: RangePopupEventArgs;
     private openEventArgs: RangePopupEventArgs;
     private controlDown: KeyboardEventArgs;
-    private formElement: Element;
-    private formatString: string;
     private startCopy: Date;
     private endCopy: Date;
+    private formElement: Element;
+    private formatString: string;
     protected tabIndex: string;
+    private invalidValueString: string = null;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -380,7 +382,6 @@ export class DateRangePicker extends CalendarBase {
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
      * @default Month
-     * @hidden
      */
     @Property('Month')
     public start: CalendarView;
@@ -388,7 +389,6 @@ export class DateRangePicker extends CalendarBase {
      * Sets the maximum level of view (month, year, decade) in the Calendar.
      * Depth view should be smaller than the start view to restrict its view navigation.
      * @default Month
-     * @hidden
      */
     @Property('Month')
     public depth: CalendarView;
@@ -408,9 +408,10 @@ export class DateRangePicker extends CalendarBase {
     public separator: string;
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
-     *  > For more details refer to 
+     * > For more details refer to 
      * [`Range Span`] (../../daterangepicker/range-restriction#range-span) documentation.
      * @default null    
+     * @aspType int
      */
     @Property(null)
     public minDays: number;
@@ -419,6 +420,7 @@ export class DateRangePicker extends CalendarBase {
      * > For more details refer to 
      * [`Range Span`](../../daterangepicker/range-restriction#range-span) documentation.
      * @default null
+     * @aspType int
      */
     @Property(null)
     public maxDays: number;
@@ -434,8 +436,8 @@ export class DateRangePicker extends CalendarBase {
      * Sets or gets the required date format to the start and end date string.
      * > For more details refer to 
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
-     * @default null
      * @aspType string
+     * @default null
      */
     @Property(null)
     public format: string | RangeFormatObject;
@@ -580,6 +582,11 @@ export class DateRangePicker extends CalendarBase {
             this.element.id = getUniqueID('ej2-datetimepicker');
             if (this.angularTag !== null) { attributes(this.inputElement, { 'id': this.element.id + '_input' }); }
         }
+        this.checkInvalidRange(this.value);
+        if (!this.invalidValueString && (typeof (this.value) === 'string')) {
+            let rangeArray: string[] = (<string>this.value).split(' ' + this.separator + ' ');
+            this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
+        }
         this.initProperty();
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
@@ -594,17 +601,18 @@ export class DateRangePicker extends CalendarBase {
     };
 
     private updateValue(): void {
+        let dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         if (this.value && (<Date[]>this.value).length > 0) {
             if ((<Date[]>this.value)[0] instanceof Date && !isNaN(+(<Date[]>this.value)[0])) {
                 this.setProperties({ startDate: (<Date[]>this.value)[0] }, true);
                 this.startValue = (<Date[]>this.value)[0];
             } else if (typeof (<Date[]>this.value)[0] === 'string') {
-                if (+(<Date[]>this.value)[0] === 0 || isNaN(+(new Date('' + (<Date[]>this.value)[0])))) {
+                if (+(<Date[]>this.value)[0] === 0 || isNaN(+(new Date(this.checkValue((<Date[]>this.value)[0]))))) {
                     this.startValue = null;
                     this.setValue();
                 } else {
-                    this.setProperties({ startDate: new Date('' + (<Date[]>this.value)[0]) }, true);
-                    this.startValue = new Date('' + (<Date[]>this.value)[0]);
+                    this.setProperties({ startDate: new Date(this.checkValue((<Date[]>this.value)[0])) }, true);
+                    this.startValue = new Date(this.checkValue((<Date[]>this.value)[0]));
                 }
             } else {
                 this.startValue = null;
@@ -614,13 +622,13 @@ export class DateRangePicker extends CalendarBase {
                 this.setProperties({ endDate: (<Date[]>this.value)[1] }, true);
                 this.endValue = (<Date[]>this.value)[1];
             } else if (typeof (<Date[]>this.value)[1] === 'string') {
-                if (+(<Date[]>this.value)[0] === 0 || isNaN(+(new Date('' + (<Date[]>this.value)[0])))) {
+                if (+(<Date[]>this.value)[0] === 0 || isNaN(+(new Date(this.checkValue((<Date[]>this.value)[0]))))) {
                     this.setProperties({ endDate: null }, true);
                     this.endValue = null;
                     this.setValue();
                 } else {
-                    this.setProperties({ endDate: new Date('' + (<Date[]>this.value)[1]) }, true);
-                    this.endValue = new Date('' + (<Date[]>this.value)[1]);
+                    this.setProperties({ endDate: new Date(this.checkValue((<Date[]>this.value)[1])) }, true);
+                    this.endValue = new Date(this.checkValue((<Date[]>this.value)[1]));
                     this.setValue();
                 }
             } else {
@@ -633,8 +641,8 @@ export class DateRangePicker extends CalendarBase {
                 this.setProperties({ startDate: (<DateRange>this.value).start }, true);
                 this.startValue = (<DateRange>this.value).start;
             } else if (typeof (<DateRange>this.value).start === 'string') {
-                this.setProperties({ startDate: new Date('' + (<DateRange>this.value).start) }, true);
-                this.startValue = new Date('' + (<DateRange>this.value).start);
+                this.setProperties({ startDate: new Date(this.checkValue((<DateRange>this.value).start)) }, true);
+                this.startValue = new Date(this.checkValue((<DateRange>this.value).start));
             } else {
                 this.startValue = null;
                 this.setValue();
@@ -643,8 +651,8 @@ export class DateRangePicker extends CalendarBase {
                 this.setProperties({ endDate: (<DateRange>this.value).end }, true);
                 this.endValue = (<DateRange>this.value).end;
             } else if (typeof (<DateRange>this.value).end === 'string') {
-                this.setProperties({ endDate: new Date('' + (<DateRange>this.value).end) }, true);
-                this.endValue = new Date('' + (<DateRange>this.value).end);
+                this.setProperties({ endDate: new Date(this.checkValue((<DateRange>this.value).end)) }, true);
+                this.endValue = new Date(this.checkValue((<DateRange>this.value).end));
                 this.setValue();
             } else {
                 this.setProperties({ endDate: null }, true);
@@ -652,14 +660,15 @@ export class DateRangePicker extends CalendarBase {
                 this.setValue();
             }
         } else if (isNullOrUndefined(this.value)) {
-            this.endValue = this.checkDateValue(new Date('' + this.endDate));
-            this.startValue = this.checkDateValue(new Date('' + this.startDate));
+            this.endValue = this.checkDateValue(new Date(this.checkValue(this.endDate)));
+            this.startValue = this.checkDateValue(new Date(this.checkValue(this.startDate)));
             this.setValue();
         }
     }
     private initProperty(): void {
         this.globalize = new Internationalization(this.locale);
         this.checkFormat();
+        this.checkView();
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: this.globalize.getFirstDayOfWeek() }, true);
         }
@@ -683,11 +692,12 @@ export class DateRangePicker extends CalendarBase {
         if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
         this.checkHtmlAttributes();
         merge(this.keyConfigs, { shiftTab: 'shift+tab' });
-        this.setProperties({ startDate: this.checkDateValue(new Date('' + this.startValue)) }, true); // persist the value propeerty.
-        this.setProperties({ endValue: this.checkDateValue(new Date('' + this.endValue)) }, true);
+        let start: Date = this.checkDateValue(new Date(this.checkValue(this.startValue)));
+        this.setProperties({ startDate: start }, true); // persist the value propeerty.
+        this.setProperties({ endValue: this.checkDateValue(new Date(this.checkValue(this.endValue))) }, true);
         this.setValue();
-        this.setProperties({ min: this.checkDateValue(new Date('' + this.min)) }, true);
-        this.setProperties({ max: this.checkDateValue(new Date('' + this.max)) }, true);
+        this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(this.min))) }, true);
+        this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(this.max))) }, true);
         this.l10n = new L10n('daterangepicker', this.defaultConstant, this.locale);
         this.l10n.setLocale(this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -729,7 +739,7 @@ export class DateRangePicker extends CalendarBase {
                 let id: string = range.label.replace(/\s+/g, '') + '_' + (++i);
                 if (typeof range.end === 'string') {
                     this.presetsItem.push({
-                        id: id, text: range.label, end: new Date('' + range.end), start: new Date('' + range.start)
+                        id: id, text: range.label, end: new Date(this.checkValue(range.end)), start: new Date(this.checkValue(range.start))
                     });
                 } else {
                     this.presetsItem.push({ id: id, text: range.label, start: range.start, end: range.end });
@@ -847,17 +857,18 @@ export class DateRangePicker extends CalendarBase {
                 this.setProperties({ value: null, startDate: null, endDate: null }, true);
                 this.startValue = this.endValue = null;
             }
+
             if (this.element.tagName === 'EJS-DATERANGEPICKER') {
                 this.setProperties({ value: null, startDate: null, endDate: null }, true);
                 val = '';
                 this.startValue = this.endValue = null;
                 this.inputElement.setAttribute('value', '');
             }
+            this.restoreValue();
             if (this.inputElement) {
                 Input.setValue(val, this.inputElement, this.floatLabelType, this.showClearButton);
                 this.errorClass();
             }
-            this.restoreValue();
         }
     }
     private clear(): void {
@@ -1025,13 +1036,21 @@ export class DateRangePicker extends CalendarBase {
         EventHandler.clearEvents(this.rightCalNextIcon);
     }
     private updateNavIcons(): void {
-        if (this.currentView() === 'Year' || this.currentView() === 'Decade') {
-            return;
+        if (this.isPopupOpen() && this.depth === this.currentView()) {
+            let leftDate: Date = new Date(this.checkValue(this.leftCalCurrentDate));
+            let iconState: boolean = false;
+            if (this.currentView() === 'Year') {
+                iconState = (this.compareYears(leftDate, this.rightCalCurrentDate) < 1);
+            } else if (this.currentView() === 'Decade') {
+                iconState = (this.compareDecades(leftDate, this.rightCalCurrentDate) < 1);
+            } else if (this.currentView() === 'Month') {
+                iconState = (this.compareMonths(leftDate, this.rightCalCurrentDate) < 1);
+            }
+            this.previousIcon = this.rightCalPrevIcon;
+            this.nextIcon = this.leftCalNextIcon;
+            this.nextIconHandler(iconState);
+            this.previousIconHandler(iconState);
         }
-        this.previousIcon = this.rightCalPrevIcon;
-        this.nextIcon = this.leftCalNextIcon;
-        this.nextIconHandler(this.compareMonths(new Date('' + this.leftCalCurrentDate), this.rightCalCurrentDate) < 1);
-        this.previousIconHandler(this.compareMonths(new Date('' + this.leftCalCurrentDate), this.rightCalCurrentDate) < 1);
     }
     private calendarIconEvent(): void {
         this.clearCalendarEvents();
@@ -1074,7 +1093,9 @@ export class DateRangePicker extends CalendarBase {
             EventHandler.add(this.startButton.element, 'click', this.deviceHeaderClick, this);
             EventHandler.add(this.endButton.element, 'click', this.deviceHeaderClick, this);
         }
-        this.bindCalendarCellEvents();
+        if (this.start === this.depth) {
+            this.bindCalendarCellEvents();
+        }
         this.removeFocusedDate();
     }
     private calendarIconRipple(): void {
@@ -1130,7 +1151,7 @@ export class DateRangePicker extends CalendarBase {
             if (isNullOrUndefined(this.calendarElement.querySelector('.' + STARTDATE + ':not(.e-other-month)'))) {
                 this.currentDate = new Date(+this.startValue);
                 remove(this.tableBodyElement);
-                this.renderMonths();
+                this.createContentBody();
                 this.deviceNavigation();
             }
             this.removeClassDisabled();
@@ -1142,7 +1163,7 @@ export class DateRangePicker extends CalendarBase {
             if (isNullOrUndefined(this.calendarElement.querySelector('.' + ENDDATE + ':not(.e-other-month)'))) {
                 this.currentDate = new Date(+this.endValue);
                 remove(this.tableBodyElement);
-                this.renderMonths();
+                this.createContentBody();
                 this.deviceNavigation();
             }
             this.updateMinMaxDays(<HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR));
@@ -1173,6 +1194,7 @@ export class DateRangePicker extends CalendarBase {
             if (!isNullOrUndefined(value) && value.trim() !== '') {
                 let range: string[] = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
+                    this.invalidValueString = null;
                     let dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
                     let startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
                     let endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
@@ -1371,7 +1393,7 @@ export class DateRangePicker extends CalendarBase {
                 }
                 break;
             case 'select':
-                if (view === 0) {
+                if (levelRestrict) {
                     let element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : startDate;
                     if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
                         this.selectRange(null, (element));
@@ -1396,7 +1418,7 @@ export class DateRangePicker extends CalendarBase {
                 if (!isLeftCalendar && +yearDate < +leftDateLimit) {
                     ele = this.keyCalendarUpdate(true, ele);
                 }
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
+                super.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 0, 1));
                 this.keyNavigation(ele, e);
                 break;
             case 'altRightArrow':
@@ -1439,7 +1461,7 @@ export class DateRangePicker extends CalendarBase {
                 e.preventDefault();
                 break;
             case 'controlDown':
-                if ((!isNullOrUndefined(selectedDate) && !levelRestrict) || !isNullOrUndefined(focusedDate)) {
+                if ((!isNullOrUndefined(selectedDate) || !isNullOrUndefined(focusedDate)) && !levelRestrict) {
                     if (!isNullOrUndefined(this.value)) {
                         if (this.calendarElement.classList.contains(LEFTCALENDER)) {
                             value = this.startDate;
@@ -1457,7 +1479,7 @@ export class DateRangePicker extends CalendarBase {
                 if (isLeftCalendar && +yearDate > +rightDateLimit) {
                     ele = this.keyCalendarUpdate(false, ele);
                 }
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
+                super.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 11, 31));
                 this.keyNavigation(ele, e);
                 break;
             case 'pageUp':
@@ -1467,7 +1489,7 @@ export class DateRangePicker extends CalendarBase {
                     ele = this.keyCalendarUpdate(true, ele);
                 }
                 this.addMonths(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
+                super.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'pageDown':
@@ -1477,7 +1499,7 @@ export class DateRangePicker extends CalendarBase {
                     ele = this.keyCalendarUpdate(false, ele);
                 }
                 this.addMonths(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
+                super.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'shiftPageUp':
@@ -1487,7 +1509,7 @@ export class DateRangePicker extends CalendarBase {
                     ele = this.keyCalendarUpdate(true, ele);
                 }
                 this.addYears(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
+                super.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'shiftPageDown':
@@ -1497,7 +1519,7 @@ export class DateRangePicker extends CalendarBase {
                     ele = this.keyCalendarUpdate(false, ele);
                 }
                 this.addYears(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
+                super.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'shiftTab':
@@ -1593,15 +1615,18 @@ export class DateRangePicker extends CalendarBase {
         let isDate: boolean = !isNullOrUndefined(this.startValue) || !isNullOrUndefined(this.endValue);
         let focusedDate: HTMLElement[];
         focusedDate = <HTMLElement[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + CALENDAR + ' .' + FOCUSDATE);
-        if ((this.leftCalendar && this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
-            && this.rightCalendar && this.rightCalendar.querySelector('.e-content').classList.contains('e-month')) ||
-            this.calendarElement && this.calendarElement.querySelector('.e-content').classList.contains('e-month')) {
-            for (let ele of focusedDate) {
-                if (!ele.classList.contains(TODAY) || (ele.classList.contains(TODAY) && (isDate))) {
-                    ele.classList.remove(FOCUSDATE);
-                    if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(ENDDATE)) {
-                        ele.removeAttribute('aria-label');
-                    }
+        for (let ele of focusedDate) {
+            let today: Date = new Date();
+            let eleDate: Date = this.getIdValue(null, ele);
+            if ((this.depth === 'Month' && this.currentView() === 'Month' &&
+                (!ele.classList.contains(TODAY) || (ele.classList.contains(TODAY) && isDate)))
+                || (this.depth === 'Year' && this.currentView() === 'Year' &&
+                    ((!this.isSameMonth(today, eleDate) && !this.isSameYear(today, eleDate)) || isDate))
+                || (this.depth === 'Decade' && this.currentView() === 'Decade' &&
+                    (!this.isSameYear(today, eleDate) || isDate))) {
+                ele.classList.remove(FOCUSDATE);
+                if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(ENDDATE)) {
+                    ele.removeAttribute('aria-label');
                 }
             }
         }
@@ -1631,6 +1656,24 @@ export class DateRangePicker extends CalendarBase {
             }
         }
     }
+    private isSameStartEnd(startVal: Date, endVal: Date): boolean {
+        let isSame: boolean = false;
+        if (this.depth === 'Month') {
+            if ((startVal).setHours(0, 0, 0, 0) === (endVal).setHours(0, 0, 0, 0)) {
+                isSame = true;
+            }
+        } else if (this.depth === 'Year') {
+            if ((startVal.getFullYear() === endVal.getFullYear()) &&
+                (startVal.getMonth() === endVal.getMonth())) {
+                isSame = true;
+            }
+        } else if (this.depth === 'Decade') {
+            if (startVal.getFullYear() === endVal.getFullYear()) {
+                isSame = true;
+            }
+        }
+        return isSame;
+    }
     private updateRange(elementCollection: HTMLElement[]): void {
         if (!isNullOrUndefined(this.startValue)) {
             for (let calendar of elementCollection) {
@@ -1640,10 +1683,10 @@ export class DateRangePicker extends CalendarBase {
                         let eleDate: Date = this.getIdValue(null, ele);
                         let eleDateValue: Date = this.getIdValue(null, ele);
                         if (!isNullOrUndefined(this.endValue)) {
-                            if (this.currentView() === 'Month' &&
+                            if (this.currentView() === this.depth &&
                                 +eleDateValue.setHours(0, 0, 0, 0) >= +new Date(+this.startValue).setHours(0, 0, 0, 0)
                                 && +eleDateValue.setHours(0, 0, 0, 0) <= +new Date(+this.endValue).setHours(0, 0, 0, 0) &&
-                                +new Date(+this.startValue).setHours(0, 0, 0, 0) !== +new Date(+this.endValue).setHours(0, 0, 0, 0) &&
+                                !this.isSameStartEnd(new Date(+this.startValue), new Date(+this.endValue)) &&
                                 +new Date(+this.startValue).setHours(0, 0, 0, 0) >= +this.min
                                 && +new Date(+this.endValue).setHours(0, 0, 0, 0) <= +this.max
                                 && !(this.isDateDisabled(this.startValue) || this.isDateDisabled(this.endValue))) {
@@ -1655,7 +1698,7 @@ export class DateRangePicker extends CalendarBase {
                         if (!ele.classList.contains(OTHERMONTH)) {
                             let startDateValue: Date = new Date(+this.startValue);
                             let eleDateValue: Date = new Date(+eleDate);
-                            if (this.currentView() === 'Month' &&
+                            if (this.currentView() === this.depth &&
                                 +eleDateValue.setHours(0, 0, 0, 0) === +startDateValue.setHours(0, 0, 0, 0)
                                 && +eleDateValue.setHours(0, 0, 0, 0) >= +startDateValue.setHours(0, 0, 0, 0) &&
                                 +this.startValue >= +this.min
@@ -1665,7 +1708,12 @@ export class DateRangePicker extends CalendarBase {
                                 this.addSelectedAttributes(ele, this.startValue, true);
                             }
                             let endDateValue: Date = new Date(+this.endValue);
-                            if (this.currentView() === 'Month' &&
+                            if (this.currentView() === 'Year') {
+                                eleDateValue = new Date(eleDateValue.getFullYear(), eleDateValue.getMonth() + 1, 0);
+                            } else if (this.currentView() === 'Decade') {
+                                eleDateValue = new Date(eleDateValue.getFullYear(), 11, 31);
+                            }
+                            if (this.currentView() === this.depth &&
                                 !isNullOrUndefined(this.endValue) &&
                                 +eleDateValue.setHours(0, 0, 0, 0) === +endDateValue.setHours(0, 0, 0, 0)
                                 && +eleDateValue.setHours(0, 0, 0, 0) <= +endDateValue.setHours(0, 0, 0, 0) &&
@@ -1749,6 +1797,12 @@ export class DateRangePicker extends CalendarBase {
         let date: Date;
         date = isNullOrUndefined(event) ? this.getIdValue(null, element)
             : this.getIdValue(event, null);
+        let y: number = date.getFullYear();
+        let m: number = date.getMonth();
+        let firstDay: Date = new Date(y, m, 1);
+        let lastDay: Date = new Date(y, m + 1, 0);
+        let firstMonth: Date = new Date(y, 0, 1);
+        let lastMonth: Date = new Date(y, 11, 31);
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             if (!this.isMobile || this.isMobile && !this.endButton.element.classList.contains(ACTIVE)) {
                 this.removeSelection();
@@ -1763,7 +1817,8 @@ export class DateRangePicker extends CalendarBase {
                 date.setMinutes(this.previousStartValue.getMinutes());
                 date.setSeconds(this.previousStartValue.getSeconds());
             }
-            this.startValue = new Date('' + date);
+            this.startValue = (this.depth === 'Month') ? new Date(this.checkValue(date)) :
+                (this.depth === 'Year') ? firstDay : firstMonth;
             this.endValue = null;
             this.setValue();
             addClass([ele], STARTDATE);
@@ -1796,7 +1851,8 @@ export class DateRangePicker extends CalendarBase {
                     date.setMinutes(this.previousEndValue.getMinutes());
                     date.setSeconds(this.previousEndValue.getSeconds());
                 }
-                this.endValue = new Date('' + date);
+                this.endValue = (this.depth === 'Month') ? new Date(this.checkValue(date)) :
+                    (this.depth === 'Year') ? lastDay : lastMonth;
                 this.setValue();
                 let endEle: Element[] = <Element[] & NodeListOf<Element>>this.popupObj.element.querySelectorAll('.' + ENDDATE);
                 if (this.isMobile) {
@@ -1841,7 +1897,8 @@ export class DateRangePicker extends CalendarBase {
                 this.trigger('select', this.rangeArgs(event));
             } else if (+date < +this.startValue) {
                 this.removeClassDisabled();
-                this.startValue = new Date('' + date);
+                this.startValue = (this.depth === 'Month') ? new Date(this.checkValue(date)) :
+                    (this.depth === 'Year') ? firstDay : firstMonth;
                 this.setValue();
                 this.removeSelectedAttributes();
                 removeClass(this.popupObj.element.querySelectorAll('.' + STARTDATE), [STARTDATE, SELECTED]);
@@ -1876,7 +1933,7 @@ export class DateRangePicker extends CalendarBase {
         if (!isNullOrUndefined(this.startValue)) {
             let tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>this.calendarElement.querySelectorAll('.' + CALENDAR + ' td');
             let isStartDate: boolean = false;
-            if (this.currentView() === 'Month') {
+            if (this.currentView() === this.depth) {
                 for (let ele of tdCells) {
                     if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER)) {
                         if (!ele.classList.contains(DISABLED)) {
@@ -1923,12 +1980,20 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private updateMinMaxDays(calendar: HTMLElement): void {
-        if (!isNullOrUndefined(this.startValue) && (isNullOrUndefined(this.endValue) || this.isMobile)) {
+        if ((!isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) ||
+            (this.isMobile && this.endButton.element.classList.contains(ACTIVE))) {
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) || (!isNullOrUndefined(this.maxDays) && this.maxDays > 0)) {
                 let minDate: Date = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.minDays - 1)));
                 let maxDate: Date = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.maxDays - 1)));
                 minDate = (!isNullOrUndefined(this.minDays) && this.minDays > 0) ? minDate : null;
                 maxDate = (!isNullOrUndefined(this.maxDays) && this.maxDays > 0) ? maxDate : null;
+                if (this.currentView() === 'Year') {
+                    minDate = isNullOrUndefined(minDate) ? null : new Date(minDate.getFullYear(), minDate.getMonth(), 0);
+                    maxDate = isNullOrUndefined(maxDate) ? null : new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+                } else if (this.currentView() === 'Decade') {
+                    minDate = isNullOrUndefined(minDate) ? null : new Date(minDate.getFullYear() - 1, 11, 1);
+                    maxDate = isNullOrUndefined(maxDate) ? null : new Date(maxDate.getFullYear(), 0, 1);
+                }
                 let tdCells: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>calendar.querySelectorAll('.' + CALENDAR + ' td');
                 let maxEle: Element;
                 for (let ele of tdCells) {
@@ -2149,13 +2214,13 @@ export class DateRangePicker extends CalendarBase {
     private deviceNavigation(ele?: Element): void {
         this.deviceCalendarEvent();
         this.updateRange([<HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR)]);
-        if ((!isNullOrUndefined(this.endValue) && this.endButton.element.classList.contains(ACTIVE))) {
+        if (this.endButton.element.classList.contains(ACTIVE)) {
             this.updateMinMaxDays(<HTMLElement>this.popupObj.element.querySelector('.' + CALENDAR));
         }
         if (this.endButton.element.classList.contains(ACTIVE)) {
             this.selectableDates();
         }
-        if (this.currentView() === 'Month') {
+        if (this.currentView() === this.depth) {
             this.bindCalendarCellEvents();
         }
         this.removeFocusedDate();
@@ -2168,8 +2233,15 @@ export class DateRangePicker extends CalendarBase {
         }
         this.updateNavIcons();
         this.calendarIconEvent();
-        if ((this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
+        if ((((this.depth === 'Month')
+            && this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
             && this.rightCalendar.querySelector('.e-content').classList.contains('e-month'))
+            || ((this.depth === 'Year')
+                && this.leftCalendar.querySelector('.e-content').classList.contains('e-year')
+                && this.rightCalendar.querySelector('.e-content').classList.contains('e-year'))
+            || ((this.depth === 'Decade')
+                && this.leftCalendar.querySelector('.e-content').classList.contains('e-decade')
+                && this.rightCalendar.querySelector('.e-content').classList.contains('e-decade')))
             || this.isMobile) {
             this.bindCalendarCellEvents();
         }
@@ -2203,6 +2275,38 @@ export class DateRangePicker extends CalendarBase {
             }
         } else {
             result = start.getMonth() === end.getMonth() ? 0 : start.getMonth() + 1 === end.getMonth() ? -1 : 1;
+        }
+        return result;
+    }
+    private compareYears(start: Date, end: Date): number {
+        let result: number;
+        if (start.getFullYear() === end.getFullYear()) {
+            result = -1;
+        } else if (start.getFullYear() > end.getFullYear()) {
+            result = -1;
+        } else {
+            if (start.getFullYear() + 1 === end.getFullYear()) {
+                result = -1;
+            } else {
+                result = 1;
+            }
+        }
+        return result;
+    }
+    private compareDecades(start: Date, end: Date): number {
+        let result: number;
+        if (start.getFullYear() === end.getFullYear()) {
+            result = -1;
+        } else if (start.getFullYear() > end.getFullYear()) {
+            result = -1;
+        } else {
+            let strtFullYr: number = start.getFullYear();
+            let enFullYr: number = end.getFullYear();
+            if ((strtFullYr - (strtFullYr % 10) + 10) === (enFullYr - (enFullYr % 10))) {
+                result = -1;
+            } else {
+                result = 1;
+            }
         }
         return result;
     }
@@ -2350,6 +2454,20 @@ export class DateRangePicker extends CalendarBase {
         }
         return false;
     }
+    private isSameYear(start: Date, end: Date): boolean {
+        if (start.getFullYear() === end.getFullYear()) {
+            return true;
+        }
+        return false;
+    }
+    private isSameDecade(start: Date, end: Date): boolean {
+        let startYear: number = start.getFullYear();
+        let endYear: number = end.getFullYear();
+        if ((startYear - (startYear % 10)) === (endYear - (endYear % 10))) {
+            return true;
+        }
+        return false;
+    }
 
     private startMonthCurrentDate(): void {
         if (this.isSameMonth(this.min, this.max) || +this.currentDate > +this.max || this.isSameMonth(this.currentDate, this.max)) {
@@ -2357,7 +2475,7 @@ export class DateRangePicker extends CalendarBase {
             this.currentDate.setDate(1);
             this.currentDate.setMonth(this.currentDate.getMonth() - 1);
         } else if (this.currentDate < this.min) {
-            this.currentDate = new Date('' + this.min);
+            this.currentDate = new Date(this.checkValue(this.min));
         }
     }
     private selectNextMonth(): void {
@@ -2375,7 +2493,44 @@ export class DateRangePicker extends CalendarBase {
         ) {
             this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
             this.currentDate.setDate(1);
-            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+            let month: number = this.currentDate.getMonth() + 1;
+            this.currentDate.setMonth(month);
+        }
+    }
+    private selectNextYear(): void {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !this.isSameYear(this.endValue, this.currentDate)
+            && !this.isDateDisabled(this.endValue) && !this.isDateDisabled(this.startValue)) {
+            this.currentDate = new Date(+this.endValue);
+        } else {
+            this.currentDate.setMonth(0);
+            let yr: number = this.currentDate.getFullYear() + 1;
+            this.currentDate.setFullYear(yr);
+            return;
+        }
+        if ((!isNullOrUndefined(this.endValue) && +this.endValue > +this.max)
+            || ((!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) && +this.startValue > +this.endValue)
+            || (!isNullOrUndefined(this.startValue) && +this.startValue < +this.min)
+        ) {
+            this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
+            this.currentDate.setMonth(0);
+            this.currentDate.setFullYear(this.currentDate.getFullYear() + 1);
+        }
+    }
+    private selectNextDecade(): void {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !this.isSameDecade(this.endValue, this.currentDate)
+            && !this.isDateDisabled(this.endValue) && !this.isDateDisabled(this.startValue)) {
+            this.currentDate = new Date(+this.endValue);
+        } else {
+            let decyr: number = this.currentDate.getFullYear() + 10;
+            this.currentDate.setFullYear(decyr);
+            return;
+        }
+        if (((!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) && +this.startValue > +this.endValue)
+            || (!isNullOrUndefined(this.endValue) && +this.endValue > +this.max)
+            || (!isNullOrUndefined(this.startValue) && +this.startValue < +this.min)
+        ) {
+            this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
+            this.currentDate.setFullYear(this.currentDate.getFullYear() + 10);
         }
     }
     private selectStartMonth(): void {
@@ -2424,7 +2579,9 @@ export class DateRangePicker extends CalendarBase {
             if (!this.isMobile) {
                 EventHandler.add(this.leftTitle, 'click', this.leftNavTitle, this);
             }
-            this.selectNextMonth();
+            if (this.start === 'Month') { this.selectNextMonth(); }
+            if (this.start === 'Year') { this.selectNextYear(); }
+            if (this.start === 'Decade') { this.selectNextDecade(); }
             this.renderCalendar();
             this.rightCalCurrentDate = new Date(+this.currentDate);
             addClass([this.calendarElement], RIGHTCALENDER);
@@ -2506,57 +2663,93 @@ export class DateRangePicker extends CalendarBase {
     public currentView(): string {
         return super.currentView();
     }
-    protected navigatedEvent(e: MouseEvent): void {
-        let element: HTMLElement;
-        if (this.isMobile && this.currentView() === 'Month') {
-            this.bindCalendarCellEvents();
-            this.deviceNavigation();
-            this.removeFocusedDate();
-        } else if (this.isMobile && (this.currentView() === 'Decade' || this.currentView() === 'Year')) {
-            this.selectableDates();
+    protected getCalendarView(view: string): CalendarView {
+        if (view === 'Year') {
+            return 'Year';
+        } else if (view === 'Decade') {
+            return 'Decade';
         } else {
-            if (!this.isMobile && this.currentView() === 'Month') {
-                element = this.calendarElement.classList.contains('e-left-calendar') ? this.leftCalendar : this.rightCalendar;
-                if (element === this.leftCalendar && ((e && !(<HTMLElement>e.currentTarget).children[0].classList.contains('e-icons'))
-                    || (!isNullOrUndefined(this.controlDown)))) {
-                    this.leftCalCurrentDate = new Date(+this.currentDate);
-                    this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(new Date(+this.currentDate).getMonth() + 1));
-                    this.currentDate = this.leftCalCurrentDate;
-                    this.updateCalendarElement(this.leftCalendar);
-                    this.updateControl(this.leftCalendar);
-                    this.updateCalendarElement(this.rightCalendar);
-                    this.navigateTo('Month', this.rightCalCurrentDate);
-                    this.updateControl(this.rightCalendar);
-                    this.updateNavIcons();
-                    this.calendarIconEvent();
-                    this.calendarIconRipple();
-                } else if (e && !(<HTMLElement>e.currentTarget).children[0].classList.contains('e-icons')
-                    || (!isNullOrUndefined(this.controlDown))) {
-                    this.rightCalCurrentDate = new Date(+this.currentDate);
-                    this.leftCalCurrentDate = new Date(this.currentDate.setMonth(this.currentDate.getMonth() - 1));
-                    this.currentDate = this.rightCalCurrentDate;
-                    this.updateCalendarElement(this.rightCalendar);
-                    this.updateControl(this.rightCalendar);
-                    this.updateCalendarElement(this.leftCalendar);
-                    if (this.startValue && (this.startValue.getMonth() < this.rightCalCurrentDate.getMonth() &&
-                        this.startValue.getFullYear() <= this.rightCalCurrentDate.getFullYear())) {
-                        if (isNullOrUndefined(this.endValue)) {
-                            this.effect = '';
-                            this.navigateTo('Month', new Date(+this.startValue));
-                        } else {
-                            this.navigateTo('Month', this.leftCalCurrentDate);
-                        }
-                    } else {
-                        this.navigateTo('Month', this.leftCalCurrentDate);
-                    }
-                    this.updateControl(this.leftCalendar);
-                    this.updateNavIcons();
-                    this.calendarIconEvent();
-                    this.calendarIconRipple();
+            return 'Month';
+        }
+    }
+    protected navigatedEvent(e: MouseEvent): void {
+        this.trigger('navigated', this.navigatedArgs);
+        if (!isNullOrUndefined(this.popupObj)) {
+            let element: HTMLElement;
+            let view: CalendarView = this.getCalendarView(this.currentView());
+            if (this.isMobile) {
+                if (view === this.depth) {
+                    this.bindCalendarCellEvents();
+                    this.deviceNavigation();
+                    this.removeFocusedDate();
+                    this.checkMinMaxDays();
+                } else {
+                    this.selectableDates();
                 }
-            } else if (!this.isMobile && (this.currentView() === 'Decade' || this.currentView() === 'Year')) {
-                this.updateNavIcons();
-                this.calendarIconEvent();
+            } else {
+                if (!this.isMobile && view === this.depth) {
+                    element = this.calendarElement.classList.contains('e-left-calendar') ? this.leftCalendar : this.rightCalendar;
+                    if (element === this.leftCalendar && ((e && !(<HTMLElement>e.currentTarget).children[0].classList.contains('e-icons'))
+                        || (!isNullOrUndefined(this.controlDown)))) {
+                        this.leftCalCurrentDate = new Date(+this.currentDate);
+                        if (view === 'Year') {
+                            let year: number = this.currentDate.getFullYear() + 1;
+                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(year));
+                        } else if (view === 'Decade') {
+                            let decYear: number = this.currentDate.getFullYear() + 10;
+                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decYear));
+                        } else {
+                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() + 1));
+                        }
+                        this.currentDate = this.leftCalCurrentDate;
+                        this.updateCalendarElement(this.leftCalendar);
+                        this.updateControl(this.leftCalendar);
+                        this.updateCalendarElement(this.rightCalendar);
+                        super.navigateTo.call(this, view, this.rightCalCurrentDate);
+                        this.updateControl(this.rightCalendar);
+                        this.updateNavIcons();
+                        this.calendarIconEvent();
+                        this.calendarIconRipple();
+                        this.controlDown = null;
+                    } else if (e && !(<HTMLElement>e.currentTarget).children[0].classList.contains('e-icons')
+                        || (!isNullOrUndefined(this.controlDown))) {
+                        this.rightCalCurrentDate = new Date(+this.currentDate);
+                        if (view === 'Year') {
+                            let yr: number = this.currentDate.getFullYear() - 1;
+                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(yr));
+                        } else if (view === 'Decade') {
+                            let decyr: number = this.currentDate.getFullYear() - 10;
+                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decyr));
+                        } else {
+                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() - 1));
+                        }
+                        this.currentDate = this.rightCalCurrentDate;
+                        this.updateCalendarElement(this.rightCalendar);
+                        this.updateControl(this.rightCalendar);
+                        this.updateCalendarElement(this.leftCalendar);
+                        if (this.startValue && isNullOrUndefined(this.endValue)) {
+                            if (view === 'Month' && this.startValue.getMonth() < this.rightCalCurrentDate.getMonth() &&
+                                this.startValue.getFullYear() <= this.rightCalCurrentDate.getFullYear()) {
+                                    super.navigateTo.call(this, view, new Date(+this.startValue));
+                            } else if (view === 'Year' && this.startValue.getFullYear() < this.rightCalCurrentDate.getFullYear()) {
+                                super.navigateTo.call(this, view, new Date(+this.startValue));
+                            } else {
+                                super.navigateTo.call(this, view, this.leftCalCurrentDate);
+                            }
+                        } else {
+                            super.navigateTo.call(this, view, this.leftCalCurrentDate);
+                        }
+                        this.updateControl(this.leftCalendar);
+                        this.updateNavIcons();
+                        this.calendarIconEvent();
+                        this.calendarIconRipple();
+                        this.controlDown = null;
+                    }
+                    this.checkMinMaxDays();
+                } else {
+                    this.updateNavIcons();
+                    this.calendarIconEvent();
+                }
             }
         }
     }
@@ -3242,13 +3435,122 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateInput(): void {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let formatingOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-            let startDate: string = this.globalize.formatDate(this.startValue, formatingOptions);
-            let endDate: string = this.globalize.formatDate(this.endValue, formatingOptions);
+            let formatOption: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+            let startDate: string = this.globalize.formatDate(this.startValue, formatOption);
+            let endDate: string = this.globalize.formatDate(this.endValue, formatOption);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
         }
+        if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
+            Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
+    }
+
+    protected checkInvalidRange(value: String | DateRange | Date[]): void {
+        if (!isNullOrUndefined(value)) {
+            let invalid: boolean = false;
+            let startinvalue: String | Date;
+            let endinvalue: String | Date;
+            let startString: string = null;
+            let endString: string = null;
+            let valueString: string = null;
+            let startObject: boolean = false;
+            let endObject: boolean = false;
+            let invalidobject: boolean = false;
+            if (typeof (value) === 'string') {
+                let range: string[] = (<string>value).split(' ' + this.separator + ' ');
+                if (range.length === 2) {
+                    startString = range[0];
+                    endString = range[1];
+                } else {
+                    invalid = true;
+                    valueString = value;
+                }
+            } else {
+                if ((<Date[]>value).length > 0) {
+                    startinvalue = (<Date[]>value)[0];
+                    endinvalue = (<Date[]>value)[1];
+                } else {
+                    startinvalue = (<DateRange>value).start;
+                    endinvalue = (<DateRange>value).end;
+                }
+                if (!(startinvalue instanceof Date) && typeof (startinvalue) !== 'object') {
+                    startString = this.getstringvalue(startinvalue);
+                } else if (startinvalue instanceof Date) {
+                    startObject = true;
+                } else if (!isNullOrUndefined(startinvalue)) {
+                    invalidobject = true;
+                }
+                if (!(endinvalue instanceof Date) && typeof (endinvalue) !== 'object') {
+                    endString = this.getstringvalue(endinvalue);
+                } else if (endinvalue instanceof Date) {
+                    endObject = true;
+                } else if (!isNullOrUndefined(endinvalue)) {
+                    invalidobject = true;
+                }
+            }
+            if ((isNullOrUndefined(startString) && !startObject && !isNullOrUndefined(endString)) ||
+                (!isNullOrUndefined(startString) && !endObject && isNullOrUndefined(endString))) {
+                invalid = true;
+            }
+            if (invalidobject) {
+                startString = endString = valueString = null;
+                invalid = true;
+            }
+            if (startString) { invalid = invalid || this.checkInvalidValue(startString); }
+            if (endString) { invalid = invalid || this.checkInvalidValue(endString); }
+            if (invalid) {
+                if (startObject && !invalidobject) { startString = (<Date>startinvalue).toLocaleDateString(); }
+                if (endObject && !invalidobject) { endString = (<Date>endinvalue).toLocaleDateString(); }
+                if (!isNullOrUndefined(startString) && !isNullOrUndefined(endString)) {
+                    valueString = startString + ' ' + this.separator + ' ' + endString;
+                } else if (!isNullOrUndefined(startString)) {
+                    valueString = startString;
+                } else if (!isNullOrUndefined(endString)) {
+                    valueString = endString;
+                }
+                this.invalidValueString = valueString;
+                this.setProperties({ value: null }, true);
+                this.setProperties({ startValue: null }, true);
+                this.setProperties({ endValue: null }, true);
+                this.startDate = null;
+                this.endDate = null;
+            }
+        }
+    }
+    private getstringvalue(value: number | string): string {
+        let stringValue: string = null;
+        if (!isNullOrUndefined(value) && (typeof value === 'number')) {
+            stringValue = (value).toString();
+        } else if (!isNullOrUndefined(value) && (typeof value === 'string')) {
+            stringValue = '' + value;
+        }
+        return stringValue;
+    }
+    private checkInvalidValue(value: string): boolean {
+        let valueString: string = value;
+        let invalid: boolean = false;
+        let formatOpt: object = null;
+        formatOpt = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        if (typeof valueString !== 'string') {
+            invalid = true;
+        } else {
+            let globalize: Internationalization = new Internationalization(this.locale);
+            if (!this.checkDateValue(globalize.parseDate(valueString, formatOpt))) {
+                let extISOStr: RegExp = null;
+                let basISOString: RegExp = null;
+                // tslint:disable-next-line
+                extISOStr = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                // tslint:disable-next-line
+                basISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                if ((!extISOStr.test(valueString) && !basISOString.test(valueString))
+                    || (/^[a-zA-Z0-9- ]*$/).test(valueString) || isNaN(+new Date(this.checkValue(valueString)))) {
+                    invalid = true;
+                }
+            }
+        }
+        return invalid;
     }
     private isDateDisabled(date: Date): boolean {
         if (isNullOrUndefined(date)) {
@@ -3361,8 +3663,66 @@ export class DateRangePicker extends CalendarBase {
      * @returns void
      * @hidden
      */
-    public navigateTo(view: CalendarView, value: Date): void {
-        super.navigateTo(view, value);
+    public navigateTo(view: CalendarView, date: Date): void {
+        if (this.isPopupOpen()) {
+            if (view.toLowerCase() === 'month') {
+                view = 'Month';
+            } else if (view.toLowerCase() === 'year') {
+                view = 'Year';
+            } else if (view.toLowerCase() === 'decade') {
+                view = 'Decade';
+            } else {
+                return;
+            }
+            if (this.getViewNumber(view) < this.getViewNumber(this.depth)) {
+                view = this.depth;
+            }
+            if (this.isMobile) {
+                super.navigateTo.call(this, view, date);
+            } else {
+                if (date < this.min) {
+                    date = new Date(+this.min);
+                } else if (date >= this.max) {
+                    date = new Date(+this.max);
+                }
+                if (view === 'Month' && this.isSameMonth(date, this.max)) {
+                    date = new Date(this.max.getFullYear(), this.max.getMonth() - 1, this.min.getDate());
+                } else if (view === 'Year' && this.isSameYear(date, this.max)) {
+                    date = new Date((this.max.getFullYear() - 1), this.max.getMonth(), this.max.getDate());
+                } else if (view === 'Decade' && this.isSameDecade(date, this.max)) {
+                    date = new Date((this.max.getFullYear() - 10), this.max.getMonth(), this.max.getDate());
+                }
+                this.leftCalCurrentDate = date;
+                this.navigate(this.leftCalendar, this.leftCalCurrentDate, view);
+                if (view === 'Month') {
+                    date = new Date(this.currentDate.setMonth(this.currentDate.getMonth() + 1));
+                } else if (view === 'Year') {
+                    date = new Date(this.currentDate.setFullYear(this.currentDate.getFullYear() + 1));
+                } else {
+                    date = new Date(this.currentDate.setFullYear(this.currentDate.getFullYear() + 10));
+                }
+                this.rightCalCurrentDate = date;
+                this.navigate(this.rightCalendar, this.rightCalCurrentDate, view);
+                this.leftKeyboardModule = this.rightKeyboardModule = null;
+                this.updateNavIcons();
+            }
+            if (this.currentView() === this.depth) { this.bindCalendarCellEvents(); }
+            this.removeFocusedDate();
+            this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
+        }
+    }
+
+    private navigate(calendar: HTMLElement, date: Date, view: CalendarView): void {
+        this.calendarElement = calendar;
+        this.table = calendar.querySelector('table');
+        this.tableBodyElement = calendar.querySelector('tbody');
+        this.headerTitleElement = calendar.querySelector('.e-title');
+        this.tableHeadElement = <HTMLElement>calendar.querySelector('thead');
+        this.contentElement = calendar.querySelector('.e-content');
+        this.previousIcon = calendar.querySelector('.e-prev');
+        this.nextIcon = calendar.querySelector('.e-next');
+        this.effect = ZOOMIN;
+        super.navigateTo.call(this, view, date);
     }
 
     /**
@@ -3409,7 +3769,7 @@ export class DateRangePicker extends CalendarBase {
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             Input.removeAttributes(<{ [key: string]: string }>ariaAttrs, this.inputElement);
             (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) ?
-            this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
+                this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
             this.ensureInputAttribute();
             this.inputElement.classList.remove('e-input');
             if (!isNullOrUndefined(this.inputWrapper)) {
@@ -3527,6 +3887,14 @@ export class DateRangePicker extends CalendarBase {
                     if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
                         this.setScrollPosition();
                     }
+                    this.checkMinMaxDays();
+                    if ((this.isMobile) && (!isNullOrUndefined(this.startDate)) && (isNullOrUndefined(this.endDate))) {
+                        this.endButton.element.classList.add(ACTIVE);
+                        this.startButton.element.classList.remove(ACTIVE);
+                        this.endButton.element.removeAttribute('disabled');
+                        this.selectableDates();
+                    }
+
                 }
             }
         }
@@ -3542,15 +3910,15 @@ export class DateRangePicker extends CalendarBase {
                 this.clearRange();
             } else {
                 if (!isNullOrUndefined(this.previousStartValue)) {
-                    this.startValue = new Date('' + this.previousStartValue);
+                    this.startValue = new Date(this.checkValue(this.previousStartValue));
                     this.setValue();
-                    this.currentDate = new Date('' + this.startValue);
+                    this.currentDate = new Date(this.checkValue(this.startValue));
                 } else {
                     this.startValue = null;
                     this.setValue();
                 }
                 if (!isNullOrUndefined(this.previousEndValue)) {
-                    this.endValue = new Date('' + this.previousEndValue);
+                    this.endValue = new Date(this.checkValue(this.previousEndValue));
                     this.setValue();
                 } else {
                     this.endValue = null;
@@ -3620,6 +3988,7 @@ export class DateRangePicker extends CalendarBase {
         this.changeTrigger();
     }
     private refreshChange(): void {
+        this.checkView();
         this.refreshControl();
         this.changeTrigger();
     }
@@ -3721,8 +4090,8 @@ export class DateRangePicker extends CalendarBase {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'format':
-                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkFormat();
                     this.updateInput();
                     this.changeTrigger();
                     break;
@@ -3742,7 +4111,7 @@ export class DateRangePicker extends CalendarBase {
                         newProp.startDate = this.globalize.parseDate(<string>newProp.startDate, format);
                     }
                     if (+this.initStartDate !== +newProp.startDate) {
-                        this.startValue = this.checkDateValue(new Date('' + newProp.startDate));
+                        this.startValue = this.checkDateValue(new Date(this.checkValue(newProp.startDate)));
                         this.setDate();
                         this.setValue();
                     }
@@ -3752,39 +4121,52 @@ export class DateRangePicker extends CalendarBase {
                         newProp.endDate = this.globalize.parseDate(<string>newProp.endDate, format);
                     }
                     if (+this.initEndDate !== +newProp.endDate) {
-                        this.endValue = this.checkDateValue(new Date('' + newProp.endDate));
+                        this.endValue = this.checkDateValue(new Date(this.checkValue(newProp.endDate)));
                         this.setDate();
                         this.setValue();
                     }
                     break;
                 case 'value':
-                    if ((!isNullOrUndefined(newProp.value) && (<Date[]>newProp.value).length > 0)
-                        || !isNullOrUndefined(newProp.value) && (<DateRange>newProp.value).start) {
-                        this.valueType = newProp.value;
-                        if ((<Date[]>newProp.value)[0] === null || ((<DateRange>newProp.value).start === null)) {
-                            if ((<Date[]>newProp.value).length === 1 || ((<DateRange>newProp.value).start)) {
-                                this.clearModelvalue(newProp, oldProp);
-                            } else if ((<Date[]>newProp.value)[1] === null ||
-                                ((<DateRange>newProp.value).start === null)) { this.clearModelvalue(newProp, oldProp); }
-                        } else if ((+this.initStartDate !== +(<Date[]>newProp.value)[0]
-                            || +this.initEndDate !== +(<Date[]>newProp.value)[1]) ||
-                            (+this.initStartDate !== +((<DateRange>newProp.value).start
-                                || +this.initEndDate !== +(<DateRange>newProp.value).start))) {
-                            if ((<Date[]>newProp.value).length === 1) {
-                                this.modelValue = <Date[]>newProp.value;
-                            } else if ((<DateRange>newProp.value).start) {
-                                this.modelValue = <DateRange>newProp.value;
-                            }
+                    this.invalidValueString = null;
+                    this.checkInvalidRange(newProp.value);
+                    if (typeof (newProp.value) === 'string') {
+                        if (!this.invalidValueString) {
+                            let rangeArray: string[] = (<string>newProp.value).split(' ' + this.separator + ' ');
+                            this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
                             this.updateValue();
                             this.setDate();
+                        } else {
+                            this.clearModelvalue(newProp, oldProp);
                         }
                     } else {
-                        if (isNullOrUndefined(this.value)
-                            || (<DateRange>newProp.value).start == null) {
+                        if ((!isNullOrUndefined(newProp.value) && (<Date[]>newProp.value).length > 0)
+                            || !isNullOrUndefined(newProp.value) && (<DateRange>newProp.value).start) {
                             this.valueType = newProp.value;
-                            this.startValue = null;
-                            this.endValue = null;
-                            this.clearModelvalue(newProp, oldProp);
+                            if ((<Date[]>newProp.value)[0] === null || ((<DateRange>newProp.value).start === null)) {
+                                if ((<Date[]>newProp.value).length === 1 || ((<DateRange>newProp.value).start)) {
+                                    this.clearModelvalue(newProp, oldProp);
+                                } else if ((<Date[]>newProp.value)[1] === null ||
+                                    ((<DateRange>newProp.value).start === null)) { this.clearModelvalue(newProp, oldProp); }
+                            } else if ((+this.initStartDate !== +(<Date[]>newProp.value)[0]
+                                || +this.initEndDate !== +(<Date[]>newProp.value)[1]) ||
+                                (+this.initStartDate !== +((<DateRange>newProp.value).start
+                                    || +this.initEndDate !== +(<DateRange>newProp.value).start))) {
+                                if ((<Date[]>newProp.value).length === 1) {
+                                    this.modelValue = <Date[]>newProp.value;
+                                } else if ((<DateRange>newProp.value).start) {
+                                    this.modelValue = <DateRange>newProp.value;
+                                }
+                                this.updateValue();
+                                this.setDate();
+                            }
+                        } else {
+                            if (isNullOrUndefined(this.value)
+                                || (<DateRange>newProp.value).start == null) {
+                                this.valueType = newProp.value;
+                                this.startValue = null;
+                                this.endValue = null;
+                                this.clearModelvalue(newProp, oldProp);
+                            }
                         }
                     }
                     break;
@@ -3797,17 +4179,18 @@ export class DateRangePicker extends CalendarBase {
                     this.refreshChange();
                     break;
                 case 'min':
-                    this.setProperties({ min: this.checkDateValue(new Date('' + newProp.min)) }, true);
+                    this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true);
                     this.previousEleValue = this.inputElement.value;
                     this.enableInput();
                     this.refreshChange();
                     break;
                 case 'max':
-                    this.setProperties({ max: this.checkDateValue(new Date('' + newProp.max)) }, true);
+                    this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
                     this.enableInput();
                     this.refreshChange();
                     break;
                 case 'strictMode':
+                    this.invalidValueString = null;
                     this.setProperties({ strictMode: newProp.strictMode }, true);
                     this.refreshChange();
                     break;
@@ -3819,6 +4202,14 @@ export class DateRangePicker extends CalendarBase {
                     this.floatLabelType = newProp.floatLabelType;
                     Input.removeFloating(this.inputWrapper);
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                    break;
+                case 'start':
+                    this.setProperties({ start: newProp.start }, true);
+                    this.refreshChange();
+                    break;
+                case 'depth':
+                    this.setProperties({ depth: newProp.depth }, true);
+                    this.refreshChange();
                     break;
             }
         }

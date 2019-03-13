@@ -2,6 +2,7 @@
  * Maps Themes doc
  */
 import { IFontMapping, MapsTheme } from '../index';
+import { IThemeStyle } from './interface';
 
 /**
  * Specifies Maps Themes
@@ -190,7 +191,7 @@ export namespace HighContrastTheme {
     export let tooltipLabelFont: IFontMapping = {
         size: '12px',
         fontWeight: 'Regular',
-        color: '#FFFFFF',
+        color: '#000000',
         fontStyle: 'Regular',
         fontFamily: 'Roboto'
     };
@@ -265,4 +266,57 @@ export namespace DarkTheme {
         fontStyle: 'Medium',
     };
 
+}
+
+export function getThemeStyle(theme: MapsTheme): IThemeStyle {
+    let style: IThemeStyle;
+    switch (theme) {
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+        case 'HighContrast':
+        case 'Highcontrast':
+            style = {
+                backgroundColor: '#000000',
+                areaBackgroundColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                subTitleFontColor: '#FFFFFF',
+                legendTitleFontColor: '#FFFFFF',
+                legendTextColor: '#FFFFFF',
+                dataLabelFontColor: '#000000',
+                tooltipFontColor: '#ffffff',
+                tooltipFillColor: '#363F4C',
+                zoomFillColor: '#FFFFFF'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                backgroundColor: '#FFFFFF',
+                areaBackgroundColor: '#FFFFFF',
+                titleFontColor: '#212529',
+                subTitleFontColor: '#212529',
+                legendTitleFontColor: '#212529',
+                legendTextColor: '#212529',
+                dataLabelFontColor: '#212529',
+                tooltipFontColor: '#FFFFFF',
+                tooltipFillColor: '#000000',
+                zoomFillColor: '#FFFFFF'
+            };
+            break;
+        default:
+            style = {
+                backgroundColor: '#FFFFFF',
+                areaBackgroundColor: '#FFFFFF',
+                titleFontColor: '#424242',
+                subTitleFontColor: '#424242',
+                legendTitleFontColor: '#757575',
+                legendTextColor: '#757575',
+                dataLabelFontColor: '#000000',
+                tooltipFontColor: '#ffffff',
+                tooltipFillColor: '#000000',
+                zoomFillColor: '#737373'
+            };
+            break;
+    }
+    return style;
 }

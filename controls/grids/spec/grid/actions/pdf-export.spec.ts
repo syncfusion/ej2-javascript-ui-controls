@@ -16,6 +16,7 @@ import { createGrid, destroy} from '../base/specutil.spec';
 import { HierarchyGridPrintMode } from '../../../src/grid/base/enum';
 import { PdfDocument, PdfGrid, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
 import { DataManager } from '@syncfusion/ej2-data';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Page, Group, Selection, Toolbar, PdfExport, DetailRow, ForeignKey);
 
@@ -24,6 +25,11 @@ describe('pdf Export =>', () => {
     describe('Single Grid Pdf Export =>', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: employeeData,
@@ -311,6 +317,15 @@ describe('pdf Export =>', () => {
                 done();
             });
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
     
         afterAll(() => {
             destroy(gridObj);

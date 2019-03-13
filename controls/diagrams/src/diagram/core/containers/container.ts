@@ -1,10 +1,11 @@
 import { DiagramElement } from '../elements/diagram-element';
+import { ElementAction } from '../../enum/enum';
 import { Thickness } from '../appearance';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
 import { rotatePoint, getOffset } from '../../utility/base-util';
-import { ElementAction } from '../../enum/enum';
+
 /**
  * Container module is used to group related objects
  */
@@ -148,6 +149,7 @@ export class Container extends DiagramElement {
     }
 
     //protected methods
+
 
     /**
      * Stretches the child elements based on the size of the container

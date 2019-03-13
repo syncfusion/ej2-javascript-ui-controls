@@ -278,7 +278,7 @@ export let tools: { [key: string]: IToolsItems } = {
         'subCommand': 'OpenImageLink'
     },
     'editimagelink': {
-        'id': 'EditIamgeLink',
+        'id': 'EditImageLink',
         'icon': 'e-edit-link',
         'tooltip': 'Edit Link',
         'command': 'Images',

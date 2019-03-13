@@ -69,11 +69,11 @@
         .e-scroll-nav {
 
           .e-nav-up-arrow::before {
-            content: '\ebbb';
+            content: '\e84f';
           }
 
           .e-nav-down-arrow::before {
-            content: '\ebbd';
+            content: '\e85e';
           }
         }
 
@@ -84,7 +84,7 @@
           }
 
           &::after {
-            content: '\ebb8';
+            content: '\e85e';
           }
         }
 
@@ -95,7 +95,7 @@
           }
 
           &::after {
-            content: '\ebb8';
+            content: '\e84f';
           }
         }
       }

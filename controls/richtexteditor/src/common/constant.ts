@@ -47,3 +47,13 @@ export const MODEL_CHANGED_PLUGIN: string = 'model_changed_plugin';
  */
 export const MODEL_CHANGED: string = 'model_changed';
 
+/* PasteCleanup plugin for MSWord content
+ * @hidden
+ */
+export const MS_WORD_CLEANUP_PLUGIN: string = 'ms_word_cleanup_plugin';
+
+/* PasteCleanup for MSWord content
+ * @hidden
+ */
+export const MS_WORD_CLEANUP: string = 'ms_word_cleanup';
+

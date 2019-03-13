@@ -25,8 +25,11 @@ import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import { data, employeeData, filterData, customerData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import * as events from '../../../src/grid/base/constant';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Freeze);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, DetailRow, Freeze, VirtualScroll);
 
 describe('Inline Editing module', () => {
 
@@ -44,6 +47,11 @@ describe('Inline Editing module', () => {
         let actionBegin: () => void;
         let actionComplete: () => void;
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: dataSource(),
@@ -117,6 +125,11 @@ describe('Inline Editing module', () => {
             //toolbar status check
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
             gridObj.clearSelection();
+            let formFunc: any = (args?: any): void => {
+                expect(args.name).toBe('edit-form');
+                gridObj.off(events.beforeStartEdit, formFunc);
+            };
+            gridObj.on(events.beforeStartEdit, formFunc, this);
             gridObj.selectRow(0, true);
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
         });
@@ -1877,11 +1890,84 @@ describe('Inline Editing module', () => {
         it('toolbar staus check after 1 record added', () => {
             expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
         });
     });
+    describe('EJ2-22823 Add and Delete operations current view check in virtualization => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', showConfirmDialog: false, showDeleteConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: false,
+                    enableVirtualization: true,
+                    height: 300,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'EmployeeID', type: 'number', allowEditing: false },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity' },
+                        { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
+                        { field: 'ShipName', isIdentity: true },
+                        { field: 'ShipCountry', type: 'string', editType: 'dropdownedit' },
+                        { field: 'ShipRegion', type: 'string' },
+                        { field: 'ShipAddress', allowFiltering: true, visible: false },
+                        { field: 'OrderDate', format: { skeleton: 'yMd', type: 'date' }, type: 'date', editType: 'datepickeredit' }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Delete operation in current view check', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType == 'delete') {
+                    expect((gridObj.getCurrentViewRecords()[0] as any).OrderID).toBe(10249);
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
+        });
+
+        it('Add operation in current view check', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType == 'add') {
+                    args.form.querySelector('td input').value = 10001;
+                        gridObj.endEdit();
+                        gridObj.actionComplete = (args: any) => {
+                            if (args.requestType == 'save') {
+                                expect((gridObj.getCurrentViewRecords()[0] as any).OrderID).toBe(10001);
+                                done();
+                            }
+                        };
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });   
+
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+        });
+    });
+
 
 });

@@ -1,3 +1,4 @@
+import { Browser } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
@@ -34,6 +35,7 @@ export class Magnification {
     private pageRerenderCount: number = 0;
     private imageObjects: HTMLImageElement[] = [];
     private topValue: number = 0;
+    private isTapToFitZoom: boolean = false;
     /**
      * @private
      */
@@ -81,7 +83,7 @@ export class Magnification {
 
     /**
      * Zoom the PDF document to the given zoom value
-     * @param  {number} zoomValue
+     * @param  {number} zoomValue - Specifies the Zoom Value for magnify the PDF document
      * @returns void
      */
     public zoomTo(zoomValue: number): void {
@@ -160,14 +162,18 @@ export class Magnification {
 
     /**
      * Scales the page to fit the page in the container in the control.
-     * @param  {number} zoomValue
+     * @param  {number} zoomValue - Defines the Zoom Value for fit the page in the Container
      * @returns void
      */
     public fitToPage(): void {
         let zoomValue: number = this.calculateFitZoomFactor('fitToPage');
         this.isAutoZoom = false;
         this.onZoomChanged(zoomValue);
-        this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+        if (Browser.isDevice) {
+            this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+        } else {
+            this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+        }
         // tslint:disable-next-line:max-line-length
         this.pdfViewerBase.viewerContainer.scrollTop = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top * this.zoomFactor;
     }
@@ -275,15 +281,26 @@ export class Magnification {
      * Executes when the zoom or pinch operation is performed
      */
     private onZoomChanged(zoomValue: number): void {
+        if (this.pdfViewer.annotationModule) {
+            this.pdfViewer.annotationModule.closePopupMenu();
+        }
         this.previousZoomFactor = this.zoomFactor;
         this.zoomLevel = this.getZoomLevel(zoomValue);
         this.zoomFactor = this.getZoomFactor(zoomValue);
-        this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+        if (Browser.isDevice) {
+            this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+        } else {
+            this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+        }
         if (this.pdfViewerBase.pageCount > 0) {
             if (this.previousZoomFactor !== this.zoomFactor) {
                 if (!this.isPinchZoomed) {
                     this.magnifyPages();
                 } else {
+                    if (Browser.isDevice) {
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewerBase.mobilePageNoContainer.style.left = (this.pdfViewer.element.clientWidth / 2) - (parseFloat(this.pdfViewerBase.mobilePageNoContainer.style.width) / 2) + 'px';
+                    }
                     this.responsivePages();
                 }
             }
@@ -294,6 +311,11 @@ export class Magnification {
         }
         if (this.pdfViewer.toolbarModule) {
             this.pdfViewer.toolbarModule.updateZoomPercentage(this.zoomFactor);
+        }
+        if (Browser.isDevice && this.isPinchZoomed) {
+            // tslint:disable-next-line:radix
+            let zoomPercentage: string = parseInt((this.zoomFactor * 100).toString()) + '%';
+            this.pdfViewerBase.navigationPane.createTooltipMobile(zoomPercentage);
         }
     }
 
@@ -378,6 +400,9 @@ export class Magnification {
             } else {
                 oldCanvases[i].id = this.pdfViewer.element.id + '_pageCanvas_' + pageNumber;
             }
+            if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                this.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotationsPinch(i);
+            }
         }
         this.isRerenderCanvasCreated = false;
     }
@@ -432,27 +457,31 @@ export class Magnification {
         this.pdfViewerBase.pageContainer.style.height = this.topValue + this.pdfViewerBase.pageSize[this.pdfViewerBase.pageSize.length - 1].height * this.zoomFactor + 'px';
         this.resizeCanvas(this.pdfViewerBase.currentPageNumber);
         if (this.isPinchZoomed) {
-            let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
-            let currentPageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
-            if (currentPageCanvas) {
-                let currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
-                // update scroll top for the viewer container based on pinch zoom factor
-                let previousPageTop: number = (currentPageBounds.top) * this.previousZoomFactor;
-                let previousY: number = scrollValue + this.touchCenterY;
-                // tslint:disable-next-line:max-line-length
-                let currentY: number = (currentPageBounds.top) * this.zoomFactor + ((previousY - previousPageTop) < 0 ? previousY - previousPageTop : (previousY -
-                    // tslint:disable-next-line:max-line-length
-                    previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
-                this.pdfViewerBase.viewerContainer.scrollTop = currentY - this.touchCenterY;
-                // update scroll left for the viewer container based on pinch zoom factor
-                let prevValue: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
-                let scaleCorrectionFactor: number = this.zoomFactor / prevValue - 1;
-                let scrollX: number = this.touchCenterX - currentPageBounds.left;
-                this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
-            }
+            this.calculateScrollValues(scrollValue);
         }
         this.pdfViewerBase.renderedPagesList = [];
         this.pdfViewerBase.pinchZoomStorage = [];
+    }
+
+    private calculateScrollValues(scrollValue: number): void {
+        let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
+        let currentPageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
+        if (currentPageCanvas) {
+            let currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
+            // update scroll top for the viewer container based on pinch zoom factor
+            let previousPageTop: number = (currentPageBounds.top) * this.previousZoomFactor;
+            let previousY: number = scrollValue + this.touchCenterY;
+            // tslint:disable-next-line:max-line-length
+            let currentY: number = (currentPageBounds.top) * this.zoomFactor + ((previousY - previousPageTop) < 0 ? previousY - previousPageTop : (previousY -
+                // tslint:disable-next-line:max-line-length
+                previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
+            this.pdfViewerBase.viewerContainer.scrollTop = currentY - this.touchCenterY;
+            // update scroll left for the viewer container based on pinch zoom factor
+            let prevValue: number = (currentPageBounds.width * this.previousZoomFactor) / currentPageBounds.width;
+            let scaleCorrectionFactor: number = this.zoomFactor / prevValue - 1;
+            let scrollX: number = this.touchCenterX - currentPageBounds.left;
+            this.pdfViewerBase.viewerContainer.scrollLeft += scrollX * scaleCorrectionFactor;
+        }
     }
 
     private rerenderOnScroll(): void {
@@ -467,6 +496,14 @@ export class Magnification {
                 let textLayers: NodeList = document.querySelectorAll('div[id*="_textLayer_"]');
                 for (let i: number = 0; i < textLayers.length; i++) {
                     (textLayers[i] as HTMLElement).style.display = 'block';
+                }
+            }
+            if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                let annotationLayers: NodeList = document.querySelectorAll('canvas[id*="_annotationCanvas_"]');
+                for (let j: number = 0; j < annotationLayers.length; j++) {
+                    let pageNumber: string = (annotationLayers[j] as HTMLElement).id.split('_annotationCanvas_')[1];
+                    // tslint:disable-next-line:radix
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotationsPinch(parseInt(pageNumber));
                 }
             }
             this.pdfViewerBase.pageViewScrollChanged(this.reRenderPageNumber);
@@ -515,6 +552,9 @@ export class Magnification {
             if (oldCanvas) {
                 oldCanvas.parentNode.removeChild(oldCanvas);
             }
+            if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                this.pdfViewer.annotationModule.textMarkupAnnotationModule.rerenderAnnotations(i);
+            }
             if (pageDiv) {
                 pageDiv.style.visibility = 'visible';
             }
@@ -542,9 +582,12 @@ export class Magnification {
             let canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
             if (canvas) {
                 canvas.id = this.pdfViewer.element.id + '_oldCanvas_' + i;
+                if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                    let annotationCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + i);
+                    annotationCanvas.id = this.pdfViewer.element.id + '_old_annotationCanvas_' + i;
+                }
                 // tslint:disable-next-line:max-line-length
-                let newCanvas: HTMLElement = this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i);
-                newCanvas.style.display = 'none';
+                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), this.pdfViewerBase.pageSize[i].width * this.zoomFactor, this.pdfViewerBase.pageSize[i].height * this.zoomFactor, i, 'none');
             }
         }
         this.isRerenderCanvasCreated = true;
@@ -603,11 +646,18 @@ export class Magnification {
                         pageDiv.style.height = height + 'px';
                         // tslint:disable-next-line:max-line-length
                         pageDiv.style.top = ((this.pdfViewerBase.pageSize[i].top) * this.zoomFactor) + 'px';
-                        pageDiv.style.left = this.pdfViewerBase.updateLeftPosition(i) + 'px';
+                        if (this.pdfViewer.enableRtl) {
+                            pageDiv.style.right = this.pdfViewerBase.updateLeftPosition(i) + 'px';
+                        } else {
+                            pageDiv.style.left = this.pdfViewerBase.updateLeftPosition(i) + 'px';
+                        }
                         let canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
                         if (canvas) {
                             canvas.style.width = width + 'px';
                             canvas.style.height = height + 'px';
+                            if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                                this.pdfViewer.annotationModule.textMarkupAnnotationModule.resizeAnnotations(width, height, i);
+                            }
                         }
                         if (textLayer) {
                             textLayer.style.width = width + 'px';
@@ -751,6 +801,25 @@ export class Magnification {
                 this.pdfViewerBase.getElement('_pageDiv_' + (currentPageIndex + 1)).style.visibility = 'hidden';
             }
         }
+    }
+
+    /**
+     * @private
+     */
+    public onDoubleTapMagnification(): void {
+        this.pdfViewer.toolbarModule.showToolbar(false);
+        let scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
+        if (!this.isTapToFitZoom) {
+            if (this.zoomFactor < 2) {
+                this.zoomTo(200);
+            } else {
+                this.fitToWidth();
+            }
+        } else {
+            this.zoomTo(this.previousZoomFactor * 100);
+        }
+        this.calculateScrollValues(scrollValue);
+        this.isTapToFitZoom = !this.isTapToFitZoom;
     }
 
     private downwardScrollFitPage(currentPageIndex: number): void {

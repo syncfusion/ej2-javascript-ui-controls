@@ -1,7 +1,7 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { Aggregate } from '../../src/treegrid/actions/summary';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { projectData, sampleData } from '../base/datasource.spec';
+import { projectData, sampleData, allysonData } from '../base/datasource.spec';
 import { Page } from '../../src/treegrid/actions/page';
 import { RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from '../../src';
 import { Filter } from '../../src/treegrid/actions/filter';
@@ -358,6 +358,47 @@ describe('TreeGrid Pager module', () => {
       destroy(gridObj);
     });
   });
+  describe('EJ2-22983: DataSource is not proper whose parentIDMapping record is not defined', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: allysonData,
+          idMapping: 'AreaId',
+          allowPaging: true,
+          parentIdMapping: 'AreaPaiId',
+          treeColumnIndex: 1,
+          columns: ['AreaPaiId', 'AreaId', 'Nome']
+        },
+        done
+      );
+    });
+
+    it('Rendering of unordered list', () => {
+      expect(gridObj.getRows().length === gridObj.getCurrentViewRecords().length).toBe(true);
+    });
+    it('Collapsing testing', (done: Function) => {
+        gridObj.collapsed = () => {
+            expect(gridObj.getRows().length === 4).toBe(true);
+            done();
+        };
+        gridObj.collapseAtLevel(1);
+    });
+    it('Expand testing', (done: Function) => {
+        gridObj.expanded = () => {
+            expect(gridObj.getRows().length === 12).toBe(true);
+            expect(gridObj.grid.pageSettings.totalRecordsCount === 56).toBe(true);
+            done();
+        };
+        gridObj.expandAtLevel(1);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

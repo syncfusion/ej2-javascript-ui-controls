@@ -1,4 +1,5 @@
 //default
+$skin-name: 'material-dark' !default;
 $btn-border: 1px solid !default;
 $btn-bgcolor: $grey-700 !default;
 $btn-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .26) !default;
@@ -78,7 +79,7 @@ $btn-active-border-color: $btn-border-color !default;
 $btn-hover-color: $btn-color !default;
 $btn-hover-bgcolor: mix($btn-color, $btn-bgcolor, 8%) !default;
 $btn-active-color: $btn-color !default;
-$btn-active-bgcolor: mix($btn-color, $btn-bgcolor, 32%) !default;
+$btn-active-bgcolor: mix($btn-color, $btn-bgcolor, 18%) !default;
 $btn-focus-color: $btn-color !default;
 $btn-focus-border-color: $btn-border-color !default;
 $btn-focus-bgcolor: mix($btn-color, $btn-bgcolor, 24%) !default;
@@ -168,6 +169,7 @@ $btn-flat-color: $grey-dark-font !default;
 $btn-flat-border: $btn-border !default;
 $btn-flat-border-color: transparent !default;
 $btn-flat-bgcolor: transparent !default;
+$btn-flat-disabled-bgcolor: $btn-flat-bgcolor !default;
 $btn-flat-primary-color: $btn-primary-bgcolor !default;
 $btn-flat-primary-bgcolor: $btn-flat-bgcolor !default;
 $btn-flat-success-bgcolor: $btn-flat-bgcolor !default;
@@ -288,6 +290,8 @@ $btn-outline-info-disabled-border-color: rgba($grey-700, .3) !default;
 $btn-outline-warning-disabled-border-color: rgba($grey-700, .3) !default;
 $btn-outline-danger-disabled-border-color: rgba($grey-700, .3) !default;
 $btn-outline-primary-color: $btn-primary-bgcolor !default;
+$btn-outline-primary-focus-bgcolor: $btn-primary-focus-bgcolor !default;
+$btn-outline-primary-focus-color: $btn-primary-focus-color !default;
 //endoutline
 
 //roundbutton

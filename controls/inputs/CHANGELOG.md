@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### MaskedTextBox
+
+#### Bug Fixes
+
+- Now, you can get the proper masked textbox value in the `change` event.
+
+### TextBox
+
+#### New Features
+
+- Provided option to render `multiline textbox` (textarea).
+
+#### Bug Fixes
+
+- Now input event will trigger after clear the textbox value using clear icon.
+
+### Uploader
+
+#### Bug Fixes
+
+- Issue with uploading the file within the form has been fixed.
+
+- Issue with updating the uploader buttons text in firefox lower versions has been fixed.
+
+### Slider
+
+#### New Features
+
+- Now only single tooltip will be displayed in range slider for resize and drag actions for better user interface.
+
 ## 16.4.55 (2019-02-27)
 
 ### TextBox

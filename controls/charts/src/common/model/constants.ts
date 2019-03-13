@@ -59,3 +59,5 @@ export const scrollStart : string = 'scrollStart';
 export const scrollEnd : string = 'scrollEnd';
 /** @private */
 export const scrollChanged : string = 'scrollChanged';
+/** @private */
+export const stockEventRender: string = 'stockEventRender';

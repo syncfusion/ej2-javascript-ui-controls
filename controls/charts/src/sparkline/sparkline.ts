@@ -1,4 +1,5 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex, SvgRenderer } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { remove, L10n, Internationalization, Event, EmitType, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Touch, Collection } from '@syncfusion/ej2-base';
 import { SparklineBorder, SparklineTooltipSettings, ContainerArea, AxisSettings, Padding, SparklineMarkerSettings } from './model/base';
@@ -10,10 +11,11 @@ import { Size, createSvg, RectOption, Rect, drawRectangle, getIdElement, SparkVa
 import { ISparklineLoadedEventArgs, ISparklineLoadEventArgs, IDataLabelRenderingEventArgs, IPointRegionEventArgs } from './model/interface';
 import { IMarkerRenderingEventArgs, ISparklinePointEventArgs, ISparklineMouseEventArgs } from './model/interface';
 import { IAxisRenderingEventArgs, ISparklineResizeEventArgs, ITooltipRenderingEventArgs } from './model/interface';
-import { ISeriesRenderingEventArgs } from './model/interface';
+import { ISeriesRenderingEventArgs, IThemes } from './model/interface';
 import { SparklineRenderer } from './rendering/sparkline-renderer';
 import { SparklineTooltip } from './rendering/sparkline-tooltip';
 import { SparklineModel } from './sparkline-model';
+import { getThemeColor } from './utils/helper';
 
 //tslint:disable: no-duplicate-lines
 /**
@@ -322,6 +324,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public availableSize: Size;
 
     /**
+     * Sparkline theme support
+     *  @private
+     */
+    public sparkTheme: IThemes;
+
+    /**
      * localization object 
      * @private
      */
@@ -357,6 +365,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.unWireEvents();
 
         this.trigger('load', { sparkline: this });
+
+        this.sparkTheme = getThemeColor(this.theme);
 
         this.sparklineRenderer = new SparklineRenderer(this);
 

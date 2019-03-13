@@ -392,6 +392,7 @@ export class Resize implements IAction {
         let mousemove: number = this.parent.enableRtl ? -(pageX - this.pageX) : (pageX - this.pageX);
         let colData: { [key: string]: number } = this.getColData(this.column, mousemove);
         let width: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
+        this.parent.log('resize_min_max', {column: this.column, width});
         if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
             width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0;
             this.pageX = pageX = this.minMove;

@@ -1,5 +1,6 @@
 import { IRichTextEditor } from '../base/interface';
 import { ContentRender } from '../renderer/content-renderer';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /* tslint:disable */
 const IFRAMEHEADER: string = `
@@ -120,7 +121,13 @@ export class IframeContentRender extends ContentRender {
      * @return {Element} 
      */
     public getEditPanel(): Element {
-        return (this.contentPanel as HTMLIFrameElement).contentDocument.body;
+        let editNode: HTMLElement;
+        if (!isNullOrUndefined((this.contentPanel as HTMLIFrameElement).contentDocument)) {
+            editNode = (this.contentPanel as HTMLIFrameElement).contentDocument.body;
+        } else {
+            editNode = this.parent.inputElement;
+        }
+        return editNode;
     }
     /**
      * Get the document of RichTextEditor

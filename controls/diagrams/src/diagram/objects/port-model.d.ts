@@ -103,7 +103,7 @@ export interface PortModel {
 
     /**
      * Defines the constraints of port
-     * @default 'None'
+     * @default 'Default'
      * @aspNumberEnum 
      */
     constraints?: PortConstraints;

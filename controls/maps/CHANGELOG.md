@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### Maps
+
+#### Bug Fixes
+
+- Now, the border style is applied properly to the shapes when performing selection.
+
 ## 16.4.55 (2019-02-27)
 
 ### Maps

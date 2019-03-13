@@ -51,11 +51,35 @@ export class ContextMenu {
     /**
      * @private
      */
+    public menuItems: MenuItemModel[] = [];
+    /**
+     * @private
+     */
+    public customMenuItems: MenuItemModel[] = [];
+    /**
+     * @private
+     */
+    public locale: L10n;
+    /**
+     * @private
+     */
+    public ids: string[] = [];
+    /**
+     * @private
+     */
+    public enableCustomContextMenu: boolean;
+    /**
+     * @private
+     */
+    public enableCustomContextMenuBottom: boolean;
+    /**
+     * @private
+     */
     constructor(viewer: LayoutViewer) {
         this.viewer = viewer;
-        let locale: L10n = new L10n('documenteditor', this.viewer.owner.defaultLocale);
-        locale.setLocale(this.viewer.owner.locale);
-        this.initContextMenu(locale, this.viewer.owner.enableRtl);
+        this.locale = new L10n('documenteditor', this.viewer.owner.defaultLocale);
+        this.locale.setLocale(this.viewer.owner.locale);
+        this.initContextMenu(this.locale, this.viewer.owner.enableRtl);
     }
     /**
      * Gets module name.
@@ -83,7 +107,7 @@ export class ContextMenu {
         ul.style.maxHeight = 'auto';
         ul.oncontextmenu = this.disableBrowserContextmenu;
         this.contextMenu.appendChild(ul);
-        let menuItems: MenuItemModel[] = [
+        this.menuItems = [
             {
                 text: localValue.getConstant('Cut'),
                 iconCss: 'e-icons e-de-cut',
@@ -251,7 +275,7 @@ export class ContextMenu {
         let menuOptions: ContextMenuModel = {
             target: '#' + this.viewer.owner.containerId + 'e-de-contextmenu',
             enableRtl: isRtl,
-            items: menuItems,
+            items: this.addMenuItems(this.menuItems),
             select: (args: MenuEventArgs) => {
                 let item: string = args.element.id;
                 this.handleContextMenuItem(item);
@@ -259,6 +283,23 @@ export class ContextMenu {
         };
         this.contextMenuInstance = new Menu(menuOptions, '#' + this.viewer.owner.containerId + 'e-de-contextmenu-list');
         this.contextMenuInstance.beforeOpen = () => {
+            for (let index: number = 0; index < this.customMenuItems.length; index++) {
+                if (typeof this.customMenuItems[index].id !== 'undefined') {
+                this.ids[index] = this.customMenuItems[index].id;
+                } else {
+                this.ids[index] = this.customMenuItems[index + 1].id;
+                }
+            }
+            this.viewer.owner.fireCustomContextMenuBeforeOpen(this.ids);
+            if (this.enableCustomContextMenu) {
+                for (let index: number = 0; index < this.menuItems.length; index++) {
+                    if (typeof this.menuItems[index].id !== 'undefined') {
+                        document.getElementById(this.menuItems[index].id).style.display = 'none';
+                    } else {
+                        (document.getElementById(this.menuItems[index - 1].id).nextSibling as HTMLElement).style.display = 'none';
+                    }
+                }
+            }
             if (this.viewer && this.viewer.selection) {
                 classList(this.viewer.selection.caret, [], ['e-de-cursor-animation']);
                 this.viewer.selection.showCaret();
@@ -373,6 +414,39 @@ export class ContextMenu {
             case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
                 this.viewer.owner.editor.autoFitTable('FixedColumnWidth');
                 break;
+            default:
+                // fires customContextMenuSelect while selecting the added custom menu item
+                this.viewer.owner.fireCustomContextMenuSelect(item);
+                break;
+        }
+    }
+    /**
+     * To add and customize custom context menu
+     * @param {MenuItemModel[]} items -To add custom menu item
+     * @param {boolean} isEnable? -To hide existing menu item and show custom menu item alone
+     * @param {boolean} isBottom? -To show the custom menu item in bottom of the existing item
+     */
+    public addCustomMenu(items: MenuItemModel[], isEnable?: boolean, isBottom?: boolean): void {
+        let menuItems: MenuItemModel[] = JSON.parse(JSON.stringify(items));
+        this.destroy();
+        for (let index: number = 0; index < menuItems.length; index++) {
+            this.customMenuItems.push(menuItems[index]);
+            this.customMenuItems[index].id = this.viewer.owner.element.id + this.customMenuItems[index].id;
+        }
+        this.enableCustomContextMenu = isEnable;
+        this.enableCustomContextMenuBottom = isBottom;
+        this.initContextMenu(this.locale);
+    }
+    /**
+     * Context Menu Items.
+     * @param {MenuItemModel[]} menuItems -To add MenuItem to context menu
+     * @private
+     */
+    public addMenuItems(menuItems: MenuItemModel[]): MenuItemModel[] {
+        if (this.enableCustomContextMenuBottom) {
+            return menuItems.concat(this.customMenuItems);
+        } else {
+            return this.customMenuItems.concat(menuItems);
         }
     }
     /**
@@ -531,5 +605,8 @@ export class ContextMenu {
         }
         this.contextMenu = undefined;
         this.contextMenuInstance = undefined;
+        this.menuItems = [];
+        this.customMenuItems = [];
+        this.ids = [];
     }
 }

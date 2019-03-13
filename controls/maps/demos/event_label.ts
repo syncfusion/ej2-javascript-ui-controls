@@ -2,7 +2,7 @@
  * Maps datalabel sample
  */
 import { Maps, MapsTooltip, ILabelRenderingEventArgs, DataLabel, ILoadEventArgs, MapsTheme, SmartLabelMode, IntersectAction, MapAjax } from '../src/index';
-
+import { usa } from './MapData/USA';
 Maps.Inject(MapsTooltip, DataLabel);
     let maps: Maps = new Maps({
 dataLabelRendering:(args: ILabelRenderingEventArgs) =>{
@@ -18,7 +18,7 @@ dataLabelRendering:(args: ILabelRenderingEventArgs) =>{
                     labelPath: 'name',
                     smartLabelMode: 'Trim'
                 },
-                shapeData: new MapAjax(location.origin + location.pathname + 'demos/MapData/USA.json'),
+                shapeData: usa,
                 shapeSettings: {
                     autofill: true
                 },

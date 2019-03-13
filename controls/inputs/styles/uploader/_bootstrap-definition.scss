@@ -17,6 +17,8 @@ $right: 100% !default;
 $file-status-rtl-top-margin: 7% !default;
 $remove-icon-height: 20px !default;
 $remove-icon-width: 20px !default;
+$remove-bigger-icon-height: 20px !default;
+$remove-bigger-icon-width: 20px !default;
 $remove-icon-before: 4px !default;
 $file-size-top: $zero-value !default;
 $action-buttons-margin: 10px !default;
@@ -154,5 +156,7 @@ $remove-icon-padding-smaller: 16px !default;
 $remove-icon-margin-top-smaller: -22px !default;
 
 $remove-icon-color: $grey-light !default;
-$hover-icon-color: $grey-light !default;
+$upload-hover-icon-color: $grey-light !default;
 $disabled-state: rgba($grey-light-font, .38) !default;
+
+$uploader-icons-hover-radius: 50% !default;

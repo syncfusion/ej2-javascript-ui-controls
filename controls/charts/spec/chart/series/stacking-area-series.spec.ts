@@ -22,6 +22,7 @@ import { MouseEvents } from '../base/events.spec';
 import { unbindResizeEvents } from '../base/data.spec';
 import { tooltipData21, tooltipData22, datetimeData21, categoryData, negativeDataPoint, seriesData1, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
 Chart.Inject(LineSeries, StackingAreaSeries, StackingColumnSeries, AreaSeries, DateTime, Category, DataLabel);
 let data: any = tooltipData21;
@@ -31,6 +32,14 @@ export interface Arg {
     chart: Chart;
 }
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Chart StackingArea series', () => {
         let chartObj: Chart;
         let elem: HTMLElement;
@@ -672,6 +681,15 @@ describe('Chart Control', () => {
             chart.animationComplete = animationComplete;
             chart.refresh();
         });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });
 

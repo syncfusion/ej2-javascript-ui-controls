@@ -18,9 +18,6 @@ $grid-border-radius: 0 !default;
 $grid-sortnumber-bg-color: #bbbdc0 !default;
 $grid-sortnumber-color: $content-font-color !default;
 
-$grid-drag-selection-color: $content-border-color !default;
-
-
 $group-droparea-hover-color: $active-font-color !default;
 
 $group-header-hover-color: $header-font-color !default;
@@ -309,7 +306,10 @@ $group-row-bg-color: $grey-800 !default;
 $grid-group-broder-color: $grey-700 !default;
 $grid-header-font-weight: 500 !default;
 $grid-header-font-size: 12px !default;
+$grid-bigger-header-font-size: $grid-header-font-size !default;
 $grid-content-font-size: 13px !default;
+$grid-header-height: 29px !default;
+$grid-bigger-header-height: $grid-header-height !default;
 // $grid-header-icon-color: $grey-dark-font !default;
 $grid-header-icon-color: $grey-white !default;
 $grid-hover-icon-color: $grey-white !default;
@@ -344,10 +344,10 @@ $grid-headercell-both-border-width: 0 0 0 1px !default;
 $grid-rowcell-both-border-width: 1px 0 0 1px !default;
 $grid-indentcell-border-width: 0 1px 0 0 !default;
 $grid-headercelldiv-line-height: 30px !default;
+$grid-bigger-headercelldiv-line-height: $grid-headercelldiv-line-height !default;
 $grid-filterbarcell-text-indent: 0 !default;
 $grid-grouptext-margin-right: 6px !default;
 $grid-groupdroparea-rtl-text-align: right !default;
-$grid-drag-selection-bg-color: $grey-dark !default;
 $grid-rtl-th-firstcell-border-left: 0 !default;
 $grid-gd-clone-border-radius: 13px !default;
 $group-ungroupicon-font-size: 9px !default;
@@ -469,3 +469,7 @@ $grid-clone-prop-box-shadow: 0 3px 8px 0 rgba($grey-black, .26) !default;
 $grid-drag-icon-opacity: $grid-conent-font-opacity !default;
 $grid-clone-dropitemscount-border: $grey-600 !default;
 $grid-clone-dragdrop-bg-color: $grey-800 !default;
+$grid-group-clone-box-shadow: 0 0 !default;
+$grid-unboundcelldiv-margin: 0 3.5px !default;
+$grid-bigger-flmenu-padding: $grid-flmenu-padding !default;
+$grid-rowcell-wrap-height: 18px !default;

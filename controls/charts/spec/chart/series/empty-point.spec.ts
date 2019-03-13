@@ -10,6 +10,7 @@ import {
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents, DataValue } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(
     LineSeries, DataLabel, AreaSeries, ColumnSeries, BarSeries, SplineSeries,
     StackingAreaSeries, ScatterSeries, BubbleSeries, StepLineSeries, StepAreaSeries,
@@ -25,6 +26,14 @@ export let emptyPointsData2: DataValue[] = [
         { x: 5000, y: null }, { x: 6000, y: 90 },
         { x: 7000, y: 40 }];
 describe('Empty Points checking with', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let element: HTMLElement;
     describe('Numeric value Type', () => {
         let chartObj: Chart;
@@ -361,4 +370,13 @@ describe('Empty Points checking with', () => {
             chartObj.refresh();
         });
      });
+     it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

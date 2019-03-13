@@ -1,13 +1,14 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, setCurrencyCode, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, compile, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, setCurrencyCode, setStyleAttribute } from '@syncfusion/ej2-base';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { Workbook } from '@syncfusion/ej2-excel-export';
-import { PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfLayoutFormat, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
-import { Accordion, ContextMenu as ContextMenu$1, Tab, TreeView } from '@syncfusion/ej2-navigations';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
+import { Accordion, ContextMenu as ContextMenu$1, Menu, Tab, Toolbar as Toolbar$1, TreeView } from '@syncfusion/ej2-navigations';
+import { Animation, AreaSeries, AxisLine, BarSeries, Border, BubbleSeries, Category, Chart, ChartArea, ChartSegment, ColumnSeries, CornerRadius, Crosshair, CrosshairSettings, CrosshairTooltip, EmptyPointSettings, ErrorBarSettings, Export, Font, Indexes, LabelBorder, Legend, LineSeries, MajorGridLines, MajorTickLines, Margin, MarkerSettings, MinorGridLines, MinorTickLines, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLineSettings, Theme, Tooltip as Tooltip$1, Trendline, Zoom } from '@syncfusion/ej2-charts';
 import { ColorPicker, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { DatePicker } from '@syncfusion/ej2-calendars';
+import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
 /**
@@ -25,6 +26,22 @@ class PivotUtil {
         date.setHours(0, 0, 0, 0);
         return date;
     }
+    static getClonedData(data) {
+        let clonedData = [];
+        let fields = Object.keys(data[0]);
+        for (let item of data) {
+            let keyPos = 0;
+            /* tslint:disable */
+            let framedSet = {};
+            /* tslint:enable */
+            while (keyPos < fields.length) {
+                framedSet[fields[keyPos]] = item[fields[keyPos]];
+                keyPos++;
+            }
+            clonedData.push(framedSet);
+        }
+        return clonedData;
+    }
 }
 
 /**
@@ -32,14 +49,9 @@ class PivotUtil {
  */
 /** @hidden */
 class PivotEngine {
-    /**
-     * Constructor for PivotEngine class
-     * @param  {DataOptions} dataSource?
-     * @param  {string} mode?
-     * @hidden
-     */
-    /* tslint:disable:align */
-    constructor(dataSource, mode, savedFieldList, pageSettings, enableValueSoring, isDrillThrough) {
+    constructor() {
+        /** @hidden */
+        this.valueContent = [];
         /** @hidden */
         this.formatFields = {};
         /** @hidden */
@@ -66,6 +78,48 @@ class PivotEngine {
         this.enableValueSorting = false;
         /** @hidden */
         this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
+        /** @hidden */
+        this.rMembers = [];
+        /** @hidden */
+        this.cMembers = [];
+        this.valueMatrix = [];
+        this.indexMatrix = [];
+        this.memberCnt = -1;
+        this.pageInLimit = false;
+        this.endPos = 0;
+        this.removeCount = 0;
+        this.colHdrBufferCalculated = false;
+        this.colValuesLength = 1;
+        this.rowValuesLength = 1;
+        this.slicedHeaders = [];
+        this.fieldFilterMem = {};
+        this.filterPosObj = {};
+        this.selectedHeaders = { selectedHeader: [], values: [] };
+        this.rawIndexObject = {};
+        this.isEditing = false;
+        this.data = [];
+        this.frameHeaderObjectsCollection = false;
+        this.headerObjectsCollection = {};
+        /* private makeMirrorObject(elements: number[], obj: NumberIndex): void {
+             for (let lp: number = 0, end: number = elements.length; lp < end; lp++) {
+                 obj[elements[lp]] = elements[lp];
+             }
+         } */
+    }
+    renderEngine(dataSource, customProperties) {
+        this.formatFields = {};
+        this.calculatedFields = {};
+        this.calculatedFormulas = {};
+        this.valueAxis = 0;
+        this.saveDataHeaders = {};
+        this.columnCount = 0;
+        this.rowCount = 0;
+        this.colFirstLvl = 0;
+        this.rowFirstLvl = 0;
+        this.rowStartPos = 0;
+        this.colStartPos = 0;
+        this.enableValueSorting = false;
+        this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
         this.valueMatrix = [];
         this.indexMatrix = [];
         this.rMembers = [];
@@ -83,10 +137,11 @@ class PivotEngine {
         this.selectedHeaders = { selectedHeader: [], values: [] };
         this.rawIndexObject = {};
         this.isEditing = false;
-        /* tslint:enable:align */
         let fields;
         this.globalize = new Internationalization();
+        this.localeObj = customProperties ? customProperties.localeObj : undefined;
         this.enableSort = dataSource.enableSorting;
+        this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showSubTotals = isNullOrUndefined(dataSource.showSubTotals) ? true : dataSource.showSubTotals;
         this.showRowSubTotals = isNullOrUndefined(dataSource.showRowSubTotals) ? true : dataSource.showRowSubTotals;
         this.showColumnSubTotals = isNullOrUndefined(dataSource.showColumnSubTotals) ? true : dataSource.showColumnSubTotals;
@@ -95,38 +150,300 @@ class PivotEngine {
         this.showColumnGrandTotals = isNullOrUndefined(dataSource.showColumnGrandTotals) ? true : dataSource.showColumnGrandTotals;
         this.allowValueFilter = dataSource.allowValueFilter;
         this.isValueFilterEnabled = false;
-        this.enableValueSorting = enableValueSoring;
-        fields = dataSource.data[0];
-        this.fields = Object.keys(fields);
-        this.rows = dataSource.rows ? dataSource.rows : [];
-        this.columns = dataSource.columns ? dataSource.columns : [];
-        this.filters = dataSource.filters ? dataSource.filters : [];
-        this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
-        this.values = dataSource.values ? dataSource.values : [];
-        this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
-        this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
-        this.validateFilters(dataSource);
-        this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
-        this.drilledMembers =
-            dataSource.drilledMembers ? (this.isValueFiltersAvail && dataSource.allowValueFilter) ? [] : dataSource.drilledMembers : [];
-        this.isMutiMeasures = this.values.length > 1 ? true : false;
-        this.valueAxis = dataSource.valueAxis === 'row' ? 1 : 0;
-        this.rowValuesLength = this.valueAxis === 1 ? this.values.length : 1;
-        this.colValuesLength = this.valueAxis === 0 ? this.values.length : 1;
-        this.valueSortSettings = dataSource.valueSortSettings ||
-            { sortOrder: 'None', headerDelimiter: '.', headerText: '', columnIndex: undefined };
-        this.valueSortData = [];
-        this.pageSettings = pageSettings ? pageSettings : this.pageSettings;
-        this.savedFieldList = savedFieldList;
-        this.isDrillThrough = isDrillThrough ? isDrillThrough : false;
-        this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-        this.fillFieldMembers(dataSource.data, this.indexMatrix);
-        this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-        this.valueMatrix = this.generateValueMatrix(dataSource.data);
-        this.filterMembers = [];
-        this.updateFilterMembers(dataSource);
-        this.generateGridData(dataSource);
-        return this;
+        this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
+        this.valueContent = [];
+        if (dataSource.data && dataSource.data[0]) {
+            this.fields = Object.keys(dataSource.data[0]);
+            this.rows = dataSource.rows ? dataSource.rows : [];
+            this.columns = dataSource.columns ? dataSource.columns : [];
+            this.filters = dataSource.filters ? dataSource.filters : [];
+            this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
+            this.values = dataSource.values ? dataSource.values : [];
+            this.groups = dataSource.groupSettings ? dataSource.groupSettings : [];
+            this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
+            this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
+            fields = this.getGroupData(dataSource.data);
+            this.data = dataSource.data;
+            this.validateFilters(dataSource);
+            this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
+            this.drilledMembers =
+                dataSource.drilledMembers ? (this.isValueFiltersAvail && dataSource.allowValueFilter) ? [] : dataSource.drilledMembers : [];
+            this.isMutiMeasures = this.values.length > 1 ? true : false;
+            this.valueAxis = dataSource.valueAxis === 'row' ? 1 : 0;
+            this.emptyCellTextContent = dataSource.emptyCellsTextContent ? dataSource.emptyCellsTextContent : '';
+            this.rowValuesLength = this.valueAxis === 1 ? this.values.length : 1;
+            this.colValuesLength = this.valueAxis === 0 ? this.values.length : 1;
+            this.valueSortSettings = dataSource.valueSortSettings ||
+                { sortOrder: 'None', headerDelimiter: '.', headerText: '', columnIndex: undefined };
+            this.valueSortData = [];
+            this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
+                : undefined;
+            this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
+            this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
+            this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
+            this.fillFieldMembers(dataSource.data, this.indexMatrix);
+            this.updateSortSettings(dataSource.sortSettings, this.enableSort);
+            this.valueMatrix = this.generateValueMatrix(dataSource.data);
+            this.filterMembers = [];
+            this.updateFilterMembers(dataSource);
+            this.generateGridData(dataSource);
+        }
+    }
+    /* tslint:disable */
+    getGroupData(data) {
+        let fieldkeySet = data[0];
+        for (let dategroup of this.groups) {
+            let fieldName = dategroup.name;
+            if (this.fields.indexOf(fieldName) > -1) {
+                let groupFields = {};
+                if (dategroup.type === 'Number') {
+                    if (PivotUtil.getType(fieldkeySet[fieldName]) === 'number') {
+                        if (dategroup.rangeInterval) {
+                            data.sort((a, b) => (a[fieldName] > b[fieldName]) ? 1 : ((b[fieldName] > a[fieldName]) ? -1 : 0));
+                        }
+                    }
+                    else {
+                        return fieldkeySet;
+                    }
+                }
+                let len = data.length;
+                while (len--) {
+                    let item = data[len];
+                    if (item[fieldName] && dategroup.type === 'Date') {
+                        let date = new Date(item[fieldName].toString());
+                        if (!isNullOrUndefined(date) && dategroup.groupInterval.length > 0) {
+                            let isGrouped = false;
+                            for (let interval of dategroup.groupInterval) {
+                                isGrouped = true;
+                                let isInRangeAvail = this.getRange(dategroup, date.getTime());
+                                let newDate = PivotUtil.resetTime(new Date());
+                                switch (interval) {
+                                    case 'Years':
+                                        {
+                                            let newFieldName = fieldName + '_years';
+                                            groupFields[newFieldName] = interval;
+                                            item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setFullYear(date.getFullYear())).toString());
+                                        }
+                                        break;
+                                    case 'Quarters':
+                                        {
+                                            let newFieldName = fieldName + '_quarters';
+                                            groupFields[newFieldName] = interval;
+                                            let month = Math.ceil((date.getMonth() + 1) / 3);
+                                            item[newFieldName] = (isInRangeAvail ? undefined : 'Qtr' + month.toString());
+                                        }
+                                        break;
+                                    case 'Months':
+                                        {
+                                            let newFieldName = fieldName + '_months';
+                                            groupFields[newFieldName] = interval;
+                                            item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString());
+                                        }
+                                        break;
+                                    case 'Days':
+                                        {
+                                            let newFieldName = fieldName + '_days';
+                                            groupFields[newFieldName] = interval;
+                                            item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString());
+                                        }
+                                        break;
+                                    case 'Hours':
+                                        {
+                                            let newFieldName = fieldName + '_hours';
+                                            groupFields[newFieldName] = interval;
+                                            item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setHours(date.getHours())).toString());
+                                        }
+                                        break;
+                                    case 'Minutes':
+                                        {
+                                            let newFieldName = fieldName + '_minutes';
+                                            groupFields[newFieldName] = interval;
+                                            item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMinutes(date.getMinutes())).toString());
+                                        }
+                                        break;
+                                    case 'Seconds':
+                                        {
+                                            let newFieldName = fieldName + '_seconds';
+                                            groupFields[newFieldName] = interval;
+                                            item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setSeconds(date.getSeconds())).toString());
+                                        }
+                                        break;
+                                }
+                            }
+                            if (isGrouped) {
+                                delete item[fieldName];
+                            }
+                        }
+                    }
+                    else {
+                        let isInRangeAvail = this.getRange(dategroup, item[fieldName]);
+                        item[fieldName] = isInRangeAvail ? undefined : item[fieldName];
+                    }
+                    let keys = Object.keys(item);
+                    let isCompleteSet = [];
+                    for (let key of keys) {
+                        isCompleteSet.push((item[key]) ? true : false);
+                    }
+                    
+                    fieldkeySet = (((isCompleteSet.indexOf(false) === -1) && keys.length === Object.keys(data[0]).length) ? item : fieldkeySet);
+                }
+                if (dategroup.type === 'Date') {
+                    let isDataSource = false;
+                    let axisFields = [this.rows, this.columns, this.values, this.filters];
+                    let groupKeys = Object.keys(groupFields);
+                    let gCnt = Object.keys(groupKeys).length;
+                    let groupField;
+                    for (let axis of axisFields) {
+                        if (!isDataSource && axis) {
+                            let cnt = axis.length;
+                            let i = 0;
+                            while (i < cnt) {
+                                if (axis[i].name === fieldName) {
+                                    let actualField = axis[i];
+                                    axis.splice(i, 1);
+                                    while (gCnt--) {
+                                        groupField = groupFields[groupKeys[gCnt]];
+                                        let newField = {
+                                            name: groupKeys[gCnt],
+                                            caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + fieldName + ')',
+                                            type: 'Count',
+                                            showNoDataItems: actualField.showNoDataItems,
+                                            baseField: actualField.baseField,
+                                            baseItem: actualField.baseItem,
+                                        };
+                                        axis.splice(i, 0, newField);
+                                    }
+                                    break;
+                                }
+                                i++;
+                            }
+                            break;
+                        }
+                    }
+                    gCnt = Object.keys(groupKeys).length;
+                    while (gCnt--) {
+                        groupField = groupFields[groupKeys[gCnt]];
+                        let formatfield = new DataManager({ json: this.formats }).executeLocal(new Query().where('name', 'equal', groupKeys[gCnt]))[0];
+                        if (groupField !== 'Quarters' && !formatfield) {
+                            let formatSettings = {
+                                name: groupKeys[gCnt],
+                                type: ['Years', 'Months', 'Days'].indexOf(groupField) > -1 ? 'date' : 'time',
+                                format: ((groupField === 'Years') ? 'yyyy' : (groupField === 'Months') ? 'MMM' :
+                                    (groupField === 'Days') ? 'd-MMM' : (groupField === 'Hours') ? 'hh a' :
+                                        (groupField === 'Minutes') ? ':mm' : (groupField === 'Seconds') ? ':ss' : undefined)
+                            };
+                            this.formats.push(formatSettings);
+                        }
+                    }
+                }
+                else if (dategroup.type === 'Number' && dategroup.rangeInterval) {
+                    let startValue;
+                    let endValue;
+                    let cStartValue;
+                    let cEndValue;
+                    let framedSet = [];
+                    let unframedSet = [];
+                    let dataLength = data.length;
+                    let cnt = 0;
+                    while (cnt < dataLength) {
+                        unframedSet.push(data[cnt][fieldName]);
+                        if (data[cnt][fieldName] && framedSet.indexOf(data[cnt][fieldName]) === -1) {
+                            framedSet.push(data[cnt][fieldName]);
+                        }
+                        cnt++;
+                    }
+                    let framedSetLength = Math.max.apply(Math, framedSet);
+                    for (let i = framedSet[0], len = framedSetLength; i < len; i++) {
+                        if (unframedSet.indexOf(i) < 0) {
+                            let duplicateData = this.frameData(data[0]);
+                            duplicateData[fieldName] = i;
+                            let index = unframedSet.lastIndexOf(i - 1);
+                            unframedSet.splice(index + 1, 0, i);
+                            data.splice(index + 1, 0, duplicateData);
+                        }
+                    }
+                    dataLength = data.length;
+                    cnt = 0;
+                    while (cnt < dataLength) {
+                        if (data[cnt] && data[cnt][fieldName]) {
+                            cStartValue = data[cnt][fieldName];
+                            cEndValue = cStartValue + (dategroup.rangeInterval - 1);
+                            startValue = (!startValue) ? cStartValue : startValue;
+                            endValue = ((!endValue) ? ((cEndValue > framedSetLength) ? framedSetLength : cEndValue) : ((endValue > framedSetLength) ? framedSetLength : endValue));
+                            if (cStartValue >= startValue && cStartValue <= endValue) {
+                                data[cnt][fieldName] = ((startValue === endValue) ? startValue.toString() : startValue.toString() + '-' + endValue.toString());
+                            }
+                            else if (cStartValue > endValue && cStartValue === endValue + 1) {
+                                startValue = endValue + 1;
+                                endValue = ((startValue + (dategroup.rangeInterval - 1) > framedSetLength) ? framedSetLength : startValue + (dategroup.rangeInterval - 1));
+                                data[cnt][fieldName] = ((startValue === endValue) ? startValue.toString() : startValue.toString() + '-' + endValue.toString());
+                            }
+                            let keys = Object.keys(data[cnt]);
+                            let isCompleteSet = [];
+                            for (let key of keys) {
+                                isCompleteSet.push((data[cnt][key]) ? true : false);
+                            }
+                            
+                            fieldkeySet = (((isCompleteSet.indexOf(false) === -1) && keys.length === Object.keys(data[0]).length) ? data[cnt] : fieldkeySet);
+                        }
+                        cnt++;
+                    }
+                    let axisFields = [this.rows, this.columns, this.values, this.filters];
+                    for (let fields of axisFields) {
+                        let field = new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
+                        if (field) {
+                            field = field.properties ? field.properties : field;
+                            field.type = 'Count';
+                        }
+                    }
+                    for (let i = 0, len = this.formats.length; i < len; i++) {
+                        if (this.formats[i].name === fieldName) {
+                            this.formats.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                return fieldkeySet;
+            }
+        }
+        this.fields = Object.keys(fieldkeySet);
+        return fieldkeySet;
+    }
+    frameData(data) {
+        let fields = Object.keys(data);
+        let keyPos = 0;
+        let framedSet = {};
+        while (keyPos < fields.length) {
+            framedSet[fields[keyPos]] = undefined;
+            keyPos++;
+        }
+        return framedSet;
+    }
+    /* tslint:enable */
+    getRange(group, cValue) {
+        let isRangeAvail;
+        if (group.type === 'Date') {
+            let cDate = new Date(cValue);
+            if (group.startingAt && cDate.getTime() < group.startingAt.getTime() ||
+                group.endingAt && cDate.getTime() > group.endingAt.getTime()) {
+                isRangeAvail = true;
+            }
+            else {
+                isRangeAvail = false;
+            }
+        }
+        else {
+            if (group.startingAt && cValue < group.startingAt ||
+                group.endingAt && cValue > group.endingAt) {
+                isRangeAvail = true;
+            }
+            else {
+                isRangeAvail = false;
+            }
+        }
+        return isRangeAvail;
     }
     getFormattedFields(fields) {
         let cnt = this.formats.length;
@@ -146,6 +463,7 @@ class PivotEngine {
         dataFields = dataFields.concat(this.columns, this.values, this.filters);
         this.getFormattedFields(dataFields);
         this.getCalculatedField(keys);
+        keys = this.fields;
         let len = keys.length;
         if (this.savedFieldList) {
             this.fieldList = this.savedFieldList;
@@ -224,6 +542,7 @@ class PivotEngine {
             this.fieldList[this.calculatedFieldSettings[lnt].name].formula = this.calculatedFieldSettings[lnt].formula;
         }
     }
+    /* tslint:disable:typedef */
     getCalculatedField(keys) {
         for (let field of this.calculatedFieldSettings) {
             this.calculatedFields[field.name] = extend({}, field, null, true);
@@ -237,6 +556,7 @@ class PivotEngine {
             let formula = actualFormula.replace(/"/g, '');
             field.formula = formula.indexOf('^') > -1 ? this.powerFunction(formula) : formula;
             field.name = calcProperties ? calcProperties.name : field.name;
+            keys = keys.filter((key) => { return key !== field.name; });
             keys.push(field.name);
             let formulaType = actualFormula.split('\"');
             for (let len = 0, lmt = formulaType.length; len < lmt; len++) {
@@ -266,6 +586,7 @@ class PivotEngine {
                 }
             }
         }
+        this.fields = keys;
     }
     validateFilters(data) {
         this.isValueFiltersAvail = false;
@@ -435,7 +756,9 @@ class PivotEngine {
                 filterElements[rln].properties : filterElements[rln];
             if (this.fieldList[filterElement.name].isSelected && this.isValidFilterField(filterElement, source.allowLabelFilter)) {
                 this.applyLabelFilter(filterElement);
-                filter = filterElement ? filterElement.items : [];
+                if (filterElement) {
+                    filter = filterElement.items;
+                }
                 if (filterElement.type && filterElement.type === 'Include') {
                     /* tslint:disable-next-line:max-line-length */
                     this.frameFilterList(filter, filterElement.name, ilist, 'include', filterElement.showLabelFilter, isInclude);
@@ -553,7 +876,7 @@ class PivotEngine {
                         break;
                     case 'EndsWith':
                     case 'DoesNotEndsWith':
-                        if (filterValue.match(value1.toLowerCase() + '$') != null) {
+                        if (filterValue.match(value1.toLowerCase() + '$') !== null) {
                             items.push(member);
                         }
                         break;
@@ -594,6 +917,7 @@ class PivotEngine {
         }
         return items;
     }
+    /* tslint:disable */
     getDateFilterMembers(members, name, operator, value1, value2) {
         let items = [];
         for (let member of members) {
@@ -602,34 +926,34 @@ class PivotEngine {
                 switch (operator) {
                     case 'Equals':
                     case 'DoesNotEquals':
-                        if ((PivotUtil.resetTime(filterValue)).getTime() === (PivotUtil.resetTime(value1)).getTime()) {
+                        if (this.getFormattedValue(filterValue.toString(), name).formattedText === this.getFormattedValue(value1.toString(), name).formattedText) {
                             items.push(this.getFormattedValue(member, name).formattedText);
                         }
                         break;
                     case 'After':
-                        if ((PivotUtil.resetTime(filterValue)).getTime() > (PivotUtil.resetTime(value1)).getTime()) {
+                        if (filterValue.getTime() > value1.getTime()) {
                             items.push(this.getFormattedValue(member, name).formattedText);
                         }
                         break;
                     case 'AfterOrEqualTo':
-                        if ((PivotUtil.resetTime(filterValue)).getTime() >= (PivotUtil.resetTime(value1)).getTime()) {
+                        if (filterValue.getTime() >= value1.getTime()) {
                             items.push(this.getFormattedValue(member, name).formattedText);
                         }
                         break;
                     case 'Before':
-                        if ((PivotUtil.resetTime(filterValue)).getTime() < (PivotUtil.resetTime(value1)).getTime()) {
+                        if (filterValue.getTime() < value1.getTime()) {
                             items.push(this.getFormattedValue(member, name).formattedText);
                         }
                         break;
                     case 'BeforeOrEqualTo':
-                        if ((PivotUtil.resetTime(filterValue)).getTime() <= (PivotUtil.resetTime(value1)).getTime()) {
+                        if (filterValue.getTime() <= value1.getTime()) {
                             items.push(this.getFormattedValue(member, name).formattedText);
                         }
                         break;
                     case 'Between':
                     case 'NotBetween':
-                        if (((PivotUtil.resetTime(filterValue)).getTime() >= (PivotUtil.resetTime(value1)).getTime()) &&
-                            ((PivotUtil.resetTime(filterValue)).getTime() <= (PivotUtil.resetTime(value2)).getTime())) {
+                        if ((filterValue.getTime() >= value1.getTime()) &&
+                            (filterValue.getTime() <= value2.getTime())) {
                             items.push(this.getFormattedValue(member, name).formattedText);
                         }
                         break;
@@ -638,6 +962,7 @@ class PivotEngine {
         }
         return items;
     }
+    /* tslint:enable */
     validateFilterValue(val, operator, value1, value2) {
         let isMemberInclude = false;
         if (typeof (value1) === 'number') {
@@ -688,62 +1013,62 @@ class PivotEngine {
     }
     /* tslint:disable-next-line:max-line-length */
     frameFilterList(filter, name, list, type, isLabelFilter, isInclude) {
-        let updateFilter = () => {
-            let fln = 0;
-            let field = this.fieldList[name];
-            field.filter = filter;
-            field.filterType = type;
-            field.isExcelFilter = isLabelFilter;
-            let members = (this.formatFields[name] &&
-                (['date', 'dateTime', 'time'].indexOf(this.formatFields[name].type) > -1)) ?
-                field.formattedMembers : field.members;
-            let allowFil = isInclude;
-            let final = {};
-            let filterObj = {};
-            final[type] = { indexObject: {}, index: [] };
-            this.fieldFilterMem[name] = { memberObj: {} };
-            while (filter[fln]) {
-                let indx = members[filter[fln]].index;
-                if (type === 'include') {
-                    for (let iln = 0, ilt = indx.length; iln < ilt; iln++) {
-                        if (!allowFil || list[type].indexObject[indx[iln]] !== undefined) {
-                            final[type].indexObject[indx[iln]] = indx[iln];
-                            final[type].index.push(indx[iln]);
-                        }
-                    }
-                }
-                else {
-                    for (let iln = 0, ilt = indx.length; iln < ilt; iln++) {
-                        if (list[type].indexObject[indx[iln]] === undefined) {
-                            list[type].indexObject[indx[iln]] = indx[iln];
-                            list[type].index.push(indx[iln]);
-                        }
-                    }
-                    this.fieldFilterMem[name].memberObj[filter[fln]] = filter[fln];
-                }
-                fln++;
-            }
-            if (type === 'include') {
-                list[type] = final[type];
-                for (let iln = 0; iln < filter.length; iln++) {
-                    filterObj[filter[iln]] = filter[iln];
-                }
-                let items = Object.keys(members);
-                for (let iln = 0, ilt = items.length; iln < ilt; iln++) {
-                    if (filterObj[items[iln]] === undefined) {
-                        this.fieldFilterMem[name].memberObj[items[iln]] = items[iln];
-                    }
-                }
-            }
-        };
         if (!list[type]) {
             list[type] = { indexObject: {}, index: [] };
-            updateFilter();
+            this.updateFilter(filter, name, list, type, isLabelFilter, isInclude);
         }
         else {
-            updateFilter();
+            this.updateFilter(filter, name, list, type, isLabelFilter, isInclude);
         }
         // }
+    }
+    updateFilter(filter, name, list, type, isLabelFilter, isInclude) {
+        let fln = 0;
+        let field = this.fieldList[name];
+        field.filter = filter;
+        field.filterType = type;
+        field.isExcelFilter = isLabelFilter;
+        let members = (this.formatFields[name] &&
+            (['date', 'dateTime', 'time'].indexOf(this.formatFields[name].type) > -1)) ?
+            field.formattedMembers : field.members;
+        let allowFil = isInclude;
+        let final = {};
+        let filterObj = {};
+        final[type] = { indexObject: {}, index: [] };
+        this.fieldFilterMem[name] = { memberObj: {} };
+        while (filter[fln]) {
+            let indx = members[filter[fln]].index;
+            if (type === 'include') {
+                for (let iln = 0, ilt = indx.length; iln < ilt; iln++) {
+                    if (!allowFil || list[type].indexObject[indx[iln]] !== undefined) {
+                        final[type].indexObject[indx[iln]] = indx[iln];
+                        final[type].index.push(indx[iln]);
+                    }
+                }
+            }
+            else {
+                for (let iln = 0, ilt = indx.length; iln < ilt; iln++) {
+                    if (list[type].indexObject[indx[iln]] === undefined) {
+                        list[type].indexObject[indx[iln]] = indx[iln];
+                        list[type].index.push(indx[iln]);
+                    }
+                }
+                this.fieldFilterMem[name].memberObj[filter[fln]] = filter[fln];
+            }
+            fln++;
+        }
+        if (type === 'include') {
+            list[type] = final[type];
+            for (let iln = 0; iln < filter.length; iln++) {
+                filterObj[filter[iln]] = filter[iln];
+            }
+            let items = Object.keys(members);
+            for (let iln = 0, ilt = items.length; iln < ilt; iln++) {
+                if (filterObj[items[iln]] === undefined) {
+                    this.fieldFilterMem[name].memberObj[items[iln]] = items[iln];
+                }
+            }
+        }
     }
     /* tslint:disable-next-line:max-line-length */
     applyValueFiltering(rowData, level, rows, columns, valueFilter, rowFilterData, type) {
@@ -979,6 +1304,8 @@ class PivotEngine {
         this.isEmptyData = false;
         let filterMembers = [];
         let showNoDataItems = (rows[0] && rows[0].showNoDataItems) || (columns[0] && columns[0].showNoDataItems);
+        let dataFields = extend([], this.rows, null, true);
+        dataFields = dataFields.concat(this.columns, this.values, this.filters);
         if (showNoDataItems) {
             for (let ln = 0; ln < this.indexMatrix.length; ln++) {
                 filterMembers.push(ln);
@@ -991,7 +1318,7 @@ class PivotEngine {
         this.valueSortSettings.columnIndex = undefined;
         let st1 = new Date().getTime();
         if (!this.isValueFilterEnabled || this.isEditing) {
-            if (!headerCollection || this.enableValueSorting) {
+            if (!headerCollection) {
                 this.columnCount = 0;
                 this.rowCount = 0;
                 this.cMembers = [];
@@ -1005,11 +1332,11 @@ class PivotEngine {
                         filterMembers : this.filterMembers, 'column', '');
                 }
                 this.insertAllMembersCommon();
+                this.saveDataHeaders = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? {
+                    rowHeaders: extend([], this.rMembers, null, true),
+                    columnHeaders: extend([], this.cMembers, null, true)
+                } : {};
             }
-            this.saveDataHeaders = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? {
-                rowHeaders: extend([], this.rMembers, null, true),
-                columnHeaders: extend([], this.cMembers, null, true)
-            } : {};
         }
         this.pivotValues = [];
         this.headerContent = [];
@@ -1021,7 +1348,7 @@ class PivotEngine {
         let rowFilteredData = [];
         let columnFilteredData = [];
         let valuesCount = (this.values.length);
-        if ((this.isValueFiltersAvail && dataSource.allowValueFilter)) {
+        if (this.isValueFiltersAvail && dataSource.allowValueFilter && !headerCollection) {
             this.valueFilteredData = [];
             let rowHeaders = this.saveDataHeaders.rowHeaders;
             let columnHeaders = this.saveDataHeaders.columnHeaders;
@@ -1076,10 +1403,10 @@ class PivotEngine {
             this.updateFilterMembers(dataSource);
             this.rMembers = rows.length !== 0 ?
                 this.getIndexedHeaders(rows, data, 0, rows[0].showNoDataItems ?
-                    filterMembers : this.filterMembers, 'row', '') : this.rMembers;
+                    filterMembers : this.filterMembers, 'row', '') : [];
             this.cMembers = columns.length !== 0 ?
                 this.getIndexedHeaders(columns, data, 0, columns[0].showNoDataItems ?
-                    filterMembers : this.filterMembers, 'column', '') : this.cMembers;
+                    filterMembers : this.filterMembers, 'column', '') : [];
             this.insertAllMembersCommon();
             this.updateFieldList(savedFieldList);
             this.rowCount = 0;
@@ -1089,11 +1416,13 @@ class PivotEngine {
             this.cMembers = this.updateFramedHeaders(this.cMembers, this.cMembers, columnFilteredData, this.filterFramedHeaders, 'column');
             this.isValueFilterEnabled = true;
         }
-        this.applyValueSorting();
+        if (!headerCollection) {
+            this.applyValueSorting();
+        }
         if (this.pageSettings) {
-            if (!headerCollection || this.enableValueSorting) {
-                this.headerCollection.rowHeaders = extend([], this.rMembers, null, true);
-                this.headerCollection.columnHeaders = extend([], this.cMembers, null, true);
+            if (!headerCollection) {
+                this.headerCollection.rowHeaders = this.rMembers;
+                this.headerCollection.columnHeaders = this.cMembers;
                 this.headerCollection.rowHeadersCount = this.rowCount;
                 this.headerCollection.columnHeadersCount = this.columnCount;
             }
@@ -1102,21 +1431,8 @@ class PivotEngine {
                 this.cMembers = headerCollection.columnHeaders;
                 this.rowCount = headerCollection.rowHeadersCount;
                 this.columnCount = headerCollection.columnHeadersCount;
-                if (this.columns.length > 1 || this.rows.length > 1 || this.allowValueFilter) {
-                    this.headerCollection = extend({}, headerCollection, null, true);
-                }
             }
             this.calculatePagingValues();
-            if (!this.enableValueSorting || !this.allowValueFilter) {
-                if (rows.length > 0) {
-                    this.insertPosition(rows, data, 0, this.filterMembers, 'row', '', this.rMembers);
-                }
-                if (columns.length > 0) {
-                    this.insertPosition(columns, data, 0, this.filterMembers, 'column', '', this.cMembers);
-                }
-                this.rMembers = this.insertTotalPosition(this.rMembers);
-                this.cMembers = this.insertTotalPosition(this.cMembers);
-            }
         }
         this.getAggregatedHeaders(rows, columns, this.rMembers, this.cMembers, values);
         this.getHeaderData(this.cMembers, colheads, this.pivotValues, 0, this.valueAxis ? 1 : valuesCount);
@@ -1131,15 +1447,362 @@ class PivotEngine {
         /* tslint:disable-next-line:max-line-length */
         this.getTableData(this.rMembers, rowheads, colheads, 0, this.pivotValues, valuesCount, this.rMembers[this.rMembers.length - 1], this.cMembers[this.cMembers.length - 1]);
         this.applyAdvancedAggregate(rowheads, colheads, this.pivotValues);
-        if (this.pageSettings) {
-            this.removeIndexProperties();
-        }
         this.isEngineUpdated = true;
         let st2 = new Date().getTime();
         //  console.log(st1 - st2);
     }
     /* tslint:enable */
-    applyValueSorting() {
+    /* tslint:disable:no-string-literal */
+    /* tslint:disable:typedef */
+    /** @hidden */
+    onDrill(drilledItem) {
+        let headersInfo = this.getHeadersInfo(drilledItem.fieldName, drilledItem.axis);
+        this.performDrillOperation(headersInfo.headers, drilledItem, headersInfo.fields, headersInfo.position, 0);
+        this.headerCollection.rowHeadersCount = this.rowCount;
+        this.headerCollection.columnHeadersCount = this.columnCount;
+        if (headersInfo.axis === 'row') {
+            this.headerCollection.rowHeaders = headersInfo.headers;
+        }
+        else {
+            this.headerCollection.columnHeaders = headersInfo.headers;
+        }
+        this.updateEngine();
+    }
+    /** @hidden */
+    onSort(sortItem) {
+        let headersInfo = this.getHeadersInfo(sortItem.name, '');
+        this.fieldList[sortItem.name].sort = sortItem.order;
+        this.performSortOperation(headersInfo.headers, sortItem, headersInfo, 0);
+        this.updateEngine();
+    }
+    /** @hidden */
+    onFilter(filterItem, dataSource) {
+        let headersInfo = this.getHeadersInfo(filterItem.name, '');
+        if (filterItem.type === 'Include' && filterItem.items.length === this.fieldList[filterItem.name].dateMember.length) {
+            this.fieldList[filterItem.name].filter = [];
+            this.fieldList[filterItem.name].filterType = '';
+        }
+        else {
+            this.fieldList[filterItem.name].filter = filterItem.items;
+            this.fieldList[filterItem.name].filterType = filterItem.type;
+        }
+        let posObj = {};
+        for (let pos of this.filterMembers) {
+            posObj[pos] = pos;
+        }
+        this.filterMembers = [];
+        this.fieldFilterMem = {};
+        this.updateFilterMembers(dataSource);
+        let addPos = this.filterMembers.filter((pos) => { return posObj[pos] === undefined; });
+        for (let item of filterItem.items) {
+            
+        }
+        let showNoDataItems = (this.rows[0] && this.rows[0].showNoDataItems) || (this.columns[0] && this.columns[0].showNoDataItems);
+        if (showNoDataItems) {
+            let filterMembers = [];
+            this.filterPosObj = {};
+            for (let ln = 0; ln < addPos.length; ln++) {
+                this.filterPosObj[addPos[ln]] = addPos[ln];
+            }
+            for (let ln = 0; ln < this.indexMatrix.length; ln++) {
+                filterMembers.push(ln);
+            }
+            addPos = filterMembers;
+        }
+        this.performFilterCommonUpdate(filterItem, headersInfo, addPos);
+        this.frameHeaderObjectsCollection = false;
+        this.headerObjectsCollection = {};
+        this.updateEngine();
+    }
+    /** @hidden */
+    onAggregation(field) {
+        this.fieldList[field.name].aggregateType = field.type;
+        this.rMembers = this.headerCollection.rowHeaders;
+        this.cMembers = this.headerCollection.columnHeaders;
+        this.updateEngine();
+    }
+    /** @hidden */
+    onCalcOperation(field) {
+        this.rMembers = this.headerCollection.rowHeaders;
+        this.cMembers = this.headerCollection.columnHeaders;
+        this.getCalculatedField(this.fields);
+        if (this.fieldList[field.name]) {
+            this.fieldList[field.name].formula = field.formula;
+        }
+        else {
+            this.fieldList[field.name] = {
+                id: field.name,
+                caption: field.name,
+                type: 'number',
+                aggregateType: 'CalculatedField',
+                filterType: '',
+                index: this.fields.length - 1,
+                filter: [],
+                sort: this.enableSort ? 'Ascending' : 'None',
+                isSelected: true,
+                isExcelFilter: false,
+                formula: field.formula
+            };
+            if (this.valueAxis === 1) {
+                this.headerCollection.rowHeadersCount = this.rowCount = (this.rowCount / (this.values.length - 1)) * this.values.length;
+            }
+            else {
+                this.headerCollection.columnHeadersCount = this.columnCount = (this.columnCount / (this.values.length - 1)) * this.values.length;
+            }
+        }
+        this.updateEngine();
+    }
+    performDrillOperation(headers, drilledItem, fields, position, currentPosition) {
+        let count = 0;
+        while (count < headers.length) {
+            if (position === currentPosition) {
+                if (drilledItem.memberName === headers[count].actualText) {
+                    if (drilledItem.action === 'down') {
+                        headers[count].isDrilled = true;
+                        headers[count].members = this.getIndexedHeaders(fields, this.data, position + 1, headers[count].index, drilledItem.axis, drilledItem.memberName);
+                        let sortedHeaders;
+                        if (drilledItem.axis === 'row') {
+                            sortedHeaders = this.applyValueSorting(headers[count].members, this.cMembers);
+                            headers[count].members = sortedHeaders.rMembers;
+                        }
+                        else {
+                            sortedHeaders = this.applyValueSorting(this.rMembers, headers[count].members);
+                            headers[count].members = sortedHeaders.cMembers;
+                        }
+                    }
+                    else {
+                        headers[count].isDrilled = false;
+                        this.updateHeadersCount(headers[count].members, drilledItem.axis, 'minus');
+                        headers[count].members = [];
+                    }
+                    break;
+                }
+            }
+            else if (headers[count].members.length > 0) {
+                headers[count].members = this.performDrillOperation(headers[count].members, drilledItem, fields, position, currentPosition + 1);
+            }
+            count++;
+        }
+        return headers;
+    }
+    performSortOperation(headers, sortItem, headersInfo, currentPosition) {
+        let count = 0;
+        while (count < headers.length) {
+            if (headersInfo.position === currentPosition) {
+                headers = this.getSortedHeaders(headers, sortItem.order.toString());
+                break;
+            }
+            else if (headers[count].members.length > 0) {
+                headers[count].members = this.performSortOperation(headers[count].members, sortItem, headersInfo, currentPosition + 1);
+            }
+            count++;
+        }
+        return headers;
+    }
+    performFilterDeletion(headers, filterItem, headersInfo, filterObjects, currentPosition) {
+        let count = 0;
+        let loopIn = true;
+        while (count < headers.length && loopIn) {
+            if (headersInfo.position === currentPosition) {
+                let engine = this;
+                headers = headers.filter((item) => {
+                    return !engine.fieldFilterMem[filterItem.name].memberObj[item.formattedText] || item.type === 'grand sum';
+                });
+                loopIn = false;
+            }
+            else if (headers[count].members.length > 0) {
+                headers[count].members = this.performFilterDeletion(headers[count].members, filterItem, headersInfo, filterObjects, currentPosition + 1);
+            }
+            count++;
+        }
+        let engine = this;
+        return headers.filter((item) => {
+            return item.isDrilled ? item.members.length > 0 : engine.matchIndexes(item.indexObject, filterObjects);
+        });
+    }
+    matchIndexes(index, filterObjects) {
+        let keys = Object.keys(index);
+        let len = keys.length;
+        if (len === 0) {
+            return true;
+        }
+        while (len > -1) {
+            if (filterObjects[index[keys[len]]] !== undefined) {
+                return true;
+            }
+            len--;
+        }
+        return false;
+    }
+    performFilterAddition(headers, fields, headersInfo) {
+        let count = 0;
+        while (count < headers.length) {
+            let levelName = headers[count].valueSort.levelName;
+            if (this.headerObjectsCollection[levelName]) {
+                let memberNameObj = {};
+                for (let member of headers[count].members) {
+                    memberNameObj[member.valueSort.levelName.toString()] = member.valueSort.levelName.toString();
+                }
+                let excessHeaders = this.headerObjectsCollection[levelName].filter((member) => {
+                    return !memberNameObj[member.valueSort.levelName.toString()];
+                });
+                headers[count].members = headers[count].members.concat(excessHeaders);
+                headers[count].members = this.getSortedHeaders(headers[count].members, this.fieldList[headersInfo.fields[headers[count].members[0].level].name].sort);
+                delete this.headerObjectsCollection[levelName];
+            }
+            if (headers[count].members.length > 0) {
+                headers[count].members = this.performFilterAddition(headers[count].members, fields, headersInfo);
+            }
+            count++;
+        }
+        return headers;
+    }
+    performFilterCommonUpdate(filterItem, headersInfo, addPos) {
+        let rawHeaders = headersInfo.axis === 'row' ? this.rMembers : this.cMembers;
+        if (headersInfo.axis === 'row') {
+            this.rowCount = 0;
+        }
+        else {
+            this.columnCount = 0;
+        }
+        let filterObjects = {};
+        for (let item of this.filterMembers) {
+            filterObjects[item] = item;
+        }
+        if (this.fieldFilterMem[filterItem.name]) {
+            rawHeaders = this.performFilterDeletion(headersInfo.headers, filterItem, headersInfo, filterObjects, 0);
+        }
+        if (addPos.length > 0) {
+            this.frameHeaderObjectsCollection = true;
+            if (headersInfo.fields.filter((item) => { return item.showNoDataItems; }).length > 0) {
+                addPos = this.data.map((item, pos) => { return pos; });
+            }
+            this.headerObjectsCollection['parent'] = this.getIndexedHeaders(headersInfo.fields, this.data, 0, addPos, headersInfo.axis, '');
+            rawHeaders = this.performFilterAddition(rawHeaders, headersInfo.fields, headersInfo);
+            let headerNames = {};
+            for (let header of rawHeaders) {
+                headerNames[header.valueSort.levelName.toString()] = header.valueSort.levelName.toString();
+            }
+            let excessHeaders = this.headerObjectsCollection['parent'].filter((header) => {
+                return !headerNames[header.valueSort.levelName.toString()];
+            });
+            let grandHeader = rawHeaders.filter((item) => { return item.type === 'grand sum'; });
+            rawHeaders.pop();
+            rawHeaders = this.getSortedHeaders(rawHeaders.concat(excessHeaders), this.fieldList[headersInfo.fields[0].name].sort).concat(grandHeader);
+        }
+        this.updateHeadersCount(rawHeaders, headersInfo.axis, 'plus');
+        if (headersInfo.axis === 'row') {
+            if (headersInfo.position > 0) {
+                this.insertPosition(this.rows, this.data, 0, this.filterMembers, 'row', '', rawHeaders);
+            }
+            this.insertTotalPosition(rawHeaders);
+            this.rMembers = this.headerCollection.rowHeaders = rawHeaders;
+            this.headerCollection.rowHeadersCount = this.rowCount;
+        }
+        else {
+            if (headersInfo.position > 0) {
+                this.insertPosition(this.columns, this.data, 0, this.filterMembers, 'column', '', rawHeaders);
+            }
+            this.insertTotalPosition(rawHeaders);
+            this.cMembers = this.headerCollection.columnHeaders = rawHeaders;
+            this.headerCollection.columnHeadersCount = this.columnCount;
+        }
+        this.applyValueSorting();
+    }
+    getHeadersInfo(fieldName, axis) {
+        this.rMembers = this.headerCollection.rowHeaders;
+        this.cMembers = this.headerCollection.columnHeaders;
+        axis = axis === '' ? this.getAxisByFieldName(fieldName) : axis;
+        let headers = axis === 'row' ? this.rMembers : this.cMembers;
+        let fields = axis === 'row' ? this.rows : this.columns;
+        let position = 0;
+        for (let field of fields) {
+            if (field.name === fieldName) {
+                break;
+            }
+            position++;
+        }
+        return { axis: axis, fields: fields, headers: headers, position: position };
+    }
+    /** @hidden */
+    updateEngine() {
+        this.removeCount = 0;
+        this.calculatePagingValues();
+        this.pivotValues = [];
+        this.headerContent = [];
+        this.valueContent = [];
+        let rowheads = [];
+        let colheads = [];
+        let valuesCount = (this.values.length);
+        this.getAggregatedHeaders(this.rows, this.columns, this.rMembers, this.cMembers, this.values);
+        this.getHeaderData(this.cMembers, colheads, this.pivotValues, 0, this.valueAxis ? 1 : valuesCount);
+        this.insertSubTotals();
+        this.getTableData(this.rMembers, rowheads, colheads, 0, this.pivotValues, valuesCount, this.rMembers[this.rMembers.length - 1], this.cMembers[this.cMembers.length - 1]);
+        this.applyAdvancedAggregate(rowheads, colheads, this.pivotValues);
+        this.isEngineUpdated = true;
+    }
+    getAxisByFieldName(fieldName) {
+        let axisCount = 0;
+        let axis = '';
+        while (axisCount < 4 && axis === '') {
+            switch (axisCount) {
+                case 0:
+                    axis = this.getFieldByName(fieldName, this.rows) ? 'row' : '';
+                    break;
+                case 1:
+                    axis = this.getFieldByName(fieldName, this.columns) ? 'column' : '';
+                    break;
+            }
+            axisCount++;
+        }
+        return axis;
+    }
+    getFieldByName(fieldName, fields) {
+        return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
+    }
+    /* tslint:disable:no-any */
+    updateHeadersCount(headers, axis, action) {
+        let lenCnt = 0;
+        while (lenCnt < headers.length) {
+            if (axis === 'row') {
+                this.rowCount = this.rowCount - (action === 'plus' ? -(this.valueAxis === 1 ? this.values.length : 1) :
+                    (this.valueAxis === 1 ? this.values.length : 1));
+            }
+            else {
+                this.columnCount = this.columnCount - (action === 'plus' ? -(this.valueAxis === 1 ? 1 : this.values.length) :
+                    (this.valueAxis === 1 ? 1 : this.values.length));
+            }
+            if (headers[lenCnt].members.length > 0) {
+                this.updateHeadersCount(headers[lenCnt].members, axis, action);
+            }
+            lenCnt++;
+        }
+    }
+    frameHeaderWithKeys(header) {
+        let keys = Object.keys(header);
+        let keyPos = 0;
+        let framedHeader = {};
+        while (keyPos < keys.length) {
+            framedHeader[keys[keyPos]] = header[keys[keyPos]];
+            keyPos++;
+        }
+        return framedHeader;
+    }
+    getSortedHeaders(headers, sortOrder) {
+        return this.enableSort ? (sortOrder === 'Ascending' ?
+            (headers.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+            (sortOrder === 'Descending' ?
+                (headers.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) : headers)) :
+            headers;
+    }
+    /** @hidden */
+    applyValueSorting(rMembers, cMembers) {
+        let isNullArgument = false;
+        if (rMembers === undefined || cMembers === undefined) {
+            rMembers = this.rMembers;
+            cMembers = this.cMembers;
+            isNullArgument = true;
+        }
         if (this.valueSortSettings.headerText && this.valueSortSettings.headerText !== '' && this.values.length > 0) {
             let textArray = this.valueSortSettings.headerText.split(this.valueSortSettings.headerDelimiter);
             let hText = '';
@@ -1163,24 +1826,40 @@ class PivotEngine {
                 mType = this.fieldList[caption].aggregateType;
             }
             else {
-                hText = this.valueSortSettings.headerText;
+                if (!this.alwaysShowValueHeader || textArray.length === 1) {
+                    hText = this.valueSortSettings.headerText;
+                }
+                else {
+                    for (let i = 0; i < textArray.length - 1; i++) {
+                        hText = hText === '' ? textArray[i] : (hText + this.valueSortSettings.headerDelimiter + textArray[i]);
+                    }
+                }
                 mIndex = this.fieldList[this.values[0].name].index;
                 mType = this.fieldList[this.values[0].name].aggregateType;
             }
             let member;
             if (this.valueAxis === 0) {
-                member = this.getMember(this.cMembers, hText);
+                member = this.getMember(cMembers, hText);
                 if (member) {
-                    this.sortByValueRow(this.rMembers, member, this.valueSortSettings.sortOrder, mIndex, mType);
+                    rMembers = this.sortByValueRow(rMembers, member, this.valueSortSettings.sortOrder, mIndex, mType);
                 }
             }
             else {
-                member = this.getMember(this.rMembers, hText);
+                member = this.getMember(rMembers, hText);
                 if (member) {
-                    this.sortByValueRow(this.cMembers, member, this.valueSortSettings.sortOrder, mIndex, mType);
+                    cMembers = this.sortByValueRow(cMembers, member, this.valueSortSettings.sortOrder, mIndex, mType);
+                }
+            }
+            if (isNullArgument) {
+                this.rMembers = rMembers;
+                this.cMembers = cMembers;
+                if (this.pageSettings) {
+                    this.headerCollection.rowHeaders = this.rMembers;
+                    this.headerCollection.columnHeaders = this.cMembers;
                 }
             }
         }
+        return { rMembers: rMembers, cMembers: cMembers };
     }
     getMember(cMembers, headerText) {
         let vlen = cMembers.length;
@@ -1200,29 +1879,23 @@ class PivotEngine {
         return member;
     }
     sortByValueRow(rMembers, member, sortOrder, mIndex, mType) {
-        let sort = false;
-        let vlen = rMembers.length;
-        for (let j = 0; j < vlen; j++) {
-            for (let k = j; k < vlen && rMembers[j].type !== 'grand sum' && rMembers[k].type !== 'grand sum'; k++) {
-                if (sortOrder === 'Descending') {
-                    sort = this.getAggregateValue(rMembers[j].index, member.indexObject, mIndex, mType) <
-                        this.getAggregateValue(rMembers[k].index, member.indexObject, mIndex, mType);
-                }
-                else {
-                    sort = this.getAggregateValue(rMembers[j].index, member.indexObject, mIndex, mType) >
-                        this.getAggregateValue(rMembers[k].index, member.indexObject, mIndex, mType);
-                }
-                if (sort) {
-                    let temp = {};
-                    temp = rMembers[j];
-                    rMembers[j] = rMembers[k];
-                    rMembers[k] = temp;
-                }
+        let aggreColl = [];
+        for (let header of rMembers) {
+            if (header.type === 'grand sum') {
+                aggreColl.push({ 'header': header });
             }
-            if (rMembers[j].members.length > 0) {
-                this.sortByValueRow(rMembers[j].members, member, sortOrder, mIndex, mType);
+            else {
+                aggreColl.push({ 'header': header, 'value': this.getAggregateValue(header.index, member.indexObject, mIndex, mType) });
             }
         }
+        aggreColl.sort((a, b) => { return sortOrder === 'Descending' ? (b['value'] - a['value']) : (a['value'] - b['value']); });
+        rMembers = aggreColl.map((item) => { return item['header']; });
+        for (let header of rMembers) {
+            if (header.members.length > 0) {
+                header.members = this.sortByValueRow(header.members, member, sortOrder, mIndex, mType);
+            }
+        }
+        return rMembers;
     }
     insertAllMembersCommon() {
         /* inserting the row grant-total members */
@@ -1234,27 +1907,6 @@ class PivotEngine {
         let columnFlag = (this.showGrandTotals && this.showColumnGrandTotals) ? true : (this.columns.length > 0) ? false : true;
         if (columnFlag) {
             this.insertAllMember(this.cMembers, this.filterMembers, '', 'column');
-        }
-    }
-    removeIndexProperties() {
-        for (let rCnt = 0; rCnt < this.headerContent.length; rCnt++) {
-            if (this.headerContent[rCnt]) {
-                for (let cCnt = 0; cCnt < Object.keys(this.headerContent[rCnt]).length; cCnt++) {
-                    let key = Number(Object.keys(this.headerContent[rCnt])[cCnt]);
-                    this.headerContent[rCnt][key].index = [];
-                    this.headerContent[rCnt][key].indexObject = {};
-                    this.pivotValues[rCnt][key].index = [];
-                    this.pivotValues[rCnt][key].indexObject = {};
-                }
-            }
-        }
-        for (let rCnt = this.headerContent.length; rCnt < this.pivotValues.length; rCnt++) {
-            if (this.headerContent[rCnt]) {
-                this.valueContent[rCnt - this.headerContent.length][0].index = [];
-                this.valueContent[rCnt - this.headerContent.length][0].indexObject = {};
-                this.pivotValues[rCnt][0].index = [];
-                this.pivotValues[rCnt][0].indexObject = {};
-            }
         }
     }
     insertSubTotals() {
@@ -1269,6 +1921,9 @@ class PivotEngine {
                 for (let colCnt = colLength - 1; colCnt > 0; colCnt--) {
                     let cell = rowCells[colCnt];
                     if (cell) {
+                        // if (cell.rowSpan > 1) {
+                        //     cell.rowSpan = 1;
+                        // }
                         if (savedCell) {
                             savedCell.colSpan = spanCnt;
                             savedCell.colIndex = savedCell.colIndex - (spanCnt - 1);
@@ -1334,7 +1989,6 @@ class PivotEngine {
     /* tslint:disable:max-func-body-length */
     getIndexedHeaders(keys, data, keyInd, position, axis, parentMember) {
         let hierarchy = [];
-        let showPosition = this.enableValueSorting || this.allowValueFilter || !this.pageSettings;
         if (keys) {
             let rlen = keys.length;
             let decisionObj = {};
@@ -1342,7 +1996,6 @@ class PivotEngine {
             let field = keys[keyInd];
             // let members: string[] = Object.keys(this.fieldList[field].members);
             let childrens = this.fieldList[fieldName];
-            let index = {};
             let isNoData = false;
             let isDateType = (this.formatFields[fieldName] &&
                 (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1));
@@ -1396,27 +2049,20 @@ class PivotEngine {
                     member.index = decisionObj[memInd].index;
                     member.indexObject = decisionObj[memInd].indexObject;
                     if (availData) {
-                        if (showPosition) {
-                            member.index = decisionObj[memInd].index = [position[pos]];
-                            decisionObj[memInd].indexObject[position[pos]] = position[pos];
-                            member.indexObject = decisionObj[memInd].indexObject;
-                        }
-                        else {
-                            index[memInd] = [position[pos]];
-                        }
+                        member.index = decisionObj[memInd].index = [position[pos]];
+                        decisionObj[memInd].indexObject[position[pos]] = position[pos];
+                        member.indexObject = decisionObj[memInd].indexObject;
                     }
                     member.ordinal = memInd;
                     member.valueSort = {};
-                    if (showPosition) {
-                        member.valueSort.axis = fieldName;
-                        if (keyInd !== 0) {
-                            member.valueSort.levelName = parentMember + this.valueSortSettings.headerDelimiter + member.formattedText;
-                            member.valueSort[parentMember + this.valueSortSettings.headerDelimiter + member.formattedText] = 1;
-                        }
-                        else {
-                            member.valueSort[member.formattedText] = 1;
-                            member.valueSort.levelName = member.formattedText;
-                        }
+                    member.valueSort.axis = fieldName;
+                    if (keyInd !== 0) {
+                        member.valueSort.levelName = parentMember + this.valueSortSettings.headerDelimiter + member.formattedText;
+                        member.valueSort[parentMember + this.valueSortSettings.headerDelimiter + member.formattedText] = 1;
+                    }
+                    else {
+                        member.valueSort[member.formattedText] = 1;
+                        member.valueSort.levelName = member.formattedText;
                     }
                     //if (!member.members) {
                     member.members = [];
@@ -1425,18 +2071,8 @@ class PivotEngine {
                     hierarchy.push(member);
                 }
                 else if (availData) {
-                    if (showPosition) {
-                        decisionObj[memInd].index.push(position[pos]);
-                        decisionObj[memInd].indexObject[position[pos]] = position[pos];
-                    }
-                    else {
-                        if (index[memInd] === undefined) {
-                            index[memInd] = [position[pos]];
-                        }
-                        else {
-                            index[memInd].push(position[pos]);
-                        }
-                    }
+                    decisionObj[memInd].index.push(position[pos]);
+                    decisionObj[memInd].indexObject[position[pos]] = position[pos];
                 }
                 if (showNoDataItems && !isNoData && keyInd > 0 && pos + 1 === position.length &&
                     Object.keys(savedMembers).length > 0) {
@@ -1446,24 +2082,27 @@ class PivotEngine {
                 }
             }
             for (let iln = 0, ilt = hierarchy.length; iln < ilt; iln++) {
-                if (axis === 'row') {
-                    this.rowCount += this.rowValuesLength;
-                }
-                else {
-                    this.columnCount += this.colValuesLength;
-                }
-                if (rlen - 1 > keyInd && hierarchy[iln].isDrilled) {
-                    if (showPosition) {
-                        let level = null;
-                        if (hierarchy[iln].valueSort && hierarchy[iln].valueSort.levelName) {
-                            level = hierarchy[iln].valueSort.levelName;
-                        }
-                        parentMember = (level || hierarchy[iln].formattedText);
+                if (!this.frameHeaderObjectsCollection) {
+                    if (axis === 'row') {
+                        this.rowCount += this.rowValuesLength;
                     }
-                    let filterPosition = !showPosition ? index[hierarchy[iln].ordinal] : hierarchy[iln].index;
+                    else {
+                        this.columnCount += this.colValuesLength;
+                    }
+                }
+                let level = null;
+                if (hierarchy[iln].valueSort && hierarchy[iln].valueSort.levelName) {
+                    level = hierarchy[iln].valueSort.levelName;
+                }
+                parentMember = (level || hierarchy[iln].formattedText);
+                if (rlen - 1 > keyInd && hierarchy[iln].isDrilled) {
+                    let filterPosition = hierarchy[iln].index;
                     /* tslint:disable:align */
                     hierarchy[iln].members = this.getIndexedHeaders(keys, data, keyInd + 1, (filterPosition === undefined ? [] : filterPosition), axis, parentMember);
                     /* tslint:enable:align */
+                    if (this.frameHeaderObjectsCollection) {
+                        this.headerObjectsCollection[parentMember] = hierarchy[iln].members;
+                    }
                 }
             }
             /* tslint:disable:typedef */
@@ -1472,12 +2111,16 @@ class PivotEngine {
                 if (isDateType) {
                     return childrens.sort === 'Ascending' ?
                         (hierarchy.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
-                        (hierarchy.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0)));
+                        childrens.sort === 'Descending' ?
+                            (hierarchy.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0))) :
+                            hierarchy;
                 }
                 else {
                     return childrens.sort === 'Ascending' ?
                         (hierarchy.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-                        (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0)));
+                        childrens.sort === 'Descending' ?
+                            (hierarchy.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
+                            hierarchy;
                 }
             }
             else {
@@ -1578,8 +2221,6 @@ class PivotEngine {
         return headers;
     }
     calculatePagingValues() {
-        let isValueSorting = ((this.valueSortSettings.sortOrder !== 'None' &&
-            this.valueSortSettings.headerText !== '') || this.enableValueSorting) ? true : false;
         if (this.pageSettings) {
             if (this.valueAxis === 1) {
                 this.rowValuesLength = this.values.length;
@@ -1600,7 +2241,7 @@ class PivotEngine {
             this.rowStartPos = exactStartPos;
             this.endPos = this.rowStartPos + (this.pageSettings.rowSize * 3 * this.rowValuesLength);
             this.endPos = this.endPos > this.rowCount ? this.rowCount : this.endPos;
-            this.rMembers = isValueSorting ? this.rMembers : this.performSlicing(this.rMembers, [], this.rowStartPos, 'row');
+            this.rMembers = this.performSlicing(this.rMembers, [], this.rowStartPos, 'row');
             this.memberCnt = -this.colValuesLength;
             this.pageInLimit = false;
             this.colHdrBufferCalculated = false;
@@ -1615,11 +2256,9 @@ class PivotEngine {
             }
             this.colFirstLvl = (this.colStartPos - exactStartPos) % this.pageSettings.columnSize;
             this.colStartPos = exactStartPos;
-            if (!isValueSorting) {
-                this.endPos = this.colStartPos + (this.pageSettings.columnSize * 3 * this.colValuesLength);
-                this.endPos = this.endPos > this.columnCount ? this.columnCount : this.endPos;
-                this.cMembers = this.performSlicing(this.cMembers, [], this.colStartPos, 'column');
-            }
+            this.endPos = this.colStartPos + (this.pageSettings.columnSize * 3 * this.colValuesLength);
+            this.endPos = this.endPos > this.columnCount ? this.columnCount : this.endPos;
+            this.cMembers = this.performSlicing(this.cMembers, [], this.colStartPos, 'column');
             this.memberCnt = -1;
             this.pageInLimit = false;
         }
@@ -1656,12 +2295,10 @@ class PivotEngine {
                     }
                 }
             }
-            let members = headers[pos].members;
-            slicedHeaders.push(headers[pos]);
+            slicedHeaders.push(headers[pos].members.length > 0 ? this.removeChildMembers(headers[pos]) : headers[pos]);
             if (headers[pos].members.length > 0) {
-                slicedHeaders[slicedHeaders.length - 1].members = [];
                 slicedHeaders[slicedHeaders.length - 1].members =
-                    this.performSlicing(members, [], startPos, axis);
+                    this.performSlicing(headers[pos].members, [], startPos, axis);
             }
             if (!this.pageInLimit) {
                 slicedHeaders.pop();
@@ -1673,13 +2310,25 @@ class PivotEngine {
         }
         return slicedHeaders;
     }
+    removeChildMembers(member) {
+        let keys = Object.keys(member);
+        let keyPos = 0;
+        let framedMember = {};
+        while (keyPos < keys.length) {
+            framedMember[keys[keyPos]] = member[keys[keyPos]];
+            if (keys[keyPos] === 'members') {
+                framedMember['members'] = [];
+            }
+            keyPos++;
+        }
+        return framedMember;
+    }
     insertAllMember(set, filter, customText, axis) {
         let len = set.length;
-        let showPosition = this.enableValueSorting || this.allowValueFilter || !this.pageSettings;
         customText = ' Total';
         set[len] = {
             hasChild: false,
-            index: !showPosition ? [] : filter,
+            index: filter,
             level: 0,
             axis: axis,
             isDrilled: false,
@@ -1692,10 +2341,8 @@ class PivotEngine {
         };
         set[len].valueSort[set[len].formattedText] = 1;
         set[len].valueSort.levelName = set[len].formattedText;
-        if (showPosition) {
-            for (let ln = 0, lt = filter.length; ln < lt; ln++) {
-                set[len].indexObject[filter[ln]] = filter[ln];
-            }
+        for (let ln = 0, lt = filter.length; ln < lt; ln++) {
+            set[len].indexObject[filter[ln]] = filter[ln];
         }
         if (axis === 'row') {
             this.rowCount += this.rowValuesLength;
@@ -1719,13 +2366,13 @@ class PivotEngine {
                 data[tnum] = [];
                 this.valueContent[actCnt] = {};
                 //data[tnum][0] = rows[rln].name;
-                data[tnum][0] = this.valueContent[actCnt][0] = rows[rln];
+                data[tnum][0] = this.valueContent[actCnt][0] = this.frameHeaderWithKeys(rows[rln]);
             }
             else {
                 // data[tnum][0] = rows[rln].name;
-                data[tnum][0] = this.valueContent[actCnt][0] = rows[rln];
+                data[tnum][0] = this.valueContent[actCnt][0] = this.frameHeaderWithKeys(rows[rln]);
             }
-            if (this.valueAxis && this.isMutiMeasures && !(rows[rln].isDrilled &&
+            if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && !(rows[rln].isDrilled &&
                 ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                     !this.showSubTotals || !this.showRowSubTotals))) {
                 let hpos = tnum;
@@ -1803,7 +2450,7 @@ class PivotEngine {
                             baseField = values[vln].baseField;
                             baseItem = values[vln].baseItem;
                         }
-                        else if (this.valueAxis && this.isMutiMeasures && columns.length > 0) {
+                        else if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && columns.length > 0) {
                             baseField = columns[0].name;
                             baseItem = Object.keys(this.fieldList[columns[0].name].members)[0];
                         }
@@ -1843,7 +2490,7 @@ class PivotEngine {
                     {
                         this.selectedHeaders.values.push(values[vln].name);
                         /* tslint:disable-next-line:max-line-length */
-                        this.getAggregatedHeaderData((this.valueAxis && this.isMutiMeasures ? cMembers : rMembers), values[vln].name, undefined, false, (this.valueAxis && this.isMutiMeasures ? 'column' : 'row'), values[vln].type, this.selectedHeaders.selectedHeader, vln);
+                        this.getAggregatedHeaderData((this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) ? cMembers : rMembers), values[vln].name, undefined, false, (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) ? 'column' : 'row'), values[vln].type, this.selectedHeaders.selectedHeader, vln);
                     }
                     break;
                 case 'PercentageOfParentTotal':
@@ -1853,7 +2500,7 @@ class PivotEngine {
                         if (values[vln].baseField) {
                             baseField = values[vln].baseField;
                         }
-                        else if (this.valueAxis && this.isMutiMeasures && columns.length > 0) {
+                        else if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && columns.length > 0) {
                             baseField = columns[0].name;
                         }
                         else if (rows.length > 0) {
@@ -2004,7 +2651,7 @@ class PivotEngine {
             for (let index of indexCollection) {
                 let currentSet = data[pivotIndex[index][0]][pivotIndex[index][1]];
                 // currentSet.formattedText = '0';
-                currentSet.formattedText = (this.selectedHeaders.selectedHeader.length > 0 ? '0' : '#N/A');
+                currentSet.formattedText = (this.selectedHeaders.selectedHeader.length > 0 ? this.emptyCellTextContent : '#N/A');
             }
         }
         else {
@@ -2016,7 +2663,7 @@ class PivotEngine {
         for (let headers of selectedHeaders) {
             let selectedHeaderCollection = headers.aggregateHeaders;
             let name = headers.value;
-            let valueCount = (this.valueAxis && this.isMutiMeasures ? headers.valueCount : 0);
+            let valueCount = (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) ? headers.valueCount : 0);
             let aggregateType = headers.type;
             let uniqueName = headers.uniqueName;
             let axis = headers.axis;
@@ -2134,12 +2781,12 @@ class PivotEngine {
                                 let cVal = currentSet.value - selectedRowValues[index[1]].value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
                                 if (aggregateType === 'DifferenceFrom') {
-                                    currentSet.formattedText = this.getFormattedValue(cVal, name).formattedText;
+                                    currentSet.formattedText = cVal === 0 ? this.emptyCellTextContent : this.getFormattedValue(cVal, name).formattedText;
                                 }
                                 else {
                                     cVal = (selectedRowValues[index[1]].value === 0 ?
                                         0 : (cVal / selectedRowValues[index[1]].value));
-                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                                 }
                             }
                         }
@@ -2198,12 +2845,12 @@ class PivotEngine {
                                 let cVal = currentSet.value - selectedColumnValues[index[0]].value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
                                 if (aggregateType === 'DifferenceFrom') {
-                                    currentSet.formattedText = this.getFormattedValue(cVal, name).formattedText;
+                                    currentSet.formattedText = cVal === 0 ? this.emptyCellTextContent : this.getFormattedValue(cVal, name).formattedText;
                                 }
                                 else {
                                     cVal = (selectedColumnValues[index[0]].value === 0 ?
                                         0 : (cVal / selectedColumnValues[index[0]].value));
-                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                    currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                                 }
                             }
                         }
@@ -2239,7 +2886,7 @@ class PivotEngine {
                                 let currentSet = data[i[0]][i[1]];
                                 let cVal = currentSet.value / selectedRowValues[i[1]].value;
                                 cVal = isNaN(cVal) ? 0 : cVal;
-                                currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                             }
                         }
                         else {
@@ -2268,7 +2915,7 @@ class PivotEngine {
                                 let currentSet = data[i[0]][i[1]];
                                 let val = currentSet.value / selectedColumnValues[i[0]].value;
                                 val = isNaN(val) ? 0 : val;
-                                currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: 2 }) : '0');
+                                currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: 2 }) : this.emptyCellTextContent);
                             }
                         }
                     }
@@ -2333,7 +2980,9 @@ class PivotEngine {
         if (!isLeastNode) {
             this.getTableData(reformAxis[tnum - vln].members, reformAxis, columns, tnum, data, vlt, rTotal, cTotal);
         }
-        reformAxis[tnum - vln].members = [];
+        if (!this.pageSettings) {
+            reformAxis[tnum - vln].members = [];
+        }
     }
     updateRowData(rows, columns, tnum, data, vln, rln, cln, dln, actCnt, rTotal, cTotal) {
         let mPos = this.fieldList[this.values[vln].name].index;
@@ -2389,12 +3038,15 @@ class PivotEngine {
         let subTotal = (rows[rln].isDrilled && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
             !this.showSubTotals || !this.showRowSubTotals));
         let formattedText = subTotal ?
-            '' : aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
-        if (value && (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
+            '' : (value === undefined) ? this.emptyCellTextContent :
+            aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
+        if (!isNaN(value) && !isNullOrUndefined(value) &&
+            (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
             formattedText = this.globalize.formatNumber(value, { format: 'P', maximumFractionDigits: 2 });
         }
         else if (!subTotal &&
-            isNaN(value) && (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {
+            isNaN(value) && !isNullOrUndefined(value) &&
+            (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {
             formattedText = '#DIV/0!';
         }
         //dln = data[tnum].length;
@@ -2402,7 +3054,7 @@ class PivotEngine {
             axis: 'value', actualText: field, indexObject: this.isDrillThrough ? this.rawIndexObject : {},
             rowHeaders: rows[rln].type === 'grand sum' ? '' : rows[rln].valueSort.levelName,
             columnHeaders: columns[cln].type === 'grand sum' ? '' : columns[cln].valueSort.levelName,
-            formattedText: formattedText, value: value, rowIndex: tnum, colIndex: dln, isSum: isSum
+            formattedText: formattedText, value: isNullOrUndefined(value) ? 0 : value, rowIndex: tnum, colIndex: dln, isSum: isSum
         };
         this.rawIndexObject = {};
     }
@@ -2418,7 +3070,7 @@ class PivotEngine {
             if ((!isNullOrUndefined(axis[rln].showSubTotals) && !axis[rln].showSubTotals) ||
                 !this.showSubTotals || !this.showColumnSubTotals) {
                 if (!axis[rln].isDrilled) {
-                    reformAxis[reformAxis.length] = axis[rln];
+                    reformAxis[reformAxis.length] = this.frameHeaderWithKeys(axis[rln]);
                 }
                 else {
                     this.removeCount++;
@@ -2427,7 +3079,7 @@ class PivotEngine {
             }
             else {
                 tnum = reformAxis.length;
-                reformAxis[tnum] = axis[rln];
+                reformAxis[tnum] = this.frameHeaderWithKeys(axis[rln]);
             }
             //  let rplus: number = rln + 1;
             let lvl = axis[rln].level;
@@ -2436,12 +3088,13 @@ class PivotEngine {
             if (!data[lvl]) {
                 data[lvl] = [];
                 this.headerContent[lvl] = {};
-                data[lvl][(tnum * vcnt) + vcnt] = this.headerContent[lvl][(tnum * vcnt) + vcnt] = axis[rln];
+                data[lvl][(tnum * vcnt) + vcnt] = this.headerContent[lvl][(tnum * vcnt) + vcnt] = this.frameHeaderWithKeys(axis[rln]);
             }
             else {
-                data[lvl][(tnum * vcnt) + vcnt] = this.headerContent[lvl][(tnum * vcnt) + vcnt] = axis[rln];
+                data[lvl][(tnum * vcnt) + vcnt] = this.headerContent[lvl][(tnum * vcnt) + vcnt] = this.frameHeaderWithKeys(axis[rln]);
             }
-            if (this.isMutiMeasures && !this.valueAxis) {
+            let isSingleMeasure = (this.columns.length === 0 && this.values.length === 1) ? true : false;
+            if ((this.isMutiMeasures || this.alwaysShowValueHeader || isSingleMeasure) && !this.valueAxis) {
                 for (let vln = 0; vln < vcnt; vln++) {
                     let name = this.values[vln].caption ? this.values[vln].caption : this.values[vln].name;
                     let calObj = {
@@ -2472,7 +3125,9 @@ class PivotEngine {
             else if (axis[rln].valueSort && axis[rln].valueSort[sortText]) {
                 this.valueSortSettings.columnIndex = (tnum * vcnt) + 1;
             }
-            reformAxis[tnum].members = [];
+            if (!this.pageSettings) {
+                reformAxis[tnum].members = [];
+            }
         }
     }
     /* tslint:disable */
@@ -2485,9 +3140,11 @@ class PivotEngine {
         let cellValue = 0;
         let avgCnt = 0;
         let isInit = true;
+        let isValueExist = false;
         if (type && type.toLowerCase() === 'count') {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     cellValue += (this.valueMatrix[rowIndex[ri]][value] === undefined ? 0 : 1);
                 }
@@ -2498,6 +3155,7 @@ class PivotEngine {
             let duplicateValues = [];
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
                     if (currentVal !== undefined) {
@@ -2514,6 +3172,7 @@ class PivotEngine {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                    isValueExist = true;
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
                     if (currentVal !== undefined) {
                         cellValue = (isInit ? 1 : (cellValue === 0 ? 1 : cellValue));
@@ -2533,6 +3192,7 @@ class PivotEngine {
             let avgDifferenceVal = 0;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
                     if (currentVal !== undefined) {
@@ -2564,6 +3224,7 @@ class PivotEngine {
             let isFirst = true;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     if (isFirst) {
                         cellValue = this.valueMatrix[rowIndex[ri]][value];
@@ -2580,6 +3241,7 @@ class PivotEngine {
             let isMaxFirst = true;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     if (isMaxFirst) {
                         cellValue = this.valueMatrix[rowIndex[ri]][value];
@@ -2595,6 +3257,7 @@ class PivotEngine {
         else if (type && type.toLowerCase() === 'calculatedfield') {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let calcField = this.calculatedFields[this.fields[value]];
                     let actualFormula = calcField.formula;
@@ -2612,10 +3275,10 @@ class PivotEngine {
                             actualFormula = (actualFormula).replace(aggregatedValue.formula, value.toString());
                         }
                     }
-                    // /* tslint:disable */
+                    /* tslint:disable */
                     cellValue = eval(actualFormula);
-                    // /* tslint:enable */
-                    JSON.parse(cellValue.toString());
+                    (cellValue === Infinity ? Infinity : JSON.parse(cellValue.toString()));
+                    /* tslint:enable */
                 }
                 ri++;
             }
@@ -2623,6 +3286,7 @@ class PivotEngine {
         else {
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
+                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
@@ -2652,7 +3316,7 @@ class PivotEngine {
                  ri++;
              }
          } */
-        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : cellValue);
+        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
     }
     /* tslint:enable */
     /** hidden */
@@ -2735,6 +3399,8 @@ const excelQueryCellInfo = 'excelQueryCellInfo';
 /** @hidden */
 const pdfQueryCellInfo = 'pdfQueryCellInfo';
 /** @hidden */
+const onPdfCellRender = 'onPdfCellRender';
+/** @hidden */
 const dataBound = 'dataBound';
 /** @hidden */
 const queryCellInfo = 'queryCellInfo';
@@ -2762,6 +3428,36 @@ const cellDeselected = 'cellDeselected';
 const rowSelected = 'rowSelected';
 /** @hidden */
 const rowDeselected = 'rowDeselected';
+/** @hidden */
+const beginDrillThrough = 'beginDrillThrough';
+/** @hidden */
+const saveReport = 'saveReport';
+/** @hidden */
+const fetchReport = 'fetchReport';
+/** @hidden */
+const loadReport = 'loadReport';
+/** @hidden */
+const renameReport = 'renameReport';
+/** @hidden */
+const removeReport = 'removeReport';
+/** @hidden */
+const newReport = 'newReport';
+/** @hidden */
+const toolbarRender = 'toolbarRender';
+/** @hidden */
+const toolbarClick = 'toolbarClick';
+/** @hidden */
+const chartTooltipRender = 'chartTooltipRender';
+/** @hidden */
+const chartLoaded = 'chartLoaded';
+/** @hidden */
+const chartLoad = 'chartLoad';
+/** @hidden */
+const chartResized = 'chartResized';
+/** @hidden */
+const chartAxisLabelRender = 'chartAxisLabelRender';
+/** @hidden */
+const chartSeriesCreated = 'chartSeriesCreated';
 /**
  * Specifies pivot internal events
  */
@@ -2785,6 +3481,8 @@ const pivotButtonUpdate = 'pivot-button-update';
 const initCalculatedField = 'init-calculatedfield';
 /** @hidden */
 const click = 'click';
+/** @hidden */
+const initToolbar = 'init-toolbar';
 
 /**
  * CSS Constants
@@ -3014,7 +3712,7 @@ const COLLAPSE = 'e-collapse';
 /** @hidden */
 const EXPAND = 'e-expand';
 /** @hidden */
-
+const TABLE = 'e-table';
 /** @hidden */
 
 /** @hidden */
@@ -3213,6 +3911,78 @@ const BACK_ICON = 'e-field-list-back-icon';
 const TITLE_MOBILE_HEADER = 'e-title-mobile-header';
 /** @hidden */
 const TITLE_MOBILE_CONTENT = 'e-title-mobile-content';
+/** @hidden */
+const ROW_CELL_CLASS = 'e-rowcell';
+/** @hidden */
+const CELL_ACTIVE_BGCOLOR = 'e-active';
+/** @hidden */
+const SPAN_CLICKED = 'e-spanclicked';
+/** @hidden */
+const ROW_SELECT = 'e-rowselect';
+/** @hidden */
+const GRID_HEADER = 'e-gridheader';
+/** @hidden */
+const GRID_EXPORT = 'e-export';
+/** @hidden */
+const GRID_PDF_EXPORT = 'e-pivotview-pdf-export';
+/** @hidden */
+const GRID_EXCEL_EXPORT = 'e-pivotview-excel-export';
+/** @hidden */
+const GRID_CSV_EXPORT = 'e-pivotview-csv-export';
+/** @hidden */
+const GRID_LOAD = 'e-load-report';
+/** @hidden */
+const GRID_NEW = 'e-new-report';
+/** @hidden */
+const GRID_RENAME = 'e-rename-report';
+/** @hidden */
+const GRID_REMOVE = 'e-remove-report';
+/** @hidden */
+const GRID_SAVEAS = 'e-saveas-report';
+/** @hidden */
+const GRID_SAVE = 'e-save-report';
+/** @hidden */
+const GRID_SUB_TOTAL = 'e-sub-total';
+/** @hidden */
+const GRID_GRAND_TOTAL = 'e-grand-total';
+/** @hidden */
+const GRID_FORMATTING = 'e-toolbar-formatting';
+/** @hidden */
+const GRID_TOOLBAR = 'e-pivot-toolbar';
+/** @hidden */
+const GRID_REPORT_LABEL = 'e-pivotview-report-label';
+/** @hidden */
+const GRID_REPORT_INPUT = 'e-pivotview-report-input';
+/** @hidden */
+const GRID_REPORT_OUTER = 'e-report-outer';
+/** @hidden */
+const GRID_REPORT_DIALOG = 'e-pivotview-report-dialog';
+/** @hidden */
+const TOOLBAR_FIELDLIST = 'e-toolbar-fieldlist';
+/** @hidden */
+const TOOLBAR_GRID = 'e-toolbar-grid';
+/** @hidden */
+const TOOLBAR_CHART = 'e-toolbar-chart';
+/** @hidden */
+const REPORT_LIST_DROP = 'e-reportlist-drop';
+/** @hidden */
+const PIVOTCHART = 'e-pivotchart';
+/** @hidden */
+const GROUP_CHART_ROW = 'e-group-chart-rows';
+/** @hidden */
+const GROUP_CHART_COLUMN = 'e-group-chart-columns';
+/** @hidden */
+const GROUP_CHART_VALUE = 'e-group-chart-values';
+/** @hidden */
+const GROUP_CHART_MULTI_VALUE = 'e-group-chart-multi-values';
+/** @hidden */
+const GROUP_CHART_FILTER = 'e-group-chart-filters';
+/** @hidden */
+const GROUP_CHART_VALUE_DROPDOWN_DIV = 'e-group-chart-values-drodown-div';
+/** @hidden */
+const GROUP_CHART_VALUE_DROPDOWN = 'e-group-chart-values-drodown';
+/** @hidden */
+const CHART_GROUPING_BAR_CLASS = 'e-chart-grouping-bar';
 
 /**
  * Module to render PivotGrid control
@@ -3224,6 +3994,8 @@ class Render {
         this.colPos = 0;
         this.lastSpan = 0;
         this.parent = parent;
+        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
+            (this.parent.isAdaptive ? 140 : 200);
         this.engine = parent.engineModule;
         this.gridSettings = parent.gridSettings;
         this.formatList = this.getFormatList();
@@ -3231,6 +4003,7 @@ class Render {
     /** @hidden */
     /* tslint:disable */
     render() {
+        this.parent.gridHeaderCellInfo = [];
         let parent = this.parent;
         let engine = this.parent.engineModule;
         this.injectGridModules(parent);
@@ -3272,28 +4045,29 @@ class Render {
             this.parent.grid.appendTo('#' + this.parent.element.id + '_grid');
         }
         /* tslint:disable */
-        this.parent.grid.on(headerRefreshed, function () {
-            if (this.parent.enableVirtualization) {
-                let mHdr = this.parent.element.querySelector('.' + MOVABLEHEADER_DIV);
-                let mCont = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV);
-                let vtr = mCont.querySelector('.' + VIRTUALTRACK_DIV);
-                this.parent.virtualHeaderDiv = mHdr.querySelector('.' + VIRTUALTRACK_DIV);
-                if (mHdr.querySelector('.' + VIRTUALTRACK_DIV)) {
-                    remove(mHdr.querySelector('.' + VIRTUALTRACK_DIV));
-                }
-                else {
-                    this.parent.virtualHeaderDiv = createElement('div', { className: VIRTUALTRACK_DIV });
-                }
-                mHdr.appendChild(this.parent.virtualHeaderDiv);
-                if (vtr) {
-                    setStyleAttribute(this.parent.virtualHeaderDiv, { height: 0, width: vtr.style.width });
-                }
-                setStyleAttribute(mHdr.querySelector('.e-table'), {
-                    transform: (mCont.querySelector('.e-table').style.transform).split(',')[0] + ',' + 0 + 'px)'
-                });
-                mHdr.scrollLeft = mCont.scrollLeft;
+        this.parent.grid.on(headerRefreshed, this.refreshHeader, this);
+    }
+    refreshHeader() {
+        if (this.parent.enableVirtualization) {
+            let mHdr = this.parent.element.querySelector('.' + MOVABLEHEADER_DIV);
+            let mCont = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV);
+            let vtr = mCont.querySelector('.' + VIRTUALTRACK_DIV);
+            this.parent.virtualHeaderDiv = mHdr.querySelector('.' + VIRTUALTRACK_DIV);
+            if (mHdr.querySelector('.' + VIRTUALTRACK_DIV)) {
+                remove(mHdr.querySelector('.' + VIRTUALTRACK_DIV));
             }
-        }, this);
+            else {
+                this.parent.virtualHeaderDiv = createElement('div', { className: VIRTUALTRACK_DIV });
+            }
+            mHdr.appendChild(this.parent.virtualHeaderDiv);
+            if (vtr) {
+                setStyleAttribute(this.parent.virtualHeaderDiv, { height: 0, width: vtr.style.width });
+            }
+            setStyleAttribute(mHdr.querySelector('.e-table'), {
+                transform: (mCont.querySelector('.e-table').style.transform).split(',')[0] + ',' + 0 + 'px)'
+            });
+            mHdr.scrollLeft = mCont.scrollLeft;
+        }
     }
     /** @hidden */
     bindGrid(parent, isEmpty) {
@@ -3326,62 +4100,87 @@ class Render {
             beforePrint: this.gridSettings.beforePrint ? this.gridSettings.beforePrint.bind(this.parent) : undefined,
             printComplete: this.gridSettings.printComplete ? this.gridSettings.printComplete.bind(this.parent) : undefined,
             rowSelecting: this.gridSettings.rowSelecting ? this.gridSettings.rowSelecting.bind(this.parent) : undefined,
-            rowSelected: (args) => {
-                parent.renderModule.selected(args);
-                parent.trigger(rowSelected, args);
-            },
+            rowSelected: this.rowSelected.bind(this),
             rowDeselecting: this.gridSettings.rowDeselecting ? this.gridSettings.rowDeselecting.bind(this.parent) : undefined,
-            rowDeselected: (args) => {
-                parent.renderModule.selected(args);
-                parent.trigger(rowDeselected, args);
-            },
+            rowDeselected: this.rowDeselected.bind(this),
             cellSelecting: this.gridSettings.cellSelecting ? this.gridSettings.cellSelecting.bind(this.parent) : undefined,
-            cellSelected: (args) => {
-                parent.renderModule.selected(args);
-                parent.trigger(selected, args);
-            },
+            cellSelected: this.cellSelected.bind(this),
             cellDeselecting: this.gridSettings.cellDeselecting ? this.gridSettings.cellDeselecting.bind(this.parent) : undefined,
-            cellDeselected: (args) => {
-                parent.renderModule.selected(args);
-                parent.trigger(cellDeselected, args);
-            },
+            cellDeselected: this.cellDeselected.bind(this),
             resizeStart: this.gridSettings.resizeStart ? this.gridSettings.resizeStart.bind(this.parent) : undefined,
             columnDragStart: this.gridSettings.columnDragStart ? this.gridSettings.columnDragStart.bind(this) : undefined,
             columnDrag: this.gridSettings.columnDrag ? this.gridSettings.columnDrag.bind(this) : undefined,
             columnDrop: this.gridSettings.columnDrop ? this.gridSettings.columnDrop.bind(this) : undefined,
             resizing: this.setGroupWidth.bind(this),
             resizeStop: this.onResizeStop.bind(this),
-            queryCellInfo: (args) => {
-                parent.renderModule.rowCellBoundEvent(args);
-            },
-            dataBound: (args) => {
-                if (parent.element.querySelector('.e-firstcell')) {
-                    if (parent.enableRtl) {
-                        parent.element.querySelector('.e-firstcell').style.borderRight = 'none';
-                    }
-                    else {
-                        parent.element.querySelector('.e-firstcell').style.borderLeft = 'none';
-                    }
-                }
-                this.parent.grid.widthService.setWidthToTable();
-                parent.notify(contentReady, {});
-            },
-            headerCellInfo: (args) => {
-                parent.renderModule.columnCellBoundEvent(args);
-            },
-            excelHeaderQueryCellInfo: (args) => {
-                parent.renderModule.excelColumnEvent(args);
-            },
-            pdfHeaderQueryCellInfo: (args) => {
-                parent.renderModule.pdfColumnEvent(args);
-            },
-            excelQueryCellInfo: (args) => {
-                parent.renderModule.excelRowEvent(args);
-            },
-            pdfQueryCellInfo: (args) => {
-                parent.renderModule.pdfRowEvent(args);
-            }
+            queryCellInfo: this.queryCellInfo.bind(this),
+            dataBound: this.dataBound.bind(this),
+            headerCellInfo: this.headerCellInfo.bind(this),
+            excelHeaderQueryCellInfo: this.excelHeaderQueryCellInfo.bind(this),
+            pdfHeaderQueryCellInfo: this.pdfHeaderQueryCellInfo.bind(this),
+            excelQueryCellInfo: this.excelQueryCellInfo.bind(this),
+            pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this)
         });
+    }
+    rowSelected(args) {
+        this.parent.renderModule.selected();
+        this.parent.trigger(rowSelected, args);
+    }
+    rowDeselected(args) {
+        this.parent.renderModule.selected();
+        this.parent.trigger(rowDeselected, args);
+    }
+    cellSelected(args) {
+        if (this.parent.rowRangeSelection.enable) {
+            this.parent.grid.selectionModule.selectRowsByRange(this.parent.rowRangeSelection.startIndex, this.parent.rowRangeSelection.endIndex);
+            this.parent.rowRangeSelection.enable = false;
+        }
+        else {
+            this.parent.renderModule.selected();
+            this.parent.trigger(selected, args);
+        }
+    }
+    cellDeselected(args) {
+        this.parent.renderModule.selected();
+        this.parent.trigger(cellDeselected, args);
+    }
+    queryCellInfo(args) {
+        this.parent.renderModule.rowCellBoundEvent(args);
+    }
+    headerCellInfo(args) {
+        this.parent.renderModule.columnCellBoundEvent(args);
+    }
+    excelHeaderQueryCellInfo(args) {
+        this.parent.renderModule.excelColumnEvent(args);
+    }
+    pdfQueryCellInfo(args) {
+        this.parent.renderModule.pdfRowEvent(args);
+    }
+    excelQueryCellInfo(args) {
+        this.parent.renderModule.excelRowEvent(args);
+    }
+    pdfHeaderQueryCellInfo(args) {
+        this.parent.renderModule.pdfColumnEvent(args);
+    }
+    dataBound(args) {
+        if (this.parent.cellTemplate) {
+            for (let cell of this.parent.gridHeaderCellInfo) {
+                if (this.parent.cellTemplate) {
+                    append([].slice.call(this.parent.getCellTemplate()(cell, this.parent, 'cellTemplate')), cell.targetCell);
+                }
+            }
+            this.parent.gridHeaderCellInfo = [];
+        }
+        if (this.parent.element.querySelector('.e-firstcell')) {
+            if (this.parent.enableRtl) {
+                this.parent.element.querySelector('.e-firstcell').style.borderRight = 'none';
+            }
+            else {
+                this.parent.element.querySelector('.e-firstcell').style.borderLeft = 'none';
+            }
+        }
+        this.parent.grid.widthService.setWidthToTable();
+        this.parent.notify(contentReady, {});
     }
     injectGridModules(parent) {
         Grid.Inject(Freeze);
@@ -3417,11 +4216,18 @@ class Render {
         this.parent.grid.printMode = this.gridSettings.printMode;
         this.parent.grid.rowHeight = this.gridSettings.rowHeight;
         this.parent.grid.gridLines = this.gridSettings.gridLines;
+        this.clearColumnSelection();
+    }
+    clearColumnSelection() {
+        this.parent.element.querySelectorAll('.' + CELL_ACTIVE_BGCOLOR).forEach(function (ele) {
+            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
+            ele.classList.remove(SELECTED_BGCOLOR);
+        });
     }
     appendValueSortIcon(cell, tCell, rCnt, cCnt) {
         let vSort = this.parent.dataSource.valueSortSettings;
-        let len = (cell.type === 'grand sum' && this.parent.dataSource.values.length === 1) ? 0 :
-            this.parent.dataSource.values.length > 1 ? (this.parent.engineModule.headerContent.length - 1) :
+        let len = (cell.type === 'grand sum' && this.parent.dataSource.values.length === 1 && !this.parent.dataSource.alwaysShowValueHeader) ? 0 :
+            (this.parent.dataSource.values.length > 1 || this.parent.dataSource.alwaysShowValueHeader) ? (this.parent.engineModule.headerContent.length - 1) :
                 this.parent.dataSource.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
         let lock = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
         if (vSort !== undefined && lock && rCnt === len && this.parent.dataSource.valueAxis === 'column') {
@@ -3457,12 +4263,11 @@ class Render {
             if (this.parent.element.querySelector('.e-group-row').offsetWidth < 245 && !this.parent.firstColWidth) {
                 args.cancel = true;
                 let gridColumn = this.parent.grid.columns;
-                let resColWidth = (this.parent.isAdaptive ? 180 : 250);
                 if (gridColumn && gridColumn.length > 0) {
-                    gridColumn[0].width = resColWidth;
+                    gridColumn[0].width = this.resColWidth;
                 }
-                this.parent.element.querySelector('.e-frozenheader').querySelector('col').style.width = (resColWidth + 'px');
-                this.parent.element.querySelector('.e-frozencontent').querySelector('col').style.width = (resColWidth + 'px');
+                this.parent.element.querySelector('.e-frozenheader').querySelector('col').style.width = (this.resColWidth + 'px');
+                this.parent.element.querySelector('.e-frozencontent').querySelector('col').style.width = (this.resColWidth + 'px');
             }
             this.parent.element.querySelector('.e-group-values').style.width =
                 this.parent.element.querySelector('.e-group-row').offsetWidth + 'px';
@@ -3472,17 +4277,19 @@ class Render {
         this.parent.trigger(args.e.type === 'touchend' || args.e.type === 'mouseup' ? resizeStop : resizing, args);
     }
     /* tslint:disable */
-    selected(args) {
+    /** @hidden */
+    selected() {
         clearTimeout(this.timeOutObj);
-        this.timeOutObj = setTimeout(() => {
-            let pivotArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues };
-            let selectedElements = this.parent.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR);
-            selectedElements = selectedElements.length === 0 ? this.parent.element.querySelectorAll('.' + SELECTED_BGCOLOR) :
-                selectedElements;
-            for (let element of selectedElements) {
-                let colIndex = Number(element.getAttribute('aria-colindex'));
-                let rowIndex = Number(element.getAttribute('index'));
-                let cell = this.engine.pivotValues[rowIndex][colIndex];
+        this.timeOutObj = setTimeout(this.onSelect.bind(this), 300);
+    }
+    onSelect() {
+        let pivotArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues };
+        let selectedElements = this.parent.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR + ',.' + SELECTED_BGCOLOR);
+        for (let element of selectedElements) {
+            let colIndex = Number(element.getAttribute('aria-colindex'));
+            let rowIndex = Number(element.getAttribute('index'));
+            let cell = this.engine.pivotValues[rowIndex][colIndex];
+            if (cell) {
                 if (cell.axis === 'value') {
                     pivotArgs.selectedCellsInfo.push({
                         currentCell: cell,
@@ -3511,12 +4318,12 @@ class Render {
                     });
                 }
             }
-            this.parent.trigger(cellSelected, pivotArgs);
-        }, 300);
+        }
+        this.parent.trigger(cellSelected, pivotArgs);
     }
     rowCellBoundEvent(args) {
         let tCell = args.cell;
-        if (tCell && this.engine) {
+        if (tCell && !this.parent.isEmptyGrid) {
             let customClass = this.parent.hyperlinkSettings.cssClass;
             tCell.setAttribute('index', (Number(tCell.getAttribute('index')) + this.engine.headerContent.length).toString());
             let cell = args.data[0];
@@ -3585,7 +4392,7 @@ class Render {
                 }
             }
             else {
-                let innerText = tCell.innerText.toString() === '0' ? '' : tCell.innerText;
+                let innerText = tCell.innerText;
                 tCell.innerText = '';
                 tCell.classList.add(VALUESCONTENT);
                 cell = args.data[Number(tCell.getAttribute('aria-colindex'))];
@@ -3601,6 +4408,9 @@ class Render {
                         (tCell.className.indexOf('e-summary') === -1 && this.parent.isValueCellHyperlink) ||
                         cell.enableHyperlink ? '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>' : innerText)
                 }));
+            }
+            if (this.parent.cellTemplate) {
+                append([].slice.call(this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate')), tCell);
             }
             this.unWireEvents(tCell);
             this.wireEvents(tCell);
@@ -3679,6 +4489,17 @@ class Render {
                     tCell.insertBefore(div, tCell.children[0]);
                 }
                 tCell = this.appendValueSortIcon(cell, tCell, cell.rowIndex, cell.colIndex);
+                if (this.parent.cellTemplate) {
+                    try {
+                        if (this.parent.getCellTemplate()()) {
+                            this.parent.gridHeaderCellInfo = [];
+                            append([].slice.call(this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate')), tCell);
+                        }
+                    }
+                    catch (error) {
+                        this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
+                    }
+                }
                 this.unWireEvents(tCell);
                 this.wireEvents(tCell);
             }
@@ -3750,11 +4571,15 @@ class Render {
         let parWidth = isNaN(this.parent.width) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
-        let resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) : (this.parent.isAdaptive ? 140 : 200);
-        if (this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.grid && this.parent.dataSource.rows.length > 0) {
-            parWidth = parWidth - (this.gridSettings.columnWidth > resColWidth ? this.gridSettings.columnWidth : resColWidth);
-            colCount = colCount - 1;
-        }
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
+        colCount = colCount - 1;
+        let colWidth = (colCount * this.gridSettings.columnWidth + 78) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
+        return colWidth;
+    }
+    resizeColWidth(colCount) {
+        let parWidth = isNaN(this.parent.width) ? (this.parent.width.toString().indexOf('%') > -1 ?
+            ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
+            Number(this.parent.width);
         let colWidth = (colCount * this.gridSettings.columnWidth + 78) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
         return colWidth;
     }
@@ -3790,7 +4615,7 @@ class Render {
                                 headerText: formattedText,
                                 customAttributes: { 'cell': colField[cCnt] },
                                 width: colField[cCnt] ?
-                                    this.setSavedWidth(colField[cCnt].valueSort.levelName, colWidth) : colWidth,
+                                    this.setSavedWidth(colField[cCnt].valueSort.levelName, colWidth) : this.resColWidth,
                                 minWidth: 30,
                                 format: cCnt === 0 ? '' : this.formatList[(cCnt - 1) % this.parent.dataSource.values.length],
                                 allowReordering: this.parent.gridSettings.allowReordering,
@@ -3814,7 +4639,7 @@ class Render {
                                         headerText: formattedText,
                                         customAttributes: { 'cell': colField[cCnt] },
                                         width: colField[cCnt] ?
-                                            this.setSavedWidth(colField[cCnt].valueSort.levelName, colWidth) : colWidth,
+                                            this.setSavedWidth(colField[cCnt].valueSort.levelName, colWidth) : this.resColWidth,
                                         minWidth: 30,
                                         allowReordering: this.parent.gridSettings.allowReordering,
                                         allowResizing: this.parent.gridSettings.allowResizing,
@@ -3838,10 +4663,9 @@ class Render {
                 }
                 integrateModel = columnModel.length > 0 ? columnModel : integrateModel;
             } while (headerCnt > 0);
-            let resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) : (this.parent.isAdaptive ? 140 : 200);
             integrateModel[0] = {
                 field: (0 + '.formattedText'),
-                width: this.setSavedWidth('0.formattedText', colWidth < resColWidth ? resColWidth : colWidth),
+                width: this.resColWidth,
                 minWidth: 30,
                 headerText: '',
                 allowReordering: false,
@@ -3863,7 +4687,7 @@ class Render {
     frameEmptyColumns() {
         let columns = [];
         let colWidth = this.calculateColWidth(2);
-        columns.push({ field: '0.formattedText', headerText: '', minWidth: 30, width: colWidth });
+        columns.push({ field: '0.formattedText', headerText: '', minWidth: 30, width: this.resColWidth });
         columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth });
         return columns;
     }
@@ -3941,9 +4765,6 @@ class Render {
         return args;
     }
     exportContentEvent(args) {
-        if (args.value === '0') {
-            args.value = '';
-        }
         args.value = args.data[Number(args.column.field.split('.formattedText')[0])].type === 'grand sum' ?
             this.parent.localeObj.getConstant('grandTotal') : args.value;
         return args;
@@ -4118,6 +4939,29 @@ __decorate$1([
     Property()
 ], FormatSettings.prototype, "format", void 0);
 /**
+ * Configures the group settings of fields.
+ */
+class GroupSettings extends ChildProperty {
+}
+__decorate$1([
+    Property()
+], GroupSettings.prototype, "name", void 0);
+__decorate$1([
+    Property()
+], GroupSettings.prototype, "groupInterval", void 0);
+__decorate$1([
+    Property()
+], GroupSettings.prototype, "startingAt", void 0);
+__decorate$1([
+    Property()
+], GroupSettings.prototype, "endingAt", void 0);
+__decorate$1([
+    Property('Date')
+], GroupSettings.prototype, "type", void 0);
+__decorate$1([
+    Property()
+], GroupSettings.prototype, "rangeInterval", void 0);
+/**
  * Configures the calculatedfields settings.
  */
 class CalculatedFieldSettings extends ChildProperty {
@@ -4213,7 +5057,10 @@ __decorate$1([
     Property(true)
 ], DataSource.prototype, "showColumnGrandTotals", void 0);
 __decorate$1([
-    Property([])
+    Property(false)
+], DataSource.prototype, "alwaysShowValueHeader", void 0);
+__decorate$1([
+    Collection([], FormatSettings)
 ], DataSource.prototype, "formatSettings", void 0);
 __decorate$1([
     Collection([], DrillOptions)
@@ -4227,6 +5074,12 @@ __decorate$1([
 __decorate$1([
     Collection([], ConditionalFormatSettings)
 ], DataSource.prototype, "conditionalFormatSettings", void 0);
+__decorate$1([
+    Property()
+], DataSource.prototype, "emptyCellsTextContent", void 0);
+__decorate$1([
+    Collection([], GroupSettings)
+], DataSource.prototype, "groupSettings", void 0);
 
 var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -4352,7 +5205,7 @@ __decorate$2([
 ], GridSettings.prototype, "columnDrop", void 0);
 __decorate$2([
     Event()
-], GridSettings.prototype, "beforeColumnsRender", void 0);
+], GridSettings.prototype, "columnRender", void 0);
 
 /**
  * @hidden
@@ -4419,7 +5272,7 @@ class ExcelExport$1 {
                                     cellValue = cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total'));
                                 }
                                 else {
-                                    cellValue = cellValue === '0' ? '' : cellValue;
+                                    cellValue = cellValue;
                                 }
                                 if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                     cells.push({
@@ -4478,6 +5331,14 @@ class ExcelExport$1 {
         let book = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv');
         book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
     }
+    /**
+     * To destroy the excel export module
+     * @returns void
+     * @hidden
+     */
+    /* tslint:disable:no-empty */
+    destroy() {
+    }
 }
 
 /**
@@ -4499,19 +5360,158 @@ class PDFExport {
     getModuleName() {
         return 'pdfExport';
     }
+    addPage(eventParams) {
+        let page = eventParams.document.pages.add();
+        let header = eventParams.args.header;
+        let footer = eventParams.args.footer;
+        let font = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);
+        let brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+        let pen = new PdfPen(new PdfColor(0, 0, 0), .5);
+        /** Header and Footer to be set */
+        let headerTemplate = new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
+        headerTemplate.graphics.drawString(header, font, pen, brush, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
+        eventParams.document.template.top = headerTemplate;
+        let footerTemplate = new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
+        footerTemplate.graphics.drawString(footer, font, pen, brush, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
+        eventParams.document.template.bottom = footerTemplate;
+        return page;
+    }
+    hexDecToRgb(hexDec) {
+        if (hexDec === null || hexDec === '' || hexDec.length !== 7) {
+            throw new Error('please set valid hex value for color..');
+        }
+        hexDec = hexDec.substring(1);
+        let bigint = parseInt(hexDec, 16);
+        let r = (bigint >> 16) & 255;
+        let g = (bigint >> 8) & 255;
+        let b = bigint & 255;
+        return { r: r, g: g, b: b };
+    }
+    getFontStyle(theme) {
+        let fontType = PdfFontStyle.Regular;
+        if (!isNullOrUndefined(theme) && theme.bold) {
+            fontType |= PdfFontStyle.Bold;
+        }
+        if (!isNullOrUndefined(theme) && theme.italic) {
+            fontType |= PdfFontStyle.Italic;
+        }
+        if (!isNullOrUndefined(theme) && theme.underline) {
+            fontType |= PdfFontStyle.Underline;
+        }
+        if (!isNullOrUndefined(theme) && theme.strikeout) {
+            fontType |= PdfFontStyle.Strikeout;
+        }
+        return fontType;
+    }
+    getBorderStyle(borderStyle) {
+        let borders = new PdfBorders();
+        if (!isNullOrUndefined(borderStyle)) {
+            let borderWidth = borderStyle.width;
+            // set border width
+            let width = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? borderWidth * 0.75 : undefined;
+            // set border color
+            let color = new PdfColor(196, 196, 196);
+            if (!isNullOrUndefined(borderStyle.color)) {
+                let borderColor = this.hexDecToRgb(borderStyle.color);
+                color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
+            }
+            let pen = new PdfPen(color, width);
+            // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
+            if (!isNullOrUndefined(borderStyle.dashStyle)) {
+                pen.dashStyle = this.getDashStyle(borderStyle.dashStyle);
+            }
+            borders.all = pen;
+        }
+        else {
+            let pdfColor = new PdfColor(234, 234, 234);
+            borders.all = new PdfPen(pdfColor);
+        }
+        return borders;
+    }
+    getDashStyle(dashType) {
+        switch (dashType) {
+            case 'Dash':
+                return 1;
+            case 'Dot':
+                return 2;
+            case 'DashDot':
+                return 3;
+            case 'DashDotDot':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    getStyle() {
+        let border = new PdfBorders();
+        if (!isNullOrUndefined(this.gridStyle)) {
+            let fontFamily = !isNullOrUndefined(this.gridStyle.header.fontName) ?
+                this.getFontFamily(this.gridStyle.header.fontName) : PdfFontFamily.Helvetica;
+            let fontStyle = this.getFontStyle(this.gridStyle.header);
+            let fontSize = !isNullOrUndefined(this.gridStyle.header.fontSize) ? this.gridStyle.header.fontSize : 10.5;
+            let pdfColor = new PdfColor();
+            if (!isNullOrUndefined(this.gridStyle.header.fontColor)) {
+                let penBrushColor = this.hexDecToRgb(this.gridStyle.header.fontColor);
+                pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
+            }
+            let font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+            if (!isNullOrUndefined(this.gridStyle.header.font)) {
+                font = this.gridStyle.header.font;
+            }
+            return {
+                border: this.getBorderStyle(this.gridStyle.header.border), font: font, brush: new PdfSolidBrush(pdfColor)
+            };
+        }
+        else {
+            return {
+                brush: new PdfSolidBrush(new PdfColor()),
+                border: border, font: undefined
+            };
+        }
+    }
+    setRecordThemeStyle(row, border) {
+        if (!isNullOrUndefined(this.gridStyle) && !isNullOrUndefined(this.gridStyle.record)) {
+            let fontFamily = !isNullOrUndefined(this.gridStyle.record.fontName) ?
+                this.getFontFamily(this.gridStyle.record.fontName) : PdfFontFamily.Helvetica;
+            let fontSize = !isNullOrUndefined(this.gridStyle.record.fontSize) ? this.gridStyle.record.fontSize : 9.75;
+            let fontStyle = this.getFontStyle(this.gridStyle.record);
+            let font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+            if (!isNullOrUndefined(this.gridStyle.record.font)) {
+                font = this.gridStyle.record.font;
+            }
+            row.style.setFont(font);
+            let pdfColor = new PdfColor();
+            if (!isNullOrUndefined(this.gridStyle.record.fontColor)) {
+                let penBrushColor = this.hexDecToRgb(this.gridStyle.record.fontColor);
+                pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
+            }
+            row.style.setTextBrush(new PdfSolidBrush(pdfColor));
+        }
+        let borderRecord = this.gridStyle && this.gridStyle.record &&
+            this.gridStyle.record.border ? this.getBorderStyle(this.gridStyle.record.border) : border;
+        row.style.setBorder(borderRecord);
+        return row;
+    }
     /**
      * Method to perform pdf export.
      * @hidden
      */
+    /* tslint:disable:max-func-body-length */
     exportToPDF() {
         let eventParams = this.applyEvent();
+        let headerStyle = this.getStyle();
         /** Fill data and export */
         let dataCollIndex = 0;
-        let gridResult;
         let pivotValues = eventParams.args.dataCollections[dataCollIndex];
+        for (let vLen = 0; eventParams.args.allowRepeatHeader && vLen < pivotValues.length; vLen++) {
+            for (let vCnt = 6; pivotValues[vLen] && vCnt < pivotValues[vLen].length; vCnt += 6) {
+                pivotValues[vLen].splice(vCnt, 0, pivotValues[vLen][0]);
+            }
+        }
         let colLength = pivotValues && pivotValues.length > 0 ? pivotValues[0].length : 0;
         let integratedCnt = 0;
         do {
+            let page = this.addPage(eventParams);
             let pdfGrid = new PdfGrid();
             if (pivotValues && pivotValues.length > 0) {
                 pdfGrid.columns.add(pivotValues[0].length - integratedCnt >= 6 ? 6 : pivotValues[0].length - integratedCnt);
@@ -4527,6 +5527,16 @@ class PDFExport {
                             pdfGrid.headers.add(1);
                         }
                         let pdfGridRow = !isColHeader ? pdfGrid.rows.addRow() : pdfGrid.headers.getHeader(actualrCnt);
+                        if (isColHeader) {
+                            pdfGridRow.style.setBorder(headerStyle.border);
+                            if (headerStyle.font) {
+                                pdfGridRow.style.setFont(headerStyle.font);
+                            }
+                            pdfGridRow.style.setTextBrush(headerStyle.brush);
+                        }
+                        else {
+                            this.setRecordThemeStyle(pdfGridRow, headerStyle.border);
+                        }
                         let localCnt = 0;
                         let isEmptyRow = true;
                         for (let cCnt = integratedCnt; cCnt < colLen; cCnt++) {
@@ -4537,8 +5547,7 @@ class PDFExport {
                                     let cellValue = pivotCell.formattedText;
                                     cellValue = pivotCell.type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
                                         (pivotCell.type === 'sum' ?
-                                            cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) :
-                                            (cellValue === '0' ? '' : cellValue));
+                                            cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
                                             (6 - localCnt < pivotCell.colSpan ? 6 - localCnt : pivotCell.colSpan) : 1;
@@ -4551,7 +5560,7 @@ class PDFExport {
                                         isEmptyRow = false;
                                     }
                                 }
-                                maxLevel = pivotCell.level > maxLevel && cCnt === 0 ? pivotCell.level : maxLevel;
+                                maxLevel = pivotCell.level > maxLevel ? pivotCell.level : maxLevel;
                                 isValueCell = pivotCell.axis === 'value';
                                 cCnt = cCnt + (pdfGridRow.cells.getCell(localCnt).columnSpan ?
                                     (pdfGridRow.cells.getCell(localCnt).columnSpan - 1) : 0);
@@ -4560,16 +5569,40 @@ class PDFExport {
                                 if (pivotCell.style) {
                                     pdfGridRow = this.applyStyle(pdfGridRow, pivotCell, localCnt);
                                 }
+                                let args = {
+                                    style: (pivotCell && pivotCell.isSum) ? { bold: true } : undefined,
+                                    pivotCell: pivotCell,
+                                    cell: pdfGridRow.cells.getCell(localCnt)
+                                };
+                                this.parent.trigger(onPdfCellRender, args);
+                                if (args.style) {
+                                    this.processCellStyle(pdfGridRow.cells.getCell(localCnt), args);
+                                }
                             }
                             else {
+                                let args = {
+                                    style: undefined,
+                                    pivotCell: undefined,
+                                    cell: pdfGridRow.cells.getCell(localCnt)
+                                };
+                                this.parent.trigger(onPdfCellRender, args);
+                                if (args.style) {
+                                    this.processCellStyle(pdfGridRow.cells.getCell(localCnt), args);
+                                }
                                 pdfGridRow.cells.getCell(localCnt).value = '';
                                 if (cCnt === 0 && isColHeader && this.parent.dataSource.columns &&
                                     this.parent.dataSource.columns.length > 0) {
                                     pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
                                 }
+                                else if (cCnt !== 0 && isColHeader && this.parent.dataSource.columns &&
+                                    this.parent.dataSource.columns.length > 0 &&
+                                    pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
+                                        Object.keys(this.parent.engineModule.headerContent).length) {
+                                    pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
+                                }
                             }
                             let stringFormat = new PdfStringFormat();
-                            stringFormat.paragraphIndent = (!isColHeader && cCnt === 0 && pivotValues[rCnt][cCnt]) ?
+                            stringFormat.paragraphIndent = (!isColHeader && localCnt === 0 && pivotValues[rCnt][cCnt]) ?
                                 pivotValues[rCnt][cCnt].level * 15 : 0;
                             stringFormat.alignment = isValueCell ? PdfTextAlignment.Right : PdfTextAlignment.Left;
                             stringFormat.lineAlignment = PdfVerticalAlignment.Middle;
@@ -4582,21 +5615,12 @@ class PDFExport {
                         actualrCnt++;
                     }
                 }
-                if (integratedCnt === 0) {
-                    pdfGrid.columns.getColumn(0).width = 100 + (maxLevel * 20);
-                }
+                pdfGrid.columns.getColumn(0).width = 100 + (maxLevel * 20);
             }
-            let layout = new PdfLayoutFormat();
-            layout.paginateBounds = new RectangleF(0, 0, 0, 0);
             if (integratedCnt === 0 && this.parent.dataSource.columns && this.parent.dataSource.columns.length > 0) {
                 pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan--;
             }
-            if (gridResult) {
-                gridResult = pdfGrid.draw(gridResult.page, new PointF(10, gridResult.bounds.y + gridResult.bounds.height + 10), layout);
-            }
-            else {
-                gridResult = pdfGrid.draw(eventParams.page, new PointF(10, 20), layout);
-            }
+            pdfGrid.draw(page, new PointF(10, 20));
             integratedCnt = integratedCnt + 6;
             if (integratedCnt >= colLength && eventParams.args.dataCollections.length > (dataCollIndex + 1)) {
                 dataCollIndex++;
@@ -4620,6 +5644,80 @@ class PDFExport {
         pdfGridRow.cells.getCell(localCnt).style.textBrush = brush;
         return pdfGridRow;
     }
+    getFontFamily(family) {
+        switch (family) {
+            case 'TimesRoman':
+                return 2;
+            case 'Courier':
+                return 1;
+            case 'Symbol':
+                return 3;
+            case 'ZapfDingbats':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    /* tslint:disable-next-line:no-any */
+    getFont(theme) {
+        if (theme.style.font) {
+            return theme.style.font;
+        }
+        let fontSize = (!isNullOrUndefined(theme.style.fontSize)) ? (theme.style.fontSize * 0.75) : 9.75;
+        let fontFamily = (!isNullOrUndefined(theme.style.fontFamily)) ?
+            (this.getFontFamily(theme.style.fontFamily)) : PdfFontFamily.TimesRoman;
+        let fontStyle = PdfFontStyle.Regular;
+        if (!isNullOrUndefined(theme.style.bold) && theme.style.bold) {
+            fontStyle |= PdfFontStyle.Bold;
+        }
+        if (!isNullOrUndefined(theme.style.italic) && theme.style.italic) {
+            fontStyle |= PdfFontStyle.Italic;
+        }
+        if (!isNullOrUndefined(theme.style.underline) && theme.style.underline) {
+            fontStyle |= PdfFontStyle.Underline;
+        }
+        if (!isNullOrUndefined(theme.style.strikeout) && theme.style.strikeout) {
+            fontStyle |= PdfFontStyle.Strikeout;
+        }
+        return new PdfStandardFont(fontFamily, fontSize, fontStyle);
+    }
+    processCellStyle(gridCell, arg) {
+        if (!isNullOrUndefined(arg.style.backgroundColor)) {
+            let backColor = this.hexDecToRgb(arg.style.backgroundColor);
+            gridCell.style.backgroundBrush = new PdfSolidBrush(new PdfColor(backColor.r, backColor.g, backColor.b));
+        }
+        if (!isNullOrUndefined(arg.style.textBrushColor)) {
+            let textBrushColor = this.hexDecToRgb(arg.style.textBrushColor);
+            gridCell.style.textBrush = new PdfSolidBrush(new PdfColor(textBrushColor.r, textBrushColor.g, textBrushColor.b));
+        }
+        if (!isNullOrUndefined(arg.style.textPenColor)) {
+            let textColor = this.hexDecToRgb(arg.style.textPenColor);
+            gridCell.style.textPen = new PdfPen(new PdfColor(textColor.r, textColor.g, textColor.b));
+        }
+        if (!isNullOrUndefined(arg.style.fontFamily) || !isNullOrUndefined(arg.style.fontSize) || !isNullOrUndefined(arg.style.bold) ||
+            !isNullOrUndefined(arg.style.italic) || !isNullOrUndefined(arg.style.underline) || !isNullOrUndefined(arg.style.strikeout)) {
+            gridCell.style.font = this.getFont(arg);
+        }
+        if (!isNullOrUndefined(arg.style.border)) {
+            let border = new PdfBorders();
+            let borderWidth = arg.style.border.width;
+            // set border width
+            let width = (!isNullOrUndefined(borderWidth) && typeof borderWidth === 'number') ? (borderWidth * 0.75) : (undefined);
+            // set border color
+            let color = new PdfColor(196, 196, 196);
+            if (!isNullOrUndefined(arg.style.border.color)) {
+                let borderColor = this.hexDecToRgb(arg.style.border.color);
+                color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
+            }
+            let pen = new PdfPen(color, width);
+            // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
+            if (!isNullOrUndefined(arg.style.border.dashStyle)) {
+                pen.dashStyle = this.getDashStyle(arg.style.border.dashStyle);
+            }
+            border.all = pen;
+            gridCell.style.borders = border;
+        }
+    }
     applyEvent() {
         /** Event trigerring */
         if (this.parent.enableVirtualization) {
@@ -4628,25 +5726,23 @@ class PDFExport {
             this.parent.engineModule.generateGridData(this.parent.dataSource);
             this.parent.engineModule.pageSettings = pageSettings;
         }
+        let clonedValues = JSON.parse(JSON.stringify(this.parent.engineModule.pivotValues));
+        let style;
         let args = {
-            fileName: 'default', header: '', footer: '', dataCollections: [this.parent.engineModule.pivotValues]
+            fileName: 'default', header: '', footer: '', dataCollections: [clonedValues], allowRepeatHeader: true, style: style
         };
         this.parent.trigger(beforeExport, args);
-        let header = args.header;
-        let footer = args.footer;
+        this.gridStyle = args.style;
         let document = new PdfDocument();
-        let page = document.pages.add();
-        /** Header and Footer to be set */
-        let font = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);
-        let brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
-        let pen = new PdfPen(new PdfColor(0, 0, 0), .5);
-        let headerTemplate = new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
-        headerTemplate.graphics.drawString(header, font, pen, brush, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
-        document.template.top = headerTemplate;
-        let footerTemplate = new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
-        footerTemplate.graphics.drawString(footer, font, pen, brush, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
-        document.template.bottom = footerTemplate;
-        return { document: document, page: page, args: args };
+        return { document: document, args: args };
+    }
+    /**
+     * To destroy the pdf export module
+     * @returns void
+     * @hidden
+     */
+    /* tslint:disable:no-empty */
+    destroy() {
     }
 }
 
@@ -4662,6 +5758,15 @@ class KeyboardInteraction {
         this.keyConfigs = {
             tab: 'tab',
             enter: 'enter',
+            shiftUp: 'shift+upArrow',
+            shiftDown: 'shift+downArrow',
+            shiftLeft: 'shift+leftArrow',
+            shiftRight: 'shift+rightArrow',
+            upArrow: 'upArrow',
+            downArrow: 'downArrow',
+            leftArrow: 'leftArrow',
+            rightArrow: 'rightArrow',
+            escape: 'escape'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -4678,6 +5783,19 @@ class KeyboardInteraction {
                 break;
             case 'enter':
                 this.processEnter(e);
+                break;
+            case 'shiftUp':
+            case 'shiftDown':
+            case 'shiftLeft':
+            case 'shiftRight':
+            case 'upArrow':
+            case 'downArrow':
+            case 'leftArrow':
+            case 'rightArrow':
+                this.processSelection(e);
+                break;
+            case 'escape':
+                this.clearSelection();
                 break;
         }
     }
@@ -4755,6 +5873,75 @@ class KeyboardInteraction {
             e.preventDefault();
             return;
         }
+    }
+    clearSelection() {
+        let control = this.parent;
+        /* tslint:disable */
+        [].slice.call(control.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR + ',.' + SELECTED_BGCOLOR)).forEach(function (ele) {
+            ele.classList.remove(SELECTED_BGCOLOR);
+            ele.classList.remove(CELL_SELECTED_BGCOLOR);
+            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
+        });
+        this.parent.renderModule.selected();
+        /* tslint:enable */
+    }
+    processSelection(e) {
+        if (this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row') {
+            let target = e.target;
+            let control = this.parent;
+            let colIndex = Number(e.target.getAttribute('aria-colIndex'));
+            let rowIndex = Number(e.target.getAttribute('index'));
+            let ele;
+            /* tslint:disable */
+            if (target.nodeName === 'TH' || target.nodeName === 'TD') {
+                if (e.action === 'shiftUp' || e.action === 'upArrow') {
+                    ele = (rowIndex === 0 || colIndex === 0 || (target.nodeName !== 'TH' &&
+                        control.renderModule.rowStartPos !== rowIndex)) ? null : this.getParentElement(control, ele, colIndex, rowIndex - 1);
+                }
+                else if (e.action === 'shiftDown' || e.action === 'downArrow') {
+                    ele = control.element.querySelector('th[aria-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
+                }
+                else if (e.action === 'shiftLeft' || e.action === 'leftArrow') {
+                    ele = e.target.previousSibling;
+                }
+                else {
+                    ele = e.target.nextSibling;
+                }
+            }
+            if (!isNullOrUndefined(ele)) {
+                if (control.gridSettings.selectionSettings.mode === 'Both' ? !ele.classList.contains(ROW_CELL_CLASS) : true) {
+                    colIndex = Number(ele.getAttribute('aria-colindex'));
+                    rowIndex = Number(ele.getAttribute('index'));
+                    let colSpan = Number(ele.getAttribute('aria-colspan'));
+                    control.clearSelection(ele, e, colIndex, rowIndex);
+                    control.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
+                }
+                else {
+                    control.clearSelection(ele, e, colIndex, rowIndex);
+                }
+            }
+            else {
+                if (e.action === 'upArrow') {
+                    ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + (rowIndex - 1) + '"]');
+                    rowIndex--;
+                }
+                else if (e.action === 'downArrow') {
+                    ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
+                    rowIndex++;
+                }
+                if (!isNullOrUndefined(ele)) {
+                    control.clearSelection(ele, e, colIndex, rowIndex);
+                }
+            }
+        }
+        /* tslint:enable */
+    }
+    getParentElement(control, ele, colIndex, rowIndex) {
+        while (!ele) {
+            ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + rowIndex + '"]');
+            colIndex--;
+        }
+        return ele;
     }
     /**
      * To destroy the keyboard module.
@@ -4906,6 +6093,18 @@ class VirtualScroll$1 {
             this.eventType = e.type;
         };
     }
+    getPointXY(e) {
+        let pageXY = { x: 0, y: 0 };
+        if (!(e.touches && e.touches.length)) {
+            pageXY.x = e.pageX;
+            pageXY.y = e.pageY;
+        }
+        else {
+            pageXY.x = e.touches[0].pageX;
+            pageXY.y = e.touches[0].pageY;
+        }
+        return pageXY;
+    }
     onTouchScroll(mHdr, mCont, fCont) {
         let element = mCont;
         return (e) => {
@@ -4935,26 +6134,6 @@ class VirtualScroll$1 {
             }
             this.eventType = e.type;
         };
-    }
-    setPageXY() {
-        return (e) => {
-            if (e.pointerType === 'mouse') {
-                return;
-            }
-            this.pageXY = this.getPointXY(e);
-        };
-    }
-    getPointXY(e) {
-        let pageXY = { x: 0, y: 0 };
-        if (e.touches && e.touches.length) {
-            pageXY.x = e.touches[0].pageX;
-            pageXY.y = e.touches[0].pageY;
-        }
-        else {
-            pageXY.x = e.pageX;
-            pageXY.y = e.pageY;
-        }
-        return pageXY;
     }
     update(mHdr, mCont, top, left, e) {
         if (this.direction === 'vertical') {
@@ -5002,22 +6181,30 @@ class VirtualScroll$1 {
             this.parent.scrollPosObject.horizontalSection = pos;
         }
     }
+    setPageXY() {
+        return (e) => {
+            if (e.pointerType === 'mouse') {
+                return;
+            }
+            this.pageXY = this.getPointXY(e);
+        };
+    }
     common(mHdr, mCont, fCont) {
         return (e) => {
-            this.update(mHdr, mCont, mCont.scrollTop, mCont.scrollLeft, e);
+            this.update(mHdr, mCont, mCont.scrollTop * this.parent.verticalScrollScale, mCont.scrollLeft * this.parent.horizontalScrollScale, e);
         };
     }
     onHorizondalScroll(mHdr, mCont, fCont) {
         /* tslint:disable-next-line */
         let timeOutObj;
         return (e) => {
-            let left = mCont.scrollLeft;
+            let left = mCont.scrollLeft * this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 /* tslint:disable */
                 timeOutObj = setTimeout(() => {
                     left = e.type === 'touchmove' ? mCont.scrollLeft : left;
-                    this.update(mHdr, mCont, mCont.scrollTop, left, e);
+                    this.update(mHdr, mCont, mCont.scrollTop * this.parent.verticalScrollScale, left, e);
                 }, 300);
             }
             if (this.previousValues.left === left) {
@@ -5025,10 +6212,22 @@ class VirtualScroll$1 {
                 return;
             }
             this.direction = 'horizondal';
+            let horiOffset = -((left - this.parent.scrollPosObject.horizontalSection - mCont.scrollLeft));
+            let vertiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[1].trim();
+            if (mCont.scrollLeft < this.parent.scrollerBrowserLimit) {
+                setStyleAttribute(mCont.querySelector('.e-table'), {
+                    transform: 'translate(' + horiOffset + 'px,' + vertiOffset
+                });
+                setStyleAttribute(mHdr.querySelector('.e-table'), {
+                    transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
+                });
+            }
             let excessMove = this.parent.scrollPosObject.horizontalSection > left ?
                 -(this.parent.scrollPosObject.horizontalSection - left) : ((left + mHdr.offsetWidth) -
                 (this.parent.scrollPosObject.horizontalSection + mCont.querySelector('.e-table').offsetWidth));
-            if (this.parent.scrollPosObject.horizontalSection > left ? true : excessMove > 1) {
+            let notLastPage = Math.ceil(this.parent.scrollPosObject.horizontalSection / this.parent.horizontalScrollScale) <
+                this.parent.scrollerBrowserLimit;
+            if (this.parent.scrollPosObject.horizontalSection > left ? true : (excessMove > 1 && notLastPage)) {
                 //  showSpinner(this.parent.element);
                 if (left > mHdr.clientWidth) {
                     if (this.parent.scrollPosObject.left < 1) {
@@ -5041,12 +6240,22 @@ class VirtualScroll$1 {
                 else {
                     excessMove = -this.parent.scrollPosObject.horizontalSection;
                 }
+                horiOffset = -((left - (this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.scrollLeft));
+                let vWidth = (this.parent.gridSettings.columnWidth * this.parent.engineModule.columnCount
+                    - this.parent.grid.columns[0].width);
+                if (vWidth > this.parent.scrollerBrowserLimit) {
+                    this.parent.horizontalScrollScale = vWidth / this.parent.scrollerBrowserLimit;
+                    vWidth = this.parent.scrollerBrowserLimit;
+                }
+                if (horiOffset > vWidth && horiOffset > left) {
+                    horiOffset = left;
+                    excessMove = 0;
+                }
                 setStyleAttribute(mCont.querySelector('.e-table'), {
-                    transform: 'translate(' + (this.parent.scrollPosObject.horizontalSection + excessMove) + 'px,' +
-                        this.parent.scrollPosObject.verticalSection + 'px)'
+                    transform: 'translate(' + horiOffset + 'px,' + vertiOffset
                 });
                 setStyleAttribute(mHdr.querySelector('.e-table'), {
-                    transform: 'translate(' + (this.parent.scrollPosObject.horizontalSection + excessMove) + 'px,' + 0 + 'px)'
+                    transform: 'translate(' + horiOffset + 'px,' + 0 + 'px)'
                 });
                 this.parent.scrollPosObject.horizontalSection = this.parent.scrollPosObject.horizontalSection + excessMove;
             }
@@ -5060,22 +6269,34 @@ class VirtualScroll$1 {
         /* tslint:disable-next-line */
         let timeOutObj;
         return (e) => {
-            let top = mCont.scrollTop;
+            let top = mCont.scrollTop * this.parent.verticalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
                 clearTimeout(timeOutObj);
                 /* tslint:disable */
                 timeOutObj = setTimeout(() => {
-                    this.update(null, mCont, mCont.scrollTop, mCont.scrollLeft, e);
+                    this.update(null, mCont, mCont.scrollTop * this.parent.verticalScrollScale, mCont.scrollLeft * this.parent.horizontalScrollScale, e);
                 }, 300);
             }
             if (this.previousValues.top === top) {
                 return;
             }
             this.direction = 'vertical';
+            let vertiOffset = -((top - this.parent.scrollPosObject.verticalSection - mCont.scrollTop));
+            let horiOffset = mCont.querySelector('.' + TABLE).style.transform.split(',')[0].trim();
+            if (mCont.scrollTop < this.parent.scrollerBrowserLimit) {
+                setStyleAttribute(fCont.querySelector('.e-table'), {
+                    transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
+                });
+                setStyleAttribute(mCont.querySelector('.e-table'), {
+                    transform: horiOffset + ',' + vertiOffset + 'px)'
+                });
+            }
             let excessMove = this.parent.scrollPosObject.verticalSection > top ?
                 -(this.parent.scrollPosObject.verticalSection - top) : ((top + fCont.clientHeight) -
                 (this.parent.scrollPosObject.verticalSection + fCont.querySelector('.e-table').offsetHeight));
-            if (this.parent.scrollPosObject.verticalSection > top ? true : excessMove > 1) {
+            let notLastPage = Math.ceil(this.parent.scrollPosObject.verticalSection / this.parent.verticalScrollScale) <
+                this.parent.scrollerBrowserLimit;
+            if (this.parent.scrollPosObject.verticalSection > top ? true : (excessMove > 1 && notLastPage)) {
                 //  showSpinner(this.parent.element);
                 if (top > fCont.clientHeight) {
                     if (this.parent.scrollPosObject.top < 1) {
@@ -5088,12 +6309,23 @@ class VirtualScroll$1 {
                 else {
                     excessMove = -this.parent.scrollPosObject.verticalSection;
                 }
+                let movableTable = this.parent.element.querySelector('.' + MOVABLECONTENT_DIV).querySelector('.e-table');
+                vertiOffset = -((top - (this.parent.scrollPosObject.verticalSection + excessMove) - mCont.scrollTop));
+                let vHeight = (this.parent.gridSettings.rowHeight * this.parent.engineModule.rowCount + 0.1
+                    - movableTable.clientHeight);
+                if (vHeight > this.parent.scrollerBrowserLimit) {
+                    this.parent.verticalScrollScale = vHeight / this.parent.scrollerBrowserLimit;
+                    vHeight = this.parent.scrollerBrowserLimit;
+                }
+                if (vertiOffset > vHeight && vertiOffset > top) {
+                    vertiOffset = top;
+                    excessMove = 0;
+                }
                 setStyleAttribute(fCont.querySelector('.e-table'), {
-                    transform: 'translate(' + 0 + 'px,' + (this.parent.scrollPosObject.verticalSection + excessMove) + 'px)'
+                    transform: 'translate(' + 0 + 'px,' + vertiOffset + 'px)'
                 });
                 setStyleAttribute(mCont.querySelector('.e-table'), {
-                    transform: 'translate(' + this.parent.scrollPosObject.horizontalSection + 'px,' +
-                        (this.parent.scrollPosObject.verticalSection + excessMove) + 'px)'
+                    transform: horiOffset + ',' + vertiOffset + 'px)'
                 });
                 this.parent.scrollPosObject.verticalSection = this.parent.scrollPosObject.verticalSection + excessMove;
             }
@@ -5284,6 +6516,7 @@ class DrillThroughDialog {
             allowPaging: this.parent.editSettings.allowEditing
         });
         let dialogModule = this;
+        this.parent.trigger(beginDrillThrough, { cellInfo: eventArgs, gridObj: this.drillThroughGrid, type: 'editing' });
         if (this.parent.editSettings.allowEditing) {
             Grid.Inject(Edit, Page);
             this.drillThroughGrid.editSettings = this.parent.editSettings;
@@ -5327,6 +6560,7 @@ class DrillThroughDialog {
         else {
             Grid.Inject(VirtualScroll);
         }
+        document.body.appendChild(drillThroughGrid);
         this.drillThroughGrid.appendTo(drillThroughGrid);
         drillThroughBody.appendChild(drillThroughBodyHeader);
         drillThroughBody.appendChild(drillThroughGrid);
@@ -5453,6 +6687,924 @@ class DrillThrough {
     }
 }
 
+class PivotChart {
+    constructor() {
+        this.headerColl = {};
+        this.maxLevel = 0;
+        this.columnGroupObject = {};
+    }
+    /**
+     * Get component name.
+     * @returns string
+     * @private
+     */
+    getModuleName() {
+        return 'pivotchart';
+    }
+    /* tslint:disable */
+    loadChart(parent, chartSettings) {
+        this.parent = parent;
+        this.engineModule = this.parent.engineModule;
+        this.dataSource = this.parent.dataSource;
+        this.chartSettings = chartSettings;
+        if (this.dataSource.values.length > 0) {
+            if (this.chartSettings.enableMultiAxis) {
+                this.measureList = this.dataSource.values.map(function (item) { return item.name; });
+            }
+            else {
+                this.measureList = [chartSettings.value === '' ? this.dataSource.values[0].name : chartSettings.value];
+            }
+        }
+        else if (this.parent.chart) {
+            this.parent.chart.series = [];
+            this.parent.chart.primaryXAxis.title = '';
+            this.parent.chart.primaryYAxis.title = '';
+            if (this.parent.chart.axes.length > 0) {
+                this.parent.chart.axes[0].title = '';
+            }
+            this.parent.chart.primaryXAxis.zoomFactor = 1;
+            this.parent.chart.refresh();
+            return;
+        }
+        else {
+            this.parent.notify(contentReady, {});
+            return;
+        }
+        this.columnGroupObject = {};
+        let pivotValues = this.parent.engineModule.pivotValues;
+        this.currentMeasure = chartSettings.enableMultiAxis ? this.measureList[0] :
+            (((chartSettings.value === '' || this.dataSource.values.filter((item) => {
+                return item.name === chartSettings.value;
+            }).length === 0) && this.dataSource.values.length > 0) ? this.dataSource.values[0].name : chartSettings.value);
+        let totColIndex = this.getColumnTotalIndex(pivotValues);
+        let rKeys = Object.keys(pivotValues);
+        let prevLevel;
+        let indexCount = -0.5;
+        this.headerColl = {};
+        for (let rKey of rKeys) {
+            let rowIndex = Number(rKey);
+            if (pivotValues[rowIndex][0] && pivotValues[rowIndex][0].axis === 'row' &&
+                (this.dataSource.rows.length === 0 ? true : pivotValues[rowIndex][0].type !== 'grand sum')) {
+                let firstRowCell = pivotValues[rowIndex][0];
+                this.maxLevel = firstRowCell.level > this.maxLevel ? firstRowCell.level : this.maxLevel;
+                if (!(prevLevel === undefined || prevLevel < firstRowCell.level)) {
+                    indexCount++;
+                }
+                prevLevel = firstRowCell.level;
+                let name = firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString();
+                let caption = firstRowCell.hasChild ? ((firstRowCell.isDrilled ? ' - ' : ' + ') + name) : name;
+                let cellInfo = {
+                    name: name,
+                    text: caption,
+                    levelName: firstRowCell.valueSort['levelName'].toString(),
+                    level: firstRowCell.level,
+                    fieldName: firstRowCell.valueSort['axis'] ? firstRowCell.valueSort['axis'].toString() : ''
+                };
+                if (this.headerColl[indexCount]) {
+                    this.headerColl[indexCount][firstRowCell.level] = cellInfo;
+                }
+                else {
+                    this.headerColl[indexCount] = {};
+                    this.headerColl[indexCount][firstRowCell.level] = cellInfo;
+                }
+                let rows = pivotValues[rowIndex];
+                let cKeys = Object.keys(rows);
+                for (let cKey of cKeys) {
+                    let cellIndex = Number(cKey);
+                    let cell = pivotValues[rowIndex][cellIndex];
+                    if (!totColIndex[cell.colIndex] && cell.axis === 'value' &&
+                        (chartSettings.enableMultiAxis ? true : cell.actualText === this.currentMeasure)) {
+                        if (firstRowCell.isDrilled) {
+                            break;
+                        }
+                        let columnSeries = cell.columnHeaders.toString().split('.').join(' - ') + ' | ' + cell.actualText;
+                        if (this.columnGroupObject[columnSeries]) {
+                            this.columnGroupObject[columnSeries].push({
+                                x: this.dataSource.rows.length === 0 ? firstRowCell.formattedText :
+                                    cell.rowHeaders.toString().split('.').join(' - '),
+                                y: Number(cell.value)
+                            });
+                        }
+                        else {
+                            this.columnGroupObject[columnSeries] = [{
+                                    x: this.dataSource.rows.length === 0 ? firstRowCell.formattedText :
+                                        cell.rowHeaders.toString().split('.').join(' - '),
+                                    y: Number(cell.value)
+                                }];
+                        }
+                    }
+                }
+            }
+        }
+        this.refreshChart();
+    }
+    /**
+     * Refreshing chart based on the updated chartSettings.
+     * @returns void
+     */
+    refreshChart() {
+        this.chartSeries = [];
+        let columnKeys = Object.keys(this.columnGroupObject);
+        this.persistSettings = JSON.parse(this.parent.getPersistData()).chartSettings;
+        for (let key of columnKeys) {
+            let currentSeries = {};
+            currentSeries = this.persistSettings.chartSeries ? this.frameObjectWithKeys(this.persistSettings.chartSeries) : currentSeries;
+            currentSeries.dataSource = this.columnGroupObject[key];
+            currentSeries.xName = 'x';
+            currentSeries.yName = 'y';
+            currentSeries.name = this.chartSettings.enableMultiAxis ? key : key.split(' | ')[0];
+            if (!(this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar')) {
+                currentSeries.yAxisName = key.split(' | ')[1];
+            }
+            this.chartSeries = this.chartSeries.concat(currentSeries);
+        }
+        let seriesEvent = { series: this.chartSeries, cancel: false };
+        this.parent.trigger(chartSeriesCreated, seriesEvent);
+        if (!seriesEvent.cancel) {
+            this.bindChart();
+        }
+        else {
+            if (this.element) {
+                remove(this.element);
+            }
+            this.parent.notify(contentReady, {});
+        }
+    }
+    frameObjectWithKeys(series) {
+        let keys = Object.keys(series);
+        let keyPos = 0;
+        let framedSeries = {};
+        while (keyPos < keys.length) {
+            framedSeries[keys[keyPos]] = series[keys[keyPos]];
+            keyPos++;
+        }
+        return framedSeries;
+    }
+    bindChart() {
+        let currentXAxis = this.configXAxis();
+        let currentTooltipSettings = this.configTooltipSettings();
+        let currentLegendSettings = this.configLegendSettings();
+        let currentZoomSettings = this.configZoomSettings();
+        let axesWithRows = this.frameAxesWithRows();
+        let type = this.chartSettings.chartSeries.type;
+        if (this.parent.displayOption.view === 'Both') {
+            this.element = this.parent.displayOption.primary === 'Chart' ? (this.parent.element.insertBefore((!this.element ? (createElement('div', {
+                className: PIVOTCHART, id: this.parent.element.id + '_chart'
+            })) : this.element), this.parent.element.querySelector('.' + GRID_CLASS))) :
+                (this.parent.element.appendChild(!this.element ? (createElement('div', {
+                    className: PIVOTCHART, id: this.parent.element.id + '_chart'
+                })) : this.element));
+        }
+        else if (!this.element) {
+            this.element = this.parent.element.appendChild(createElement('div', {
+                className: PIVOTCHART, id: this.parent.element.id + '_chart'
+            }));
+        }
+        if (!this.parent.chart) {
+            if (this.parent.showGroupingBar) {
+                this.element.style.minWidth = '400px !important';
+            }
+            else {
+                this.element.style.minWidth = '310px !important';
+            }
+            Chart.Inject(ColumnSeries, StackingColumnSeries, RangeColumnSeries, BarSeries, StackingBarSeries, ScatterSeries, BubbleSeries, LineSeries, StepLineSeries, SplineSeries, SplineAreaSeries, MultiColoredLineSeries, PolarSeries, RadarSeries, AreaSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries, MultiColoredAreaSeries, ParetoSeries, Legend, Tooltip$1, Category, MultiLevelLabel, ScrollBar, Zoom, Export, Crosshair);
+            this.parent.chart = new Chart({
+                series: this.chartSeries,
+                legendSettings: currentLegendSettings,
+                tooltip: currentTooltipSettings,
+                zoomSettings: currentZoomSettings,
+                axes: (type === 'Polar' || type === 'Radar') ? [] : axesWithRows.axes,
+                rows: (type === 'Polar' || type === 'Radar') ? [{}] : axesWithRows.rows,
+                primaryYAxis: (type === 'Polar' || type === 'Radar') ? axesWithRows.axes[0] : { visible: false },
+                primaryXAxis: currentXAxis,
+                width: this.parent.width.toString(),
+                height: this.parent.height.toString(),
+                title: this.chartSettings.title,
+                titleStyle: this.chartSettings.titleStyle,
+                subTitle: this.chartSettings.subTitle,
+                subTitleStyle: this.chartSettings.subTitleStyle,
+                margin: this.chartSettings.margin,
+                border: this.chartSettings.border,
+                background: this.chartSettings.background,
+                chartArea: this.chartSettings.chartArea,
+                palettes: this.chartSettings.palettes,
+                theme: this.chartSettings.theme,
+                crosshair: this.chartSettings.crosshair,
+                selectionMode: this.chartSettings.selectionMode,
+                isMultiSelect: this.chartSettings.isMultiSelect,
+                enableExport: this.chartSettings.enableExport,
+                selectedDataIndexes: this.chartSettings.selectedDataIndexes,
+                isTransposed: this.chartSettings.isTransposed,
+                enableAnimation: this.chartSettings.enableAnimation,
+                description: this.chartSettings.description,
+                tabIndex: this.chartSettings.tabIndex,
+                locale: this.parent.locale,
+                enableSideBySidePlacement: this.chartSettings.enableSideBySidePlacement,
+                beforePrint: this.chartSettings.beforePrint ? this.chartSettings.beforePrint.bind(this) : undefined,
+                animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this) : undefined,
+                legendRender: this.chartSettings.legendRender ? this.chartSettings.legendRender.bind(this) : undefined,
+                textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
+                pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
+                seriesRender: this.chartSettings.seriesRender ? this.chartSettings.seriesRender.bind(this) : undefined,
+                chartMouseMove: this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove.bind(this) : undefined,
+                chartMouseClick: this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick.bind(this) : undefined,
+                pointMove: this.chartSettings.pointMove ? this.chartSettings.pointMove.bind(this) : undefined,
+                pointClick: this.chartSettings.pointClick ? this.chartSettings.pointClick.bind(this) : undefined,
+                chartMouseLeave: this.chartSettings.chartMouseLeave ? this.chartSettings.chartMouseLeave.bind(this) : undefined,
+                chartMouseDown: this.chartSettings.chartMouseDown ? this.chartSettings.chartMouseDown.bind(this) : undefined,
+                chartMouseUp: this.chartSettings.chartMouseUp ? this.chartSettings.chartMouseUp.bind(this) : undefined,
+                dragComplete: this.chartSettings.dragComplete ? this.chartSettings.dragComplete.bind(this) : undefined,
+                zoomComplete: this.chartSettings.zoomComplete ? this.chartSettings.zoomComplete.bind(this) : undefined,
+                scrollStart: this.chartSettings.scrollStart ? this.chartSettings.scrollStart.bind(this) : undefined,
+                scrollEnd: this.chartSettings.scrollEnd ? this.chartSettings.scrollEnd.bind(this) : undefined,
+                scrollChanged: this.chartSettings.scrollChanged ? this.chartSettings.scrollChanged.bind(this) : undefined,
+                tooltipRender: this.tooltipRender.bind(this),
+                loaded: this.loaded.bind(this),
+                load: this.load.bind(this),
+                resized: this.resized.bind(this),
+                axisLabelRender: this.axisLabelRender.bind(this)
+            }, '#' + this.parent.element.id + '_chart');
+        }
+        else {
+            this.parent.chart.series = this.chartSeries;
+            this.parent.chart.primaryXAxis = currentXAxis;
+            if (type === 'Polar' || type === 'Radar') {
+                this.parent.chart.primaryYAxis.visible = true;
+                this.parent.chart.primaryYAxis = axesWithRows.axes[0];
+                this.parent.chart.axes = [];
+                this.parent.chart.rows = [{}];
+            }
+            else {
+                this.parent.chart.primaryYAxis.visible = false;
+                this.parent.chart.axes = axesWithRows.axes;
+                this.parent.chart.rows = axesWithRows.rows;
+            }
+            this.parent.chart.refresh();
+        }
+    }
+    frameAxesWithRows() {
+        let axes = [];
+        let rows = [];
+        let percentChart = this.persistSettings.chartSeries && (this.persistSettings.chartSeries.type === 'StackingColumn100' ||
+            this.persistSettings.chartSeries.type === 'StackingBar100' ||
+            this.persistSettings.chartSeries.type === 'StackingArea100');
+        if (this.chartSettings.enableMultiAxis) {
+            let valCnt = 0;
+            let divider = (100 / this.dataSource.values.length) + '%';
+            for (let item of this.dataSource.values) {
+                let measureField = this.engineModule.fieldList[item.name];
+                let measureAggregatedName = this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' + measureField.caption;
+                let formatSetting = this.dataSource.formatSettings.filter((itm) => {
+                    return itm.name === item.name;
+                })[0];
+                let resFormat = (this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar') ? true : false;
+                let currentYAxis = {};
+                currentYAxis = this.persistSettings.primaryYAxis ?
+                    this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
+                currentYAxis.labelFormat = currentYAxis.labelFormat ?
+                    currentYAxis.labelFormat : (percentChart ? '' : (formatSetting && !resFormat ? formatSetting.format : 'N'));
+                currentYAxis.title = currentYAxis.title ? currentYAxis.title : measureAggregatedName;
+                currentYAxis.plotOffset = currentYAxis.plotOffset ? currentYAxis.plotOffset : (valCnt % 2 !== 0 ? 30 : 0);
+                currentYAxis.rowIndex = valCnt;
+                if (!resFormat) {
+                    currentYAxis.name = item.name;
+                }
+                axes = axes.concat(currentYAxis);
+                rows.push({ height: divider });
+                valCnt++;
+            }
+        }
+        else {
+            let measureField = this.engineModule.fieldList[this.currentMeasure];
+            let measureAggregatedName = this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' +
+                measureField.caption;
+            let formatSetting = this.dataSource.formatSettings.filter((item) => {
+                return item.name === this.currentMeasure;
+            })[0];
+            let currentYAxis = {};
+            currentYAxis = this.persistSettings.primaryYAxis ? this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
+            currentYAxis.rowIndex = 0;
+            if (!(this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar')) {
+                currentYAxis.name = this.currentMeasure;
+            }
+            currentYAxis.labelFormat = currentYAxis.labelFormat ? currentYAxis.labelFormat : (percentChart ? '' : (formatSetting ?
+                formatSetting.format : 'N'));
+            currentYAxis.title = currentYAxis.title ? currentYAxis.title : measureAggregatedName;
+            axes = axes.concat(currentYAxis);
+            rows.push({ height: '100%' });
+        }
+        return { axes: axes, rows: rows };
+    }
+    getColumnTotalIndex(pivotValues) {
+        let colIndexColl = {};
+        let rKeys = Object.keys(pivotValues);
+        for (let rowIndex of rKeys) {
+            let rows = pivotValues[Number(rowIndex)];
+            let cKeys = Object.keys(rows);
+            for (let cellIndex of cKeys) {
+                let cell = rows[Number(cellIndex)];
+                if (cell.axis !== 'column') {
+                    return colIndexColl;
+                }
+                else if ((cell.type === 'sum' || (this.dataSource.columns.length === 0 ? false : cell.type === 'grand sum'))
+                    && cell.rowSpan !== -1) {
+                    colIndexColl[cell.colIndex] = cell.colIndex;
+                }
+            }
+        }
+        return colIndexColl;
+    }
+    // The commented lines will be utilized once we get the requested requirement(of multi-level labels) from chart team.
+    // private frameMultiLevelLabels(): MultiLevelLabelsModel[] {
+    //     let startKeys: string[] = Object.keys(this.headerColl);
+    //     let parentHeaders: RowHeaderLevelGrouping = this.headerColl[-0.5];
+    //     for (let startKey of startKeys) {
+    //         let sKey: number = Number(startKey);
+    //         let headers = this.headerColl[sKey];
+    //         let levelPos: number = 0;
+    //         let isAvail: boolean = false;
+    //         while (levelPos <= this.maxLevel) {
+    //             if (!isAvail) {
+    //                 if (!headers[levelPos]) {
+    //                     headers[levelPos] = parentHeaders[levelPos];
+    //                 } else {
+    //                     isAvail = true;
+    //                 }
+    //             } else if (!headers[levelPos]) {
+    //                 headers[levelPos] = {
+    //                     name: headers[levelPos - 1].name,
+    //                     text: headers[levelPos - 1].text,
+    //                     levelName: headers[levelPos - 1].levelName,
+    //                     level: headers[levelPos - 1].level,
+    //                     fieldName: headers[levelPos - 1].fieldName,
+    //                     span: -1
+    //                 };
+    //                 headers[levelPos - 1].span = 0;
+    //             }
+    //             levelPos++;
+    //         }
+    //         parentHeaders = this.headerColl[sKey];
+    //     }
+    //     let gRows: { [key: number]: any } = {};
+    //     for (let startKey of startKeys) {
+    //         let sKey: number = Number(startKey);
+    //         let headers = this.headerColl[sKey];
+    //         let lKeys: string[] = Object.keys(headers);
+    //         for (let levelKey of lKeys) {
+    //             let lKey: number = Number(levelKey);
+    //             if (gRows[lKey]) {
+    //                 let len: number = gRows[lKey].length;
+    //                 if (headers[lKey].levelName === parentHeaders[lKey].levelName) {
+    //                     gRows[lKey][len - 1].end = gRows[lKey][len - 1].end as number + 1;
+    //                 } else {
+    //                     gRows[lKey].push({ start: sKey, end: sKey + 1, text: headers[lKey].text, customAttributes: headers[lKey] });
+    //                 }
+    //             } else {
+    //                 gRows[lKey] = [{ start: sKey, end: sKey + 1, text: headers[lKey].text, customAttributes: headers[lKey] }];
+    //             }
+    //         }
+    //         parentHeaders = headers;
+    //     }
+    //     let levellength: number = Object.keys(gRows).length;
+    //     let multiLevelLabels: MultiLevelLabelsModel[] = [];
+    //     for (let level: number = levellength - 1; level > -1; level--) {
+    //         multiLevelLabels.push({ categories: gRows[level] });
+    //     }
+    //     return multiLevelLabels;
+    // }
+    getZoomFactor() {
+        if (!isNaN(Number(this.parent.width))) {
+            this.calculatedWidth = Number(this.parent.width);
+        }
+        else if (this.parent.width.indexOf('%') > -1) {
+            this.calculatedWidth = this.parent.element.clientWidth * (parseFloat(this.parent.width) / 100);
+        }
+        else if (this.parent.width.indexOf('px') > -1) {
+            this.calculatedWidth = Number(this.parent.width.toString().split('px')[0]);
+        }
+        else {
+            this.calculatedWidth = this.parent.element.clientWidth;
+        }
+        let seriesLength = (this.chartSeries.length * 10) > 120 ? (this.chartSeries.length * 10) : 120;
+        let zoomFactor = this.chartSeries.length > 0 ?
+            (this.calculatedWidth / (Object.keys(this.chartSeries[0].dataSource).length * seriesLength)) : 1;
+        zoomFactor = (zoomFactor < 1 && zoomFactor > 0) ? zoomFactor : 1;
+        return zoomFactor;
+    }
+    configTooltipSettings() {
+        let tooltip = this.chartSettings.tooltip;
+        tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
+        tooltip.header = tooltip.header ? tooltip.header : '';
+        tooltip.enableMarker = tooltip.enableMarker === undefined ? true : tooltip.enableMarker;
+        return tooltip;
+    }
+    configLegendSettings() {
+        let legendSettings = {};
+        legendSettings = this.chartSettings.legendSettings ? this.chartSettings.legendSettings : legendSettings;
+        legendSettings.padding = legendSettings.padding ? legendSettings.padding : 25;
+        legendSettings.shapePadding = legendSettings.shapePadding ? legendSettings.shapePadding : 10;
+        return legendSettings;
+    }
+    configXAxis() {
+        let currentXAxis = {};
+        currentXAxis = this.persistSettings.primaryXAxis ? this.frameObjectWithKeys(this.persistSettings.primaryXAxis) : currentXAxis;
+        currentXAxis.valueType = 'Category';
+        currentXAxis.labelIntersectAction = currentXAxis.labelIntersectAction ? currentXAxis.labelIntersectAction : 'Rotate45';
+        currentXAxis.title = currentXAxis.title ? currentXAxis.title :
+            this.dataSource.rows.map((args) => { return args.caption || args.name; }).join(' / ');
+        currentXAxis.zoomFactor = this.getZoomFactor();
+        return currentXAxis;
+    }
+    configZoomSettings() {
+        let zoomSettings = this.chartSettings.zoomSettings;
+        zoomSettings.enableSelectionZooming = zoomSettings.enableSelectionZooming === undefined ? true : zoomSettings.enableSelectionZooming;
+        zoomSettings.enableScrollbar = zoomSettings.enableScrollbar === undefined ? true : zoomSettings.enableScrollbar;
+        return zoomSettings;
+    }
+    tooltipRender(args) {
+        let measureField = this.engineModule.fieldList[args.series.yAxisName ? (args.series.yAxisName.split('_CumulativeAxis')[0]) :
+            (this.chartSettings.enableMultiAxis ? args.series.name.split(' | ')[1] : this.currentMeasure)];
+        let measureAggregatedName = this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' + measureField.caption;
+        args.text = measureAggregatedName + ': ' + this.parent.engineModule.getFormattedValue(args.point.y, measureField.id).formattedText + ' <br/>' +
+            (this.dataSource.columns.length === 0 ? '' :
+                this.parent.localeObj.getConstant('column') + ': ' + args.series.name.split(' | ')[0] + ' <br/>') +
+            (this.dataSource.rows.length === 0 ? '' :
+                this.parent.localeObj.getConstant('row') + ': ' + args.point.x);
+        this.parent.trigger(chartTooltipRender, args);
+    }
+    // The commented lines will be utilized once we get the requested requirement(of multi-level labels) from chart team.
+    loaded(args) {
+        this.parent.isChartLoaded = true;
+        if (this.parent.chart && this.parent.showGroupingBar && this.parent.groupingBarModule &&
+            this.parent.showFieldList && this.parent.currentView === 'Chart') {
+            this.parent.groupingBarModule.alignIcon();
+        }
+        // if (this.chartSettings.showMultiLevelLabels) {
+        //     this.parent.element.querySelector(
+        //         "#" + this.parent.element.id + "_chartXAxisMultiLevelLabel0").setAttribute('cursor', 'pointer');
+        // }
+        this.parent.notify(contentReady, {});
+        this.parent.trigger(chartLoaded, args);
+    }
+    // The commented lines will be utilized once we get the requested requirement(of multi-level labels) from chart team.
+    axisLabelRender(args) {
+        // if (this.chartSettings.showMultiLevelLabels) {
+        //     if (args.axis.name === 'primaryXAxis') {
+        //         args.text = '';
+        //     }
+        // }
+        this.parent.trigger(chartAxisLabelRender, args);
+    }
+    load(args) {
+        if (args.chart.zoomModule) {
+            args.chart.zoomModule.isZoomed = true;
+        }
+        this.parent.trigger(chartLoad, args);
+    }
+    resized(args) {
+        args.chart.primaryXAxis.zoomFactor = this.getZoomFactor();
+        this.parent.trigger(chartResized, args);
+    }
+    /**
+     * To destroy the chart module
+     * @returns void
+     * @hidden
+     */
+    /* tslint:disable:no-empty */
+    destroy() {
+    }
+}
+
+/**
+ * Base export
+ */
+/** @hidden */
+
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ *  Configures the series in charts.
+ */
+class PivotSeries extends ChildProperty {
+}
+__decorate$3([
+    Property(null)
+], PivotSeries.prototype, "fill", void 0);
+__decorate$3([
+    Complex(null, Animation)
+], PivotSeries.prototype, "animation", void 0);
+__decorate$3([
+    Property('0')
+], PivotSeries.prototype, "dashArray", void 0);
+__decorate$3([
+    Property(1)
+], PivotSeries.prototype, "width", void 0);
+__decorate$3([
+    Property('X')
+], PivotSeries.prototype, "segmentAxis", void 0);
+__decorate$3([
+    Property('Line')
+], PivotSeries.prototype, "drawType", void 0);
+__decorate$3([
+    Property(true)
+], PivotSeries.prototype, "isClosed", void 0);
+__decorate$3([
+    Collection([], ChartSegment)
+], PivotSeries.prototype, "segments", void 0);
+__decorate$3([
+    Property('')
+], PivotSeries.prototype, "stackingGroup", void 0);
+__decorate$3([
+    Complex({ color: 'transparent', width: 0 }, Border)
+], PivotSeries.prototype, "border", void 0);
+__decorate$3([
+    Property(true)
+], PivotSeries.prototype, "visible", void 0);
+__decorate$3([
+    Property(1)
+], PivotSeries.prototype, "opacity", void 0);
+__decorate$3([
+    Property('Line')
+], PivotSeries.prototype, "type", void 0);
+__decorate$3([
+    Complex(null, MarkerSettings)
+], PivotSeries.prototype, "marker", void 0);
+__decorate$3([
+    Complex(null, ErrorBarSettings)
+], PivotSeries.prototype, "errorBar", void 0);
+__decorate$3([
+    Property(true)
+], PivotSeries.prototype, "enableTooltip", void 0);
+__decorate$3([
+    Collection([], Trendline)
+], PivotSeries.prototype, "trendlines", void 0);
+__decorate$3([
+    Property('')
+], PivotSeries.prototype, "tooltipMappingName", void 0);
+__decorate$3([
+    Property('SeriesType')
+], PivotSeries.prototype, "legendShape", void 0);
+__decorate$3([
+    Property(1)
+], PivotSeries.prototype, "minRadius", void 0);
+__decorate$3([
+    Property(null)
+], PivotSeries.prototype, "selectionStyle", void 0);
+__decorate$3([
+    Property('Natural')
+], PivotSeries.prototype, "splineType", void 0);
+__decorate$3([
+    Property(3)
+], PivotSeries.prototype, "maxRadius", void 0);
+__decorate$3([
+    Property(0.5)
+], PivotSeries.prototype, "cardinalSplineTension", void 0);
+__decorate$3([
+    Property(null)
+], PivotSeries.prototype, "columnWidth", void 0);
+__decorate$3([
+    Complex(null, EmptyPointSettings)
+], PivotSeries.prototype, "emptyPointSettings", void 0);
+__decorate$3([
+    Complex(null, CornerRadius)
+], PivotSeries.prototype, "cornerRadius", void 0);
+__decorate$3([
+    Property(0)
+], PivotSeries.prototype, "columnSpacing", void 0);
+/**
+ * Configures the axes in charts.
+ */
+class PivotAxis extends ChildProperty {
+}
+__decorate$3([
+    Property('Rotate45')
+], PivotAxis.prototype, "labelIntersectAction", void 0);
+__decorate$3([
+    Complex(Theme.axisLabelFont, Font)
+], PivotAxis.prototype, "labelStyle", void 0);
+__decorate$3([
+    Property('')
+], PivotAxis.prototype, "title", void 0);
+__decorate$3([
+    Complex({}, CrosshairTooltip)
+], PivotAxis.prototype, "crosshairTooltip", void 0);
+__decorate$3([
+    Property('')
+], PivotAxis.prototype, "labelFormat", void 0);
+__decorate$3([
+    Complex(Theme.axisTitleFont, Font)
+], PivotAxis.prototype, "titleStyle", void 0);
+__decorate$3([
+    Property(false)
+], PivotAxis.prototype, "isIndexed", void 0);
+__decorate$3([
+    Property(0)
+], PivotAxis.prototype, "plotOffset", void 0);
+__decorate$3([
+    Property('None')
+], PivotAxis.prototype, "edgeLabelPlacement", void 0);
+__decorate$3([
+    Property('BetweenTicks')
+], PivotAxis.prototype, "labelPlacement", void 0);
+__decorate$3([
+    Property('Outside')
+], PivotAxis.prototype, "tickPosition", void 0);
+__decorate$3([
+    Property(false)
+], PivotAxis.prototype, "opposedPosition", void 0);
+__decorate$3([
+    Property(true)
+], PivotAxis.prototype, "visible", void 0);
+__decorate$3([
+    Property('Outside')
+], PivotAxis.prototype, "labelPosition", void 0);
+__decorate$3([
+    Property(0)
+], PivotAxis.prototype, "labelRotation", void 0);
+__decorate$3([
+    Property(0)
+], PivotAxis.prototype, "minorTicksPerInterval", void 0);
+__decorate$3([
+    Property(null)
+], PivotAxis.prototype, "maximum", void 0);
+__decorate$3([
+    Property(null)
+], PivotAxis.prototype, "minimum", void 0);
+__decorate$3([
+    Property(34)
+], PivotAxis.prototype, "maximumLabelWidth", void 0);
+__decorate$3([
+    Property(null)
+], PivotAxis.prototype, "interval", void 0);
+__decorate$3([
+    Complex({}, MajorTickLines)
+], PivotAxis.prototype, "majorTickLines", void 0);
+__decorate$3([
+    Property(false)
+], PivotAxis.prototype, "enableTrim", void 0);
+__decorate$3([
+    Complex({}, MajorGridLines)
+], PivotAxis.prototype, "majorGridLines", void 0);
+__decorate$3([
+    Complex({}, MinorTickLines)
+], PivotAxis.prototype, "minorTickLines", void 0);
+__decorate$3([
+    Complex({}, AxisLine)
+], PivotAxis.prototype, "lineStyle", void 0);
+__decorate$3([
+    Complex({}, MinorGridLines)
+], PivotAxis.prototype, "minorGridLines", void 0);
+__decorate$3([
+    Property(false)
+], PivotAxis.prototype, "isInversed", void 0);
+__decorate$3([
+    Property(null)
+], PivotAxis.prototype, "description", void 0);
+__decorate$3([
+    Property(0)
+], PivotAxis.prototype, "startAngle", void 0);
+__decorate$3([
+    Property(100)
+], PivotAxis.prototype, "coefficient", void 0);
+__decorate$3([
+    Collection([], StripLineSettings)
+], PivotAxis.prototype, "stripLines", void 0);
+__decorate$3([
+    Property(2)
+], PivotAxis.prototype, "tabIndex", void 0);
+__decorate$3([
+    Complex({ color: null, width: 0, type: 'Rectangle' }, LabelBorder)
+], PivotAxis.prototype, "border", void 0);
+/**
+ * Configures the ToolTips in the chart.
+ */
+class PivotTooltipSettings extends ChildProperty {
+}
+__decorate$3([
+    Property(false)
+], PivotTooltipSettings.prototype, "enableMarker", void 0);
+__decorate$3([
+    Property(true)
+], PivotTooltipSettings.prototype, "enable", void 0);
+__decorate$3([
+    Property(null)
+], PivotTooltipSettings.prototype, "fill", void 0);
+__decorate$3([
+    Property(false)
+], PivotTooltipSettings.prototype, "shared", void 0);
+__decorate$3([
+    Property(0.75)
+], PivotTooltipSettings.prototype, "opacity", void 0);
+__decorate$3([
+    Property(null)
+], PivotTooltipSettings.prototype, "header", void 0);
+__decorate$3([
+    Property(null)
+], PivotTooltipSettings.prototype, "format", void 0);
+__decorate$3([
+    Complex(Theme.tooltipLabelFont, Font)
+], PivotTooltipSettings.prototype, "textStyle", void 0);
+__decorate$3([
+    Property(null)
+], PivotTooltipSettings.prototype, "template", void 0);
+__decorate$3([
+    Complex({ color: '#cccccc', width: 0.5 }, Border)
+], PivotTooltipSettings.prototype, "border", void 0);
+__decorate$3([
+    Property(true)
+], PivotTooltipSettings.prototype, "enableAnimation", void 0);
+/**
+ * Configures the zooming behavior for the chart.
+ */
+class PivotZoomSettings extends ChildProperty {
+}
+__decorate$3([
+    Property(false)
+], PivotZoomSettings.prototype, "enablePinchZooming", void 0);
+__decorate$3([
+    Property(true)
+], PivotZoomSettings.prototype, "enableSelectionZooming", void 0);
+__decorate$3([
+    Property(false)
+], PivotZoomSettings.prototype, "enableDeferredZooming", void 0);
+__decorate$3([
+    Property(false)
+], PivotZoomSettings.prototype, "enableMouseWheelZooming", void 0);
+__decorate$3([
+    Property('XY')
+], PivotZoomSettings.prototype, "mode", void 0);
+__decorate$3([
+    Property(['Zoom', 'ZoomIn', 'ZoomOut', 'Pan', 'Reset'])
+], PivotZoomSettings.prototype, "toolbarItems", void 0);
+__decorate$3([
+    Property(true)
+], PivotZoomSettings.prototype, "enableScrollbar", void 0);
+__decorate$3([
+    Property(false)
+], PivotZoomSettings.prototype, "enablePan", void 0);
+/**
+ *  Configures the chart settings.
+ */
+class ChartSettings extends ChildProperty {
+}
+__decorate$3([
+    Complex({}, PivotSeries)
+], ChartSettings.prototype, "chartSeries", void 0);
+__decorate$3([
+    Complex({}, PivotAxis)
+], ChartSettings.prototype, "primaryXAxis", void 0);
+__decorate$3([
+    Complex({}, PivotAxis)
+], ChartSettings.prototype, "primaryYAxis", void 0);
+__decorate$3([
+    Property('')
+], ChartSettings.prototype, "value", void 0);
+__decorate$3([
+    Property(false)
+], ChartSettings.prototype, "enableMultiAxis", void 0);
+__decorate$3([
+    Complex(Theme.chartTitleFont, Font)
+], ChartSettings.prototype, "titleStyle", void 0);
+__decorate$3([
+    Property('')
+], ChartSettings.prototype, "title", void 0);
+__decorate$3([
+    Complex(Theme.chartSubTitleFont, Font)
+], ChartSettings.prototype, "subTitleStyle", void 0);
+__decorate$3([
+    Property('')
+], ChartSettings.prototype, "subTitle", void 0);
+__decorate$3([
+    Complex({ color: '#DDDDDD', width: 0 }, Border)
+], ChartSettings.prototype, "border", void 0);
+__decorate$3([
+    Complex({}, Margin)
+], ChartSettings.prototype, "margin", void 0);
+__decorate$3([
+    Complex({ border: { color: null, width: 0.5 }, background: 'transparent' }, ChartArea)
+], ChartSettings.prototype, "chartArea", void 0);
+__decorate$3([
+    Property(null)
+], ChartSettings.prototype, "background", void 0);
+__decorate$3([
+    Property('Material')
+], ChartSettings.prototype, "theme", void 0);
+__decorate$3([
+    Property([])
+], ChartSettings.prototype, "palettes", void 0);
+__decorate$3([
+    Complex({}, CrosshairSettings)
+], ChartSettings.prototype, "crosshair", void 0);
+__decorate$3([
+    Complex({}, PivotTooltipSettings)
+], ChartSettings.prototype, "tooltip", void 0);
+__decorate$3([
+    Complex({}, PivotZoomSettings)
+], ChartSettings.prototype, "zoomSettings", void 0);
+__decorate$3([
+    Property()
+], ChartSettings.prototype, "legendSettings", void 0);
+__decorate$3([
+    Property('None')
+], ChartSettings.prototype, "selectionMode", void 0);
+__decorate$3([
+    Property(true)
+], ChartSettings.prototype, "enableExport", void 0);
+__decorate$3([
+    Property(false)
+], ChartSettings.prototype, "isMultiSelect", void 0);
+__decorate$3([
+    Collection([], Indexes)
+], ChartSettings.prototype, "selectedDataIndexes", void 0);
+__decorate$3([
+    Property(true)
+], ChartSettings.prototype, "enableAnimation", void 0);
+__decorate$3([
+    Property(false)
+], ChartSettings.prototype, "isTransposed", void 0);
+__decorate$3([
+    Property(1)
+], ChartSettings.prototype, "tabIndex", void 0);
+__decorate$3([
+    Property(null)
+], ChartSettings.prototype, "description", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "resized", void 0);
+__decorate$3([
+    Property(true)
+], ChartSettings.prototype, "enableSideBySidePlacement", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "loaded", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "beforePrint", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "animationComplete", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "load", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "textRender", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "legendRender", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "seriesRender", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "pointRender", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "tooltipRender", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "axisLabelRender", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "chartMouseClick", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "chartMouseMove", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "pointMove", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "pointClick", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "chartMouseDown", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "chartMouseLeave", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "dragComplete", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "chartMouseUp", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "scrollStart", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "zoomComplete", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "scrollChanged", void 0);
+__decorate$3([
+    Event()
+], ChartSettings.prototype, "scrollEnd", void 0);
+
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -5477,6 +7629,12 @@ __decorate([
 __decorate([
     Property(true)
 ], GroupingBarSettings.prototype, "showValueTypeIcon", void 0);
+__decorate([
+    Property('Both')
+], GroupingBarSettings.prototype, "displayMode", void 0);
+__decorate([
+    Property(true)
+], GroupingBarSettings.prototype, "allowDragAndDrop", void 0);
 /**
  * Configures the edit behavior of the Grid.
  */
@@ -5556,6 +7714,17 @@ __decorate([
     Property('')
 ], HyperlinkSettings.prototype, "cssClass", void 0);
 /**
+ * It holds the option for configure the chart and grid view.
+ */
+class DisplayOption extends ChildProperty {
+}
+__decorate([
+    Property('Table')
+], DisplayOption.prototype, "view", void 0);
+__decorate([
+    Property('Table')
+], DisplayOption.prototype, "primary", void 0);
+/**
  * Represents the PivotView component.
  * ```html
  * <div id="PivotView"></div>
@@ -5574,6 +7743,30 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     constructor(options, element) {
         super(options, element);
         /** @hidden */
+        this.verticalScrollScale = 1;
+        /** @hidden */
+        this.horizontalScrollScale = 1;
+        /** @hidden */
+        this.scrollerBrowserLimit = 500000;
+        /** @hidden */
+        this.lastSortInfo = {};
+        /** @hidden */
+        this.lastFilterInfo = {};
+        /** @hidden */
+        this.lastAggregationInfo = {};
+        /** @hidden */
+        this.lastCalcFieldInfo = {};
+        this.shiftLockedPos = [];
+        this.savedSelectedCellsPos = [];
+        this.isPopupClicked = false;
+        this.isMouseDown = false;
+        this.isMouseUp = false;
+        this.isCellBoxMultiSelection = false;
+        /** @hidden */
+        this.gridHeaderCellInfo = [];
+        /** @hidden */
+        this.rowRangeSelection = { enable: false, startIndex: 0, endIndex: 0 };
+        /** @hidden */
         this.resizeInfo = {};
         /** @hidden */
         this.scrollPosObject = {
@@ -5588,6 +7781,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.posCount = 0;
         this.needsID = true;
         this.pivotView = this;
+        this.engineModule = new PivotEngine();
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -5607,6 +7801,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (this.showGroupingBar) {
             isCommonRequire = true;
             modules.push({ args: [this], member: 'grouping' });
+        }
+        if (this.showToolbar && this.toolbar.length > 0) {
+            isCommonRequire = true;
+            modules.push({ args: [this], member: 'toolbar' });
         }
         if (this.showFieldList) {
             isCommonRequire = true;
@@ -5696,6 +7894,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             dragField: 'Drag field to formula',
             clearFilter: 'Clear',
             by: 'by',
+            all: 'All',
+            multipleItems: 'Multiple items',
             /* tslint:disable */
             member: 'Member',
             label: 'Label',
@@ -5761,7 +7961,53 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             example: 'e.g:',
             editorDataLimitMsg: ' more items. Search to refine further.',
             details: 'Details',
-            manageRecords: 'Manage Records'
+            manageRecords: 'Manage Records',
+            Years: 'Years',
+            Quarters: 'Quarters',
+            Months: 'Months',
+            Days: 'Days',
+            Hours: 'Hours',
+            Minutes: 'Minutes',
+            Seconds: 'Seconds',
+            save: 'Save a report',
+            new: 'Create a new report',
+            load: 'Load',
+            saveAs: 'Save as current report',
+            rename: 'Rename a current report',
+            deleteReport: 'Delete a current report',
+            export: 'Export',
+            subTotals: 'Sub totals',
+            grandTotals: 'Grand totals',
+            reportName: 'Report Name :',
+            pdf: 'PDF',
+            excel: 'Excel',
+            csv: 'CSV',
+            showSubTotals: 'Show sub totals',
+            doNotShowSubTotals: 'Do not show sub totals',
+            showSubTotalsRowsOnly: 'Show sub totals rows only',
+            showSubTotalsColumnsOnly: 'Show sub totals columns only',
+            showGrandTotals: 'Show grand totals',
+            doNotShowGrandTotals: 'Do not show grand totals',
+            showGrandTotalsRowsOnly: 'Show grand totals rows only',
+            showGrandTotalsColumnsOnly: 'Show grand totals columns only',
+            fieldList: 'Show fieldlist',
+            grid: 'Show table',
+            toolbarFormatting: 'Conditional formatting',
+            chart: 'Chart',
+            reportMsg: 'Please enter vaild report name!!!',
+            reportList: 'Report list',
+            removeConfirm: 'Are you sure want to delete this report?',
+            emptyReport: 'No reports found!!',
+            bar: 'Bar',
+            line: 'Line',
+            area: 'Area',
+            scatter: 'Scatter',
+            polar: 'Polar',
+            of: 'of',
+            emptyFormat: 'No format found!!!',
+            emptyInput: 'Enter a value',
+            newReportConfirm: 'Want to save changes to report?',
+            emptyReportName: 'Enter a report name'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -5803,11 +8049,16 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.columnDragStart = this.gridSettings.columnDragStart ? this.gridSettings.columnDragStart.bind(this) : undefined;
         this.columnDrag = this.gridSettings.columnDrag ? this.gridSettings.columnDrag.bind(this) : undefined;
         this.columnDrop = this.gridSettings.columnDrop ? this.gridSettings.columnDrop.bind(this) : undefined;
-        this.beforeColumnsRender = this.gridSettings.beforeColumnsRender ? this.gridSettings.beforeColumnsRender : undefined;
+        this.beforeColumnsRender = this.gridSettings.columnRender ? this.gridSettings.columnRender : undefined;
         this.selected = this.gridSettings.cellSelected ? this.gridSettings.cellSelected : undefined;
         this.cellDeselected = this.gridSettings.cellDeselected ? this.gridSettings.cellDeselected : undefined;
         this.rowSelected = this.gridSettings.rowSelected ? this.gridSettings.rowSelected : undefined;
         this.rowDeselected = this.gridSettings.rowDeselected ? this.gridSettings.rowDeselected : undefined;
+        this.chartTooltipRender = this.chartSettings.tooltipRender ? this.chartSettings.tooltipRender : undefined;
+        this.chartLoaded = this.chartSettings.loaded ? this.chartSettings.loaded : undefined;
+        this.chartLoad = this.chartSettings.load ? this.chartSettings.load : undefined;
+        this.chartResized = this.chartSettings.resized ? this.chartSettings.resized : undefined;
+        this.chartAxisLabelRender = this.chartSettings.axisLabelRender ? this.chartSettings.axisLabelRender : undefined;
         if (this.gridSettings.rowHeight === null) {
             this.setProperties({ gridSettings: { rowHeight: this.isAdaptive ? 48 : 36 } }, true);
         }
@@ -5816,8 +8067,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 Number(this.height.split('px')[0]) : this.height;
             this.width = (typeof this.width === 'string' && this.width.indexOf('%') === -1) ?
                 Number(this.width.split('px')[0]) : this.width;
-            this.height = typeof this.height === 'number' ? this.height : 300;
-            this.width = typeof this.width === 'number' ? this.width : 800;
+            this.height = !isNaN(this.height) ? this.height : 300;
+            this.width = !isNaN(this.width) ? this.width : 800;
         }
         if (this.enableVirtualization) {
             let colValues = 1;
@@ -5844,6 +8095,14 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 PivotView_1.Inject(DrillThrough);
             }
         }
+        this.isCellBoxMultiSelection = this.gridSettings.allowSelection &&
+            this.gridSettings.selectionSettings.cellSelectionMode === 'Box' &&
+            this.gridSettings.selectionSettings.mode === 'Cell' && this.gridSettings.selectionSettings.type === 'Multiple';
+        if (this.displayOption.view !== 'Table') {
+            this.chartModule = new PivotChart();
+        }
+        this.currentView = this.currentView ? this.currentView : (this.displayOption.view === 'Both' ?
+            this.displayOption.primary : this.displayOption.view);
     }
     /**
      * Initialize the control rendering
@@ -5851,6 +8110,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      * @hidden
      */
     render() {
+        this.cellTemplateFn = this.templateParser(this.cellTemplate);
         createSpinner({ target: this.element }, this.createElement);
         this.trigger(load, { 'dataSource': this.dataSource });
         this.updateClass();
@@ -5859,6 +8119,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (this.isAdaptive) {
             this.contextMenuModule.render();
         }
+        this.notify(initToolbar, {});
     }
     /**
      * Register the internal events.
@@ -5886,7 +8147,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      * @hidden
      */
     getPersistData() {
-        let keyEntity = ['dataSource', 'pivotValues', 'gridSettings'];
+        let keyEntity = ['dataSource', 'pivotValues', 'gridSettings', 'chartSettings'];
         return this.addOnPersist(keyEntity);
     }
     /**
@@ -5928,13 +8189,28 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 case 'hyperlinkSettings':
                 case 'allowDrillThrough':
                 case 'editSettings':
+                    if (newProp.dataSource && newProp.dataSource.groupSettings && newProp.dataSource.groupSettings.length > 0) {
+                        let groupSettings = extend([], this.dataSource.groupSettings, null, true);
+                        let data = PivotUtil.getClonedData(this.clonedDataSet);
+                        let dataSource = extend({}, this.clonedReport, null, true);
+                        dataSource.data = data;
+                        dataSource.groupSettings = groupSettings;
+                        this.setProperties({ dataSource: dataSource }, true);
+                    }
                     this.notify(initialLoad, {});
                     break;
                 case 'pivotValues':
+                case 'displayOption':
                     this.notify(dataReady, {});
                     break;
                 case 'gridSettings':
                     this.renderModule.updateGridSettings();
+                    this.isCellBoxMultiSelection = this.gridSettings.allowSelection &&
+                        this.gridSettings.selectionSettings.cellSelectionMode === 'Box' &&
+                        this.gridSettings.selectionSettings.mode === 'Cell' && this.gridSettings.selectionSettings.type === 'Multiple';
+                    break;
+                case 'chartSettings':
+                    this.chartModule.loadChart(this, this.chartSettings);
                     break;
                 case 'locale':
                 case 'currencyCode':
@@ -5953,8 +8229,29 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 case 'showTooltip':
                     this.renderToolTip();
                     break;
+                case 'toolbar':
+                    if (this.toolbarModule) {
+                        this.toolbarModule.refreshToolbar();
+                    }
+                    break;
             }
         }
+    }
+    templateParser(template) {
+        if (template) {
+            try {
+                if (document.querySelectorAll(template).length) {
+                    return compile(document.querySelector(template).innerHTML.trim());
+                }
+            }
+            catch (error) {
+                return compile(template);
+            }
+        }
+        return undefined;
+    }
+    getCellTemplate() {
+        return this.cellTemplateFn;
     }
     /**
      * Render the UI section of PivotView.
@@ -5962,34 +8259,58 @@ let PivotView = PivotView_1 = class PivotView extends Component {
      * @hidden
      */
     renderPivotGrid() {
+        if (this.chartModule) {
+            this.chartModule.engineModule = this.engineModule;
+            this.chartModule.loadChart(this, this.chartSettings);
+        }
         if (this.enableVirtualization) {
             this.virtualscrollModule = new VirtualScroll$1(this);
         }
-        if (this.hyperlinkSettings) {
-            this.isRowCellHyperlink = (this.hyperlinkSettings.showRowHeaderHyperlink ?
-                true : this.hyperlinkSettings.showHyperlink ? true : false);
-            this.isColumnCellHyperlink = (this.hyperlinkSettings.showColumnHeaderHyperlink ?
-                true : this.hyperlinkSettings.showHyperlink ? true : false);
-            this.isValueCellHyperlink = (this.hyperlinkSettings.showValueCellHyperlink ?
-                true : this.hyperlinkSettings.showHyperlink ? true : false);
-            this.isSummaryCellHyperlink = (this.hyperlinkSettings.showSummaryCellHyperlink ?
-                true : this.hyperlinkSettings.showHyperlink ? true : false);
-            this.applyHyperlinkSettings();
+        if (this.displayOption.view !== 'Chart') {
+            if (this.hyperlinkSettings) {
+                this.isRowCellHyperlink = (this.hyperlinkSettings.showRowHeaderHyperlink ?
+                    true : this.hyperlinkSettings.showHyperlink ? true : false);
+                this.isColumnCellHyperlink = (this.hyperlinkSettings.showColumnHeaderHyperlink ?
+                    true : this.hyperlinkSettings.showHyperlink ? true : false);
+                this.isValueCellHyperlink = (this.hyperlinkSettings.showValueCellHyperlink ?
+                    true : this.hyperlinkSettings.showHyperlink ? true : false);
+                this.isSummaryCellHyperlink = (this.hyperlinkSettings.showSummaryCellHyperlink ?
+                    true : this.hyperlinkSettings.showHyperlink ? true : false);
+                this.applyHyperlinkSettings();
+            }
+            if (this.allowDrillThrough || this.editSettings.allowEditing) {
+                this.drillThroughModule = new DrillThrough(this);
+            }
+            this.renderModule = new Render(this);
+            this.renderModule.render();
         }
-        if (this.allowDrillThrough || this.editSettings.allowEditing) {
-            this.drillThroughModule = new DrillThrough(this);
+        else if (this.grid) {
+            remove(this.grid.element);
         }
-        this.renderModule = new Render(this);
-        this.renderModule.render();
         if (this.showFieldList || this.showGroupingBar) {
             this.notify(uiUpdate, this);
             if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
                 this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSource, null, true);
             }
+            if (this.showToolbar && this.showGroupingBar) {
+                this.notify(initToolbar, this);
+            }
         }
         this.trigger(dataBound);
         if (this.allowConditionalFormatting) {
             this.applyFormatting();
+        }
+        if (this.showToolbar) {
+            if (this.displayOption.view === 'Both' && this.chart && this.grid) {
+                if (this.currentView === 'Table') {
+                    this.grid.element.style.display = '';
+                    this.chart.element.style.display = 'none';
+                }
+                else {
+                    this.grid.element.style.display = 'none';
+                    this.chart.element.style.display = '';
+                }
+            }
         }
     }
     /**
@@ -6001,7 +8322,39 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     updateDataSource(isRefreshGrid) {
         showSpinner(this.element);
         /* tslint:disable:align */
-        this.engineModule = new PivotEngine(this.dataSource, '', this.engineModule.fieldList, this.pageSettings, this.enableValueSorting, (this.allowDrillThrough || this.editSettings.allowEditing));
+        let customProperties = {
+            mode: '',
+            savedFieldList: this.engineModule.fieldList,
+            pageSettings: this.pageSettings,
+            enableValueSorting: this.enableValueSorting,
+            isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing)
+        };
+        let isSorted = Object.keys(this.lastSortInfo).length > 0 ? true : false;
+        let isFiltered = Object.keys(this.lastFilterInfo).length > 0 ? true : false;
+        let isAggChange = Object.keys(this.lastAggregationInfo).length > 0 ? true : false;
+        let isCalcChange = Object.keys(this.lastCalcFieldInfo).length > 0 ? true : false;
+        if (this.enableVirtualization && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+            if (isSorted) {
+                this.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
+                this.engineModule.onSort(this.lastSortInfo);
+                this.lastSortInfo = {};
+            }
+            if (isFiltered) {
+                this.engineModule.onFilter(this.lastFilterInfo, this.dataSource);
+                this.lastFilterInfo = {};
+            }
+            if (isAggChange) {
+                this.engineModule.onAggregation(this.lastAggregationInfo);
+                this.lastAggregationInfo = {};
+            }
+            if (isCalcChange) {
+                this.engineModule.onCalcOperation(this.lastCalcFieldInfo);
+                this.lastCalcFieldInfo = {};
+            }
+        }
+        else {
+            this.engineModule.renderEngine(this.dataSource, customProperties);
+        }
         let eventArgs = {
             dataSource: this.dataSource,
             pivotValues: this.engineModule.pivotValues
@@ -6021,6 +8374,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (this.showGroupingBar && this.groupingBarModule) {
             this.groupingBarModule.destroy();
         }
+        if (this.showToolbar && this.toolbarModule) {
+            this.toolbarModule.destroy();
+        }
         if (this.enableVirtualization && this.virtualscrollModule) {
             this.virtualscrollModule.destroy();
         }
@@ -6032,6 +8388,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         }
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
+        }
+        if (this.chart) {
+            this.chart.destroy();
         }
         this.unwireEvents();
         removeClass([this.element], ROOT);
@@ -6090,20 +8449,39 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.grid.pdfExport(pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
         }
     }
+    /**
+     * Export method for the chart.
+     * @param type - Defines the export type.
+     * @param fileName - Defines file name of export document.
+     * @param orientation - Defines the page orientation on pdf export(0 for Portrait mode, 1 for Landscape mode).
+     * @param width - Defines width of the export document.
+     * @param height - Defines height of the export document.
+     */
+    chartExport(type, fileName, orientation, width, height) {
+        if (this.chart && this.chart.enableExport) {
+            this.chart.exportModule.export(type, fileName, orientation, null, width, height);
+        }
+    }
+    /**
+     * Print method for the chart.
+     */
+    printChart() {
+        if (this.chart) {
+            this.chart.print();
+        }
+    }
     onDrill(target) {
         let fieldName = target.parentElement.getAttribute('fieldname');
         let memberName = this.engineModule.pivotValues[Number(target.parentElement.getAttribute('index'))][Number(target.parentElement.getAttribute('aria-colindex'))].actualText;
         this.engineModule.fieldList[fieldName].members[memberName].isDrilled =
             target.classList.contains(COLLAPSE) ? false : true;
-        let dataSource = extend({}, this.dataSource, null, true);
         let fieldAvail = false;
-        let prop = dataSource.properties;
-        if (!prop.drilledMembers || prop.drilledMembers.length === 0) {
-            prop.drilledMembers = [{ name: fieldName, items: [memberName] }];
+        if (this.dataSource.drilledMembers.length === 0) {
+            this.setProperties({ dataSource: { drilledMembers: [{ name: fieldName, items: [memberName] }] } }, true);
         }
         else {
-            for (let fCnt = 0; fCnt < prop.drilledMembers.length; fCnt++) {
-                let field = prop.drilledMembers[fCnt];
+            for (let fCnt = 0; fCnt < this.dataSource.drilledMembers.length; fCnt++) {
+                let field = this.dataSource.drilledMembers[fCnt];
                 if (field.name === fieldName) {
                     fieldAvail = true;
                     let memIndex = field.items.indexOf(memberName);
@@ -6119,16 +8497,26 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 }
             }
             if (!fieldAvail) {
-                prop.drilledMembers.push({ name: fieldName, items: [memberName] });
+                this.dataSource.drilledMembers.push({ name: fieldName, items: [memberName] });
             }
         }
-        this.setProperties({ dataSource: { drilledMembers: prop.drilledMembers } }, true);
         showSpinner(this.element);
-        this.engineModule.generateGridData(this.dataSource);
+        let drilledItem = {
+            fieldName: fieldName, memberName: memberName,
+            axis: target.parentElement.classList.contains(ROWSHEADER) ? 'row' : 'column',
+            action: target.classList.contains(COLLAPSE) ? 'up' : 'down'
+        };
+        if (this.enableVirtualization) {
+            this.engineModule.onDrill(drilledItem);
+        }
+        else {
+            this.engineModule.generateGridData(this.dataSource);
+        }
         this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
         this.renderPivotGrid();
     }
     onContentReady() {
+        this.isPopupClicked = false;
         if (this.showFieldList) {
             hideSpinner(this.pivotFieldListModule.fieldListSpinnerElement);
         }
@@ -6137,59 +8525,78 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         }
         if (!this.isEmptyGrid) {
             hideSpinner(this.element);
+            this.trigger(dataBound);
         }
         else {
             this.isEmptyGrid = false;
         }
-        if (this.enableVirtualization && this.engineModule) {
-            if (this.element.querySelector('.' + MOVABLECONTENT_DIV) &&
-                !this.element.querySelector('.' + MOVABLECONTENT_DIV).querySelector('.' + VIRTUALTRACK_DIV)) {
-                this.virtualDiv = createElement('div', { className: VIRTUALTRACK_DIV });
-                this.element.querySelector('.' + MOVABLECONTENT_DIV).appendChild(this.virtualDiv);
+        if (this.grid) {
+            if (this.enableVirtualization && this.engineModule) {
+                if (this.element.querySelector('.' + MOVABLECONTENT_DIV) &&
+                    !this.element.querySelector('.' + MOVABLECONTENT_DIV).querySelector('.' + VIRTUALTRACK_DIV)) {
+                    this.virtualDiv = createElement('div', { className: VIRTUALTRACK_DIV });
+                    this.element.querySelector('.' + MOVABLECONTENT_DIV).appendChild(this.virtualDiv);
+                }
+                if (this.element.querySelector('.' + MOVABLEHEADER_DIV) &&
+                    !this.element.querySelector('.' + MOVABLEHEADER_DIV).querySelector('.' + VIRTUALTRACK_DIV)) {
+                    this.virtualHeaderDiv = createElement('div', { className: VIRTUALTRACK_DIV });
+                    this.element.querySelector('.' + MOVABLEHEADER_DIV).appendChild(this.virtualHeaderDiv);
+                }
+                else {
+                    this.virtualHeaderDiv =
+                        this.element.querySelector('.' + MOVABLEHEADER_DIV).querySelector('.' + VIRTUALTRACK_DIV);
+                }
+                let movableTable = this.element.querySelector('.' + MOVABLECONTENT_DIV).querySelector('.e-table');
+                let vHeight = (this.gridSettings.rowHeight * this.engineModule.rowCount + 0.1 - movableTable.clientHeight);
+                if (vHeight > this.scrollerBrowserLimit) {
+                    this.verticalScrollScale = vHeight / this.scrollerBrowserLimit;
+                    vHeight = this.scrollerBrowserLimit;
+                }
+                let vWidth = (this.gridSettings.columnWidth * this.engineModule.columnCount
+                    - this.grid.columns[0].width);
+                if (vWidth > this.scrollerBrowserLimit) {
+                    this.horizontalScrollScale = vWidth / this.scrollerBrowserLimit;
+                    vWidth = this.scrollerBrowserLimit;
+                }
+                setStyleAttribute(this.virtualDiv, {
+                    height: (vHeight > 0.1 ? vHeight : 0.1) + 'px',
+                    width: (vWidth > 0.1 ? vWidth : 0.1) + 'px'
+                });
+                setStyleAttribute(this.virtualHeaderDiv, {
+                    height: 0, width: (vWidth > 0.1 ? vWidth : 0.1) + 'px'
+                });
+                let mCnt = this.element.querySelector('.' + MOVABLECONTENT_DIV);
+                let fCnt = this.element.querySelector('.' + FROZENCONTENT_DIV);
+                let mHdr = this.element.querySelector('.' + MOVABLEHEADER_DIV);
+                let verOffset = (mCnt.scrollTop > this.scrollerBrowserLimit) ?
+                    mCnt.querySelector('.' + TABLE).style.transform.split(',')[1].trim() :
+                    -(((mCnt.scrollTop * this.verticalScrollScale) - this.scrollPosObject.verticalSection - mCnt.scrollTop)) + 'px)';
+                let horiOffset = (mCnt.scrollLeft > this.scrollerBrowserLimit) ?
+                    (mCnt.querySelector('.' + TABLE).style.transform.split(',')[0].trim() + ',') :
+                    'translate(' + -(((mCnt.scrollLeft * this.horizontalScrollScale) -
+                        this.scrollPosObject.horizontalSection - mCnt.scrollLeft)) + 'px,';
+                setStyleAttribute(fCnt.querySelector('.e-table'), {
+                    transform: 'translate(' + 0 + 'px,' + verOffset
+                });
+                setStyleAttribute(mCnt.querySelector('.e-table'), {
+                    transform: horiOffset + verOffset
+                });
+                setStyleAttribute(mHdr.querySelector('.e-table'), {
+                    transform: horiOffset + 0 + 'px)'
+                });
             }
-            if (this.element.querySelector('.' + MOVABLEHEADER_DIV) &&
-                !this.element.querySelector('.' + MOVABLEHEADER_DIV).querySelector('.' + VIRTUALTRACK_DIV)) {
-                this.virtualHeaderDiv = createElement('div', { className: VIRTUALTRACK_DIV });
-                this.element.querySelector('.' + MOVABLEHEADER_DIV).appendChild(this.virtualHeaderDiv);
+            if (this.showGroupingBar) {
+                this.element.style.minWidth = '400px';
+                this.grid.element.style.minWidth = '400px';
             }
             else {
-                this.virtualHeaderDiv =
-                    this.element.querySelector('.' + MOVABLEHEADER_DIV).querySelector('.' + VIRTUALTRACK_DIV);
+                this.element.style.minWidth = '310px';
+                this.grid.element.style.minWidth = '310px';
             }
-            let movableTable = this.element.querySelector('.' + MOVABLECONTENT_DIV).querySelector('.e-table');
-            let vHeight = (this.gridSettings.rowHeight * this.engineModule.rowCount + 0.1 - movableTable.clientHeight);
-            let vWidth = (this.gridSettings.columnWidth * this.engineModule.columnCount
-                - this.grid.columns[0].width);
-            setStyleAttribute(this.virtualDiv, {
-                height: (vHeight > 0.1 ? vHeight : 0.1) + 'px',
-                width: (vWidth > 0.1 ? vWidth : 0.1) + 'px'
-            });
-            setStyleAttribute(this.virtualHeaderDiv, {
-                height: 0, width: (vWidth > 0.1 ? vWidth : 0.1) + 'px'
-            });
-            let mCnt = this.element.querySelector('.' + MOVABLECONTENT_DIV);
-            let fCnt = this.element.querySelector('.' + FROZENCONTENT_DIV);
-            let mHdr = this.element.querySelector('.' + MOVABLEHEADER_DIV);
-            setStyleAttribute(fCnt.querySelector('.e-table'), {
-                transform: 'translate(' + 0 + 'px,' + this.scrollPosObject.verticalSection + 'px)'
-            });
-            setStyleAttribute(mCnt.querySelector('.e-table'), {
-                transform: 'translate(' + this.scrollPosObject.horizontalSection + 'px,' + this.scrollPosObject.verticalSection + 'px)'
-            });
-            setStyleAttribute(mHdr.querySelector('.e-table'), {
-                transform: 'translate(' + this.scrollPosObject.horizontalSection + 'px,' + 0 + 'px)'
-            });
+            this.unwireEvents();
+            this.wireEvents();
         }
-        if (this.showGroupingBar) {
-            this.element.style.minWidth = '400px';
-            this.grid.element.style.minWidth = '400px';
-        }
-        else {
-            this.element.style.minWidth = '310px';
-            this.grid.element.style.minWidth = '310px';
-        }
-        this.unwireEvents();
-        this.wireEvents();
+        this.isChartLoaded = false;
     }
     setToolTip(args) {
         let colIndex = Number(args.target.getAttribute('aria-colindex'));
@@ -6202,10 +8609,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 this.getRowText(rowIndex, 0) +
                 '</p></br><p class=' + TOOLTIP_HEADER + '>' +
                 this.localeObj.getConstant('column') + ':</p><p class=' + TOOLTIP_CONTENT + '>' +
-                this.getColText(0, colIndex, rowIndex) + '</p></br>' + '<p class=' + TOOLTIP_HEADER + '>' +
-                this.localeObj.getConstant('value') + ':</p><p class=' + TOOLTIP_CONTENT + '>' +
+                this.getColText(0, colIndex, rowIndex) + '</p></br>' + (cell.actualText !== '' ? ('<p class=' + TOOLTIP_HEADER + '>' +
+                this.engineModule.fieldList[cell.actualText].aggregateType + ' ' + this.localeObj.getConstant('of') + ' ' +
+                this.engineModule.fieldList[cell.actualText].caption + ':</p><p class=' + TOOLTIP_CONTENT + '>' +
                 (((cell.formattedText === '0' || cell.formattedText === '') ?
-                    this.localeObj.getConstant('noValue') : cell.formattedText)) + '</p></div>';
+                    this.localeObj.getConstant('noValue') : cell.formattedText)) + '</p></div>') : '');
         }
         else {
             args.cancel = true;
@@ -6221,8 +8629,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             if (cell.index !== undefined) {
                 if (level > cell.level) {
                     rowText = rowText + ' - ' + cell.formattedText;
+                    level = level - 1;
                 }
-                level = cell.level;
             }
         }
         return rowText.split(' - ').reverse().join(' - ');
@@ -6258,8 +8666,60 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         }
     }
     wireEvents() {
-        EventHandler.add(this.element, this.isAdaptive ? 'touchend' : 'click', this.mouseClickHandler, this);
-        window.addEventListener('resize', this.onWindowResize.bind(this), true);
+        if (this.displayOption.view !== 'Chart') {
+            EventHandler.add(this.element, this.isAdaptive ? 'touchend' : 'click', this.mouseClickHandler, this);
+            EventHandler.add(this.element, 'mousedown', this.mouseDownHandler, this);
+            EventHandler.add(this.element.querySelector('.' + GRID_HEADER), 'mousemove', this.mouseMoveHandler, this);
+            EventHandler.add(this.element, 'mouseup', this.mouseUpHandler, this);
+            window.addEventListener('resize', this.onWindowResize.bind(this), true);
+        }
+    }
+    mouseDownHandler(e) {
+        if (this.isCellBoxMultiSelection) {
+            this.isMouseDown = true;
+            this.isMouseUp = false;
+            let parent = this.parentAt(e.target, 'TH');
+            this.clearSelection(parent, e, Number(parent.getAttribute('aria-colindex')), Number(parent.getAttribute('index')));
+            this.lastSelectedElement = undefined;
+        }
+    }
+    mouseMoveHandler(e) {
+        if (this.isCellBoxMultiSelection) {
+            e.preventDefault();
+            if (this.isMouseDown && e.target) {
+                let ele = e.target;
+                let parentElement = this.parentAt(ele, 'TH');
+                if (this.lastSelectedElement && this.lastSelectedElement !== parentElement &&
+                    parentElement.classList.contains(SELECTED_BGCOLOR)) {
+                    this.lastSelectedElement.classList.remove(CELL_ACTIVE_BGCOLOR);
+                    this.lastSelectedElement.classList.remove(SELECTED_BGCOLOR);
+                    this.lastSelectedElement = parentElement;
+                }
+                else {
+                    this.lastSelectedElement = parentElement;
+                    parentElement.classList.add(CELL_ACTIVE_BGCOLOR);
+                    parentElement.classList.add(SELECTED_BGCOLOR);
+                }
+                this.renderModule.selected();
+            }
+        }
+    }
+    mouseUpHandler(e) {
+        if (this.isCellBoxMultiSelection) {
+            this.isMouseDown = false;
+            this.isMouseUp = true;
+        }
+    }
+    parentAt(target, tagName) {
+        while (target.tagName !== tagName) {
+            if (target.parentElement) {
+                target = target.parentElement;
+            }
+            else {
+                break;
+            }
+        }
+        return target;
     }
     mouseClickHandler(e) {
         let target = e.target;
@@ -6283,17 +8743,17 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             else if (target.classList.contains('e-headertext')) {
                 ele = target.parentElement.parentElement;
             }
-            this.CellClicked(target);
+            this.CellClicked(target, e);
             if ((ele.parentElement.parentElement.parentElement.parentElement.classList.contains('e-movableheader')
                 && this.dataSource.valueAxis === 'column') || (ele.parentElement.classList.contains('e-row') &&
                 this.dataSource.valueAxis === 'row')) {
                 /* tslint:disable */
                 let colIndex = Number(ele.getAttribute('aria-colindex'));
                 let rowIndex = Number(ele.getAttribute('index'));
-                if (this.dataSource.valueAxis === 'row' && this.dataSource.values.length > 1) {
+                if (this.dataSource.valueAxis === 'row' && (this.dataSource.values.length > 1 || this.dataSource.alwaysShowValueHeader)) {
                     rowIndex = this.pivotValues[rowIndex][colIndex].type === 'value' ? rowIndex : (rowIndex + 1);
                 }
-                else if (this.dataSource.valueAxis === 'column' && this.dataSource.values.length > 1) {
+                else if (this.dataSource.valueAxis === 'column' && (this.dataSource.values.length > 1 || this.dataSource.alwaysShowValueHeader)) {
                     colIndex = (Number(ele.getAttribute('aria-colindex')) + Number(ele.getAttribute('aria-colspan')) - 1);
                     rowIndex = this.engineModule.headerContent.length - 1;
                 }
@@ -6312,7 +8772,21 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 /* tslint:enable */
                 showSpinner(this.element);
                 this.engineModule.enableValueSorting = true;
-                this.engineModule.generateGridData(this.dataSource, this.engineModule.headerCollection);
+                if (this.enableVirtualization) {
+                    if (this.dataSource.enableSorting) {
+                        for (let key of Object.keys(this.engineModule.fieldList)) {
+                            this.engineModule.fieldList[key].sort = 'Ascending';
+                        }
+                        this.setProperties({ dataSource: { sortSettings: [] } }, true);
+                    }
+                    this.engineModule.rMembers = this.engineModule.headerCollection.rowHeaders;
+                    this.engineModule.cMembers = this.engineModule.headerCollection.columnHeaders;
+                    this.engineModule.applyValueSorting();
+                    this.engineModule.updateEngine();
+                }
+                else {
+                    this.engineModule.generateGridData(this.dataSource);
+                }
                 this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
                 this.renderPivotGrid();
             }
@@ -6321,7 +8795,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.onDrill(target);
         }
         else {
-            this.CellClicked(target);
+            this.CellClicked(target, e);
             return;
         }
     }
@@ -6417,25 +8891,26 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     onWindowResize() {
         /* tslint:disable */
         clearTimeout(this.timeOutObj);
-        this.timeOutObj = setTimeout(() => {
-            if (this.element && this.element.classList.contains('e-pivotview') && this.engineModule) {
-                let colWidth = this.renderModule.calculateColWidth(this.dataSource.values.length > 0 ?
-                    this.engineModule.pivotValues[0].length : 2);
-                this.grid.width = this.renderModule.calculateGridWidth();
-                this.setCommonColumnsWidth(this.grid.columns, colWidth);
-                this.posCount = 0;
-                if (!this.showGroupingBar) {
-                    this.setGridColumns(this.grid.columns);
-                }
-                this.grid.headerModule.refreshUI();
-                if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + GROUPING_BAR_CLASS)) {
-                    this.groupingBarModule.setGridRowWidth();
-                }
-            }
-        }, 500);
+        this.timeOutObj = setTimeout(this.windowResize.bind(this), 500);
         /* tslint:enable */
     }
-    CellClicked(target) {
+    windowResize() {
+        if (this.element && this.element.classList.contains('e-pivotview') && this.engineModule) {
+            let colWidth = this.renderModule.resizeColWidth(this.dataSource.values.length > 0 ?
+                this.engineModule.pivotValues[0].length : 2);
+            this.grid.width = this.renderModule.calculateGridWidth();
+            this.setCommonColumnsWidth(this.grid.columns, colWidth);
+            this.posCount = 0;
+            if (!this.showGroupingBar) {
+                this.setGridColumns(this.grid.columns);
+            }
+            this.grid.headerModule.refreshUI();
+            if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + GROUPING_BAR_CLASS)) {
+                this.groupingBarModule.setGridRowWidth();
+            }
+        }
+    }
+    CellClicked(target, e) {
         let ele = null;
         if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
             ele = target;
@@ -6447,18 +8922,210 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         else if (target.classList.contains('e-headertext')) {
             ele = target.parentElement.parentElement;
         }
+        else if (target.classList.contains(ROW_SELECT)) {
+            if (target.classList.contains(SPAN_CLICKED)) {
+                this.isPopupClicked = false;
+            }
+            else {
+                this.isPopupClicked = true;
+            }
+        }
+        /* tslint:disable */
         if (ele) {
+            let colIndex = Number(ele.getAttribute('aria-colindex'));
+            let rowIndex = Number(ele.getAttribute('index'));
+            let colSpan = Number(ele.getAttribute('aria-colspan'));
             if (this.cellClick) {
                 this.trigger(cellClick, {
                     currentCell: ele,
-                    data: this.pivotValues[Number(ele.getAttribute('index'))][Number(ele.getAttribute('aria-colindex'))]
+                    data: this.pivotValues[rowIndex][colIndex]
                 });
+            }
+            if (this.gridSettings.allowSelection) {
+                if (this.gridSettings.selectionSettings.mode === 'Both' ? !ele.classList.contains(ROW_CELL_CLASS) :
+                    this.gridSettings.selectionSettings.mode !== 'Row') {
+                    this.clearSelection(ele, e, colIndex, rowIndex);
+                    this.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
+                }
+                else {
+                    this.clearSelection(ele, e, colIndex, rowIndex);
+                }
+                if (this.gridSettings.selectionSettings.type === 'Multiple' &&
+                    (this.gridSettings.selectionSettings.mode === 'Row' || this.gridSettings.selectionSettings.mode === 'Both')) {
+                    this.applyRowSelection(0, rowIndex);
+                }
             }
         }
     }
+    /** @hidden */
+    clearSelection(ele, e, colIndex, rowIndex) {
+        if ((!e.shiftKey && !e.ctrlKey) || this.gridSettings.selectionSettings.type === 'Single') {
+            if (this.gridSettings.selectionSettings.mode === 'Cell') {
+                if (ele.classList.contains(COLUMNSHEADER)) {
+                    [].slice.call(this.element.querySelectorAll(('.' + ROW_CELL_CLASS + '.') + CELL_SELECTED_BGCOLOR)).forEach(function (ele) {
+                        ele.classList.remove(CELL_SELECTED_BGCOLOR);
+                    });
+                }
+                else {
+                    [].slice.call(this.element.querySelectorAll(('.' + COLUMNSHEADER + '.') + CELL_ACTIVE_BGCOLOR)).forEach(function (ele) {
+                        ele.classList.remove(CELL_ACTIVE_BGCOLOR);
+                        ele.classList.remove(SELECTED_BGCOLOR);
+                    });
+                }
+            }
+            else if (this.gridSettings.selectionSettings.mode === 'Both') {
+                if (ele.classList.contains(ROW_CELL_CLASS)) {
+                    [].slice.call(this.element.querySelectorAll('.' + SELECTED_BGCOLOR)).forEach(function (ele) {
+                        if (Number(ele.getAttribute('index')) !== rowIndex) {
+                            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
+                            ele.classList.remove(SELECTED_BGCOLOR);
+                        }
+                    });
+                }
+                else {
+                    [].slice.call(this.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR)).forEach(function (ele) {
+                        ele.classList.remove(CELL_SELECTED_BGCOLOR);
+                    });
+                }
+            }
+        }
+    }
+    /** @hidden */
+    applyRowSelection(colIndex, rowIndex) {
+        let pivotValue = this.engineModule.pivotValues[rowIndex][colIndex];
+        if (pivotValue && pivotValue.isDrilled) {
+            let parentLevel = pivotValue.level;
+            let rCount = rowIndex;
+            do {
+                rCount++;
+                pivotValue = this.engineModule.pivotValues[rCount][colIndex];
+            } while (pivotValue && parentLevel < pivotValue.level);
+            let _this = this;
+            if (this.isAdaptive) {
+                this.rowRangeSelection = {
+                    enable: true,
+                    startIndex: rowIndex - _this.renderModule.rowStartPos,
+                    endIndex: rCount - (1 + _this.renderModule.rowStartPos)
+                };
+            }
+            else {
+                _this.grid.selectionModule.selectRowsByRange(rowIndex -
+                    _this.renderModule.rowStartPos, rCount - (1 + _this.renderModule.rowStartPos));
+            }
+        }
+    }
+    /** @hidden */
+    applyColumnSelection(e, target, colStart, colEnd, rowStart) {
+        if (!target.classList.contains(ROWSHEADER) &&
+            (this.gridSettings.selectionSettings.mode === 'Cell' ? target.classList.contains(COLUMNSHEADER) : true)) {
+            let isCtrl = e.ctrlKey;
+            if (this.isAdaptive && this.gridSettings.selectionSettings.type === 'Multiple') {
+                this.grid.selectionModule.showPopup(e);
+                if (this.isPopupClicked) {
+                    this.element.querySelector('.' + ROW_SELECT).classList.add(SPAN_CLICKED);
+                    isCtrl = true;
+                }
+                else {
+                    this.element.querySelector('.' + ROW_SELECT).classList.remove(SPAN_CLICKED);
+                    isCtrl = false;
+                }
+            }
+            let queryStringArray = [];
+            let type = this.gridSettings.selectionSettings.type;
+            let isToggle = target.classList.contains(CELL_ACTIVE_BGCOLOR);
+            let activeColumns = [];
+            let actColPos = {};
+            for (let cCnt = colStart; cCnt <= colEnd; cCnt++) {
+                activeColumns.push(cCnt.toString());
+            }
+            if (!isCtrl || type === 'Single') {
+                [].slice.call(this.element.querySelectorAll('.' + CELL_ACTIVE_BGCOLOR)).forEach(function (ele) {
+                    ele.classList.remove(CELL_ACTIVE_BGCOLOR);
+                    ele.classList.remove(SELECTED_BGCOLOR);
+                    if (activeColumns.indexOf(ele.getAttribute('aria-colindex')) === -1) {
+                        isToggle = false;
+                    }
+                    let colIndex = Number(ele.getAttribute('aria-colindex'));
+                    actColPos[colIndex] = colIndex;
+                });
+                /* tslint:disable-next-line:no-any */
+                activeColumns = Object.keys(actColPos).length > 0 ? Object.keys(actColPos).sort(function (a, b) {
+                    return a - b;
+                }) : activeColumns;
+            }
+            else {
+                isToggle = false;
+            }
+            if (type === 'Multiple' && e.shiftKey) {
+                this.shiftLockedPos = this.shiftLockedPos.length === 0 ? activeColumns : this.shiftLockedPos;
+                if (Number(this.shiftLockedPos[0]) <= colStart) {
+                    colStart = Number(this.shiftLockedPos[0]);
+                }
+                else {
+                    colEnd = colEnd < Number(this.shiftLockedPos[this.shiftLockedPos.length - 1]) ?
+                        Number(this.shiftLockedPos[this.shiftLockedPos.length - 1]) : colEnd;
+                }
+            }
+            else {
+                this.shiftLockedPos = [];
+            }
+            let rowSelectedList = [];
+            if (e.ctrlKey && this.gridSettings.selectionSettings.mode === 'Both' && type === 'Multiple' && !target.classList.contains(ROWSHEADER)) {
+                [].slice.call(this.element.querySelectorAll('.' + ROWSHEADER + '.' + CELL_SELECTED_BGCOLOR)).forEach(function (ele) {
+                    rowSelectedList.push(ele.getAttribute('index'));
+                });
+            }
+            let count = colStart;
+            while (count <= colEnd) {
+                queryStringArray.push('[aria-colindex="' + count + '"]' + (this.gridSettings.selectionSettings.mode === 'Cell' ?
+                    '[index="' + rowStart + '"]' : "") + '');
+                count++;
+            }
+            if (!isToggle) {
+                rowStart = target.classList.contains('e-headercell') ? rowStart : (this.renderModule.rowStartPos - 1);
+                let isTargetSelected = target.classList.contains(CELL_ACTIVE_BGCOLOR);
+                [].slice.call(this.element.querySelectorAll(queryStringArray.toString())).forEach(function (ele) {
+                    if (Number(ele.getAttribute('index')) >= rowStart) {
+                        if (isTargetSelected && isCtrl && (rowSelectedList.indexOf(ele.getAttribute('index')) === -1)) {
+                            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
+                            ele.classList.remove(SELECTED_BGCOLOR);
+                        }
+                        else {
+                            ele.classList.add(CELL_ACTIVE_BGCOLOR);
+                            ele.classList.add(SELECTED_BGCOLOR);
+                        }
+                    }
+                });
+            }
+            this.renderModule.selected();
+        }
+    }
+    getSelectedCellsPos() {
+        let control = this;
+        control.savedSelectedCellsPos = [];
+        [].slice.call(this.element.querySelectorAll('.' + SELECTED_BGCOLOR)).forEach(function (ele) {
+            control.savedSelectedCellsPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('aria-colindex') });
+        });
+    }
+    setSavedSelectedCells() {
+        let control = this;
+        [].slice.call(this.savedSelectedCellsPos).forEach(function (item) {
+            let query = '[aria-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
+            control.element.querySelector(query).classList.add(CELL_ACTIVE_BGCOLOR);
+            control.element.querySelector(query).classList.add(SELECTED_BGCOLOR);
+        });
+    }
+    /* tslint:enable */
     unwireEvents() {
-        EventHandler.remove(this.element, this.isAdaptive ? 'touchend' : 'click', this.mouseClickHandler);
-        window.removeEventListener('resize', this.onWindowResize.bind(this), true);
+        if (this.displayOption.view !== 'Chart') {
+            EventHandler.remove(this.element, this.isAdaptive ? 'touchend' : 'click', this.mouseClickHandler);
+            EventHandler.remove(this.element, 'mousedown', this.mouseDownHandler);
+            if (this.element.querySelector('.' + GRID_HEADER)) {
+                EventHandler.remove(this.element.querySelector('.' + GRID_HEADER), 'mousemove', this.mouseMoveHandler);
+            }
+            EventHandler.remove(this.element, 'mouseup', this.mouseUpHandler);
+            window.removeEventListener('resize', this.onWindowResize.bind(this), true);
+        }
     }
     renderEmptyGrid() {
         this.isEmptyGrid = true;
@@ -6474,30 +9141,41 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
         this.grid.appendTo('#' + this.element.id + '_grid');
     }
+    /* tslint:disable */
     initEngine() {
         this.trigger(enginePopulating, { 'dataSource': this.dataSource });
+        if (this.dataSource.groupSettings) {
+            let dataSet = this.dataSource.data;
+            this.clonedDataSet = this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(dataSet);
+            this.setProperties({ dataSource: { data: [] } }, true);
+            this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSource, null, true);
+            this.setProperties({ dataSource: { data: dataSet } }, true);
+        }
         /* tslint:disable:align */
-        this.engineModule = new PivotEngine(this.dataSource, '', undefined, this.pageSettings, this.enableValueSorting, (this.allowDrillThrough || this.editSettings.allowEditing));
+        let customProperties = {
+            mode: '',
+            savedFieldList: undefined,
+            pageSettings: this.pageSettings,
+            enableValueSorting: this.enableValueSorting,
+            isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
+            localeObj: this.localeObj
+        };
+        this.engineModule.renderEngine(this.dataSource, customProperties);
         this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
         this.trigger(enginePopulated, { 'pivotValues': this.pivotValues });
         this.notify(dataReady, {});
         this.isEmptyGrid = false;
     }
+    /* tslint:enable */
     generateData() {
-        this.renderEmptyGrid();
+        if (this.displayOption.view !== 'Chart') {
+            this.renderEmptyGrid();
+        }
         showSpinner(this.element);
         /* tslint:disable */
         if (this.dataSource && this.dataSource.data) {
             if (this.dataSource.data instanceof DataManager) {
-                setTimeout(() => {
-                    this.dataSource.data.executeQuery(new Query()).then((e) => {
-                        if (!this.element.querySelector('.e-spinner-pane')) {
-                            showSpinner(this.element);
-                        }
-                        this.setProperties({ dataSource: { data: e.result } }, true);
-                        this.initEngine();
-                    });
-                }, 100);
+                setTimeout(this.getData.bind(this), 100);
             }
             else if (this.dataSource.data.length > 0) {
                 this.initEngine();
@@ -6510,6 +9188,16 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             hideSpinner(this.element);
         }
         /* tslint:enable */
+    }
+    getData() {
+        this.dataSource.data.executeQuery(new Query()).then(this.executeQuery.bind(this));
+    }
+    executeQuery(e) {
+        if (!this.element.querySelector('.e-spinner-pane')) {
+            showSpinner(this.element);
+        }
+        this.setProperties({ dataSource: { data: e.result } }, true);
+        this.initEngine();
     }
     applyFormatting() {
         if (this.pivotValues) {
@@ -6559,18 +9247,19 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             }
             let format = this.dataSource.conditionalFormatSettings;
             for (let k = 0; k < format.length; k++) {
-                let sheet = (() => {
-                    let style = document.createElement('style');
-                    style.appendChild(document.createTextNode(''));
-                    document.head.appendChild(style);
-                    return style.sheet;
-                })();
+                let sheet = (this.createStyleSheet.bind(this))();
                 let str = 'color: ' + format[k].style.color + '!important;background-color: ' + format[k].style.backgroundColor +
                     '!important;font-size: ' + format[k].style.fontSize + '!important;font-family: ' + format[k].style.fontFamily +
                     ' !important;';
                 sheet.insertRule('.format' + this.element.id + k + '{' + str + '}', 0);
             }
         }
+    }
+    createStyleSheet() {
+        let style = document.createElement('style');
+        style.appendChild(document.createTextNode(''));
+        document.head.appendChild(style);
+        return style.sheet;
     }
     applyHyperlinkSettings() {
         if (this.pivotValues) {
@@ -6681,6 +9370,9 @@ __decorate([
     Complex({}, GridSettings)
 ], PivotView.prototype, "gridSettings", void 0);
 __decorate([
+    Complex({}, ChartSettings)
+], PivotView.prototype, "chartSettings", void 0);
+__decorate([
     Complex({}, GroupingBarSettings)
 ], PivotView.prototype, "groupingBarSettings", void 0);
 __decorate([
@@ -6693,6 +9385,9 @@ __decorate([
     Complex({}, CellEditSettings)
 ], PivotView.prototype, "editSettings", void 0);
 __decorate([
+    Complex({}, DisplayOption)
+], PivotView.prototype, "displayOption", void 0);
+__decorate([
     Property()
 ], PivotView.prototype, "pivotValues", void 0);
 __decorate([
@@ -6701,6 +9396,12 @@ __decorate([
 __decorate([
     Property(true)
 ], PivotView.prototype, "showTooltip", void 0);
+__decorate([
+    Property(false)
+], PivotView.prototype, "showToolbar", void 0);
+__decorate([
+    Property([])
+], PivotView.prototype, "toolbar", void 0);
 __decorate([
     Property(false)
 ], PivotView.prototype, "showValuesButton", void 0);
@@ -6737,6 +9438,9 @@ __decorate([
 __decorate([
     Property(1000)
 ], PivotView.prototype, "maxNodeLimitInMemberEditor", void 0);
+__decorate([
+    Property()
+], PivotView.prototype, "cellTemplate", void 0);
 __decorate([
     Event()
 ], PivotView.prototype, "queryCellInfo", void 0);
@@ -6787,6 +9491,48 @@ __decorate([
 ], PivotView.prototype, "rowDeselected", void 0);
 __decorate([
     Event()
+], PivotView.prototype, "chartTooltipRender", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "chartLoaded", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "chartLoad", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "chartResized", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "chartAxisLabelRender", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "onPdfCellRender", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "saveReport", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "fetchReport", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "loadReport", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "renameReport", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "removeReport", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "newReport", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "toolbarRender", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "toolbarClick", void 0);
+__decorate([
+    Event()
 ], PivotView.prototype, "load", void 0);
 __decorate([
     Event()
@@ -6817,10 +9563,16 @@ __decorate([
 ], PivotView.prototype, "drillThrough", void 0);
 __decorate([
     Event()
+], PivotView.prototype, "beginDrillThrough", void 0);
+__decorate([
+    Event()
 ], PivotView.prototype, "hyperlinkCellClick", void 0);
 __decorate([
     Event()
 ], PivotView.prototype, "cellSelected", void 0);
+__decorate([
+    Event()
+], PivotView.prototype, "chartSeriesCreated", void 0);
 PivotView = PivotView_1 = __decorate([
     NotifyPropertyChanges
 ], PivotView);
@@ -6970,6 +9722,7 @@ class EventBase {
             let newSortObj = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
             this.parent.dataSource.sortSettings.push(newSortObj);
         }
+        this.parent.control.lastSortInfo = this.parent.dataSource.sortSettings[this.parent.dataSource.sortSettings.length - 1];
         isDescending ? removeClass([target], SORT_DESCEND_CLASS) : addClass([target], SORT_DESCEND_CLASS);
     }
     /**
@@ -6985,9 +9738,15 @@ class EventBase {
         let fieldCaption = target.parentElement.textContent;
         let isInclude = false;
         let filterItems = [];
-        this.parent.engineModule.fieldList[fieldName].dateMember = new DataManager(this.parent.engineModule.
-            fieldList[fieldName].dateMember).executeLocal(new Query().
-            sortBy('actualText', this.parent.engineModule.fieldList[fieldName].sort.toLowerCase()));
+        /* tslint:disable:typedef */
+        this.parent.engineModule.fieldList[fieldName].dateMember = this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
+            (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText > b.actualText) ? 1 :
+                ((b.actualText > a.actualText) ? -1 : 0))) :
+            this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
+                (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText < b.actualText) ? 1 :
+                    ((b.actualText < a.actualText) ? -1 : 0))) :
+                this.parent.engineModule.fieldList[fieldName].dateMember;
+        /* tslint:enable:typedef */
         let filterObj = this.getFilterItemByName(fieldName);
         if (!isNullOrUndefined(filterObj)) {
             isInclude = filterObj.type === 'Include' ? true : false;
@@ -7425,6 +10184,7 @@ class FilterDialog {
             attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
             styles: 'visibility:hidden;'
         });
+        let filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
         let headerTemplate = this.parent.localeObj.getConstant('filter') + ' ' +
             '"' + fieldCaption + '"' + ' ' + this.parent.localeObj.getConstant('by');
         this.filterObject = this.getFilterObject(fieldName);
@@ -7433,7 +10193,7 @@ class FilterDialog {
         this.dialogPopUp = new Dialog({
             animationSettings: { effect: (this.allowExcelLikeFilter ? 'None' : 'Fade') },
             allowDragging: false,
-            header: (this.allowExcelLikeFilter ? headerTemplate : fieldCaption),
+            header: (this.allowExcelLikeFilter ? headerTemplate : filterCaption),
             content: (this.allowExcelLikeFilter ? '' : this.createTreeView(treeData, fieldCaption, fieldName)),
             isModal: this.parent.renderMode === 'Popup' ? true : this.parent.isAdaptive ? true : false,
             visible: true,
@@ -7465,11 +10225,7 @@ class FilterDialog {
             target: target,
             close: this.removeFilterDialog.bind(this),
             /* tslint:disable-next-line:typedef */
-            open: function (args) {
-                if (this.element.querySelector('.e-editor-label-wrapper')) {
-                    this.element.querySelector('.e-editor-label-wrapper').style.width = this.element.offsetWidth + 'px';
-                }
-            }
+            open: this.dialogOpen.bind(this)
         });
         this.dialogPopUp.appendTo(editorDialog);
         if (this.allowExcelLikeFilter) {
@@ -7488,6 +10244,12 @@ class FilterDialog {
             return;
         }
     }
+    dialogOpen(args) {
+        if (args.element.querySelector('.e-editor-label-wrapper')) {
+            args.element.querySelector('.e-editor-label-wrapper').style.width =
+                args.element.offsetWidth + 'px';
+        }
+    }
     createTreeView(treeData, fieldCaption, fieldName) {
         let editorTreeWrapper = createElement('div', {
             id: this.parent.parentID + 'EditorDiv',
@@ -7497,6 +10259,7 @@ class FilterDialog {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
             className: EDITOR_SEARCH_WRAPPER_CLASS
         });
+        let filterCaption = this.parent.engineModule.fieldList[fieldName].caption;
         let editorSearch = createElement('input', { attrs: { 'type': 'text' } });
         let labelWrapper = createElement('div', {
             id: this.parent.parentID + '_LabelDiv', attrs: { 'tabindex': '-1' },
@@ -7524,7 +10287,7 @@ class FilterDialog {
         editorTreeWrapper.appendChild(selectAllWrapper);
         editorTreeWrapper.appendChild(promptDiv);
         this.editorSearch = new MaskedTextBox({
-            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + fieldCaption + '"',
+            placeholder: this.parent.localeObj.getConstant('search') + ' ' + '"' + filterCaption + '"',
             enableRtl: this.parent.enableRtl,
             cssClass: EDITOR_SEARCH_CLASS,
             showClearButton: true,
@@ -7573,6 +10336,7 @@ class FilterDialog {
         let types = ['Label', 'Value', 'Include', 'Exclude'];
         let regx = '((-|\\+)?[0-9]+(\\.[0-9]+)?)+';
         let member = Object.keys(this.parent.engineModule.fieldList[fieldName].members)[0];
+        let fieldType = this.parent.engineModule.fieldList[fieldName].type;
         let formatObj = this.parent.eventBase.getFormatItemByName(fieldName);
         let items = [
             {
@@ -7587,7 +10351,7 @@ class FilterDialog {
             if (((type === 'Label') && this.parent.dataSource.allowLabelFilter) ||
                 (type === 'Value' && this.parent.dataSource.allowValueFilter)) {
                 let filterType = (type === 'Label' && ((member).match(regx) &&
-                    (member).match(regx)[0].length === (member).length)) ? 'Number' :
+                    (member).match(regx)[0].length === (member).length) && fieldType === 'number') ? 'Number' :
                     (type === 'Label' && (new Date(member).toString() !== 'Invalid Date') &&
                         ((formatObj && formatObj.type) || (this.filterObject && this.filterObject.type === 'Date'))) ? 'Date' : type;
                 let item = {
@@ -7749,10 +10513,10 @@ class FilterDialog {
         });
         optionWrapper.appendTo(optionDiv2);
         if (type === 'date') {
-            let inputObj1 = new DatePicker({
+            let inputObj1 = new DateTimePicker({
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
-                format: 'dd/MM/yyyy',
+                format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value1 : null),
                 change: (e) => {
@@ -7766,10 +10530,10 @@ class FilterDialog {
                 },
                 width: '100%',
             });
-            let inputObj2 = new DatePicker({
+            let inputObj2 = new DateTimePicker({
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
                 enableRtl: this.parent.enableRtl,
-                format: 'dd/MM/yyyy',
+                format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
                 value: (filterObj && option === filterObj.condition ? filterObj.value2 : null),
                 change: (e) => {
@@ -8194,6 +10958,7 @@ class DialogRenderer {
     }
     applyButtonClick() {
         this.parent.updateDataSource(false);
+        this.parent.axisFieldModule.render();
         this.parent.clonedDataSource = extend({}, this.parent.dataSource, null, true);
         this.parent.clonedFieldList = extend({}, this.parent.pivotFieldList, null, true);
     }
@@ -8350,26 +11115,7 @@ class DialogRenderer {
             items: items,
             height: '100%',
             enableRtl: this.parent.enableRtl,
-            selected: (e) => {
-                if (fieldListWrappper.querySelector('.' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)) {
-                    if (e.selectedIndex !== 4) {
-                        addClass([fieldListWrappper.querySelector('.' + ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], ICON_DISABLE);
-                        removeClass([fieldListWrappper.querySelector('.' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], ICON_DISABLE);
-                    }
-                    else {
-                        removeClass([fieldListWrappper.querySelector('.' + ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], ICON_DISABLE);
-                        addClass([fieldListWrappper.querySelector('.' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], ICON_DISABLE);
-                    }
-                }
-                if (e.selectedIndex === 4) {
-                    this.adaptiveElement.items[4].content = '';
-                    this.adaptiveElement.dataBind();
-                    this.parent.notify(initCalculatedField, {});
-                }
-                else {
-                    this.parent.axisFieldModule.render();
-                }
-            }
+            selected: this.tabSelect.bind(this)
         });
         if (this.parent.renderMode === 'Fixed') {
             layoutFooter.appendChild(this.createAddButton());
@@ -8379,6 +11125,26 @@ class DialogRenderer {
         }
         else {
             this.adaptiveElement.appendTo(this.parentElement);
+        }
+    }
+    tabSelect(e) {
+        if (this.parentElement.querySelector('.' + WRAPPER_CLASS + ' .' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)) {
+            if (e.selectedIndex !== 4) {
+                addClass([this.parentElement.querySelector('.' + WRAPPER_CLASS + ' .' + ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], ICON_DISABLE);
+                removeClass([this.parentElement.querySelector('.' + WRAPPER_CLASS + ' .' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], ICON_DISABLE);
+            }
+            else {
+                removeClass([this.parentElement.querySelector('.' + WRAPPER_CLASS + ' .' + ADAPTIVE_CALCULATED_FIELD_BUTTON_CLASS)], ICON_DISABLE);
+                addClass([this.parentElement.querySelector('.' + WRAPPER_CLASS + ' .' + ADAPTIVE_FIELD_LIST_BUTTON_CLASS)], ICON_DISABLE);
+            }
+        }
+        if (e.selectedIndex === 4) {
+            this.adaptiveElement.items[4].content = '';
+            this.adaptiveElement.dataBind();
+            this.parent.notify(initCalculatedField, {});
+        }
+        else {
+            this.parent.axisFieldModule.render();
         }
     }
     createCalculatedButton() {
@@ -8592,13 +11358,14 @@ class TreeViewRenderer {
                 }],
             closeOnEscape: true,
             target: this.parentElement.parentElement,
-            close: () => {
-                if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
-                    remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
-                }
-            }
+            close: this.dialogClose.bind(this)
         });
         this.fieldDialog.appendTo(fieldListDialog);
+    }
+    dialogClose() {
+        if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
+            remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
+        }
     }
     createTreeView(treeData) {
         let editorTreeWrapper = createElement('div', {
@@ -8617,9 +11384,7 @@ class TreeViewRenderer {
             placeholder: this.parent.localeObj.getConstant('search'),
             enableRtl: this.parent.enableRtl,
             cssClass: EDITOR_SEARCH_CLASS,
-            change: (e) => {
-                this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
-            }
+            change: this.textChange.bind(this)
         });
         this.editorSearch.appendTo(editorSearch);
         editorTreeWrapper.appendChild(treeViewContainer);
@@ -8632,6 +11397,9 @@ class TreeViewRenderer {
         });
         this.fieldTable.appendTo(treeViewContainer);
         return editorTreeWrapper;
+    }
+    textChange(e) {
+        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
     }
     dragStart(args) {
         if (args.event.target.classList.contains(DRAG_CLASS)) {
@@ -8804,7 +11572,11 @@ class TreeViewRenderer {
     getTreeData(axis) {
         let data = [];
         let keys = Object.keys(this.parent.pivotFieldList);
-        let fieldList = extend({}, this.parent.pivotFieldList, null, true);
+        let fieldList = {};
+        for (let key of keys) {
+            let member = this.parent.pivotFieldList[key];
+            fieldList[key] = { id: member.id, caption: member.caption, isSelected: member.isSelected };
+        }
         if (this.parent.isAdaptive) {
             let fields = [this.parent.dataSource.filters, this.parent.dataSource.columns, this.parent.dataSource.rows,
                 this.parent.dataSource.values];
@@ -9178,6 +11950,10 @@ class AggregateMenu {
             change(args) {
                 optionWrapper2.enabled = baseFieldTypes.indexOf(args.value) !== -1 ? true : false;
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value) !== -1 ? true : false;
+                if (optionWrapper3.enabled && optionWrapper3.dataSource.length === 1) {
+                    optionWrapper3.dataSource = fieldItemDataSource;
+                    optionWrapper3.dataBind();
+                }
             }
         });
         optionWrapper1.appendTo(dropOptionDiv1);
@@ -9198,7 +11974,7 @@ class AggregateMenu {
         });
         optionWrapper2.appendTo(dropOptionDiv2);
         let optionWrapper3 = new DropDownList({
-            dataSource: fieldItemDataSource, enableRtl: this.parent.enableRtl,
+            dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl,
             value: baseItem,
             // popupWidth: 'auto',
             allowFiltering: true,
@@ -9236,6 +12012,7 @@ class AggregateMenu {
                         let dataSourceItem = valuefields[vCnt].properties ?
                             valuefields[vCnt].properties : valuefields[vCnt];
                         dataSourceItem.type = menu.item.id;
+                        this.parent.lastAggregationInfo = dataSourceItem;
                         /* tslint:disable-next-line:no-any */
                     }
                 }
@@ -9284,6 +12061,7 @@ class AggregateMenu {
         selectedField.baseItem = baseItemInstance.value;
         this.valueDialog.close();
         // this.parent.axisFieldModule.render();
+        this.parent.lastAggregationInfo = selectedField;
         this.updateDataSource(true);
     }
     removeDialog() {
@@ -9323,6 +12101,9 @@ class PivotButton {
         this.menuOption = new AggregateMenu(this.parent);
         this.parent.pivotButtonModule = this;
         this.addEventListener();
+        if (this.parent instanceof PivotFieldList) {
+            this.axisField = new AxisFieldRenderer(this.parent);
+        }
     }
     /* tslint:disable */
     renderPivotButton(args) {
@@ -9367,76 +12148,117 @@ class PivotButton {
         }
         if (axisElement) {
             if (this.parent.getModuleName() === 'pivotview' && field.length === 0) {
-                let axisPrompt = createElement('span', {
-                    className: AXIS_PROMPT_CLASS,
-                    innerHTML: axis === 'rows' ? this.parent.localeObj.getConstant('rowAxisPrompt') :
-                        axis === 'columns' ? this.parent.localeObj.getConstant('columnAxisPrompt') :
-                            axis === 'values' ? this.parent.localeObj.getConstant('valueAxisPrompt') :
-                                this.parent.localeObj.getConstant('filterAxisPrompt')
-                });
-                axisElement.appendChild(axisPrompt);
+                for (let element of this.parentElement.querySelectorAll('.e-group-' + axis)) {
+                    if (!element.classList.contains(GROUP_CHART_VALUE)) {
+                        let axisPrompt = createElement('span', {
+                            className: AXIS_PROMPT_CLASS,
+                            innerHTML: (this.parent.groupingBarSettings.allowDragAndDrop ? axis === 'rows' ? this.parent.localeObj.getConstant('rowAxisPrompt') :
+                                axis === 'columns' ? this.parent.localeObj.getConstant('columnAxisPrompt') :
+                                    axis === 'values' ? this.parent.localeObj.getConstant('valueAxisPrompt') :
+                                        this.parent.localeObj.getConstant('filterAxisPrompt') : '')
+                        });
+                        element.appendChild(axisPrompt);
+                    }
+                }
             }
             else {
                 for (let i = 0, cnt = field.length; i < cnt; i++) {
-                    let buttonWrapper = createElement('div', {
-                        className: PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 ? ' e-first-btn' : ''),
-                        attrs: { 'data-tag': axis + ':' + field[i].name }
-                    });
-                    let buttonElement = createElement('div', {
-                        id: field[i].name, className: PIVOT_BUTTON_CLASS,
-                        attrs: {
-                            'data-uid': field[i].name, 'tabindex': '0', 'isvalue': i === valuePos ? 'true' : 'false',
-                            'aria-disabled': 'false', 'aria-label': field[i].caption ? field[i].caption : field[i].name,
-                            'data-type': field[i].type,
-                            'data-caption': field[i].caption ? field[i].caption : field[i].name,
-                            'data-basefield': field[i].baseField,
-                            'data-baseitem': field[i].baseItem
+                    for (let element of (this.parent.getModuleName() === 'pivotfieldlist' ? [axisElement] : this.parentElement.querySelectorAll('.e-group-' + axis))) {
+                        element = element;
+                        if (!element.classList.contains(GROUP_CHART_VALUE)) {
+                            let buttonWrapper = createElement('div', {
+                                className: PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 ? ' e-first-btn' : ''),
+                                attrs: { 'data-tag': axis + ':' + field[i].name }
+                            });
+                            let buttonElement = createElement('div', {
+                                id: field[i].name, className: PIVOT_BUTTON_CLASS,
+                                attrs: {
+                                    'data-uid': field[i].name, 'tabindex': '0', 'isvalue': i === valuePos ? 'true' : 'false',
+                                    'aria-disabled': 'false', 'aria-label': field[i].caption ? field[i].caption : field[i].name,
+                                    'data-type': field[i].type,
+                                    'data-caption': field[i].caption ? field[i].caption : field[i].name,
+                                    'data-basefield': field[i].baseField,
+                                    'data-baseitem': field[i].baseItem
+                                }
+                            });
+                            let dropIndicatorElement = createElement('span', {
+                                attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
+                                className: DROP_INDICATOR_CLASS
+                            });
+                            let dropLastIndicatorElement = createElement('span', {
+                                attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
+                                className: DROP_INDICATOR_CLASS + '-last'
+                            });
+                            let dragWrapper = this.createButtonDragIcon(buttonElement);
+                            let contentElement = this.createButtonText(field, i, axis, valuePos);
+                            buttonElement.appendChild(contentElement);
+                            if (['filters', 'values'].indexOf(axis) === -1 && valuePos !== i) {
+                                this.createSortOption(buttonElement, field[i].name);
+                            }
+                            if (axis !== 'values' && valuePos !== i) {
+                                this.createFilterOption(buttonElement, field[i].name);
+                            }
+                            if (axis === 'values') {
+                                this.getTypeStatus(field, i, buttonElement);
+                            }
+                            let removeElement = createElement('span', {
+                                attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
+                                className: ICON + ' ' + REMOVE_CLASS
+                            });
+                            if (this.parent.getModuleName() === 'pivotview') {
+                                if (this.parent.groupingBarSettings.showRemoveIcon) {
+                                    removeClass([removeElement], ICON_DISABLE);
+                                }
+                                else {
+                                    addClass([removeElement], ICON_DISABLE);
+                                }
+                            }
+                            buttonElement.appendChild(removeElement);
+                            buttonWrapper.appendChild(dropIndicatorElement);
+                            buttonWrapper.appendChild(buttonElement);
+                            buttonWrapper.appendChild(dropLastIndicatorElement);
+                            element.appendChild(buttonWrapper);
+                            let pivotButton = new Button({ enableRtl: this.parent.enableRtl });
+                            pivotButton.appendTo(buttonElement);
+                            this.unWireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
+                            this.wireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
+                            if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
+                                this.parent.getModuleName() === 'pivotfieldlist') {
+                                this.createDraggable(this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
+                            }
                         }
-                    });
-                    let dropIndicatorElement = createElement('span', {
-                        attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
-                        className: DROP_INDICATOR_CLASS
-                    });
-                    let dropLastIndicatorElement = createElement('span', {
-                        attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
-                        className: DROP_INDICATOR_CLASS + '-last'
-                    });
-                    let dragWrapper = this.createButtonDragIcon(buttonElement);
-                    let contentElement = this.createButtonText(field, i, axis, valuePos);
-                    buttonElement.appendChild(contentElement);
-                    if (['filters', 'values'].indexOf(axis) === -1 && valuePos !== i) {
-                        this.createSortOption(buttonElement, field[i].name);
                     }
-                    if (axis !== 'values' && valuePos !== i) {
-                        this.createFilterOption(buttonElement, field[i].name);
-                    }
-                    if (axis === 'values') {
-                        this.getTypeStatus(field, i, buttonElement);
-                    }
-                    let removeElement = createElement('span', {
-                        attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
-                        className: ICON + ' ' + REMOVE_CLASS
-                    });
-                    if (this.parent.getModuleName() === 'pivotview') {
-                        if (this.parent.groupingBarSettings.showRemoveIcon) {
-                            removeClass([removeElement], ICON_DISABLE);
+                }
+                if (axis === 'values') {
+                    for (let element of this.parentElement.querySelectorAll('.e-group-' + axis)) {
+                        if (element.classList.contains(GROUP_CHART_VALUE)) {
+                            let valueData = field.map((item) => { return { text: item.caption ? item.caption : item.name, value: item.name }; });
+                            let parent = this.parent;
+                            if (this.valueFiedDropDownList && element.querySelector('.' + GROUP_CHART_VALUE_DROPDOWN_DIV)) {
+                                this.valueFiedDropDownList.dataSource = valueData;
+                                this.valueFiedDropDownList.value = !parent.chartSettings.enableMultiAxis ?
+                                    parent.chartModule.currentMeasure : valueData[0].value;
+                            }
+                            else {
+                                let ddlDiv = createElement('div', { className: GROUP_CHART_VALUE_DROPDOWN_DIV });
+                                element.appendChild(ddlDiv);
+                                this.valueFiedDropDownList = new DropDownList({
+                                    dataSource: valueData,
+                                    enableRtl: this.parent.enableRtl,
+                                    value: !parent.chartSettings.enableMultiAxis ?
+                                        parent.chartModule.currentMeasure : valueData[0].value,
+                                    width: 200,
+                                    fields: { value: 'value', text: 'text' },
+                                    cssClass: GROUP_CHART_VALUE_DROPDOWN,
+                                    change(args) {
+                                        if (args.e && args.e !== null) {
+                                            parent.chartSettings.value = args.value;
+                                        }
+                                    }
+                                });
+                                this.valueFiedDropDownList.appendTo(ddlDiv);
+                            }
                         }
-                        else {
-                            addClass([removeElement], ICON_DISABLE);
-                        }
-                    }
-                    buttonElement.appendChild(removeElement);
-                    buttonWrapper.appendChild(dropIndicatorElement);
-                    buttonWrapper.appendChild(buttonElement);
-                    buttonWrapper.appendChild(dropLastIndicatorElement);
-                    axisElement.appendChild(buttonWrapper);
-                    let pivotButton = new Button({ enableRtl: this.parent.enableRtl });
-                    pivotButton.appendTo(buttonElement);
-                    this.unWireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
-                    this.wireEvent(buttonWrapper, i === valuePos ? 'values' : axis);
-                    if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
-                        this.parent.getModuleName() === 'pivotfieldlist') {
-                        this.createDraggable(this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
                     }
                 }
             }
@@ -9448,6 +12270,10 @@ class PivotButton {
     createButtonText(field, i, axis, valuePos) {
         let buttonText;
         let aggregation;
+        let filterMem;
+        if (axis === "filters") {
+            filterMem = this.updateButtontext(field[i].name);
+        }
         if (this.parent.engineModule.fieldList[field[i].name] !== undefined) {
             aggregation = this.parent.engineModule.fieldList[field[i].name].aggregateType;
             if (aggregation === undefined && (this.parent.engineModule.fieldList[field[i].name].type === 'string' || this.parent.engineModule.fieldList[field[i].name].type === 'include' ||
@@ -9462,12 +12288,13 @@ class PivotButton {
         let text = field[i].caption ? field[i].caption : field[i].name;
         buttonText = createElement('span', {
             attrs: {
-                title: ((axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text),
+                title: axis === 'filters' ? (text + ' (' + filterMem + ')') : (((axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
-            className: PIVOT_BUTTON_CONTENT_CLASS,
-            innerHTML: axis !== 'values' || aggregation === 'CalculatedField' ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text
+            className: PIVOT_BUTTON_CONTENT_CLASS + ' ' +
+                (this.parent.getModuleName() === 'pivotview' && !this.parent.groupingBarSettings.allowDragAndDrop ? 'e-disable-drag' : ''),
+            innerHTML: axis === 'filters' ? (text + ' (' + filterMem + ')') : (axis !== 'values' || aggregation === 'CalculatedField' ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)
         });
         return buttonText;
     }
@@ -9506,7 +12333,8 @@ class PivotButton {
             helper: this.createDragClone.bind(this),
             dragStart: this.onDragStart.bind(this),
             drag: this.onDragging.bind(this),
-            dragStop: this.onDragStop.bind(this)
+            dragStop: this.onDragStop.bind(this),
+            abort: (this.parent.getModuleName() === 'pivotview' && !this.parent.groupingBarSettings.allowDragAndDrop ? '.' + PIVOT_BUTTON_CLASS : '')
         });
     }
     createButtonDragIcon(pivotButton) {
@@ -9631,6 +12459,9 @@ class PivotButton {
     }
     onDragStop(args) {
         this.parent.isDragging = false;
+        if (args.target.classList && (args.target.classList.contains(GROUP_CHART_VALUE) || args.target.classList.contains(GROUP_CHART_VALUE_DROPDOWN))) {
+            args.target = this.parent.element.querySelector('.' + GROUP_CHART_ROW);
+        }
         let element = closest(args.element, '.' + PIVOT_BUTTON_CLASS);
         removeClass([].slice.call(this.parentElement.querySelectorAll('.' + PIVOT_BUTTON_CLASS)), SELECTED_NODE_CLASS);
         removeClass([].slice.call(this.parentElement.querySelectorAll('.' + DROP_INDICATOR_CLASS)), INDICATOR_HOVER_CLASS);
@@ -9687,7 +12518,7 @@ class PivotButton {
             (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.pivotGridModule !== undefined &&
                 this.parent.pivotGridModule.enableValueSorting)) &&
             args.target.parentElement.parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-            this.parent.dataSource.valueSortSettings.headerText = '';
+            this.parent.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
         }
         this.parent.pivotCommon.eventBase.updateSorting(args);
         this.updateDataSource(true);
@@ -9711,40 +12542,41 @@ class PivotButton {
     updateFiltering(args) {
         this.parent.pivotCommon.eventBase.updateFiltering(args);
         let target = args.target;
-        let fieldName = target.parentElement.id;
+        this.fieldName = target.parentElement.id;
         this.dialogPopUp = this.parent.pivotCommon.filterDialog.dialogPopUp;
         this.memberTreeView = this.parent.pivotCommon.filterDialog.memberTreeView;
         this.parent.pivotCommon.filterDialog.memberTreeView.nodeChecked = this.nodeStateModified.bind(this);
         this.parent.pivotCommon.filterDialog.allMemberSelect.nodeChecked = this.nodeStateModified.bind(this);
-        this.bindDialogEvents(fieldName);
+        this.bindDialogEvents();
     }
-    bindDialogEvents(fieldName) {
+    bindDialogEvents() {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {
-            this.updateDialogButtonEvents(this.parent.pivotCommon.filterDialog.tabObj.selectedItem, fieldName);
+            this.updateDialogButtonEvents(this.parent.pivotCommon.filterDialog.tabObj.selectedItem);
             this.dialogPopUp.buttons[1].click = this.ClearFilter.bind(this);
-            this.parent.pivotCommon.filterDialog.tabObj.selected = (e) => {
-                this.updateDialogButtonEvents(e.selectedIndex, fieldName);
-                removeClass([].slice.call(this.dialogPopUp.element.querySelectorAll('.e-selected-tab')), 'e-selected-tab');
-                if (e.selectedIndex > 0) {
-                    /* tslint:disable-next-line:max-line-length */
-                    addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (e.selectedIndex === 1 && this.parent.dataSource.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
-                }
-                if (e.selectedIndex === 0) {
-                    this.parent.pivotCommon.filterDialog.updateCheckedState();
-                }
-                else {
-                    this.dialogPopUp.buttons[0].buttonModel.disabled = false;
-                    this.dialogPopUp.element.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
-                }
-            };
+            this.parent.pivotCommon.filterDialog.tabObj.selected = this.tabSelect.bind(this);
         }
         else {
-            this.updateDialogButtonEvents(0, fieldName);
+            this.updateDialogButtonEvents(0);
         }
     }
-    updateDialogButtonEvents(index, fieldName) {
+    tabSelect(e) {
+        this.updateDialogButtonEvents(e.selectedIndex);
+        removeClass([].slice.call(this.dialogPopUp.element.querySelectorAll('.e-selected-tab')), 'e-selected-tab');
+        if (e.selectedIndex > 0) {
+            /* tslint:disable-next-line:max-line-length */
+            addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (e.selectedIndex === 1 && this.parent.dataSource.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
+        }
+        if (e.selectedIndex === 0) {
+            this.parent.pivotCommon.filterDialog.updateCheckedState();
+        }
+        else {
+            this.dialogPopUp.buttons[0].buttonModel.disabled = false;
+            this.dialogPopUp.element.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
+        }
+    }
+    updateDialogButtonEvents(index) {
         this.dialogPopUp.buttons[0].click = (index === 0 ?
-            this.updateFilterState.bind(this, fieldName) : this.updateCustomFilter.bind(this));
+            this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this));
     }
     updateCustomFilter(args) {
         let dialogElement = this.dialogPopUp.element.querySelector('.e-selected-tab');
@@ -9785,6 +12617,9 @@ class PivotButton {
         }
         else {
             this.parent.dataSource.filterSettings.push(filterItem);
+        }
+        if (type !== 'Value') {
+            this.parent.lastFilterInfo = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
         }
         this.dialogPopUp.close();
         this.refreshPivotButtonState(fieldName, true);
@@ -9837,24 +12672,14 @@ class PivotButton {
         this.parent.pivotCommon.filterDialog.updateCheckedState();
     }
     checkedStateAll(state) {
-        if (state === 'check') {
-            for (let item of this.parent.pivotCommon.currentTreeItems) {
-                for (let searctItem of this.parent.pivotCommon.searchTreeItems) {
-                    if (item.id === searctItem.id) {
-                        item.checkedStatus = true;
-                        searctItem.checkedStatus = true;
-                    }
-                }
-            }
+        let searchItemObj = {};
+        for (let item of this.parent.pivotCommon.searchTreeItems) {
+            item.checkedStatus = state === 'check';
+            searchItemObj[item.id] = item.id;
         }
-        else {
-            for (let item of this.parent.pivotCommon.currentTreeItems) {
-                for (let searctItem of this.parent.pivotCommon.searchTreeItems) {
-                    if (item.id === searctItem.id) {
-                        item.checkedStatus = false;
-                        searctItem.checkedStatus = false;
-                    }
-                }
+        for (let item of this.parent.pivotCommon.currentTreeItems) {
+            if (searchItemObj[item.id] !== undefined) {
+                item.checkedStatus = state === 'check';
             }
         }
     }
@@ -9891,7 +12716,11 @@ class PivotButton {
         if (!isNodeUnChecked) {
             this.removeDataSourceSettings(fieldName);
         }
+        this.parent.lastFilterInfo = filterItem;
         this.updateDataSource(true);
+        if (this.parent instanceof PivotFieldList) {
+            this.axisField.render();
+        }
     }
     refreshPivotButtonState(fieldName, isFiltered) {
         let pivotButtons = [].slice.call(this.parentElement.querySelectorAll('.e-pivot-button'));
@@ -9984,6 +12813,64 @@ class PivotButton {
         this.menuOption.destroy();
         this.removeEventListener();
     }
+    // To update button text
+    updateButtontext(fieldName) {
+        let filterCount = this.parent.engineModule.fieldList[fieldName].filter.length;
+        let filterType = this.parent.engineModule.fieldList[fieldName].filterType;
+        let memLen = this.parent.engineModule.fieldList[fieldName].dateMember.length;
+        let filterMem;
+        let firstNode = this.parent.engineModule.fieldList[fieldName].filter[0];
+        if (filterType === "include") {
+            if (filterCount === 1) {
+                filterMem = firstNode;
+            }
+            else if (filterCount > 1) {
+                if (filterCount === memLen) {
+                    filterMem = this.parent.localeObj.getConstant('all');
+                }
+                else {
+                    filterMem = this.parent.localeObj.getConstant('multipleItems');
+                }
+            }
+        }
+        else if (filterType === "exclude") {
+            if (filterCount === 1) {
+                if (memLen === 2) {
+                    if (firstNode !== this.parent.engineModule.fieldList[fieldName].dateMember[0].actualText) {
+                        filterMem = firstNode;
+                    }
+                    else {
+                        filterMem = this.parent.engineModule.fieldList[fieldName].dateMember[0].actualText;
+                    }
+                }
+                else {
+                    filterMem = this.parent.localeObj.getConstant('multipleItems');
+                }
+            }
+            else if (filterCount > 1) {
+                let j;
+                let allNodes = Object.keys(this.parent.engineModule.fieldList[fieldName].members);
+                let filteredItems = this.parent.engineModule.fieldList[fieldName].filter;
+                if (filterCount === (allNodes.length - 1)) {
+                    loop: for (j = 0; j < allNodes.length; j++) {
+                        let test = allNodes[j];
+                        let x = filteredItems.indexOf(test);
+                        if (x === -1) {
+                            filterMem = allNodes[j];
+                            break loop;
+                        }
+                    }
+                }
+                else {
+                    filterMem = this.parent.localeObj.getConstant('multipleItems');
+                }
+            }
+        }
+        else {
+            filterMem = this.parent.localeObj.getConstant('all');
+        }
+        return filterMem;
+    }
 }
 
 /**
@@ -10063,7 +12950,7 @@ class Render$1 {
     }
 }
 
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -10089,6 +12976,15 @@ let PivotFieldList = class PivotFieldList extends Component {
         super(options, element);
         /** @hidden */
         this.isRequiredUpdate = true;
+        /** @hidden */
+        this.lastSortInfo = {};
+        /** @hidden */
+        this.lastFilterInfo = {};
+        /** @hidden */
+        this.lastAggregationInfo = {};
+        /** @hidden */
+        this.lastCalcFieldInfo = {};
+        this.engineModule = new PivotEngine();
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -10164,6 +13060,8 @@ let PivotFieldList = class PivotFieldList extends Component {
             by: 'by',
             enterValue: 'Enter value',
             chooseDate: 'Enter date',
+            all: 'All',
+            multipleItems: 'Multiple items',
             /* tslint:disable */
             Equals: 'Equals',
             DoesNotEquals: 'Does Not Equal',
@@ -10212,6 +13110,13 @@ let PivotFieldList = class PivotFieldList extends Component {
             PercentageOfParentTotal: '% of Parent Total',
             PercentageOfParentColumnTotal: '% of Parent Column Total',
             PercentageOfParentRowTotal: '% of Parent Row Total',
+            Years: 'Years',
+            Quarters: 'Quarters',
+            Months: 'Months',
+            Days: 'Days',
+            Hours: 'Hours',
+            Minutes: 'Minutes',
+            Seconds: 'Seconds',
             /* tslint:enable */
             apply: 'APPLY',
             valueFieldSettings: 'Value field settings',
@@ -10228,6 +13133,21 @@ let PivotFieldList = class PivotFieldList extends Component {
         this.isDragging = false;
         this.captionData = [];
         this.wireEvent();
+    }
+    frameCustomProperties() {
+        let pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+        let isDrillThrough = this.pivotGridModule ?
+            (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
+        let enableValueSorting = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
+        let customProperties = {
+            mode: '',
+            savedFieldList: undefined,
+            pageSettings: pageSettings,
+            enableValueSorting: enableValueSorting,
+            isDrillThrough: isDrillThrough,
+            localeObj: this.localeObj
+        };
+        return customProperties;
     }
     /**
      * Initialize the control rendering
@@ -10316,15 +13236,19 @@ let PivotFieldList = class PivotFieldList extends Component {
             }
         }
     }
+    /* tslint:disable */
     generateData() {
         this.pivotFieldList = {};
         if (this.dataSource && this.dataSource.data) {
             this.trigger(enginePopulating, { 'dataSource': this.dataSource });
-            let pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
-            let isDrillThrough = this.pivotGridModule ?
-                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
-            let enableValueSorting = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
-            this.engineModule = new PivotEngine(this.dataSource, '', undefined, pageSettings, enableValueSorting, isDrillThrough);
+            if (this.dataSource.groupSettings) {
+                let pivotDataSet = this.dataSource.data;
+                this.clonedDataSet = this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet);
+                this.setProperties({ dataSource: { data: [] } }, true);
+                this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSource, null, true);
+                this.setProperties({ dataSource: { data: pivotDataSet } }, true);
+            }
+            this.engineModule.renderEngine(this.dataSource, this.frameCustomProperties());
             this.pivotFieldList = this.engineModule.fieldList;
             let eventArgs = {
                 pivotFieldList: this.pivotFieldList,
@@ -10335,6 +13259,7 @@ let PivotFieldList = class PivotFieldList extends Component {
         this.notify(dataReady, {});
         this.trigger(dataBound);
     }
+    /* tslint:enable */
     fieldListRender() {
         this.element.innerHTML = '';
         if (this.renderMode === 'Popup' && this.dialogRenderer.fieldListDialog && !this.dialogRenderer.fieldListDialog.isDestroyed) {
@@ -10369,8 +13294,7 @@ let PivotFieldList = class PivotFieldList extends Component {
             let lnt = this.captionData.length;
             while (lnt--) {
                 if (this.captionData[lnt]) {
-                    for (let item of this.captionData[lnt]) {
-                        let obj = item.properties;
+                    for (let obj of this.captionData[lnt]) {
                         if (obj) {
                             if (this.engineModule.fieldList[obj.name] && obj.caption) {
                                 this.engineModule.fieldList[obj.name].caption = obj.caption;
@@ -10388,9 +13312,7 @@ let PivotFieldList = class PivotFieldList extends Component {
         }
     }
     getFields(dataSource) {
-        let fieldSets = extend({}, dataSource, null, true);
-        let obj = fieldSets.properties;
-        this.captionData = [obj.rows, obj.columns, obj.values, obj.filters];
+        this.captionData = [dataSource.rows, dataSource.columns, dataSource.values, dataSource.filters];
     }
     /**
      * Updates the PivotEngine using dataSource from Pivot Field List component.
@@ -10405,11 +13327,38 @@ let PivotFieldList = class PivotFieldList extends Component {
         showSpinner(this.fieldListSpinnerElement);
         if (isNullOrUndefined(isEngineRefresh)) {
             let pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
-            let enableValueSorting = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
-            let isDrillThrough = this.pivotGridModule ?
-                (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
-            this.engineModule =
-                new PivotEngine(this.dataSource, '', this.pivotFieldList, pageSettings, enableValueSorting, isDrillThrough);
+            let customProperties = this.frameCustomProperties();
+            customProperties.savedFieldList = this.pivotFieldList;
+            let lastSortInfo = this.pivotGridModule ? this.pivotGridModule.lastSortInfo : this.lastSortInfo;
+            if (this.pivotGridModule) {
+                this.pivotGridModule.lastSortInfo = {};
+            }
+            this.lastSortInfo = {};
+            let isAggChange = Object.keys(this.lastAggregationInfo).length > 0 ? true : false;
+            let isCalcChange = Object.keys(this.lastCalcFieldInfo).length > 0 ? true : false;
+            let isSorted = Object.keys(lastSortInfo).length > 0 ? true : false;
+            let isFiltered = Object.keys(this.lastFilterInfo).length > 0 ? true : false;
+            if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                if (isSorted) {
+                    this.pivotGridModule.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
+                    this.engineModule.onSort(lastSortInfo);
+                }
+                if (isFiltered) {
+                    this.engineModule.onFilter(this.lastFilterInfo, this.dataSource);
+                    this.lastFilterInfo = {};
+                }
+                if (isAggChange) {
+                    this.engineModule.onAggregation(this.lastAggregationInfo);
+                    this.lastAggregationInfo = {};
+                }
+                if (isCalcChange) {
+                    this.engineModule.onCalcOperation(this.lastCalcFieldInfo);
+                    this.lastCalcFieldInfo = {};
+                }
+            }
+            else {
+                this.engineModule.renderEngine(this.dataSource, customProperties);
+            }
             this.getFieldCaption(this.dataSource);
         }
         else {
@@ -10458,6 +13407,7 @@ let PivotFieldList = class PivotFieldList extends Component {
      */
     update(control) {
         if (control) {
+            this.clonedDataSet = control.clonedDataSet;
             this.setProperties({ dataSource: control.dataSource }, true);
             this.engineModule = control.engineModule;
             this.pivotFieldList = control.engineModule.fieldList;
@@ -10486,6 +13436,7 @@ let PivotFieldList = class PivotFieldList extends Component {
      */
     updateView(control) {
         if (control) {
+            control.clonedDataSet = this.clonedDataSet;
             control.setProperties({ dataSource: this.dataSource }, true);
             control.engineModule = this.engineModule;
             control.pivotValues = this.engineModule.pivotValues;
@@ -10536,52 +13487,52 @@ let PivotFieldList = class PivotFieldList extends Component {
         }
     }
 };
-__decorate$3([
+__decorate$4([
     Complex({}, DataSource)
 ], PivotFieldList.prototype, "dataSource", void 0);
-__decorate$3([
+__decorate$4([
     Property('Popup')
 ], PivotFieldList.prototype, "renderMode", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], PivotFieldList.prototype, "target", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], PivotFieldList.prototype, "cssClass", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], PivotFieldList.prototype, "allowCalculatedField", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], PivotFieldList.prototype, "showValuesButton", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], PivotFieldList.prototype, "allowDeferLayoutUpdate", void 0);
-__decorate$3([
+__decorate$4([
     Property(1000)
 ], PivotFieldList.prototype, "maxNodeLimitInMemberEditor", void 0);
-__decorate$3([
+__decorate$4([
     Event()
 ], PivotFieldList.prototype, "load", void 0);
-__decorate$3([
+__decorate$4([
     Event()
 ], PivotFieldList.prototype, "enginePopulating", void 0);
-__decorate$3([
+__decorate$4([
     Event()
 ], PivotFieldList.prototype, "enginePopulated", void 0);
-__decorate$3([
+__decorate$4([
     Event()
 ], PivotFieldList.prototype, "onFieldDropped", void 0);
-__decorate$3([
+__decorate$4([
     Event()
 ], PivotFieldList.prototype, "dataBound", void 0);
-__decorate$3([
+__decorate$4([
     Event()
 ], PivotFieldList.prototype, "created", void 0);
-__decorate$3([
+__decorate$4([
     Event()
 ], PivotFieldList.prototype, "destroyed", void 0);
-PivotFieldList = __decorate$3([
+PivotFieldList = __decorate$4([
     NotifyPropertyChanges
 ], PivotFieldList);
 
@@ -10847,6 +13798,7 @@ class CalculatedField {
                 report.values.push(field);
                 report.calculatedFieldSettings.push(cField);
             }
+            this.parent.lastCalcFieldInfo = cField;
             this.addFormula(report, field.name);
         }
         else {
@@ -10886,6 +13838,7 @@ class CalculatedField {
             }
             this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
             this.parent.setProperties({ dataSource: this.existingReport }, true);
+            this.parent.lastCalcFieldInfo = {};
             this.parent.updateDataSource(false);
         }
     }
@@ -10984,40 +13937,21 @@ class CalculatedField {
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
-                    'click': () => this.applyFormula(),
+                    click: this.applyFormula.bind(this),
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('ok'),
                         isPrimary: true
                     }
                 },
                 {
-                    'click': () => {
-                        this.dialog.close();
-                        this.isEdit = false;
-                    },
+                    click: this.cancelClick.bind(this),
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('cancel')
                     }
                 }
             ],
-            close: (args) => {
-                if (this.parent.getModuleName() === 'pivotfieldlist') {
-                    this.parent.axisFieldModule.render();
-                    if (this.parent.renderMode !== 'Fixed') {
-                        addClass([this.parent.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)], ICON_HIDDEN);
-                        this.parent.dialogRenderer.fieldListDialog.show();
-                    }
-                }
-                this.treeObj.destroy();
-                this.dialog.destroy();
-                this.newFields = null;
-                remove(document.getElementById(this.parentID + 'calculateddialog'));
-                remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
-            },
-            beforeOpen: (args) => {
-                this.dialog.element.querySelector('.e-dlg-header').
-                    setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
-            },
+            close: this.closeDialog.bind(this),
+            beforeOpen: this.beforeOpen.bind(this),
             animationSettings: { effect: 'Zoom' },
             width: '25%',
             isModal: false,
@@ -11028,6 +13962,28 @@ class CalculatedField {
             target: document.body
         });
         this.dialog.appendTo('#' + this.parentID + 'calculateddialog');
+    }
+    cancelClick() {
+        this.dialog.close();
+        this.isEdit = false;
+    }
+    beforeOpen(args) {
+        this.dialog.element.querySelector('.e-dlg-header').
+            setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
+    }
+    closeDialog(args) {
+        if (this.parent.getModuleName() === 'pivotfieldlist') {
+            this.parent.axisFieldModule.render();
+            if (this.parent.renderMode !== 'Fixed') {
+                addClass([this.parent.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)], ICON_HIDDEN);
+                this.parent.dialogRenderer.fieldListDialog.show();
+            }
+        }
+        this.treeObj.destroy();
+        this.dialog.destroy();
+        this.newFields = null;
+        remove(document.getElementById(this.parentID + 'calculateddialog'));
+        remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
     }
     /**
      * To render dialog elements.
@@ -11119,26 +14075,28 @@ class CalculatedField {
             fields: { dataSource: this.getFieldListData(this.parent), id: 'formula', text: 'name', iconCss: 'icon' },
             allowDragAndDrop: true,
             enableRtl: this.parent.enableRtl,
-            nodeCollapsing: (args) => {
-                args.cancel = true;
-            },
-            nodeDragStart: (args) => {
-                if (args.event.target.classList.contains(DRAG_CLASS)) {
-                    let dragItem = document.querySelector('.e-drag-item.e-treeview');
-                    addClass([dragItem], PIVOTCALC);
-                    dragItem.style.zIndex = (this.dialog.zIndex + 1).toString();
-                    dragItem.style.display = 'inline';
-                }
-                else {
-                    args.cancel = true;
-                }
-            },
+            nodeCollapsing: this.nodeCollapsing.bind(this),
+            nodeDragStart: this.dragStart.bind(this),
             nodeClicked: this.fieldClickHandler.bind(this),
             nodeDragStop: this.fieldDropped.bind(this),
             drawNode: this.drawTreeNode.bind(this),
             sortOrder: 'Ascending'
         });
         this.treeObj.appendTo('#' + this.parentID + 'tree');
+    }
+    nodeCollapsing(args) {
+        args.cancel = true;
+    }
+    dragStart(args) {
+        if (args.event.target.classList.contains(DRAG_CLASS)) {
+            let dragItem = document.querySelector('.e-drag-item.e-treeview');
+            addClass([dragItem], PIVOTCALC);
+            dragItem.style.zIndex = (this.dialog.zIndex + 1).toString();
+            dragItem.style.display = 'inline';
+        }
+        else {
+            args.cancel = true;
+        }
     }
     /**
      * Trigger before treeview text append.
@@ -11246,60 +14204,63 @@ class CalculatedField {
             let accordion = new Accordion({
                 items: this.getAccordionData(this.parent),
                 enableRtl: this.parent.enableRtl,
-                expanding: (args) => {
-                    if (args.element.querySelectorAll('.e-radio-wrapper').length === 0) {
-                        Object.keys(this.parent.engineModule.fieldList).forEach((key) => {
-                            let type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
-                            let radiobutton;
-                            if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
-                                for (let i = 0; i < type.length; i++) {
-                                    radiobutton = new RadioButton({
-                                        label: type[i],
-                                        name: AGRTYPE + key,
-                                        change: (args) => {
-                                            let type = args.event.target.parentElement.querySelector('.e-label').
-                                                innerText;
-                                            let field = args.event.target.closest('.e-acrdn-item').
-                                                querySelector('[data-field').getAttribute('data-caption');
-                                            args.event.target.
-                                                closest('.e-acrdn-item').querySelector('.e-label').
-                                                innerText = field + ' (' + type + ')';
-                                            args.event.target.closest('.e-acrdn-item').
-                                                querySelector('[data-type').setAttribute('data-type', type);
-                                        },
-                                    });
-                                    radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
-                                }
-                            }
-                        });
-                    }
-                },
+                expanding: this.accordionExpand.bind(this),
             });
             let addBtn = new Button({ cssClass: FLAT, isPrimary: true });
             addBtn.appendTo('#' + this.parentID + 'addBtn');
             accordion.appendTo('#' + this.parentID + 'accordDiv');
-            Object.keys(this.parent.engineModule.fieldList).forEach((key, index) => {
-                let type = null;
-                if (this.parent.engineModule.fieldList[key].type === 'string' ||
-                    this.parent.engineModule.fieldList[key].type === 'include' ||
-                    this.parent.engineModule.fieldList[key].type === 'exclude') {
-                    type = COUNT;
-                }
-                else {
-                    type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
-                        this.parent.engineModule.fieldList[key].aggregateType : SUM;
-                }
-                let checkbox = new CheckBox({
-                    label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
-                });
-                checkbox.appendTo('#' + this.parentID + '_' + index);
-                document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
-                document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
-            });
+            Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
             if (addBtn.element) {
                 addBtn.element.onclick = this.addBtnClick.bind(this);
             }
         }
+    }
+    accordionExpand(args) {
+        if (args.element.querySelectorAll('.e-radio-wrapper').length === 0) {
+            Object.keys(this.parent.engineModule.fieldList).forEach((key) => {
+                let type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+                let radiobutton;
+                if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
+                    for (let i = 0; i < type.length; i++) {
+                        radiobutton = new RadioButton({
+                            label: type[i],
+                            name: AGRTYPE + key,
+                            change: this.onChange.bind(this),
+                        });
+                        radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
+                    }
+                }
+            });
+        }
+    }
+    onChange(args) {
+        let type = args.event.target.parentElement.querySelector('.e-label').
+            innerText;
+        let field = args.event.target.closest('.e-acrdn-item').
+            querySelector('[data-field').getAttribute('data-caption');
+        args.event.target.
+            closest('.e-acrdn-item').querySelector('.e-label').
+            innerText = field + ' (' + type + ')';
+        args.event.target.closest('.e-acrdn-item').
+            querySelector('[data-type').setAttribute('data-type', type);
+    }
+    updateType(key, index) {
+        let type = null;
+        if (this.parent.engineModule.fieldList[key].type === 'string' ||
+            this.parent.engineModule.fieldList[key].type === 'include' ||
+            this.parent.engineModule.fieldList[key].type === 'exclude') {
+            type = COUNT;
+        }
+        else {
+            type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
+                this.parent.engineModule.fieldList[key].aggregateType : SUM;
+        }
+        let checkbox = new CheckBox({
+            label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
+        });
+        checkbox.appendTo('#' + this.parentID + '_' + index);
+        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
+        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
     }
     /**
      * Trigger while click cancel button.
@@ -11425,6 +14386,7 @@ class CalculatedField {
                 for (let j = 0; j < report.calculatedFieldSettings.length; j++) {
                     if (report.calculatedFieldSettings[j].name === this.inputObj.value) {
                         report.calculatedFieldSettings[j].formula = dropField.value;
+                        this.parent.lastCalcFieldInfo = report.calculatedFieldSettings[j];
                     }
                 }
             }
@@ -11514,26 +14476,9 @@ class FieldList {
     updateControl() {
         if (this.element) {
             prepend([this.element], this.parent.element);
-            if (this.parent.grid && this.parent.showGroupingBar && this.parent.groupingBarModule) {
+            if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
                 clearTimeout(this.timeOutObj);
-                this.timeOutObj = setTimeout(() => {
-                    if (this.parent.grid && this.parent.grid.element) {
-                        let actWidth = this.parent.grid.element.offsetWidth < 400 ? 400 : this.parent.grid.element.offsetWidth;
-                        setStyleAttribute(this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS), {
-                            left: formatUnit(this.parent.enableRtl ?
-                                -Math.abs((actWidth) -
-                                    this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth) :
-                                (actWidth) -
-                                    this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth)
-                        });
-                        if (this.parent.enableRtl) {
-                            addClass([this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
-                        }
-                        else {
-                            removeClass([this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
-                        }
-                    }
-                });
+                this.timeOutObj = setTimeout(this.update.bind(this));
             }
             else {
                 if (this.parent.enableRtl) {
@@ -11548,6 +14493,31 @@ class FieldList {
             });
         }
         this.parent.pivotFieldListModule.update(this.parent);
+    }
+    update() {
+        let currentWidth;
+        if (this.parent.currentView !== 'Table') {
+            currentWidth = this.parent.chart ? this.parent.chartModule.calculatedWidth : currentWidth;
+        }
+        else {
+            currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
+        }
+        if (currentWidth) {
+            let actualWidth = currentWidth < 400 ? 400 : currentWidth;
+            setStyleAttribute(this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS), {
+                left: formatUnit(this.parent.enableRtl ?
+                    -Math.abs((actualWidth) -
+                        this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth) :
+                    (actualWidth) -
+                        this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth)
+            });
+            if (this.parent.enableRtl) {
+                addClass([this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
+            }
+            else {
+                removeClass([this.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
+            }
+        }
     }
     /**
      * @hidden
@@ -11688,8 +14658,13 @@ class AxisFields {
     render() {
         this.pivotButton = new PivotButton(this.parent);
         this.createPivotButtons();
-        let pivotButtons = [].slice.call(this.parent.element.querySelector('.' + GROUP_ROW_CLASS)
-            .querySelectorAll('.' + PIVOT_BUTTON_WRAPPER_CLASS));
+        let pivotButtons = [];
+        /* tslint:disable:no-any */
+        for (let element of this.parent.element.querySelectorAll('.' + GROUP_ROW_CLASS)) {
+            if (!element.classList.contains(GROUP_CHART_ROW)) {
+                pivotButtons = pivotButtons.concat([].slice.call(element.querySelectorAll('.' + PIVOT_BUTTON_WRAPPER_CLASS)));
+            }
+        }
         let vlen = pivotButtons.length;
         for (let j = 0; j < vlen; j++) {
             let indentWidth = 24;
@@ -11702,10 +14677,12 @@ class AxisFields {
     }
     createPivotButtons() {
         let fields = [this.parent.dataSource.rows, this.parent.dataSource.columns, this.parent.dataSource.values, this.parent.dataSource.filters];
-        this.parent.element.querySelector('.' + GROUP_ROW_CLASS).innerHTML = '';
-        this.parent.element.querySelector('.' + GROUP_COLUMN_CLASS).innerHTML = '';
-        this.parent.element.querySelector('.' + GROUP_VALUE_CLASS).innerHTML = '';
-        this.parent.element.querySelector('.' + GROUP_FILTER_CLASS).innerHTML = '';
+        for (let element of this.parent.element.querySelectorAll('.' + GROUP_ROW_CLASS + ',.' + GROUP_COLUMN_CLASS + ',.'
+            + GROUP_VALUE_CLASS + ',.' + GROUP_FILTER_CLASS)) {
+            if (this.parent.dataSource.values.length > 0 ? !element.classList.contains(GROUP_CHART_VALUE) : true) {
+                element.innerHTML = '';
+            }
+        }
         let axis = ['rows', 'columns', 'values', 'filters'];
         for (let i = 0, lnt = fields.length; i < lnt; i++) {
             if (fields[i]) {
@@ -11729,6 +14706,7 @@ class GroupingBar {
     constructor(parent) {
         this.parent = parent;
         this.parent.groupingBarModule = this;
+        this.resColWidth = (this.parent.isAdaptive ? 180 : 250);
         this.addEventListener();
         this.parent.axisFieldModule = new AxisFields(this.parent);
         this.touchObj = new Touch(this.parent.element, {
@@ -11776,70 +14754,109 @@ class GroupingBar {
         this.groupingTable.appendChild(this.rightAxisPanel);
         let axisPanels = [this.rowPanel, this.columnPanel, this.valuePanel, this.filterPanel];
         for (let element of axisPanels) {
-            new Droppable(element, {});
+            if (this.parent.groupingBarSettings.allowDragAndDrop) {
+                new Droppable(element, {});
+            }
             this.unWireEvent(element);
             this.wireEvent(element);
+        }
+        if (this.parent.displayOption.view !== 'Table' && this.parent.groupingBarSettings.displayMode !== 'Table') {
+            this.groupingChartTable = this.groupingTable.cloneNode(true);
+            this.groupingChartTable.classList.add(CHART_GROUPING_BAR_CLASS);
+            this.groupingChartTable.querySelector('.' + GROUP_ROW_CLASS).classList.add(GROUP_CHART_ROW);
+            this.groupingChartTable.querySelector('.' + GROUP_COLUMN_CLASS).classList.add(GROUP_CHART_COLUMN);
+            if (this.parent.chartSettings.enableMultiAxis) {
+                this.groupingChartTable.querySelector('.' + GROUP_VALUE_CLASS).classList.add(GROUP_CHART_MULTI_VALUE);
+            }
+            else {
+                this.groupingChartTable.querySelector('.' + GROUP_VALUE_CLASS).classList.add(GROUP_CHART_VALUE);
+                this.groupingChartTable.querySelector('.' + GROUP_VALUE_CLASS).classList.remove(DROPPABLE_CLASS);
+            }
+            this.groupingChartTable.querySelector('.' + GROUP_FILTER_CLASS).classList.add(GROUP_CHART_FILTER);
+        }
+        else {
+            this.groupingChartTable = undefined;
+        }
+        if (this.parent.displayOption.view === 'Chart' || this.parent.groupingBarSettings.displayMode === 'Chart') {
+            this.groupingTable = undefined;
         }
     }
     appendToElement() {
         if (this.parent.element.querySelector('.' + GROUPING_BAR_CLASS)) {
-            remove(this.parent.element.querySelector('.' + GROUPING_BAR_CLASS));
-        }
-        if (this.parent.isAdaptive) {
-            this.leftAxisPanel.style.minWidth = '180px';
-            this.valuePanel.style.minWidth = '180px';
-        }
-        if (this.parent.firstColWidth) {
-            this.leftAxisPanel.style.minWidth = 'auto';
-            this.valuePanel.style.minWidth = 'auto';
-        }
-        this.filterPanel.removeAttribute('style');
-        this.columnPanel.removeAttribute('style');
-        this.rowPanel.removeAttribute('style');
-        this.filterPanel.removeAttribute('style');
-        let emptyRowCount = Object.keys(this.parent.engineModule.headerContent).length;
-        if (emptyRowCount) {
-            let emptyHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
-            addClass([emptyHeader], 'e-row');
-            emptyHeader.removeAttribute('style');
-            addClass([emptyHeader.querySelector('.e-headercell')], 'e-group-row');
-            emptyHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
-            emptyHeader.querySelector('.e-group-row').querySelector('.e-headercelldiv').style.display = 'none';
-            emptyHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv').style.display = 'none';
-        }
-        prepend([this.groupingTable], this.parent.element);
-        setStyleAttribute(this.groupingTable, { width: formatUnit(this.parent.grid.width) });
-        this.groupingTable.style.minWidth = '400px';
-        this.parent.axisFieldModule.render();
-        this.setGridRowWidth();
-        let colGroupElement = this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0];
-        let rightAxisPanelWidth = formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
-        setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
-        setStyleAttribute(this.rightAxisPanel, { width: rightAxisPanelWidth });
-        let rightPanelHeight = (this.valuePanel.offsetHeight / 2);
-        if (rightPanelHeight > this.columnPanel.offsetHeight) {
-            setStyleAttribute(this.filterPanel, { height: formatUnit(rightPanelHeight) });
-            setStyleAttribute(this.columnPanel, { height: formatUnit(rightPanelHeight + 1) });
-        }
-        let topLeftHeight = this.parent.element.querySelector('.e-headercontent').offsetHeight;
-        setStyleAttribute(this.rowPanel, {
-            height: topLeftHeight + 'px'
-        });
-        if (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler')) {
-            this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler').style.height =
-                topLeftHeight + 'px';
-        }
-        let colRows = [].slice.call(this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('tr'));
-        let columnRows = colRows.filter((trCell) => {
-            return (trCell.childNodes.length > 0);
-        });
-        let colHeight = topLeftHeight / columnRows.length;
-        for (let element of columnRows) {
-            setStyleAttribute(element, { 'height': colHeight + 'px' });
-            let rowHeader = [].slice.call(element.querySelectorAll('.e-rhandler'));
-            for (let rhElement of rowHeader) {
-                setStyleAttribute(rhElement, { 'height': colHeight + 'px' });
+            /* tslint:disable:no-any */
+            for (let element of this.parent.element.querySelectorAll('.' + GROUPING_BAR_CLASS)) {
+                remove(element);
             }
+        }
+        if (this.groupingChartTable) {
+            if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+                setStyleAttribute(this.groupingChartTable, { width: formatUnit(this.parent.chart.width) });
+                this.parent.element.insertBefore(this.groupingChartTable, this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+            }
+            else {
+                this.groupingChartTable = undefined;
+            }
+        }
+        if (this.parent.displayOption.view !== 'Chart' && this.groupingTable) {
+            if (this.parent.isAdaptive) {
+                this.leftAxisPanel.style.minWidth = '180px';
+                this.valuePanel.style.minWidth = '180px';
+            }
+            if (this.parent.firstColWidth) {
+                this.leftAxisPanel.style.minWidth = 'auto';
+                this.valuePanel.style.minWidth = 'auto';
+            }
+            this.filterPanel.removeAttribute('style');
+            this.columnPanel.removeAttribute('style');
+            this.rowPanel.removeAttribute('style');
+            this.filterPanel.removeAttribute('style');
+            let emptyRowCount = Object.keys(this.parent.engineModule.headerContent).length;
+            if (emptyRowCount) {
+                let emptyHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
+                addClass([emptyHeader], 'e-row');
+                emptyHeader.removeAttribute('style');
+                addClass([emptyHeader.querySelector('.e-headercell')], 'e-group-row');
+                emptyHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
+                emptyHeader.querySelector('.e-group-row').querySelector('.e-headercelldiv').style.display = 'none';
+                emptyHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv').style.display = 'none';
+            }
+            this.parent.element.insertBefore(this.groupingTable, this.parent.element.querySelector('.' + GRID_CLASS));
+            setStyleAttribute(this.groupingTable, { width: formatUnit(this.parent.grid.width) });
+            this.groupingTable.style.minWidth = '400px';
+            this.parent.axisFieldModule.render();
+            this.setGridRowWidth();
+            let colGroupElement = this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0];
+            let rightAxisPanelWidth = formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
+            setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
+            setStyleAttribute(this.rightAxisPanel, { width: rightAxisPanelWidth });
+            let rightPanelHeight = (this.valuePanel.offsetHeight / 2);
+            if (rightPanelHeight > this.columnPanel.offsetHeight) {
+                setStyleAttribute(this.filterPanel, { height: formatUnit(rightPanelHeight) });
+                setStyleAttribute(this.columnPanel, { height: formatUnit(rightPanelHeight + 1) });
+            }
+            let topLeftHeight = this.parent.element.querySelector('.e-headercontent').offsetHeight;
+            setStyleAttribute(this.rowPanel, {
+                height: topLeftHeight + 'px'
+            });
+            if (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler')) {
+                this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler').style.height =
+                    topLeftHeight + 'px';
+            }
+            let colRows = [].slice.call(this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('tr'));
+            let columnRows = colRows.filter((trCell) => {
+                return (trCell.childNodes.length > 0);
+            });
+            let colHeight = topLeftHeight / columnRows.length;
+            for (let element of columnRows) {
+                setStyleAttribute(element, { 'height': colHeight + 'px' });
+                let rowHeader = [].slice.call(element.querySelectorAll('.e-rhandler'));
+                for (let rhElement of rowHeader) {
+                    setStyleAttribute(rhElement, { 'height': colHeight + 'px' });
+                }
+            }
+        }
+        else {
+            this.parent.axisFieldModule.render();
         }
     }
     /**
@@ -11853,18 +14870,8 @@ class GroupingBar {
         setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
         setStyleAttribute(this.rightAxisPanel, { width: rightAxisWidth });
         if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
-            let element = this.parent.pivotFieldListModule.element;
             clearTimeout(this.timeOutObj);
-            this.timeOutObj = setTimeout(() => {
-                let actWidth = this.parent.grid.element.offsetWidth < 400 ? 400 : this.parent.grid.element.offsetWidth;
-                setStyleAttribute(element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS), {
-                    left: formatUnit(this.parent.enableRtl ?
-                        -Math.abs((actWidth) -
-                            element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth) :
-                        (actWidth) -
-                            element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth)
-                });
-            });
+            this.timeOutObj = setTimeout(this.alignIcon.bind(this));
         }
         if (!this.parent.grid.element.querySelector('.e-group-row')) {
             let emptyRowHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
@@ -11899,6 +14906,27 @@ class GroupingBar {
             }
         }
     }
+    /** @hidden */
+    alignIcon() {
+        let element = this.parent.pivotFieldListModule.element;
+        let currentWidth;
+        if (this.parent.currentView === 'Table') {
+            currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
+        }
+        else {
+            currentWidth = this.parent.chart ? this.parent.chartModule.calculatedWidth : currentWidth;
+        }
+        if (currentWidth) {
+            let actWidth = currentWidth < 400 ? 400 : currentWidth;
+            setStyleAttribute(element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS), {
+                left: formatUnit(this.parent.enableRtl ?
+                    -Math.abs((actWidth) -
+                        element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth) :
+                    (actWidth) -
+                        element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).offsetWidth)
+            });
+        }
+    }
     /**
      * @hidden
      */
@@ -11910,8 +14938,7 @@ class GroupingBar {
                 let lastButton = pivotButtons[pivotButtons.length - 1];
                 let lastButtonWidth = (lastButton.querySelector('.' + PIVOT_BUTTON_CLASS).offsetWidth +
                     lastButton.querySelector('.e-indent-div').offsetWidth + 20);
-                let resColWidth = (this.parent.isAdaptive ? 180 : 250);
-                let buttonWidth = formatUnit(lastButtonWidth < resColWidth ? resColWidth : lastButtonWidth);
+                let buttonWidth = formatUnit(lastButtonWidth < this.resColWidth ? this.resColWidth : lastButtonWidth);
                 let rowHeaderTable = this.parent.element.querySelector('.e-frozenheader').querySelector('table');
                 let rowContentTable = this.parent.element.querySelector('.e-frozencontent').querySelector('table');
                 let rowContent = this.parent.element.querySelector('.e-frozencontent').querySelector('colgroup').children[0];
@@ -11919,8 +14946,9 @@ class GroupingBar {
                 let gridColumn = this.parent.grid.columns;
                 if (gridColumn && gridColumn.length > 0) {
                     /* tslint:disable:align */
-                    gridColumn[0].width = (gridColumn[0].width >= resColWidth ?
-                        (colwidth > resColWidth ? colwidth : resColWidth) : (colwidth > resColWidth ? colwidth : resColWidth));
+                    gridColumn[0].width = (gridColumn[0].width >= this.resColWidth ?
+                        (colwidth > this.resColWidth ? colwidth : this.resColWidth) :
+                        (colwidth > this.resColWidth ? colwidth : this.resColWidth));
                 }
                 let valueColWidth = this.parent.renderModule.calculateColWidth(this.parent.dataSource.values.length > 0 ?
                     this.parent.engineModule.pivotValues[0].length : 2);
@@ -11948,17 +14976,25 @@ class GroupingBar {
             }
             else {
                 if (!this.parent.firstColWidth) {
-                    let resColWidth = 180;
                     let gridColumn = this.parent.grid.columns;
                     if (gridColumn && gridColumn.length > 0) {
-                        gridColumn[0].width = resColWidth;
+                        gridColumn[0].width = this.resColWidth;
                     }
                     this.parent.posCount = 0;
                     this.parent.grid.headerModule.refreshUI();
                 }
             }
         }
-        this.refreshUI();
+        else {
+            if (this.parent.grid.columns && this.parent.grid.columns.length > 0) {
+                this.parent.grid.columns[0].width = this.parent.grid.columns[0].width > this.resColWidth ?
+                    this.parent.grid.columns[0].width : this.resColWidth;
+            }
+            this.parent.grid.headerModule.refreshUI();
+        }
+        if (this.groupingTable) {
+            this.refreshUI();
+        }
     }
     setColWidth(columns, width) {
         for (let cCnt = 0; cCnt < columns.length; cCnt++) {
@@ -12072,21 +15108,7 @@ class ConditionalFormatting {
         }));
         let buttonModel = [
             {
-                'click': () => {
-                    let format = {
-                        conditions: 'LessThan',
-                        value1: 0,
-                        style: {
-                            backgroundColor: 'white',
-                            color: 'black',
-                            fontFamily: 'Arial',
-                            fontSize: '12px'
-                        }
-                    };
-                    this.refreshConditionValues();
-                    this.newFormat.push(format);
-                    this.addFormat();
-                },
+                click: this.addButtonClick.bind(this),
                 buttonModel: {
                     cssClass: this.parent.isAdaptive ? (FORMAT_ROUND_BUTTON + ' ' + FORMAT_CONDITION_BUTTON) :
                         FORMAT_CONDITION_BUTTON,
@@ -12095,22 +15117,14 @@ class ConditionalFormatting {
                 }
             },
             {
-                'click': () => {
-                    this.refreshConditionValues();
-                    this.parent.setProperties({ dataSource: { conditionalFormatSettings: this.newFormat } }, true);
-                    this.parent.renderPivotGrid();
-                    this.destroy();
-                },
+                click: this.applyButtonClick.bind(this),
                 buttonModel: {
                     cssClass: FLAT_CLASS + ' ' + FORMAT_APPLY_BUTTON,
                     content: this.parent.localeObj.getConstant('apply')
                 }
             },
             {
-                'click': () => {
-                    this.destroy();
-                    this.newFormat = [];
-                },
+                click: this.cancelButtonClick.bind(this),
                 buttonModel: {
                     cssClass: FLAT_CLASS + ' ' + FORMAT_CANCEL_BUTTON,
                     content: this.parent.localeObj.getConstant('cancel')
@@ -12122,38 +15136,80 @@ class ConditionalFormatting {
                 animationSettings: { effect: 'Zoom' }, isModal: true, width: '100%', height: '100%',
                 showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,
-                beforeOpen: (args) => {
-                    this.dialog.element.querySelector('.' + DIALOG_HEADER).
-                        setAttribute('title', this.parent.localeObj.getConstant('conditionalFormating'));
-                },
+                beforeOpen: this.beforeOpen.bind(this),
                 cssClass: FORMAT_DIALOG, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
             });
         }
         else {
             this.dialog = new Dialog({
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel,
-                beforeOpen: (args) => {
-                    this.dialog.element.querySelector('.' + DIALOG_HEADER).
-                        setAttribute('title', this.parent.localeObj.getConstant('conditionalFormating'));
-                },
+                beforeOpen: this.beforeOpen.bind(this),
                 cssClass: FORMAT_DIALOG, isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
         }
         this.dialog.appendTo('#' + this.parentID + 'conditionalformatting');
     }
+    beforeOpen(args) {
+        this.dialog.element.querySelector('.' + DIALOG_HEADER).
+            setAttribute('title', this.parent.localeObj.getConstant('conditionalFormating'));
+    }
+    addButtonClick() {
+        let format = {
+            conditions: 'LessThan',
+            value1: 0,
+            style: {
+                backgroundColor: 'white',
+                color: 'black',
+                fontFamily: 'Arial',
+                fontSize: '12px'
+            }
+        };
+        this.refreshConditionValues();
+        this.newFormat.push(format);
+        this.addFormat();
+    }
+    applyButtonClick() {
+        if (this.refreshConditionValues()) {
+            this.parent.setProperties({ dataSource: { conditionalFormatSettings: this.newFormat } }, true);
+            this.parent.renderPivotGrid();
+            this.destroy();
+        }
+    }
+    cancelButtonClick() {
+        this.destroy();
+        this.newFormat = [];
+    }
     refreshConditionValues() {
         for (let i = 0; i < this.newFormat.length; i++) {
+            if (document.querySelector('#' + this.parentID + 'conditionvalue1' + i).value === '' ||
+                document.querySelector('#' + this.parentID + 'conditionvalue2' + i).value === '') {
+                document.querySelector('#' + this.parentID + 'conditionvalue1' + i).value === '' ?
+                    document.querySelector('#' + this.parentID + 'conditionvalue1' + i).focus() :
+                    document.querySelector('#' + this.parentID + 'conditionvalue2' + i).focus();
+                return false;
+            }
             this.newFormat[i].value1 =
                 Number(document.querySelector('#' + this.parentID + 'conditionvalue1' + i).value);
             this.newFormat[i].value2 =
                 Number(document.querySelector('#' + this.parentID + 'conditionvalue2' + i).value);
         }
+        return true;
     }
     addFormat() {
         let format = createElement('div', { id: this.parentID + 'formatDiv', className: FORMAT_NEW });
         for (let i = 0; i < this.newFormat.length; i++) {
             format.appendChild(this.createDialogElements(i));
+        }
+        if (this.newFormat.length === 0) {
+            let outerDiv = this.createDialogElements();
+            let element = createElement('p', {
+                id: this.parentID + 'emptyFormat',
+                innerHTML: this.parent.localeObj.getConstant('emptyFormat'),
+                styles: 'margin: 10px'
+            });
+            outerDiv.appendChild(element);
+            format.appendChild(outerDiv);
         }
         this.dialog.setProperties({ 'content': format }, false);
         for (let i = 0; i < this.newFormat.length; i++) {
@@ -12162,123 +15218,133 @@ class ConditionalFormatting {
         }
     }
     createDialogElements(i) {
-        let format = this.newFormat[i];
         let outerDiv = createElement('div', {
             id: this.parentID + 'outerDiv' + i, className: FORMAT_OUTER
         });
-        let button = createElement('button', {
-            id: this.parentID + 'removeButton' + i, className: FORMAT_DELETE_BUTTON,
-            attrs: { 'title': this.parent.localeObj.getConstant('delete') }
-        });
-        outerDiv.appendChild(button);
-        let innerDiv = createElement('div', { id: this.parentID + 'innerDiv', className: FORMAT_INNER });
-        let table = createElement('table', { id: this.parentID + 'cftable', className: FORMAT_TABLE });
-        let tRow = createElement('tr');
-        let td = createElement('td');
-        let valuelabel = createElement('span', {
-            id: this.parentID + 'valuelabel' + i, className: FORMAT_VALUE_LABEL,
-            innerHTML: this.parent.localeObj.getConstant('value')
-        });
-        td.appendChild(valuelabel);
-        tRow.appendChild(td);
-        table.appendChild(tRow);
-        tRow = createElement('tr');
-        td = createElement('td');
-        let measureDropdown = createElement('div', { id: this.parentID + 'measure' + i });
-        let measureInput = createElement('input', {
-            id: this.parentID + 'measureinput' + i,
-            attrs: { 'type': 'text', 'tabindex': '1' }
-        });
-        measureDropdown.appendChild(measureInput);
-        td.appendChild(measureDropdown);
-        tRow.appendChild(td);
-        td = createElement('td');
-        let conditionDropdown = createElement('div', { id: this.parentID + 'condition' });
-        let conditionInput = createElement('input', {
-            id: this.parentID + 'conditioninput' + i,
-            attrs: { 'type': 'text', 'tabindex': '1' }
-        });
-        conditionDropdown.appendChild(conditionInput);
-        td.appendChild(conditionDropdown);
-        tRow.appendChild(td);
-        td = createElement('td');
-        let style = !(format.conditions === 'Between' || format.conditions === 'NotBetween') ? 'display:none; width:10px' : '';
-        let value1 = createElement('input', {
-            id: this.parentID + 'conditionvalue1' + i,
-            attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value1) ? format.value1.toString() : '0' },
-            styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' : 'width: 120px',
-            className: INPUT + ' ' + FORMAT_VALUE1
-        });
-        td.appendChild(value1);
-        let valuespan = createElement('span', {
-            id: this.parentID + 'valuespan' + i, className: FORMAT_VALUE_SPAN,
-            innerHTML: '&', styles: style
-        });
-        td.appendChild(valuespan);
-        let value2 = createElement('input', {
-            id: this.parentID + 'conditionvalue2' + i,
-            attrs: { 'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value2) ? format.value2.toString() : '0' },
-            styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
-            className: INPUT + ' ' + FORMAT_VALUE2
-        });
-        td.appendChild(value2);
-        tRow.appendChild(td);
-        table.appendChild(tRow);
-        if (this.parent.isAdaptive) {
+        if (i !== undefined) {
+            let format = this.newFormat[i];
+            let button = createElement('button', {
+                id: this.parentID + 'removeButton' + i, className: FORMAT_DELETE_BUTTON,
+                attrs: { 'title': this.parent.localeObj.getConstant('delete') }
+            });
+            outerDiv.appendChild(button);
+            let innerDiv = createElement('div', { id: this.parentID + 'innerDiv', className: FORMAT_INNER });
+            let table = createElement('table', { id: this.parentID + 'cftable', className: FORMAT_TABLE });
+            let tRow = createElement('tr');
+            let td = createElement('td');
+            let valuelabel = createElement('span', {
+                id: this.parentID + 'valuelabel' + i, className: FORMAT_VALUE_LABEL,
+                innerHTML: this.parent.localeObj.getConstant('value')
+            });
+            td.appendChild(valuelabel);
+            tRow.appendChild(td);
+            table.appendChild(tRow);
+            tRow = createElement('tr');
+            td = createElement('td');
+            let measureDropdown = createElement('div', { id: this.parentID + 'measure' + i });
+            let measureInput = createElement('input', {
+                id: this.parentID + 'measureinput' + i,
+                attrs: { 'type': 'text', 'tabindex': '1' }
+            });
+            measureDropdown.appendChild(measureInput);
+            td.appendChild(measureDropdown);
+            tRow.appendChild(td);
+            td = createElement('td');
+            let conditionDropdown = createElement('div', { id: this.parentID + 'condition' });
+            let conditionInput = createElement('input', {
+                id: this.parentID + 'conditioninput' + i,
+                attrs: { 'type': 'text', 'tabindex': '1' }
+            });
+            conditionDropdown.appendChild(conditionInput);
+            td.appendChild(conditionDropdown);
+            tRow.appendChild(td);
+            td = createElement('td');
+            let style = !(format.conditions === 'Between' || format.conditions === 'NotBetween') ? 'display:none; width:10px' : '';
+            let value1 = createElement('input', {
+                id: this.parentID + 'conditionvalue1' + i,
+                attrs: {
+                    'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value1) ? format.value1.toString() : '0',
+                    'placeholder': this.parent.localeObj.getConstant('emptyInput')
+                },
+                styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' :
+                    'width: 120px',
+                className: INPUT + ' ' + FORMAT_VALUE1
+            });
+            td.appendChild(value1);
+            let valuespan = createElement('span', {
+                id: this.parentID + 'valuespan' + i, className: FORMAT_VALUE_SPAN,
+                innerHTML: '&', styles: style
+            });
+            td.appendChild(valuespan);
+            let value2 = createElement('input', {
+                id: this.parentID + 'conditionvalue2' + i,
+                attrs: {
+                    'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value2) ? format.value2.toString() : '0',
+                    'placeholder': this.parent.localeObj.getConstant('emptyInput')
+                },
+                styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
+                className: INPUT + ' ' + FORMAT_VALUE2
+            });
+            td.appendChild(value2);
+            tRow.appendChild(td);
+            table.appendChild(tRow);
+            if (this.parent.isAdaptive) {
+                innerDiv.appendChild(table);
+                table = createElement('table', { id: this.parentID + 'cftable', className: FORMAT_TABLE });
+            }
+            tRow = createElement('tr');
+            td = createElement('td');
+            let formatlabel = createElement('span', {
+                id: this.parentID + 'formatlabel' + i, className: FORMAT_LABEL,
+                innerHTML: this.parent.localeObj.getConstant('formatLabel')
+            });
+            td.appendChild(formatlabel);
+            tRow.appendChild(td);
+            table.appendChild(tRow);
+            tRow = createElement('tr');
+            td = createElement('td');
+            let fontNameDropdown = createElement('div', { id: this.parentID + 'fontname' });
+            let fontNameInput = createElement('input', {
+                id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
+            });
+            fontNameDropdown.appendChild(fontNameInput);
+            td.appendChild(fontNameDropdown);
+            tRow.appendChild(td);
+            td = createElement('td');
+            let fontSizeDropdown = createElement('div', { id: this.parentID + 'fontsize' });
+            let fontSizeInput = createElement('input', {
+                id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
+            });
+            fontSizeDropdown.appendChild(fontSizeInput);
+            td.appendChild(fontSizeDropdown);
+            tRow.appendChild(td);
+            if (this.parent.isAdaptive) {
+                table.appendChild(tRow);
+                tRow = createElement('tr');
+                table.appendChild(tRow);
+                tRow = createElement('tr');
+            }
+            td = createElement('td');
+            let colorPicker1 = createElement('input', {
+                id: this.parentID + 'fontcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: FORMAT_FONT_COLOR
+            });
+            td.appendChild(colorPicker1);
+            let colorPicker2 = createElement('input', {
+                id: this.parentID + 'backgroundcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: FORMAT_BACK_COLOR
+            });
+            td.appendChild(colorPicker2);
+            tRow.appendChild(td);
+            td = createElement('td');
+            let valuePreview = createElement('div', {
+                id: this.parentID + 'valuepreview' + i, className: INPUT + ' ' + FORMAT_VALUE_PREVIEW,
+                innerHTML: '123.45',
+            });
+            td.appendChild(valuePreview);
+            tRow.appendChild(td);
+            table.appendChild(tRow);
             innerDiv.appendChild(table);
-            table = createElement('table', { id: this.parentID + 'cftable', className: FORMAT_TABLE });
+            outerDiv.appendChild(innerDiv);
         }
-        tRow = createElement('tr');
-        td = createElement('td');
-        let formatlabel = createElement('span', {
-            id: this.parentID + 'formatlabel' + i, className: FORMAT_LABEL, innerHTML: this.parent.localeObj.getConstant('formatLabel')
-        });
-        td.appendChild(formatlabel);
-        tRow.appendChild(td);
-        table.appendChild(tRow);
-        tRow = createElement('tr');
-        td = createElement('td');
-        let fontNameDropdown = createElement('div', { id: this.parentID + 'fontname' });
-        let fontNameInput = createElement('input', {
-            id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
-        });
-        fontNameDropdown.appendChild(fontNameInput);
-        td.appendChild(fontNameDropdown);
-        tRow.appendChild(td);
-        td = createElement('td');
-        let fontSizeDropdown = createElement('div', { id: this.parentID + 'fontsize' });
-        let fontSizeInput = createElement('input', {
-            id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
-        });
-        fontSizeDropdown.appendChild(fontSizeInput);
-        td.appendChild(fontSizeDropdown);
-        tRow.appendChild(td);
-        if (this.parent.isAdaptive) {
-            table.appendChild(tRow);
-            tRow = createElement('tr');
-            table.appendChild(tRow);
-            tRow = createElement('tr');
-        }
-        td = createElement('td');
-        let colorPicker1 = createElement('input', {
-            id: this.parentID + 'fontcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: FORMAT_FONT_COLOR
-        });
-        td.appendChild(colorPicker1);
-        let colorPicker2 = createElement('input', {
-            id: this.parentID + 'backgroundcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: FORMAT_BACK_COLOR
-        });
-        td.appendChild(colorPicker2);
-        tRow.appendChild(td);
-        td = createElement('td');
-        let valuePreview = createElement('div', {
-            id: this.parentID + 'valuepreview' + i, className: INPUT + ' ' + FORMAT_VALUE_PREVIEW,
-            innerHTML: '123.45',
-        });
-        td.appendChild(valuePreview);
-        tRow.appendChild(td);
-        table.appendChild(tRow);
-        innerDiv.appendChild(table);
-        outerDiv.appendChild(innerDiv);
         return outerDiv;
     }
     renderDropDowns(i) {
@@ -12300,10 +15366,7 @@ class ConditionalFormatting {
             dataSource: fields, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             popupHeight: '200px', popupWidth: 'auto',
-            change: (args) => {
-                this.newFormat[i].measure = args.value.toString() === this.parent.localeObj.getConstant('AllValues') ?
-                    undefined : args.value.toString();
-            }
+            change: this.measureChange.bind(this, i)
         });
         this.fieldsDropDown[i].appendTo('#' + this.parentID + 'measureinput' + i);
         let conditions = [
@@ -12321,25 +15384,7 @@ class ConditionalFormatting {
             dataSource: conditions, fields: { value: 'value', text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             popupHeight: '200px', popupWidth: 'auto',
-            change: (args) => {
-                this.newFormat[i].conditions = args.value;
-                if (args.value === 'Between' || args.value === 'NotBetween') {
-                    document.querySelector('#' + this.parentID + 'valuespan' + i).style.display = 'inline-block';
-                    document.querySelector('#' + this.parentID + 'valuespan' + i).style.width =
-                        this.parent.isAdaptive ? '10%' : '10px';
-                    document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.display = 'inline-block';
-                    document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.width =
-                        this.parent.isAdaptive ? '35%' : '45px';
-                    document.querySelector('#' + this.parentID + 'conditionvalue1' + i).style.width =
-                        this.parent.isAdaptive ? '35%' : '45px';
-                }
-                else {
-                    document.querySelector('#' + this.parentID + 'valuespan' + i).style.display = 'none';
-                    document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.display = 'none';
-                    document.querySelector('#' + this.parentID + 'conditionvalue1' + i).style.width =
-                        this.parent.isAdaptive ? '100%' : '120px';
-                }
-            }
+            change: this.conditionChange.bind(this, i)
         });
         this.conditionsDropDown[i].appendTo('#' + this.parentID + 'conditioninput' + i);
         let fontNames = [
@@ -12353,10 +15398,7 @@ class ConditionalFormatting {
             dataSource: fontNames, fields: { text: 'name' },
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
             popupWidth: '150px', popupHeight: '200px',
-            change: (args) => {
-                this.newFormat[i].style.fontFamily = args.value.toString();
-                document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontFamily = args.value;
-            }
+            change: this.fontNameChange.bind(this, i)
         });
         this.fontNameDropDown[i].appendTo('#' + this.parentID + 'fontnameinput' + i);
         let fontSize = [
@@ -12367,12 +15409,40 @@ class ConditionalFormatting {
         this.fontSizeDropDown[i] = new DropDownList({
             dataSource: fontSize, fields: { text: 'name' }, popupHeight: '200px',
             value: value, width: this.parent.isAdaptive ? '100%' : '120px',
-            change: (args) => {
-                this.newFormat[i].style.fontSize = args.value.toString();
-                document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontSize = args.value;
-            }
+            change: this.fontSizeChange.bind(this, i)
         });
         this.fontSizeDropDown[i].appendTo('#' + this.parentID + 'fontsizeinput' + i);
+    }
+    conditionChange(i, args) {
+        this.newFormat[i].conditions = args.value;
+        if (args.value === 'Between' || args.value === 'NotBetween') {
+            document.querySelector('#' + this.parentID + 'valuespan' + i).style.display = 'inline-block';
+            document.querySelector('#' + this.parentID + 'valuespan' + i).style.width =
+                this.parent.isAdaptive ? '10%' : '10px';
+            document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.display = 'inline-block';
+            document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.width =
+                this.parent.isAdaptive ? '35%' : '45px';
+            document.querySelector('#' + this.parentID + 'conditionvalue1' + i).style.width =
+                this.parent.isAdaptive ? '35%' : '45px';
+        }
+        else {
+            document.querySelector('#' + this.parentID + 'valuespan' + i).style.display = 'none';
+            document.querySelector('#' + this.parentID + 'conditionvalue2' + i).style.display = 'none';
+            document.querySelector('#' + this.parentID + 'conditionvalue1' + i).style.width =
+                this.parent.isAdaptive ? '100%' : '120px';
+        }
+    }
+    fontNameChange(i, args) {
+        this.newFormat[i].style.fontFamily = args.value.toString();
+        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontFamily = args.value;
+    }
+    fontSizeChange(i, args) {
+        this.newFormat[i].style.fontSize = args.value.toString();
+        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontSize = args.value;
+    }
+    measureChange(i, args) {
+        this.newFormat[i].measure = args.value.toString() === this.parent.localeObj.getConstant('AllValues') ?
+            undefined : args.value.toString();
     }
     renderColorPicker(i) {
         let format = this.newFormat[i];
@@ -12381,11 +15451,7 @@ class ConditionalFormatting {
         document.querySelector('#' + this.parentID + 'valuepreview' + i).style.color = color;
         this.fontColor[i] = new ColorPicker({
             cssClass: FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
-            change: (args) => {
-                this.newFormat[i].style.color = args.currentValue.hex;
-                document.querySelector('#' + this.parentID + 'valuepreview' + i).style.color =
-                    args.currentValue.hex;
-            }
+            change: this.fontColorChange.bind(this, i)
         });
         this.fontColor[i].appendTo('#' + this.parentID + 'fontcolor' + i);
         addClass([this.fontColor[i].element.nextElementSibling.querySelector('.' + SELECTED_COLOR)], ICON);
@@ -12396,11 +15462,7 @@ class ConditionalFormatting {
         document.querySelector('#' + this.parentID + 'valuepreview' + i).style.fontSize = format.style.fontSize;
         this.backgroundColor[i] = new ColorPicker({
             cssClass: FORMAT_COLOR_PICKER, value: color, mode: 'Palette',
-            change: (args) => {
-                this.newFormat[i].style.backgroundColor = args.currentValue.hex;
-                document.querySelector('#' + this.parentID + 'valuepreview' + i).style.backgroundColor =
-                    args.currentValue.hex;
-            }
+            change: this.backColorChange.bind(this, i)
         });
         this.backgroundColor[i].appendTo('#' + this.parentID + 'backgroundcolor' + i);
         addClass([this.backgroundColor[i].element.nextElementSibling.querySelector('.e-selected-color')], ICON);
@@ -12409,11 +15471,27 @@ class ConditionalFormatting {
             cssClass: FLAT
         });
         toggleBtn.appendTo('#' + this.parentID + 'removeButton' + i);
-        toggleBtn.element.onclick = () => {
-            this.newFormat.splice(i, 1);
-            this.addFormat();
-        };
+        toggleBtn.element.onclick = this.toggleButtonClick.bind(this, i);
     }
+    backColorChange(i, args) {
+        this.newFormat[i].style.backgroundColor = args.currentValue.hex;
+        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.backgroundColor =
+            args.currentValue.hex;
+    }
+    fontColorChange(i, args) {
+        this.newFormat[i].style.color = args.currentValue.hex;
+        document.querySelector('#' + this.parentID + 'valuepreview' + i).style.color =
+            args.currentValue.hex;
+    }
+    toggleButtonClick(i) {
+        this.newFormat.splice(i, 1);
+        this.addFormat();
+    }
+    /**
+     * To check is Hex or not.
+     * @returns boolean
+     * @hidden
+     */
     isHex(h) {
         let a = parseInt(h, 16);
         while (h.charAt(0) === '0') {
@@ -12421,6 +15499,11 @@ class ConditionalFormatting {
         }
         return (a.toString(16) === h.toLowerCase() || (a === 0 && h === ''));
     }
+    /**
+     * To convert hex to RGB.
+     * @returns { r: number, g: number, b: number } | null
+     * @hidden
+     */
     hexToRgb(hex) {
         let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
@@ -12429,6 +15512,11 @@ class ConditionalFormatting {
             b: parseInt(result[3], 16)
         } : null;
     }
+    /**
+     * To convert color to hex.
+     * @returns string
+     * @hidden
+     */
     colourNameToHex(colour) {
         let colours = {
             'aliceblue': '#f0f8ff', 'antiquewhite': '#faebd7', 'aqua': '#00ffff', 'aquamarine': '#7fffd4',
@@ -12478,7 +15566,6 @@ class ConditionalFormatting {
     /**
      * To create Conditional Formatting dialog.
      * @returns void
-     * @hidden
      */
     showConditionalFormattingDialog() {
         this.newFormat = [];
@@ -12513,6 +15600,665 @@ class ConditionalFormatting {
     }
 }
 
+PivotView.Inject(Common);
+/**
+ * Module for Toolbar
+ */
+/** @hidden */
+class Toolbar$2 {
+    constructor(parent) {
+        this.currentReport = '';
+        this.parent = parent;
+        this.parent.toolbarModule = this;
+        this.addEventListener();
+    }
+    /**
+     * It returns the Module name.
+     * @returns string
+     * @hidden
+     */
+    getModuleName() {
+        return 'toolbar';
+    }
+    createToolbar() {
+        this.renderDialog();
+        if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar') !== null) {
+            remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
+        }
+        this.parent.element.insertBefore(createElement('div', {
+            id: this.parent.element.id + 'pivot-toolbar',
+            className: GRID_TOOLBAR
+        }), this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
+        this.toolbar = new Toolbar$1({
+            created: this.create.bind(this),
+            enableRtl: this.parent.enableRtl,
+            width: this.parent.width ? (Number(this.parent.width) - 2) : (Number(this.parent.element.offsetWidth) - 2),
+            items: this.getItems()
+        });
+        this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
+    }
+    fetchReports() {
+        let reports = { reportName: [] };
+        this.parent.trigger(fetchReport, reports);
+        return reports;
+    }
+    /* tslint:disable */
+    getItems() {
+        let toolbar = this.parent.toolbar.filter((v, i, a) => a.indexOf(v) === i);
+        let items = [];
+        for (let item of toolbar) {
+            switch (item) {
+                case 'New':
+                    items.push({
+                        prefixIcon: GRID_NEW + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('new'),
+                        click: this.actionClick.bind(this), id: this.parent.element.id + 'new'
+                    });
+                    break;
+                case 'Save':
+                    items.push({
+                        prefixIcon: GRID_SAVE + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('save'),
+                        click: this.actionClick.bind(this), id: this.parent.element.id + 'save'
+                    });
+                    break;
+                case 'SaveAs':
+                    items.push({
+                        prefixIcon: GRID_SAVEAS + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('saveAs'),
+                        click: this.actionClick.bind(this), id: this.parent.element.id + 'saveas'
+                    });
+                    break;
+                case 'Rename':
+                    items.push({
+                        prefixIcon: GRID_RENAME + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('rename'),
+                        click: this.actionClick.bind(this), id: this.parent.element.id + 'rename'
+                    });
+                    break;
+                case 'Remove':
+                    items.push({
+                        prefixIcon: GRID_REMOVE + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('deleteReport'),
+                        click: this.actionClick.bind(this), id: this.parent.element.id + 'remove'
+                    });
+                    break;
+                case 'Load':
+                    items.push({
+                        template: '<div><input class=' + GRID_LOAD + ' id=' + this.parent.element.id + '_reportlist></input></div>',
+                        click: this.actionClick.bind(this),
+                        id: this.parent.element.id + 'load'
+                    });
+                    break;
+                case 'Grid':
+                    let toDisable = this.parent.displayOption.view === 'Chart';
+                    items.push({
+                        prefixIcon: TOOLBAR_GRID + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('grid'),
+                        id: this.parent.element.id + 'grid', cssClass: toDisable ? MENU_DISABLE : '',
+                        click: this.gridClick.bind(this),
+                    });
+                    break;
+                case 'Chart':
+                    items.push({
+                        template: '<ul id="' + this.parent.element.id + '_chart"></ul>',
+                        id: this.parent.element.id + 'chart'
+                    });
+                    break;
+                case 'Export':
+                    items.push({
+                        template: '<ul id="' + this.parent.element.id + '_menu"></ul>',
+                        id: this.parent.element.id + 'export'
+                    });
+                    break;
+                case 'SubTotal':
+                    items.push({
+                        template: '<ul id="' + this.parent.element.id + '_summary"></ul>',
+                        id: this.parent.element.id + 'sub-total'
+                    });
+                    break;
+                case 'GrandTotal':
+                    items.push({
+                        template: '<ul id="' + this.parent.element.id + '_grandtotal"></ul>',
+                        id: this.parent.element.id + 'grand-total'
+                    });
+                    break;
+                case 'ConditionalFormatting':
+                    items.push({
+                        prefixIcon: GRID_FORMATTING + ' ' + ICON, id: this.parent.element.id + 'formatting',
+                        click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('toolbarFormatting')
+                    });
+                    break;
+                case 'FieldList':
+                    items.push({
+                        prefixIcon: TOOLBAR_FIELDLIST + ' ' + ICON, tooltipText: this.parent.localeObj.getConstant('fieldList'),
+                        click: this.actionClick.bind(this), align: 'Right', id: this.parent.element.id + 'fieldlist'
+                    });
+                    if (this.parent.element.querySelector('.e-toggle-field-list')) {
+                        this.parent.element.querySelector('.e-toggle-field-list').style.display = 'none';
+                    }
+                    break;
+            }
+        }
+        let toolbarArgs = { customToolbar: items };
+        this.parent.trigger(toolbarRender, toolbarArgs);
+        return items;
+    }
+    /* tslint:enable */
+    reportChange(args) {
+        if (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New') {
+            let loadArgs = {
+                reportName: args.itemData.value
+            };
+            this.parent.trigger(loadReport, loadArgs);
+            this.currentReport = loadArgs.reportName;
+        }
+    }
+    saveReport(args) {
+        if (this.currentReport && this.currentReport !== '' && args.item.id === (this.parent.element.id + 'save')) {
+            let saveArgs = {
+                report: this.parent.getPersistData(),
+                reportName: this.currentReport
+            };
+            this.parent.trigger(saveReport, saveArgs);
+        }
+        else {
+            this.dialogShow(args);
+        }
+    }
+    dialogShow(args) {
+        this.dialog.header = args.item.tooltipText;
+        let outerDiv = createElement('div', {
+            className: GRID_REPORT_OUTER
+        });
+        let label = createElement('div', {
+            className: GRID_REPORT_LABEL,
+            innerHTML: this.parent.localeObj.getConstant('reportName')
+        });
+        let input = createElement('input', {
+            className: GRID_REPORT_INPUT + ' ' + INPUT,
+            attrs: {
+                'placeholder': this.parent.localeObj.getConstant('emptyReportName')
+            },
+        });
+        outerDiv.appendChild(label);
+        outerDiv.appendChild(input);
+        this.dialog.content = outerDiv;
+        this.dialog.refresh();
+        this.dialog.show();
+    }
+    renameReport(args) {
+        this.parent.trigger(toolbarClick, args);
+        if (this.currentReport && this.currentReport !== '') {
+            this.dialogShow(args);
+        }
+        else {
+            this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('emptyReport'));
+            return;
+        }
+    }
+    actionClick(args) {
+        switch (args.item.id) {
+            case (this.parent.element.id + 'save'):
+            case (this.parent.element.id + 'saveas'):
+                this.saveReport(args);
+                break;
+            case (this.parent.element.id + 'remove'):
+                this.action = 'Remove';
+                if (this.currentReport && this.currentReport !== '') {
+                    this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('removeConfirm'));
+                }
+                else {
+                    this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('emptyReport'));
+                }
+                return;
+            case (this.parent.element.id + 'rename'):
+                this.renameReport(args);
+                break;
+            case (this.parent.element.id + 'new'):
+                this.action = 'New';
+                this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('newReportConfirm'));
+                break;
+            case (this.parent.element.id + 'load'):
+                this.action = 'Load';
+                break;
+            case (this.parent.element.id + 'fieldlist'):
+                if (this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.dialogRenderer) {
+                    this.parent.pivotFieldListModule.dialogRenderer.fieldListDialog.show();
+                }
+                break;
+            case (this.parent.element.id + 'formatting'):
+                if (this.parent.conditionalFormattingModule) {
+                    this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
+                }
+                break;
+        }
+    }
+    renderDialog() {
+        if (document.querySelector('#' + this.parent.element.id + 'report-dialog') !== null) {
+            remove(document.querySelector('#' + this.parent.element.id + 'report-dialog'));
+        }
+        this.parent.element.appendChild(createElement('div', {
+            id: this.parent.element.id + 'report-dialog',
+            className: GRID_REPORT_DIALOG
+        }));
+        this.dialog = new Dialog({
+            animationSettings: { effect: 'Fade' },
+            allowDragging: false,
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    click: this.okBtnClick.bind(this),
+                    buttonModel: {
+                        content: this.parent.localeObj.getConstant('ok'),
+                        isPrimary: true
+                    }
+                },
+                {
+                    click: this.cancelBtnClick.bind(this),
+                    buttonModel: {
+                        content: this.parent.localeObj.getConstant('cancel')
+                    }
+                }
+            ],
+            isModal: true,
+            visible: false,
+            showCloseIcon: true,
+            enableRtl: this.parent.enableRtl,
+            width: 'auto',
+            height: 'auto',
+            zIndex: 1000001,
+            closeOnEscape: true,
+            target: document.body
+        });
+        this.dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
+    }
+    okBtnClick() {
+        let reportInput = this.dialog.element.querySelector('.' + GRID_REPORT_INPUT);
+        if (reportInput && reportInput.value === '') {
+            reportInput.focus();
+            return;
+        }
+        if ((this.dialog.header === this.parent.localeObj.getConstant('save') ||
+            this.dialog.header === this.parent.localeObj.getConstant('saveAs')) &&
+            reportInput.value && reportInput.value !== '') {
+            this.action = 'Save';
+            this.currentReport = reportInput.value;
+            let saveArgs = {
+                report: this.parent.getPersistData(),
+                reportName: reportInput.value
+            };
+            this.parent.trigger(saveReport, saveArgs);
+        }
+        else if (this.dialog.header === this.parent.localeObj.getConstant('rename') && reportInput.value && reportInput.value !== '') {
+            this.action = 'Rename';
+            let renameArgs = {
+                reportName: this.currentReport,
+                rename: reportInput.value
+            };
+            this.parent.trigger(renameReport, renameArgs);
+            this.currentReport = reportInput.value;
+        }
+        this.updateReportList();
+        this.dialog.hide();
+    }
+    cancelBtnClick() {
+        this.dialog.hide();
+    }
+    createConfirmDialog(title, description) {
+        if (document.getElementById(this.parent.element.id + '_ConfirmDialog')) {
+            remove(document.getElementById(this.parent.element.id + '_ConfirmDialog').parentElement);
+        }
+        let errorDialog = createElement('div', {
+            id: this.parent.element.id + '_ConfirmDialog',
+            className: ERROR_DIALOG_CLASS
+        });
+        this.parent.element.appendChild(errorDialog);
+        this.confirmPopUp = new Dialog({
+            animationSettings: { effect: 'Fade' },
+            allowDragging: false,
+            showCloseIcon: true,
+            enableRtl: this.parent.enableRtl,
+            header: title,
+            content: description,
+            isModal: true,
+            visible: true,
+            closeOnEscape: true,
+            target: document.body,
+            width: 'auto',
+            height: 'auto',
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    buttonModel: {
+                        content: this.parent.localeObj.getConstant('ok'), isPrimary: true,
+                        cssClass: OK_BUTTON_CLASS + ' ' + OUTLINE_CLASS
+                    },
+                    click: this.okButtonClick.bind(this)
+                },
+                {
+                    buttonModel: {
+                        content: this.parent.localeObj.getConstant('cancel'), isPrimary: true,
+                        cssClass: CANCEL_BUTTON_CLASS
+                    },
+                    click: this.cancelButtonClick.bind(this)
+                }
+            ]
+        });
+        this.confirmPopUp.appendTo(errorDialog);
+    }
+    okButtonClick() {
+        if (this.action === 'New') {
+            if (this.currentReport && this.currentReport !== '') {
+                let saveArgs = {
+                    report: this.parent.getPersistData(),
+                    reportName: this.currentReport
+                };
+                this.parent.trigger(saveReport, saveArgs);
+            }
+            else {
+                this.dialogShow({ item: { tooltipText: this.parent.localeObj.getConstant('save') } });
+            }
+        }
+        else if (this.action === 'Remove') {
+            let removeArgs = {
+                reportName: this.currentReport
+            };
+            this.parent.trigger(removeReport, removeArgs);
+            this.currentReport = '';
+            this.updateReportList();
+        }
+        this.confirmPopUp.hide();
+    }
+    cancelButtonClick() {
+        if (this.action === 'New') {
+            this.currentReport = '';
+            this.reportList.value = '';
+            this.reportList.text = '';
+            this.reportList.refresh();
+            this.parent.trigger(newReport);
+        }
+        this.confirmPopUp.hide();
+    }
+    /* tslint:disable */
+    create() {
+        let toDisable = this.parent.displayOption.view === 'Table';
+        let menuChartTypes = [
+            {
+                iconCss: TOOLBAR_CHART + ' ' + ICON,
+                items: toDisable ? [] : [
+                    {
+                        text: this.parent.localeObj.getConstant('column'),
+                        id: 'Column'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('bar'),
+                        id: 'Bar'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('line'),
+                        id: 'Line'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('area'),
+                        id: 'Area'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('scatter'),
+                        id: 'Scatter'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('polar'),
+                        id: 'Polar'
+                    }
+                ]
+            }
+        ];
+        new Menu({
+            items: menuChartTypes, cssClass: toDisable ? MENU_DISABLE : '', enableRtl: this.parent.enableRtl,
+            select: this.chartClick.bind(this)
+        }, '#' + this.parent.element.id + '_chart');
+        let menuData = [
+            {
+                iconCss: GRID_EXPORT + ' ' + ICON,
+                items: [
+                    {
+                        text: this.parent.localeObj.getConstant('pdf'),
+                        iconCss: GRID_PDF_EXPORT + ' ' + ICON,
+                        id: this.parent.element.id + 'pdf'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('excel'),
+                        iconCss: GRID_EXCEL_EXPORT + ' ' + ICON,
+                        id: this.parent.element.id + 'excel'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('csv'),
+                        iconCss: GRID_CSV_EXPORT + ' ' + ICON,
+                        id: this.parent.element.id + 'csv'
+                    }
+                ]
+            }
+        ];
+        this.exportMenu = new Menu({ items: menuData, enableRtl: this.parent.enableRtl, select: this.export.bind(this) }, '#' + this.parent.element.id + '_menu');
+        let menu = [
+            {
+                iconCss: GRID_SUB_TOTAL + ' ' + ICON,
+                items: [
+                    {
+                        text: this.parent.localeObj.getConstant('showSubTotals'),
+                        id: this.parent.element.id + 'subtotal'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('doNotShowSubTotals'),
+                        id: this.parent.element.id + 'notsubtotal'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('showSubTotalsRowsOnly'),
+                        id: this.parent.element.id + 'subtotalrow'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('showSubTotalsColumnsOnly'),
+                        id: this.parent.element.id + 'subtotalcolumn'
+                    },
+                ]
+            }
+        ];
+        this.subTotalMenu = new Menu({ items: menu, enableRtl: this.parent.enableRtl, select: this.subTotalClick.bind(this) }, '#' + this.parent.element.id + '_summary');
+        let menuTotal = [
+            {
+                iconCss: GRID_GRAND_TOTAL + ' ' + ICON,
+                items: [
+                    {
+                        text: this.parent.localeObj.getConstant('showGrandTotals'),
+                        id: this.parent.element.id + 'grandtotal'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('doNotShowGrandTotals'),
+                        id: this.parent.element.id + 'notgrandtotal'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('showGrandTotalsRowsOnly'),
+                        id: this.parent.element.id + 'grandtotalrow'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('showGrandTotalsColumnsOnly'),
+                        id: this.parent.element.id + 'grandtotalcolumn'
+                    },
+                ]
+            }
+        ];
+        this.grandTotalMenu = new Menu({ items: menuTotal, enableRtl: this.parent.enableRtl, select: this.grandTotalClick.bind(this) }, '#' + this.parent.element.id + '_grandtotal');
+        let reports = this.fetchReports();
+        this.reportList = new DropDownList({
+            dataSource: reports.reportName,
+            width: '150px',
+            popupHeight: '200px',
+            placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
+            enableRtl: this.parent.enableRtl,
+            cssClass: REPORT_LIST_DROP,
+            select: this.reportChange.bind(this),
+            value: this.currentReport
+        });
+        this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+    }
+    updateReportList() {
+        let reports = this.fetchReports();
+        this.reportList.dataSource = reports.reportName;
+        if (this.currentReport === '' && this.reportList.dataSource.length > 0) {
+            this.reportList.value = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+            this.reportList.text = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+            this.currentReport = this.reportList.dataSource[this.reportList.dataSource.length - 1];
+        }
+        else {
+            this.reportList.value = this.currentReport;
+            this.reportList.text = this.currentReport;
+        }
+    }
+    grandTotalClick(args) {
+        switch (args.item.id) {
+            case (this.parent.element.id + 'notgrandtotal'):
+                this.parent.dataSource.showGrandTotals = false;
+                this.parent.dataSource.showColumnGrandTotals = false;
+                this.parent.dataSource.showRowGrandTotals = false;
+                break;
+            case (this.parent.element.id + 'grandtotalrow'):
+                this.parent.dataSource.showGrandTotals = true;
+                this.parent.dataSource.showColumnGrandTotals = false;
+                this.parent.dataSource.showRowGrandTotals = true;
+                break;
+            case (this.parent.element.id + 'grandtotalcolumn'):
+                this.parent.dataSource.showGrandTotals = true;
+                this.parent.dataSource.showColumnGrandTotals = true;
+                this.parent.dataSource.showRowGrandTotals = false;
+                break;
+            case (this.parent.element.id + 'grandtotal'):
+                this.parent.dataSource.showGrandTotals = true;
+                this.parent.dataSource.showColumnGrandTotals = true;
+                this.parent.dataSource.showRowGrandTotals = true;
+                break;
+        }
+    }
+    subTotalClick(args) {
+        switch (args.item.id) {
+            case (this.parent.element.id + 'notsubtotal'):
+                this.parent.dataSource.showSubTotals = false;
+                this.parent.dataSource.showColumnSubTotals = false;
+                this.parent.dataSource.showRowSubTotals = false;
+                break;
+            case (this.parent.element.id + 'subtotalrow'):
+                this.parent.dataSource.showSubTotals = true;
+                this.parent.dataSource.showColumnSubTotals = false;
+                this.parent.dataSource.showRowSubTotals = true;
+                break;
+            case (this.parent.element.id + 'subtotalcolumn'):
+                this.parent.dataSource.showSubTotals = true;
+                this.parent.dataSource.showColumnSubTotals = true;
+                this.parent.dataSource.showRowSubTotals = false;
+                break;
+            case (this.parent.element.id + 'subtotal'):
+                this.parent.dataSource.showSubTotals = true;
+                this.parent.dataSource.showColumnSubTotals = true;
+                this.parent.dataSource.showRowSubTotals = true;
+                break;
+        }
+    }
+    gridClick(args) {
+        if (this.parent.grid && this.parent.chart) {
+            this.parent.grid.element.style.display = '';
+            this.parent.chart.element.style.display = 'none';
+            this.parent.currentView = 'Table';
+        }
+    }
+    chartClick(args) {
+        if (args.item && args.item.text) {
+            this.parent.chartSettings.chartSeries.type = args.item.id;
+            if (this.parent.grid && this.parent.chart) {
+                this.parent.grid.element.style.display = 'none';
+                this.parent.chart.element.style.display = '';
+                this.parent.currentView = 'Chart';
+            }
+        }
+    }
+    export(args) {
+        switch (args.item.id) {
+            case (this.parent.element.id + 'pdf'):
+                if (this.parent.pdfExportModule) {
+                    this.parent.pdfExportModule.exportToPDF();
+                }
+                else {
+                    this.parent.pdfExport();
+                }
+                break;
+            case (this.parent.element.id + 'excel'):
+                if (this.parent.excelExportModule) {
+                    this.parent.excelExportModule.exportToExcel('Excel');
+                }
+                else {
+                    this.parent.excelExport();
+                }
+                break;
+            case (this.parent.element.id + 'csv'):
+                if (this.parent.excelExportModule) {
+                    this.parent.excelExportModule.exportToExcel('csv');
+                }
+                else {
+                    this.parent.csvExport();
+                }
+                break;
+        }
+    }
+    /**
+     * @hidden
+     */
+    addEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(initToolbar, this.createToolbar, this);
+    }
+    /**
+     * To refresh the toolbar
+     * @return {void}
+     * @hidden
+     */
+    refreshToolbar() {
+        this.createToolbar();
+    }
+    /**
+     * @hidden
+     */
+    removeEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off(initToolbar, this.createToolbar);
+    }
+    /**
+     * To destroy the toolbar
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.removeEventListener();
+        if (this.confirmPopUp && !this.confirmPopUp.isDestroyed) {
+            this.confirmPopUp.destroy();
+        }
+        if (this.dialog && !this.dialog.isDestroyed) {
+            this.dialog.destroy();
+        }
+        if (this.exportMenu && !this.exportMenu.isDestroyed) {
+            this.exportMenu.destroy();
+        }
+        if (this.subTotalMenu && !this.subTotalMenu.isDestroyed) {
+            this.subTotalMenu.destroy();
+        }
+        if (this.grandTotalMenu && !this.grandTotalMenu.isDestroyed) {
+            this.grandTotalMenu.destroy();
+        }
+        if (this.reportList && !this.reportList.isDestroyed) {
+            this.reportList.destroy();
+        }
+        if (this.toolbar && !this.toolbar.isDestroyed) {
+            this.toolbar.destroy();
+        }
+    }
+}
+
 /**
  * common exported items
  */
@@ -12526,5 +16272,5 @@ class ConditionalFormatting {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelected, cellDeselected, rowSelected, rowDeselected, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, PivotEngine, PivotUtil };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, PivotEngine, PivotUtil };
 //# sourceMappingURL=ej2-pivotview.es2015.js.map

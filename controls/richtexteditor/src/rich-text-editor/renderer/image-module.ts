@@ -60,6 +60,7 @@ export class Image {
         this.parent.on(events.dropDownSelect, this.alignmentSelect, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
         this.parent.on(events.paste, this.imagePaste, this);
+        this.parent.on(events.destroy, this.removeEventListener, this);
     }
 
     protected removeEventListener(): void {
@@ -78,6 +79,7 @@ export class Image {
         this.parent.off(events.dropDownSelect, this.alignmentSelect);
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
+        this.parent.off(events.destroy, this.removeEventListener);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
@@ -176,7 +178,7 @@ export class Image {
                 this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
             }
         }
-        if ((e.target as HTMLElement).tagName === 'A' ||
+        if ((e.target as HTMLElement).tagName === 'IMG' &&
             (e.target as HTMLElement).parentElement.tagName === 'A') {
             e.preventDefault();
         }
@@ -243,10 +245,12 @@ export class Image {
     }
 
     private calcPos(elem: HTMLElement): OffsetPosition {
+        let ignoreOffset: string[] = ['TD', 'TH', 'TABLE'];
         let parentOffset: OffsetPosition = { top: 0, left: 0 };
         let offset: OffsetPosition = elem.getBoundingClientRect();
         let doc: Document = elem.ownerDocument;
-        let offsetParent: Node = ((elem.offsetParent && elem.offsetParent.classList.contains('e-img-caption')) ?
+        let offsetParent: Node = ((elem.offsetParent && (elem.offsetParent.classList.contains('e-img-caption') ||
+            ignoreOffset.indexOf(elem.offsetParent.tagName) > -1)) ?
             closest(elem, '#' + this.parent.getID() + '_rte-edit-view') : elem.offsetParent) || doc.documentElement;
         while (offsetParent &&
             (offsetParent === doc.body || offsetParent === doc.documentElement) &&
@@ -671,13 +675,13 @@ export class Image {
                     if (e.checked) {
                         target = '_blank';
                     } else {
-                        target = '';
+                        target = null;
                     }
                 }
             });
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
-            let target: string = this.checkBoxObj.checked ? '_blank' : '';
+            let target: string = this.checkBoxObj.checked ? '_blank' : null;
             let linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             let linkargs: IImageNotifyArgs = {
                 args: e.args,
@@ -685,7 +689,7 @@ export class Image {
                 selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target
             };
             this.dialogObj.setProperties({
-                height: 'initial',
+                height: 'inherit',
                 width: '290px',
                 header: this.parent.localeObj.getConstant('imageInsertLinkHeader'),
                 content: linkWrap,
@@ -702,7 +706,7 @@ export class Image {
                 (inputDetails.target) ? this.checkBoxObj.checked = true : this.checkBoxObj.checked = false;
                 this.dialogObj.header = inputDetails.header;
             }
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             (this.dialogObj.content as HTMLElement).querySelector('input').focus();
         }
     }
@@ -730,7 +734,7 @@ export class Image {
                 alt: inputAlt
             };
             this.dialogObj.setProperties({
-                height: 'initial', width: '290px', header: altHeader, content: altWrap, position: { X: 'center', Y: 'center' },
+                height: 'inherit', width: '290px', header: altHeader, content: altWrap, position: { X: 'center', Y: 'center' },
                 buttons: [{
                     click: (e: MouseEvent) => { this.insertAlt(altArgs); },
                     buttonModel: {
@@ -738,7 +742,7 @@ export class Image {
                     }
                 }]
             });
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             (this.dialogObj.content as HTMLElement).querySelector('input').focus();
         }
     }
@@ -785,7 +789,7 @@ export class Image {
             proxy.parent.formatter.process(
                 proxy.parent, e.args, e.args,
                 {
-                    url: url, target: proxy.checkBoxObj.checked ? '_blank' : '', selectNode: e.selectNode,
+                    url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, selectNode: e.selectNode,
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });
             proxy.dialogObj.hide({ returnValue: true } as Event);
@@ -794,7 +798,7 @@ export class Image {
         proxy.parent.formatter.process(
             proxy.parent, e.args, e.args,
             {
-                url: url, target: e.target, selectNode: e.selectNode,
+                url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, selectNode: e.selectNode,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
         proxy.dialogObj.hide({ returnValue: false } as Event);
@@ -898,7 +902,7 @@ export class Image {
             let dialogContent: HTMLElement = this.imgsizeInput(e);
             let selectObj: IImageNotifyArgs = { args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
-                height: 'initial', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
+                height: 'inherit', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
                 buttons: [{
                     click: (e: MouseEvent) => { this.insertSize(selectObj); },
                     buttonModel: {
@@ -906,7 +910,7 @@ export class Image {
                     }
                 }]
             });
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             (this.dialogObj.content as HTMLElement).querySelector('input').focus();
         }
     }
@@ -959,7 +963,7 @@ export class Image {
             cssClass: classes.CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'initial',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'inherit',
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
@@ -989,7 +993,7 @@ export class Image {
         });
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(imgDialog);
-        imgDialog.style.maxHeight = 'none';
+        imgDialog.style.maxHeight = 'inherit';
         if (this.quickToolObj) {
             if (this.quickToolObj.imageQTBar && document.body.contains(this.quickToolObj.imageQTBar.element)) {
                 this.quickToolObj.imageQTBar.hidePopup();
@@ -1172,7 +1176,7 @@ export class Image {
             } else {
                 this.dialogObj.setProperties({ content: dialogContent }, false);
             }
-            this.dialogObj.element.style.maxHeight = 'none';
+            this.dialogObj.element.style.maxHeight = 'inherit';
             if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
                 || this.parent.editorMode === 'HTML') {
                 (dialogContent.querySelector('#' + this.rteID + '_insertImage') as HTMLElement).focus();

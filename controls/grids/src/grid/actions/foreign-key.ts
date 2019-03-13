@@ -62,6 +62,7 @@ export class ForeignKey extends Data {
             });
             args.promise.resolve(args.result);
         }).catch((e: Object) => {
+            this.parent.log(['actionfailure', 'foreign_key_failure']);
             if (args.promise && args.promise.reject) {
                 args.promise.reject(e);
             }
@@ -103,7 +104,6 @@ export class ForeignKey extends Data {
     private genarateColumnQuery(column: Column): Query {
         let gObj: IGrid = this.parent;
         let query: Query = new Query();
-        let predicate: PredicateModel[] = [];
         let queryColumn: { column: PredicateModel[], isTrue: boolean } = this.isFiltered(column);
         if (queryColumn.isTrue) {
             query = this.filterQuery(query, <PredicateModel[]>queryColumn.column, true);

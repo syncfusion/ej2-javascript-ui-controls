@@ -60,6 +60,14 @@ export function getTooltipThemeColor(theme: TooltipTheme): ITooltipThemeStyle {
                 tooltipHeaderLine: '#9A9A9A'
             };
             break;
+        case 'Bootstrap4':
+            style = {
+                tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                tooltipBoldLabel: 'rgba(255, 255, 255)',
+                tooltipLightLabel: 'rgba(255, 255, 255, 0.9)',
+                tooltipHeaderLine: 'rgba(255, 255, 255, 0.2)'
+            };
+            break;
         default:
             style = {
                 tooltipFill: 'rgba(0, 8, 22, 0.75)',

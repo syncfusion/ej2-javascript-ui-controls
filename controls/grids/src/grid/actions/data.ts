@@ -3,7 +3,7 @@ import { Query, DataManager, Predicate, Deferred, UrlAdaptor } from '@syncfusion
 import { IDataProcessor, IGrid, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from '../base/interface';
 import { ReturnType } from '../base/type';
 import { SearchSettingsModel, PredicateModel, SortDescriptorModel } from '../base/grid-model';
-import { setFormatter, getDatePredicate, getColumnByForeignKeyValue } from '../base/util';
+import { setFormatter, getDatePredicate, isGroupAdaptive, getColumnByForeignKeyValue } from '../base/util';
 import { AggregateRowModel, AggregateColumnModel } from '../models/models';
 import * as events from '../base/constant';
 import { ValueFormatter } from '../services/value-formatter';
@@ -91,7 +91,11 @@ export class Data implements IDataProcessor {
 
         this.sortQuery(query);
 
-        this.pageQuery(query, skipPage);
+        if (isGroupAdaptive(this.parent)) {
+            this.virtualGroupPageQuery(query);
+        } else {
+            this.pageQuery(query, skipPage);
+        }
 
         this.groupQuery(query);
 
@@ -105,6 +109,19 @@ export class Data implements IDataProcessor {
                 types.forEach((type: string) => query.aggregate(type.toLowerCase(), column.field));
             });
         });
+        return query;
+    }
+
+    protected virtualGroupPageQuery(query: Query): Query {
+        let gObj: IGrid = this.parent;
+        let fName: string = 'fn';
+        if (query.queries.length) {
+            for (let i: number = 0; i < query.queries.length; i++) {
+                if (query.queries[i][fName] === 'onPage') {
+                    query.queries.splice(i, 1);
+                }
+            }
+        }
         return query;
     }
 
@@ -137,6 +154,9 @@ export class Data implements IDataProcessor {
             let columns: string[] = gObj.groupSettings.columns;
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
                 let column: Column = this.getColumnByField(columns[i]);
+                if (!column) {
+                    this.parent.log('initial_action', {moduleName: 'group', columnName: columns[i]});
+                }
                 let isGrpFmt: boolean = column.enableGroupByFormat;
                 let format: string | NumberFormatOptions | DateFormatOptions = column.format;
                 if (isGrpFmt) {
@@ -158,9 +178,15 @@ export class Data implements IDataProcessor {
                 let col: Column = this.getColumnByField(columns[i].field);
                 if (col) {
                     col.setSortDirection(columns[i].direction);
+                } else {
+                    this.parent.log('initial_action', {moduleName: 'sort', columnName: columns[i].field});
+                    return query;
                 }
-                let fn: Function | string = col.sortComparer && !this.isRemote() ? (col.sortComparer as Function).bind(col) :
-                columns[i].direction;
+                let fn: Function | string = columns[i].direction;
+                if (col.sortComparer) {
+                    this.parent.log('grid_sort_comparer');
+                    fn = !this.isRemote() ? (col.sortComparer as Function).bind(col) : columns[i].direction;
+                }
                 if (gObj.groupSettings.columns.indexOf(columns[i].field) === -1) {
                     query.sortBy(col.field, fn);
                 } else {
@@ -176,7 +202,7 @@ export class Data implements IDataProcessor {
 
     protected searchQuery(query: Query): Query {
         let sSettings: SearchSettingsModel = this.parent.searchSettings;
-        let fields: string[] = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f: Column) => f.field);
+        let fields: string[] = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         let predicateList: Predicate[] = [];
         let needForeignKeySearch: boolean = false;
         if (this.parent.searchSettings.key.length) {
@@ -226,6 +252,9 @@ export class Data implements IDataProcessor {
                 let excelPredicate: Predicate = CheckBoxFilter.getPredicate(checkBoxCols);
                 for (let prop of Object.keys(excelPredicate)) {
                     let col: Column = getColumnByForeignKeyValue(prop, foreignColumn);
+                    if (!col) {
+                        this.parent.log('initial_action', {moduleName: 'filter', columnName: prop});
+                    }
                     if (col && !skipFoerign) {
                         predicateList = this.fGeneratePredicate(col, predicateList);
                         actualFilter.push(col);
@@ -238,6 +267,9 @@ export class Data implements IDataProcessor {
                 for (let col of defaultFltrCols) {
                     let column: Column = this.getColumnByField(col.field) ||
                         getColumnByForeignKeyValue(col.field, this.parent.getForeignKeyColumns());
+                    if (!column) {
+                        this.parent.log('initial_action', {moduleName: 'filter', columnName: col.field});
+                    }
                     let sType: string = column.type;
                     if (getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
@@ -482,9 +514,6 @@ export class Data implements IDataProcessor {
                 this.parent.trigger(events.dataSourceChanged, editArgs);
                 deff.promise.then((e: ReturnType) => {
                     this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
-                    if (editArgs.requestType === 'save') {
-                        this.parent.notify(events.recordAdded, editArgs);
-                    }
                     this.parent.trigger(events.dataStateChange, state);
                 })
                 .catch(() => void 0);
@@ -499,4 +528,18 @@ export class Data implements IDataProcessor {
         return def;
     }
 
+     /**
+      * Gets the columns where searching needs to be performed from the Grid.
+      * @return {string[]}
+      */
+     private getSearchColumnFieldNames(): string[] {
+        let colFieldNames: string[] = [];
+        let columns: Column[] = this.parent.getColumns();
+        for (let col of columns) {
+            if (col.allowSearching) {
+                colFieldNames.push(col.field);
+            }
+        }
+        return colFieldNames;
+    }
 }

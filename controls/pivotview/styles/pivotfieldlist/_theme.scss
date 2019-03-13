@@ -366,7 +366,7 @@
                 .e-pv-filter,
                 .e-pv-filtered,
                 .e-dropdown-icon {
-                  color: $pivotgrid-button-icon-color;
+                  color: $field-list-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
                   font-size: $field-list-icon-size;
@@ -375,7 +375,7 @@
                   width: 20px;
 
                   &:hover {
-                    color: $pivotgrid-icon-hover-color;
+                    color: $field-list-icon-hover-color;
                   }
 
                   &.e-disable {
@@ -707,7 +707,7 @@
                 .e-pv-filtered,
                 .e-remove,
                 .e-dropdown-icon {
-                  color: $pivotgrid-button-icon-color;
+                  color: $field-list-button-icon-color;
                   cursor: pointer;
                   display: inline-block;
                   font-size: $field-list-bigger-icon-size;
@@ -716,7 +716,7 @@
                   width: 24px;
 
                   &:hover {
-                    color: $pivotgrid-icon-hover-color;
+                    color: $field-list-icon-hover-color;
                   }
                 }
 

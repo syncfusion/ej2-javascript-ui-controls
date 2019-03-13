@@ -1,8 +1,0 @@
-@include export-module('base-phone') {
-  /*! responsive phone */
-  @media screen and (min-width: 320px) {
-    .ts {
-      border: 0;
-    }
-  }
-}

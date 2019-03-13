@@ -89,7 +89,7 @@
 
               .e-base-field-option-text,
               .e-base-item-option-text,
-              .e-type-option-text, {
+              .e-type-option-text {
                 font-size: 13px;
                 font-weight: 500;
                 width: 100%;
@@ -254,7 +254,98 @@
         overflow: auto;
       }
     }
+
+    // sass-lint:disable-all
+    .e-pivot-toolbar {
+      border-bottom: 0;
+      border-style: solid;
+
+      .e-menu-wrapper {
+        background-color: transparent;
+        border: none;
+
+        ul.e-menu:not(.e-vertical) {
+          padding: 0 5px !important;
+        }
+
+        ul .e-menu-item {
+          height: $pivotgrid-menubar-height;
+          padding-left: 10px;
+
+          .e-menu-icon {
+            margin-right: 0;
+            font-size: 16px;
+          }
+        }
+      }
+
+      .e-toolbar-item.e-template {
+          padding: 0 !important;
+      }
+
+      .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn {
+        padding: 0 5px;
+      }
+
+      .e-reportlist-label {
+        float: left;
+        font-weight: 500;
+      }
+
+      .e-reportlist-drop {
+        float: right;
+        margin: 0 8px;
+      }
+
+      &.e-rtl {
+        .e-reportlist-label {
+          float: right;
+        }
+  
+        .e-reportlist-drop {
+          float: left;
+        }
+      }
+    }
+    // sass-lint:enable-all
   }
+
+  .e-pivotview-report-inner {
+    padding-top: 10px;
+  }
+
+  .e-pivotview-report-dialog {
+    max-width: 350px;
+  }
+
+  .e-pivotview-report-label {
+    float: left;
+    margin-top: 10px;
+    width: 40%;
+  }
+
+  // sass-lint:disable-all
+  .e-pivotview-report-input {
+    float: right;
+    width: 60% !important;
+  }
+
+  &.e-rtl {
+    .e-pivotview-report-input {
+      float: left;
+    }
+
+    .e-pivotview-report-label {
+      float: right;
+    }
+  }
+
+  .e-pivotview-pdf-export,
+  .e-pivotview-excel-export,
+  .e-pivotview-csv-export {
+    font-size: 18px !important;
+  }
+  // sass-lint:enable-all
 
   .e-drillthrough-dialog {
     .e-drillthrough-body-header-container {
@@ -288,6 +379,10 @@
   .e-bigger#{&}.e-pivotview,
   .e-bigger .e-pivotview,
   .e-bigger.e-pivotview {
+    .e-pivot-toolbar .e-menu-wrapper ul .e-menu-item {
+      height: $pivotgrid-bigger-menubar-height;
+    }
+
     .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container {
       height: $pivotgrid-member-filter-list-bigger-height;
     }

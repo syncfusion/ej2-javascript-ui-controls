@@ -1,0 +1,60 @@
+@include export-module('gantt-material-icons') {
+  #{&}.e-gantt {
+    .e-add::before {
+      content: '\e823';
+    }
+
+    .e-edit::before {
+      content: '\e944';
+    }
+
+    .e-delete::before {
+      content: '\e965';
+    }
+
+    .e-cancel::before {
+      content: '\e953';
+    }
+
+    .e-save::before {
+      content: '\e954';
+    }
+
+    .e-update::before {
+      content: '\e735';
+    }
+
+    .e-search-icon::before {
+      content: '\ebe6';
+    }
+
+    .e-cancel-icon::before {
+      content: '\e953';
+    }
+
+    .e-notes-info::before {
+      content: '\1F6C8';
+    }
+
+    .e-expandall::before {
+      content: '\e557';
+    }
+
+    .e-collapseall::before {
+      content: '\e558';
+    }
+
+    .e-prevtimespan::before {
+      content: '\e85b';
+    }
+
+    .e-nexttimespan::before {
+      content: '\e85f';
+    }
+
+    .e-left-resize-gripper::before,
+    .e-right-resize-gripper::before {
+      content: '\ebef';
+    }
+  }
+}

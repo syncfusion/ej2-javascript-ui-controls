@@ -3,7 +3,8 @@
  */
 
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
-import { PathOption, Size, ChartLocation, appendChildElement } from '../../common/utils/helper';
+import { PathOption, Size } from '@syncfusion/ej2-svg-base';
+import { ChartLocation, appendChildElement } from '../../common/utils/helper';
 import { AccumulationChart } from '../accumulation';
 import { TriangularBase } from './triangular-base';
 import { removeElement } from '../../sparkline/utils/helper';

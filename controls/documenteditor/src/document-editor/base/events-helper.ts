@@ -106,3 +106,22 @@ export interface SearchResultsChangeEventArgs {
      */
     source: DocumentEditor;
 }
+
+/**
+ * This event arguments provides the necessary information about customContentMenu event.
+ */
+export interface CustomContentMenuEventArgs {
+    /**
+     * Specifies the id of selected custom context menu item.
+     */
+    id: string;
+}
+/**
+ * This event arguments provides the necessary information about BeforeOpenCloseCustomContentMenu event.
+ */
+export interface BeforeOpenCloseCustomContentMenuEventArgs {
+    /**
+     * Specifies the array of added custom context menu item ids.
+     */
+    ids: string[];
+}

@@ -1,7 +1,8 @@
 /**
  * Multi Colored Line and Area Series Spec
  */
-import { createElement, SvgRenderer, EmitType, debounce } from '@syncfusion/ej2-base';
+import { createElement, EmitType, debounce } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { MultiColoredLineSeries, ILoadedEventArgs, DateTime, Category, IAnimationCompleteEventArgs } from '../../../src/index';
 import { MultiColoredAreaSeries, Legend, Series, Points, Chart, getElement } from '../../../src/index';
 Chart.Inject(DateTime, Category, MultiColoredLineSeries, MultiColoredAreaSeries, Legend);
@@ -37,6 +38,14 @@ function getData(interiors: string[], values?: any, isEmpty?: boolean): Object[]
 }
 
 describe('Chart Control Multi Colored Series', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     /**
      * Multi Colored Line
      */
@@ -864,5 +873,13 @@ describe('Chart Control Multi Colored Series', () => {
             chartObj.refresh();
         });
     });
-
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

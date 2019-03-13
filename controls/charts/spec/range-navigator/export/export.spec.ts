@@ -7,10 +7,18 @@ import { RangeNavigator } from '../../../src/index';
 import { IPrintEventArgs } from '../../../src/common/model/interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 
 
 describe('Range Navigator Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Print Utils for Chart', () => {
         let chartObj: RangeNavigator;
         let chartElement: Element;
@@ -114,4 +122,13 @@ describe('Range Navigator Control', () => {
             }, 500);
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

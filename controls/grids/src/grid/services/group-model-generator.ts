@@ -34,26 +34,27 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         this.rows = [];
         this.index = this.parent.enableVirtualization ? args.startIndex : 0;
         for (let i: number = 0, len: number = data.length; i < len; i++) {
-            this.getGroupedRecords(0, data[i], (<Group>data).level);
+            this.getGroupedRecords(0, data[i], (<Group>data).level, i, undefined, this.rows.length);
         }
         this.index = 0;
         return this.rows;
     }
 
-    private getGroupedRecords(index: number, data: GroupedData, raw?: Object): void {
+    private getGroupedRecords(index: number, data: GroupedData, raw?: Object, parentid?: number, childId?: number, tIndex?: number): void {
         let level: number = <number>raw;
+        let parentExpand: boolean = true;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid) && (this.parent.columns.length !== this.parent.groupSettings.columns.length)) {
-                this.rows = this.rows.concat(this.generateDataRows((data as Object[]), index));
+                this.rows = this.rows.concat(this.generateDataRows((data as Object[]), index, parentid, this.rows.length));
             } else {
                 for (let j: number = 0, len: number = (data as Object[]).length; j < len; j++) {
-                    this.getGroupedRecords(index, data[j], data.level);
+                    this.getGroupedRecords(index, data[j], data.level, parentid, index, this.rows.length);
                 }
             }
         } else {
-            this.rows = this.rows.concat(this.generateCaptionRow(data, index));
+            this.rows = this.rows.concat(this.generateCaptionRow(data, index, parentid, childId, tIndex));
             if (data.items && (data.items as Object[]).length) {
-                this.getGroupedRecords(index + 1, data.items, data.items.level);
+                this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length);
             }
             if (this.parent.aggregates.length) {
                 this.rows.push(...(<Row<Column>[]>this.summaryModelGen.generateRows(<Object>data, { level: level })));
@@ -110,15 +111,21 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         return cells;
     }
 
-    private generateCaptionRow(data: GroupedData, indent: number): Row<Column> {
+    private generateCaptionRow(data: GroupedData, indent: number, parentID?: number, childID?: number, tIndex?: number): Row<Column> {
         let options: IRow<Column> = {};
         let tmp: Cell<Column>[] = [];
+        let records: string = 'records';
         let col: Column = this.parent.getColumnByField(data.field);
         options.data = extend({}, data);
         if (col) {
             (<GroupedData>options.data).field = data.field;
         }
         options.isDataRow = false;
+        options.isExpand = true;
+        options.parentGid = parentID;
+        options.childGid = childID;
+        options.tIndex = tIndex;
+        options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : (<Object[]>data.items).length;
         options.uid = getUid('grid-row');
         let row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options);
         row.indent = indent;
@@ -138,10 +145,10 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         }
     }
 
-    private generateDataRows(data: Object[], indent: number): Row<Column>[] {
+    private generateDataRows(data: Object[], indent: number, childID?: number, tIndex?: number): Row<Column>[] {
         let rows: Row<Column>[] = []; let indexes: number[] = this.parent.getColumnIndexesInView();
-        for (let i: number = 0, len: number = data.length; i < len; i++) {
-            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent);
+        for (let i: number = 0, len: number = data.length; i < len; i++ , tIndex++) {
+            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex);
             for (let j: number = 0; j < indent; j++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(indent) === -1) { continue; }
                 rows[i].cells.unshift(this.generateIndentCell());

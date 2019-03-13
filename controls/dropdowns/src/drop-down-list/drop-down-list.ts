@@ -207,7 +207,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * For more details about the available template options refer to 
      * [`Template`](../../drop-down-list/templates) documentation.
      * 
-     * We have built-in `template engine` 
+     * We have built-in `template engine`
      * which provides options to compile template string into a executable function.
      * For EX: We have expression evolution as like ES6 expression string literals.
      * @default null
@@ -432,7 +432,6 @@ export class DropDownList extends DropDownBase implements IInput {
     protected resetHandler(e: MouseEvent): void {
         e.preventDefault();
         this.clear(e);
-        this.onChangeEvent(e);
     }
 
     protected resetFocusElement(): void {
@@ -492,6 +491,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.setSelection(null, null);
         this.isSelectCustom = false;
         this.updateIconState();
+        this.cloneElements();
     }
 
     private setHTMLAttributes(): void {
@@ -1068,7 +1068,7 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             let proxy: this = this;
             if (!this.isSecondClick) {
-                setTimeout(() => { proxy.cloneElements(); }, 100);
+                setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, 100);
             }
         } else {
             this.focusIn(e);
@@ -1080,7 +1080,6 @@ export class DropDownList extends DropDownBase implements IInput {
             if (ulElement) {
                 ulElement = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
                 this.actionCompleteData.ulElement = ulElement;
-                this.isSecondClick = true;
             }
         }
     }
@@ -1521,17 +1520,6 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isNotSearchList = false;
             return;
         }
-        if (this.value && this.dataSource instanceof DataManager) {
-            let checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
-            let checkVal: boolean = list.some((x: { [key: string]: Object; }) => x[checkField] === this.value);
-            if (!checkVal) {
-                let query: Query = this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value));
-                this.dataSource.executeQuery(query).then((e: Object) => {
-                    this.addItem((e as ResultData).result, list.length);
-                    this.updateValues();
-                });
-            }
-        }
         if (this.isActive) {
             let selectedItem: HTMLElement = this.selectedLI ? <HTMLElement>this.selectedLI.cloneNode(true) : null;
             super.onActionComplete(ulElement, list, e);
@@ -1554,6 +1542,19 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.updateValues();
                 this.initRemoteRender = false;
                 this.initial = false;
+                if (this.value && this.dataSource instanceof DataManager) {
+                    let checkField: string = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+                    let checkVal: boolean = list.some((x: {[key: string]: boolean | string | number}) => x[checkField] === this.value);
+                    if (!checkVal) {
+                        this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', this.value)))
+                        .then((e: Object) => {
+                            if ((e as ResultData).result.length > 0) {
+                                this.addItem((e as ResultData).result, list.length);
+                                this.updateValues();
+                            }
+                        });
+                    }
+                }
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
@@ -1599,7 +1600,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private focusIndexItem(): void {
         let value: string | number = this.getItemData().value;
         this.activeIndex = this.getIndexByValue(value);
-        let element: HTMLElement = (this.list.querySelector('[data-value="' + value + '"]') as HTMLElement);
+        let element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', value);
         this.selectedLI = element;
         this.activeItem(element);
         this.removeFocus();

@@ -20,6 +20,7 @@ import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Selection } from '../../../src/chart/user-interaction/selection';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILegendRenderEventArgs } from '../../../src/common/model/interface';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IDragCompleteEventArgs } from '../../../src/common/model/interface';
 Chart.Inject(
@@ -118,6 +119,14 @@ let prevent: Function = (): void => {
 
 
 describe('Chart', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let element: HTMLElement;
     let id: string = 'container';
     let draggedRectGroup: string = id + '_ej2_drag_rect';
@@ -1140,7 +1149,7 @@ describe('Chart', () => {
                 let element1: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('y');
                 expect(Math.round(element1) == 92 || Math.round(element1) == 91 || Math.round(element1) == 94).toBe(true);
                 element1 = +document.getElementById('container_Series_0_Point_2_Text_1').getAttribute('y');
-                expect(Math.round(element1) == 53 || Math.round(element1) == 56 || Math.round(element1) == 69 || Math.round(element1) == 67).toBe(true);
+                expect(Math.round(element1) == 51 || Math.round(element1) == 53).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1160,9 +1169,9 @@ describe('Chart', () => {
                     || bounds.width == 639.6922607421875).toBe(true);
                 expect(bounds.height == 318.75 || bounds.height == 318.25 || bounds.height == 310.25).toBe(true);
                 let element1: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('x');
-                expect(Math.round(element1) == 549 || Math.round(element1) == 552 || Math.round(element1) == 550).toBe(true);
+                expect(Math.round(element1) == 547 || Math.round(element1) == 550).toBe(true);
                 element1 = +document.getElementById('container_Series_0_Point_2_Text_1').getAttribute('x');
-                expect(Math.round(element1) == 607 || Math.round(element1) == 608 || Math.round(element1) == 610 || Math.round(element1) == 613).toBe(true);
+                expect(Math.round(element1) == 611 || Math.round(element1) == 613).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1182,9 +1191,9 @@ describe('Chart', () => {
                     || bounds.width == 639.6922607421875).toBe(true);
                 expect(bounds.height == 318.75 || bounds.height == 318.25 || bounds.height == 310.25).toBe(true);
                 let element1: number = +document.getElementById('container_Series_0_Point_2_Text_0').getAttribute('x');
-                expect(Math.round(element1) == 549 || Math.round(element1) == 552 || Math.round(element1) == 550).toBe(true);
+                expect(Math.round(element1) == 547 || Math.round(element1) == 550).toBe(true);
                 element1 = +document.getElementById('container_Series_0_Point_2_Text_1').getAttribute('x');
-                expect(Math.round(element1) == 607 || Math.round(element1) == 608 || Math.round(element1) == 610 || Math.round(element1) == 613).toBe(true);
+                expect(Math.round(element1) == 611 || Math.round(element1) == 613).toBe(true);
 
                 done();
             };
@@ -1195,5 +1204,13 @@ describe('Chart', () => {
 
         });
     });
-
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

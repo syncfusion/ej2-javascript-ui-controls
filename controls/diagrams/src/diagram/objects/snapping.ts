@@ -1093,7 +1093,9 @@ export class Snapping {
             if (quad.objects.length > 0) {
                 for (let j: number = 0; j < quad.objects.length; j++) {
                     nd = quad.objects[j] as DiagramElement;
-                    if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible) {
+                    if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible
+                        && !(this.diagram.nameTable[nd.id].shape.type === 'SwimLane') && !(this.diagram.nameTable[nd.id].isLane) &&
+                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader)) {
                         bounds = getBounds(nd);
                         if (nodes.indexOf(nd) === -1 && this.intersectsRect(child, bounds)) {
                             nodes.push(nd);

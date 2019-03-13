@@ -1,4 +1,5 @@
-import { Property, ChildProperty, Complex, LinearGradient, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { LinearGradient } from '@syncfusion/ej2-svg-base';
 import { HeatMap } from '../heatmap';
 import { DrawSvgCanvas, TextOption, TextBasic, PathOption, Line, LineOption, GradientPointer } from '../utils/helper';
 import { Size, measureText, getTitle, getElement, CanvasTooltip, formatValue, LegendRange, ToggleVisibility, sum } from '../utils/helper';
@@ -1275,17 +1276,12 @@ export class Legend {
      * update visibility collections of legend and series
      * @private
      */
-    public updateLegendRangeCollections(load: boolean): void {
-        if (load) {
+    public updateLegendRangeCollections(): void {
             let heatMap: HeatMap = this.heatMap;
             heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
             this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
             heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
             this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
             this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
-        } else {
-            this.legendRange = [];
-            this.legendTextRange = [];
         }
-    }
 }

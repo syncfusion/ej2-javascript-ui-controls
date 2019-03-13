@@ -5,7 +5,7 @@ import { getElement, StockSeriesModel } from '../../index';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel } from '@syncfusion/ej2-navigations';
-import { Rect } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 
 /**
  * Period selector for range navigator
@@ -106,7 +106,7 @@ export class ToolBarSelector {
     private indicators: TechnicalIndicators[] = [];
     private secondayIndicators: TechnicalIndicators[] = [];
     public resetButton(): void {
-        let reset: Button = new Button({ cssClass: 'e-flat' });
+        let reset: Button = new Button();
         reset.appendTo('#resetClick');
         document.getElementById('resetClick').onclick = () => {
             let indicatorlength: number = this.indicators.length;
@@ -326,9 +326,7 @@ export class ToolBarSelector {
     }
     public printButton(): void {
         if (this.stockChart.exportType.indexOf('Print') > -1) {
-            let print: Button = new Button({
-                cssClass: 'e-flat'
-            });
+            let print: Button = new Button();
             print.appendTo('#print');
             document.getElementById('print').onclick = () => {
                     this.stockChart.chart.print(this.stockChart.element.id);

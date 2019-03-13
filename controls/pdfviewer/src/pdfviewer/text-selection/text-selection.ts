@@ -1,4 +1,4 @@
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
@@ -26,7 +26,8 @@ export interface ISelection {
     endOffset: number;
     textContent: string;
     pageNumber: number;
-    bounds: ClientRect[];
+    bound: IRectangle;
+    rectangleBounds: IRectangle[];
 }
 /**
  * The `TextSelection` module is used to handle the text selection of PDF viewer.
@@ -49,7 +50,11 @@ export class TextSelection {
     private dropDivElementRight: HTMLElement;
     private dropElementLeft: HTMLElement;
     private dropElementRight: HTMLElement;
-    private selectionRangeArray: ISelection[] = [];
+    private contextMenuHeight: number = 144;
+    /**
+     * @private
+     */
+    public selectionRangeArray: ISelection[] = [];
     private selectionAnchorTouch: { [key: string]: Object } = null;
     private selectionFocusTouch: { [key: string]: Object } = null;
     // tslint:disable-next-line
@@ -428,7 +433,7 @@ export class TextSelection {
     public maintainSelectionOnZoom(isMaintainSelection: boolean, isStich: boolean): void {
         let selection: Selection = window.getSelection();
         if (selection.type === 'Range' || (!selection.type && !selection.isCollapsed)) {
-            let isBackward: boolean = this.isBackWardSelection(selection);
+            let isBackward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
             if (selection.anchorNode !== null) {
                 // tslint:disable-next-line:radix
                 let anchorPageId: number = parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
@@ -603,7 +608,7 @@ export class TextSelection {
                             range.setEnd(selection.focusNode, selection.focusOffset);
                         }
                     } else {
-                        let isBackward: boolean = this.isBackWardSelection(selection);
+                        let isBackward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
                         // tslint:disable-next-line:max-line-length
                         if (anchorPageIndex > currentAnchorIndex && currentAnchorIndex > focusPageIndex && anchorPageIndex !== focusPageIndex) {
                             if (!isBackward) {
@@ -713,7 +718,7 @@ export class TextSelection {
             // tslint:disable-next-line
             let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
             if (isNaN(focusPageId) && selection.anchorNode !== null) {
-                let backward: boolean = this.isBackWardSelection(selection);
+                let backward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
                 if (!backward) {
                     // tslint:disable-next-line:radix
                     let lastChildNode: HTMLElement = this.pdfViewerBase.pageContainer.lastChild as HTMLElement;
@@ -729,20 +734,22 @@ export class TextSelection {
                     focusPageId = parseInt((this.pdfViewerBase.pageContainer.firstChild as HTMLElement).id.split('_pageDiv_')[1]);
                 }
             }
-            let backward: boolean = this.isBackWardSelection(selection);
+            let backward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
             if (this.isTouchSelection && pageNumber > focusPageId && pageNumber > anchorPageId) {
                 return;
             }
             if (anchorPageId === focusPageId) {
                 let selectionObject: ISelection = null;
-                let selectionBounds: ClientRect[] = this.getSelectionBounds(selection.getRangeAt(0), pageNumber);
+                let selectionBounds: IRectangle = this.getSelectionBounds(selection.getRangeAt(0), pageNumber);
+                let selectionRectBounds: IRectangle[] = this.getSelectionRectangleBounds(selection.getRangeAt(0), pageNumber);
                 // tslint:disable-next-line:max-line-length
                 let anchorOffsetValue: number = (this.getNodeElementFromNode(selection.anchorNode).childNodes.length === 1) ? selection.anchorOffset : this.getCorrectOffset(selection.anchorNode, selection.anchorOffset);
                 let focusOffsetValue: number = (this.getNodeElementFromNode(selection.focusNode).childNodes.length === 1) ? selection.focusOffset : this.getCorrectOffset(selection.focusNode, selection.focusOffset);
                 selectionObject = {
                     isBackward: backward, startNode: this.getNodeElementFromNode(selection.anchorNode).id,
                     startOffset: anchorOffsetValue, endNode: this.getNodeElementFromNode(selection.focusNode).id,
-                    endOffset: focusOffsetValue, textContent: selection.toString(), pageNumber: pageNumber, bounds: selectionBounds
+                    // tslint:disable-next-line:max-line-length
+                    endOffset: focusOffsetValue, textContent: selection.toString(), pageNumber: pageNumber, bound: selectionBounds, rectangleBounds: selectionRectBounds
                 };
                 this.pushSelectionRangeObject(selectionObject, pageNumber);
             } else {
@@ -890,7 +897,7 @@ export class TextSelection {
             let focusPageId: number = parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
             let nextPageElement: HTMLElement;
             if (anchorPageId !== currentPageNumber && focusPageId !== currentPageNumber) {
-                let backward: boolean = this.isBackWardSelection(selection);
+                let backward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
                 if (!backward) {
                     nextPageElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (currentPageNumber - 1));
                     if (nextPageElement) {
@@ -930,7 +937,7 @@ export class TextSelection {
         let selectionObject: ISelection = null;
         let selection: Selection = window.getSelection();
         if (selection.anchorNode !== null) {
-            let backward: boolean = this.isBackWardSelection(selection);
+            let backward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
             let firstElement: HTMLElement;
             let lastElement: HTMLElement;
             let startOffset: number;
@@ -991,9 +998,10 @@ export class TextSelection {
                     // tslint:disable-next-line:max-line-length
                     let selectionRangeObject: Range = this.getSelectionRangeObject(firstElement.id, startOffset, lastElement.id, endOffset, pageNumber);
                     let selectionString: string = selectionRangeObject.toString();
-                    let selectionBounds: ClientRect[] = this.getSelectionBounds(selectionRangeObject, pageNumber);
+                    let selectionBound: IRectangle = this.getSelectionBounds(selectionRangeObject, pageNumber);
+                    let selectionRectBounds: IRectangle[] = this.getSelectionRectangleBounds(selectionRangeObject, pageNumber);
                     // tslint:disable-next-line:max-line-length
-                    return selectionObject = { isBackward: backward, startNode: firstElement.id, startOffset: startOffset, endNode: lastElement.id, endOffset: endOffset, textContent: selectionString, pageNumber: pageNumber, bounds: selectionBounds };
+                    return selectionObject = { isBackward: backward, startNode: firstElement.id, startOffset: startOffset, endNode: lastElement.id, endOffset: endOffset, textContent: selectionString, pageNumber: pageNumber, bound: selectionBound, rectangleBounds: selectionRectBounds };
                 } else {
                     return null;
                 }
@@ -1020,19 +1028,68 @@ export class TextSelection {
         return range;
     }
 
-    private getSelectionBounds(range: Range, pageNumber: number): ClientRect[] {
+    private getSelectionBounds(range: Range, pageNumber: number): IRectangle {
         let startElement: HTMLElement = this.getNodeElementFromNode(range.startContainer);
         let endElement: HTMLElement = this.getNodeElementFromNode(range.endContainer);
-        let bounds: IRectangle[] = [];
+        let bounds: IRectangle = null;
         if (startElement !== endElement) {
             let newStartRange: Range = document.createRange();
             // tslint:disable-next-line:max-line-length
             let startRange: Range = this.createRangeForSelection(range.startContainer, range.endContainer, range.startOffset, range.endOffset, newStartRange);
-            bounds.push(this.normalizeBounds(startRange.getBoundingClientRect(), pageNumber));
+            bounds = this.normalizeBounds(startRange.getBoundingClientRect(), pageNumber);
         } else {
-            bounds.push(this.normalizeBounds(range.getBoundingClientRect(), pageNumber));
+            bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
         }
         return bounds;
+    }
+
+    private getSelectionRectangleBounds(range: Range, pageNumber: number): IRectangle[] {
+        let selectionBounds: IRectangle[] = [];
+        let startElement: HTMLElement = this.getNodeElementFromNode(range.startContainer);
+        let endElement: HTMLElement = this.getNodeElementFromNode(range.endContainer);
+        let bounds: IRectangle = null;
+        if (startElement !== endElement) {
+            let startOffset: number = 0; let endOffset: number = 0; let currentId: number = 0;
+            let anchorPageId: number = this.pdfViewerBase.textLayer.getPageIndex(range.startContainer);
+            let anchorTextId: number = this.pdfViewerBase.textLayer.getTextIndex(range.startContainer, anchorPageId);
+            let focusPageId: number = this.pdfViewerBase.textLayer.getPageIndex(range.endContainer);
+            let focusTextId: number = this.pdfViewerBase.textLayer.getTextIndex(range.endContainer, focusPageId);
+            let textDivs: NodeList = this.pdfViewerBase.getElement('_textLayer_' + pageNumber).childNodes;
+            if (pageNumber === anchorPageId) {
+                currentId = anchorTextId;
+            } else {
+                currentId = 0;
+            }
+            for (let j: number = currentId; j < textDivs.length; j++) {
+                let textElement: HTMLElement = textDivs[j] as HTMLElement;
+                if (j === anchorTextId) {
+                    startOffset = range.startOffset;
+                } else {
+                    startOffset = 0;
+                }
+                if (j === focusTextId) {
+                    endOffset = range.endOffset;
+                } else {
+                    endOffset = textElement.textContent.length;
+                }
+                let newRange: Range = document.createRange();
+                for (let k: number = 0; k < textElement.childNodes.length; k++) {
+                    let node: Node = textElement.childNodes[k];
+                    newRange.setStart(node, startOffset);
+                    newRange.setEnd(node, endOffset);
+                }
+                let boundingRect: IRectangle = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
+                selectionBounds.push(boundingRect);
+                newRange.detach();
+                if (j === focusTextId) {
+                    break;
+                }
+            }
+        } else {
+            bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
+            selectionBounds.push(bounds);
+        }
+        return selectionBounds;
     }
 
     private getTextId(elementId: string): number {
@@ -1049,7 +1106,7 @@ export class TextSelection {
         newBounds = {
             bottom: this.getMagnifiedValue(bound.bottom - currentPageRect.top), height: this.getMagnifiedValue(bound.height),
             left: this.getMagnifiedValue(bound.left - currentPageRect.left), top: this.getMagnifiedValue(bound.top - currentPageRect.top),
-            right: this.getMagnifiedValue(bound.right - currentPageRect.left), width: this.getMagnifiedValue(bound.height)
+            right: this.getMagnifiedValue(bound.right - currentPageRect.left), width: this.getMagnifiedValue(bound.width)
         };
         return newBounds;
     }
@@ -1061,17 +1118,17 @@ export class TextSelection {
     /**
      * @private
      */
-    public getCurrentSelectionBounds(pageNumber: number): ClientRect[] {
-        let bounds: ClientRect[] = null;
+    public getCurrentSelectionBounds(pageNumber: number): IRectangle {
+        let bound: IRectangle = null;
         let ranges: ISelection[] = this.selectionRangeArray;
         for (let i: number = 0; i < ranges.length; i++) {
             if (ranges[i] !== null) {
                 if (pageNumber === ranges[i].pageNumber) {
-                    bounds = ranges[i].bounds;
+                    bound = ranges[i].bound;
                 }
             }
         }
-        return bounds;
+        return bound;
     }
 
     private createRangeForSelection(start: Node, end: Node, startOffset: number, endOffset: number, range: Range): Range {
@@ -1083,7 +1140,7 @@ export class TextSelection {
     private maintainSelectionArray(): void {
         if (this.selectionRangeArray.length !== 0) {
             let selection: Selection = window.getSelection();
-            let isBackward: boolean = this.isBackWardSelection(selection);
+            let isBackward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
             // tslint:disable-next-line
             let anchorPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1])) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
             if (isNaN(anchorPage)) {
@@ -1127,15 +1184,6 @@ export class TextSelection {
         }
     }
 
-    private isBackWardSelection(selection: Selection): boolean {
-        let position: number = selection.anchorNode.compareDocumentPosition(selection.focusNode);
-        let backward: boolean = false;
-        if (!position && selection.anchorOffset > selection.focusOffset || position === Node.DOCUMENT_POSITION_PRECEDING) {
-            backward = true;
-        }
-        return backward;
-    }
-
     /**
      * @private
      */
@@ -1143,7 +1191,7 @@ export class TextSelection {
         let selection: Selection = window.getSelection();
         // tslint:disable-next-line:max-line-length
         if (selection.anchorNode !== null && this.pdfViewerBase.viewerContainer.contains(this.getNodeElementFromNode(selection.anchorNode))) {
-            let isBackWardSelection: boolean = this.isBackWardSelection(selection);
+            let isBackWardSelection: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
             let anchorPageId: number; let focusPageId: number; let anchorOffsetDiv: number; let focusOffsetDiv: number;
             let anchorOffset: number; let focusOffset: number;
             if (isBackWardSelection) {
@@ -1418,10 +1466,24 @@ export class TextSelection {
             this.dropDivElementRight.addEventListener('touchmove', this.onRightTouchSelectElementTouchMove);
             this.dropDivElementRight.addEventListener('touchend', this.onRightTouchSelectElementTouchEnd);
             // tslint:disable-next-line:max-line-length
-            this.pdfViewerBase.contextMenuModule.contextMenuObj.open(event.touches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop, event.touches[0].clientX - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);
+            this.calculateContextMenuPosition(event.touches[0].clientY, event.touches[0].clientX);
         }
     }
-
+    // tslint:disable-next-line
+    private calculateContextMenuPosition(top: any, left: any): any {
+        top = top - this.pdfViewerBase.toolbarHeight;
+        if (Browser.isDevice) {
+            // tslint:disable-next-line
+            let contextTop: any = top - this.contextMenuHeight;
+            if (contextTop < this.pdfViewerBase.toolbarHeight) {
+                top = top + this.contextMenuHeight;
+            } else {
+                top = contextTop;
+            }
+        }
+        // tslint:disable-next-line:max-line-length
+        this.pdfViewerBase.contextMenuModule.contextMenuObj.open(top, left - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);
+    }
     private onLeftTouchSelectElementTouchStart = (event: TouchEvent): void => {
         this.initiateSelectionByTouch();
     }
@@ -1460,8 +1522,13 @@ export class TextSelection {
     private terminateSelectionByTouch(event: any): void {
         this.maintainSelectionOnZoom(true, false);
         this.applySpanForSelection();
-        // tslint:disable-next-line:max-line-length
-        this.pdfViewerBase.contextMenuModule.contextMenuObj.open(event.changedTouches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop + this.pdfViewerBase.contextMenuModule.contextMenuElement.clientHeight, event.changedTouches[0].clientX - this.pdfViewerBase.viewerContainer.offsetLeft, this.pdfViewerBase.viewerContainer);
+        if (this.pdfViewerBase.getTextMarkupAnnotationMode()) {
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.drawTextMarkupAnnotations(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode);
+        } else {
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewerBase.contextMenuModule.contextMenuObj.open(event.changedTouches[0].clientY - this.pdfViewerBase.viewerContainer.offsetTop + this.pdfViewerBase.contextMenuModule.contextMenuElement.clientHeight, event.changedTouches[0].clientX - this.pdfViewerBase.viewerContainer.offsetLeft, this.pdfViewerBase.viewerContainer);
+        }
     }
 
     private onLeftTouchSelectElementTouchMove = (event: TouchEvent): void => {

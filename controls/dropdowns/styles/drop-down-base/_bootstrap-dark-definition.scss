@@ -29,6 +29,8 @@ $ddl-list-text-indent: 20px !default;
 $ddl-list-line-height: 26px !default;
 $ddl-list-padding-right: 20px !default;
 $ddl-bigger-list-header-font-size: $ddl-list-font-size !default;
+$ddl-multi-column-border-width: 0 0 1px 0 !default;
+$ddl-multi-column-border-color: $grey-88 !default;
 
 @include export-module('dropdownbase-bootstrap-dark') {
   .e-dropdownbase .e-list-item .e-list-icon {

@@ -43,13 +43,6 @@ $hscroll-device-arrow-size: 14px !default;
 $hscroll-device-arrow-size-bigger: 18px !default;
 $hscroll-device-arrow-width: 52px !default;
 
-
-$hscroll-left-arrow-icon: '\e830' !default;
-$hscroll-right-arrow-icon: '\e829' !default;
-
-$hscroll-device-left-arrow-icon: '\e913' !default;
-$hscroll-device-right-arrow-icon: '\e904' !default;
-
 @mixin hscroll-btn-animation {
   content: '';
 }

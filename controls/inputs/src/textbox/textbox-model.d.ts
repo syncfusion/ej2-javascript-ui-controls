@@ -56,6 +56,13 @@ export interface TextBoxModel extends ComponentModel{
     enableRtl?: boolean;
 
     /**
+     * Specifies a boolean value that enable or disable the multiline on the TextBox. 
+     * The TextBox changes from single line to multiline when enable this multiline mode.
+     * @default false
+     */
+    multiline?: boolean;
+
+    /**
      * Specifies a Boolean value that indicates whether the TextBox allow user to interact with it.
      * @default true
      */

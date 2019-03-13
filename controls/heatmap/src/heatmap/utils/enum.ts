@@ -24,6 +24,8 @@ export type HeatMapTheme =
     'Fabric' |
     /**  Render a HeatMap with Bootstrap theme. */
     'Bootstrap' |
+    /**  Render a HeatMap with Bootstrap4 theme. */
+    'Bootstrap4' |
     /**  Render a HeatMap with Highcontrast Light theme. */
     'HighContrastLight'|
     /**  Render a HeatMap with Material Dark theme. */

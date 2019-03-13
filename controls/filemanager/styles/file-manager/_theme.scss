@@ -1,0 +1,261 @@
+@mixin active-icon {
+  .e-fe-dot,
+  .e-fe-tick {
+    color: $fe-ddl-icon-color;
+  }
+}
+@mixin active-item {
+  background: $fe-active-bg-color;
+  border-color: $fe-active-border-color;
+}
+@mixin hover-item($bg-color, $border-color) {
+  background: $bg-color;
+  border-color: $border-color;
+}
+
+@include export-module('FileManager-theme') {
+  #{&}.e-filemanager {
+    background: $fe-background;
+    border-color: $fe-border-color;
+
+    .e-toolbar {
+      border-bottom-color: $fe-border-color;
+
+      .e-toolbar-item .e-btn {
+        background: $fe-tb-btn-bg-color;
+
+        .e-tbar-btn-text {
+          color: $fe-text-color;
+        }
+
+        .e-icons {
+          color: $fe-icon-color;
+        }
+
+        &:active {
+          background: $fe-tb-focus-bg;
+          border-color: $fe-tb-focus-border-color;
+        }
+
+        &:hover {
+          background: $fe-tb-hover-bg-color;
+          border-color: $fe-tb-hover-border-color;
+        }
+
+        &:focus {
+          background: $fe-tb-hover-bg-color;
+          border-color: $fe-tb-hover-border-color;
+        }
+      }
+
+      .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
+        &.e-active {
+          background: $fe-tb-focus-bg;
+          border-color: $fe-tb-focus-border-color;
+        }
+
+        &:hover {
+          background: $fe-tb-focus-bg;
+          border-color: $fe-tb-hover-border-color;
+        }
+
+        &:focus {
+          background: $fe-tb-focus-bg;
+          border-color: $fe-tb-hover-border-color;
+        }
+      }
+
+      .e-status {
+        color: $fe-text-color;
+      }
+    }
+
+    .e-address {
+      border-bottom-color: $fe-border-color;
+
+      .e-icons {
+        color: $fe-icon-color;
+      }
+
+      .e-list-text {
+        color: $fe-bc-link-color;
+      }
+
+      .e-address-list-item {
+        color: $fe-bc-link-color;
+
+        &:focus .e-list-text {
+          background: $fe-bc-hover-bg-color;
+          color: $fe-bc-hover-font-color;
+        }
+
+        &:last-child {
+          .e-list-text {
+            color: $fe-bc-color;
+          }
+        }
+
+        &:not(:last-child) {
+
+          .e-list-text {
+
+            &:hover {
+              background: $fe-bc-hover-bg-color;
+              color: $fe-bc-hover-font-color;
+            }
+
+            &:active {
+              background: $fe-bc-hover-bg-color;
+              color: $fe-bc-hover-font-color;
+            }
+
+            &:focus {
+              background: $fe-bc-hover-bg-color;
+              color: $fe-bc-hover-font-color;
+            }
+          }
+        }
+      }
+
+      .e-search-wrap {
+        .e-input-group.e-control-wrapper:not(.e-success) {
+          background: $fe-search-bg-color;
+          border-color: $fe-border-color;
+        }
+      }
+    }
+
+    .e-treeview {
+      .e-list-item.e-active > .e-fullrow {
+        border: $fe-ah-border-color;
+      }
+    }
+
+    .e-grid {
+
+      .e-gridheader {
+
+        tr:first-child th {
+          background: $fe-grid-header-bg-color;
+        }
+
+        .e-headercell {
+
+          &:not(.e-fe-grid-icon):hover {
+            background: $fe-hover-bg-color;
+          }
+
+          &.e-fe-checkbox:hover {
+            background: $fe-grid-header-bg-color;
+          }
+
+          &.e-fe-grid-icon .e-headercelldiv:hover {
+            background: $fe-hover-bg-color;
+          }
+        }
+      }
+
+      td.e-active {
+        color: $fe-active-font-color;
+      }
+
+      .e-checkbox-wrapper {
+        .e-icons.e-check {
+          background-color: $fe-checkbox-bg-color;
+          color: $fe-checkbox-color;
+        }
+      }
+
+    }
+
+    .e-dialog {
+
+      td {
+        color: $fe-text-color;
+
+        &:first-child {
+          color: $fe-label-color;
+        }
+      }
+    }
+
+    .e-large-icons {
+
+      .e-list-img {
+        border-color: $fe-img-border-color;
+      }
+
+      .e-active {
+        color: $fe-active-font-color;
+      }
+
+      .e-large-icon {
+        border-color: transparent;
+
+        &.e-active {
+          @include active-item;
+        }
+
+        &.e-hover {
+          @include hover-item($fe-hover-bg-color, $fe-hover-border-color);
+        }
+
+        &.e-active.e-hover {
+          @include hover-item($fe-ah-bg-color, $fe-ah-border-color);
+        }
+
+        &.e-focus {
+          border-color: $fe-hover-border-color;
+        }
+      }
+
+      .e-checkbox-wrapper {
+        .e-icons.e-check {
+          background-color: $fe-checkbox-bg-color;
+          color: $fe-checkbox-color;
+        }
+      }
+
+    }
+
+    .e-fe-error {
+      color: $fe-error-color;
+    }
+
+    .e-upload {
+
+      .e-upload-actions {
+        border-bottom-color: $fe-up-list-border-color;
+      }
+    }
+
+    &.e-fe-mobile {
+
+      .e-large-icons {
+
+        .e-large-icon {
+
+          &.e-hover {
+            @include hover-item(transparent, transparent);
+          }
+
+          &.e-focus {
+            border-color: transparent;
+          }
+
+          &.e-active {
+            @include active-item;
+          }
+        }
+      }
+    }
+  }
+
+  #{&}.e-fe-popup {
+
+    &.e-dropdown-popup ul .e-item,
+    &.e-contextmenu-wrapper ul .e-menu-item {
+      @include active-icon;
+    }
+  }
+}

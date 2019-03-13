@@ -129,7 +129,7 @@ export class FilterMenuRenderer {
     private renderFilterUI(target: Element, col: Column): void {
 
         let dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-flmenu-maindiv');
-
+        this.parent.log('column_type_missing', {column: col});
         this.renderOperatorUI(dlgConetntEle, target, col);
         this.renderFlValueUI(dlgConetntEle, target, col);
     }

@@ -3,7 +3,8 @@
  */
 import { RangeNavigator } from '../index';
 import { DataPoint } from '../utils/helper';
-import { FontModel, Rect } from '../../chart/index';
+import { FontModel } from '../../chart/index';
+import { Rect } from '@syncfusion/ej2-svg-base';
 /**
  * interface for load event
  */

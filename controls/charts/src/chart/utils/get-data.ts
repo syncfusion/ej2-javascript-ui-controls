@@ -1,5 +1,6 @@
 import { Chart } from '../chart';
-import { withInBounds, PointData, Rect, getValueXByPoint, getValueYByPoint, AccPointData } from '../../common/utils/helper';
+import { withInBounds, PointData, getValueXByPoint, getValueYByPoint, AccPointData } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from '../series/chart-series';
 
 /**
@@ -111,7 +112,10 @@ export class ChartData {
         });
     }
 
-    private getClosest(series: Series, value: number): number {
+    /**
+     * @private
+     */
+    public getClosest(series: Series, value: number): number {
         let xData: number[] = series.xData;
         let closest: number;
         if (value >= <number>series.xMin - 0.5 && value <= <number>series.xMax + 0.5) {

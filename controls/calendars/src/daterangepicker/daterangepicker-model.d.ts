@@ -172,7 +172,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
      * @default Month
-     * @hidden
      */
     start?: CalendarView;
 
@@ -180,7 +179,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Sets the maximum level of view (month, year, decade) in the Calendar.
      * Depth view should be smaller than the start view to restrict its view navigation.
      * @default Month
-     * @hidden
      */
     depth?: CalendarView;
 
@@ -198,9 +196,10 @@ export interface DateRangePickerModel extends CalendarBaseModel{
 
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
-     *  > For more details refer to 
+     * > For more details refer to 
      * [`Range Span`] (../../daterangepicker/range-restriction#range-span) documentation.
      * @default null    
+     * @aspType int
      */
     minDays?: number;
 
@@ -209,6 +208,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * > For more details refer to 
      * [`Range Span`](../../daterangepicker/range-restriction#range-span) documentation.
      * @default null
+     * @aspType int
      */
     maxDays?: number;
 
@@ -224,8 +224,8 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * Sets or gets the required date format to the start and end date string.
      * > For more details refer to 
      * [`Format`](https://ej2.syncfusion.com/demos/#/material/daterangepicker/format.html)sample.
-     * @default null
      * @aspType string
+     * @default null
      */
     format?: string | RangeFormatObject;
 

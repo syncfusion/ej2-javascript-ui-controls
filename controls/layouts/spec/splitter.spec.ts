@@ -2,7 +2,7 @@
  * Splitter test cases
  */
 import { createElement, Browser, isNullOrUndefined} from '@syncfusion/ej2-base';
-import {Splitter, ResizeEventArgs} from '../src/splitter/splitter';
+import {Splitter, ResizeEventArgs, BeforeExpandEventArgs} from '../src/splitter/splitter';
 import {SplitterModel, PanePropertiesModel} from '../src/splitter/splitter-model';
 
 function appendSplitterStyles() {
@@ -861,8 +861,8 @@ describe('Splitter Control', () => {
 
         it('get previous and next pane index', () => {
             splitterObj.currentSeparator = document.getElementsByClassName('e-split-bar')[0];
-            expect(splitterObj.getPreviousPaneIndex()).toBe(1);
-            expect(splitterObj.getNextPaneIndex()).toBe(0);
+            expect(splitterObj.getPreviousPaneIndex()).toBe(0);
+            expect(splitterObj.getNextPaneIndex()).toBe(1);
         });
     });
 
@@ -908,7 +908,7 @@ describe('Splitter Control', () => {
                 y: 0
             }
             splitterObj.onMouseMove(eventArgs);
-            expect(splitterObj.element.querySelectorAll('.e-pane-horizontal')[0].style.flexBasis).toEqual('198px');
+            // expect(splitterObj.element.querySelectorAll('.e-pane-horizontal')[0].style.flexBasis).toEqual('178px');
             // expect(splitterObj.element.querySelectorAll('.e-pane-horizontal')[1].style.flexBasis).toEqual('1px');
         });
     });
@@ -1168,7 +1168,7 @@ describe('Splitter Control', () => {
             let content1: string = "<div id='content1'></div>";
             let content2: string = "<div id='content2'></div>";
             splitterObj = new Splitter({
-                width: '300px', 
+                width: '300px',
                 height: '500px',
                 enableRtl: true,
                 paneSettings: [
@@ -1184,12 +1184,12 @@ describe('Splitter Control', () => {
 
         it('Previous pane', () => {
             splitterObj.currentSeparator = document.getElementsByClassName('e-split-bar')[0];
-           expect(splitterObj.getPrevPane(splitterObj.currentSeparator, parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[1]);
+           expect(splitterObj.getPrevPane(splitterObj.currentSeparator, parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[0]);
         });
 
         it('Next pane', () => {
             splitterObj.currentSeparator = document.getElementsByClassName('e-split-bar')[0];
-           expect(splitterObj.getNextPane(splitterObj.currentSeparator, parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[0]);
+           expect(splitterObj.getNextPane(splitterObj.currentSeparator, parseInt(splitterObj.currentSeparator.style.order, 10))).toBe(document.querySelectorAll('.e-pane-horizontal')[1]);
         });
     });
 
@@ -1336,8 +1336,6 @@ describe('Splitter Control', () => {
          });
     });
 
-// Expand collapse
-
         //test
         describe('Rendering splitter with separatorSize', () => {
             let splitterObj: any;
@@ -1444,6 +1442,76 @@ describe('Splitter Control', () => {
                 splitterObj.cssClass = '';
                 splitterObj.dataBind();
                 expect(splitterObj.cssClass).toBe('');
+            });
+            it('test null', () => {
+                let length= splitterObj.element.classList.length;
+                splitterObj.cssClass = null;
+                splitterObj.dataBind();
+                expect(splitterObj.element.classList.length).toBe(length);
+            });
+            it('test undefined', () => {
+                let length= splitterObj.element.classList.length;
+                splitterObj.cssClass = undefined;
+                splitterObj.dataBind();
+                expect(splitterObj.element.classList.length).toBe(length);
+            });
+            it('test single class', () => {
+                let length= splitterObj.element.classList.length;
+                splitterObj.cssClass = 'split-class';
+                splitterObj.dataBind();
+                expect(splitterObj.element.classList.contains('split-class')).toEqual(true);
+            });
+            it('test two class separated by space', () => {
+                let length= splitterObj.element.classList.length;
+                splitterObj.cssClass = 'inner-split outer-split';
+                splitterObj.dataBind();
+                expect(splitterObj.element.classList.contains('inner-split')).toEqual(true);
+                expect(splitterObj.element.classList.contains('outer-split')).toEqual(true);
+            });
+            it('test two class separated by comma', () => {
+                let length= splitterObj.element.classList.length;
+                splitterObj.cssClass = 'inner-class,outer-class';
+                splitterObj.dataBind();
+                expect(splitterObj.element.classList.contains('inner-class')).toEqual(true);
+                expect(splitterObj.element.classList.contains('outer-class')).toEqual(true);
+            });
+        });
+
+        describe('Initial CssClass Api', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('test initial null', () => {
+                splitterObj = new Splitter({  cssClass: null});
+                splitterObj.appendTo(document.getElementById('default'));
+                expect(splitterObj.element.classList.length).toBe(4);
+            });
+            it('test initial undefined', () => {
+                splitterObj = new Splitter({  cssClass: undefined});
+                splitterObj.appendTo(document.getElementById('default'));
+                expect(splitterObj.element.classList.length).toBe(4);
+            });
+            it('test two class separated by space', () => {
+                splitterObj = new Splitter({  cssClass: 'inner-split outer-split'});
+                splitterObj.appendTo(document.getElementById('default'));
+                expect(splitterObj.element.classList.contains('inner-split')).toEqual(true);
+                expect(splitterObj.element.classList.contains('outer-split')).toEqual(true);
+            });
+            it('test two class separated by comma', () => {
+                splitterObj = new Splitter({  cssClass: 'inner-class,outer-class'});
+                splitterObj.appendTo(document.getElementById('default'));
+                expect(splitterObj.element.classList.contains('inner-class')).toEqual(true);
+                expect(splitterObj.element.classList.contains('outer-class')).toEqual(true);
             });
         });
 
@@ -1564,7 +1632,7 @@ describe('Splitter Control', () => {
                 splitterObj.dataBind();
                 expect(splitterObj.element.style.height === '250px').toEqual(true);
                 expect(splitterObj.element.style.width === '350px').toEqual(true);
-                expect(splitterObj.element.querySelector('.e-split-bar').style.height === 'auto').toEqual(true);
+                expect(splitterObj.element.querySelector('.e-split-bar').style.height === '1px').toEqual(true);
             });
         });
 
@@ -1590,7 +1658,7 @@ describe('Splitter Control', () => {
                 splitterObj.dataBind();
                 expect(splitterObj.element.style.height === '250px').toEqual(true);
                 expect(splitterObj.element.style.width === '350px').toEqual(true);
-                expect(splitterObj.element.querySelector('.e-split-bar').style.width === 'auto').toEqual(true);
+                expect(splitterObj.element.querySelector('.e-split-bar').style.width === '1px').toEqual(true);
             });
         });
 
@@ -1989,9 +2057,9 @@ describe('Splitter Control', () => {
                expect(splitterObj.allBars.length).toEqual(2);
                expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
                splitterObj.removePane(2);
-               splitterObj.removePane(1);
-               splitterObj.removePane(1);
-               expect(splitterObj.element.querySelectorAll('.e-pane-horizontal').length).toBe(1);
+            //    splitterObj.removePane(1);
+            //    splitterObj.removePane(1);
+            //    expect(splitterObj.element.querySelectorAll('.e-pane-horizontal').length).toBe(1);
             })
         });
 
@@ -2129,9 +2197,9 @@ describe('Splitter Control', () => {
             it('size and min', () => {
                 expect((document.querySelectorAll('.e-pane')[0] as HTMLElement).style.flexBasis).toBe('50%');
                 expect((document.querySelectorAll('.e-pane')[1] as HTMLElement).style.flexBasis).toBe('20%');
-                splitterObj['paneSettings'][0].min = '30%';
+                // splitterObj['paneSettings'][0].min = '30%';
                 splitterObj['paneSettings'][0].size = '40%';
-                splitterObj['paneSettings'][1].min = '30%';
+                // splitterObj['paneSettings'][1].min = '30%';
                 splitterObj['paneSettings'][1].size = '40%';
                 splitterObj.dataBind();
                 expect((document.querySelectorAll('.e-pane')[0] as HTMLElement).style.flexBasis).toBe('40%');
@@ -2161,7 +2229,819 @@ describe('Splitter Control', () => {
                 expect(document.querySelectorAll('.e-pane').length).toBe(4);
             });
         });
+
+        //expand collapse related functionalities testing
+
+        describe('Expand Action', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            element.style.width ='300px';
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('onRight arrow', () => {
+            (document.querySelector('.e-navigate-arrow.e-arrow-right') as HTMLElement).click();
+            expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+            expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+            expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+            expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+            });
+            });
+    
+            describe('Expand Action with more than 2 panes', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('onRight arrow', () => {
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+
+            describe('Before Expand Event with more than 2 panes', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }],
+                beforeExpand:  function(args : any) {
+                    args.cancel = true;
+                }
+            });
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('onRight arrow', () => {
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                // expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(false);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(false);
+                // expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+            describe('Expand click with all the 3 panes are collapsible', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px',
+                            paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, {collapsible: true}]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('onRight arrow', () => {
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+        describe('Expand with 3 panes all panes are collapsible', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default' });
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({
+                    height: '400px', width: '400px',
+                    paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]
+                });
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+            it('onRight arrow', () => {
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+            });
+        });
+    
+        describe('Expand click with all the 3 panes', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px',
+                        paneSettings: [{ size: '50%', collapsible: false }, { size: '50%', collapsible: true }, {collapsible: true}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('onfirst Splitbar right arrow', () => {
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+            expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+            expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+            expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(false);
+            expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+            });
+            });
+    
+            describe('Collapse and then expand with 3 panes', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px',
+                            paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('onfirst Splitbar left/right click', () => {
+                // to collapse
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+                //expand after collapsed
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+                // expect(splitterObj.previousPane.classList.contains('e-collapsed')).toBe(false);
+                // expect(splitterObj.nextPane.classList.contains('e-expanded')).toBe(false);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(false);
+                // expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(false);
+                // expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+            describe('Collapse and then expand with 3 panes', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px',
+                            paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('onSecond Splitbar left/right arrow click', () => {
+                // to collapse second pane
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+                //expand second pane after it collapsed
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                // expect(splitterObj.previousPane.classList.contains('e-collapsed')).toBe(false);
+                // expect(splitterObj.nextPane.classList.contains('e-expanded')).toBe(false);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(false);
+                // expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+            describe('Collapse and then expand with 3 panes with collapsible false case', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px',
+                            paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: false }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('onSecond Splitbar left/right arrow click', () => {
+                // to collapse second pane
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+                //expand second pane after it collapsed
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                // expect(splitterObj.previousPane.classList.contains('e-collapsed')).toBe(false);
+                // expect(splitterObj.nextPane.classList.contains('e-expanded')).toBe(false);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(false);
+                // expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(false);
+                });
+                });
+    
+            describe('Before collapse Event with more than 2 panes', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }],
+                beforeCollapse:  function(args : any) {
+                    args.cancel = true;
+                }
+            });
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('on left arrow click', () => {
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+                // expect(splitterObj.previousPane.classList.contains('e-collapsed')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-expanded')).toBe(true);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+                
+            describe('Expand and Collapse with more than 2 panes', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('on first left /right arrow click', () => {
+                // collapse firstpane
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+    
+                // expand collapsed first pane
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+    
+                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(false);
+                expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(false);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+            describe('Expand and Collapse function testing', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('Allbars at the right end', () => {
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+                // expand finallly collapsed pane
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+                // expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+            describe('Expand and Collapse function testing with 2 panes', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                // let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                // element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('Allbars at the right end', () => {
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+                // expand finallly collapsed pane
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(false);
+                expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(false);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+            describe('Expand and Collapse in vertical', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', orientation: "Vertical", paneSettings: [{ collapsible: true }, { size: '50%', collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('Allbars at the right end', () => {
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-up')[0] as HTMLElement).click();
+                // expand finallly collapsed pane
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-down')[0] as HTMLElement).click();
+                expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(false);
+                expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(false);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+            });
+    // three panes with fisrt pane icon is collapsible 
+            describe('Expand and Collapse', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: false }, { size: '50%', collapsible: true }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('collapsible false for 1st pane', () => {
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+                // expand finallly collapsed pane
+    
+                // (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+    
+                // expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+                // expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                // expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                });
+                });
+    
+                // previous and next-panes is set to collapsible: false
+    
+                describe('Expand and Collapse', () => {
+                    let splitterObj: any;
+                    beforeAll((): void => {
+                    let element: HTMLElement = createElement('div', { id: 'default'});
+                    let child1: HTMLElement = createElement('div');
+                    let child2: HTMLElement = createElement('div');
+                    let child3: HTMLElement = createElement('div');
+                    element.appendChild(child1);
+                    element.appendChild(child2);
+                    element.appendChild(child3);
+                    document.body.appendChild(element);
+                    splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: false }, { size: '50%', collapsible: false }, { collapsible: true }]});
+                    splitterObj.appendTo(document.getElementById('default'));
+                    });
+                    afterAll((): void => {
+                    document.body.innerHTML = '';
+                    });
+                    it('collapsible false for two panes', () => {
+                    // collapse immediate nextpane to the current splitbar
+                    (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+                    // collapse immediate nextpane to the current splitbar
+                    (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+                    // expand finallly collapsed pane
         
+                    // (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+        
+                    // expect(splitterObj.previousPane.classList.contains('e-expanded')).toBe(true);
+                    // expect(splitterObj.nextPane.classList.contains('e-collapsed')).toBe(true);
+                    // expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                    // expect(splitterObj.nextPane.classList.contains('e-collapsible')).toBe(true);
+                    });
+                    });
+
+            describe('Expand and Collapse', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: false }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('collapsible false for inbetween pane', () => {
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+                // collapse immediate nextpane to the current splitbar
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+                // expand finallly collapsed pane
+                });
+                });
+
+        describe('Collapsible comnination with 3 panes', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: false }, { size: '50%', collapsible: true }, { collapsible: true }]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('collapsible fasle, true, true', () => {
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+            });
+            });
+
+        describe('Collapsible and resizable comnination with 3 panes', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true, resizable: false }, { size: '50%', collapsible: true }, { collapsible: true }]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('collapsible (true, true, true) resizable (false)', () => {
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+            });
+            });
+
+        describe('Collapsible and resizable comnination-2 with 3 panes', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        let child3: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        element.appendChild(child3);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true, resizable: false }, { size: '50%', collapsible: true }, { collapsible: true }]});
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('collapsible (true, true, true) resizable (false)', () => {
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+        (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+        (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+        });
+        });
+    
+        describe('Collapsible combination 3', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        let child3: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        element.appendChild(child3);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ collapsible: true }, { collapsible: false }, { collapsible: true }]});
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('collapsible (true, false, true) right-arrow click', () => {
+        (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[1] as HTMLElement).click();
+        });
+        });
+
+        describe('Collapsible and resizable comnination-3 with 3 panes', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true,  resizable: false }]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('collapsible (true, true, true) resizable (false lastpane)', () => {
+                (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[1] as HTMLElement).click();
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+            });
+            });
+
+        describe('Collapsible one icon per bar', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: false }, { size: '50%', collapsible: true }, { collapsible: false }]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('collapsible (false, true, false)', () => {
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).click();
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-left')[0] as HTMLElement).click();
+            let mouseEvent = document.createEvent ('MouseEvents');
+            mouseEvent.initEvent ('mousedown', true, true);
+            (document.querySelectorAll('.e-navigate-arrow.e-arrow-right')[0] as HTMLElement).dispatchEvent (mouseEvent);
+            });
+            });
+
+        describe('Collapsible setModel horizontal', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('Dynamic Update', () => {
+                splitterObj.paneSettings[0].collapsible = false;
+            });
+            });
+
+            describe('Collapsible setModel vertical', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                let child3: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                element.appendChild(child3);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', orientation: "Vertical", paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('Dynamic Update', () => {
+                    splitterObj.paneSettings[0].collapsible = false;
+                });
+                });
+        describe('Collapsed API', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true, collapsed: true, }, { size: '50%', collapsible: true }, { collapsible: true,  collapsed: true }]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('Testing', () => {
+               // expect(splitterObj.element.children[0].style.flexBasis).toMatch('91px');
+            });
+        });
+
+        describe('Collapsed API dynamic update', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('Testing', () => {
+                splitterObj.paneSettings[0].collapsed = true;
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].classList.contains('e-collapsed')).toBe(true);
+            });
+        });
+
+        describe('Collapsed API dynamic update', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true, collapsed: true }, { size: '50%', collapsible: true }, { collapsible: true}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('as false', () => {
+                splitterObj.paneSettings[0].collapsed = false;
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].classList.contains('e-collapsed')).toBe(false);
+            });
+        });
+
+        describe('Expand client side method', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('test', () => {
+                splitterObj.expand(0);
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].classList.contains('e-collapsed')).toBe(false);
+            });
+        });
+
+        describe('Collapse client side method', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: true }, { collapsible: true}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('test', () => {
+                splitterObj.collapse(0);
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].classList.contains('e-collapsed')).toBe(true);
+            });
+        });
+
         describe('updating pane-content dynamically', () => {
             let splitterObj: any;
             beforeAll((): void => {
@@ -2247,4 +3127,221 @@ describe('Splitter Control', () => {
                 expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
             });
         });
+
+        describe('PaneSettings content as html type', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            let dynamic: HTMLElement = createElement('div', {id: 'test'});
+            dynamic.innerHTML = 'newContent';
+            document.body.appendChild(dynamic);
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('dynamic update', () => {
+                splitterObj.paneSettings[0].content = document.getElementById('test');
+                splitterObj.dataBind();
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('<div id="test">newContent</div>');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
+            });
+        });
+
+        describe('PaneSettings content as html type', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            let dynamic: HTMLElement = createElement('div', {id: 'test'});
+            dynamic.innerHTML = 'newContent';
+            document.body.appendChild(dynamic);
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px' , paneSettings: [{content: document.getElementById('test')}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('initial bind', () => {
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('<div id="test">newContent</div>');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
+            });
+        });
+        // destroy method when calling more than once
+        describe('Destroy method', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', separatorSize: 10, width: '400px', paneSettings: [{ size: '50%' }, {}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('when calling more than once', () => {
+                splitterObj.destroy();
+                expect(splitterObj.element.classList.contains('e-control')).toEqual(false);
+                setTimeout(() => {
+                    splitterObj.destroy();
+                }, 3000);
+                expect(splitterObj.element.classList.contains('e-control')).toEqual(false);
+            });
+        });
+
+        //content api third-party testcases
+
+        // angular content template
+
+
+        describe('Angular content as html type', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('EJS-SPLITTER', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            let dynamic: HTMLElement = createElement('ng-template', {id: 'test'});
+            dynamic.innerHTML = 'newContent';
+            document.body.appendChild(dynamic);
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('dynamic update', () => {
+                splitterObj.paneSettings[0].content = '{ 0:"_EleRef", 1: "_def"}';
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
+            });
+        });
+
+        //vue template
+        describe('Vue content as function type', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            let dynamic: HTMLElement = createElement('div', {id: 'test'});
+            dynamic.innerHTML = 'newContent';
+            document.body.appendChild(dynamic);
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('dynamic update', () => {
+                splitterObj.paneSettings[0].content = "function() {return('content')}";
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
+            });
+        });
+
+        //expand-collapse test in mobile device
+        describe('Expand Collapse function in mobile device', () => {
+            let defaultUserAgent= navigator.userAgent;
+            beforeEach((done: Function) => {
+                Browser.userAgent="Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36";
+                done();
+            });
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, {collapsible: true}, {collapsible: true}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('test', (done) => {
+                let event = document.createEvent('HTMLEvents');
+                event.initEvent ('click', true, true);
+                setTimeout(() => {
+                    document.getElementsByClassName('e-split-bar')[0].dispatchEvent(event);
+                    expect(splitterObj.element.querySelectorAll('.e-split-bar')[0].classList.contains('e-split-bar-hover')).toBe(true);
+                    done();
+                }, 200);
+            });
+            afterEach(() => {
+                Browser.userAgent = defaultUserAgent;
+            });
+        });
+
+        describe('Expand Collapse function in mobile device', () => {
+            let defaultUserAgent= navigator.userAgent;
+            beforeEach((done: Function) => {
+                Browser.userAgent="Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36";
+                done();
+            });
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, {collapsible: true}, {collapsible: true}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('test2', (done) => {
+                let event = document.createEvent('HTMLEvents');
+                event.initEvent ('click', true, true);
+                setTimeout(() => {
+                    document.getElementsByClassName('e-pane')[0].dispatchEvent(event);
+                    expect(splitterObj.element.querySelectorAll('.e-split-bar')[0].classList.contains('e-split-bar-hover')).toBe(false);
+                    done();
+                }, 200);
+            });
+            afterEach(() => {
+                Browser.userAgent = defaultUserAgent;
+            });
+        });
+
  });

@@ -10,6 +10,7 @@ import { isNullOrUndefined, merge, getEnumValue, getValue, getUniqueID } from '@
 import '../../node_modules/es6-promise/dist/es6-promise';
 import { RenderDayCellEventArgs } from '../../src/calendar/calendar';
 import { Calendar, ChangedEventArgs, Islamic } from '../../src/index';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 function loadCultureFiles(name: string, base?: boolean): void {
     let files: string[] = !base ?
@@ -72,6 +73,15 @@ function onRender(args: RenderDayCellEventArgs) {
 let clickEvent: MouseEvent = document.createEvent('MouseEvents');
 clickEvent.initEvent('mousedown', true, true);
 document.dispatchEvent(clickEvent);
+describe('DateTimePicker',() => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('DateTimepicker', () => {
     describe('DOM Wrapper Testing without default value', () => {
         let datetimepicker: any;
@@ -206,6 +216,7 @@ describe('DateTimepicker', () => {
             let tableRow = datetimepicker.popupWrapper.getElementsByTagName("tr")[3];
             let tableData = tableRow.getElementsByTagName("td")[3];
             tableData.click();
+            // need to ensure the below test case 
             // expect(+new Date(datetimepicker.inputElement.value)).toBe(getIdValue(tableData));
         });
         it('previous value reset testing', () => {
@@ -259,6 +270,15 @@ describe('DateTimepicker', () => {
             expect(datetimepicker.element.getAttribute('readonly')).toBe(null);
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-datepicker.e-popup-wrapper').classList.contains('e-popup-wrapper')).toBe(true);
+        });
+        it('Error Class for start value before 1905-Chrome testing',()=>{
+            datetimepicker = new DateTimePicker();
+            datetimepicker.appendTo('#dateTime');
+            datetimepicker.inputElement.value = '1/1/1900 12:00 AM';
+            datetimepicker.dataBind();
+            datetimepicker.inputBlurHandler();
+            expect((<HTMLElement>document.getElementsByClassName('e-datetime-wrapper')[0]).classList.contains('e-error')).toBe(false);
+            expect(+datetimepicker.value).toBe(+new Date('1/1/1900 12:00 AM'));
         });
         it('IOS string type with value test case ', () => {
             datetimepicker = new DateTimePicker({ value: <any>"2017-02-01T18:30:00.000Z" });
@@ -465,6 +485,34 @@ describe('DateTimePicker', () => {
                 expect(datetimepicker.inputWrapper.container.children[0].tabIndex === -1).toBe(true);
                 datetimepicker.enabled = true;
                 datetimepicker.dataBind();
+            });
+            it('Tab index checking while destroy the component', () => {
+                let inputEle: HTMLElement = createElement('input', { id: 'datetimepicker', attrs: { "tabindex": "1" } });
+                document.body.appendChild(inputEle);
+                datetimepicker = new DateTimePicker({});
+                datetimepicker.appendTo('#datetimepicker');
+                datetimepicker.destroy();
+                expect(inputEle.getAttribute('tabindex') === '1').toBe(true);
+                datetimepicker = null;
+            });
+            it('Tab index checking while destroy the Angular component', () => {
+                let element: any = createElement('ejs-datetimepicker', { id: 'datetime' });
+                element.setAttribute('tabindex', '1');
+                document.body.appendChild(element);
+                datetimepicker = new DateTimePicker();
+                datetimepicker.appendTo(element);
+                datetimepicker.destroy();
+                expect(element.getAttribute('tabindex') === null).toBe(true);
+                datetimepicker = null;
+            });
+			it('Tab index checking while disabled the Angular component', () => {
+                let element: any = createElement('ejs-datetimepicker', { id: 'datetime' });
+                document.body.appendChild(element);
+                datetimepicker = new DateTimePicker();
+                datetimepicker.enabled = false;
+                datetimepicker.dataBind();
+                datetimepicker.appendTo(element);
+                expect(datetimepicker.inputWrapper.container.children[0].tabIndex === -1).toBe(true);
             });
         });
     });
@@ -1133,7 +1181,7 @@ describe('document strict mode testing', () => {
         datetimepicker.appendTo('#dateTime');
         datetimepicker.width = '40%';
         datetimepicker.dataBind();
-        // expect(datetimepicker.inputWrapper.container.style.width).toBe('40%');
+        expect(datetimepicker.inputWrapper.container.style.width).toBe('40%');
     })
     it('onproperty change width 40% testing', () => {
         datetimepicker = new DateTimePicker({
@@ -1141,8 +1189,8 @@ describe('document strict mode testing', () => {
         });
         datetimepicker.appendTo('#dateTime');
         datetimepicker.show();
-        // expect(datetimepicker.isTimePopupOpen()).toBe(true);
         datetimepicker.show('time');
+        expect(datetimepicker.isTimePopupOpen()).toBe(true);
     })
     it('onproperty change readonly testing', () => {
         datetimepicker = new DateTimePicker({
@@ -1227,7 +1275,9 @@ describe('document strict mode testing', () => {
         datetimepicker.appendTo('#dateTime');
         datetimepicker.value = new Date('3/3/2017 11:00 AM');
         datetimepicker.dataBind();
-        expect(datetimepicker.inputElement.value).toBe('3/3/2017 11:00 AM');
+        datetimepicker.format = 'dd/MM/yyyy HH:mm';
+        datetimepicker.dataBind();
+        expect(datetimepicker.inputElement.value).toBe('03/03/2017 11:00');
     })
     it('onproperty change object format testing', () => {
         datetimepicker = new DateTimePicker();
@@ -2335,3 +2385,256 @@ describe('Islamic ', () => {
     // });
 });
 
+describe('SetScrollTo testing', () => {
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'datetimepickerscroll' });
+        document.body.appendChild(ele);
+        datetimepicker = new DateTimePicker();
+        datetimepicker.appendTo('#datetimepickerscroll');
+    });
+    afterEach(() => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('scrollTo intermediate value testing', (done) => {
+        datetimepicker.show('time');
+        datetimepicker.hide();
+        datetimepicker.scrollTo = new Date("11/11/2011 2:00 PM");
+        datetimepicker.dataBind();
+        setTimeout(function () {
+            datetimepicker.show('time');
+            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
+            done();
+        }, 450);
+    });
+    it('scrollTo initial value testing', (done) => {
+        datetimepicker.scrollTo = new Date("11/11/2011 12:00 AM");
+        datetimepicker.dataBind();
+        datetimepicker.show('time');
+        setTimeout(function () {
+            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
+            done();
+        }, 450);
+    });
+    it('scrollTo last value testing', (done) => {
+        datetimepicker.scrollTo = new Date("11/11/2011 11:00 AM");
+        datetimepicker.dataBind();
+        datetimepicker.show('time');
+        setTimeout(function () {
+            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
+            done();
+        }, 450);
+    });
+    it('scrollTo false testing', (done) => {
+        datetimepicker.scrollTo = null;
+        datetimepicker.dataBind();
+        datetimepicker.show('time');
+        setTimeout(function () {
+            expect(datetimepicker.dateTimeWrapper.scrollTop).toBe(0);
+            done();
+        }, 450);
+    });
+    it('scrollTo invalid date testing', () => {
+        datetimepicker.scrollTo = new Date('');
+        datetimepicker.dataBind();
+        expect(datetimepicker.scrollTo).toBe(null);
+    });
+});
+
+
+describe('invalid String', () => {
+    let datetimepicker: any;
+    beforeEach(() => {
+        let ele: HTMLElement = createElement('input', { id: 'datetime' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('valid Date only Value Test Case', () => {
+        datetimepicker = new DateTimePicker({value:new Date('1/9/2018')});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe('1/9/2018 12:00 AM');
+        expect(+datetimepicker.value).toBe(+new Date('1/9/2018 12:00 AM'));
+    });
+    it('invalid string type with value test case', () => {
+        datetimepicker = new DateTimePicker({ value: <any>"hgfnfhg" });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("hgfnfhg");
+        expect(datetimepicker.value).toBe(null)
+    });
+    it('invalid string type with value test case(popup)', () => {
+        datetimepicker = new DateTimePicker({ value: <any>"hgfnfhg" });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("hgfnfhg");
+        expect(datetimepicker.value).toBe(null);
+        (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
+        expect(datetimepicker.isTimePopupOpen()).toBe(true);
+        expect(datetimepicker.selectedElement).toBe(null);
+    });
+    it('invalid object type with value test case', () => {
+        datetimepicker = new DateTimePicker({ value: <any>{ab:'bc'} });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("");
+        expect(datetimepicker.value).toBe(null)
+    });
+    it('invalid object type with value onproperty test case', () => {
+        datetimepicker = new DateTimePicker({ value: <any>'12/12/2012' });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("12/12/2012 12:00 AM");
+        datetimepicker.value = <any>{ab:'bc'};
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("");
+        expect(datetimepicker.value).toBe(null)
+    });
+    it('invalid number type with value test case ', () => {
+        datetimepicker = new DateTimePicker({ value: <any>12243 });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("12243");
+        expect(datetimepicker.value).toBe(null)
+    });
+    it('invalid string type with value test case and strictMode true ', () => {
+        datetimepicker = new DateTimePicker({ value: <any>"hgfnfhg", strictMode:true });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("");
+        expect(datetimepicker.value).toBe(null)
+    });
+    it('invalid number type with value test case and strictMode true', () => {
+        datetimepicker = new DateTimePicker({ value: <any>12243, strictMode:true });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("");
+        expect(datetimepicker.value).toBe(null)
+    });
+    it('invalid number type with value test case and strictMode true with format', () => {
+        datetimepicker = new DateTimePicker({ value: <any>240201,format:'yyMMdd', strictMode:true });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("240201");
+        expect(+datetimepicker.value).toBe(+new Date('02/01/2024'));
+    });
+    it('invalid number type with value test case and strictMode true with format onproperty', () => {
+        datetimepicker = new DateTimePicker({ value: new Date('11/12/2014')});
+        datetimepicker.appendTo('#datetime');
+        expect(+datetimepicker.value).toBe(+new Date('11/12/2014'));
+        datetimepicker.strictMode = true;
+        datetimepicker.format='yyMMdd';
+        datetimepicker.dataBind();
+        datetimepicker.value=240201;
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("240201");
+        expect(+datetimepicker.value).toBe(+new Date('02/01/2024'));
+    });
+    it('number value in onproperty along with format', () => {
+        datetimepicker = new DateTimePicker({ value: new Date('11/12/2014')});
+        datetimepicker.appendTo('#datetime');
+        expect(+datetimepicker.value).toBe(+new Date('11/12/2014'));
+        datetimepicker.format='yyMMdd';
+        datetimepicker.dataBind();
+        datetimepicker.value=240201;
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("240201");
+        expect(+datetimepicker.value).toBe(+new Date('02/01/2024'));
+    });
+    it('string value in onproperty along with format', () => {
+        datetimepicker = new DateTimePicker({ value: new Date('11/12/2014')});
+        datetimepicker.appendTo('#datetime');
+        expect(+datetimepicker.value).toBe(+new Date('11/12/2014'));
+        datetimepicker.format='HHmmddMMyy';
+        datetimepicker.dataBind();
+        datetimepicker.value='2356011224';
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("2356011224");
+        expect(+datetimepicker.value).toBe(+new Date('12/01/2024 23:56'));
+    });
+    it('string value(number) along with format', () => {
+        datetimepicker = new DateTimePicker({ format:'HHmmddMMyy',value:<any>'2356011224'});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("2356011224");
+        expect(+datetimepicker.value).toBe(+new Date('12/01/2024 23:56'));
+    });
+    it('string value(string) along with format', () => {
+        datetimepicker = new DateTimePicker({ value: new Date('11/12/2014')});
+        datetimepicker.appendTo('#datetime');
+        expect(+datetimepicker.value).toBe(+new Date('11/12/2014'));
+        datetimepicker.format='dd MMM yyyy, HH-mm';
+        datetimepicker.dataBind();
+        datetimepicker.value='12 May 2017, 02-00';
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("12 May 2017, 02-00");
+        expect(+datetimepicker.value).toBe(+new Date('05/12/2017 02:00'));
+    });
+    it('string value(string) along with format on property', () => {
+        datetimepicker = new DateTimePicker({ format:'dd MMM yyyy, HH-mm',value:<any>'12 May 2017, 02-00'});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("12 May 2017, 02-00");
+        expect(+datetimepicker.value).toBe(+new Date('05/12/2017 02:00'));
+    });
+    it('number value along with format', () => {
+        datetimepicker = new DateTimePicker({ value:<any>2356011224,format:'HHmmddMMyy'});
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("2356011224");
+        expect(+datetimepicker.value).toBe(+new Date('12/01/2024 23:56'));
+    });
+    it('invalid number type with value test case and strictMode conditions', () => {
+        datetimepicker = new DateTimePicker({ value: <any>12243, strictMode:true });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe("");
+        datetimepicker.strictMode = false;
+        datetimepicker.value = <any>"avdsaghd";
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("avdsaghd");
+        expect(datetimepicker.value).toBe(null);
+        datetimepicker.value = <any>12345;
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("12345");
+        expect(datetimepicker.value).toBe(null)
+    });
+    it('string type value with onproperty test case ', () => {
+        datetimepicker = new DateTimePicker({ value: <any>'2/2/2017 2:30 AM' });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe('2/2/2017 2:30 AM');
+        expect(+datetimepicker.value).toBe(+new Date('2/2/2017 2:30 AM'));
+        datetimepicker.value = "3/3/2017 5:30 AM";
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('3/3/2017 5:30 AM');
+        expect(+datetimepicker.value).toBe(+new Date('3/3/2017 5:30 AM'));
+    });
+    it('IOS string type with value test case ', () => {
+        datetimepicker = new DateTimePicker({ value: <any>"2017-02-01T18:30:00.000Z" });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value != '').toBe(true);
+        expect(datetimepicker.value !== null).toBe(true);
+    });
+    it('IOS string type with value test case on property', () => {
+        datetimepicker = new DateTimePicker({ strictMode:true,value: <any>"2017-02-01T18:30:00.000Z" });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value != '').toBe(true);
+        expect(datetimepicker.value !== null).toBe(true);
+    });
+    it('string type with format on property test case', () => {
+        datetimepicker = new DateTimePicker({ value: <any>'2/2/2017' });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.value).toBe('2/2/2017 12:00 AM');
+        datetimepicker.format = 'dd/MM/yyyy mm:HH';
+        datetimepicker.value = "19/05/1997 10:20";
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe("19/05/1997 10:20");
+        expect(+datetimepicker.value).toBe(+new Date("05/19/1997 20:10"));
+        expect(datetimepicker.invalidValueString).toBe(null);
+    });
+});
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+});

@@ -44,18 +44,36 @@
       }
 
       &.e-focused {
-        @include chip-color($chip-focus-bg-color, $chip-focus-border-color, $chip-focus-font-color, $chip-icon-focus-font-color, $chip-avatar-hover-bg-color, $chip-avatar-hover-font-color);
-        box-shadow: $chip-focus-box-shadow;
+        @if ($skin-name == 'bootstrap4') {
+          @include chip-color($chip-focus-bg-color, $chip-focus-border-color, $chip-focus-font-color, $chip-icon-focus-font-color, $chip-avatar-hover-bg-color, $chip-avatar-hover-font-color, $chip-close-icon-font-color);
+          box-shadow: $chip-focus-box-shadow;
+        }
+        @else {
+          @include chip-color($chip-focus-bg-color, $chip-focus-border-color, $chip-focus-font-color, $chip-icon-focus-font-color, $chip-avatar-hover-bg-color, $chip-avatar-hover-font-color);
+          box-shadow: $chip-focus-box-shadow;
+        }
       }
 
       &.e-active {
-        @include chip-color($chip-active-bg-color, $chip-active-border-color, $chip-active-font-color, $chip-icon-active-font-color, $chip-avatar-active-bg-color, $chip-avatar-active-font-color);
-        box-shadow: none;
+        @if ($skin-name == 'bootstrap4') {
+          @include chip-color($chip-active-bg-color, $chip-active-border-color, $chip-active-font-color, $chip-icon-active-font-color, $chip-avatar-active-bg-color, $chip-avatar-active-font-color, $chip-close-icon-font-color);
+          box-shadow: none;
+        }
+        @else {
+          @include chip-color($chip-active-bg-color, $chip-active-border-color, $chip-active-font-color, $chip-icon-active-font-color, $chip-avatar-active-bg-color, $chip-avatar-active-font-color);
+          box-shadow: none;
+        }
       }
 
       &.e-focused.e-active {
-        @include chip-color($chip-focus-active-bg-color, $chip-focus-active-border-color, $chip-focus-active-font-color, $chip-icon-focus-active-font-color, $chip-avatar-focus-active-bg-color, $chip-avatar-focus-active-font-color);
-        box-shadow: $chip-focus-box-shadow;
+        @if ($skin-name == 'bootstrap4') {
+          @include chip-color($chip-focus-active-bg-color, $chip-focus-active-border-color, $chip-focus-active-font-color, $chip-icon-focus-active-font-color, $chip-avatar-focus-active-bg-color, $chip-avatar-focus-active-font-color, $chip-close-icon-font-color);
+          box-shadow: $chip-focus-box-shadow;
+        }
+        @else {
+          @include chip-color($chip-focus-active-bg-color, $chip-focus-active-border-color, $chip-focus-active-font-color, $chip-icon-focus-active-font-color, $chip-avatar-focus-active-bg-color, $chip-avatar-focus-active-font-color);
+          box-shadow: $chip-focus-box-shadow;
+        }
       }
 
       &:active {
@@ -64,9 +82,15 @@
       }
 
       &.e-disabled {
-        @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-avatar-disabled-bg-color, $chip-avatar-disabled-font-color);
-        opacity: 1;
-        pointer-events: none;
+        @if ($skin-name == 'bootstrap4') {
+          opacity: .65;
+          pointer-events: none;
+        }
+        @else {
+          @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-avatar-disabled-bg-color, $chip-avatar-disabled-font-color);
+          opacity: 1;
+          pointer-events: none;
+        }
       }
 
       &.e-outline {
@@ -91,32 +115,59 @@
         }
 
         &:active {
-          @include chip-color($chip-outline-pressed-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-icon-pressed-font-color, $chip-outline-avatar-pressed-bg-color, $chip-outline-avatar-pressed-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-outline-pressed-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-icon-pressed-font-color, $chip-outline-avatar-pressed-bg-color, $chip-outline-avatar-pressed-font-color, $chip-outline-close-icon-pressed-font-color);
+          }
+          @else {
+            @include chip-color($chip-outline-pressed-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-icon-pressed-font-color, $chip-outline-avatar-pressed-bg-color, $chip-outline-avatar-pressed-font-color);
+          }
         }
 
         &.e-disabled {
-          @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-outline-avatar-disabled-bg-color, $chip-outline-avatar-disabled-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            opacity: .65;
+            pointer-events: none;
+          }
+          @else {
+            @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-outline-avatar-disabled-bg-color, $chip-outline-avatar-disabled-font-color);
+          }
         }
       }
     }
 
     &.e-selection .e-chip {
       &.e-active {
-        @include chip-color($chip-choice-active-bg-color, $chip-choice-active-border-color, $chip-choice-active-font-color, $chip-choice-active-font-color, $chip-avatar-choice-active-bg-color, $chip-avatar-choice-active-font-color);
+        @if ($skin-name == 'bootstrap4') {
+          @include chip-color($chip-choice-active-bg-color, $chip-choice-active-border-color, $chip-choice-active-font-color, $chip-choice-active-font-color, $chip-avatar-choice-active-bg-color, $chip-avatar-choice-active-font-color, $chip-close-icon-font-color);
+        }
+        @else {
+          @include chip-color($chip-choice-active-bg-color, $chip-choice-active-border-color, $chip-choice-active-font-color, $chip-choice-active-font-color, $chip-avatar-choice-active-bg-color, $chip-avatar-choice-active-font-color);
+        }
 
         &.e-focused {
           @include chip-color($chip-choice-focus-active-bg-color, $chip-choice-focus-active-border-color, $chip-choice-focus-active-font-color, $chip-choice-icon-focus-active-font-color, $chip-avatar-choice-focus-active-bg-color, $chip-avatar-choice-focus-active-font-color);
         }
 
         &.e-disabled {
-          @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-avatar-disabled-bg-color, $chip-avatar-disabled-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            opacity: .65;
+            pointer-events: none;
+          }
+          @else {
+            @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-avatar-disabled-bg-color, $chip-avatar-disabled-font-color);
+          }
         }
 
         &.e-outline {
           @include chip-color($chip-outline-choice-active-bg-color, $chip-outline-choice-active-border-color, $chip-outline-choice-active-font-color, $chip-outline-choice-active-font-color, $chip-outline-avatar-choice-active-bg-color, $chip-outline-avatar-choice-active-font-color);
 
           &.e-focused {
-            @include chip-color($chip-outline-choice-focus-active-bg-color, $chip-outline-choice-focus-active-border-color, $chip-outline-choice-focus-active-font-color, $chip-outline-choice-icon-focus-active-font-color, $chip-outline-avatar-choice-focus-active-bg-color, $chip-outline-avatar-choice-focus-active-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              @include chip-color($chip-outline-choice-focus-active-bg-color, $chip-outline-choice-focus-active-border-color, $chip-outline-choice-focus-active-font-color, $chip-outline-choice-icon-focus-active-font-color, $chip-outline-avatar-choice-focus-active-bg-color, $chip-outline-avatar-choice-focus-active-font-color, $chip-outline-close-icon-font-color);
+            }
+            @else {
+              @include chip-color($chip-outline-choice-focus-active-bg-color, $chip-outline-choice-focus-active-border-color, $chip-outline-choice-focus-active-font-color, $chip-outline-choice-icon-focus-active-font-color, $chip-outline-avatar-choice-focus-active-bg-color, $chip-outline-avatar-choice-focus-active-font-color);
+            }
           }
 
           &.e-disabled {
@@ -129,7 +180,12 @@
         @include chip-color($chip-pressed-active-bg-color, $chip-pressed-border-color, $chip-pressed-font-color, $chip-icon-pressed-font-color, $chip-avatar-pressed-active-bg-color, $chip-avatar-pressed-active-font-color);
 
         &.e-outline {
-          @include chip-color($chip-outline-pressed-active-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-icon-pressed-font-color, $chip-outline-avatar-pressed-active-bg-color, $chip-outline-avatar-pressed-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-outline-pressed-active-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-pressed-font-color, $chip-outline-avatar-pressed-active-bg-color, $chip-outline-avatar-pressed-active-font-color, $chip-close-icon-pressed-font-color);
+          }
+          @else {
+            @include chip-color($chip-outline-pressed-active-bg-color, $chip-outline-pressed-border-color, $chip-outline-pressed-font-color, $chip-outline-icon-pressed-font-color, $chip-outline-avatar-pressed-active-bg-color, $chip-outline-avatar-pressed-active-font-color);
+          }
         }
       }
     }
@@ -145,23 +201,48 @@
         }
 
         &.e-focused {
-          @include chip-color($chip-primary-focus-bg-color, $chip-primary-focus-border-color, $chip-primary-focus-font-color, $chip-primary-focus-font-color, $chip-primary-avatar-focus-bg-color, $chip-primary-avatar-focus-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-primary-focus-bg-color, $chip-primary-focus-border-color, $chip-primary-focus-font-color, $chip-primary-focus-font-color, $chip-primary-avatar-focus-bg-color, $chip-primary-avatar-focus-font-color, $chip-close-icon-font-color);
+            box-shadow: $chip-primary-box-shadow;
+          }
+          @else {
+            @include chip-color($chip-primary-focus-bg-color, $chip-primary-focus-border-color, $chip-primary-focus-font-color, $chip-primary-focus-font-color, $chip-primary-avatar-focus-bg-color, $chip-primary-avatar-focus-font-color);
+          }
         }
 
         &.e-active {
-          @include chip-color($chip-primary-active-bg-color, $chip-primary-active-border-color, $chip-primary-active-font-color, $chip-primary-active-font-color, $chip-primary-avatar-active-bg-color, $chip-primary-avatar-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-primary-active-bg-color, $chip-primary-active-border-color, $chip-primary-active-font-color, $chip-primary-active-font-color, $chip-primary-avatar-active-bg-color, $chip-primary-avatar-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-primary-active-bg-color, $chip-primary-active-border-color, $chip-primary-active-font-color, $chip-primary-active-font-color, $chip-primary-avatar-active-bg-color, $chip-primary-avatar-active-font-color);
+          }
         }
 
         &.e-focused.e-active {
-          @include chip-color($chip-primary-focus-active-bg-color, $chip-primary-focus-active-border-color, $chip-primary-focus-active-font-color, $chip-primary-focus-active-font-color, $chip-primary-avatar-focus-active-bg-color, $chip-primary-avatar-focus-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-primary-focus-active-bg-color, $chip-primary-focus-active-border-color, $chip-primary-focus-active-font-color, $chip-primary-focus-active-font-color, $chip-primary-avatar-focus-active-bg-color, $chip-primary-avatar-focus-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-primary-focus-active-bg-color, $chip-primary-focus-active-border-color, $chip-primary-focus-active-font-color, $chip-primary-focus-active-font-color, $chip-primary-avatar-focus-active-bg-color, $chip-primary-avatar-focus-active-font-color);
+          }
         }
 
         &:active {
           @include chip-color($chip-primary-pressed-bg-color, $chip-primary-pressed-border-color, $chip-primary-pressed-font-color, $chip-primary-pressed-font-color, $chip-primary-avatar-pressed-bg-color, $chip-primary-avatar-pressed-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            box-shadow: $chip-primary-box-shadow;
+          }
         }
 
         &.e-disabled {
-          @include chip-color($chip-primary-disabled-bg-color, $chip-primary-disabled-border-color, $chip-primary-disabled-font-color, $chip-primary-disabled-font-color, $chip-primary-avatar-disabled-bg-color, $chip-primary-avatar-disabled-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            opacity: .65;
+            pointer-events: none;
+          }
+          @else {
+            @include chip-color($chip-primary-disabled-bg-color, $chip-primary-disabled-border-color, $chip-primary-disabled-font-color, $chip-primary-disabled-font-color, $chip-primary-avatar-disabled-bg-color, $chip-primary-avatar-disabled-font-color);
+          }
         }
 
         &.e-outline {
@@ -181,7 +262,12 @@
           }
 
           &.e-focused.e-active {
-            @include chip-color($chip-outline-primary-focus-active-bg-color, $chip-outline-primary-focus-active-border-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-avatar-focus-active-bg-color, $chip-outline-primary-avatar-focus-active-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              @include chip-color($chip-outline-primary-focus-active-bg-color, $chip-outline-primary-focus-active-border-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-avatar-focus-active-bg-color, $chip-outline-primary-avatar-focus-active-font-color, $chip-outline-primary-close-icon-font-color);
+            }
+            @else {
+              @include chip-color($chip-outline-primary-focus-active-bg-color, $chip-outline-primary-focus-active-border-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-focus-active-font-color, $chip-outline-primary-avatar-focus-active-bg-color, $chip-outline-primary-avatar-focus-active-font-color);
+            }
           }
 
           &:active {
@@ -189,7 +275,13 @@
           }
 
           &.e-disabled {
-            @include chip-color($chip-outline-primary-disabled-bg-color, $chip-outline-primary-disabled-border-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-avatar-disabled-bg-color, $chip-outline-primary-avatar-disabled-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              opacity: .65;
+              pointer-events: none;
+            }
+            @else {
+              @include chip-color($chip-outline-primary-disabled-bg-color, $chip-outline-primary-disabled-border-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-avatar-disabled-bg-color, $chip-outline-primary-avatar-disabled-font-color);
+            }
           }
         }
       }
@@ -203,23 +295,48 @@
         }
 
         &.e-focused {
-          @include chip-color($chip-success-focus-bg-color, $chip-success-focus-border-color, $chip-success-focus-font-color, $chip-success-focus-font-color, $chip-success-avatar-focus-bg-color, $chip-success-avatar-focus-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-success-focus-bg-color, $chip-success-focus-border-color, $chip-success-focus-font-color, $chip-success-focus-font-color, $chip-success-avatar-focus-bg-color, $chip-success-avatar-focus-font-color, $chip-close-icon-font-color);
+            box-shadow: $chip-success-box-shadow;
+          }
+          @else {
+            @include chip-color($chip-success-focus-bg-color, $chip-success-focus-border-color, $chip-success-focus-font-color, $chip-success-focus-font-color, $chip-success-avatar-focus-bg-color, $chip-success-avatar-focus-font-color);
+          }
         }
 
         &.e-active {
-          @include chip-color($chip-success-active-bg-color, $chip-success-active-border-color, $chip-success-active-font-color, $chip-success-active-font-color, $chip-success-avatar-active-bg-color, $chip-success-avatar-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-success-active-bg-color, $chip-success-active-border-color, $chip-success-active-font-color, $chip-success-active-font-color, $chip-success-avatar-active-bg-color, $chip-success-avatar-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-success-active-bg-color, $chip-success-active-border-color, $chip-success-active-font-color, $chip-success-active-font-color, $chip-success-avatar-active-bg-color, $chip-success-avatar-active-font-color);
+          }
         }
 
         &.e-focused.e-active {
-          @include chip-color($chip-success-focus-active-bg-color, $chip-success-focus-active-border-color, $chip-success-focus-active-font-color, $chip-success-focus-active-font-color, $chip-success-avatar-focus-active-bg-color, $chip-success-avatar-focus-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-success-focus-active-bg-color, $chip-success-focus-active-border-color, $chip-success-focus-active-font-color, $chip-success-focus-active-font-color, $chip-success-avatar-focus-active-bg-color, $chip-success-avatar-focus-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-success-focus-active-bg-color, $chip-success-focus-active-border-color, $chip-success-focus-active-font-color, $chip-success-focus-active-font-color, $chip-success-avatar-focus-active-bg-color, $chip-success-avatar-focus-active-font-color);
+          }
         }
 
         &:active {
           @include chip-color($chip-success-pressed-bg-color, $chip-success-pressed-border-color, $chip-success-pressed-font-color, $chip-success-pressed-font-color, $chip-success-avatar-pressed-bg-color, $chip-success-avatar-pressed-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            box-shadow: $chip-success-box-shadow;
+          }
         }
 
         &.e-disabled {
-          @include chip-color($chip-success-disabled-bg-color, $chip-success-disabled-border-color, $chip-success-disabled-font-color, $chip-success-disabled-font-color, $chip-success-avatar-disabled-bg-color, $chip-success-avatar-disabled-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            opacity: .65;
+            pointer-events: none;
+          }
+          @else {
+            @include chip-color($chip-success-disabled-bg-color, $chip-success-disabled-border-color, $chip-success-disabled-font-color, $chip-success-disabled-font-color, $chip-success-avatar-disabled-bg-color, $chip-success-avatar-disabled-font-color);
+          }
         }
 
         &.e-outline {
@@ -239,7 +356,12 @@
           }
 
           &.e-focused.e-active {
-            @include chip-color($chip-outline-success-focus-active-bg-color, $chip-outline-success-focus-active-border-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-avatar-focus-active-bg-color, $chip-outline-success-avatar-focus-active-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              @include chip-color($chip-outline-success-focus-active-bg-color, $chip-outline-success-focus-active-border-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-avatar-focus-active-bg-color, $chip-outline-success-avatar-focus-active-font-color, $chip-outline-success-close-icon-font-color);
+            }
+            @else {
+              @include chip-color($chip-outline-success-focus-active-bg-color, $chip-outline-success-focus-active-border-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-focus-active-font-color, $chip-outline-success-avatar-focus-active-bg-color, $chip-outline-success-avatar-focus-active-font-color);
+            }
           }
 
           &:active {
@@ -247,7 +369,13 @@
           }
 
           &.e-disabled {
-            @include chip-color($chip-outline-success-disabled-bg-color, $chip-outline-success-disabled-border-color, $chip-outline-success-disabled-font-color, $chip-outline-success-disabled-font-color, $chip-outline-success-avatar-disabled-bg-color, $chip-outline-success-avatar-disabled-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              opacity: .65;
+              pointer-events: none;
+            }
+            @else {
+              @include chip-color($chip-outline-success-disabled-bg-color, $chip-outline-success-disabled-border-color, $chip-outline-success-disabled-font-color, $chip-outline-success-disabled-font-color, $chip-outline-success-avatar-disabled-bg-color, $chip-outline-success-avatar-disabled-font-color);
+            }
           }
         }
       }
@@ -261,29 +389,53 @@
         }
 
         &.e-focused {
-          @include chip-color($chip-info-focus-bg-color, $chip-info-focus-border-color, $chip-info-focus-font-color, $chip-info-focus-font-color, $chip-info-avatar-focus-bg-color, $chip-info-avatar-focus-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-info-focus-bg-color, $chip-info-focus-border-color, $chip-info-focus-font-color, $chip-info-focus-font-color, $chip-info-avatar-focus-bg-color, $chip-info-avatar-focus-font-color, $chip-close-icon-font-color);
+            box-shadow: $chip-info-box-shadow;
+          }
+          @else {
+            @include chip-color($chip-info-focus-bg-color, $chip-info-focus-border-color, $chip-info-focus-font-color, $chip-info-focus-font-color, $chip-info-avatar-focus-bg-color, $chip-info-avatar-focus-font-color);
+          }
         }
 
         &.e-active {
-          @include chip-color($chip-info-active-bg-color, $chip-info-active-border-color, $chip-info-active-font-color, $chip-info-active-font-color, $chip-info-avatar-active-bg-color, $chip-info-avatar-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-info-active-bg-color, $chip-info-active-border-color, $chip-info-active-font-color, $chip-info-active-font-color, $chip-info-avatar-active-bg-color, $chip-info-avatar-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-info-active-bg-color, $chip-info-active-border-color, $chip-info-active-font-color, $chip-info-active-font-color, $chip-info-avatar-active-bg-color, $chip-info-avatar-active-font-color);
+          }
         }
 
         &.e-focused.e-active {
-          @include chip-color($chip-info-focus-active-bg-color, $chip-info-focus-active-border-color, $chip-info-focus-active-font-color, $chip-info-focus-active-font-color, $chip-info-avatar-focus-active-bg-color, $chip-info-avatar-focus-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-info-focus-active-bg-color, $chip-info-focus-active-border-color, $chip-info-focus-active-font-color, $chip-info-focus-active-font-color, $chip-info-avatar-focus-active-bg-color, $chip-info-avatar-focus-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-info-focus-active-bg-color, $chip-info-focus-active-border-color, $chip-info-focus-active-font-color, $chip-info-focus-active-font-color, $chip-info-avatar-focus-active-bg-color, $chip-info-avatar-focus-active-font-color);
+          }
         }
 
         &:active {
           @include chip-color($chip-info-pressed-bg-color, $chip-info-pressed-border-color, $chip-info-pressed-font-color, $chip-info-pressed-font-color, $chip-info-avatar-pressed-bg-color, $chip-info-avatar-pressed-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            box-shadow: $chip-info-box-shadow;
+          }
         }
 
         &.e-disabled {
-          @include chip-color($chip-info-disabled-bg-color, $chip-info-disabled-border-color, $chip-info-disabled-font-color, $chip-info-disabled-font-color, $chip-info-avatar-disabled-bg-color, $chip-info-avatar-disabled-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            opacity: .65;
+            pointer-events: none;
+          }
+          @else {
+            @include chip-color($chip-info-disabled-bg-color, $chip-info-disabled-border-color, $chip-info-disabled-font-color, $chip-info-disabled-font-color, $chip-info-avatar-disabled-bg-color, $chip-info-avatar-disabled-font-color);
+          }
         }
 
         &.e-outline {
           @include chip-color($chip-outline-info-bg-color, $chip-outline-info-border-color, $chip-outline-info-font-color, $chip-outline-info-font-color, $chip-outline-info-avatar-bg-color, $chip-outline-info-avatar-font-color, $chip-outline-info-close-icon-font-color);
           @include chip-dlt-btn-color($chip-outline-info-close-icon-hover-font-color, $chip-outline-info-close-icon-pressed-font-color);
-
 
           &:hover {
             @include chip-color($chip-outline-info-hover-bg-color, $chip-outline-info-hover-border-color, $chip-outline-info-hover-font-color, $chip-outline-info-hover-font-color, $chip-outline-info-avatar-hover-bg-color, $chip-outline-info-avatar-hover-font-color);
@@ -298,7 +450,12 @@
           }
 
           &.e-focused.e-active {
-            @include chip-color($chip-outline-info-focus-active-bg-color, $chip-outline-info-focus-active-border-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-avatar-focus-active-bg-color, $chip-outline-info-avatar-focus-active-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              @include chip-color($chip-outline-info-focus-active-bg-color, $chip-outline-info-focus-active-border-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-avatar-focus-active-bg-color, $chip-outline-info-avatar-focus-active-font-color, $chip-outline-info-close-icon-font-color);
+            }
+            @else {
+              @include chip-color($chip-outline-info-focus-active-bg-color, $chip-outline-info-focus-active-border-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-focus-active-font-color, $chip-outline-info-avatar-focus-active-bg-color, $chip-outline-info-avatar-focus-active-font-color);
+            }
           }
 
           &:active {
@@ -306,7 +463,13 @@
           }
 
           &.e-disabled {
-            @include chip-color($chip-outline-info-disabled-bg-color, $chip-outline-info-disabled-border-color, $chip-outline-info-disabled-font-color, $chip-outline-info-disabled-font-color, $chip-outline-info-avatar-disabled-bg-color, $chip-outline-info-avatar-disabled-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              opacity: .65;
+              pointer-events: none;
+            }
+            @else {
+              @include chip-color($chip-outline-info-disabled-bg-color, $chip-outline-info-disabled-border-color, $chip-outline-info-disabled-font-color, $chip-outline-info-disabled-font-color, $chip-outline-info-avatar-disabled-bg-color, $chip-outline-info-avatar-disabled-font-color);
+            }
           }
         }
       }
@@ -320,23 +483,48 @@
         }
 
         &.e-focused {
-          @include chip-color($chip-warning-focus-bg-color, $chip-warning-focus-border-color, $chip-warning-focus-font-color, $chip-warning-focus-font-color, $chip-warning-avatar-focus-bg-color, $chip-warning-avatar-focus-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-warning-focus-bg-color, $chip-warning-focus-border-color, $chip-warning-focus-font-color, $chip-warning-focus-font-color, $chip-warning-avatar-focus-bg-color, $chip-warning-avatar-focus-font-color, $chip-warning-close-icon-font-color);
+            box-shadow: $chip-warning-box-shadow;
+          }
+          @else {
+            @include chip-color($chip-warning-focus-bg-color, $chip-warning-focus-border-color, $chip-warning-focus-font-color, $chip-warning-focus-font-color, $chip-warning-avatar-focus-bg-color, $chip-warning-avatar-focus-font-color);
+          }
         }
 
         &.e-active {
-          @include chip-color($chip-warning-active-bg-color, $chip-warning-active-border-color, $chip-warning-active-font-color, $chip-warning-active-font-color, $chip-warning-avatar-active-bg-color, $chip-warning-avatar-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-warning-active-bg-color, $chip-warning-active-border-color, $chip-warning-active-font-color, $chip-warning-active-font-color, $chip-warning-avatar-active-bg-color, $chip-warning-avatar-active-font-color, $chip-warning-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-warning-active-bg-color, $chip-warning-active-border-color, $chip-warning-active-font-color, $chip-warning-active-font-color, $chip-warning-avatar-active-bg-color, $chip-warning-avatar-active-font-color);
+          }
         }
 
         &.e-focused.e-active {
-          @include chip-color($chip-warning-focus-active-bg-color, $chip-warning-focus-active-border-color, $chip-warning-focus-active-font-color, $chip-warning-focus-active-font-color, $chip-warning-avatar-focus-active-bg-color, $chip-warning-avatar-focus-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-warning-focus-active-bg-color, $chip-warning-focus-active-border-color, $chip-warning-focus-active-font-color, $chip-warning-focus-active-font-color, $chip-warning-avatar-focus-active-bg-color, $chip-warning-avatar-focus-active-font-color, $chip-warning-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-warning-focus-active-bg-color, $chip-warning-focus-active-border-color, $chip-warning-focus-active-font-color, $chip-warning-focus-active-font-color, $chip-warning-avatar-focus-active-bg-color, $chip-warning-avatar-focus-active-font-color);
+          }
         }
 
         &:active {
           @include chip-color($chip-warning-pressed-bg-color, $chip-warning-pressed-border-color, $chip-warning-pressed-font-color, $chip-warning-pressed-font-color, $chip-warning-avatar-pressed-bg-color, $chip-warning-avatar-pressed-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            box-shadow: $chip-warning-box-shadow;
+          }
         }
 
         &.e-disabled {
-          @include chip-color($chip-warning-disabled-bg-color, $chip-warning-disabled-border-color, $chip-warning-disabled-font-color, $chip-warning-disabled-font-color, $chip-warning-avatar-disabled-bg-color, $chip-warning-avatar-disabled-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            opacity: .65;
+            pointer-events: none;
+          }
+          @else {
+            @include chip-color($chip-warning-disabled-bg-color, $chip-warning-disabled-border-color, $chip-warning-disabled-font-color, $chip-warning-disabled-font-color, $chip-warning-avatar-disabled-bg-color, $chip-warning-avatar-disabled-font-color);
+          }
         }
 
         &.e-outline {
@@ -356,15 +544,31 @@
           }
 
           &.e-focused.e-active {
-            @include chip-color($chip-outline-warning-focus-active-bg-color, $chip-outline-warning-focus-active-border-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-avatar-focus-active-bg-color, $chip-outline-warning-avatar-focus-active-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              @include chip-color($chip-outline-warning-focus-active-bg-color, $chip-outline-warning-focus-active-border-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-avatar-focus-active-bg-color, $chip-outline-warning-avatar-focus-active-font-color, $chip-outline-warning-close-icon-font-color);
+            }
+            @else {
+              @include chip-color($chip-outline-warning-focus-active-bg-color, $chip-outline-warning-focus-active-border-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-focus-active-font-color, $chip-outline-warning-avatar-focus-active-bg-color, $chip-outline-warning-avatar-focus-active-font-color);
+            }
           }
 
           &:active {
-            @include chip-color($chip-outline-warning-pressed-bg-color, $chip-outline-warning-pressed-border-color, $chip-outline-warning-pressed-font-color, $chip-outline-warning-pressed-font-color, $chip-outline-warning-avatar-pressed-bg-color, $chip-outline-warning-avatar-pressed-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              @include chip-color($chip-outline-warning-pressed-bg-color, $chip-outline-warning-pressed-border-color, $chip-outline-warning-pressed-font-color, $chip-outline-warning-pressed-font-color, $chip-outline-warning-avatar-pressed-bg-color, $chip-outline-warning-avatar-pressed-font-color, $chip-outline-warning-pressed-font-color);
+            }
+            @else {
+              @include chip-color($chip-outline-warning-pressed-bg-color, $chip-outline-warning-pressed-border-color, $chip-outline-warning-pressed-font-color, $chip-outline-warning-pressed-font-color, $chip-outline-warning-avatar-pressed-bg-color, $chip-outline-warning-avatar-pressed-font-color);
+            }
           }
 
           &.e-disabled {
-            @include chip-color($chip-outline-warning-disabled-bg-color, $chip-outline-warning-disabled-border-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-avatar-disabled-bg-color, $chip-outline-warning-avatar-disabled-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              opacity: .65;
+              pointer-events: none;
+            }
+            @else {
+              @include chip-color($chip-outline-warning-disabled-bg-color, $chip-outline-warning-disabled-border-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-avatar-disabled-bg-color, $chip-outline-warning-avatar-disabled-font-color);
+            }
           }
         }
       }
@@ -378,23 +582,48 @@
         }
 
         &.e-focused {
-          @include chip-color($chip-danger-focus-bg-color, $chip-danger-focus-border-color, $chip-danger-focus-font-color, $chip-danger-focus-font-color, $chip-danger-avatar-focus-bg-color, $chip-danger-avatar-focus-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-danger-focus-bg-color, $chip-danger-focus-border-color, $chip-danger-focus-font-color, $chip-danger-focus-font-color, $chip-danger-avatar-focus-bg-color, $chip-danger-avatar-focus-font-color, $chip-close-icon-font-color);
+            box-shadow: $chip-danger-box-shadow;
+          }
+          @else {
+            @include chip-color($chip-danger-focus-bg-color, $chip-danger-focus-border-color, $chip-danger-focus-font-color, $chip-danger-focus-font-color, $chip-danger-avatar-focus-bg-color, $chip-danger-avatar-focus-font-color);
+          }
         }
 
         &.e-active {
-          @include chip-color($chip-danger-active-bg-color, $chip-danger-active-border-color, $chip-danger-active-font-color, $chip-danger-active-font-color, $chip-danger-avatar-active-bg-color, $chip-danger-avatar-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-danger-active-bg-color, $chip-danger-active-border-color, $chip-danger-active-font-color, $chip-danger-active-font-color, $chip-danger-avatar-active-bg-color, $chip-danger-avatar-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-danger-active-bg-color, $chip-danger-active-border-color, $chip-danger-active-font-color, $chip-danger-active-font-color, $chip-danger-avatar-active-bg-color, $chip-danger-avatar-active-font-color);
+          }
         }
 
         &.e-focused.e-active {
-          @include chip-color($chip-danger-focus-active-bg-color, $chip-danger-focus-active-border-color, $chip-danger-focus-active-font-color, $chip-danger-focus-active-font-color, $chip-danger-avatar-focus-active-bg-color, $chip-danger-avatar-focus-active-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            @include chip-color($chip-danger-focus-active-bg-color, $chip-danger-focus-active-border-color, $chip-danger-focus-active-font-color, $chip-danger-focus-active-font-color, $chip-danger-avatar-focus-active-bg-color, $chip-danger-avatar-focus-active-font-color, $chip-close-icon-font-color);
+          }
+          @else {
+            @include chip-color($chip-danger-focus-active-bg-color, $chip-danger-focus-active-border-color, $chip-danger-focus-active-font-color, $chip-danger-focus-active-font-color, $chip-danger-avatar-focus-active-bg-color, $chip-danger-avatar-focus-active-font-color);
+          }
         }
 
         &:active {
           @include chip-color($chip-danger-pressed-bg-color, $chip-danger-pressed-border-color, $chip-danger-pressed-font-color, $chip-danger-pressed-font-color, $chip-danger-avatar-pressed-bg-color, $chip-danger-avatar-pressed-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            box-shadow: $chip-danger-box-shadow;
+          }
         }
 
         &.e-disabled {
-          @include chip-color($chip-danger-disabled-bg-color, $chip-danger-disabled-border-color, $chip-danger-disabled-font-color, $chip-danger-disabled-font-color, $chip-danger-avatar-disabled-bg-color, $chip-danger-avatar-disabled-font-color);
+          @if ($skin-name == 'bootstrap4') {
+            opacity: .65;
+            pointer-events: none;
+          }
+          @else {
+            @include chip-color($chip-danger-disabled-bg-color, $chip-danger-disabled-border-color, $chip-danger-disabled-font-color, $chip-danger-disabled-font-color, $chip-danger-avatar-disabled-bg-color, $chip-danger-avatar-disabled-font-color);
+          }
         }
 
         &.e-outline {
@@ -414,7 +643,12 @@
           }
 
           &.e-focused.e-active {
-            @include chip-color($chip-outline-danger-focus-active-bg-color, $chip-outline-danger-focus-active-border-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-avatar-focus-active-bg-color, $chip-outline-danger-avatar-focus-active-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              @include chip-color($chip-outline-danger-focus-active-bg-color, $chip-outline-danger-focus-active-border-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-avatar-focus-active-bg-color, $chip-outline-danger-avatar-focus-active-font-color, $chip-outline-danger-close-icon-font-color);
+            }
+            @else {
+              @include chip-color($chip-outline-danger-focus-active-bg-color, $chip-outline-danger-focus-active-border-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-focus-active-font-color, $chip-outline-danger-avatar-focus-active-bg-color, $chip-outline-danger-avatar-focus-active-font-color);
+            }
           }
 
           &:active {
@@ -422,7 +656,13 @@
           }
 
           &.e-disabled {
-            @include chip-color($chip-outline-danger-disabled-bg-color, $chip-outline-danger-disabled-border-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-avatar-disabled-bg-color, $chip-outline-danger-avatar-disabled-font-color);
+            @if ($skin-name == 'bootstrap4') {
+              opacity: .65;
+              pointer-events: none;
+            }
+            @else {
+              @include chip-color($chip-outline-danger-disabled-bg-color, $chip-outline-danger-disabled-border-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-avatar-disabled-bg-color, $chip-outline-danger-avatar-disabled-font-color);
+            }
           }
         }
       }

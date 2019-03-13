@@ -52,6 +52,7 @@ export class Annotations {
             cancel: false, name: annotationRender, content: annotation.content,
             annotation: annotation, textStyle: annotation.font
         };
+        argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
         this.gauge.trigger(annotationRender, argsData);
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);

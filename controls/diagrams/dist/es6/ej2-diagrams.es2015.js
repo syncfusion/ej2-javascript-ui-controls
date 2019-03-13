@@ -168,6 +168,30 @@ class Point extends ChildProperty {
             return pt1.y < pt2.y ? 'Bottom' : 'Top';
         }
     }
+    //Move these methods to util
+    //public CompareTo(point: PointModel): number {
+    //    let result: number = this.X.CompareTo(point.X);
+    //    return result != 0 ? result : this.Y.CompareTo(point.Y);
+    //}
+    //public CompareOnYAxis(point: PointModel): number {
+    //    let result: number = this.X.CompareTo(point.X);
+    //    return result != 0 ? result : this.Y.CompareTo(point.Y);
+    //}
+    //public CompareOnXAxis(point: PointModel): number {
+    //    let result: number = this.Y.CompareTo(point.Y);
+    //    return result != 0 ? result : this.X.CompareTo(point.X);
+    //}
+    // public round(): void {
+    //     this.x = Math.round(this.x);
+    //     this.y = Math.round(this.y);
+    // }
+    /**
+     * @private
+     * Returns the name of class Point
+     */
+    getClassName() {
+        return 'Point';
+    }
 }
 __decorate$1([
     Property(0)
@@ -1894,6 +1918,7 @@ var Keys;
  * * TextEdit - Indicates the text editing is in progress.
  * * Group - Indicates the group is in progress.
  * * Clear - Indicates diagram have clear all.
+ * * PreventClearSelection - prevents diagram from clear selection
  */
 var DiagramAction;
 (function (DiagramAction) {
@@ -1915,6 +1940,10 @@ var DiagramAction;
     DiagramAction[DiagramAction["PreventClearSelection"] = 256] = "PreventClearSelection";
     /** Indicates whether drag or rotate tool has been activated */
     DiagramAction[DiagramAction["Interactions"] = 512] = "Interactions";
+    /** Use to prevent the history during some action in diagram */
+    DiagramAction[DiagramAction["PreventHistory"] = 1024] = "PreventHistory";
+    /** Use to prevent the icon while expand a node in diagram */
+    DiagramAction[DiagramAction["PreventIconsUpdate"] = 2048] = "PreventIconsUpdate";
 })(DiagramAction || (DiagramAction = {}));
 /**
  * Defines the Selector type to be drawn
@@ -1980,6 +2009,7 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["mouseEnter"] = 20] = "mouseEnter";
     DiagramEvent[DiagramEvent["mouseLeave"] = 21] = "mouseLeave";
     DiagramEvent[DiagramEvent["mouseOver"] = 22] = "mouseOver";
+    DiagramEvent[DiagramEvent["expandStateChange"] = 23] = "expandStateChange";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -1997,6 +2027,8 @@ var PortConstraints;
     PortConstraints[PortConstraints["InConnect"] = 8] = "InConnect";
     /** Enables to only connect the source end of connector */
     PortConstraints[PortConstraints["OutConnect"] = 16] = "OutConnect";
+    /** Enables all constraints */
+    PortConstraints[PortConstraints["Default"] = 24] = "Default";
 })(PortConstraints || (PortConstraints = {}));
 /**
  * Defines the context menu click
@@ -2049,6 +2081,21 @@ class DiagramElement {
          * Sets or gets whether the content of the element needs to be measured
          */
         this.isDirt = true;
+        /**
+         * set to true during print and eport
+         */
+        /** @private */
+        this.isExport = false;
+        /**
+         * set scaling value for print and export
+         */
+        /** @private */
+        this.exportScaleValue = { x: 0, y: 0 };
+        /**
+         * set scaling value for print and export
+         */
+        /** @private */
+        this.exportScaleOffset = { x: 0, y: 0 };
         /**
          * Check whether style need to be apply or not
          */
@@ -2407,6 +2454,13 @@ __decorate$2([
  * ```
  */
 class Stop extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class Stop
+     */
+    getClassName() {
+        return 'Stop';
+    }
 }
 __decorate$2([
     Property('')
@@ -3018,6 +3072,8 @@ class TextElement extends DiagramElement {
         this.textContent = '';
         /** @private */
         this.canMeasure = true;
+        /** @private */
+        this.canConsiderBounds = true;
         /**
          * sets the hyperlink color to blue
          */
@@ -3189,6 +3245,130 @@ class ImageElement extends DiagramElement {
     }
 }
 
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the hyperlink for the annotations in the nodes/connectors
+ */
+class Hyperlink extends ChildProperty {
+}
+__decorate$3([
+    Property('blue')
+], Hyperlink.prototype, "color", void 0);
+__decorate$3([
+    Property('')
+], Hyperlink.prototype, "content", void 0);
+__decorate$3([
+    Property('')
+], Hyperlink.prototype, "link", void 0);
+__decorate$3([
+    Property('None')
+], Hyperlink.prototype, "textDecoration", void 0);
+/**
+ * Defines the textual description of nodes/connectors
+ */
+class Annotation extends ChildProperty {
+}
+__decorate$3([
+    Property('')
+], Annotation.prototype, "content", void 0);
+__decorate$3([
+    Property(undefined)
+], Annotation.prototype, "template", void 0);
+__decorate$3([
+    Property(true)
+], Annotation.prototype, "visibility", void 0);
+__decorate$3([
+    Property(AnnotationConstraints.InheritReadOnly)
+], Annotation.prototype, "constraints", void 0);
+__decorate$3([
+    Complex(undefined, Hyperlink)
+], Annotation.prototype, "hyperlink", void 0);
+__decorate$3([
+    Property('')
+], Annotation.prototype, "id", void 0);
+__decorate$3([
+    Property()
+], Annotation.prototype, "width", void 0);
+__decorate$3([
+    Property()
+], Annotation.prototype, "height", void 0);
+__decorate$3([
+    Property(0)
+], Annotation.prototype, "rotateAngle", void 0);
+__decorate$3([
+    Complex({ strokeWidth: 0, strokeColor: 'transparent', fill: 'transparent' }, TextStyle)
+], Annotation.prototype, "style", void 0);
+__decorate$3([
+    Property('Center')
+], Annotation.prototype, "horizontalAlignment", void 0);
+__decorate$3([
+    Property('Center')
+], Annotation.prototype, "verticalAlignment", void 0);
+__decorate$3([
+    Complex({}, Margin)
+], Annotation.prototype, "margin", void 0);
+__decorate$3([
+    Complex({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
+], Annotation.prototype, "dragLimit", void 0);
+__decorate$3([
+    Property('Shape')
+], Annotation.prototype, "type", void 0);
+__decorate$3([
+    Property()
+], Annotation.prototype, "addInfo", void 0);
+/**
+ * Defines the textual description of nodes/connectors with respect to bounds
+ */
+class ShapeAnnotation extends Annotation {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+    }
+    /**
+     * @private
+     * Returns the module of class ShapeAnnotation
+     */
+    getClassName() {
+        return 'ShapeAnnotation';
+    }
+}
+__decorate$3([
+    Complex({ x: 0.5, y: 0.5 }, Point)
+], ShapeAnnotation.prototype, "offset", void 0);
+/**
+ * Defines the connector annotation
+ */
+class PathAnnotation extends Annotation {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+    }
+    /**
+     * @private
+     * Returns the module of class PathAnnotation
+     */
+    getClassName() {
+        return 'PathAnnotation';
+    }
+}
+__decorate$3([
+    Property(0.5)
+], PathAnnotation.prototype, "offset", void 0);
+__decorate$3([
+    Complex({ x: 0, y: 0 }, Point)
+], PathAnnotation.prototype, "displacement", void 0);
+__decorate$3([
+    Property('Center')
+], PathAnnotation.prototype, "alignment", void 0);
+__decorate$3([
+    Property(false)
+], PathAnnotation.prototype, "segmentAngle", void 0);
+
 /**
  * Canvas module is used to define a plane(canvas) and to arrange the children based on margin
  */
@@ -3236,11 +3416,13 @@ class Canvas extends Container {
                         continue;
                     }
                 }
-                if (desiredBounds === undefined) {
-                    desiredBounds = childBounds;
-                }
-                else {
-                    desiredBounds.uniteRect(childBounds);
+                if ((!(child instanceof TextElement)) || (child instanceof TextElement && child.canConsiderBounds)) {
+                    if (desiredBounds === undefined) {
+                        desiredBounds = childBounds;
+                    }
+                    else {
+                        desiredBounds.uniteRect(childBounds);
+                    }
                 }
             }
             if (desiredBounds) {
@@ -3445,7 +3627,7 @@ let basicShapes = {
     'Diamond': 'M397.784,287.875 L369.5,316.159 L341.216,287.875 L369.5,259.591 L397.784,287.875 z'
 };
 
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -3456,40 +3638,40 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  */
 class Port extends ChildProperty {
 }
-__decorate$4([
+__decorate$5([
     Property('')
 ], Port.prototype, "id", void 0);
-__decorate$4([
+__decorate$5([
     Property('Center')
 ], Port.prototype, "horizontalAlignment", void 0);
-__decorate$4([
+__decorate$5([
     Property('Center')
 ], Port.prototype, "verticalAlignment", void 0);
-__decorate$4([
+__decorate$5([
     Complex({}, Margin)
 ], Port.prototype, "margin", void 0);
-__decorate$4([
+__decorate$5([
     Property(12)
 ], Port.prototype, "width", void 0);
-__decorate$4([
+__decorate$5([
     Property(12)
 ], Port.prototype, "height", void 0);
-__decorate$4([
+__decorate$5([
     Complex({}, ShapeStyle)
 ], Port.prototype, "style", void 0);
-__decorate$4([
+__decorate$5([
     Property('Square')
 ], Port.prototype, "shape", void 0);
-__decorate$4([
+__decorate$5([
     Property(PortVisibility.Connect)
 ], Port.prototype, "visibility", void 0);
-__decorate$4([
+__decorate$5([
     Property('')
 ], Port.prototype, "pathData", void 0);
-__decorate$4([
-    Property(PortConstraints.None)
+__decorate$5([
+    Property(PortConstraints.Default)
 ], Port.prototype, "constraints", void 0);
-__decorate$4([
+__decorate$5([
     Property()
 ], Port.prototype, "addInfo", void 0);
 /**
@@ -3500,120 +3682,17 @@ class PointPort extends Port {
     constructor(parent, propName, defaultValue, isArray) {
         super(parent, propName, defaultValue, isArray);
     }
+    /**
+     * @private
+     * Returns the name of class PointPort
+     */
+    getClassName() {
+        return 'PointPort';
+    }
 }
-__decorate$4([
+__decorate$5([
     Complex({ x: 0.5, y: 0.5 }, Point)
 ], PointPort.prototype, "offset", void 0);
-
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Defines the hyperlink for the annotations in the nodes/connectors
- */
-class Hyperlink extends ChildProperty {
-}
-__decorate$5([
-    Property('blue')
-], Hyperlink.prototype, "color", void 0);
-__decorate$5([
-    Property('')
-], Hyperlink.prototype, "content", void 0);
-__decorate$5([
-    Property('')
-], Hyperlink.prototype, "link", void 0);
-__decorate$5([
-    Property('None')
-], Hyperlink.prototype, "textDecoration", void 0);
-/**
- * Defines the textual description of nodes/connectors
- */
-class Annotation extends ChildProperty {
-}
-__decorate$5([
-    Property('')
-], Annotation.prototype, "content", void 0);
-__decorate$5([
-    Property(undefined)
-], Annotation.prototype, "template", void 0);
-__decorate$5([
-    Property(true)
-], Annotation.prototype, "visibility", void 0);
-__decorate$5([
-    Property(AnnotationConstraints.InheritReadOnly)
-], Annotation.prototype, "constraints", void 0);
-__decorate$5([
-    Complex(undefined, Hyperlink)
-], Annotation.prototype, "hyperlink", void 0);
-__decorate$5([
-    Property('')
-], Annotation.prototype, "id", void 0);
-__decorate$5([
-    Property()
-], Annotation.prototype, "width", void 0);
-__decorate$5([
-    Property()
-], Annotation.prototype, "height", void 0);
-__decorate$5([
-    Property(0)
-], Annotation.prototype, "rotateAngle", void 0);
-__decorate$5([
-    Complex({ strokeWidth: 0, strokeColor: 'transparent', fill: 'transparent' }, TextStyle)
-], Annotation.prototype, "style", void 0);
-__decorate$5([
-    Property('Center')
-], Annotation.prototype, "horizontalAlignment", void 0);
-__decorate$5([
-    Property('Center')
-], Annotation.prototype, "verticalAlignment", void 0);
-__decorate$5([
-    Complex({}, Margin)
-], Annotation.prototype, "margin", void 0);
-__decorate$5([
-    Complex({ top: undefined, bottom: undefined, left: undefined, right: undefined }, Margin)
-], Annotation.prototype, "dragLimit", void 0);
-__decorate$5([
-    Property('Shape')
-], Annotation.prototype, "type", void 0);
-__decorate$5([
-    Property()
-], Annotation.prototype, "addInfo", void 0);
-/**
- * Defines the textual description of nodes/connectors with respect to bounds
- */
-class ShapeAnnotation extends Annotation {
-    // tslint:disable-next-line:no-any
-    constructor(parent, propName, defaultValue, isArray) {
-        super(parent, propName, defaultValue, isArray);
-    }
-}
-__decorate$5([
-    Complex({ x: 0.5, y: 0.5 }, Point)
-], ShapeAnnotation.prototype, "offset", void 0);
-/**
- * Defines the connector annotation
- */
-class PathAnnotation extends Annotation {
-    // tslint:disable-next-line:no-any
-    constructor(parent, propName, defaultValue, isArray) {
-        super(parent, propName, defaultValue, isArray);
-    }
-}
-__decorate$5([
-    Property(0.5)
-], PathAnnotation.prototype, "offset", void 0);
-__decorate$5([
-    Complex({ x: 0, y: 0 }, Point)
-], PathAnnotation.prototype, "displacement", void 0);
-__decorate$5([
-    Property('Center')
-], PathAnnotation.prototype, "alignment", void 0);
-__decorate$5([
-    Property(false)
-], PathAnnotation.prototype, "segmentAngle", void 0);
 
 /**
  * ShapeDictionary defines the shape of the default nodes and ports
@@ -4634,6 +4713,9 @@ function connectToOneEnd(element, source, target) {
         source.point = nodeConnectingPoint;
         if (element.sourcePortWrapper) {
             source.point = { x: sourcePort.offsetX, y: sourcePort.offsetY };
+            if (element.sourcePadding) {
+                source.point = addPaddingToConnector(element, source, target, false);
+            }
         }
     }
     else {
@@ -4641,12 +4723,27 @@ function connectToOneEnd(element, source, target) {
         target.point = nodeConnectingPoint;
         if (element.targetPortWrapper) {
             target.point = { x: targetPort.offsetX, y: targetPort.offsetY };
+            if (element.targetPadding) {
+                target.point = addPaddingToConnector(element, source, target, true);
+            }
         }
     }
 }
-function checkSourceAndTargetIntersect(sourceWrapper, targetWrapper) {
-    let sourceSegment = createSegmentsCollection(sourceWrapper);
-    let targetSegment = createSegmentsCollection(targetWrapper);
+function addPaddingToConnector(element, source, target, isTarget) {
+    let sourcePort = element.sourcePortWrapper;
+    let targetPort = element.targetPortWrapper;
+    let padding = (isTarget) ? element.targetPadding : element.sourcePadding;
+    let paddingPort = (isTarget) ? targetPort : sourcePort;
+    let rect = new Rect(paddingPort.bounds.x - padding, paddingPort.bounds.y - padding, paddingPort.actualSize.width + 2 * padding, paddingPort.actualSize.height + 2 * padding);
+    let segmentPoints = [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft];
+    segmentPoints[segmentPoints.length] = segmentPoints[0];
+    let thisSegment = { x1: source.point.x, y1: source.point.y, x2: target.point.x, y2: target.point.y };
+    let point = (isTarget) ? target.point : source.point;
+    return getIntersectionPoints(thisSegment, segmentPoints, true, point) || point;
+}
+function checkSourceAndTargetIntersect(sourceWrapper, targetWrapper, connector) {
+    let sourceSegment = createSegmentsCollection(sourceWrapper, connector.sourcePadding);
+    let targetSegment = createSegmentsCollection(targetWrapper, connector.targetPadding);
     for (let i = 0; i < sourceSegment.length - 1; i++) {
         let srcSegment = sourceSegment[i];
         for (let j = 0; j < targetSegment.length - 1; j++) {
@@ -4658,9 +4755,9 @@ function checkSourceAndTargetIntersect(sourceWrapper, targetWrapper) {
     }
     return false;
 }
-function createSegmentsCollection(sourceWrapper) {
+function createSegmentsCollection(sourceWrapper, padding) {
     let segments = [];
-    let points = getPoints(sourceWrapper, sourceWrapper.corners);
+    let points = getPoints(sourceWrapper, sourceWrapper.corners, padding);
     points.push(points[0]);
     for (let i = 0; i < points.length - 1; i++) {
         segments.push(createLineSegment(points[i], points[i + 1]));
@@ -4733,7 +4830,7 @@ function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
     let tarBounds = swapBounds(targetEle, tarCor, ele.targetWrapper.bounds);
     let isInterSect = false;
     if (ele.sourceWrapper && ele.targetWrapper) {
-        isInterSect = checkSourceAndTargetIntersect(ele.sourceWrapper, ele.targetWrapper);
+        isInterSect = checkSourceAndTargetIntersect(ele.sourceWrapper, ele.targetWrapper, ele);
     }
     if (srcPort !== undefined) {
         source.point = { x: srcPort.offsetX, y: srcPort.offsetY };
@@ -4746,6 +4843,15 @@ function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
             case 'Right':
                 source.point.x = source.point.x;
                 break;
+        }
+        if (ele.sourcePadding && !isInterSect) {
+            if (tarPort) {
+                target.point = {
+                    x: tarPort.offsetX,
+                    y: tarPort.offsetY
+                };
+            }
+            source.point = addPaddingToConnector(ele, source, target, false);
         }
     }
     else {
@@ -4775,6 +4881,9 @@ function defaultOrthoConnection(ele, srcDir, tarDir, sPt, tPt) {
             case 'Right':
                 target.point.x = target.point.x;
                 break;
+        }
+        if (ele.targetPadding && !isInterSect) {
+            target.point = addPaddingToConnector(ele, source, target, true);
         }
     }
     else {
@@ -5285,6 +5394,8 @@ function getIntersection(ele, bounds, sPt, tPt, isTar) {
     let angle = Point.findAngle(tPt, sPt);
     let child;
     let wrapper = isTar ? ele.targetWrapper : ele.sourceWrapper;
+    let padding = (isTar ? ele.targetPadding : ele.sourcePadding);
+    let rect;
     let segmentPoints;
     let point = isTar || ele.type === 'Orthogonal' ? sPt : tPt;
     let sourcePoint = Point.transform(sPt, angle, Math.max(wrapper.actualSize.height / 2, wrapper.actualSize.width / 2));
@@ -5329,7 +5440,10 @@ function getIntersection(ele, bounds, sPt, tPt, isTar) {
         }
     }
     else {
-        segmentPoints = getPoints(wrapper, wrapper.corners);
+        if ((ele.sourcePadding || ele.targetPadding)) {
+            rect = new Rect(wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding, wrapper.actualSize.height + 2 * padding);
+        }
+        segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : getPoints(wrapper, wrapper.corners);
         segmentPoints[segmentPoints.length] = segmentPoints[0];
     }
     let length = segmentPoints.length;
@@ -6786,6 +6900,13 @@ __decorate$9([
  * Defines the behavior of straight segments
  */
 class StraightSegment extends ConnectorSegment {
+    /**
+     * @private
+     * Returns the name of class StraightSegment
+     */
+    getClassName() {
+        return 'StraightSegment';
+    }
 }
 __decorate$9([
     Complex({ x: 0, y: 0 }, Point)
@@ -6794,6 +6915,13 @@ __decorate$9([
  * Defines the behavior of bezier segments
  */
 class BezierSegment extends StraightSegment {
+    /**
+     * @private
+     * Returns the name of class BezierSegment
+     */
+    getClassName() {
+        return 'BezierSegment';
+    }
 }
 __decorate$9([
     Complex({ x: 0, y: 0 }, Point)
@@ -6811,6 +6939,13 @@ __decorate$9([
  * Defines the behavior of orthogonal segments
  */
 class OrthogonalSegment extends ConnectorSegment {
+    /**
+     * @private
+     * Returns the module of class OrthogonalSegment
+     */
+    getClassName() {
+        return 'OrthogonalSegment';
+    }
 }
 __decorate$9([
     Property(null)
@@ -7756,6 +7891,13 @@ class Connector extends NodeBase {
         updateConnector(this, points);
         return { x: tx, y: ty };
     }
+    /**
+     * @private
+     * Returns the name of class Connector
+     */
+    getClassName() {
+        return 'Connector';
+    }
 }
 __decorate$9([
     ComplexFactory(getConnectorType)
@@ -7809,6 +7951,12 @@ __decorate$9([
     Property('')
 ], Connector.prototype, "targetPortID", void 0);
 __decorate$9([
+    Property(0)
+], Connector.prototype, "sourcePadding", void 0);
+__decorate$9([
+    Property(0)
+], Connector.prototype, "targetPadding", void 0);
+__decorate$9([
     Complex({ strokeWidth: 1, strokeColor: 'black' }, StrokeStyle)
 ], Connector.prototype, "style", void 0);
 __decorate$9([
@@ -7861,6 +8009,13 @@ var __decorate$10 = (undefined && undefined.__decorate) || function (decorators,
  * @default {}
  */
 class UserHandle extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UserHandle
+     */
+    getClassName() {
+        return 'UserHandle';
+    }
 }
 __decorate$10([
     Property('')
@@ -8094,8 +8249,8 @@ function canInConnect(node) {
 }
 /** @private */
 function canPortInConnect(port) {
-    if (port) {
-        if ((port.constraints & PortConstraints.InConnect)) {
+    if (port && port.constraints) {
+        if (!(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.InConnect)) {
             return port.constraints & PortConstraints.InConnect;
         }
     }
@@ -8110,8 +8265,8 @@ function canOutConnect(node) {
 }
 /** @private */
 function canPortOutConnect(port) {
-    if (port) {
-        if ((port.constraints & PortConstraints.OutConnect)) {
+    if (port && port.constraints) {
+        if (!(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.OutConnect)) {
             return port.constraints & PortConstraints.OutConnect;
         }
     }
@@ -8270,6 +8425,24 @@ function canDraw(port, diagram) {
 /** @private */
 function canDrag(port, diagram) {
     return port.constraints & PortConstraints.Drag;
+}
+/** @private */
+function canPreventClearSelection(diagramActions) {
+    if (diagramActions & DiagramAction.PreventClearSelection) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+/** @private */
+function canDrawThumbs(rendererActions) {
+    if (!(rendererActions & RendererAction.DrawSelectorBorder)) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 /** @private */
 function avoidDrawSelector(rendererActions) {
@@ -8463,6 +8636,11 @@ class GridPanel extends Container {
         this.desiredRowHeight = [];
         this.desiredCellWidth = [];
     }
+    /** @private */
+    rowDefinitions() {
+        return this.rowDefns;
+    }
+    /** @private */
     columnDefinitions() {
         return this.colDefns;
     }
@@ -8574,16 +8752,25 @@ class GridPanel extends Container {
                 if (j === row.cells.length - 1) {
                     if (this.width && this.width !== calculateWidth) {
                         row.cells[j].desiredCellWidth += (this.width - calculateWidth);
+                        row.cells[j].minWidth = row.cells[j].desiredCellWidth;
                         if (row.cells[j].children && row.cells[j].children.length) {
-                            row.cells[j].children[0].minWidth = row.cells[j].desiredCellWidth;
+                            row.cells[j].children[0].width = row.cells[j].desiredCellWidth;
                         }
+                        this.colDefns[j].width = row.cells[j].desiredCellWidth;
                     }
                     calculateHeight += row.cells[j].desiredCellHeight;
                     if (i === rows.length - 1) {
                         if (this.height && this.height !== calculateHeight) {
-                            row.cells[j].desiredCellHeight += (this.height - calculateHeight);
-                            if (row.cells[j].children && row.cells[j].children.length) {
-                                row.cells[j].children[0].minHeight = row.cells[j].desiredCellHeight;
+                            let height = (this.height - calculateHeight);
+                            if (height > 0) {
+                                for (let k = 0; k < row.cells.length; k++) {
+                                    row.cells[k].desiredCellHeight += height;
+                                    row.cells[k].minHeight = row.cells[k].desiredCellHeight = row.cells[k].desiredCellHeight;
+                                    if (row.cells[k].children && row.cells[k].children.length) {
+                                        row.cells[k].children[0].height = row.cells[k].desiredCellHeight;
+                                    }
+                                }
+                                this.rowDefns[i].height += height;
                             }
                         }
                     }
@@ -8592,90 +8779,210 @@ class GridPanel extends Container {
         }
     }
     /** @private */
-    updateRowHeight(rowId, height) {
+    updateRowHeight(rowId, height, isConsiderChild, padding) {
         let row = this.rows[rowId];
+        this.rowDefns[rowId].height = height;
         if (this.height !== undefined) {
             this.height += height - row.cells[0].desiredCellHeight;
         }
         for (let i = 0; i < row.cells.length; i++) {
             row.cells[i].desiredCellHeight = row.cells[i].minHeight = height;
             if (row.cells[i].children && row.cells[i].children.length) {
-                row.cells[i].children[0].minHeight = height;
+                row.cells[i].children[0].height = height;
             }
         }
         this.desiredRowHeight[rowId] = height;
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
+        if (isConsiderChild) {
+            let minHeight = (padding !== undefined) ? this.calculateCellHeightBasedOnChildren(rowId, padding) :
+                this.calculateCellHeight(rowId);
+            if (minHeight > height) {
+                this.updateRowHeight(rowId, minHeight, false);
+            }
+        }
     }
     /** @private */
-    updateColumnWidth(colId, width) {
+    updateColumnWidth(colId, width, isConsiderChild, padding) {
+        this.colDefns[colId].width = width;
         if (this.width !== undefined) {
-            this.width += width - this.rows[0].cells[colId].desiredCellWidth;
+            this.width += width - this.rows[this.rows.length - 1].cells[colId].desiredCellWidth;
         }
         for (let i = 0; i < this.rows.length; i++) {
             this.rows[i].cells[colId].desiredCellWidth = this.rows[i].cells[colId].minWidth = width;
             if (this.rows[i].cells[colId].children && this.rows[i].cells[colId].children.length) {
-                this.rows[i].cells[colId].children[0].minWidth = width;
+                this.rows[i].cells[colId].children[0].width = width;
             }
         }
         this.desiredCellWidth[colId] = width;
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
-    }
-    /** @private */
-    addRow(rowId, rows) {
-        for (let i = 0; i < rows.length; i++) {
-            let rowDefn = rows[i];
-            this.rowDefns.push(rowDefn);
-            let row = new GridRow();
-            row.cells = [];
-            let defaultCell = new ColumnDefinition();
-            defaultCell.width = this.width;
-            let columns = this.colDefns;
-            this.addCellInRow(columns, rowDefn, row);
-            if (rowId > this.rows.length - 1) {
-                this.rows.push(row);
-            }
-            else {
-                this.rows.splice(rowId, 0, row);
+        if (isConsiderChild) {
+            let minWidth = (padding !== undefined) ? this.calculateCellWidthBasedOnChildren(colId, padding) :
+                this.calculateCellWidth(colId);
+            if (minWidth > width) {
+                this.updateColumnWidth(colId, minWidth, false);
             }
         }
-        this.measure(new Size(this.width, this.height));
-        this.arrange(this.desiredSize);
     }
-    /** @private */
-    addColumn(columnId, columns) {
-        let rows = this.rows;
-        for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
-            let rowDefn = this.rowDefns[i];
-            for (let j = 0; j < columns.length; j++) {
-                let colDefn = columns[j];
-                let cell = new GridCell();
-                cell.style = this.cellStyle;
-                cell.desiredCellWidth = colDefn.width;
-                cell.desiredCellHeight = rowDefn.height;
-                if (columnId > row.cells.length - 1) {
-                    row.cells.push(cell);
+    calculateCellWidth(colIndex) {
+        let maxWidth;
+        let width;
+        let cell;
+        for (let i = 0; i < this.rows.length; i++) {
+            cell = this.rows[i].cells[colIndex];
+            if (cell.columnSpan === 1) {
+                width = (cell.outerBounds.width > cell.bounds.width &&
+                    (cell.children.length === 0 || cell.children[0].maxWidth === undefined)) ? cell.outerBounds.width : cell.bounds.width;
+                if (maxWidth) {
+                    maxWidth = (maxWidth < width) ? width : maxWidth;
                 }
                 else {
-                    row.cells.splice(columnId, 0, cell);
+                    maxWidth = width;
                 }
-                this.children.push(cell);
             }
         }
-        this.measure(new Size(this.width, this.height));
-        this.arrange(this.desiredSize);
+        return maxWidth;
+    }
+    calculateCellHeight(rowIndex) {
+        let maxHeight;
+        let height;
+        let cell;
+        let row = this.rows[rowIndex];
+        for (let i = 0; i < row.cells.length; i++) {
+            cell = row.cells[i];
+            height = (cell.outerBounds.height > cell.bounds.height) ? cell.outerBounds.height : cell.bounds.height;
+            if (maxHeight) {
+                maxHeight = (maxHeight < height) ? height : maxHeight;
+            }
+            else {
+                maxHeight = height;
+            }
+        }
+        return maxHeight;
+    }
+    calculateCellSizeBasedOnChildren(cell, option, padding, maxSize) {
+        let maxBounds;
+        let canvas;
+        canvas = (cell && cell.children.length > 0) ? cell.children[0] : undefined;
+        if (canvas && cell.columnSpan === 1) {
+            maxBounds = (option === 'Width') ? canvas.bounds.right : canvas.bounds.bottom;
+            if (!maxSize) {
+                maxSize = (option === 'Width') ? canvas.bounds.width : canvas.bounds.height;
+            }
+            for (let j = 0; j < canvas.children.length; j++) {
+                let children = canvas.children[j];
+                if (children instanceof Canvas) {
+                    if (children.id.indexOf('header') === -1) {
+                        let bounds = ((option === 'Width') ? children.bounds.right : children.bounds.bottom) + padding;
+                        if (bounds > maxBounds) {
+                            let size = (bounds - maxBounds) + ((option === 'Width') ? canvas.bounds.width : canvas.bounds.height);
+                            if (maxSize) {
+                                maxSize = (maxSize < size) ? size : maxSize;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return maxSize;
+    }
+    calculateCellWidthBasedOnChildren(colIndex, padding) {
+        let maxWidth;
+        let cell;
+        for (let i = 0; i < this.rows.length; i++) {
+            cell = this.rows[i].cells[colIndex];
+            maxWidth = this.calculateCellSizeBasedOnChildren(cell, 'Width', padding, maxWidth);
+        }
+        return maxWidth;
+    }
+    calculateCellHeightBasedOnChildren(rowIndex, padding) {
+        let maxHeight;
+        let cell;
+        let row = this.rows[rowIndex];
+        for (let i = 0; i < row.cells.length; i++) {
+            cell = row.cells[i];
+            maxHeight = this.calculateCellSizeBasedOnChildren(cell, 'Height', padding, maxHeight);
+        }
+        return maxHeight;
+    }
+    /** @private */
+    addRow(rowId, rowDefn, isMeasure) {
+        if (this.rowDefns.length > 0) {
+            this.rowDefns.splice(rowId, 0, rowDefn);
+        }
+        else {
+            this.rowDefns.push(rowDefn);
+        }
+        let row = new GridRow();
+        row.cells = [];
+        let defaultCell = new ColumnDefinition();
+        defaultCell.width = this.width;
+        let columns = this.colDefns;
+        this.addCellInRow(columns, rowDefn, row);
+        if (rowId > this.rows.length - 1) {
+            this.rows.push(row);
+        }
+        else {
+            this.rows.splice(rowId, 0, row);
+        }
+        if (isMeasure) {
+            this.measure(new Size(this.width, this.height));
+            this.arrange(this.desiredSize);
+        }
+    }
+    /** @private */
+    addColumn(columnId, column, isMeasure) {
+        let row;
+        let rowDefn;
+        let colDefn;
+        let cell;
+        let rows = this.rows;
+        if (this.colDefns.length > 0) {
+            this.colDefns.splice(columnId, 0, column);
+        }
+        else {
+            this.colDefns.push(column);
+        }
+        if (this.width !== undefined) {
+            this.width += column.width;
+        }
+        for (let i = 0; i < rows.length; i++) {
+            row = rows[i];
+            rowDefn = this.rowDefns[i];
+            colDefn = column;
+            cell = new GridCell();
+            cell.style = this.cellStyle;
+            cell.desiredCellWidth = cell.minWidth = colDefn.width;
+            cell.desiredCellHeight = cell.minHeight = rowDefn.height;
+            cell.children = [];
+            if (columnId > row.cells.length - 1) {
+                row.cells.push(cell);
+            }
+            else {
+                row.cells.splice(columnId, 0, cell);
+            }
+            this.children.push(cell);
+        }
+        if (isMeasure) {
+            this.measure(new Size(this.width, this.height));
+            this.arrange(this.desiredSize);
+        }
     }
     /** @private */
     removeRow(rowId) {
+        let cell;
+        let element;
         let rows = this.rows;
         let removeRow = rows[rowId];
+        this.height -= this.rowDefns[rowId].height;
         for (let i = 0; i < removeRow.cells.length; i++) {
-            let cell = removeRow.cells[i];
+            cell = removeRow.cells[i];
             this.children.splice(this.children.indexOf(cell), 1);
-            let element = document.getElementById(cell.id + '_groupElement');
-            element.parentElement.removeChild(element);
+            element = document.getElementById(cell.id + '_groupElement');
+            if (element && element.parentElement) {
+                element.parentElement.removeChild(element);
+            }
         }
         this.rows.splice(rowId, 1);
         this.rowDefns.splice(rowId, 1);
@@ -8684,14 +8991,20 @@ class GridPanel extends Container {
     }
     /** @private */
     removeColumn(columnId) {
+        let cell;
+        let element;
         let rows = this.rows;
+        this.width -= this.colDefns[columnId].width;
         for (let i = 0; i < rows.length; i++) {
-            let cell = rows[i].cells[columnId];
+            cell = rows[i].cells[columnId];
             this.children.splice(this.children.indexOf(cell), 1);
-            let element = document.getElementById(cell.id + '_groupElement');
-            element.parentElement.removeChild(element);
+            element = document.getElementById(cell.id + '_groupElement');
+            if (element && element.parentElement) {
+                element.parentElement.removeChild(element);
+            }
             rows[i].cells.splice(columnId, 1);
         }
+        this.colDefns.splice(columnId, 1);
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
     }
@@ -8701,6 +9014,29 @@ class GridPanel extends Container {
         let temp = this.rows[currentIndex];
         this.rows.splice(currentIndex, 1);
         this.rows.splice(newIndex, 0, temp);
+        let tempRow = this.rowDefns[currentIndex];
+        this.rowDefns.splice(currentIndex, 1);
+        this.rowDefns.splice(newIndex, 0, tempRow);
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    }
+    /** @private */
+    updateColumnIndex(startRowIndex, currentIndex, newIndex) {
+        let temp;
+        let cell;
+        let tempSize;
+        for (let i = startRowIndex; i < this.rows.length; i++) {
+            temp = this.rows[i];
+            cell = this.rows[i].cells[currentIndex];
+            temp.cells.splice(currentIndex, 1);
+            temp.cells.splice(newIndex, 0, cell);
+        }
+        let tempCol = this.colDefns[currentIndex];
+        this.colDefns.splice(currentIndex, 1);
+        this.colDefns.splice(newIndex, 0, tempCol);
+        tempSize = this.desiredCellWidth[currentIndex];
+        this.desiredCellWidth.splice(currentIndex, 1);
+        this.desiredCellWidth.splice(newIndex, 0, tempSize);
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
     }
@@ -8791,12 +9127,12 @@ class GridPanel extends Container {
     }
     /** @private */
     arrange(desiredSize, isChange) {
+        let j = 0;
+        let i = 0;
         if (this.rows !== undefined && this.rows.length > 0) {
             let x = this.offsetX - desiredSize.width * this.pivot.x;
             let y = this.offsetY - desiredSize.height * this.pivot.y;
             let cellX = x;
-            let j = 0;
-            let i = 0;
             for (let row of this.rows) {
                 cellX = x;
                 j = 0;
@@ -8815,21 +9151,24 @@ class GridPanel extends Container {
             if (isChange) {
                 // Need to remove the unwanted the child elements in the grid
                 // Used for row span and column span.
-                for (let i = 0; i < this.rows.length; i++) {
-                    let row = this.rows[i];
-                    for (let j = 0; j < row.cells.length; j++) {
-                        let cell = row.cells[j];
+                let cell;
+                let row;
+                let k;
+                let z;
+                let removeCell;
+                for (i = 0; i < this.rows.length; i++) {
+                    row = this.rows[i];
+                    for (j = 0; j < row.cells.length; j++) {
+                        cell = row.cells[j];
                         if (cell.columnSpan > 1) {
                             // remove a child element when a column span is greater than 1
                             this.children.splice((this.children.indexOf(cell)) + 1, cell.columnSpan - 1);
                         }
                         if (cell.rowSpan > 1) {
-                            let k;
-                            let z;
                             for (k = i, z = 0; ((k + cell.rowSpan - 1) < this.rows.length && z < cell.rowSpan - 1); k++, z++) {
-                                let removeCelll = this.rows[k + 1].cells[j];
+                                removeCell = this.rows[k + 1].cells[j];
                                 // remove a child element when a row span is greater than 1
-                                this.children.splice(this.children.indexOf(removeCelll), 1);
+                                this.children.splice(this.children.indexOf(removeCell), 1);
                             }
                         }
                     }
@@ -9132,56 +9471,85 @@ function getStyle(stack, node) {
 /** @private */
 function updateCanvasBounds(diagram, obj, position, isBoundsUpdate) {
     let container;
+    let connectorList = [];
+    let groupAction = false;
     if (checkParentAsContainer(diagram, obj, true)) {
+        diagram.protectPropertyChange(true);
         container = diagram.nameTable[obj.parentId];
         let wrapper = container.wrapper;
         if (container && container.container.type === 'Canvas') {
             if ((isBoundsUpdate || (wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
                 (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y)))) {
-                if (wrapper.actualSize.width < wrapper.outerBounds.width &&
-                    (!(wrapper.bounds.x > wrapper.outerBounds.x))) {
-                    if (container.rowIndex !== undefined) {
-                        let parent = diagram.nameTable[container.parentId];
-                        if (parent.columns.length - 1 === container.columnIndex) {
-                            let x = wrapper.bounds.x;
-                            let y = wrapper.bounds.y;
-                            (wrapper).maxWidth = wrapper.outerBounds.width;
-                            parent.wrapper.updateColumnWidth(container.columnIndex, wrapper.outerBounds.width);
+                let columnIndex;
+                let parentWrapper;
+                let y = wrapper.bounds.y;
+                let x = wrapper.bounds.x;
+                let parent = diagram.nameTable[container.parentId] || container;
+                let shape = parent.shape;
+                if (shape.type === 'SwimLane') {
+                    groupAction = updateLaneBoundsAfterAddChild(container, parent, obj, diagram, true);
+                }
+                else {
+                    let parent = diagram.nameTable[container.parentId] || container;
+                    let shape = parent.shape;
+                    parentWrapper = parent.wrapper;
+                    if (wrapper.actualSize.width < wrapper.outerBounds.width &&
+                        (!(wrapper.bounds.x > wrapper.outerBounds.x))) {
+                        if (container.rowIndex !== undefined) {
+                            columnIndex = parent.columns.length - 1;
+                            parentWrapper.updateColumnWidth(container.columnIndex, wrapper.outerBounds.width, true);
+                            if (shape.orientation === 'Horizontal' && shape.phaseSize) {
+                                updatePhaseMaxWidth(parent, diagram, wrapper, container.columnIndex);
+                            }
+                            updateHeaderMaxWidth(diagram, parent);
                             diagram.drag(parent, x - wrapper.bounds.x, y - wrapper.bounds.y);
-                            diagram.updateDiagramObject(parent);
+                        }
+                        else {
+                            diagram.scale(container, (1 + ((wrapper.outerBounds.width - wrapper.actualSize.width) / wrapper.actualSize.width)), 1, ((wrapper.outerBounds.x < wrapper.bounds.x) ? { x: 1, y: 0.5 } : { x: 0, y: 0.5 }));
                         }
                     }
-                    else {
-                        diagram.scale(container, (1 + ((wrapper.outerBounds.width - wrapper.actualSize.width) / wrapper.actualSize.width)), 1, ((wrapper.outerBounds.x < wrapper.bounds.x) ? { x: 1, y: 0.5 } : { x: 0, y: 0.5 }));
-                    }
-                }
-                if (wrapper.actualSize.height < wrapper.outerBounds.height &&
-                    (!(wrapper.bounds.y > wrapper.outerBounds.y))) {
-                    if (container.rowIndex !== undefined) {
-                        let contai = diagram.nameTable[container.parentId];
-                        let x = wrapper.bounds.x;
-                        let y = wrapper.bounds.y;
-                        (wrapper).maxHeight = wrapper.outerBounds.height;
-                        contai.wrapper.updateRowHeight(container.rowIndex, wrapper.outerBounds.height);
-                        diagram.drag(contai, x - wrapper.bounds.x, y - wrapper.bounds.y);
-                    }
-                    else {
-                        diagram.scale(container, 1, (1 + ((wrapper.outerBounds.height - wrapper.actualSize.height) / wrapper.actualSize.height)), ((wrapper.outerBounds.y < wrapper.bounds.y) ? { x: 0.5, y: 1 } : { x: 0.5, y: 0 }));
+                    if (wrapper.actualSize.height < wrapper.outerBounds.height &&
+                        (!(wrapper.bounds.y > wrapper.outerBounds.y))) {
+                        if (container.rowIndex !== undefined) {
+                            parentWrapper.updateRowHeight(container.rowIndex, wrapper.outerBounds.height, true);
+                            diagram.drag(parent, x - wrapper.bounds.x, y - wrapper.bounds.y);
+                        }
+                        else {
+                            diagram.scale(container, 1, (1 + ((wrapper.outerBounds.height - wrapper.actualSize.height) / wrapper.actualSize.height)), ((wrapper.outerBounds.y < wrapper.bounds.y) ? { x: 0.5, y: 1 } : { x: 0.5, y: 0 }));
+                        }
                     }
                 }
             }
-            else if (container.container.type === 'Canvas') {
+            diagram.select([obj]);
+            updateConnectorsProperties(connectorList, diagram);
+        }
+        diagram.protectPropertyChange(false);
+    }
+    return groupAction;
+}
+function removeChildInContainer(diagram, obj, position, isBoundsUpdate) {
+    let container;
+    if (checkParentAsContainer(diagram, obj, true)) {
+        diagram.protectPropertyChange(true);
+        container = diagram.nameTable[obj.parentId];
+        let wrapper = container.wrapper;
+        if (container && container.container.type === 'Canvas') {
+            if ((!isBoundsUpdate && (!(wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
+                (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y))))) {
                 let undoObj = cloneObject(obj);
                 diagram.clearSelection();
-                diagram.deleteChild(obj);
+                removeChildrenInLane(diagram, obj);
                 obj.parentId = '';
                 let entry = {
                     type: 'ChildCollectionChanged', category: 'Internal',
                     undoObject: undoObj, redoObject: cloneObject(obj)
                 };
                 diagram.addHistoryEntry(entry);
+                if (diagram.commandHandler.isContainer) {
+                    diagram.commandHandler.isContainer = false;
+                    diagram.endGroupAction();
+                }
             }
-            diagram.select([obj]);
         }
     }
 }
@@ -9217,7 +9585,7 @@ function renderContainerHelper(diagram, obj) {
     if (diagram.selectedObject.helperObject) {
         nodes = diagram.selectedObject.helperObject;
     }
-    else {
+    else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
         if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
             object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
         }
@@ -9235,7 +9603,7 @@ function renderContainerHelper(diagram, obj) {
                 maxWidth: container.maxWidth, maxHeight: container.maxHeight,
                 width: container.actualSize.width,
                 height: container.actualSize.height,
-                style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: 'red' }
+                style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: '#7D7D7D', strokeWidth: 2 }
             };
             nodes = createHelper(diagram, node);
             diagram.selectedObject.helperObject = nodes;
@@ -9268,14 +9636,43 @@ function checkChildNodeInContainer(diagram, obj) {
             bottom: obj.margin.bottom
         }, rotateAngle: obj.rotateAngle
     });
-    parentNode.wrapper.measure(new Size());
-    parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+    if (!parentNode.isLane) {
+        parentNode.wrapper.measure(new Size());
+        parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+    }
+}
+function removeChildrenInLane(diagram, node) {
+    if (node.parentId !== '') {
+        let prevParentNode = diagram.nameTable[node.parentId];
+        if (prevParentNode.isLane && prevParentNode.parentId) {
+            let swimlane = diagram.nameTable[prevParentNode.parentId];
+            let canvasId = (prevParentNode.id.slice(swimlane.id.length));
+            let prevParentId = canvasId.substring(0, canvasId.length - 1);
+            let lanes = swimlane.shape.lanes;
+            let lane;
+            for (let i = 0; i < lanes.length; i++) {
+                lane = lanes[i];
+                if (prevParentId === lane.id) {
+                    for (let j = 0; j < lane.children.length; j++) {
+                        if (lane.children[j].id === node.id) {
+                            lane.children.splice(j, 1);
+                            j--;
+                        }
+                    }
+                }
+            }
+        }
+        diagram.deleteChild(node);
+    }
 }
 /**
  * @private
  */
-function addChildToContainer(diagram, parent, node) {
+function addChildToContainer(diagram, parent, node, isUndo) {
     if (!diagram.currentSymbol) {
+        diagram.protectPropertyChange(true);
+        let swimlane;
+        node = diagram.getObject(node.id) || node;
         let child = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
         if (parent.container.type === 'Canvas') {
             let left = (node.wrapper.offsetX - node.wrapper.actualSize.width / 2) -
@@ -9290,26 +9687,103 @@ function addChildToContainer(diagram, parent, node) {
             container.children = [];
         }
         if (container.children.indexOf(node.id) === -1) {
-            if (node.parentId !== '') {
-                diagram.deleteChild(node);
+            removeChildrenInLane(diagram, node);
+            if (diagram.getObject(node.id)) {
+                diagram.removeElements(node);
             }
             let undoObj = cloneObject(node);
             diagram.addChild(container, child);
-            let entry = {
-                type: 'ChildCollectionChanged', category: 'Internal',
-                undoObject: undoObj, redoObject: cloneObject(node)
-            };
-            diagram.addHistoryEntry(entry);
-            diagram.updateDiagramObject(container);
+            node = diagram.getObject(node.id);
+            if (container.isLane && container.parentId) {
+                swimlane = diagram.nameTable[container.parentId];
+                let lanes = swimlane.shape.lanes;
+                let canvasId = (container.id.slice(swimlane.id.length));
+                let currentParentId = canvasId.substring(0, canvasId.length - 1);
+                for (let i = 0; i < lanes.length; i++) {
+                    if (container.isLane && currentParentId === lanes[i].id) {
+                        lanes[i].children.push(node);
+                    }
+                }
+            }
+            diagram.updateDiagramObject(node);
+            if (!container.parentId) {
+                diagram.updateDiagramObject(container);
+            }
+            else if (!isUndo) {
+                updateLaneBoundsAfterAddChild(container, swimlane, node, diagram);
+            }
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                let entry = {
+                    type: 'ChildCollectionChanged', category: 'Internal',
+                    undoObject: undoObj, redoObject: cloneObject(node)
+                };
+                diagram.addHistoryEntry(entry);
+            }
         }
+        diagram.protectPropertyChange(false);
     }
+}
+function updateLaneBoundsAfterAddChild(container, swimLane, node, diagram, isBoundsUpdate) {
+    let undoObject = cloneObject(container);
+    let isUpdateRow;
+    let isGroupAction = false;
+    let padding = swimLane.shape.padding;
+    let containerBounds = container.wrapper.bounds;
+    let containerOuterBounds = container.wrapper.outerBounds;
+    let nodeBounds = node.wrapper.bounds;
+    if (swimLane && swimLane.shape.type === 'SwimLane' &&
+        (containerBounds.right < nodeBounds.right + padding ||
+            containerBounds.bottom < nodeBounds.bottom + padding)) {
+        let grid = swimLane.wrapper.children[0];
+        let x = grid.bounds.x;
+        let y = grid.bounds.y;
+        let size;
+        if (containerBounds.right < nodeBounds.right + padding &&
+            containerOuterBounds.x <= containerBounds.x) {
+            size = nodeBounds.right - containerBounds.right;
+            isUpdateRow = false;
+            grid.updateColumnWidth(container.columnIndex, containerBounds.width + size, true, padding);
+        }
+        if (containerBounds.bottom < nodeBounds.bottom + padding &&
+            containerOuterBounds.y <= containerBounds.y) {
+            size = nodeBounds.bottom - containerBounds.bottom;
+            isUpdateRow = true;
+            grid.updateRowHeight(container.rowIndex, containerBounds.height + size, true, padding);
+        }
+        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+            if (isBoundsUpdate) {
+                diagram.startGroupAction();
+                isGroupAction = true;
+            }
+            if (isUpdateRow !== undefined) {
+                let entry = {
+                    category: 'Internal',
+                    type: (isUpdateRow) ? 'RowHeightChanged' : 'ColumnWidthChanged',
+                    undoObject: undoObject, redoObject: cloneObject(container)
+                };
+                diagram.addHistoryEntry(entry);
+            }
+        }
+        swimLane.width = swimLane.wrapper.width = grid.width;
+        swimLane.height = swimLane.wrapper.height = grid.height;
+        swimLaneMeasureAndArrange(swimLane);
+        if (swimLane.shape.orientation === 'Horizontal') {
+            updatePhaseMaxWidth(swimLane, diagram, container.wrapper, container.columnIndex);
+        }
+        updateHeaderMaxWidth(diagram, swimLane);
+        diagram.drag(swimLane, x - grid.bounds.x, y - grid.bounds.y);
+        checkPhaseOffset(swimLane, diagram);
+        checkLaneSize(swimLane);
+    }
+    considerSwimLanePadding(diagram, node, padding);
+    return isGroupAction;
 }
 //#endregion
 //# reginon stack panel interaction
 /** @private */
-function renderStackHighlighter(element, isVertical, position, diagram, isUml) {
+function renderStackHighlighter(element, isVertical, position, diagram, isUml, isSwimlane) {
     let adornerSvg = getAdornerLayerSvg(diagram.element.id);
-    diagram.diagramRenderer.renderStackHighlighter(element, adornerSvg, diagram.scroller.transform, isVertical, position, isUml);
+    diagram.diagramRenderer.renderStackHighlighter(element, adornerSvg, diagram.scroller.transform, isVertical, position, isUml, isSwimlane);
 }
 /** @private */
 function moveChildInStack(sourceNode, target, diagram, action) {
@@ -9324,7 +9798,7 @@ function moveChildInStack(sourceNode, target, diagram, action) {
             sourceParent.wrapper.children.splice(value, 1);
         }
     }
-    if (target && target.parentId && obj.parentId && action === 'Drag') {
+    if (target && target.parentId && obj.parentId && action === 'Drag' && sourceParent.container.type === 'Stack') {
         let targetIndex = parent.wrapper.children.indexOf(target.wrapper);
         let sourceIndex = parent.wrapper.children.indexOf(obj.wrapper);
         let undoElement = {
@@ -9346,175 +9820,168 @@ function moveChildInStack(sourceNode, target, diagram, action) {
 }
 //#end region
 //# region Swimlane rendering
+//#end region
+
+/**
+ * SwimLane modules are used to rendering and interaction.
+ */
 /** @private */
 function initSwimLane(grid, diagram, node) {
     let row = [];
     let columns = [];
-    let orientation = node.shape.orientation === 'Horizontal' ? true : false;
-    if (node.shape.header) {
-        createRow(row, node.shape.header.height);
+    let index = 0;
+    let shape = node.shape;
+    let orientation = shape.orientation === 'Horizontal' ? true : false;
+    if (shape.header && shape.hasHeader) {
+        createRow(row, shape.header.height);
     }
     initGridRow(row, orientation, node);
     initGridColumns(columns, orientation, node);
     grid.setDefinitions(row, columns);
-    let index = 0;
-    if (node.shape.header) {
+    if (shape.header && shape.hasHeader) {
         headerDefine(grid, diagram, node);
         index++;
     }
-    if (node.shape.phases.length > 0) {
-        phaseDefine(grid, diagram, node, index, orientation);
+    if (shape.phases.length > 0 && shape.phaseSize) {
+        for (let k = 0; k < shape.phases.length; k++) {
+            if (shape.phases[k].id === '') {
+                shape.phases[k].id = randomId();
+            }
+            phaseDefine(grid, diagram, node, index, orientation, k);
+        }
         index++;
     }
-    if (node.shape.lanes.length > 0) {
-        for (let k = 0; k < node.shape.lanes.length; k++) {
+    if (shape.lanes.length > 0) {
+        for (let k = 0; k < shape.lanes.length; k++) {
+            if (shape.lanes[k].id === '') {
+                shape.lanes[k].id = randomId();
+            }
             laneCollection(grid, diagram, node, index, k, orientation);
             index++;
         }
     }
 }
 /** @private */
-function addObjectToGrid(diagram, grid, parent, object, isHeader) {
-    let node = new Node(parent, 'nodes', object);
-    node.parentId = grid.id;
-    if (isHeader) {
-        node.isHeader = true;
+function addObjectToGrid(diagram, grid, parent, object, isHeader, isPhase, isLane, canvas) {
+    let node = new Node(diagram, 'nodes', object, true);
+    node.parentId = parent.id;
+    node.isHeader = (isHeader) ? true : false;
+    node.isPhase = (isPhase) ? true : false;
+    node.isLane = (isLane) ? true : false;
+    let id = (isPhase) ? 'PhaseHeaderParent' : 'LaneHeaderParent';
+    if (canvas) {
+        node[id] = canvas;
     }
+    node.constraints &= ~(NodeConstraints.InConnect | NodeConstraints.OutConnect);
+    node.constraints |= NodeConstraints.HideThumbs;
     diagram.initObject(node);
+    diagram.nodes.push(node);
     if (node.wrapper.children.length > 0) {
         for (let i = 0; i < node.wrapper.children.length; i++) {
             let child = node.wrapper.children[i];
             if (child instanceof DiagramElement) {
                 child.isCalculateDesiredSize = false;
             }
+            if (child instanceof TextElement) {
+                child.canConsiderBounds = false;
+            }
         }
     }
     return node.wrapper;
 }
-// /** @private */
-// export function addGridObject(
-//     diagram: Diagram, grid: Grid, object: NodeModel, isHeader?: boolean, rowValue?: number, colValue?: number,
-//     nodeObj?: NodeModel, orientation?: boolean, lanesNo?: number): void {
-//     let node: Node = new Node(object, 'nodes', { container: { type: 'Canvas', orientation: 'Horziontal' } });
-//     diagram.initObject(node as IElement);
-//     node.parentId = grid.id;
-//     if (isHeader) {
-//         (node as Node).isHeader = true;
-//     }
-//     diagram.nodes.push(node);
-//     let canvas: Container = node.wrapper;
-//     node.rowIndex = rowValue; node.columnIndex = colValue;
-//     canvas.children = [];
-//     if (nodeObj) {
-//         if (lanesNo !== undefined) {
-//             orientation ? canvas.verticalAlignment = 'Stretch' : canvas.horizontalAlignment = 'Stretch';
-//             canvas.relativeMode = 'Object';
-//             if (orientation) {
-//                 nodeObj.width = (object.shape as SwimLaneModel).lanes[lanesNo].header.width;
-//             } else {
-//                 nodeObj.height = (object.shape as SwimLaneModel).lanes[lanesNo].header.width;
-//             }
-//         }
-//         let node: Node = new Node(object, 'nodes', nodeObj);
-//         node.parentId = grid.id;
-//         node.rowIndex = rowValue; node.columnIndex = colValue;
-//         if (isHeader) {
-//             (node as Node).isHeader = true;
-//         }
-//         diagram.initObject(node);
-//         if (lanesNo === undefined) {
-//             if (isHeader) {
-//                 node.wrapper.horizontalAlignment = 'Stretch';
-//             } else {
-//                 orientation ? node.wrapper.horizontalAlignment = 'Stretch' : node.wrapper.verticalAlignment = 'Stretch';
-//             }
-//             canvas.horizontalAlignment = node.wrapper.horizontalAlignment;
-//             canvas.verticalAlignment = node.wrapper.verticalAlignment;
-//             canvas.relativeMode = node.wrapper.relativeMode = 'Object';
-//         } else {
-//             orientation ? node.wrapper.verticalAlignment = 'Stretch' : node.wrapper.horizontalAlignment = 'Stretch';
-//             node.wrapper.relativeMode = 'Object';
-//         }
-//         if (node.wrapper.children.length > 0) {
-//             for (let i: number = 0; i < node.wrapper.children.length; i++) {
-//                 let child: DiagramElement = node.wrapper.children[i];
-//                 if (child instanceof DiagramElement) {
-//                     child.isCalculateDesiredSize = false;
-//                 }
-//             }
-//         }
-//         canvas.children.push(node.wrapper);
-//     }
-//     grid.addObject(canvas, rowValue, colValue, 1, (isHeader) ? grid.columnDefinitions().length : 1);
-// }
 /** @private */
 function headerDefine(grid, diagram, object) {
+    let maxWidth = 0;
+    let columns = grid.columnDefinitions();
+    let shape = object.shape;
+    for (let i = 0; i < columns.length; i++) {
+        maxWidth += columns[i].width;
+    }
     let node = {
-        annotations: [{ content: object.shape.header.content.content }],
-        style: object.shape.header.style,
+        annotations: [{
+                content: shape.header.annotation.content
+            }],
+        style: shape.header.style ? shape.header.style : undefined,
+        offsetX: object.offsetX, offsetY: object.offsetY,
         rowIndex: 0, columnIndex: 0,
+        maxWidth: maxWidth,
         container: { type: 'Canvas', orientation: 'Horizontal' }
     };
     let wrapper = addObjectToGrid(diagram, grid, object, node, true);
     grid.addObject(wrapper, 0, 0, 1, grid.columnDefinitions().length);
 }
 /** @private */
-function phaseDefine(grid, diagram, object, indexValue, orientation) {
+function phaseDefine(grid, diagram, object, indexValue, orientation, phaseIndex) {
     let rowValue = 0;
     let colValue = 0;
-    for (let k = 0; k < object.shape.phases.length; k++) {
-        if (orientation) {
-            colValue = k;
-            rowValue = indexValue;
-        }
-        else {
-            rowValue = object.shape.header ? k + 1 : k;
-        }
-        let phaseObject = {
-            annotations: [{
-                    content: object.shape.phases[k].header.content.content,
-                    rotateAngle: orientation ? 0 : 270
-                }],
-            style: object.shape.phases[k].style,
-            rowIndex: rowValue, columnIndex: colValue,
-            container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
-        };
-        let wrapper = addObjectToGrid(diagram, grid, object, phaseObject);
-        grid.addObject(wrapper, rowValue, colValue);
+    let maxWidth;
+    let shape = object.shape;
+    if (orientation) {
+        colValue = phaseIndex;
+        rowValue = indexValue;
+        maxWidth = grid.columnDefinitions()[phaseIndex].width;
     }
+    else {
+        rowValue = shape.header && shape.hasHeader ? phaseIndex + 1 : phaseIndex;
+    }
+    let phaseObject = {
+        annotations: [{
+                content: shape.phases[phaseIndex].header.annotation.content,
+                rotateAngle: orientation ? 0 : 270
+            }], maxWidth: maxWidth,
+        id: object.id + shape.phases[phaseIndex].id + '_header',
+        offsetX: object.offsetX, offsetY: object.offsetY,
+        style: shape.phases[phaseIndex].style,
+        rowIndex: rowValue, columnIndex: colValue,
+        container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
+    };
+    shape.phases[phaseIndex].header.id = phaseObject.id;
+    let wrapper = addObjectToGrid(diagram, grid, object, phaseObject, false, true, false, shape.phases[phaseIndex].id);
+    grid.addObject(wrapper, rowValue, colValue);
 }
 /** @private */
 function laneCollection(grid, diagram, object, indexValue, laneIndex, orientation) {
-    let value = object.shape.phases.length || 1;
+    let laneNode;
+    let parentWrapper;
+    let gridCell;
+    let canvas;
+    let childWrapper;
+    let shape = object.shape;
+    let value = shape.phases.length || 1;
+    let isHeader = (shape.header && shape.hasHeader) ? 1 : 0;
     let colValue = 0;
-    let rowValue = orientation ? indexValue : 1;
-    let phaseCount = object.shape.phases.length > 0 ? 1 : 0;
+    let rowValue = orientation ? indexValue : isHeader;
+    let phaseCount = (shape.phaseSize && shape.phases.length > 0) ? 1 : 0;
     for (let l = 0; l < value; l++) {
         colValue = orientation ? l : laneIndex + phaseCount;
-        let canvas = {
-            id: object.shape.lanes[laneIndex].id + l,
+        gridCell = grid.rows[rowValue].cells[colValue];
+        canvas = {
+            id: object.id + shape.lanes[laneIndex].id + l,
             rowIndex: rowValue, columnIndex: colValue,
-            style: object.shape.lanes[laneIndex].style,
-            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+            width: gridCell.minWidth, height: gridCell.minHeight,
+            offsetX: object.offsetX, offsetY: object.offsetY,
+            style: shape.lanes[laneIndex].style,
+            constraints: NodeConstraints.Default | NodeConstraints.ReadOnly | NodeConstraints.AllowDrop,
             container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
         };
-        let parentWrapper = addObjectToGrid(diagram, grid, object, canvas);
+        parentWrapper = addObjectToGrid(diagram, grid, object, canvas, false, false, true);
         parentWrapper.children[0].isCalculateDesiredSize = false;
         if (l === 0) {
-            let laneNode;
             laneNode = {
-                id: object.shape.lanes[laneIndex].id + '_header',
-                style: object.shape.lanes[laneIndex].header.style,
+                id: object.id + shape.lanes[laneIndex].id + '_' + l + '_header',
+                style: shape.lanes[laneIndex].header.style,
                 annotations: [{
-                        content: object.shape.lanes[laneIndex].header.content.content,
+                        content: shape.lanes[laneIndex].header.annotation.content,
                         rotateAngle: orientation ? 270 : 0
                     }],
+                offsetX: object.offsetX, offsetY: object.offsetY,
                 rowIndex: rowValue, columnIndex: colValue,
                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
             };
-            (orientation) ? laneNode.width = object.shape.lanes[laneIndex].header.width :
-                laneNode.height = object.shape.lanes[laneIndex].header.width;
-            let childWrapper = addObjectToGrid(diagram, grid, object, laneNode);
+            shape.lanes[laneIndex].header.id = laneNode.id;
+            (orientation) ? laneNode.width = shape.lanes[laneIndex].header.width :
+                laneNode.height = shape.lanes[laneIndex].header.height;
+            childWrapper = addObjectToGrid(diagram, grid, object, laneNode, false, false, true, shape.lanes[laneIndex].id);
             parentWrapper.children.push(childWrapper);
         }
         grid.addObject(parentWrapper, rowValue, colValue);
@@ -9524,39 +9991,6 @@ function laneCollection(grid, diagram, object, indexValue, laneIndex, orientatio
         colValue = orientation ? l : laneIndex + 1;
     }
 }
-// /** @private */
-// export function laneDefine(
-//     grid: Grid, diagram: Diagram, object: NodeModel, indexValue: number, laneIndex: number, orientation: boolean): void {
-//     let value: number = orientation ? grid.columnDefinitions().length : (object.shape as SwimLaneModel).phases.length || 1;
-//     let colValue: number = 0;
-//     let rowValue: number = 0;
-//     let phaseLength: number = (object.shape as SwimLaneModel).phases.length > 0 ? 1 : 0;
-//     rowValue = orientation ? indexValue : 1;
-//     for (let l: number = 0; l < value; l++) {
-//         colValue = orientation ? l : laneIndex + phaseLength;
-//         let node: NodeModel = {
-//             style: (object.shape as SwimLaneModel).lanes[laneIndex].style, width: object.width, height: object.height
-//         };
-//         addGridObject(diagram, grid, object, false, orientation ? rowValue : rowValue, colValue);
-//         if (l === 0) {
-//             let laneNode: NodeModel;
-//             laneNode = {
-//                 id: (object.shape as SwimLaneModel).lanes[laneIndex].id,
-//                 style: (object.shape as SwimLaneModel).lanes[laneIndex].header.style,
-//                 annotations: [{
-//                     content: (object.shape as SwimLaneModel).lanes[laneIndex].header.content.content,
-//                     rotateAngle: orientation ? 270 : 0
-//                 }],
-//                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
-//             };
-//             addGridObject(diagram, grid, object, false, rowValue, orientation ? 0 : colValue, laneNode, orientation, laneIndex);
-//         }
-//         if (!orientation) {
-//             rowValue++;
-//         }
-//         colValue = orientation ? l : laneIndex + 1;
-//     }
-// }
 /** @private */
 function createRow(row, height) {
     let rows = new RowDefinition();
@@ -9573,21 +10007,22 @@ function createColumn(width) {
 function initGridRow(row, orientation, object) {
     let totalHeight = 0;
     let height;
+    let shape = object.shape;
     if (row.length > 0) {
         for (let i = 0; i < row.length; i++) {
             totalHeight += row[i].height;
         }
     }
     if (orientation) {
-        if (object.shape.phases.length > 0) {
-            totalHeight += object.shape.phases[0].height;
-            createRow(row, object.shape.phases[0].height);
+        if (shape.phases.length > 0 && shape.phaseSize) {
+            totalHeight += shape.phaseSize;
+            createRow(row, shape.phaseSize);
         }
-        if (object.shape.lanes.length > 0) {
-            for (let i = 0; i < object.shape.lanes.length; i++) {
-                height = object.shape.lanes[i].height;
+        if (shape.lanes.length > 0) {
+            for (let i = 0; i < shape.lanes.length; i++) {
+                height = shape.lanes[i].height;
                 totalHeight += height;
-                if (i === object.shape.lanes.length - 1 && totalHeight < object.height) {
+                if (i === shape.lanes.length - 1 && totalHeight < object.height) {
                     height += object.height - totalHeight;
                 }
                 createRow(row, height);
@@ -9595,11 +10030,20 @@ function initGridRow(row, orientation, object) {
         }
     }
     else {
-        if (object.shape.phases.length > 0) {
-            for (let i = 0; i < object.shape.phases.length; i++) {
-                height = object.shape.phases[i].offset;
+        if (shape.phases.length > 0) {
+            let phaseHeight = 0;
+            for (let i = 0; i < shape.phases.length; i++) {
+                let phaseOffset = shape.phases[i].offset;
+                if (i === 0) {
+                    phaseHeight += phaseOffset;
+                }
+                else {
+                    phaseOffset -= phaseHeight;
+                    phaseHeight += phaseOffset;
+                }
+                height = phaseOffset;
                 totalHeight += height;
-                if (i === object.shape.phases.length - 1 && totalHeight < object.height) {
+                if (i === shape.phases.length - 1 && totalHeight < object.height) {
                     height += object.height - totalHeight;
                 }
                 createRow(row, height);
@@ -9613,43 +10057,1539 @@ function initGridRow(row, orientation, object) {
 /** @private */
 function initGridColumns(columns, orientation, object) {
     let totalWidth = 0;
-    if (object.shape.phases.length > 0 && object.shape.orientation === 'Horizontal') {
-        for (let j = 0; j < object.shape.phases.length; j++) {
-            totalWidth += object.shape.phases[j].offset;
-            let cols = createColumn(object.shape.phases[j].offset);
-            if (j === object.shape.phases.length - 1 && totalWidth < object.width) {
+    let shape = object.shape;
+    let phaseOffset;
+    let cols;
+    let k;
+    let j;
+    let value;
+    if (shape.phases.length > 0 && shape.orientation === 'Horizontal') {
+        for (j = 0; j < shape.phases.length; j++) {
+            phaseOffset = shape.phases[j].offset;
+            if (j === 0) {
+                totalWidth += phaseOffset;
+            }
+            else {
+                phaseOffset -= totalWidth;
+                totalWidth += phaseOffset;
+            }
+            cols = createColumn(phaseOffset);
+            if (j === shape.phases.length - 1 && totalWidth < object.width) {
                 cols.width += object.width - totalWidth;
             }
             columns.push(cols);
         }
     }
     else if (!orientation) {
-        let value = object.shape.phases.length > 0 ? object.shape.lanes.length
-            + 1 : object.shape.lanes.length;
-        for (let j = 0; j < value; j++) {
-            if (j === 0 && object.shape.phases.length > 0) {
-                totalWidth += object.shape.phases[0].height;
-                let cols = createColumn(object.shape.phases[0].height);
-                columns.push(cols);
+        value = (shape.phaseSize && shape.phases.length > 0) ? shape.lanes.length
+            + 1 : shape.lanes.length;
+        if (shape.phaseSize && shape.phases.length > 0) {
+            totalWidth += shape.phaseSize;
+            cols = createColumn(shape.phaseSize);
+            columns.push(cols);
+        }
+        for (k = 0; k < shape.lanes.length; k++) {
+            totalWidth += shape.lanes[k].width;
+            cols = createColumn(shape.lanes[k].width);
+            if (k === shape.lanes.length - 1 && totalWidth < object.width) {
+                cols.width += object.width - totalWidth;
             }
-            else {
-                totalWidth += object.shape.lanes[0].height;
-                let cols = createColumn(object.shape.lanes[0].height);
-                if (j === object.shape.lanes.length && totalWidth < object.width) {
-                    cols.width += object.width - totalWidth;
-                }
-                columns.push(cols);
-            }
+            columns.push(cols);
         }
     }
     else {
-        let cols = createColumn(object.width);
+        cols = createColumn(object.width);
         columns.push(cols);
     }
 }
-//#end region
+/** @private */
+function getConnectors(diagram, grid, rowIndex, isRowUpdate) {
+    let connectors = [];
+    let conn = 0;
+    let childNode;
+    let node;
+    let k;
+    let j;
+    let canvas;
+    let row;
+    let length = grid.rowDefinitions().length;
+    let edges;
+    for (let i = 0; i < length; i++) {
+        row = grid.rows[i];
+        for (j = 0; j < row.cells.length; j++) {
+            canvas = row.cells[j].children[0];
+            if (canvas && canvas.children && canvas.children.length) {
+                for (k = 1; k < canvas.children.length; k++) {
+                    childNode = canvas.children[k];
+                    node = diagram.getObject(childNode.id);
+                    if (node && (node.inEdges.length > 0 || node.outEdges.length > 0)) {
+                        edges = node.inEdges.concat(node.outEdges);
+                        for (conn = 0; conn < edges.length; conn++) {
+                            if (connectors.indexOf(edges[conn]) === -1) {
+                                connectors.push(edges[conn]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return connectors;
+}
+/** @private */
+function swimLaneMeasureAndArrange(obj) {
+    let canvas = obj.wrapper;
+    canvas.measure(new Size(obj.width, obj.height));
+    if (canvas.children[0] instanceof GridPanel) {
+        let grid = canvas.children[0];
+        let isMeasure = false;
+        if (grid.width && grid.width < grid.desiredSize.width) {
+            isMeasure = true;
+            grid.width = grid.desiredSize.width;
+        }
+        if (grid.height && grid.height < grid.desiredSize.height) {
+            isMeasure = true;
+            grid.height = grid.desiredSize.height;
+        }
+        if (isMeasure) {
+            grid.measure(new Size(grid.width, grid.height));
+        }
+    }
+    canvas.arrange(canvas.desiredSize);
+}
+/** @private */
+function ChangeLaneIndex(diagram, obj, startRowIndex) {
+    let container = obj.wrapper.children[0];
+    let i;
+    let j;
+    let k;
+    let object;
+    let subChild;
+    let row;
+    let cell;
+    let child;
+    for (i = startRowIndex; i < container.rows.length; i++) {
+        row = container.rows[i];
+        for (j = 0; j < row.cells.length; j++) {
+            cell = row.cells[j];
+            if (cell.children && cell.children.length > 0) {
+                for (k = 0; k < cell.children.length; k++) {
+                    child = cell.children[k];
+                    object = diagram.nameTable[child.id];
+                    if (object.isLane && child.children.length > 1) {
+                        subChild = diagram.nameTable[child.children[1].id];
+                        if (subChild && subChild.isLane) {
+                            subChild.rowIndex = i;
+                            subChild.columnIndex = j;
+                        }
+                    }
+                    object.rowIndex = i;
+                    object.columnIndex = j;
+                }
+            }
+        }
+    }
+}
+/** @private */
+function arrangeChildNodesInSwimLane(diagram, obj) {
+    let grid = obj.wrapper.children[0];
+    let shape = obj.shape;
+    let padding = shape.padding;
+    let lanes = shape.lanes;
+    let top = grid.bounds.y;
+    let rowvalue;
+    let columnValue;
+    let phaseCount = (shape.phaseSize > 0) ? shape.phases.length : 0;
+    let node;
+    let canvas;
+    let cell;
+    let i;
+    let j;
+    let k;
+    let orientation = shape.orientation === 'Horizontal' ? true : false;
+    let col = orientation ? shape.phases.length || 1 : lanes.length + 1;
+    let row = orientation ? ((shape.header && shape.hasHeader) ? 1 : 0) +
+        (shape.phases.length > 0 ? 1 : 0) + (shape.lanes.length)
+        : (shape.header && shape.hasHeader ? 1 : 0) + shape.phases.length;
+    if (phaseCount === 0 && !orientation && shape.lanes.length) {
+        row += 1;
+    }
+    if (orientation) {
+        rowvalue = (shape.header && shape.hasHeader ? 1 : 0) + (phaseCount > 0 ? 1 : 0);
+        columnValue = 0;
+    }
+    else {
+        rowvalue = (shape.header && shape.hasHeader ? 1 : 0);
+        columnValue = phaseCount > 0 ? 1 : 0;
+    }
+    if (lanes.length > 0) {
+        top += (shape.header && shape.hasHeader) ? shape.header.height : 0;
+        for (i = 0; i < lanes.length; i++) {
+            for (j = 0; j < lanes[i].children.length; j++) {
+                node = lanes[i].children[j];
+                node.offsetX = lanes[i].width;
+                node.offsetY = lanes[i].height;
+                diagram.initObject(node);
+                diagram.nodes.push(node);
+                canvas = node.wrapper;
+                if (orientation) {
+                    for (k = columnValue; k < col; k++) {
+                        cell = grid.rows[rowvalue].cells[k];
+                        if (canvas.margin.left < (cell.bounds.right - grid.bounds.x)) {
+                            node.parentId = cell.children[0].id;
+                            if (k > columnValue) {
+                                canvas.margin.left = canvas.margin.left - (cell.bounds.left - grid.bounds.left);
+                            }
+                            else {
+                                if ((cell.children[0].children[1].actualSize.width + padding) >= canvas.margin.left) {
+                                    canvas.margin.left = cell.children[0].children[1].actualSize.width + padding;
+                                }
+                            }
+                            if (canvas.margin.left < padding) {
+                                canvas.margin.left = padding;
+                            }
+                            if (canvas.margin.top < padding) {
+                                canvas.margin.top = padding;
+                            }
+                            addChildToLane(canvas, node, diagram);
+                            break;
+                        }
+                    }
+                }
+                else {
+                    for (let k = rowvalue; k < row; k++) {
+                        cell = grid.rows[k].cells[columnValue];
+                        if (canvas.margin.top < (cell.bounds.bottom - top)) {
+                            node.parentId = cell.children[0].id;
+                            if (k > rowvalue) {
+                                canvas.margin.top = canvas.margin.top - (cell.bounds.top - top);
+                            }
+                            else {
+                                if ((cell.children[0].children[1].actualSize.height + padding) >= canvas.margin.top) {
+                                    canvas.margin.top = cell.children[0].children[1].actualSize.height + padding;
+                                }
+                            }
+                            if (canvas.margin.left < padding) {
+                                canvas.margin.left = padding;
+                            }
+                            if (canvas.margin.top < padding) {
+                                canvas.margin.top = padding;
+                            }
+                            addChildToLane(canvas, node, diagram);
+                            break;
+                        }
+                    }
+                }
+            }
+            orientation ? rowvalue++ : columnValue++;
+        }
+    }
+    grid.measure(new Size(obj.width, obj.height));
+    grid.arrange(grid.desiredSize);
+    updateChildOuterBounds(grid, obj);
+    obj.width = obj.wrapper.width = grid.width;
+    obj.height = obj.wrapper.height = grid.height;
+    updateHeaderMaxWidth(diagram, obj);
+    obj.wrapper.measure(new Size(obj.width, obj.height));
+    obj.wrapper.arrange(grid.desiredSize);
+    checkLaneChildrenOffset(obj);
+    checkPhaseOffset(obj, diagram);
+    checkLaneSize(obj);
+}
+function addChildToLane(canvas, node, diagram) {
+    canvas.measure(new Size(node.width, node.height));
+    canvas.arrange(canvas.desiredSize);
+    let parent = diagram.getObject(node.parentId);
+    diagram.addChild(parent, node.id);
+}
+/** @private */
+function updateChildOuterBounds(grid, obj) {
+    let columnDefinitions = grid.columnDefinitions();
+    let rowDefinitions = grid.rowDefinitions();
+    let i;
+    let k;
+    let j;
+    let cell;
+    let child;
+    let row;
+    let rowIndex = findStartLaneIndex(obj);
+    if (obj.shape.orientation === 'Vertical') {
+        if (rowIndex === 0) {
+            rowIndex = (obj.shape.header && obj.shape.hasHeader) ? 1 : 0;
+        }
+    }
+    let padding = obj.shape.padding;
+    for (i = 0; i < columnDefinitions.length; i++) {
+        grid.updateColumnWidth(i, columnDefinitions[i].width, true, padding);
+    }
+    for (i = rowIndex; i < rowDefinitions.length; i++) {
+        grid.updateRowHeight(i, rowDefinitions[i].height, true, padding);
+    }
+    for (k = 0; k < rowDefinitions.length; k++) {
+        row = grid.rows[k];
+        for (i = 0; i < columnDefinitions.length; i++) {
+            cell = row.cells[i];
+            if (cell.children && cell.children.length > 0) {
+                for (j = 0; j < cell.children.length; j++) {
+                    child = cell.children[j];
+                    if (child.maxWidth) {
+                        child.maxWidth = cell.actualSize.width;
+                    }
+                    if (child.maxHeight) {
+                        child.maxHeight = cell.actualSize.height;
+                    }
+                }
+            }
+        }
+    }
+}
+/** @private */
+function checkLaneSize(obj) {
+    if (obj.shape.type === 'SwimLane' && !obj.shape.isLane && !obj.shape.isPhase) {
+        let lane;
+        let i;
+        let columns;
+        let size;
+        let lanes = obj.shape.lanes;
+        let laneIndex = findStartLaneIndex(obj);
+        let rows = obj.wrapper.children[0].rowDefinitions();
+        for (i = 0; i < lanes.length; i++, laneIndex++) {
+            lane = lanes[i];
+            if (obj.shape.orientation === 'Horizontal') {
+                size = rows[laneIndex].height;
+                if (lane.height !== size) {
+                    lane.height = size;
+                }
+            }
+            else {
+                columns = obj.wrapper.children[0].columnDefinitions();
+                size = columns[laneIndex].width;
+                if (lane.width !== size) {
+                    lane.width = size;
+                }
+            }
+        }
+    }
+}
+/** @private */
+function checkPhaseOffset(obj, diagram) {
+    let shape = obj.shape;
+    let phases = shape.phases;
+    let i;
+    let offset;
+    let phaseRow;
+    let phase;
+    let gridRowIndex = (shape.header && shape.hasHeader) ? 1 : 0;
+    let grid = obj.wrapper.children[0];
+    let top = grid.bounds.y + ((shape.header && shape.hasHeader) ? shape.header.height : 0);
+    if (obj.shape.type === 'SwimLane') {
+        obj = diagram.getObject(obj.id) || obj;
+        if (phases.length > 0) {
+            grid = obj.wrapper.children[0];
+            if (shape.orientation === 'Horizontal') {
+                phaseRow = (shape.header && shape.hasHeader) ? grid.rows[1] : grid.rows[0];
+                for (i = 0; i < phases.length; i++) {
+                    phase = phaseRow.cells[i].children[0];
+                    offset = phase.bounds.right - grid.bounds.x;
+                    if (phases[i].offset !== offset) {
+                        phases[i].offset = offset;
+                    }
+                    diagram.nameTable[phase.id].maxWidth = phase.maxWidth;
+                }
+            }
+            else {
+                for (i = 0; i < phases.length; i++) {
+                    phase = grid.rows[gridRowIndex + i].cells[0].children[0];
+                    offset = phase.bounds.bottom - top;
+                    if (phases[i].offset !== offset) {
+                        phases[i].offset = offset;
+                    }
+                    diagram.nameTable[phase.id].maxWidth = phase.maxWidth;
+                }
+            }
+        }
+    }
+}
+/** @private */
+function updateConnectorsProperties(connectors, diagram) {
+    if (connectors && connectors.length > 0) {
+        let edges;
+        for (let i = 0; i < connectors.length; i++) {
+            edges = diagram.getObject(connectors[i]);
+            diagram.connectorPropertyChange(edges, {}, {
+                sourceID: edges.sourceID, targetID: edges.targetID
+            });
+        }
+    }
+}
+/** @private */
+function laneInterChanged(diagram, obj, target, position) {
+    let index;
+    let undoElement;
+    let entry;
+    let redoElement;
+    let sourceIndex;
+    let targetIndex;
+    let temp;
+    let sourceLaneIndex;
+    let targetLaneIndex;
+    let rowIndex;
+    let swimLane = (diagram.getObject(obj.parentId));
+    let shape = swimLane.shape;
+    let grid = swimLane.wrapper.children[0];
+    let lanes = shape.lanes;
+    let connectors = getConnectors(diagram, grid, obj.rowIndex, true);
+    if ((shape.orientation === 'Horizontal' && obj.rowIndex !== target.rowIndex) ||
+        (shape.orientation === 'Vertical' && obj.columnIndex !== target.columnIndex)) {
+        if (shape.orientation === 'Horizontal') {
+            sourceIndex = obj.rowIndex;
+            targetIndex = target.rowIndex;
+            index = ((shape.header && shape.hasHeader) ? 1 : 0) + (shape.phases.length && shape.phaseSize ? 1 : 0);
+            sourceLaneIndex = obj.rowIndex - index;
+            targetLaneIndex = target.rowIndex - index;
+            if (sourceLaneIndex < targetLaneIndex) {
+                if (position && target.wrapper.offsetY > position.y) {
+                    targetIndex += (targetLaneIndex > 0) ? -1 : 1;
+                    targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
+                }
+            }
+            else {
+                if (position && target.wrapper.offsetY < position.y) {
+                    targetIndex += 1;
+                    targetLaneIndex += 1;
+                }
+            }
+            if (sourceIndex !== targetIndex) {
+                grid.updateRowIndex(sourceIndex, targetIndex);
+            }
+        }
+        else {
+            sourceIndex = obj.columnIndex;
+            targetIndex = target.columnIndex;
+            index = (shape.phases.length && shape.phaseSize) ? 1 : 0;
+            sourceLaneIndex = obj.columnIndex - index;
+            targetLaneIndex = target.columnIndex - index;
+            rowIndex = (shape.header && shape.hasHeader) ? 1 : 0;
+            if (sourceLaneIndex < targetLaneIndex) {
+                if (position && target.wrapper.offsetX > position.x) {
+                    targetIndex += (targetLaneIndex > 0) ? -1 : 1;
+                    targetLaneIndex += (targetLaneIndex > 0) ? -1 : 1;
+                }
+            }
+            else {
+                if (position && target.wrapper.offsetX < position.x) {
+                    targetIndex += 1;
+                    targetLaneIndex += 1;
+                }
+            }
+            if (sourceIndex !== targetIndex) {
+                if (shape.phaseSize === 0 && targetIndex === 0) {
+                    if (shape.header && shape.hasHeader) {
+                        grid.rows[0].cells[sourceIndex].children = grid.rows[0].cells[0].children;
+                        grid.rows[0].cells[sourceIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
+                        grid.rows[0].cells[0].children = [];
+                    }
+                }
+                grid.updateColumnIndex(0, sourceIndex, targetIndex);
+            }
+        }
+        if (sourceIndex !== targetIndex) {
+            undoElement = {
+                target: cloneObject(target), source: cloneObject(obj)
+            };
+            temp = lanes[sourceLaneIndex];
+            lanes.splice(sourceLaneIndex, 1);
+            lanes.splice(targetLaneIndex, 0, temp);
+            redoElement = {
+                target: cloneObject(undoElement.source), source: cloneObject(undoElement.target)
+            };
+            entry = {
+                type: 'LanePositionChanged', redoObject: redoElement,
+                undoObject: undoElement, category: 'Internal'
+            };
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                diagram.commandHandler.addHistoryEntry(entry);
+            }
+            ChangeLaneIndex(diagram, swimLane, 0);
+            updateConnectorsProperties(connectors, diagram);
+            swimLane.wrapper.measure(new Size(swimLane.width, swimLane.height));
+            swimLane.wrapper.arrange(swimLane.wrapper.desiredSize);
+            diagram.updateDiagramObject(swimLane);
+        }
+    }
+}
+/** @private */
+function updateSwimLaneObject(diagram, obj, swimLane, helperObject) {
+    let parentNode = diagram.getObject(swimLane.id);
+    let shape = parentNode.shape;
+    let index = (shape.header && shape.hasHeader) ? 1 : 0;
+    let lanes = shape.lanes;
+    let phases = shape.phases;
+    let helperWidth = helperObject.wrapper.actualSize.width;
+    let helperHeight = helperObject.wrapper.actualSize.height;
+    let objWidth = obj.wrapper.actualSize.width;
+    let objHeight = obj.wrapper.actualSize.height;
+    if (parentNode.shape.type === 'SwimLane') {
+        if (shape.orientation === 'Horizontal') {
+            if (obj.isPhase) {
+                phases[obj.columnIndex].offset += (helperWidth - objWidth);
+            }
+            else {
+                index = (shape.phaseSize && shape.phases.length > 0) ? index + 1 : index;
+                lanes[(obj.rowIndex - index)].height += (helperHeight - objHeight);
+            }
+        }
+        else {
+            if (obj.isPhase) {
+                phases[(obj.rowIndex - index)].offset += (helperHeight - objHeight);
+            }
+            else {
+                index = (shape.phaseSize && shape.phases.length > 0) ? 1 : 0;
+                lanes[(obj.columnIndex - index)].width += (helperWidth - objWidth);
+            }
+        }
+    }
+}
+/** @private */
+function findLaneIndex(swimLane, laneObj) {
+    let laneIndex;
+    let shape = swimLane.shape;
+    let index = (shape.header && shape.hasHeader) ? 1 : 0;
+    if (shape.orientation === 'Horizontal') {
+        index += shape.phases.length > 0 ? 1 : 0;
+        laneIndex = laneObj.rowIndex - index;
+    }
+    else {
+        laneIndex = laneObj.columnIndex - (shape.phaseSize && shape.phases.length > 0 ? 1 : 0);
+    }
+    return laneIndex;
+}
+/** @private */
+function findPhaseIndex(phase, swimLane) {
+    let phaseIndex;
+    let shape = swimLane.shape;
+    let index = (shape.header && shape.hasHeader) ? 1 : 0;
+    phaseIndex = (shape.orientation === 'Horizontal') ? phase.columnIndex : phase.rowIndex - index;
+    return phaseIndex;
+}
+/** @private */
+function findStartLaneIndex(swimLane) {
+    let index = 0;
+    let shape = swimLane.shape;
+    if (shape.orientation === 'Horizontal') {
+        index = (shape.header && shape.hasHeader) ? 1 : 0;
+    }
+    if (shape.phases.length > 0 && shape.phaseSize) {
+        index += 1;
+    }
+    return index;
+}
+/** @private */
+function updatePhaseMaxWidth(parent, diagram, wrapper, columnIndex) {
+    let shape = parent.shape;
+    if (shape.phases.length > 0) {
+        let node = diagram.nameTable[shape.phases[columnIndex].header.id];
+        if (node && node.maxWidth < wrapper.outerBounds.width) {
+            node.maxWidth = wrapper.outerBounds.width;
+            node.wrapper.maxWidth = wrapper.outerBounds.width;
+        }
+    }
+}
+/** @private */
+function updateHeaderMaxWidth(diagram, swimLane) {
+    if (swimLane.shape.header && swimLane.shape.hasHeader) {
+        let grid = swimLane.wrapper.children[0];
+        let id = grid.rows[0].cells[0].children[0].id;
+        let headerNode = diagram.nameTable[id];
+        if (headerNode && headerNode.isHeader && headerNode.maxWidth < swimLane.width) {
+            headerNode.maxWidth = swimLane.width;
+            headerNode.wrapper.maxWidth = swimLane.width;
+        }
+    }
+}
+/** @private */
+function addLane(diagram, parent, lane, count) {
+    let swimLane = diagram.nameTable[parent.id];
+    if (swimLane.shape.type === 'SwimLane') {
+        diagram.protectPropertyChange(true);
+        let grid = swimLane.wrapper.children[0];
+        let bounds = grid.bounds;
+        let shape = swimLane.shape;
+        let redoObj;
+        let orientation = false;
+        let connectors;
+        let entry;
+        let index;
+        let laneObj;
+        let laneIndex;
+        let children;
+        let j;
+        let i;
+        let k;
+        let cell;
+        let child;
+        let point;
+        laneObj = new Lane(shape, 'lanes', lane, true);
+        index = (shape.header && shape.hasHeader) ? 1 : 0;
+        if (shape.orientation === 'Horizontal') {
+            orientation = true;
+            index = shape.phases.length > 0 ? index + 1 : index;
+        }
+        connectors = getConnectors(diagram, grid, 0, true);
+        laneIndex = (count !== undefined) ? count : shape.lanes.length;
+        index += laneIndex;
+        if (orientation) {
+            let rowDef = new RowDefinition();
+            rowDef.height = lane.height;
+            grid.addRow(index, rowDef, false);
+            swimLane.height = (swimLane.height !== undefined) ? swimLane.height + lane.height : swimLane.height;
+            swimLane.wrapper.height = grid.height = swimLane.height;
+        }
+        else {
+            let colDef = new ColumnDefinition();
+            colDef.width = lane.width;
+            grid.addColumn(laneIndex + 1, colDef, false);
+            if (swimLane.width) {
+                swimLane.width += lane.width;
+                swimLane.wrapper.width = grid.width = swimLane.width;
+            }
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                grid.rows[0].cells[0].columnSpan += 1;
+            }
+        }
+        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+            laneObj.id += randomId();
+        }
+        if (count !== undefined) {
+            shape.lanes.splice(count, 0, laneObj);
+        }
+        else {
+            shape.lanes.push(laneObj);
+        }
+        laneCollection(grid, diagram, swimLane, index, laneIndex, orientation);
+        redoObj = (shape.orientation === 'Horizontal') ?
+            diagram.nameTable[grid.rows[index].cells[0].children[0].id] :
+            ((shape.header && shape.hasHeader) ? diagram.nameTable[grid.rows[1].cells[index].children[0].id] :
+                diagram.nameTable[grid.rows[0].cells[index].children[0].id]);
+        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+            entry = {
+                type: 'LaneCollectionChanged', changeType: 'Insert', undoObject: cloneObject(laneObj),
+                redoObject: cloneObject(redoObj), category: 'Internal'
+            };
+            diagram.addHistoryEntry(entry);
+        }
+        let startRowIndex = (shape.orientation === 'Horizontal') ?
+            index : ((shape.header && shape.hasHeader) ? 1 : 0);
+        ChangeLaneIndex(diagram, swimLane, startRowIndex);
+        swimLaneMeasureAndArrange(swimLane);
+        updateHeaderMaxWidth(diagram, swimLane);
+        children = lane.children;
+        if (children && children.length > 0) {
+            for (j = 0; j < children.length; j++) {
+                child = children[j];
+                point = { x: child.wrapper.offsetX, y: child.wrapper.offsetY };
+                if (shape.orientation === 'Horizontal') {
+                    cell = grid.rows[index].cells[i];
+                    for (i = 0; i < grid.rows[index].cells.length; i++) {
+                        addChildNodeToNewLane(diagram, grid.rows[index].cells[i], point, child);
+                    }
+                }
+                else {
+                    for (k = 0; k < grid.rows.length; k++) {
+                        cell = grid.rows[k].cells[index];
+                        addChildNodeToNewLane(diagram, cell, point, child);
+                    }
+                }
+            }
+        }
+        updateConnectorsProperties(connectors, diagram);
+        diagram.drag(swimLane, bounds.x - grid.bounds.x, bounds.y - grid.bounds.y);
+        diagram.protectPropertyChange(false);
+    }
+}
+function addChildNodeToNewLane(diagram, cell, point, child) {
+    if (cell.children && cell.children.length > 0) {
+        let canvas = cell.children[0];
+        let parent = diagram.nameTable[canvas.id];
+        if (canvas.bounds.containsPoint(point)) {
+            diagram.addChild(parent, child);
+        }
+    }
+}
+function addPhase(diagram, parent, newPhase) {
+    if (parent.shape.type === 'SwimLane') {
+        let gridRowIndex;
+        let phaseNode;
+        let phase;
+        let previousPhase;
+        let nextPhase;
+        let phaseIndex;
+        let laneHeaderSize;
+        let i;
+        let x = parent.wrapper.bounds.x;
+        let y = parent.wrapper.bounds.y;
+        let shape = parent.shape;
+        let padding = shape.padding;
+        let phasesCollection = shape.phases;
+        let width;
+        let grid = parent.wrapper.children[0];
+        let orientation = shape.orientation === 'Horizontal' ? true : false;
+        gridRowIndex = (shape.header && shape.hasHeader) ? 0 : -1;
+        if (shape.phases.length > 0) {
+            gridRowIndex += 1;
+            
+        }
+        laneHeaderSize = (orientation) ? shape.lanes[0].header.width : shape.lanes[0].header.height;
+        if (newPhase.offset > laneHeaderSize) {
+            for (i = 0; i < phasesCollection.length; i++) {
+                phase = phasesCollection[i];
+                previousPhase = (i > 0) ? phasesCollection[i - 1] : phase;
+                if (phase.offset > newPhase.offset) {
+                    width = (i > 0) ? newPhase.offset - previousPhase.offset : newPhase.offset;
+                    if (orientation) {
+                        let nextCol = grid.columnDefinitions()[i];
+                        nextCol.width -= width;
+                        nextPhase = diagram.nameTable[shape.phases[i].header.id];
+                        nextPhase.maxWidth = nextPhase.wrapper.maxWidth = nextCol.width;
+                        grid.updateColumnWidth(i, nextCol.width, false);
+                        let addPhase = new ColumnDefinition();
+                        addPhase.width = width;
+                        phaseIndex = i;
+                        grid.addColumn(i, addPhase, false);
+                        break;
+                    }
+                    else {
+                        let nextRow = grid.rowDefinitions()[i + gridRowIndex];
+                        nextRow.height -= width;
+                        nextPhase = diagram.nameTable[shape.phases[i].header.id];
+                        grid.updateRowHeight(i + gridRowIndex, nextRow.height, false);
+                        let addPhase = new RowDefinition();
+                        addPhase.height = width;
+                        phaseIndex = i;
+                        grid.addRow(i + gridRowIndex, addPhase, false);
+                        break;
+                    }
+                }
+            }
+            if (diagram.diagramActions & DiagramAction.UndoRedo && phaseIndex === undefined) {
+                let entry = diagram.historyManager.currentEntry.next;
+                if (entry.isLastPhase) {
+                    phaseIndex = phasesCollection.length;
+                    addLastPhase(phaseIndex, parent, entry, grid, orientation, newPhase);
+                }
+            }
+            let phaseObj = new Phase((parent.shape), 'phases', newPhase, true);
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                phaseObj.id += randomId();
+            }
+            shape.phases.splice(phaseIndex, 0, phaseObj);
+            phaseDefine(grid, diagram, parent, gridRowIndex, orientation, phaseIndex);
+            if (orientation) {
+                phaseNode = diagram.nameTable[grid.rows[gridRowIndex].cells[phaseIndex].children[0].id];
+                if (phaseIndex === 0 && shape.header && shape.hasHeader) {
+                    grid.rows[0].cells[0].children = grid.rows[0].cells[1].children;
+                    grid.rows[0].cells[1].children = [];
+                    let fristRow = grid.rows[0];
+                    for (let i = 0; i < fristRow.cells.length; i++) {
+                        fristRow.cells[i].minWidth = undefined;
+                        if (i === 0) {
+                            fristRow.cells[i].columnSpan = grid.rows[0].cells.length;
+                        }
+                        else {
+                            fristRow.cells[i].columnSpan = 1;
+                        }
+                    }
+                }
+                addHorizontalPhase(diagram, parent, grid, phaseIndex, orientation);
+                let col = grid.columnDefinitions();
+                grid.updateColumnWidth(phaseIndex, col[phaseIndex].width, true, padding);
+                phaseNode.maxWidth = phaseNode.wrapper.maxWidth = col[phaseIndex].width;
+                if (col.length > phaseIndex + 1) {
+                    let nextPhaseNode = diagram.nameTable[grid.rows[gridRowIndex].cells[phaseIndex + 1].children[0].id];
+                    grid.updateColumnWidth(phaseIndex + 1, col[phaseIndex + 1].width, true, padding);
+                    nextPhaseNode.maxWidth = nextPhaseNode.wrapper.maxWidth = col[phaseIndex + 1].width;
+                }
+                parent.width = parent.wrapper.width = parent.wrapper.children[0].width = grid.width;
+            }
+            else {
+                phaseNode = diagram.nameTable[grid.rows[gridRowIndex + phaseIndex].cells[0].children[0].id];
+                let row = grid.rowDefinitions();
+                let size = row[gridRowIndex + phaseIndex].height;
+                addVerticalPhase(diagram, parent, grid, gridRowIndex + phaseIndex, orientation);
+                grid.updateRowHeight(gridRowIndex + phaseIndex, size, true, padding);
+                if (row.length > gridRowIndex + phaseIndex + 1) {
+                    size = row[gridRowIndex + phaseIndex + 1].height;
+                    grid.updateRowHeight(gridRowIndex + phaseIndex + 1, size, true, padding);
+                }
+                parent.height = parent.wrapper.height = parent.wrapper.children[0].height = grid.actualSize.height;
+            }
+            swimLaneMeasureAndArrange(parent);
+            parent.width = parent.wrapper.actualSize.width;
+            updateHeaderMaxWidth(diagram, parent);
+            diagram.drag(parent, x - parent.wrapper.bounds.x, y - parent.wrapper.bounds.y);
+            checkPhaseOffset(parent, diagram);
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                let entry = {
+                    type: 'PhaseCollectionChanged', changeType: 'Insert', undoObject: cloneObject(phaseObj),
+                    redoObject: cloneObject(phaseNode), category: 'Internal'
+                };
+                diagram.addHistoryEntry(entry);
+            }
+            diagram.updateDiagramObject(parent);
+        }
+    }
+}
+function addLastPhase(phaseIndex, parent, entry, grid, orientation, newPhase) {
+    let shape = parent.shape;
+    let prevPhase = shape.phases[phaseIndex - 2];
+    let prevOffset = entry.previousPhase.offset;
+    if (orientation) {
+        let nextCol = grid.columnDefinitions()[phaseIndex - 1];
+        let addPhase = new ColumnDefinition();
+        if (phaseIndex > 1) {
+            addPhase.width = (nextCol.width) - (prevOffset - prevPhase.offset);
+            nextCol.width = prevOffset - prevPhase.offset;
+        }
+        else {
+            addPhase.width = nextCol.width - prevOffset;
+            nextCol.width = prevOffset;
+        }
+        grid.updateColumnWidth(phaseIndex - 1, nextCol.width, false);
+        grid.addColumn(phaseIndex, addPhase, false);
+    }
+    else {
+        let nextCol = grid.rowDefinitions()[phaseIndex];
+        let addPhase = new RowDefinition();
+        if (phaseIndex > 1) {
+            addPhase.height = entry.undoObject.offset - prevOffset;
+            nextCol.height = prevOffset - prevPhase.offset;
+        }
+        else {
+            addPhase.height = nextCol.height - prevOffset;
+            nextCol.height = prevOffset;
+        }
+        grid.updateRowHeight(phaseIndex, nextCol.height, false);
+        grid.addRow(1 + phaseIndex, addPhase, false);
+    }
+}
+function addHorizontalPhase(diagram, node, grid, index, orientation) {
+    let shape = node.shape;
+    let nextCell;
+    let i;
+    let prevCell;
+    let gridCell;
+    let row;
+    let laneIndex = findStartLaneIndex(node);
+    if (shape.header && shape.hasHeader) {
+        grid.rows[0].cells[0].columnSpan = grid.rows[0].cells.length;
+    }
+    for (i = laneIndex; i < grid.rows.length; i++) {
+        row = grid.rows[i];
+        prevCell = row.cells[index - 1];
+        gridCell = row.cells[index];
+        nextCell = row.cells[index + 1];
+        addSwimlanePhases(diagram, node, prevCell, gridCell, nextCell, i, index);
+    }
+    ChangeLaneIndex(diagram, node, 1);
+}
+function addVerticalPhase(diagram, node, grid, rowIndex, orientation) {
+    let prevCell;
+    let gridCell;
+    let nextCell;
+    let row = grid.rows[rowIndex];
+    let nextRow = grid.rows[rowIndex + 1];
+    let prevRow = grid.rows[rowIndex - 1];
+    for (let i = 1; i < row.cells.length; i++) {
+        gridCell = row.cells[i];
+        nextCell = (nextRow) ? nextRow.cells[i] : undefined;
+        prevCell = prevRow.cells[i];
+        addSwimlanePhases(diagram, node, prevCell, gridCell, nextCell, rowIndex, i);
+    }
+    ChangeLaneIndex(diagram, node, 1);
+}
+function addSwimlanePhases(diagram, node, prevCell, gridCell, nextCell, rowIndex, columnIndex) {
+    let x;
+    let y;
+    let shape = node.shape;
+    let orientation = shape.orientation === 'Horizontal' ? true : false;
+    let grid = node.wrapper.children[0];
+    let width = gridCell.desiredCellWidth;
+    let height = gridCell.desiredCellHeight;
+    let rect;
+    let canvas;
+    let parentWrapper;
+    let j;
+    let i = (orientation) ? rowIndex : columnIndex;
+    if (prevCell) {
+        x = orientation ? prevCell.bounds.x + prevCell.bounds.width : prevCell.bounds.x;
+        y = orientation ? prevCell.bounds.y : prevCell.bounds.y + prevCell.bounds.height;
+    }
+    else {
+        x = grid.bounds.x;
+        y = nextCell.bounds.y;
+    }
+    rect = new Rect(x, y, width, height);
+    canvas = {
+        id: node.id + ((orientation) ? shape.lanes[i - 2] : shape.lanes[i - 1]).id + randomId()[0],
+        rowIndex: rowIndex, columnIndex: columnIndex,
+        width: gridCell.minWidth, height: gridCell.minHeight,
+        style: ((orientation) ? shape.lanes[i - 2] : shape.lanes[i - 1]).style,
+        constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+        container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
+    };
+    parentWrapper = addObjectToGrid(diagram, grid, node, canvas, false, false, true);
+    parentWrapper.children[0].isCalculateDesiredSize = false;
+    grid.addObject(parentWrapper, rowIndex, columnIndex);
+    if (nextCell && nextCell.children && nextCell.children.length) {
+        for (j = 0; j < nextCell.children.length; j++) {
+            if (orientation) {
+                diagram.nameTable[nextCell.children[j].id].columnIndex += 1;
+            }
+            else {
+                diagram.nameTable[nextCell.children[j].id].rowIndex += 1;
+            }
+        }
+    }
+    arrangeChildInGrid(diagram, nextCell, gridCell, rect, parentWrapper, orientation, prevCell);
+}
+function arrangeChildInGrid(diagram, nextCell, gridCell, rect, parentWrapper, orientation, prevCell) {
+    let child;
+    let point;
+    let childNode;
+    let parent = diagram.nameTable[parentWrapper.id];
+    let changeCell = (!nextCell) ? prevCell : nextCell;
+    let swimLane = diagram.nameTable[parent.parentId];
+    let padding = swimLane.shape.padding;
+    if (changeCell.children && changeCell.children[0].children.length > 1) {
+        for (let j = 1; j < changeCell.children[0].children.length; j++) {
+            child = changeCell.children[0].children[j];
+            childNode = diagram.nameTable[child.id];
+            point = (orientation) ? { x: child.bounds.x, y: child.bounds.center.y } :
+                { x: child.bounds.center.x, y: child.bounds.top };
+            if (rect.containsPoint(point)) {
+                gridCell.children[0].children.push(child);
+                changeCell.children[0].children.splice(j, 1);
+                j--;
+                diagram.deleteChild(childNode);
+                if (!childNode.isLane) {
+                    childNode.parentId = parentWrapper.id;
+                }
+                if (!parent.children) {
+                    parent.children = [];
+                }
+                if (!nextCell) {
+                    if (orientation) {
+                        childNode.margin.left = childNode.wrapper.bounds.x - changeCell.children[0].bounds.right;
+                    }
+                    else {
+                        childNode.margin.top = childNode.wrapper.bounds.y - changeCell.children[0].bounds.bottom;
+                    }
+                }
+                parent.children.push(child.id);
+                childNode.zIndex = parent.zIndex + 1;
+                diagram.removeElements(childNode);
+            }
+            else if (nextCell) {
+                if (orientation) {
+                    childNode.margin.left -= gridCell.desiredCellWidth;
+                    if (padding > childNode.margin.left) {
+                        childNode.margin.left = padding;
+                    }
+                }
+                else {
+                    childNode.margin.top -= gridCell.desiredCellHeight;
+                    if (padding > childNode.margin.top) {
+                        childNode.margin.top = padding;
+                    }
+                }
+            }
+        }
+    }
+}
+function swimLaneSelection(diagram, node, corner) {
+    if (node.shape.type === 'SwimLane' && (corner === 'ResizeSouth' || corner === 'ResizeEast')) {
+        let shape = node.shape;
+        let wrapper = node.wrapper.children[0];
+        let child;
+        let index;
+        if (corner === 'ResizeSouth') {
+            if (shape.orientation === 'Vertical') {
+                child = wrapper.rows[wrapper.rows.length - 1].cells[0];
+            }
+            else {
+                index = wrapper.rows.length - 1;
+                child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
+            }
+        }
+        else {
+            index = (shape.header && shape.hasHeader) ? 1 : 0;
+            child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
+        }
+        diagram.commandHandler.select(diagram.nameTable[child.children[0].id]);
+    }
+}
+function pasteSwimLane(swimLane, diagram, clipboardData, laneNode, isLane, isUndo) {
+    let i;
+    let j;
+    let lane;
+    let phase;
+    let node;
+    let ranId = randomId();
+    let cloneLane;
+    let childX;
+    let childY;
+    let shape = swimLane.shape;
+    let lanes;
+    let phases = shape.phases;
+    let nodeX = swimLane.offsetX - swimLane.wrapper.actualSize.width / 2;
+    let nodeY = swimLane.offsetY - swimLane.wrapper.actualSize.height / 2;
+    if (shape.orientation === 'Vertical') {
+        nodeY += (shape.header && shape.hasHeader) ? shape.header.height : 0;
+    }
+    if (!isUndo) {
+        if (!isLane) {
+            swimLane.id += ranId;
+            if (shape && shape.header && shape.hasHeader) {
+                shape.header.id += ranId;
+            }
+            else {
+                shape.header = undefined;
+            }
+        }
+        for (i = 0; phases && i < phases.length; i++) {
+            phase = phases[i];
+            phase.id += ranId;
+        }
+    }
+    lanes = (isLane) ? [clipboardData.childTable[laneNode.id]] : shape.lanes;
+    for (i = 0; lanes && i < lanes.length; i++) {
+        lane = lanes[i];
+        if (!isUndo) {
+            lane.id += ranId;
+        }
+        for (j = 0; lane.children && j < lane.children.length; j++) {
+            node = lane.children[j];
+            childX = node.wrapper.offsetX - node.width / 2;
+            childY = node.wrapper.offsetY - node.height / 2;
+            node.zIndex = -1;
+            node.inEdges = node.outEdges = [];
+            if (isUndo || (clipboardData && (clipboardData.pasteIndex === 1 || clipboardData.pasteIndex === 0))) {
+                if (shape.orientation === 'Vertical') {
+                    node.margin.top = childY - nodeY;
+                }
+                else {
+                    node.margin.left = childX - nodeX;
+                }
+            }
+            if (!isUndo) {
+                node.id += ranId;
+            }
+        }
+    }
+    if (!isUndo) {
+        if (isLane) {
+            let newShape = {
+                lanes: lanes,
+                phases: phases, phaseSize: shape.phaseSize,
+                type: 'SwimLane', orientation: shape.orientation,
+                header: { annotation: { content: 'Title' }, height: 50 },
+            };
+            cloneLane = { shape: newShape };
+            if (shape.orientation === 'Horizontal') {
+                cloneLane.width = swimLane.wrapper.actualSize.width;
+                cloneLane.height = laneNode.wrapper.actualSize.height + shape.header.height + shape.phaseSize;
+                cloneLane.offsetX = swimLane.wrapper.offsetX + (clipboardData.pasteIndex * 10);
+                cloneLane.offsetY = laneNode.wrapper.offsetY + (clipboardData.pasteIndex * 10);
+            }
+            else {
+                cloneLane.width = laneNode.wrapper.actualSize.width;
+                cloneLane.height = swimLane.wrapper.actualSize.height;
+                cloneLane.offsetX = laneNode.wrapper.offsetX + (clipboardData.pasteIndex * 10);
+                cloneLane.offsetY = swimLane.wrapper.offsetY + (clipboardData.pasteIndex * 10);
+            }
+            swimLane = cloneLane;
+        }
+        if (clipboardData.pasteIndex !== 0) {
+            swimLane.offsetX += 10;
+            swimLane.offsetY += 10;
+        }
+        swimLane.zIndex = -1;
+        swimLane = diagram.add(swimLane);
+        if (!isLane) {
+            for (let i of Object.keys(clipboardData.childTable)) {
+                let connector = clipboardData.childTable[i];
+                connector.id += ranId;
+                connector.sourceID += ranId;
+                connector.targetID += ranId;
+                connector.zIndex = -1;
+                diagram.add(connector);
+            }
+        }
+        if (diagram.mode !== 'SVG') {
+            diagram.refreshDiagramLayer();
+        }
+        diagram.select([swimLane]);
+    }
+    return swimLane;
+}
+function gridSelection(diagram, selectorModel, id, isSymbolDrag) {
+    let canvas;
+    let node = selectorModel.nodes[0];
+    if (isSymbolDrag || checkParentAsContainer(diagram, node, true)) {
+        let targetnode;
+        let wrapper;
+        let parentNode;
+        let bounds;
+        let swimLaneId;
+        let element = new DiagramElement();
+        if (id) {
+            swimLaneId = (diagram.nameTable[id].parentId);
+            targetnode = node = diagram.nameTable[id];
+        }
+        wrapper = !id ? node.wrapper : targetnode.wrapper;
+        parentNode = diagram.nameTable[swimLaneId || node.parentId];
+        if (parentNode && parentNode.container.type === 'Grid') {
+            canvas = new Canvas();
+            canvas.children = [];
+            if (isSymbolDrag || !(node.isHeader)) {
+                if ((parentNode.container.orientation === 'Horizontal' && node.isPhase) ||
+                    (parentNode.container.orientation === 'Vertical' &&
+                        (node.rowIndex > 0 && node.columnIndex > 0 || node.isLane))) {
+                    bounds = findBounds(parentNode, (targetnode) ? targetnode.columnIndex : node.columnIndex, (parentNode.shape.header && parentNode.shape.hasHeader) ? true : false);
+                    canvas.offsetX = bounds.center.x;
+                    canvas.offsetY = bounds.center.y;
+                    element.width = bounds.width;
+                    element.height = bounds.height;
+                }
+                else {
+                    canvas.offsetX = parentNode.offsetX;
+                    canvas.offsetY = wrapper.offsetY;
+                    element.width = parentNode.wrapper.actualSize.width;
+                    element.height = wrapper.actualSize.height;
+                }
+            }
+            canvas.children.push(element);
+            canvas.measure(new Size());
+            canvas.arrange(canvas.desiredSize);
+        }
+    }
+    return canvas;
+}
+function removeLaneChildNode(diagram, swimLaneNode, currentObj, isChildNode) {
+    let laneIndex = findLaneIndex(swimLaneNode, currentObj);
+    let preventHistory = false;
+    let lanenode = swimLaneNode.shape.lanes[laneIndex];
+    for (let j = lanenode.children.length - 1; j >= 0; j--) {
+        if (isChildNode) {
+            if (isChildNode.id === lanenode.children[j].id) {
+                lanenode.children.splice(j, 1);
+            }
+        }
+        else {
+            diagram.removeDependentConnector(lanenode.children[j]);
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
+                preventHistory = true;
+            }
+            diagram.remove(lanenode.children[j]);
+            lanenode.children.splice(j, 1);
+            if (preventHistory) {
+                diagram.diagramActions = diagram.diagramActions & ~DiagramAction.UndoRedo;
+            }
+        }
+    }
+}
+function getGridChildren(obj) {
+    let children = obj.children[0];
+    return children;
+}
+function removeSwimLane(diagram, obj) {
+    let rows = obj.wrapper.children[0].rows;
+    let node;
+    let i;
+    let j;
+    let k;
+    let child;
+    let removeNode;
+    for (i = 0; i < rows.length; i++) {
+        for (j = 0; j < rows[i].cells.length; j++) {
+            child = getGridChildren(rows[i].cells[j]);
+            if (child && child.children) {
+                for (k = 0; k < child.children.length; k++) {
+                    if (child.children[k].children) {
+                        removeNode = diagram.nameTable[child.children[k].id];
+                        if (removeNode) {
+                            if (removeNode.isLane) {
+                                deleteNode(diagram, removeNode);
+                            }
+                            else {
+                                diagram.removeDependentConnector(removeNode);
+                                diagram.diagramActions |= DiagramAction.PreventHistory;
+                                diagram.remove(removeNode);
+                                diagram.diagramActions &= ~DiagramAction.PreventHistory;
+                                k--;
+                            }
+                        }
+                    }
+                }
+            }
+            if (child) {
+                node = diagram.nameTable[child.id];
+                if (node) {
+                    deleteNode(diagram, node);
+                }
+            }
+        }
+    }
+}
+function deleteNode(diagram, node) {
+    diagram.nodes.splice(diagram.nodes.indexOf(node), 1);
+    diagram.removeFromAQuad(node);
+    diagram.removeObjectsFromLayer(node);
+    delete diagram.nameTable[node.id];
+    diagram.removeElements(node);
+}
+function removeLane(diagram, lane, swimLane) {
+    let shape = swimLane.shape;
+    if (shape.lanes.length === 1) {
+        diagram.remove(swimLane);
+    }
+    else {
+        let x = swimLane.wrapper.bounds.x;
+        let y = swimLane.wrapper.bounds.y;
+        let row;
+        let i;
+        let cell;
+        let j;
+        let child;
+        let grid = swimLane.wrapper.children[0];
+        let laneIndex = findLaneIndex(swimLane, lane);
+        let undoObj = cloneObject(shape.lanes[laneIndex]);
+        removeLaneChildNode(diagram, swimLane, lane);
+        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+            let entry = {
+                type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
+                redoObject: cloneObject(lane), category: 'Internal'
+            };
+            diagram.addHistoryEntry(entry);
+        }
+        shape.lanes.splice(laneIndex, 1);
+        if (shape.orientation === 'Horizontal') {
+            row = grid.rows[lane.rowIndex];
+            for (i = 0; i < row.cells.length; i++) {
+                cell = row.cells[i];
+                if (cell && cell.children.length > 0) {
+                    for (j = 0; j < cell.children.length; j++) {
+                        child = cell.children[j];
+                        removeChildren(diagram, child);
+                    }
+                }
+            }
+            grid.removeRow(lane.rowIndex);
+        }
+        else {
+            swimLane.width = (swimLane.width !== undefined) ?
+                swimLane.width - grid.rows[0].cells[lane.columnIndex].actualSize.width : swimLane.width;
+            for (i = 0; i < grid.rows.length; i++) {
+                cell = grid.rows[i].cells[lane.columnIndex];
+                if (cell && cell.children.length > 0) {
+                    for (j = 0; j < cell.children.length; j++) {
+                        child = cell.children[j];
+                        removeChildren(diagram, child);
+                    }
+                }
+            }
+            grid.removeColumn(lane.columnIndex);
+        }
+        swimLane.width = swimLane.wrapper.width = grid.width;
+        swimLane.height = swimLane.wrapper.height = grid.height;
+        swimLaneMeasureAndArrange(swimLane);
+        ChangeLaneIndex(diagram, swimLane, lane.rowIndex);
+        diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
+        diagram.updateDiagramObject(swimLane);
+    }
+}
+function removeChildren(diagram, canvas) {
+    let i;
+    let node;
+    if (canvas instanceof Canvas) {
+        if (canvas.children.length > 0) {
+            for (i = 0; i < canvas.children.length; i++) {
+                if (canvas.children[i] instanceof Canvas) {
+                    removeChildren(diagram, canvas.children[i]);
+                }
+            }
+        }
+        node = diagram.getObject(canvas.id);
+        deleteNode(diagram, node);
+    }
+}
+function removePhase(diagram, phase, swimLane) {
+    diagram.protectPropertyChange(true);
+    let x = swimLane.wrapper.bounds.x;
+    let y = swimLane.wrapper.bounds.y;
+    let isLastPhase = false;
+    let previousPhase;
+    let shape = swimLane.shape;
+    let grid = swimLane.wrapper.children[0];
+    let phaseIndex = findPhaseIndex(phase, swimLane);
+    let phaseLength = shape.phases.length;
+    if (shape.phases.length > 1) {
+        if (phaseIndex === phaseLength - 1) {
+            isLastPhase = true;
+            previousPhase = cloneObject(shape.phases[phaseIndex - 1]);
+        }
+        let undoObj = cloneObject(shape.phases[phaseIndex]);
+        shape.phases.splice(phaseIndex, 1);
+        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+            let entry = {
+                type: 'PhaseCollectionChanged', changeType: 'Remove', undoObject: undoObj, previousPhase: previousPhase,
+                redoObject: cloneObject(phase), category: 'Internal', isLastPhase: isLastPhase
+            };
+            diagram.addHistoryEntry(entry);
+        }
+        if (shape.orientation === 'Horizontal') {
+            removeHorizontalPhase(diagram, grid, phase);
+        }
+        else {
+            removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane);
+        }
+        updateHeaderMaxWidth(diagram, swimLane);
+        ChangeLaneIndex(diagram, swimLane, 1);
+        checkPhaseOffset(swimLane, diagram);
+        diagram.protectPropertyChange(false);
+        diagram.updateDiagramObject(swimLane);
+    }
+}
+function removeHorizontalPhase(diagram, grid, phase) {
+    let row;
+    let cell;
+    let prevCell;
+    let actualChild;
+    let prevCanvas;
+    let width;
+    let i;
+    let j;
+    let k;
+    let child;
+    let node;
+    let object;
+    for (i = 0; i < grid.rows.length; i++) {
+        row = grid.rows[i];
+        if (row.cells.length > 1) {
+            cell = row.cells[phase.columnIndex];
+            prevCell = (row.cells.length - 1 === phase.columnIndex) ? row.cells[phase.columnIndex - 1] :
+                row.cells[phase.columnIndex + 1];
+            prevCanvas = prevCell.children[0];
+            if (cell.children.length > 0) {
+                actualChild = cell.children[0];
+                node = diagram.nameTable[actualChild.id];
+                if (prevCell.children.length === 0 && cell.children.length > 0) {
+                    prevCell.children = cell.children;
+                    prevCell.columnSpan = cell.columnSpan - 1;
+                }
+                else {
+                    for (j = 0; j < actualChild.children.length; j++) {
+                        child = actualChild.children[j];
+                        if (child instanceof Canvas) {
+                            object = diagram.nameTable[child.id];
+                            if (!object.isLane) {
+                                object.parentId = prevCanvas.id;
+                            }
+                            if ((row.cells.length - 1 === phase.columnIndex)) {
+                                object.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
+                                child.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
+                            }
+                            prevCanvas.children.push(child);
+                            if (diagram.nameTable[prevCanvas.id]) {
+                                let parentNode = diagram.nameTable[prevCanvas.id];
+                                if (!parentNode.children) {
+                                    parentNode.children = [];
+                                }
+                                parentNode.children.push(child.id);
+                            }
+                            actualChild.children.splice(j, 1);
+                            j--;
+                            if (node && node.children && node.children.indexOf(object.id) !== -1) {
+                                node.children.splice(node.children.indexOf(object.id), 1);
+                            }
+                        }
+                        if ((row.cells.length - 1 !== phase.columnIndex)) {
+                            for (k = 0; k < prevCanvas.children.length; k++) {
+                                let prevChild = prevCanvas.children[k];
+                                if (prevChild instanceof Canvas) {
+                                    let prevNode = diagram.nameTable[prevChild.id];
+                                    prevNode.margin.left = prevNode.wrapper.bounds.x - actualChild.bounds.x;
+                                    prevChild.margin.left = prevNode.wrapper.bounds.x - actualChild.bounds.x;
+                                }
+                            }
+                        }
+                    }
+                    if (node && node.isPhase) {
+                        let object = diagram.nameTable[prevCanvas.id];
+                        if (object) {
+                            prevCanvas.maxWidth = object.wrapper.maxWidth = object.wrapper.maxWidth += node.wrapper.maxWidth;
+                        }
+                    }
+                    deleteNode(diagram, node);
+                }
+            }
+        }
+    }
+    grid.removeColumn(phase.columnIndex);
+    if ((phase.columnIndex < grid.columnDefinitions().length)) {
+        width = grid.columnDefinitions()[phase.columnIndex].width;
+        width += phase.wrapper.actualSize.width;
+        grid.updateColumnWidth(phase.columnIndex, width, true);
+    }
+    else {
+        width = grid.columnDefinitions()[phase.columnIndex - 1].width;
+        width += phase.wrapper.actualSize.width;
+        grid.updateColumnWidth(phase.columnIndex - 1, width, true);
+    }
+}
+function removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane) {
+    let row;
+    let cell;
+    let prevRow;
+    let height;
+    let i;
+    let j;
+    let k;
+    row = grid.rows[phase.rowIndex];
+    let prevCell;
+    let prevChild;
+    let shape = swimLane.shape;
+    let child;
+    let object;
+    let top = swimLane.wrapper.bounds.y;
+    let phaseCount = shape.phases.length;
+    if (shape.header !== undefined && shape.hasHeader) {
+        top += grid.rowDefinitions()[0].height;
+    }
+    prevRow = (phaseIndex === phaseCount) ? grid.rows[phase.rowIndex - 1] : grid.rows[phase.rowIndex + 1];
+    for (i = 0; i < row.cells.length; i++) {
+        cell = row.cells[i];
+        prevCell = prevRow.cells[i];
+        prevChild = prevCell.children[0];
+        if (cell.children.length > 0) {
+            let children = cell.children[0];
+            let node = diagram.nameTable[children.id];
+            if (phaseIndex < phaseCount) {
+                for (k = 0; k < prevChild.children.length; k++) {
+                    child = prevChild.children[k];
+                    if (child instanceof Canvas) {
+                        object = diagram.nameTable[child.id];
+                        object.margin.top = object.wrapper.bounds.y - (phaseIndex === 0 ? top : children.bounds.y);
+                        child.margin.top = object.wrapper.bounds.y - (phaseIndex === 0 ? top : children.bounds.y);
+                    }
+                }
+            }
+            for (j = 0; j < children.children.length; j++) {
+                child = children.children[j];
+                if (child instanceof Canvas) {
+                    object = diagram.nameTable[child.id];
+                    object.parentId = prevChild.id;
+                    if (phaseIndex === phaseCount) {
+                        object.margin.top = object.wrapper.bounds.y - (phaseIndex === 0 ? top : prevChild.bounds.y);
+                        child.margin.top = object.wrapper.bounds.y - (phaseIndex === 0 ? top : prevChild.bounds.y);
+                    }
+                    prevChild.children.push(child);
+                    children.children.splice(j, 1);
+                    j--;
+                    if (node.children && node.children.indexOf(object.id) !== -1) {
+                        node.children.splice(node.children.indexOf(object.id), 1);
+                    }
+                }
+            }
+            deleteNode(diagram, node);
+        }
+    }
+    grid.removeRow(phase.rowIndex);
+    if ((phase.rowIndex < grid.rowDefinitions().length)) {
+        height = grid.rowDefinitions()[phase.rowIndex].height;
+        height += phase.wrapper.actualSize.height;
+        grid.updateRowHeight(phase.rowIndex, height, true);
+    }
+    else {
+        height = grid.rowDefinitions()[phase.rowIndex - 1].height;
+        height += phase.wrapper.actualSize.height;
+        grid.updateRowHeight(phase.rowIndex - 1, height, true);
+    }
+}
+/**
+ * @private
+ */
+function considerSwimLanePadding(diagram, node, padding) {
+    let lane = diagram.nameTable[node.parentId];
+    if (lane && lane.isLane) {
+        let swimLane = diagram.nameTable[lane.parentId];
+        let grid = swimLane.wrapper.children[0];
+        let x = swimLane.wrapper.bounds.x;
+        let y = swimLane.wrapper.bounds.y;
+        grid.updateColumnWidth(lane.columnIndex, grid.columnDefinitions()[lane.columnIndex].width, true, padding);
+        grid.updateRowHeight(lane.rowIndex, grid.rowDefinitions()[lane.rowIndex].height, true, padding);
+        let canvas = lane.wrapper;
+        let laneHeader;
+        if (node.margin.left < padding) {
+            node.margin.left = padding;
+        }
+        if (node.margin.top < padding) {
+            node.margin.top = padding;
+        }
+        for (let i = 0; i < canvas.children.length; i++) {
+            let child = canvas.children[i];
+            if (child instanceof Canvas) {
+                let childNode = diagram.nameTable[child.id];
+                if (childNode.isLane) {
+                    laneHeader = childNode.wrapper;
+                    break;
+                }
+            }
+        }
+        if (laneHeader) {
+            if (swimLane.shape.orientation === 'Horizontal') {
+                if (node.margin.left < padding + laneHeader.actualSize.width) {
+                    node.margin.left = padding + laneHeader.actualSize.width;
+                }
+            }
+            else {
+                if (node.margin.top < padding + laneHeader.actualSize.height) {
+                    node.margin.top = padding + laneHeader.actualSize.height;
+                }
+            }
+        }
+        swimLane.wrapper.measure(new Size(swimLane.width, swimLane.height));
+        swimLane.wrapper.arrange(swimLane.wrapper.desiredSize);
+        node.offsetX = node.wrapper.offsetX;
+        node.offsetY = node.wrapper.offsetY;
+        diagram.nodePropertyChange(node, {}, { margin: { left: node.margin.left, top: node.margin.top } });
+        grid.measure(new Size(grid.width, grid.height));
+        grid.arrange(grid.desiredSize);
+        swimLane.width = swimLane.wrapper.width = swimLane.wrapper.children[0].actualSize.width;
+        swimLane.height = swimLane.wrapper.height = swimLane.wrapper.children[0].actualSize.height;
+    }
+}
+/**
+ * @private
+ */
+function checkLaneChildrenOffset(swimLane) {
+    if (swimLane.shape.type === 'SwimLane') {
+        let lanes = swimLane.shape.lanes;
+        let lane;
+        let child;
+        for (let i = 0; i < lanes.length; i++) {
+            lane = lanes[i];
+            for (let j = 0; j < lane.children.length; j++) {
+                child = lane.children[j];
+                child.offsetX = child.wrapper.offsetX;
+                child.offsetY = child.wrapper.offsetY;
+            }
+        }
+    }
+}
 
-var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9667,7 +11607,7 @@ let getShapeType = (obj) => {
         case 'Image':
             return Image$1;
         case 'Text':
-            return Text$1;
+            return Text;
         case 'Bpmn':
             return BpmnShape;
         case 'Native':
@@ -9689,121 +11629,184 @@ let getShapeType = (obj) => {
  */
 class Shape extends ChildProperty {
 }
-__decorate$3([
+__decorate$4([
     Property('Basic')
 ], Shape.prototype, "type", void 0);
 /**
  * Defines the behavior of path shape
  */
 class Path extends Shape {
+    /**
+     * @private
+     * Returns the name of class Path
+     */
+    getClassName() {
+        return 'Path';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Path')
 ], Path.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], Path.prototype, "data", void 0);
 /**
  * Defines the behavior of Native shape
  */
 class Native extends Shape {
+    /**
+     * @private
+     * Returns the name of class Native
+     */
+    getClassName() {
+        return 'Native';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Native')
 ], Native.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], Native.prototype, "content", void 0);
-__decorate$3([
+__decorate$4([
     Property('Stretch')
 ], Native.prototype, "scale", void 0);
 /**
  * Defines the behavior of html shape
  */
 class Html extends Shape {
+    /**
+     * @private
+     * Returns the name of class Html
+     */
+    getClassName() {
+        return 'Html';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('HTML')
 ], Html.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], Html.prototype, "content", void 0);
 /**
  * Defines the behavior of image shape
  */
 class Image$1 extends Shape {
+    /**
+     * @private
+     * Returns the name of class Image
+     */
+    getClassName() {
+        return 'Image';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Image')
 ], Image$1.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], Image$1.prototype, "source", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], Image$1.prototype, "scale", void 0);
-__decorate$3([
+__decorate$4([
     Property('None')
 ], Image$1.prototype, "align", void 0);
 /**
  * Defines the behavior of the text shape
  */
-class Text$1 extends Shape {
+class Text extends Shape {
+    /**
+     * @private
+     * Returns the name of class Text
+     */
+    getClassName() {
+        return 'Text';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Text')
-], Text$1.prototype, "type", void 0);
-__decorate$3([
+], Text.prototype, "type", void 0);
+__decorate$4([
     Property('')
-], Text$1.prototype, "content", void 0);
-__decorate$3([
+], Text.prototype, "content", void 0);
+__decorate$4([
     Complex({}, Margin)
-], Text$1.prototype, "margin", void 0);
+], Text.prototype, "margin", void 0);
 /**
  * Defines the behavior of the basic shape
  */
 class BasicShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class BasicShape
+     */
+    getClassName() {
+        return 'BasicShape';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Basic')
 ], BasicShape.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('Rectangle')
 ], BasicShape.prototype, "shape", void 0);
-__decorate$3([
+__decorate$4([
     Property(0)
 ], BasicShape.prototype, "cornerRadius", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], Point)
 ], BasicShape.prototype, "points", void 0);
 /**
  * Defines the behavior of the flow shape
  */
 class FlowShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class FlowShape
+     */
+    getClassName() {
+        return 'FlowShape';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Flow')
 ], FlowShape.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('Terminator')
 ], FlowShape.prototype, "shape", void 0);
 /**
  * Defines the behavior of the bpmn gateway shape
  */
 class BpmnGateway extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnGateway
+     */
+    getClassName() {
+        return 'BpmnGateway';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnGateway.prototype, "type", void 0);
 /**
  * Defines the behavior of the bpmn data object
  */
 class BpmnDataObject extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnDataObject
+     */
+    getClassName() {
+        return 'BpmnDataObject';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnDataObject.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], BpmnDataObject.prototype, "collection", void 0);
 /**
@@ -9811,79 +11814,93 @@ __decorate$3([
  */
 class BpmnTask extends ChildProperty {
 }
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnTask.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnTask.prototype, "loop", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], BpmnTask.prototype, "call", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], BpmnTask.prototype, "compensation", void 0);
 /**
  * Defines the behavior of the bpmn Event shape
  */
 class BpmnEvent extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnEvent
+     */
+    getClassName() {
+        return 'BpmnEvent';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Start')
 ], BpmnEvent.prototype, "event", void 0);
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnEvent.prototype, "trigger", void 0);
 /**
  * Defines the behavior of the bpmn sub event
  */
 class BpmnSubEvent extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnSubEvent
+     */
+    getClassName() {
+        return 'BpmnSubEvent';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnSubEvent.prototype, "trigger", void 0);
-__decorate$3([
+__decorate$4([
     Property('Start')
 ], BpmnSubEvent.prototype, "event", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], BpmnSubEvent.prototype, "id", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, Point)
 ], BpmnSubEvent.prototype, "offset", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], ShapeAnnotation)
 ], BpmnSubEvent.prototype, "annotations", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], PointPort)
 ], BpmnSubEvent.prototype, "ports", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], BpmnSubEvent.prototype, "width", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], BpmnSubEvent.prototype, "height", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, Margin)
 ], BpmnSubEvent.prototype, "margin", void 0);
-__decorate$3([
+__decorate$4([
     Property('Center')
 ], BpmnSubEvent.prototype, "horizontalAlignment", void 0);
-__decorate$3([
+__decorate$4([
     Property('Center')
 ], BpmnSubEvent.prototype, "verticalAlignment", void 0);
-__decorate$3([
+__decorate$4([
     Property(true)
 ], BpmnSubEvent.prototype, "visible", void 0);
 class BpmnTransactionSubProcess extends ChildProperty {
 }
-__decorate$3([
+__decorate$4([
     Complex({ id: 'success', event: 'End', offset: { x: 1, y: 0.5 } }, BpmnSubEvent)
 ], BpmnTransactionSubProcess.prototype, "success", void 0);
-__decorate$3([
+__decorate$4([
     Complex({ id: 'failure', event: 'Intermediate', trigger: 'Error', offset: { x: 0.25, y: 1 } }, BpmnSubEvent)
 ], BpmnTransactionSubProcess.prototype, "failure", void 0);
-__decorate$3([
+__decorate$4([
     Complex({ id: 'cancel', event: 'Intermediate', trigger: 'Cancel', offset: { x: 0.75, y: 1 } }, BpmnSubEvent)
 ], BpmnTransactionSubProcess.prototype, "cancel", void 0);
 /**
@@ -9891,45 +11908,52 @@ __decorate$3([
  */
 class BpmnSubProcess extends ChildProperty {
 }
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnSubProcess.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], BpmnSubProcess.prototype, "adhoc", void 0);
-__decorate$3([
+__decorate$4([
     Property('Default')
 ], BpmnSubProcess.prototype, "boundary", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], BpmnSubProcess.prototype, "compensation", void 0);
-__decorate$3([
+__decorate$4([
     Property('None')
 ], BpmnSubProcess.prototype, "loop", void 0);
-__decorate$3([
+__decorate$4([
     Property(true)
 ], BpmnSubProcess.prototype, "collapsed", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], BpmnSubEvent)
 ], BpmnSubProcess.prototype, "events", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnTransactionSubProcess)
 ], BpmnSubProcess.prototype, "transaction", void 0);
-__decorate$3([
+__decorate$4([
     Property(undefined)
 ], BpmnSubProcess.prototype, "processes", void 0);
 /**
  * Defines the behavior of the bpmn activity shape
  */
 class BpmnActivity extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class BpmnActivity
+     */
+    getClassName() {
+        return 'BpmnActivity';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Task')
 ], BpmnActivity.prototype, "activity", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnTask)
 ], BpmnActivity.prototype, "task", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnSubProcess)
 ], BpmnActivity.prototype, "subProcess", void 0);
 /**
@@ -9940,172 +11964,249 @@ class BpmnAnnotation extends ChildProperty {
     constructor(parent, propName, defaultValue, isArray) {
         super(parent, propName, defaultValue, isArray);
     }
+    /**
+     * @private
+     * Returns the name of class BpmnAnnotation
+     */
+    getClassName() {
+        return 'BpmnAnnotation';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], BpmnAnnotation.prototype, "text", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], BpmnAnnotation.prototype, "id", void 0);
-__decorate$3([
+__decorate$4([
     Property(0)
 ], BpmnAnnotation.prototype, "angle", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], BpmnAnnotation.prototype, "height", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], BpmnAnnotation.prototype, "width", void 0);
-__decorate$3([
+__decorate$4([
     Property(0)
 ], BpmnAnnotation.prototype, "length", void 0);
 /**
  * Defines the behavior of the bpmn shape
  */
 class BpmnShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class BpmnShape
+     */
+    getClassName() {
+        return 'BpmnShape';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Bpmn')
 ], BpmnShape.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('Event')
 ], BpmnShape.prototype, "shape", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnEvent)
 ], BpmnShape.prototype, "event", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnGateway)
 ], BpmnShape.prototype, "gateway", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnDataObject)
 ], BpmnShape.prototype, "dataObject", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnActivity)
 ], BpmnShape.prototype, "activity", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, BpmnAnnotation)
 ], BpmnShape.prototype, "annotation", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], BpmnAnnotation)
 ], BpmnShape.prototype, "annotations", void 0);
 /**
  * Defines the behavior of the UMLActivity shape
  */
 class UmlActivityShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class UmlActivityShape
+     */
+    getClassName() {
+        return 'UmlActivityShape';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('UmlActivity')
 ], UmlActivityShape.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('Action')
 ], UmlActivityShape.prototype, "shape", void 0);
 /**
  * Defines the behavior of the uml class method
  */
 class MethodArguments extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class MethodArguments
+     */
+    getClassName() {
+        return 'MethodArguments';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], MethodArguments.prototype, "name", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], MethodArguments.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, TextStyle)
 ], MethodArguments.prototype, "style", void 0);
 /**
  * Defines the behavior of the uml class attributes
  */
 class UmlClassAttribute extends MethodArguments {
+    /**
+     * @private
+     * Returns the name of class UmlClassAttribute
+     */
+    getClassName() {
+        return 'UmlClassAttribute';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Public')
 ], UmlClassAttribute.prototype, "scope", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], UmlClassAttribute.prototype, "isSeparator", void 0);
 /**
  * Defines the behavior of the uml class method
  */
 class UmlClassMethod extends UmlClassAttribute {
+    /**
+     * @private
+     * Returns the name of class UmlClassMethod
+     */
+    getClassName() {
+        return 'UmlClassMethod';
+    }
 }
-__decorate$3([
+__decorate$4([
     Collection([], MethodArguments)
 ], UmlClassMethod.prototype, "parameters", void 0);
 /**
  * Defines the behavior of the uml class shapes
  */
 class UmlClass extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UmlClass
+     */
+    getClassName() {
+        return 'UmlClass';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], UmlClass.prototype, "name", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], UmlClassAttribute)
 ], UmlClass.prototype, "attributes", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], UmlClassMethod)
 ], UmlClass.prototype, "methods", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, TextStyle)
 ], UmlClass.prototype, "style", void 0);
 /**
  * Defines the behavior of the uml interface shapes
  */
 class UmlInterface extends UmlClass {
+    /**
+     * @private
+     * Returns the name of class UmlInterface
+     */
+    getClassName() {
+        return 'UmlInterface';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property(false)
 ], UmlInterface.prototype, "isSeparator", void 0);
 /**
  * Defines the behavior of the uml interface shapes
  */
 class UmlEnumerationMember extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UmlEnumerationMember
+     */
+    getClassName() {
+        return 'UmlEnumerationMember';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], UmlEnumerationMember.prototype, "name", void 0);
-__decorate$3([
+__decorate$4([
     Property('')
 ], UmlEnumerationMember.prototype, "value", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], UmlEnumerationMember.prototype, "isSeparator", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, TextStyle)
 ], UmlEnumerationMember.prototype, "style", void 0);
 /**
  * Defines the behavior of the uml interface shapes
  */
 class UmlEnumeration extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UmlEnumeration
+     */
+    getClassName() {
+        return 'UmlEnumeration';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], UmlEnumeration.prototype, "name", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], UmlEnumerationMember)
 ], UmlEnumeration.prototype, "members", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, TextStyle)
 ], UmlEnumeration.prototype, "style", void 0);
 /**
  * Defines the behavior of the UMLActivity shape
  */
 class UmlClassifierShape extends Shape {
+    /**
+     * @private
+     * Returns the name of class UmlClassifierShape
+     */
+    getClassName() {
+        return 'UmlClassifierShape';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('UmlClassifier')
 ], UmlClassifierShape.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, UmlClass)
 ], UmlClassifierShape.prototype, "class", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, UmlInterface)
 ], UmlClassifierShape.prototype, "interface", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, UmlEnumeration)
 ], UmlClassifierShape.prototype, "enumeration", void 0);
-__decorate$3([
+__decorate$4([
     Property('Class')
 ], UmlClassifierShape.prototype, "classifier", void 0);
 /**
@@ -10147,6 +12248,9 @@ class Node extends NodeBase {
         }
         if (this.shape && this.shape.type === 'UmlActivity') {
             setUMLActivityDefaults(defaultValue, this);
+        }
+        if (this.shape && this.shape.type === 'SwimLane') {
+            setSwimLaneDefaults(defaultValue, this);
         }
     }
     /** @private */
@@ -10259,11 +12363,14 @@ class Node extends NodeBase {
                 content = getULMClassifierShapes(content, this, diagram);
                 break;
             case 'SwimLane':
+                this.annotations = [];
+                this.ports = [];
                 content.cellStyle.fill = "none";
                 content.cellStyle.strokeColor = "none";
                 this.container = { type: 'Grid', orientation: this.shape.orientation };
                 content.id = this.id;
                 this.container.orientation = this.shape.orientation;
+                this.constraints |= NodeConstraints.HideThumbs;
                 initSwimLane(content, diagram, this);
                 break;
         }
@@ -10292,7 +12399,7 @@ class Node extends NodeBase {
             content.isRectElement = true;
         }
         content.verticalAlignment = 'Stretch';
-        if (this.shape instanceof Text$1) {
+        if (this.shape instanceof Text) {
             content.margin = this.shape.margin;
         }
         if (canShadow(this)) {
@@ -10319,7 +12426,7 @@ class Node extends NodeBase {
         }
         // Creates canvas element
         let canvas;
-        if (!this.container) {
+        if (!this.container || this.shape instanceof SwimLane) {
             canvas = this.children ? new Container() : new Canvas();
         }
         else {
@@ -10577,95 +12684,102 @@ class Node extends NodeBase {
         iconContent.description = iconContainer.description || 'Click here to expand or collapse';
         iconContainer.children.push(iconContent);
     }
+    /**
+     * @private
+     * Returns the name of class Node
+     */
+    getClassName() {
+        return 'Node';
+    }
 }
-__decorate$3([
+__decorate$4([
     Collection([], ShapeAnnotation)
 ], Node.prototype, "annotations", void 0);
-__decorate$3([
+__decorate$4([
     Property(0)
 ], Node.prototype, "offsetX", void 0);
-__decorate$3([
+__decorate$4([
     Property(0)
 ], Node.prototype, "offsetY", void 0);
-__decorate$3([
+__decorate$4([
     Complex({ x: 0.5, y: 0.5 }, Point)
 ], Node.prototype, "pivot", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "width", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "height", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "minWidth", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "minHeight", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "maxWidth", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "maxHeight", void 0);
-__decorate$3([
+__decorate$4([
     Property(0)
 ], Node.prototype, "rotateAngle", void 0);
-__decorate$3([
+__decorate$4([
     Complex({ fill: 'white' }, TextStyle)
 ], Node.prototype, "style", void 0);
-__decorate$3([
+__decorate$4([
     Property('transparent')
 ], Node.prototype, "backgroundColor", void 0);
-__decorate$3([
+__decorate$4([
     Property('none')
 ], Node.prototype, "borderColor", void 0);
-__decorate$3([
+__decorate$4([
     Property(0)
 ], Node.prototype, "borderWidth", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "data", void 0);
-__decorate$3([
+__decorate$4([
     ComplexFactory(getShapeType)
 ], Node.prototype, "shape", void 0);
-__decorate$3([
+__decorate$4([
     Property(null)
 ], Node.prototype, "wrapper", void 0);
-__decorate$3([
+__decorate$4([
     Property(NodeConstraints.Default)
 ], Node.prototype, "constraints", void 0);
-__decorate$3([
+__decorate$4([
     Complex({}, Shadow)
 ], Node.prototype, "shadow", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "children", void 0);
-__decorate$3([
+__decorate$4([
     Property(null)
 ], Node.prototype, "container", void 0);
-__decorate$3([
+__decorate$4([
     Property('Left')
 ], Node.prototype, "horizontalAlignment", void 0);
-__decorate$3([
+__decorate$4([
     Property('Top')
 ], Node.prototype, "verticalAlignment", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "rows", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "columns", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "rowIndex", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "columnIndex", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "rowSpan", void 0);
-__decorate$3([
+__decorate$4([
     Property()
 ], Node.prototype, "columnSpan", void 0);
 /**
@@ -10673,97 +12787,122 @@ __decorate$3([
  */
 class Header extends ChildProperty {
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], Header.prototype, "id", void 0);
-__decorate$3([
-    Complex({}, Annotation)
-], Header.prototype, "content", void 0);
-__decorate$3([
-    Property('')
+__decorate$4([
+    Complex({ style: { fill: '#111111' } }, Annotation)
+], Header.prototype, "annotation", void 0);
+__decorate$4([
+    Complex({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
 ], Header.prototype, "style", void 0);
-__decorate$3([
-    Property(25)
+__decorate$4([
+    Property(50)
 ], Header.prototype, "height", void 0);
-__decorate$3([
-    Property(25)
+__decorate$4([
+    Property(50)
 ], Header.prototype, "width", void 0);
 /**
  * Defines the behavior of lane in swimLane
  */
 class Lane extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class Lane
+     */
+    getClassName() {
+        return 'Lane';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], Lane.prototype, "id", void 0);
-__decorate$3([
-    Property('')
+__decorate$4([
+    Complex({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
 ], Lane.prototype, "style", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], Node)
-], Lane.prototype, "childNodes", void 0);
-__decorate$3([
-    Property(25)
+], Lane.prototype, "children", void 0);
+__decorate$4([
+    Property(100)
 ], Lane.prototype, "height", void 0);
-__decorate$3([
-    Property(25)
+__decorate$4([
+    Property(100)
 ], Lane.prototype, "width", void 0);
-__decorate$3([
-    Complex({}, Header)
+__decorate$4([
+    Complex({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } }, Header)
 ], Lane.prototype, "header", void 0);
 /**
  * Defines the behavior of phase in swimLane
  */
 class Phase extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class Phase
+     */
+    getClassName() {
+        return 'Phase';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('')
 ], Phase.prototype, "id", void 0);
-__decorate$3([
-    Property('')
+__decorate$4([
+    Complex({ strokeColor: '#CCCCCC' }, ShapeStyle)
 ], Phase.prototype, "style", void 0);
-__decorate$3([
-    Complex({}, Header)
+__decorate$4([
+    Complex({ annotation: { content: 'Phase' } }, Header)
 ], Phase.prototype, "header", void 0);
-__decorate$3([
-    Property(30)
-], Phase.prototype, "height", void 0);
-__decorate$3([
-    Property(30)
-], Phase.prototype, "width", void 0);
-__decorate$3([
+__decorate$4([
     Property(100)
 ], Phase.prototype, "offset", void 0);
 /**
  * Defines the behavior of swimLane shape
  */
 class SwimLane extends Shape {
+    constructor() {
+        super(...arguments);
+        /**
+         * @private
+         * Defines space between children and lane
+         */
+        this.padding = 20;
+        /**
+         * @private
+         * Defines header by user or not
+         */
+        this.hasHeader = true;
+    }
+    /**
+     * @private
+     * Returns the name of class Phase
+     */
+    getClassName() {
+        return 'SwimLane';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('SwimLane')
 ], SwimLane.prototype, "type", void 0);
-__decorate$3([
-    Property('10')
+__decorate$4([
+    Property(20)
 ], SwimLane.prototype, "phaseSize", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], Phase)
 ], SwimLane.prototype, "phases", void 0);
-__decorate$3([
+__decorate$4([
     Property('Horizontal')
 ], SwimLane.prototype, "orientation", void 0);
-__decorate$3([
+__decorate$4([
     Collection([], Lane)
 ], SwimLane.prototype, "lanes", void 0);
-__decorate$3([
-    Complex({}, Header)
+__decorate$4([
+    Complex({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } }, Header)
 ], SwimLane.prototype, "header", void 0);
-__decorate$3([
-    Property('')
-], SwimLane.prototype, "lineStyle", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], SwimLane.prototype, "isLane", void 0);
-__decorate$3([
+__decorate$4([
     Property(false)
 ], SwimLane.prototype, "isPhase", void 0);
 /**
@@ -10771,11 +12910,18 @@ __decorate$3([
  */
 /** @private */
 class ChildContainer {
+    /**
+     * @private
+     * Returns the name of class ChildContainer
+     */
+    getClassName() {
+        return 'ChildContainer';
+    }
 }
-__decorate$3([
+__decorate$4([
     Property('Canvas')
 ], ChildContainer.prototype, "type", void 0);
-__decorate$3([
+__decorate$4([
     Property('Vertical')
 ], ChildContainer.prototype, "orientation", void 0);
 
@@ -11358,6 +13504,73 @@ let umlActivityShapes = {
     'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
 };
 
+var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the combination of keys and modifier keys
+ */
+class KeyGesture extends ChildProperty {
+}
+__decorate$12([
+    Property()
+], KeyGesture.prototype, "key", void 0);
+__decorate$12([
+    Property()
+], KeyGesture.prototype, "keyModifiers", void 0);
+/**
+ * Defines a command and a key gesture to define when the command should be executed
+ */
+class Command extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class Command
+     */
+    getClassName() {
+        return 'Command';
+    }
+}
+__decorate$12([
+    Property('')
+], Command.prototype, "name", void 0);
+__decorate$12([
+    Property()
+], Command.prototype, "canExecute", void 0);
+__decorate$12([
+    Property()
+], Command.prototype, "execute", void 0);
+__decorate$12([
+    Complex({}, KeyGesture)
+], Command.prototype, "gesture", void 0);
+__decorate$12([
+    Property('')
+], Command.prototype, "parameter", void 0);
+/**
+ * Defines the collection of commands and the corresponding key gestures
+ */
+class CommandManager extends ChildProperty {
+}
+__decorate$12([
+    Collection([], Command)
+], CommandManager.prototype, "commands", void 0);
+/**
+ * Defines the behavior of the context menu items
+ */
+class ContextMenuSettings extends ChildProperty {
+}
+__decorate$12([
+    Property()
+], ContextMenuSettings.prototype, "show", void 0);
+__decorate$12([
+    Property()
+], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
+__decorate$12([
+    Property()
+], ContextMenuSettings.prototype, "items", void 0);
+
 /** @private */
 function completeRegion(region, selectedObjects) {
     let collection = [];
@@ -11392,6 +13605,16 @@ function findObjectType(drawingObject) {
         }
     }
     return type;
+}
+/**
+ * @private
+ */
+function setSwimLaneDefaults(child, node) {
+    if (node instanceof Node) {
+        if (!child.shape.header) {
+            node.shape.hasHeader = false;
+        }
+    }
 }
 /**
  * @private
@@ -11610,12 +13833,17 @@ function getLineSegment(x1, y1, x2, y2) {
     return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
 }
 /** @private */
-function getPoints(element, corners) {
+function getPoints(element, corners, padding) {
     let line = [];
-    line.push(corners.topLeft);
-    line.push(corners.topRight);
-    line.push(corners.bottomRight);
-    line.push(corners.bottomLeft);
+    padding = padding || 0;
+    let left = { x: corners.topLeft.x - padding, y: corners.topLeft.y };
+    let right = { x: corners.topRight.x + padding, y: corners.topRight.y };
+    let top = { x: corners.bottomRight.x, y: corners.bottomRight.y - padding };
+    let bottom = { x: corners.bottomLeft.x, y: corners.bottomLeft.y + padding };
+    line.push(left);
+    line.push(right);
+    line.push(top);
+    line.push(bottom);
     return line;
 }
 /**
@@ -11841,13 +14069,295 @@ function getBezierDirection(src, tar) {
     }
 }
 /** @private */
+function removeChildNodes(node, diagram) {
+    if (node instanceof Node && node.children) {
+        for (let i = 0; i < node.children.length; i++) {
+            if (diagram.nameTable[node.children[i]].children) {
+                removeChildNodes(node, diagram);
+            }
+            diagram.removeFromAQuad(diagram.nameTable[node.children[i]]);
+            diagram.removeObjectsFromLayer(diagram.nameTable[node.children[i]]);
+            delete diagram.nameTable[node.children[i]];
+        }
+    }
+}
+function getChild(child, children) {
+    if (child && child.children && child.children.length > 0) {
+        for (let j = 0; j < child.children.length; j++) {
+            let subChild = child.children[j];
+            if (subChild instanceof Canvas) {
+                getChild(subChild, children);
+            }
+        }
+    }
+    if (children.indexOf(child.id) === -1) {
+        children.push(child.id);
+    }
+    return children;
+}
+function getSwimLaneChildren(nodes) {
+    let children = [];
+    let node;
+    let grid;
+    let childTable;
+    let child;
+    let gridChild = 'childTable';
+    for (let i = 0; i < nodes.length; i++) {
+        node = nodes[i];
+        if (node.shape.type === 'SwimLane') {
+            grid = node.wrapper.children[0];
+            childTable = grid[gridChild];
+            for (let key of Object.keys(childTable)) {
+                child = childTable[key];
+                children = getChild(child, children);
+            }
+        }
+    }
+    return children;
+}
+function removeUnnecessaryNodes(children, diagram) {
+    let nodes = diagram.nodes;
+    if (nodes) {
+        for (let i = 0; i < nodes.length; i++) {
+            if (children.indexOf(nodes[i].id) !== -1) {
+                nodes.splice(i, 1);
+                i--;
+            }
+        }
+    }
+}
+/** @private */
 function serialize(model) {
+    let removeNodes = getSwimLaneChildren(model.nodes);
     let clonedObject = cloneObject(model, model.getCustomProperty);
     clonedObject.selectedItems.nodes = [];
     clonedObject.selectedItems.connectors = [];
     clonedObject.selectedItems.wrapper = null;
+    if (model.serializationSettings.preventDefaults) {
+        clonedObject = preventDefaults(clonedObject, model);
+    }
+    removeUnnecessaryNodes(removeNodes, clonedObject);
     return JSON.stringify(clonedObject);
 }
+function preventDefaults(clonedObject, model, defaultObject, isNodeShape) {
+    defaultObject = getConstructor(model, defaultObject);
+    let properties = [];
+    properties = properties.concat(Object.keys(clonedObject));
+    for (let property of properties) {
+        if (model instanceof Node) {
+            isNodeShape = (property === 'shape') ? true : false;
+        }
+        if (clonedObject[property] instanceof Array) {
+            preventArrayDefaults(clonedObject, defaultObject, model, property);
+        }
+        else if (clonedObject[property] instanceof Object) {
+            if (property !== 'wrapper') {
+                clonedObject[property] = preventDefaults(clonedObject[property], model[property], defaultObject[property], isNodeShape);
+            }
+        }
+        else if ((defaultObject && clonedObject[property] === defaultObject[property]) || clonedObject[property] === undefined) {
+            if (!(isNodeShape && property === 'type') && !(model instanceof SwimLane && property === 'orientation')) {
+                delete clonedObject[property];
+            }
+        }
+        if (JSON.stringify(clonedObject[property]) === '[]' ||
+            JSON.stringify(clonedObject[property]) === '{}' ||
+            clonedObject[property] === undefined) {
+            delete clonedObject[property];
+        }
+    }
+    return clonedObject;
+}
+function preventArrayDefaults(clonedObject, defaultObject, model, property) {
+    if (clonedObject[property].length === 0) {
+        delete clonedObject[property];
+        // tslint:disable-next-line:no-any
+    }
+    else if (clonedObject[property].every((element) => { return typeof element === 'number'; })) {
+        let i;
+        let isSameArray = true;
+        for (i = 0; i < clonedObject[property].length; i++) {
+            if (isSameArray && clonedObject[property][i] === defaultObject[property][i]) {
+                isSameArray = true;
+            }
+            else {
+                isSameArray = false;
+            }
+        }
+        if (isSameArray) {
+            delete clonedObject[property];
+        }
+    }
+    else {
+        let i;
+        if (property === 'layers') {
+            clonedObject[property].splice(0, 1);
+            if (clonedObject[property].length === 0) {
+                delete clonedObject[property];
+            }
+        }
+        if (clonedObject[property]) {
+            for (i = clonedObject[property].length - 1; i >= 0; i--) {
+                if (property === 'nodes' || property === 'connectors') {
+                    clonedObject[property][i].wrapper = null;
+                }
+                if (property !== 'dataManager') {
+                    clonedObject[property][i] = preventDefaults(clonedObject[property][i], model[property][i], (defaultObject[property] !== undefined ? defaultObject[property][i] : undefined));
+                    if (JSON.stringify(clonedObject[property][i]) === '[]' ||
+                        JSON.stringify(clonedObject[property][i]) === '{}' ||
+                        clonedObject[property][i] === undefined) {
+                        clonedObject[property].splice(i, 1);
+                    }
+                }
+            }
+        }
+    }
+}
+/* tslint:disable */
+function getConstructor(model, defaultObject) {
+    let obj = [];
+    let constructor;
+    let parent = new Diagram();
+    let getClassName = 'getClassName';
+    if (model[getClassName]) {
+        switch (model[getClassName]()) {
+            case 'Diagram':
+                constructor = new Diagram();
+                break;
+            case 'Node':
+                constructor = new Node(parent, '', obj);
+                break;
+            case 'Path':
+                constructor = new Path(parent, '', obj);
+                break;
+            case 'Native':
+                constructor = new Native(parent, '', obj);
+                break;
+            case 'Html':
+                constructor = new Html(parent, '', obj);
+                break;
+            case 'Image':
+                constructor = new Image$1(parent, '', obj);
+                break;
+            case 'Text':
+                constructor = new Text(parent, '', obj);
+                break;
+            case 'BasicShape':
+                constructor = new BasicShape(parent, '', obj);
+                break;
+            case 'FlowShape':
+                constructor = new FlowShape(parent, '', obj);
+                break;
+            case 'BpmnShape':
+                constructor = new BpmnShape(parent, '', obj);
+                break;
+            case 'UmlActivityShape':
+                constructor = new UmlActivityShape(parent, '', obj);
+                break;
+            case 'UmlClassifierShape':
+                constructor = new UmlClassifierShape(parent, '', obj);
+                break;
+            case 'SwimLane':
+                constructor = new SwimLane(parent, '', obj);
+                if (model.header) {
+                    constructor.header = new Header(parent, '', obj);
+                    constructor.header.style.fill = '';
+                }
+                break;
+            case 'ShapeAnnotation':
+                constructor = new ShapeAnnotation(parent, '', obj);
+                break;
+            case 'PointPort':
+                constructor = new PointPort(parent, '', obj);
+                break;
+            case 'BpmnGateway':
+                constructor = new BpmnGateway(parent, '', obj);
+                break;
+            case 'BpmnDataObject':
+                constructor = new BpmnDataObject(parent, '', obj);
+                break;
+            case 'BpmnEvent':
+                constructor = new BpmnEvent(parent, '', obj);
+                break;
+            case 'BpmnSubEvent':
+                constructor = new BpmnSubEvent(parent, '', obj);
+                break;
+            case 'BpmnActivity':
+                constructor = new BpmnActivity(parent, '', obj);
+                break;
+            case 'BpmnAnnotation':
+                constructor = new BpmnAnnotation(parent, '', obj);
+                break;
+            case 'MethodArguments':
+                constructor = new MethodArguments(parent, '', obj);
+                break;
+            case 'UmlClassAttribute':
+                constructor = new UmlClassAttribute(parent, '', obj);
+                break;
+            case 'UmlClassMethod':
+                constructor = new UmlClassMethod(parent, '', obj);
+                break;
+            case 'UmlClass':
+                constructor = new UmlClass(parent, '', obj);
+                break;
+            case 'UmlInterface':
+                constructor = new UmlInterface(parent, '', obj);
+                break;
+            case 'UmlEnumerationMember':
+                constructor = new UmlEnumerationMember(parent, '', obj);
+                break;
+            case 'UmlEnumeration':
+                constructor = new UmlEnumeration(parent, '', obj);
+                break;
+            case 'Lane':
+                constructor = new Lane(parent, '', obj);
+                break;
+            case 'Phase':
+                constructor = new Phase(parent, '', obj);
+                break;
+            case 'ChildContainer':
+                constructor = new ChildContainer();
+                break;
+            case 'Connector':
+                constructor = new Connector(parent, '', obj);
+                break;
+            case 'StraightSegment':
+                constructor = new StraightSegment(parent, '', obj);
+                break;
+            case 'BezierSegment':
+                constructor = new BezierSegment(parent, '', obj);
+                break;
+            case 'OrthogonalSegment':
+                constructor = new OrthogonalSegment(parent, '', obj);
+                break;
+            case 'PathAnnotation':
+                constructor = new PathAnnotation(parent, '', obj);
+                break;
+            case 'Stop':
+                constructor = new Stop(parent, '', obj);
+                break;
+            case 'Point':
+                if (!defaultObject) {
+                    constructor = new Point(parent, '', obj);
+                }
+                else {
+                    constructor = defaultObject;
+                }
+                break;
+            case 'UserHandle':
+                constructor = new UserHandle(parent, '', obj);
+                break;
+            case 'Command':
+                constructor = new Command(parent, '', obj);
+                break;
+        }
+    }
+    else {
+        constructor = defaultObject;
+    }
+    return constructor;
+}
+/* tslint:enable */
 /** @private */
 function deserialize(model, diagram) {
     diagram.clear();
@@ -11867,18 +14377,19 @@ function deserialize(model, diagram) {
     let nodeDefaults = diagram.getNodeDefaults;
     let connectorDefaults = diagram.getConnectorDefaults;
     let dataObj = JSON.parse(model);
-    diagram.contextMenuSettings = dataObj.contextMenuSettings;
-    diagram.constraints = dataObj.constraints;
-    diagram.tool = dataObj.tool;
-    diagram.bridgeDirection = dataObj.bridgeDirection;
-    diagram.pageSettings = dataObj.pageSettings;
-    diagram.drawingObject = dataObj.drawingObject;
-    diagram.tooltip = dataObj.tooltip;
-    diagram.addInfo = dataObj.addInfo;
+    dataObj = upgrade(dataObj);
+    diagram.contextMenuSettings = dataObj.contextMenuSettings || {};
+    diagram.constraints = dataObj.constraints || DiagramConstraints.Default;
+    diagram.tool = dataObj.tool || DiagramTools.Default;
+    diagram.bridgeDirection = dataObj.bridgeDirection || 'Top';
+    diagram.pageSettings = dataObj.pageSettings || {};
+    diagram.drawingObject = dataObj.drawingObject || undefined;
+    diagram.tooltip = dataObj.tooltip || {};
+    diagram.addInfo = dataObj.addInfo || undefined;
     diagram.getDescription = getDescription;
-    diagram.scrollSettings = dataObj.scrollSettings;
-    diagram.commandManager = dataObj.commandManager;
-    diagram.layers = dataObj.layers;
+    diagram.scrollSettings = dataObj.scrollSettings || {};
+    diagram.commandManager = dataObj.commandManager || {};
+    diagram.layers = dataObj.layers || [];
     diagram.rulerSettings.horizontalRuler.arrangeTick = arrangeTickHorizontal;
     diagram.rulerSettings.verticalRuler.arrangeTick = arrangeTickVertical;
     for (let cmd of diagram.commandManager.commands) {
@@ -11887,22 +14398,29 @@ function deserialize(model, diagram) {
             cmd.canExecute = commands[cmd.name].canExecute;
         }
     }
-    diagram.backgroundColor = dataObj.backgroundColor;
-    diagram.basicElements = dataObj.basicElements;
-    diagram.connectors = dataObj.connectors;
-    diagram.dataSourceSettings = dataObj.dataSourceSettings;
+    diagram.backgroundColor = dataObj.backgroundColor || 'transparent';
+    diagram.basicElements = dataObj.basicElements || [];
+    diagram.connectors = dataObj.connectors || [];
+    diagram.dataSourceSettings = dataObj.dataSourceSettings || {};
     diagram.dataSourceSettings.doBinding = map;
-    diagram.height = dataObj.height;
+    diagram.height = dataObj.height || '100%';
     diagram.setNodeTemplate = nodeTemp;
     diagram.getConnectorDefaults = connectorDefaults;
     diagram.getNodeDefaults = nodeDefaults;
     diagram.getCustomProperty = getCustomProperty;
-    diagram.mode = dataObj.mode;
-    diagram.nodes = dataObj.nodes;
-    diagram.rulerSettings = dataObj.rulerSettings;
-    diagram.snapSettings = dataObj.snapSettings;
-    diagram.width = dataObj.width;
-    diagram.layout = dataObj.layout;
+    diagram.mode = dataObj.mode || 'SVG';
+    if (dataObj.nodes.length) {
+        for (let i = 0; i < dataObj.nodes.length; i++) {
+            if (dataObj.nodes[i].shape && dataObj.nodes[i].shape.type === 'SwimLane') {
+                pasteSwimLane(dataObj.nodes[i], undefined, undefined, undefined, undefined, true);
+            }
+        }
+    }
+    diagram.nodes = dataObj.nodes || [];
+    diagram.rulerSettings = dataObj.rulerSettings || {};
+    diagram.snapSettings = dataObj.snapSettings || {};
+    diagram.width = dataObj.width || '100%';
+    diagram.layout = dataObj.layout || {};
     diagram.layout.getLayoutInfo = getFunction(getLayoutInfo);
     diagram.layout.getBranch = getFunction(getBranch);
     diagram.diagramActions = 0;
@@ -11916,9 +14434,27 @@ function deserialize(model, diagram) {
             diagram.element.classList.add('e-diagram');
         }
     }
-    dataObj.selectedItems.nodes = [];
-    dataObj.selectedItems.connectors = [];
+    if (dataObj.selectedItems) {
+        dataObj.selectedItems.nodes = [];
+        dataObj.selectedItems.connectors = [];
+    }
     diagram.selectedItems = dataObj.selectedItems;
+    return dataObj;
+}
+/** @private */
+function upgrade(dataObj) {
+    if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1))) {
+        let nodes = dataObj.nodes;
+        for (let node of nodes) {
+            if (node && node.ports.length > 0) {
+                for (let port of node.ports) {
+                    if (port && port.constraints && port.constraints === PortConstraints.None) {
+                        port.constraints = PortConstraints.Default;
+                    }
+                }
+            }
+        }
+    }
     return dataObj;
 }
 /** @private */
@@ -12517,7 +15053,7 @@ function arrangeChild(obj, x, y, nameTable, drop, diagram) {
         node = nameTable[child[i]];
         if (node) {
             if (node.children) {
-                this.arrangeChild(node, x, y, nameTable, drop, diagram);
+                arrangeChild(node, x, y, nameTable, drop, diagram);
             }
             else {
                 node.offsetX -= x;
@@ -13076,7 +15612,7 @@ function measureNativeSvg(nativeContent) {
     return svgBounds;
 }
 /** @private */
-function updatePath(element, bounds, child) {
+function updatePath(element, bounds, child, options) {
     let initX = 0;
     let initY = 0;
     let scaleX = 0;
@@ -13090,9 +15626,9 @@ function updatePath(element, bounds, child) {
         scaleX = initX - Number(bBox.x);
         scaleY = initY - Number(bBox.y);
     }
-    if (element.actualSize.width !== bBox.width || element.actualSize.height !== bBox.height) {
-        scaleX = element.actualSize.width / Number(bBox.width ? bBox.width : 1);
-        scaleY = element.actualSize.height / Number(bBox.height ? bBox.height : 1);
+    if (element.actualSize.width !== bBox.width || element.actualSize.height !== bBox.height || options) {
+        scaleX = (options && options.width || element.actualSize.width) / Number(bBox.width ? bBox.width : 1);
+        scaleY = (options && options.height || element.actualSize.height) / Number(bBox.height ? bBox.height : 1);
         isScale = true;
     }
     arrayCollection = processPathData(element.data);
@@ -13492,6 +16028,7 @@ function cloneObject(obj, additionalProp, key) {
         let properties = [];
         properties = properties.concat(Object.keys(sourceObject));
         let customProperties = [];
+        properties.push('version');
         if (key) {
             let propAdditional = getFunction(additionalProp);
             if (propAdditional) {
@@ -13541,13 +16078,16 @@ function cloneObject(obj, additionalProp, key) {
 function getInternalProperties(propName) {
     switch (propName) {
         case 'nodes':
-            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex'];
+        case 'children':
+            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex', 'isPhase', 'isLane'];
         case 'connectors':
             return ['parentId'];
         case 'annotation':
             return ['nodeId'];
         case 'annotations':
             return ['nodeId'];
+        case 'shape':
+            return ['hasHeader'];
     }
     return [];
 }
@@ -14157,11 +16697,14 @@ class CanvasRenderer {
         }
     }
     /**   @private  */
-    drawText(canvas, options) {
+    drawText(canvas, options, parentSvg, ariaLabel, diagramId, scaleValue) {
         if (options.content && options.visible === true) {
             let ctx = CanvasRenderer.getContext(canvas);
             ctx.save();
             this.setStyle(canvas, options);
+            if (scaleValue) {
+                options.fontSize *= scaleValue;
+            }
             let pivotX = options.x + options.width * options.pivotX;
             let pivotY = options.y + options.height * options.pivotY;
             this.rotateContext(canvas, options.angle, pivotX, pivotY);
@@ -14175,8 +16718,8 @@ class CanvasRenderer {
                 let position = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
                     let child = childNodes[i];
-                    let offsetX = position.x + child.x - wrapBounds.x;
-                    let offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8);
+                    let offsetX = position.x + (scaleValue ? child.x * scaleValue : child.x) - wrapBounds.x;
+                    let offsetY = position.y + (scaleValue ? child.dy * scaleValue : child.dy) * i + ((options.fontSize) * 0.8);
                     if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
                         child.text = overFlow(child.text, options);
                     }
@@ -15140,7 +17683,7 @@ class DiagramRenderer {
     /**
      * @private
      */
-    renderStackHighlighter(element, canvas, transform, isVertical, position, isUml) {
+    renderStackHighlighter(element, canvas, transform, isVertical, position, isUml, isSwimlane) {
         let width = element.actualSize.width || 2;
         let x = element.offsetX - width * element.pivot.x;
         let height = element.actualSize.height || 2;
@@ -15179,6 +17722,11 @@ class DiagramRenderer {
                 }
             }
             else {
+                if (isSwimlane) {
+                    if (position.y >= element.offsetY) {
+                        y += height;
+                    }
+                }
                 let d = width * transform.scale;
                 data = 'M -10 -10 L 0 0 Z M -10 10 L 0 0 Z M 0 0 L ' + (d) + ' 0 Z M ' + (d) + ' 0 L ' +
                     (d + 10) + ' 10 Z L ' + (d + 10) + ' -10 Z';
@@ -15203,19 +17751,20 @@ class DiagramRenderer {
         this.svgRenderer.drawPath(canvas, options, this.diagramId);
     }
     /**   @private  */
-    renderResizeHandle(element, canvas, constraints, currentZoom, selectorConstraints, transform, canMask, enableNode, nodeConstraints) {
+    renderResizeHandle(element, canvas, constraints, currentZoom, selectorConstraints, transform, canMask, enableNode, nodeConstraints, isSwimlane) {
         let left = element.offsetX - element.actualSize.width * element.pivot.x;
         let top = element.offsetY - element.actualSize.height * element.pivot.y;
         let height = element.actualSize.height;
         let width = element.actualSize.width;
-        if (constraints & ThumbsConstraints.Rotate && (!avoidDrawSelector(this.rendererActions))) {
+        if (!isSwimlane &&
+            (constraints & ThumbsConstraints.Rotate && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions)))) {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
         }
-        this.renderBorder(element, canvas, transform, enableNode, nodeConstraints);
+        this.renderBorder(element, canvas, transform, enableNode, nodeConstraints, isSwimlane);
         let nodeWidth = element.actualSize.width * currentZoom;
         let nodeHeight = element.actualSize.height * currentZoom;
-        if (!nodeConstraints && (!avoidDrawSelector(this.rendererActions))) {
+        if (!nodeConstraints && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
             if (nodeWidth >= 40 && nodeHeight >= 40) {
                 //Hide corners when the size is less than 40
                 if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
@@ -15408,7 +17957,7 @@ class DiagramRenderer {
         this.svgRenderer.drawCircle(canvas, options, enableSelector, ariaLabel);
     }
     /**   @private  */
-    renderBorder(selector, canvas, transform, enableNode, isBorderTickness) {
+    renderBorder(selector, canvas, transform, enableNode, isBorderTickness, isSwimlane) {
         let wrapper = selector;
         let options = this.getBaseAttributes(wrapper, transform);
         options.x *= transform.scale;
@@ -15420,7 +17969,11 @@ class DiagramRenderer {
         options.strokeWidth = 0.6;
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
+        if (isSwimlane) {
+            options.class += ' e-diagram-lane';
+        }
         options.id = 'borderRect';
+        options.id = (this.rendererActions & RendererAction.DrawSelectorBorder) ? 'borderRect_symbol' : 'borderRect';
         if (!enableNode) {
             options.class += ' e-disabled';
         }
@@ -15536,6 +18089,10 @@ class DiagramRenderer {
         if (!this.isSvgMode) {
             options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
             options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
+        }
+        if (element.isExport) {
+            let pathBounds = element.absoluteBounds;
+            options.data = updatePath(element, pathBounds, undefined, options);
         }
         this.renderer.drawPath(canvas, options, this.diagramId, undefined, parentSvg, ariaLabel);
     }
@@ -15757,7 +18314,7 @@ class DiagramRenderer {
         options.fill = element.style.fill;
         let ariaLabel = element.description ? element.description : element.content ? element.content : element.id;
         this.renderer.drawRectangle(canvas, options, this.diagramId, undefined, undefined, parentSvg);
-        this.renderer.drawText(canvas, options, parentSvg, ariaLabel, this.diagramId);
+        this.renderer.drawText(canvas, options, parentSvg, ariaLabel, this.diagramId, (element.isExport && Math.min(element.exportScaleValue.x || element.exportScaleValue.y)));
         if (this.isSvgMode) {
             element.doWrap = false;
         }
@@ -15999,6 +18556,13 @@ class DiagramRenderer {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
+        if (element.isExport) {
+            options.width *= element.exportScaleValue.x;
+            options.height *= element.exportScaleValue.y;
+            options.x *= element.exportScaleValue.x;
+            options.y *= element.exportScaleValue.y;
+            options.strokeWidth *= element.exportScaleValue.x;
+        }
         if (element.flip) {
             options.flip = element.flip;
         }
@@ -16084,7 +18648,7 @@ class DiagramRenderer {
     }
 }
 
-var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -16095,16 +18659,16 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Background extends ChildProperty {
 }
-__decorate$12([
+__decorate$13([
     Property('')
 ], Background.prototype, "source", void 0);
-__decorate$12([
+__decorate$13([
     Property('transparent')
 ], Background.prototype, "color", void 0);
-__decorate$12([
+__decorate$13([
     Property('None')
 ], Background.prototype, "scale", void 0);
-__decorate$12([
+__decorate$13([
     Property('None')
 ], Background.prototype, "align", void 0);
 /**
@@ -16126,28 +18690,28 @@ __decorate$12([
  */
 class PageSettings extends ChildProperty {
 }
-__decorate$12([
+__decorate$13([
     Property(null)
 ], PageSettings.prototype, "width", void 0);
-__decorate$12([
+__decorate$13([
     Property(null)
 ], PageSettings.prototype, "height", void 0);
-__decorate$12([
+__decorate$13([
     Complex({}, Margin)
 ], PageSettings.prototype, "margin", void 0);
-__decorate$12([
+__decorate$13([
     Property('Landscape')
 ], PageSettings.prototype, "orientation", void 0);
-__decorate$12([
+__decorate$13([
     Property('Infinity')
 ], PageSettings.prototype, "boundaryConstraints", void 0);
-__decorate$12([
+__decorate$13([
     Complex({}, Background)
 ], PageSettings.prototype, "background", void 0);
-__decorate$12([
+__decorate$13([
     Property(false)
 ], PageSettings.prototype, "multiplePage", void 0);
-__decorate$12([
+__decorate$13([
     Property(false)
 ], PageSettings.prototype, "showPageBreaks", void 0);
 /**
@@ -16155,39 +18719,42 @@ __decorate$12([
  */
 class ScrollSettings extends ChildProperty {
 }
-__decorate$12([
+__decorate$13([
     Property(0)
 ], ScrollSettings.prototype, "horizontalOffset", void 0);
-__decorate$12([
+__decorate$13([
     Property(0)
 ], ScrollSettings.prototype, "verticalOffset", void 0);
-__decorate$12([
+__decorate$13([
     Property(1)
 ], ScrollSettings.prototype, "currentZoom", void 0);
-__decorate$12([
+__decorate$13([
     Property(0)
 ], ScrollSettings.prototype, "viewPortWidth", void 0);
-__decorate$12([
+__decorate$13([
     Property(0)
 ], ScrollSettings.prototype, "viewPortHeight", void 0);
-__decorate$12([
+__decorate$13([
     Property(0.2)
 ], ScrollSettings.prototype, "minZoom", void 0);
-__decorate$12([
+__decorate$13([
     Property(30)
 ], ScrollSettings.prototype, "maxZoom", void 0);
-__decorate$12([
+__decorate$13([
     Property('Diagram')
 ], ScrollSettings.prototype, "scrollLimit", void 0);
-__decorate$12([
+__decorate$13([
     Property()
 ], ScrollSettings.prototype, "scrollableArea", void 0);
-__decorate$12([
+__decorate$13([
     Property(false)
 ], ScrollSettings.prototype, "canAutoScroll", void 0);
-__decorate$12([
+__decorate$13([
     Complex({ left: 15, right: 15, top: 15, bottom: 15 }, Margin)
 ], ScrollSettings.prototype, "autoScrollBorder", void 0);
+__decorate$13([
+    Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+], ScrollSettings.prototype, "padding", void 0);
 
 /**
  * ServiceLocator
@@ -16205,7 +18772,7 @@ class ServiceLocator {
     }
 }
 
-var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -16216,16 +18783,16 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Gridlines extends ChildProperty {
 }
-__decorate$13([
+__decorate$14([
     Property('lightgray')
 ], Gridlines.prototype, "lineColor", void 0);
-__decorate$13([
+__decorate$14([
     Property('')
 ], Gridlines.prototype, "lineDashArray", void 0);
-__decorate$13([
+__decorate$14([
     Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
 ], Gridlines.prototype, "lineIntervals", void 0);
-__decorate$13([
+__decorate$14([
     Property([20])
 ], Gridlines.prototype, "snapIntervals", void 0);
 /**
@@ -16234,23 +18801,23 @@ __decorate$13([
  */
 class SnapSettings extends ChildProperty {
 }
-__decorate$13([
+__decorate$14([
     Complex({}, Gridlines)
 ], SnapSettings.prototype, "horizontalGridlines", void 0);
-__decorate$13([
+__decorate$14([
     Complex({}, Gridlines)
 ], SnapSettings.prototype, "verticalGridlines", void 0);
-__decorate$13([
+__decorate$14([
     Property(SnapConstraints.All)
 ], SnapSettings.prototype, "constraints", void 0);
-__decorate$13([
+__decorate$14([
     Property(5)
 ], SnapSettings.prototype, "snapAngle", void 0);
-__decorate$13([
+__decorate$14([
     Property(5)
 ], SnapSettings.prototype, "snapObjectDistance", void 0);
 
-var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -16261,25 +18828,25 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
  */
 class DiagramRuler extends ChildProperty {
 }
-__decorate$14([
+__decorate$15([
     Property(5)
 ], DiagramRuler.prototype, "interval", void 0);
-__decorate$14([
+__decorate$15([
     Property(100)
 ], DiagramRuler.prototype, "segmentWidth", void 0);
-__decorate$14([
+__decorate$15([
     Property('Horizontal')
 ], DiagramRuler.prototype, "orientation", void 0);
-__decorate$14([
+__decorate$15([
     Property('RightOrBottom')
 ], DiagramRuler.prototype, "tickAlignment", void 0);
-__decorate$14([
+__decorate$15([
     Property('red')
 ], DiagramRuler.prototype, "markerColor", void 0);
-__decorate$14([
+__decorate$15([
     Property(25)
 ], DiagramRuler.prototype, "thickness", void 0);
-__decorate$14([
+__decorate$15([
     Property(null)
 ], DiagramRuler.prototype, "arrangeTick", void 0);
 /**
@@ -16302,20 +18869,20 @@ __decorate$14([
  */
 class RulerSettings extends ChildProperty {
 }
-__decorate$14([
+__decorate$15([
     Property(false)
 ], RulerSettings.prototype, "showRulers", void 0);
-__decorate$14([
+__decorate$15([
     Property(true)
 ], RulerSettings.prototype, "dynamicGrid", void 0);
-__decorate$14([
+__decorate$15([
     Complex({ orientation: 'Horizontal' }, DiagramRuler)
 ], RulerSettings.prototype, "horizontalRuler", void 0);
-__decorate$14([
+__decorate$15([
     Complex({ orientation: 'Vertical' }, DiagramRuler)
 ], RulerSettings.prototype, "verticalRuler", void 0);
 
-var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -16352,78 +18919,78 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
  */
 class CrudAction extends ChildProperty {
 }
-__decorate$15([
+__decorate$16([
     Property('')
 ], CrudAction.prototype, "read", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], CrudAction.prototype, "create", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], CrudAction.prototype, "update", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], CrudAction.prototype, "destroy", void 0);
-__decorate$15([
+__decorate$16([
     Property()
 ], CrudAction.prototype, "customFields", void 0);
 class ConnectionDataSource extends ChildProperty {
 }
-__decorate$15([
+__decorate$16([
     Property('')
 ], ConnectionDataSource.prototype, "id", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], ConnectionDataSource.prototype, "sourceID", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], ConnectionDataSource.prototype, "targetID", void 0);
-__decorate$15([
+__decorate$16([
     Property(null)
 ], ConnectionDataSource.prototype, "sourcePointX", void 0);
-__decorate$15([
+__decorate$16([
     Property(null)
 ], ConnectionDataSource.prototype, "sourcePointY", void 0);
-__decorate$15([
+__decorate$16([
     Property(null)
 ], ConnectionDataSource.prototype, "targetPointX", void 0);
-__decorate$15([
+__decorate$16([
     Property(null)
 ], ConnectionDataSource.prototype, "targetPointY", void 0);
-__decorate$15([
+__decorate$16([
     Property(null)
 ], ConnectionDataSource.prototype, "dataManager", void 0);
-__decorate$15([
+__decorate$16([
     Complex({}, CrudAction)
 ], ConnectionDataSource.prototype, "crudAction", void 0);
 class DataSource extends ChildProperty {
 }
-__decorate$15([
+__decorate$16([
     Property('')
 ], DataSource.prototype, "id", void 0);
-__decorate$15([
+__decorate$16([
     Property(null)
 ], DataSource.prototype, "dataManager", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], DataSource.prototype, "root", void 0);
-__decorate$15([
+__decorate$16([
     Property('')
 ], DataSource.prototype, "parentId", void 0);
-__decorate$15([
+__decorate$16([
     Property()
 ], DataSource.prototype, "data", void 0);
-__decorate$15([
+__decorate$16([
     Property()
 ], DataSource.prototype, "doBinding", void 0);
-__decorate$15([
+__decorate$16([
     Complex({}, CrudAction)
 ], DataSource.prototype, "crudAction", void 0);
-__decorate$15([
+__decorate$16([
     Complex({}, ConnectionDataSource)
 ], DataSource.prototype, "connectionDataSource", void 0);
 
-var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -16434,58 +19001,58 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
  */
 class Layout extends ChildProperty {
 }
-__decorate$16([
+__decorate$17([
     Property('')
 ], Layout.prototype, "fixedNode", void 0);
-__decorate$16([
+__decorate$17([
     Property(30)
 ], Layout.prototype, "horizontalSpacing", void 0);
-__decorate$16([
+__decorate$17([
     Property(30)
 ], Layout.prototype, "verticalSpacing", void 0);
-__decorate$16([
+__decorate$17([
     Property(30)
 ], Layout.prototype, "maxIteration", void 0);
-__decorate$16([
+__decorate$17([
     Property(40)
 ], Layout.prototype, "springFactor", void 0);
-__decorate$16([
+__decorate$17([
     Property(50)
 ], Layout.prototype, "springLength", void 0);
-__decorate$16([
+__decorate$17([
     Complex({ left: 50, top: 50, right: 0, bottom: 0 }, Margin)
 ], Layout.prototype, "margin", void 0);
-__decorate$16([
+__decorate$17([
     Property('Auto')
 ], Layout.prototype, "horizontalAlignment", void 0);
-__decorate$16([
+__decorate$17([
     Property('Auto')
 ], Layout.prototype, "verticalAlignment", void 0);
-__decorate$16([
+__decorate$17([
     Property('TopToBottom')
 ], Layout.prototype, "orientation", void 0);
-__decorate$16([
+__decorate$17([
     Property('Auto')
 ], Layout.prototype, "connectionDirection", void 0);
-__decorate$16([
+__decorate$17([
     Property('Default')
 ], Layout.prototype, "connectorSegments", void 0);
-__decorate$16([
+__decorate$17([
     Property('None')
 ], Layout.prototype, "type", void 0);
-__decorate$16([
+__decorate$17([
     Property()
 ], Layout.prototype, "getLayoutInfo", void 0);
-__decorate$16([
+__decorate$17([
     Property()
 ], Layout.prototype, "getBranch", void 0);
-__decorate$16([
+__decorate$17([
     Property()
 ], Layout.prototype, "bounds", void 0);
-__decorate$16([
+__decorate$17([
     Property(true)
 ], Layout.prototype, "enableAnimation", void 0);
-__decorate$16([
+__decorate$17([
     Property('')
 ], Layout.prototype, "root", void 0);
 
@@ -16617,6 +19184,10 @@ function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMo
             else if (obj && canZoomPan(diagram) && !defaultTool(diagram)) {
                 return 'Pan';
             }
+            else if (diagram.selectedItems.nodes.length && diagram.selectedItems.nodes[0].isLane &&
+                diagram.selectedItems.wrapper && diagram.selectedItems.wrapper.bounds.containsPoint(position)) {
+                return 'Drag';
+            }
             else {
                 return 'Select';
             }
@@ -16633,7 +19204,8 @@ function checkResizeHandles(diagram, element, position, matrix, x, y) {
         && diagram.selectedItems.nodes[0].container) {
         action = checkResizeHandleForContainer(diagram, element, position, x, y);
     }
-    if (!action) {
+    if (!action && (!diagram.selectedItems.nodes[0] || (!diagram.selectedItems.nodes[0].isPhase &&
+        !diagram.selectedItems.nodes[0].isLane && diagram.selectedItems.nodes[0].shape.type !== 'SwimLane'))) {
         action = checkForResizeHandles(diagram, element, position, matrix, x, y);
     }
     if (action) {
@@ -17413,7 +19985,7 @@ class ConnectTool extends ToolBase {
         else if (canPortOutConnect(target) && this.endPoint === 'ConnectorSourceEnd') {
             return true;
         }
-        else if (!canPortInConnect(target) && !canPortOutConnect(target)) {
+        else if (!(target.constraints & PortConstraints.None) && !canPortInConnect(target) && !canPortOutConnect(target)) {
             return true;
         }
         return false;
@@ -17459,7 +20031,7 @@ class MoveTool extends ToolBase {
         this.initialOffset = { x: 0, y: 0 };
     }
     /**   @private  */
-    mouseUp(args) {
+    mouseUp(args, isPreventHistory) {
         let obj;
         let historyAdded = false;
         let object;
@@ -17481,32 +20053,37 @@ class MoveTool extends ToolBase {
                 obj = cloneObject(args.source);
             }
             object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-            if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
-                let oldValues;
-                let newValues;
-                if (args.source) {
-                    newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-                    oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-                }
-                let arg = {
-                    source: args.source, state: 'Completed', oldValue: oldValues, newValue: newValues,
-                    target: this.currentTarget, targetPosition: this.currentPosition, allowDrop: true, cancel: false
-                };
-                this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
-                this.commandHandler.startGroupAction();
-                historyAdded = true;
-                let entry = {
-                    type: 'PositionChanged',
-                    redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
-                };
-                if (obj.nodes[0] && obj.nodes[0].processId) {
-                    let entry = {
-                        type: 'SizeChanged', category: 'Internal',
-                        undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
+            if ((object.id === 'helper' && !obj.nodes[0].isLane && !obj.nodes[0].isPhase)
+                || (object.id !== 'helper')) {
+                if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
+                    let oldValues;
+                    let newValues;
+                    if (args.source) {
+                        newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                        oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                    }
+                    let arg = {
+                        source: args.source, state: 'Completed', oldValue: oldValues, newValue: newValues,
+                        target: this.currentTarget, targetPosition: this.currentPosition, allowDrop: true, cancel: false
                     };
-                    this.commandHandler.addHistoryEntry(entry);
+                    this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                    if (!isPreventHistory) {
+                        this.commandHandler.startGroupAction();
+                        historyAdded = true;
+                        let entry = {
+                            type: 'PositionChanged',
+                            redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
+                        };
+                        if (obj.nodes[0] && obj.nodes[0].processId) {
+                            let entry = {
+                                type: 'SizeChanged', category: 'Internal',
+                                undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
+                            };
+                            this.commandHandler.addHistoryEntry(entry);
+                        }
+                        this.commandHandler.addHistoryEntry(entry);
+                    }
                 }
-                this.commandHandler.addHistoryEntry(entry);
             }
             let snappedPoint = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, 0, 0);
             this.commandHandler.removeSnap();
@@ -17519,16 +20096,25 @@ class MoveTool extends ToolBase {
                 };
                 this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
                 if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
-                    let node = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
-                    this.commandHandler.dropChildToContainer(this.currentTarget, node);
-                    this.commandHandler.renderContainerHelper(node);
+                    let nodes = (args.source instanceof Selector) ? args.source.nodes : [args.source];
+                    let isEndGroup = false;
+                    for (let i = 0; i < nodes.length; i++) {
+                        if (!nodes[i].container) {
+                            isEndGroup = true;
+                            this.commandHandler.dropChildToContainer(this.currentTarget, nodes[i]);
+                            this.commandHandler.renderContainerHelper(nodes[i]);
+                        }
+                    }
+                    if (historyAdded && this.commandHandler.isContainer && isEndGroup) {
+                        this.commandHandler.endGroupAction();
+                    }
                 }
             }
             if (args.source && this.currentTarget) {
                 this.commandHandler.dropAnnotation(args.source, this.currentTarget);
             }
             this.commandHandler.updateSelector();
-            if (historyAdded) {
+            if (historyAdded && !this.commandHandler.isContainer) {
                 this.commandHandler.endGroupAction();
             }
         }
@@ -17620,8 +20206,15 @@ class MoveTool extends ToolBase {
             this.commandHandler.renderStackHighlighter(args);
             if (this.currentTarget && (args.source !== this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget) && args.source.id !== 'helper') {
-                if (!this.commandHandler.isParentAsContainer((args.source instanceof Selector) ? args.source.nodes[0] : args.source, true)) {
-                    this.commandHandler.drawHighlighter(this.currentTarget);
+                let object = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
+                if ((!this.commandHandler.isParentAsContainer(object, true))
+                    && (object.shape.type !== 'SwimLane' && !object.shape.isPhase)) {
+                    if (this.currentTarget.isLane) {
+                        this.commandHandler.renderStackHighlighter(args, this.currentTarget);
+                    }
+                    else {
+                        this.commandHandler.drawHighlighter(this.currentTarget);
+                    }
                 }
             }
             else {
@@ -17778,7 +20371,7 @@ class ResizeTool extends ToolBase {
         this.initialBounds.width = args.source.wrapper.actualSize.width;
     }
     /**   @private  */
-    mouseUp(args) {
+    mouseUp(args, isPreventHistory) {
         this.commandHandler.removeSnap();
         let object;
         object = this.commandHandler.renderContainerHelper(args.source) || args.source;
@@ -17799,16 +20392,18 @@ class ResizeTool extends ToolBase {
                 type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
                 childTable: this.childTable
             };
-            this.commandHandler.startGroupAction();
-            this.commandHandler.addHistoryEntry(entry);
-            if (obj.nodes[0] && obj.nodes[0].processId) {
-                let entry = {
-                    type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
-                    undoObject: this.undoParentElement, category: 'Internal'
-                };
+            if (!isPreventHistory) {
+                this.commandHandler.startGroupAction();
                 this.commandHandler.addHistoryEntry(entry);
+                if (obj.nodes[0] && obj.nodes[0].processId) {
+                    let entry = {
+                        type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
+                        undoObject: this.undoParentElement, category: 'Internal'
+                    };
+                    this.commandHandler.addHistoryEntry(entry);
+                }
+                this.commandHandler.endGroupAction();
             }
-            this.commandHandler.endGroupAction();
         }
         super.mouseUp(args);
         return !this.blocked;
@@ -19595,6 +22190,9 @@ class DiagramEventHandler {
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
         }
+        this.diagram.previousSelectedObject = null;
+        this.diagram.diagramRenderer.rendererActions =
+            this.diagram.removeConstraints(this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
         touches = evt.touches;
         if (this.isScrolling) {
             this.isScrolling = false;
@@ -19617,7 +22215,7 @@ class DiagramEventHandler {
                         let isMultipleSelect = true;
                         if ((!evt.ctrlKey && this.isMouseDown
                             && (this.diagram.selectedItems.nodes.length + this.diagram.selectedItems.connectors.length) > 1)
-                            && evt.which === 1) {
+                            && evt.which === 1 && !canPreventClearSelection(this.diagram.diagramActions)) {
                             isMultipleSelect = false;
                             this.commandHandler.clearSelection();
                         }
@@ -19626,11 +22224,15 @@ class DiagramEventHandler {
                         }
                     }
                 }
-                let hasStack = this.updateContainerProperties();
+                let history = this.updateContainerProperties();
+                let isGroupAction;
                 this.addUmlNode();
                 this.inAction = false;
                 this.isMouseDown = false;
                 this.currentPosition = this.getMousePosition(evt);
+                if (this.diagram.selectedObject.helperObject) {
+                    isGroupAction = this.updateContainerBounds();
+                }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
                     this.eventArgs.position = this.currentPosition;
                     this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
@@ -19644,19 +22246,30 @@ class DiagramEventHandler {
                         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Interactions;
                     }
                     this.eventArgs.clickCount = evt.detail;
-                    this.tool.mouseUp(this.eventArgs);
-                    if (hasStack) {
+                    if (this.diagram.selectedObject.helperObject && (this.tool instanceof MoveTool || this.tool instanceof ResizeTool)) {
+                        if (this.diagram.selectedObject.actualObject &&
+                            this.diagram.selectedObject.actualObject.parentId !== '') {
+                            let parentNode = this.diagram.getObject(this.diagram.selectedObject.actualObject.parentId);
+                            if (parentNode && parentNode.isLane) {
+                                this.commandHandler.isContainer = true;
+                            }
+                        }
+                        this.tool.mouseUp(this.eventArgs, history.isPreventHistory);
+                    }
+                    else {
+                        this.tool.mouseUp(this.eventArgs);
+                    }
+                    if (history.hasStack) {
                         this.diagram.endGroupAction();
                     }
                 }
-                if (this.diagram.selectedObject.helperObject) {
-                    let boundsUpdate = (this.tool instanceof ResizeTool) ? true : false;
+                if (isGroupAction) {
+                    this.diagram.endGroupAction();
+                }
+                this.updateContainerBounds(true);
+                if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
-                    let obj = this.diagram.selectedObject.actualObject;
-                    this.diagram.updateDiagramObject(obj);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
-                    updateCanvasBounds(this.diagram, obj, this.eventArgs.position, boundsUpdate);
-                    this.diagram.updateSelector();
                 }
                 this.blocked = false;
                 if (this.hoverElement) {
@@ -19693,11 +22306,133 @@ class DiagramEventHandler {
         this.eventArgs = {};
         this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     }
+    addSwimLaneObject(selectedNode) {
+        let swimlaneNode;
+        let targetNode;
+        let shape;
+        let value;
+        let canInsert;
+        let index = 0;
+        let offset;
+        let actualShape = selectedNode.shape;
+        let objects = this.objectFinder.findObjectsUnderMouse(this.currentPosition, this.diagram, this.eventArgs, null, this.action);
+        if (!targetNode) {
+            targetNode = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+        }
+        this.diagram.clearSelectorLayer();
+        if (targetNode && !(targetNode.isLane || targetNode.isPhase || targetNode.isHeader)) {
+            for (let i = 0; i < objects.length; i++) {
+                let laneNode = this.diagram.nameTable[objects[i].id];
+                if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) {
+                    targetNode = laneNode;
+                }
+            }
+        }
+        if (targetNode && (actualShape.isPhase || (actualShape.isLane && targetNode.isLane))) {
+            let id = targetNode.parentId;
+            swimlaneNode = this.diagram.nameTable[id];
+        }
+        if (swimlaneNode) {
+            shape = swimlaneNode.shape;
+            canInsert = (actualShape.isLane) ? actualShape.orientation === shape.orientation :
+                actualShape.orientation !== shape.orientation;
+        }
+        if (canInsert && targetNode) {
+            if (shape.header && shape.hasHeader && shape.orientation === 'Horizontal') {
+                index = 1;
+            }
+            if (shape.phases.length > 0) {
+                index += 1;
+            }
+            if (actualShape.isPhase) {
+                if (shape.orientation === 'Horizontal') {
+                    offset = this.currentPosition.x - swimlaneNode.wrapper.bounds.x;
+                }
+                else {
+                    offset = this.currentPosition.y - (swimlaneNode.wrapper.bounds.y + shape.header.height);
+                }
+                let phases = { id: randomId(), offset: offset, header: { annotation: { content: 'Phase' } } };
+                this.diagram.addPhases(swimlaneNode, [phases]);
+            }
+            else {
+                let laneHeight = actualShape.lanes[0].header.height;
+                let lane = {
+                    id: randomId(), style: actualShape.lanes[0].style, header: {
+                        annotation: {
+                            content: actualShape.lanes[0].header.annotation.content,
+                            style: actualShape.lanes[0].header.annotation.style
+                        },
+                        style: actualShape.lanes[0].header.style
+                    },
+                };
+                let orientation = (actualShape.orientation === 'Horizontal') ? true : false;
+                orientation ? lane.height = actualShape.lanes[0].height : lane.width = actualShape.lanes[0].width;
+                if (shape.orientation === 'Horizontal') {
+                    value = targetNode.rowIndex ? targetNode.rowIndex :
+                        this.diagram.nameTable[targetNode.parentId].rowIndex;
+                    if (targetNode.wrapper.offsetY < this.currentPosition.y) {
+                        value += 1;
+                    }
+                }
+                else {
+                    value = targetNode.columnIndex ? targetNode.columnIndex :
+                        this.diagram.nameTable[targetNode.parentId].columnIndex;
+                    if (this.currentPosition.x < targetNode.wrapper.bounds.center.x) {
+                        value -= 1;
+                    }
+                }
+                if (shape.lanes.length > (value - index)) {
+                    lane.header.width = shape.lanes[value - index].header.width;
+                    lane.header.height = shape.lanes[value - index].header.height;
+                }
+                else {
+                    lane.header.width = shape.lanes[value - index - 1].header.width;
+                    lane.header.height = shape.lanes[value - index - 1].header.height;
+                }
+                this.diagram.addLanes(swimlaneNode, [lane], value - index);
+            }
+            this.commandHandler.select(swimlaneNode);
+        }
+        else if (actualShape.isLane) {
+            let swimLaneobj = {
+                id: randomId(), width: selectedNode.width, height: selectedNode.height,
+                shape: {
+                    type: 'SwimLane', header: {
+                        annotation: { content: 'Header' }, height: 50, style: actualShape.lanes[0].header.style
+                    },
+                    phases: [{ id: randomId(), header: { annotation: { content: 'Phase' } } }],
+                    lanes: [{
+                            id: randomId(), height: selectedNode.height, width: selectedNode.width, style: actualShape.lanes[0].style,
+                            header: {
+                                annotation: {
+                                    content: actualShape.lanes[0].header.annotation.content,
+                                    style: actualShape.lanes[0].header.annotation.style
+                                },
+                                style: actualShape.lanes[0].header.style
+                            },
+                        }], orientation: actualShape.orientation,
+                }
+            };
+            if (actualShape.orientation === 'Vertical') {
+                swimLaneobj.width += 20;
+            }
+            swimLaneobj.offsetX = this.currentPosition.x + (swimLaneobj.width / 2);
+            swimLaneobj.offsetY = this.currentPosition.y + (swimLaneobj.height / 2);
+            this.diagram.add(swimLaneobj);
+        }
+    }
     /** @private */
     mouseLeave(evt) {
         //Define what has to happen on mouse leave
         if (this.tool && this.inAction) {
             this.tool.mouseLeave(this.eventArgs);
+        }
+        if (this.diagram.selectedObject.helperObject) {
+            this.updateContainerProperties();
+            let isGroupAction = this.updateContainerBounds();
+            if (isGroupAction) {
+                this.diagram.endGroupAction();
+            }
         }
         if (this.eventArgs && this.eventArgs.source) {
             this.diagram.updatePortVisibility(this.eventArgs.source, PortVisibility.Hover, true);
@@ -19758,7 +22493,10 @@ class DiagramEventHandler {
         }
         if (this.diagram.textEditing) {
             this.diagram.isTriggerEvent = true;
-            this.diagram.startTextEdit();
+            if (this.diagram.activeLabel.parentId) {
+                let node = this.diagram.getObject(this.diagram.activeLabel.parentId);
+                this.diagram.startTextEdit(node, this.diagram.activeLabel.id);
+            }
             this.diagram.isTriggerEvent = false;
         }
     }
@@ -19788,8 +22526,38 @@ class DiagramEventHandler {
                                 parameter: command.parameter
                             })) {
                                 evt.preventDefault();
-                                if (evt.key === 'Escape' && (this.checkEditBoxAsTarget(evt))) {
-                                    document.getElementById(this.diagram.diagramCanvas.id).focus();
+                                if (evt.key === 'Escape') {
+                                    if (this.checkEditBoxAsTarget(evt)) {
+                                        document.getElementById(this.diagram.diagramCanvas.id).focus();
+                                    }
+                                    else if (this.diagram.currentSymbol) {
+                                        let selectedSymbols = 'selectedSymbols';
+                                        let source = 'sourceElement';
+                                        let intDestroy = 'intDestroy';
+                                        this.diagram.removeFromAQuad(this.diagram.currentSymbol);
+                                        this.diagram.removeObjectsFromLayer(this.diagram.nameTable[this.diagram.currentSymbol.id]);
+                                        this.diagram.removeElements(this.diagram.currentSymbol);
+                                        removeChildNodes(this.diagram.currentSymbol, this.diagram);
+                                        delete this.diagram.nameTable[this.diagram.currentSymbol.id];
+                                        let sourceElement = this.diagram.droppable[source];
+                                        sourceElement.draggable[intDestroy]();
+                                        let element = this.diagram.droppable[selectedSymbols];
+                                        element.parentNode.removeChild(element);
+                                        let diagramActions = this.diagram.diagramActions;
+                                        this.diagram.diagramActions =
+                                            this.diagram.addConstraints(diagramActions, DiagramAction.PreventClearSelection);
+                                        this.tool.mouseUp(this.eventArgs);
+                                        this.diagram.diagramRenderer.rendererActions = this.diagram.removeConstraints(this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
+                                        if (this.diagram.previousSelectedObject) {
+                                            this.diagram.select(this.diagram.previousSelectedObject);
+                                        }
+                                        this.action = 'Select';
+                                        this.diagram.previousSelectedObject = null;
+                                        this.diagram.currentSymbol = null;
+                                        this.diagram.diagramActions =
+                                            this.diagram.removeConstraints(diagramActions, DiagramAction.PreventClearSelection);
+                                        this.isMouseDown = false;
+                                    }
                                 }
                                 if (command.execute) {
                                     // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
@@ -19998,7 +22766,7 @@ class DiagramEventHandler {
         let text = (editTextBox.value);
         let line = text.split('\n');
         node = (this.diagram.selectedItems.nodes[0]) ? this.diagram.selectedItems.nodes[0] : this.diagram.selectedItems.connectors[0];
-        if (!node && this.tool instanceof TextDrawingTool) {
+        if ((!node && this.tool instanceof TextDrawingTool) || node.shape.type === 'SwimLane') {
             node = this.diagram.nameTable[this.diagram.activeLabel.parentId];
         }
         if (node && ((node.shape.type !== 'Text' && node.annotations.length > 0) || (node.shape.type === 'Text'))) {
@@ -20059,6 +22827,11 @@ class DiagramEventHandler {
                 this.action === 'OrthoThumb' || this.action === 'BezierSourceThumb' || this.action === 'BezierTargetThumb' ||
                 this.action === 'ConnectorTargetEnd' || this.action.indexOf('Rotate') !== -1 || this.action.indexOf('Resize') !== -1) {
                 obj = this.diagram.selectedItems;
+                if (!this.diagram.currentSymbol && this.action === 'Drag' && obj && this.diagram.selectedItems.nodes.length > 0 &&
+                    this.diagram.selectedItems.nodes[0].shape.type === 'SwimLane') {
+                    objects = this.diagram.findObjectsUnderMouse(this.currentPosition);
+                    obj = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+                }
             }
             else {
                 objects = this.diagram.findObjectsUnderMouse(this.currentPosition);
@@ -20208,114 +22981,227 @@ class DiagramEventHandler {
     findActionToBeDone(obj, wrapper, position, target) {
         return findToolToActivate(obj, wrapper, this.currentPosition, this.diagram, this.touchStartList, this.touchMoveList, target);
     }
+    updateContainerBounds(isAfterMouseUp) {
+        let isGroupAction = false;
+        if (this.diagram.selectedObject.helperObject) {
+            let boundsUpdate = (this.tool instanceof ResizeTool) ? true : false;
+            let obj = this.diagram.selectedObject.actualObject;
+            let parentNode = this.diagram.nameTable[obj.parentId];
+            if (isAfterMouseUp) {
+                removeChildInContainer(this.diagram, obj, this.currentPosition, boundsUpdate);
+            }
+            else {
+                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                    this.diagram.updateDiagramObject(obj);
+                }
+                isGroupAction = updateCanvasBounds(this.diagram, obj, this.currentPosition, boundsUpdate);
+                this.diagram.updateSelector();
+                if (obj.isLane || obj.isPhase) {
+                    this.diagram.clearSelection();
+                    this.commandHandler.select(obj);
+                }
+            }
+        }
+        return isGroupAction;
+    }
     updateContainerProperties() {
         let helperObject;
         let isChangeProperties = false;
         let hasStack;
-        let hasGroup;
+        let connectors;
+        let hasGroup = false;
+        let obj;
+        let history = { hasStack: false, isPreventHistory: false };
         if (this.diagram.selectedObject.helperObject) {
-            helperObject = this.diagram.selectedObject.helperObject;
-            this.diagram.selectedItems.wrapper.children[0].offsetX = helperObject.wrapper.offsetX;
-            this.diagram.selectedItems.wrapper.children[0].offsetY = helperObject.wrapper.offsetY;
-            this.diagram.selectedItems.wrapper.children[0].actualSize.width = helperObject.wrapper.actualSize.width;
-            this.diagram.selectedItems.wrapper.children[0].actualSize.height = helperObject.wrapper.actualSize.height;
-            let obj = this.diagram.selectedObject.actualObject;
-            obj.offsetX = helperObject.offsetX;
-            obj.offsetY = helperObject.offsetY;
-            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                obj.width = helperObject.width;
-                obj.height = helperObject.height;
-            }
-            obj.rotateAngle = helperObject.rotateAngle;
             let objects = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let target = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
-            let parentNode = this.diagram.nameTable[obj.parentId];
-            let undoElement;
-            if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
-                this.diagram.startGroupAction();
-                hasGroup = true;
+            helperObject = this.diagram.selectedObject.helperObject;
+            obj = this.diagram.selectedObject.actualObject;
+            if (obj.shape.type === 'SwimLane') {
+                connectors = getConnectors(this.diagram, obj.wrapper.children[0], 0, true);
             }
-            if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
-                let index = parentNode.wrapper.children.indexOf(obj.wrapper);
-                undoElement = {
-                    targetIndex: undefined, target: undefined,
-                    sourceIndex: index, source: cloneObject(obj)
-                };
-                if (index > -1) {
-                    let children = parentNode.children;
-                    children.splice(children.indexOf(obj.id), 1);
-                    this.diagram.nameTable[obj.id].parentId = '';
-                    hasStack = true;
-                    parentNode.wrapper.children.splice(index, 1);
+            if (obj.shape.type !== 'SwimLane' && obj.parentId &&
+                this.diagram.getObject(obj.parentId).shape.type === 'SwimLane') {
+                if (target instanceof Node && this.diagram.getObject(target.parentId) &&
+                    this.diagram.getObject(target.parentId).shape.type !== 'SwimLane') {
+                    target = this.diagram.getObject(target.parentId);
                 }
             }
-            moveChildInStack(obj, target, this.diagram, this.action);
-            parentNode = checkParentAsContainer(this.diagram, obj) ? this.diagram.nameTable[obj.parentId] :
-                (this.diagram.nameTable[obj.parentId] || obj);
-            if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
-                parentNode.maxWidth = parentNode.wrapper.actualSize.width;
-                parentNode.wrapper.maxWidth = parentNode.wrapper.actualSize.width;
-                parentNode.maxHeight = parentNode.wrapper.actualSize.height;
-                parentNode.wrapper.maxHeight = parentNode.wrapper.actualSize.height;
-                isChangeProperties = true;
-            }
-            if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
-                checkChildNodeInContainer(this.diagram, obj);
+            if (this.currentAction === 'Drag' && obj.container && obj.container.type === 'Canvas' && obj.parentId &&
+                this.diagram.getObject(obj.parentId).shape.type === 'SwimLane' && target && target !== obj &&
+                target.container && target.container.type === 'Canvas' && target.isLane &&
+                obj.isLane && target.parentId === obj.parentId) {
+                laneInterChanged(this.diagram, obj, target, this.currentPosition);
+                history.isPreventHistory = true;
             }
             else {
-                if (parentNode && parentNode.container && parentNode.container.type === 'Grid') {
-                    let container = ((parentNode.shape.type === 'SwimLane') ?
-                        parentNode.wrapper.children[0] : parentNode.wrapper);
-                    let x = parentNode.wrapper.bounds.x;
-                    let y = parentNode.wrapper.bounds.y;
-                    if (obj.columnIndex !== undefined && (parentNode.container.orientation === 'Horizontal' && obj.rowIndex === 1) ||
-                        (parentNode.container.orientation === 'Vertical' && obj.rowIndex > 0 && obj.columnIndex > 0)) {
-                        container.updateColumnWidth(obj.columnIndex, helperObject.width);
+                let parentNode = this.diagram.nameTable[obj.parentId];
+                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                    obj.offsetX = helperObject.offsetX;
+                    obj.offsetY = helperObject.offsetY;
+                    if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                        obj.width = helperObject.width;
+                        obj.height = helperObject.height;
                     }
-                    else if (obj.rowIndex !== undefined) {
-                        container.updateRowHeight(obj.rowIndex, helperObject.height);
+                    obj.rotateAngle = helperObject.rotateAngle;
+                }
+                let undoElement;
+                if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
+                    this.diagram.startGroupAction();
+                    hasGroup = true;
+                }
+                if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
+                    let index = parentNode.wrapper.children.indexOf(obj.wrapper);
+                    undoElement = { targetIndex: undefined, target: undefined, sourceIndex: index, source: cloneObject(obj) };
+                    if (index > -1) {
+                        let children = parentNode.children;
+                        children.splice(children.indexOf(obj.id), 1);
+                        this.diagram.nameTable[obj.id].parentId = '';
+                        hasStack = true;
+                        parentNode.wrapper.children.splice(index, 1);
                     }
-                    this.diagram.nodePropertyChange(parentNode, {}, {
-                        offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
-                        width: parentNode.width, height: parentNode.height,
-                        rotateAngle: parentNode.rotateAngle
-                    });
-                    this.diagram.drag(parentNode, x - parentNode.wrapper.bounds.x, y - parentNode.wrapper.bounds.y);
+                }
+                moveChildInStack(obj, target, this.diagram, this.action);
+                parentNode = checkParentAsContainer(this.diagram, obj) ? this.diagram.nameTable[obj.parentId] :
+                    (this.diagram.nameTable[obj.parentId] || obj);
+                if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
+                    parentNode.wrapper.maxWidth = parentNode.maxWidth = parentNode.wrapper.actualSize.width;
+                    parentNode.wrapper.maxHeight = parentNode.maxHeight = parentNode.wrapper.actualSize.height;
+                    isChangeProperties = true;
+                }
+                if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
+                    checkChildNodeInContainer(this.diagram, obj);
                 }
                 else {
+                    history = this.updateContainerPropertiesExtend(parentNode, obj, connectors, helperObject, history);
+                }
+                if (obj.shape.lanes) {
+                    this.updateLaneChildNode(obj);
+                }
+                if (isChangeProperties) {
+                    parentNode.maxWidth = parentNode.wrapper.maxWidth = undefined;
+                    parentNode.maxHeight = parentNode.wrapper.maxHeight = undefined;
+                }
+                if (hasStack) {
+                    this.diagram.nodePropertyChange(parentNode, {}, {
+                        offsetX: parentNode.offsetX, offsetY: parentNode.offsetY, width: parentNode.width, height: parentNode.height,
+                        rotateAngle: parentNode.rotateAngle
+                    });
+                    let entry = {
+                        type: 'StackChildPositionChanged', redoObject: { sourceIndex: undefined, source: undoElement.source },
+                        undoObject: undoElement, category: 'Internal'
+                    };
+                    if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                        this.diagram.addHistoryEntry(entry);
+                    }
+                }
+                if (obj && obj.container && (obj.container.type === 'Stack' ||
+                    (obj.container.type === 'Canvas' && obj.parentId === ''))) {
                     if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
                         obj.wrapper.measureChildren = true;
                     }
                     this.diagram.nodePropertyChange(obj, {}, {
-                        offsetX: obj.offsetX, offsetY: obj.offsetY,
-                        width: obj.width, height: obj.height,
-                        rotateAngle: obj.rotateAngle
+                        offsetX: obj.offsetX, offsetY: obj.offsetY, width: obj.width, height: obj.height, rotateAngle: obj.rotateAngle
                     });
-                    obj.wrapper.measureChildren = false;
+                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                        obj.wrapper.measureChildren = false;
+                    }
                 }
             }
-            if (isChangeProperties) {
-                parentNode.maxWidth = undefined;
-                parentNode.wrapper.maxWidth = undefined;
-                parentNode.maxHeight = undefined;
-                parentNode.wrapper.maxHeight = undefined;
-            }
-            if (hasStack) {
-                this.diagram.nodePropertyChange(parentNode, {}, {
-                    offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
-                    width: parentNode.width, height: parentNode.height,
-                    rotateAngle: parentNode.rotateAngle
-                });
-                let entry = {
-                    type: 'StackChildPositionChanged', redoObject: { sourceIndex: undefined, source: undoElement.source },
-                    undoObject: undoElement, category: 'Internal'
-                };
-                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
-                    this.diagram.addHistoryEntry(entry);
+            updateConnectorsProperties(connectors, this.diagram);
+            history.hasStack = hasGroup;
+        }
+        return history;
+    }
+    updateLaneChildNode(obj) {
+        for (let i = 0; i < (obj.shape.lanes.length); i++) {
+            if (obj.shape.lanes[i].children && obj.shape.lanes[i].children.length > 0) {
+                for (let j = 0; j < obj.shape.lanes[i].children.length; j++) {
+                    let id = obj.shape.lanes[i].children[j].id;
+                    let childNode = this.diagram.nameTable[id];
+                    childNode.offsetX = childNode.wrapper.offsetX;
+                    childNode.offsetY = childNode.wrapper.offsetY;
                 }
             }
         }
-        return hasGroup;
+    }
+    updateContainerPropertiesExtend(parentNode, obj, connectors, helperObject, history) {
+        if (this.currentAction === 'ResizeEast' || this.currentAction === 'ResizeSouth' || obj.shape.type === 'SwimLane') {
+            let undoObj = cloneObject(obj);
+            let isUpdateRow = false;
+            if (parentNode && parentNode.container && parentNode.container.type === 'Grid') {
+                let shape = parentNode.shape.type === 'SwimLane' ? true : false;
+                let container = (shape ? parentNode.wrapper.children[0] : parentNode.wrapper);
+                let padding = shape ? parentNode.shape.padding : undefined;
+                let x = parentNode.wrapper.bounds.x;
+                let y = parentNode.wrapper.bounds.y;
+                if (obj.columnIndex !== undefined && (parentNode.container.orientation === 'Horizontal' &&
+                    ((shape && obj.isPhase) || (!shape && obj.rowIndex === 1))) ||
+                    (parentNode.container.orientation === 'Vertical' &&
+                        ((!shape && obj.rowIndex > 0 && obj.columnIndex > 0) || (shape && obj.isLane)))) {
+                    if (parentNode.container.orientation === 'Horizontal' && obj.isPhase && obj.wrapper.width > obj.maxWidth) {
+                        obj.maxWidth = obj.wrapper.width;
+                        obj.wrapper.maxWidth = obj.wrapper.width;
+                    }
+                    updateSwimLaneObject(this.diagram, obj, parentNode, helperObject);
+                    container.updateColumnWidth(obj.columnIndex, helperObject.width, true, padding);
+                    if (obj.isPhase) {
+                        let id = parentNode.shape.phases[obj.columnIndex].header.id;
+                        let node = this.diagram.nameTable[id];
+                        if (node.maxWidth < helperObject.width) {
+                            node.maxWidth = helperObject.width;
+                            node.wrapper.maxWidth = helperObject.width;
+                        }
+                    }
+                    if (parentNode.shape.type === 'SwimLane') {
+                        parentNode.width = (parentNode.width) ? container.width : parentNode.width;
+                        updateHeaderMaxWidth(this.diagram, parentNode);
+                        parentNode.wrapper.width = parentNode.width;
+                        connectors = getConnectors(this.diagram, container, obj.rowIndex, false);
+                    }
+                }
+                else if (obj.rowIndex !== undefined) {
+                    isUpdateRow = true;
+                    updateSwimLaneObject(this.diagram, obj, parentNode, helperObject);
+                    container.updateRowHeight(obj.rowIndex, helperObject.height, true, padding);
+                    if (parentNode.shape.type === 'SwimLane') {
+                        parentNode.height = (parentNode.height) ? container.height : parentNode.height;
+                        parentNode.wrapper.height = parentNode.height;
+                        connectors = getConnectors(this.diagram, container, obj.rowIndex, true);
+                    }
+                }
+                if (parentNode.shape.type === 'SwimLane') {
+                    history.isPreventHistory = true;
+                }
+                this.diagram.nodePropertyChange(parentNode, {}, {
+                    offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
+                    rotateAngle: parentNode.rotateAngle
+                });
+                this.diagram.drag(parentNode, x - parentNode.wrapper.bounds.x, y - parentNode.wrapper.bounds.y);
+            }
+            else {
+                if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                    obj.wrapper.measureChildren = true;
+                }
+                this.diagram.nodePropertyChange(obj, {}, {
+                    offsetX: obj.offsetX, offsetY: obj.offsetY, width: obj.width, height: obj.height, rotateAngle: obj.rotateAngle
+                });
+                obj.wrapper.measureChildren = false;
+            }
+            obj.wrapper.measure(new Size(obj.wrapper.width, obj.wrapper.height));
+            obj.wrapper.arrange(obj.wrapper.desiredSize);
+            if (this.currentAction === 'ResizeEast' || this.currentAction === 'ResizeSouth') {
+                let redoObject = cloneObject(obj);
+                let entry = {
+                    category: 'Internal',
+                    type: (isUpdateRow) ? 'RowHeightChanged' : 'ColumnWidthChanged',
+                    undoObject: undoObj, redoObject: redoObject
+                };
+                this.diagram.addHistoryEntry(entry);
+            }
+        }
+        updateConnectorsProperties(connectors, this.diagram);
+        return history;
     }
     addUmlNode() {
         let node = this.diagram.selectedItems.nodes[0];
@@ -20456,6 +23342,19 @@ class ObjectFinder {
                     break;
                 }
                 parentObj = diagram.nameTable[parentObj.parentId];
+            }
+        }
+        if (eventArgs && !eventArgs.source) {
+            for (let i = 0; i < actualTarget.length; i++) {
+                let parentNode = diagram.nameTable[actualTarget[i].parentId];
+                if (parentNode && parentNode.shape.type === 'SwimLane') {
+                    for (let j = 0; j < actualTarget.length; j++) {
+                        let connector = actualTarget[j];
+                        if (connector instanceof Connector) {
+                            actualTarget.splice(i, 1);
+                        }
+                    }
+                }
             }
         }
         return actualTarget;
@@ -20660,7 +23559,7 @@ class ObjectFinder {
     }
 }
 
-var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20681,22 +23580,22 @@ class Layer extends ChildProperty {
         this.objects = [];
     }
 }
-__decorate$17([
+__decorate$18([
     Property('')
 ], Layer.prototype, "id", void 0);
-__decorate$17([
+__decorate$18([
     Property(true)
 ], Layer.prototype, "visible", void 0);
-__decorate$17([
+__decorate$18([
     Property(false)
 ], Layer.prototype, "lock", void 0);
-__decorate$17([
+__decorate$18([
     Property()
 ], Layer.prototype, "objects", void 0);
-__decorate$17([
+__decorate$18([
     Property()
 ], Layer.prototype, "addInfo", void 0);
-__decorate$17([
+__decorate$18([
     Property(-1)
 ], Layer.prototype, "zIndex", void 0);
 
@@ -20711,6 +23610,8 @@ class CommandHandler {
         this.connectorsTable = [];
         /**   @private  */
         this.processTable = {};
+        /** @private */
+        this.isContainer = false;
         this.childTable = {};
         this.parentTable = {};
         this.diagram = diagram;
@@ -21227,6 +24128,22 @@ class CommandHandler {
                     }
                     this.clipboardData.childTable = childTable;
                 }
+                if (node.shape.type === 'SwimLane') {
+                    let swimlane = this.diagram.getObject(this.diagram.selectedItems.nodes[j].id);
+                    let childTable = this.clipboardData.childTable;
+                    let connectorsList = getConnectors(this.diagram, swimlane.wrapper.children[0], 0, true);
+                    for (let i = 0; i < connectorsList.length; i++) {
+                        let connector = this.diagram.getObject(connectorsList[i]);
+                        childTable[connector.id] = cloneObject(connector);
+                    }
+                }
+                if (node && node.isLane) {
+                    let childTable = this.clipboardData.childTable;
+                    let swimlane = this.diagram.getObject(node.parentId);
+                    let laneIndex = findLaneIndex(swimlane, node);
+                    childTable[node.id] = cloneObject(swimlane.shape.lanes[laneIndex]);
+                    childTable[node.id].width = swimlane.wrapper.actualSize.width;
+                }
             }
         }
         if (this.clipboardData.pasteIndex === 0) {
@@ -21270,6 +24187,7 @@ class CommandHandler {
         this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.Group;
         let selectedItems = [];
         let obj = {};
+        let group;
         obj.id = 'group' + randomId();
         obj = new Node(this.diagram, 'nodes', obj, true);
         obj.children = [];
@@ -21280,7 +24198,10 @@ class CommandHandler {
                 obj.children.push(selectedItems[i].id);
             }
         }
-        this.diagram.add(obj);
+        group = this.diagram.add(obj);
+        if (group) {
+            this.select(group);
+        }
         let entry = { type: 'Group', undoObject: obj, redoObject: obj, category: 'Internal' };
         this.addHistoryEntry(entry);
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
@@ -21317,10 +24238,10 @@ class CommandHandler {
                 }
                 let parentNode = this.diagram.nameTable[node.parentId];
                 for (let j = node.children.length - 1; j >= 0; j--) {
-                    (this.diagram.nameTable[node.children[0]]).parentId = '';
-                    this.diagram.deleteChild(this.diagram.nameTable[node.children[0]], node);
-                    if (node.parentId && node.children[0]) {
-                        this.diagram.addChild(parentNode, node.children[0]);
+                    (this.diagram.nameTable[node.children[j]]).parentId = '';
+                    this.diagram.deleteChild(this.diagram.nameTable[node.children[j]], node);
+                    if (node.parentId && node.children[j]) {
+                        this.diagram.addChild(parentNode, node.children[j]);
                     }
                 }
                 if (node.parentId) {
@@ -21435,6 +24356,7 @@ class CommandHandler {
         let connectorsTable = {};
         let cloneObject$$1 = cloneObject(node);
         let process;
+        let temp = this.diagram.nameTable[node.parentId];
         if (node.shape && node.shape.type === 'Bpmn' && node.shape.activity &&
             node.shape.activity.subProcess.processes
             && node.shape.activity.subProcess.processes.length) {
@@ -21442,7 +24364,13 @@ class CommandHandler {
             cloneObject$$1.zIndex = -1;
             cloneObject$$1.shape.activity.subProcess.processes = undefined;
         }
-        if (node.children && node.children.length && (!children || !children.length)) {
+        if (node.shape && node.shape.type === 'SwimLane') {
+            pasteSwimLane(node, this.diagram, this.clipboardData);
+        }
+        else if (temp && temp.shape.type === 'SwimLane') {
+            pasteSwimLane(cloneObject(temp), this.diagram, this.clipboardData, node, true);
+        }
+        else if (node.children && node.children.length && (!children || !children.length)) {
             newNode = this.cloneGroup(node, multiSelect);
         }
         else if (node.shape && node.shape.shape === 'TextAnnotation' && node.id.indexOf('_textannotation_') !== -1 &&
@@ -21829,7 +24757,13 @@ class CommandHandler {
             let selectorModel = this.diagram.selectedItems;
             let convert = obj;
             if (convert instanceof Node) {
-                selectorModel.nodes.push(obj);
+                if (obj.isHeader) {
+                    let node = this.diagram.nameTable[obj.parentId];
+                    selectorModel.nodes.push(node);
+                }
+                else {
+                    selectorModel.nodes.push(obj);
+                }
             }
             else {
                 selectorModel.connectors.push(obj);
@@ -21837,34 +24771,9 @@ class CommandHandler {
             if (!multipleSelection) {
                 selectorModel.init(this.diagram);
                 if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
-                    if (checkParentAsContainer(this.diagram, selectorModel.nodes[0], true)) {
-                        let parentNode = this.diagram.nameTable[selectorModel.nodes[0].parentId];
-                        if (parentNode && parentNode.container.type === 'Grid') {
-                            let canvas = new Canvas();
-                            canvas.children = [];
-                            let element = new DiagramElement();
-                            if (selectorModel.nodes[0].rowIndex && selectorModel.nodes[0].rowIndex > 0) {
-                                if ((parentNode.container.orientation === 'Horizontal' && selectorModel.nodes[0].rowIndex === 1) ||
-                                    (parentNode.container.orientation === 'Vertical' &&
-                                        selectorModel.nodes[0].rowIndex > 0 && selectorModel.nodes[0].columnIndex > 0)) {
-                                    let bounds = findBounds(parentNode, selectorModel.nodes[0].columnIndex, true);
-                                    canvas.offsetX = bounds.center.x;
-                                    canvas.offsetY = bounds.center.y;
-                                    element.width = bounds.width;
-                                    element.height = bounds.height;
-                                }
-                                else {
-                                    canvas.offsetX = parentNode.offsetX;
-                                    canvas.offsetY = selectorModel.nodes[0].wrapper.offsetY;
-                                    element.width = parentNode.wrapper.actualSize.width;
-                                    element.height = selectorModel.nodes[0].wrapper.actualSize.height;
-                                }
-                            }
-                            canvas.children.push(element);
-                            canvas.measure(new Size());
-                            canvas.arrange(canvas.desiredSize);
-                            selectorModel.wrapper.children[0] = canvas;
-                        }
+                    let wrapper = gridSelection(this.diagram, selectorModel);
+                    if (wrapper) {
+                        selectorModel.wrapper.children[0] = wrapper;
                     }
                     selectorModel.rotateAngle = selectorModel.nodes[0].rotateAngle;
                     selectorModel.wrapper.rotateAngle = selectorModel.nodes[0].rotateAngle;
@@ -22272,6 +25181,9 @@ class CommandHandler {
         if (hasSelection(this.diagram)) {
             let selectormodel = this.diagram.selectedItems;
             let arrayNodes = this.getSelectedObject();
+            if (this.diagram.currentSymbol) {
+                this.diagram.previousSelectedObject = arrayNodes;
+            }
             let arg = {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false
@@ -22315,15 +25227,65 @@ class CommandHandler {
      */
     renderStackHighlighter(args, target) {
         let source = this.diagram.selectedItems.nodes[0];
+        let symbolDrag;
+        let node;
+        let selectorModel;
         if (!target) {
             let objects = this.diagram.findObjectsUnderMouse(args.position);
             target = this.diagram.findObjectUnderMouse(objects, 'Drag', true);
+            if (target && !(target.isLane || target.isPhase || target.isHeader)) {
+                for (let i = 0; i < objects.length; i++) {
+                    let laneNode = this.diagram.nameTable[objects[i].id];
+                    if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) {
+                        target = laneNode;
+                    }
+                }
+            }
         }
-        if (source && target && source.parentId && target.parentId && (source.parentId === target.parentId)
-            && (source.id !== target.id) && (this.diagram.nameTable[target.parentId].container &&
-            this.diagram.nameTable[target.parentId].container.type === 'Stack')) {
-            let isVertical = this.diagram.nameTable[target.parentId].container.orientation === 'Vertical';
-            renderStackHighlighter(target.wrapper, isVertical, args.position, this.diagram);
+        if (source && target && target.isLane && source.shape && !source.shape.isPhase) {
+            node = this.diagram.nameTable[target.parentId];
+            if (this.diagram.currentSymbol && node.shape.type === 'SwimLane') {
+                symbolDrag = true;
+            }
+            if ((source && !source.parentId && source.shape.type !== 'SwimLane') ||
+                (source && source.parentId && this.diagram.nameTable[source.parentId] && this.diagram.nameTable[source.parentId].isLane &&
+                    (source.parentId !== target.parentId && source.parentId !== target.id))) {
+                selectorModel = this.diagram.selectedItems;
+                let canvas = gridSelection(this.diagram, selectorModel, target.id, true);
+                if (canvas) {
+                    selectorModel.wrapper.children[0] = canvas;
+                }
+                this.diagram.renderSelector(false, true);
+                selectorModel.wrapper.children[0] = selectorModel.nodes[0].wrapper;
+            }
+        }
+        if (source && target && target.parentId && source.shape && source.shape.isPhase) {
+            let node = this.diagram.nameTable[target.parentId];
+            if (node.shape.type === 'SwimLane') {
+                this.diagram.selectedItems.wrapper.children[0] = this.diagram.nameTable[target.parentId].wrapper;
+                this.diagram.renderSelector(false, true);
+            }
+        }
+        if ((symbolDrag && this.diagram.currentSymbol.shape.isLane) || (source && target &&
+            source.parentId && target.parentId && !source.isPhase && (source.parentId === target.parentId)
+            && (source.id !== target.id) && node &&
+            (node.container && (node.container.type === 'Stack' || node.container.type === 'Grid')))) {
+            let canvas;
+            let value = node.container.orientation === 'Vertical';
+            let isVertical = node.container === 'Stack' ? value : !value;
+            if (node.container.type === 'Grid' && target.isLane &&
+                ((!this.diagram.currentSymbol &&
+                    (node.shape.orientation === 'Horizontal' && target.rowIndex !== source.rowIndex) ||
+                    (node.shape.orientation === 'Vertical' && target.columnIndex !== source.columnIndex))
+                    || (this.diagram.currentSymbol &&
+                        this.diagram.currentSymbol.shape.orientation === node.container.orientation))) {
+                selectorModel = this.diagram.selectedItems;
+                canvas = gridSelection(this.diagram, selectorModel, target.id, symbolDrag);
+            }
+            let wrapper = node.container.type === 'Stack' ? target.wrapper : canvas;
+            if (wrapper) {
+                renderStackHighlighter(wrapper, isVertical, args.position, this.diagram, false, true);
+            }
         }
     }
     /** @private */
@@ -22352,6 +25314,11 @@ class CommandHandler {
                     }
                     this.diagram.nodePropertyChange(obj, oldValues, { offsetX: obj.offsetX, offsetY: obj.offsetY });
                     obj.wrapper.measureChildren = false;
+                }
+                if (obj.shape.type === 'SwimLane' && !this.diagram.currentSymbol) {
+                    let grid = obj.wrapper.children[0];
+                    let connectors = getConnectors(this.diagram, grid, 0, true);
+                    updateConnectorsProperties(connectors, this.diagram);
                 }
             }
             else {
@@ -23612,25 +26579,36 @@ class CommandHandler {
         let node = (args.target || args.source);
         let oldValues = { isExpanded: node.isExpanded };
         node.isExpanded = !node.isExpanded;
+        this.diagram.preventNodesUpdate = true;
+        this.diagram.diagramActions |= DiagramAction.PreventIconsUpdate;
         this.diagram.nodePropertyChange(node, oldValues, { isExpanded: node.isExpanded });
+        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventIconsUpdate;
+        this.diagram.preventNodesUpdate = false;
     }
     /** @private */
     expandNode(node, diagram) {
         let objects;
+        let preventNodesUpdate = this.diagram.preventNodesUpdate;
         let expand = node.isExpanded;
+        this.diagram.preventNodesUpdate = true;
+        this.diagram.preventConnectorsUpdate = true;
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
         this.diagram.layout.fixedNode = node.id;
         if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
-        this.diagram.preventNodesUpdate = true;
-        this.diagram.preventConnectorsUpdate = true;
         objects = this.diagram.doLayout();
-        this.diagram.preventNodesUpdate = false;
+        this.diagram.preventNodesUpdate = preventNodesUpdate;
         this.diagram.preventConnectorsUpdate = false;
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
-            this.layoutAnimateModule.expand(this.diagram.organizationalChartModule.isAnimation, objects, node, this.diagram);
+        if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule) {
+            this.layoutAnimateModule.expand(this.diagram.layout.enableAnimation, objects, node, this.diagram);
+        }
+        else {
+            let arg = {
+                element: cloneObject(node), state: (node.isExpanded) ? true : false
+            };
+            this.triggerEvent(DiagramEvent.expandStateChange, arg);
         }
         return objects;
     }
@@ -23755,16 +26733,20 @@ class CommandHandler {
     /** @private */
     isDroppable(source, targetNodes) {
         let node = this.diagram.nameTable[source.id] || source.nodes[0];
-        if (node.shape.shape === 'TextAnnotation') {
+        if (node) {
+            if (node.shape.shape === 'TextAnnotation') {
+                return true;
+            }
+            if (node && node.shape.type === 'Bpmn') {
+                if ((node.processId === targetNodes.id) || (node.id === targetNodes.processId) ||
+                    targetNodes.shape.type === 'Bpmn'
+                        && targetNodes.shape.activity.subProcess.collapsed) {
+                    return false;
+                }
+            }
             return true;
         }
-        if (node && node.shape.type === 'Bpmn') {
-            if ((node.processId === targetNodes.id) || (node.id === targetNodes.processId) ||
-                targetNodes.shape.activity.subProcess.collapsed) {
-                return false;
-            }
-        }
-        return true;
+        return false;
     }
     /**
      * @private
@@ -24050,42 +27032,33 @@ class CommandHandler {
                 node = (selector.nodes[0].shape === 'SwimLane') ? selector.nodes[0] :
                     this.diagram.nameTable[selector.nodes[0].parentId];
                 let child = selector.nodes[0];
-                if (node.container.type === 'Grid') {
+                if (node.shape.type === 'SwimLane') {
+                    let orientation = (node.shape.orientation === 'Horizontal') ? true : false;
+                    if ((child.isPhase && ((orientation && corner === 'ResizeSouth') || (!orientation && corner === 'ResizeEast'))) ||
+                        (child.isLane && ((orientation && corner === 'ResizeEast') || (!orientation && corner === 'ResizeSouth')))) {
+                        swimLaneSelection(this.diagram, node, corner);
+                    }
+                }
+                else if (node.container.type === 'Grid') {
                     if (((node.container.orientation === 'Horizontal' && child.rowIndex === 1) ||
                         (node.container.orientation === 'Vertical' && child.rowIndex > 0 && child.columnIndex > 0))) {
                         if (corner === 'ResizeSouth') {
-                            if (node.shape.type === 'SwimLane') {
-                                let wrapper = node.wrapper.children[0];
-                                let child = wrapper.rows[wrapper.rows.length - 1].cells[0];
-                                this.select(this.diagram.nameTable[child.children[0].children[0].id]);
-                            }
-                            else {
-                                for (let i = 0; i < this.diagram.nodes.length; i++) {
-                                    let obj = this.diagram.nodes[i];
-                                    if (obj.rowIndex === node.rows.length - 1 && obj.columnIndex === 0) {
-                                        this.select(obj);
-                                        break;
-                                    }
+                            for (let i = 0; i < this.diagram.nodes.length; i++) {
+                                let obj = this.diagram.nodes[i];
+                                if (obj.rowIndex === node.rows.length - 1 && obj.columnIndex === 0) {
+                                    this.select(obj);
+                                    break;
                                 }
                             }
                         }
                     }
                     else {
                         if (corner === 'ResizeEast') {
-                            if (node.shape.type === 'SwimLane') {
-                                let wrapper;
-                                let child;
-                                wrapper = node.wrapper.children[0];
-                                child = wrapper.rows[wrapper.rows.length - 1].cells[wrapper.rows[wrapper.rows.length - 1].cells.length - 1];
-                                this.select(this.diagram.nameTable[child.children[0].id]);
-                            }
-                            else {
-                                for (let i = 0; i < this.diagram.nodes.length; i++) {
-                                    let obj = this.diagram.nodes[i];
-                                    if (obj.rowIndex === 1 && obj.columnIndex === node.columns.length - 1) {
-                                        this.select(obj);
-                                        break;
-                                    }
+                            for (let i = 0; i < this.diagram.nodes.length; i++) {
+                                let obj = this.diagram.nodes[i];
+                                if (obj.rowIndex === 1 && obj.columnIndex === node.columns.length - 1) {
+                                    this.select(obj);
+                                    break;
                                 }
                             }
                         }
@@ -24093,29 +27066,7 @@ class CommandHandler {
                 }
             }
             else {
-                if (selector.nodes[0].shape.type === 'SwimLane') {
-                    node = selector.nodes[0];
-                    let wrapper;
-                    let child;
-                    let index;
-                    if ((corner === 'ResizeSouth' && selector.nodes[0].shape.orientation === 'Vertical')) {
-                        wrapper = node.wrapper.children[0];
-                        child = wrapper.rows[wrapper.rows.length - 1].cells[0];
-                        this.select(this.diagram.nameTable[child.children[0].id]);
-                    }
-                    else if (corner === 'ResizeEast') {
-                        wrapper = node.wrapper.children[0];
-                        index = (selector.nodes[0].shape.header) ? 1 : 0;
-                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
-                        this.select(this.diagram.nameTable[child.children[0].id]);
-                    }
-                    else if ((corner === 'ResizeSouth' && selector.nodes[0].shape.orientation === 'Horizontal')) {
-                        wrapper = node.wrapper.children[0];
-                        index = wrapper.rows.length - 1;
-                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
-                        this.select(this.diagram.nameTable[child.children[0].id]);
-                    }
-                }
+                swimLaneSelection(this.diagram, selector.nodes[0], corner);
             }
         }
     }
@@ -24209,7 +27160,7 @@ class DiagramScroller {
     updateScrollOffsets(hOffset, vOffset) {
         let offsetX = 0;
         let offsetY = 0;
-        let pageBounds = this.getPageBounds();
+        let pageBounds = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -24232,7 +27183,7 @@ class DiagramScroller {
     /** @private */
     setScrollOffset(hOffset, vOffset) {
         this.scrolled = false;
-        let pageBounds = this.getPageBounds();
+        let pageBounds = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -24352,7 +27303,7 @@ class DiagramScroller {
     }
     /** @private */
     setSize() {
-        let pageBounds = this.getPageBounds();
+        let pageBounds = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -24390,8 +27341,9 @@ class DiagramScroller {
      * To get page pageBounds
      * @private
      */
-    getPageBounds(boundingRect, region) {
+    getPageBounds(boundingRect, region, hasPadding) {
         let rect = new Rect();
+        let pageBounds;
         if (region !== 'Content' && this.diagram.pageSettings.width !== null && this.diagram.pageSettings.height !== null) {
             let width = this.diagram.pageSettings.width;
             let height = this.diagram.pageSettings.height;
@@ -24416,12 +27368,20 @@ class DiagramScroller {
                     negheight = this.diagram.pageSettings.height * x;
                 }
             }
-            return new Rect((-negwidth), (-negheight), width + negwidth, height + negheight);
+            pageBounds = new Rect((-negwidth), (-negheight), width + negwidth, height + negheight);
         }
         else {
             let origin = boundingRect ? undefined : 0;
-            return this.diagram.spatialSearch.getPageBounds(origin, origin);
+            pageBounds = this.diagram.spatialSearch.getPageBounds(origin, origin);
         }
+        if (hasPadding) {
+            let scrollpadding = this.diagram.scrollSettings.padding;
+            pageBounds.x -= scrollpadding.left;
+            pageBounds.y -= scrollpadding.top;
+            pageBounds.width += (scrollpadding.left + scrollpadding.right);
+            pageBounds.height += (scrollpadding.top + scrollpadding.bottom);
+        }
+        return pageBounds;
     }
     /**
      * To get page break when PageBreak is set as true
@@ -24503,12 +27463,15 @@ class DiagramScroller {
             let matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
             translateMatrix(matrix, this.horizontalOffset, this.verticalOffset);
-            focusPoint = focusPoint || { x: this.viewPortWidth / 2, y: this.viewPortHeight / 2 };
+            focusPoint = focusPoint || {
+                x: (this.viewPortWidth / 2 - this.horizontalOffset) / this.currentZoom,
+                y: (this.viewPortHeight / 2 - this.verticalOffset) / this.currentZoom
+            };
             focusPoint = transformPointByMatrix(matrix, focusPoint);
             if ((this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom &&
                 (this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom) {
                 this.currentZoom *= factor;
-                let pageBounds = this.getPageBounds();
+                let pageBounds = this.getPageBounds(undefined, undefined, true);
                 pageBounds.x *= this.currentZoom;
                 pageBounds.y *= this.currentZoom;
                 //target Matrix
@@ -24561,7 +27524,7 @@ class DiagramScroller {
             || (this.diagram.nodes.length > 0 || this.diagram.connectors.length > 0)) {
             mode = mode ? mode : 'Page';
             if (region !== 'CustomBounds') {
-                bounds = this.getPageBounds(true, region);
+                bounds = this.getPageBounds(true, region, true);
             }
             let scale = { x: 0, y: 0 };
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
@@ -25194,65 +28157,32 @@ class SpatialSearch {
     }
 }
 
-var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Defines the combination of keys and modifier keys
+ * Defines the serialization settings of diagram
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ * let diagram: Diagram = new Diagram({
+ * ...
+ * serializationSettings: { preventDefaults: true },
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ * @default {}
  */
-class KeyGesture extends ChildProperty {
+class SerializationSettings extends ChildProperty {
 }
-__decorate$18([
-    Property()
-], KeyGesture.prototype, "key", void 0);
-__decorate$18([
-    Property()
-], KeyGesture.prototype, "keyModifiers", void 0);
-/**
- * Defines a command and a key gesture to define when the command should be executed
- */
-class Command extends ChildProperty {
-}
-__decorate$18([
-    Property('')
-], Command.prototype, "name", void 0);
-__decorate$18([
-    Property()
-], Command.prototype, "canExecute", void 0);
-__decorate$18([
-    Property()
-], Command.prototype, "execute", void 0);
-__decorate$18([
-    Complex({}, KeyGesture)
-], Command.prototype, "gesture", void 0);
-__decorate$18([
-    Property('')
-], Command.prototype, "parameter", void 0);
-/**
- * Defines the collection of commands and the corresponding key gestures
- */
-class CommandManager extends ChildProperty {
-}
-__decorate$18([
-    Collection([], Command)
-], CommandManager.prototype, "commands", void 0);
-/**
- * Defines the behavior of the context menu items
- */
-class ContextMenuSettings extends ChildProperty {
-}
-__decorate$18([
-    Property()
-], ContextMenuSettings.prototype, "show", void 0);
-__decorate$18([
-    Property()
-], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
-__decorate$18([
-    Property()
-], ContextMenuSettings.prototype, "items", void 0);
+__decorate$19([
+    Property(false)
+], SerializationSettings.prototype, "preventDefaults", void 0);
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -25277,6 +28207,8 @@ class Diagram extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /** @private */
+        this.version = 17.1;
         /** @private */
         this.connectorTable = {};
         /** @private */
@@ -25314,6 +28246,9 @@ class Diagram extends Component {
             }
             if (child.shape && child.shape.type === 'UmlActivity') {
                 setUMLActivityDefaults(child, node);
+            }
+            if (child.shape && child.shape.type === 'SwimLane') {
+                setSwimLaneDefaults(child, node);
             }
         }
     }
@@ -25469,6 +28404,11 @@ class Diagram extends Component {
                             let index = Number(key);
                             this.contextMenuSettings.items[index] = items[index];
                         }
+                    }
+                    break;
+                case 'serializationSettings':
+                    if (newProp.serializationSettings.preventDefaults !== undefined) {
+                        this.serializationSettings.preventDefaults = newProp.serializationSettings.preventDefaults;
                     }
                     break;
             }
@@ -25667,6 +28607,13 @@ class Diagram extends Component {
      */
     getModuleName() {
         return 'diagram';
+    }
+    /**
+     * @private
+     * Returns the name of class Diagram
+     */
+    getClassName() {
+        return 'Diagram';
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -26086,6 +29033,13 @@ class Diagram extends Component {
             if (obj.nodes && obj.nodes.length) {
                 for (let node of obj.nodes) {
                     this.drag(node, tx, ty);
+                    if (node.parentId) {
+                        let parent = this.nameTable[node.parentId];
+                        if (parent.isLane) {
+                            let swimlane = this.nameTable[parent.parentId];
+                            updateLaneBoundsAfterAddChild(parent, swimlane, node, this);
+                        }
+                    }
                 }
             }
             if (obj.connectors && obj.connectors.length) {
@@ -26526,7 +29480,8 @@ class Diagram extends Component {
                 if (obj.id !== 'helper') {
                     this.triggerEvent(DiagramEvent.collectionChange, args);
                 }
-                if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group)) {
+                if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
+                    !(this.diagramActions & DiagramAction.PreventHistory)) {
                     let entry = {
                         type: 'CollectionChanged', changeType: 'Insert', undoObject: cloneObject(obj),
                         redoObject: cloneObject(obj), category: 'Internal'
@@ -26708,6 +29663,9 @@ class Diagram extends Component {
         let groupAction = false;
         if (obj) {
             obj = this.nameTable[obj.id];
+            if (obj && obj.shape && obj.shape.type === 'SwimLane') {
+                removeSwimLane(this, obj);
+            }
             if (obj && (canDelete(obj) || (this.diagramActions & DiagramAction.Clear))) {
                 args = {
                     element: obj, cause: this.diagramActions,
@@ -26723,7 +29681,7 @@ class Diagram extends Component {
                             return;
                         }
                     }
-                    if ((!(this.diagramActions & DiagramAction.UndoRedo)) &&
+                    if ((!(this.diagramActions & DiagramAction.UndoRedo)) && !(this.diagramActions & DiagramAction.PreventHistory) &&
                         (obj instanceof Node || obj instanceof Connector)) {
                         let entry = {
                             type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
@@ -26738,11 +29696,13 @@ class Diagram extends Component {
                         if (obj instanceof Node) {
                             this.removeDependentConnector(obj);
                         }
-                        if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj)) {
-                            this.addHistoryEntry(entry);
+                        if (!obj.isLane && !obj.isPhase) {
+                            if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj)) {
+                                this.addHistoryEntry(entry);
+                            }
                         }
                     }
-                    if (obj.children) {
+                    if (obj.children && !obj.isLane && !obj.isPhase) {
                         this.deleteGroup(obj);
                     }
                     if (obj.parentId) {
@@ -26758,6 +29718,17 @@ class Diagram extends Component {
                     if (currentObj instanceof Node) {
                         if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
                             this.bpmnModule.removeBpmnProcesses(currentObj, this);
+                        }
+                        if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
+                            let swimLaneNode = (currentObj.isLane || currentObj.isPhase) ?
+                                this.nameTable[currentObj.parentId] : this.nameTable[currentObj.id];
+                            let grid = swimLaneNode.wrapper.children[0];
+                            if (currentObj.isLane) {
+                                removeLane(this, currentObj, swimLaneNode);
+                            }
+                            else if (currentObj.isPhase) {
+                                removePhase(this, currentObj, swimLaneNode);
+                            }
                         }
                         index = this.nodes.indexOf(currentObj);
                         if (index !== -1) {
@@ -26782,26 +29753,35 @@ class Diagram extends Component {
                     if (isSelected(this, currentObj)) {
                         this.unSelect(currentObj);
                     }
-                    this.removeObjectsFromLayer(obj);
-                    if (this.currentDrawingObject) {
-                        this.currentDrawingObject.wrapper = undefined;
-                    }
-                    delete this.nameTable[obj.id];
-                    this.removeElements(currentObj);
-                    this.updateBridging();
-                    if (this.mode !== 'SVG') {
-                        this.refreshDiagramLayer();
-                    }
-                    if (!(this.diagramActions & DiagramAction.Clear)) {
-                        this.removeFromAQuad(currentObj);
-                        args = {
-                            element: obj, cause: this.diagramActions,
-                            state: 'Changed', type: 'Removal', cancel: false
-                        };
-                        if (obj.id !== 'helper') {
-                            this.triggerEvent(DiagramEvent.collectionChange, args);
+                    if (!currentObj.isPhase) {
+                        this.removeObjectsFromLayer(obj);
+                        if (this.currentDrawingObject) {
+                            this.currentDrawingObject.wrapper = undefined;
                         }
-                        this.resetTool();
+                        delete this.nameTable[obj.id];
+                        if (selectedItems.length > 0 && selectedItems[0].id === currentObj.id && currentObj.parentId) {
+                            let parentnode = this.nameTable[currentObj.parentId];
+                            if (parentnode && parentnode.isLane && this.nameTable[parentnode.parentId].shape.type === 'SwimLane') {
+                                let swimLaneNode = this.nameTable[parentnode.parentId];
+                                removeLaneChildNode(this, swimLaneNode, parentnode, currentObj);
+                            }
+                        }
+                        this.removeElements(currentObj);
+                        this.updateBridging();
+                        if (this.mode !== 'SVG') {
+                            this.refreshDiagramLayer();
+                        }
+                        if (!(this.diagramActions & DiagramAction.Clear)) {
+                            this.removeFromAQuad(currentObj);
+                            args = {
+                                element: obj, cause: this.diagramActions,
+                                state: 'Changed', type: 'Removal', cancel: false
+                            };
+                            if (obj.id !== 'helper') {
+                                this.triggerEvent(DiagramEvent.collectionChange, args);
+                            }
+                            this.resetTool();
+                        }
                     }
                 }
             }
@@ -26868,7 +29848,11 @@ class Diagram extends Component {
             for (let i = 0; i < parentNode.children.length; i++) {
                 if (parentNode.children[i] === id) {
                     parentNode.children.splice(i, 1);
-                    parentNode.wrapper.children.splice(i, 1);
+                    for (let j = 0; j < parentNode.wrapper.children.length; j++) {
+                        if (parentNode.wrapper.children[j].id === id) {
+                            parentNode.wrapper.children.splice(j, 1);
+                        }
+                    }
                 }
             }
             parentNode.wrapper.measure(new Size());
@@ -26879,6 +29863,9 @@ class Diagram extends Component {
     addChild(node, child, index) {
         let id;
         let parentNode = this.nameTable[node.id];
+        if (!parentNode.children) {
+            parentNode.children = [];
+        }
         if (parentNode.children) {
             if (typeof child === 'string') {
                 if (this.nameTable[child]) {
@@ -26909,7 +29896,11 @@ class Diagram extends Component {
                     childNode.offsetX = childNode.wrapper.offsetX;
                     childNode.offsetY = childNode.wrapper.offsetY;
                 }
-                this.updateDiagramObject(parentNode);
+                if (!parentNode.parentId ||
+                    (this.nameTable[parentNode.parentId] &&
+                        this.nameTable[parentNode.parentId].shape.type !== 'SwimLane')) {
+                    this.updateDiagramObject(parentNode);
+                }
             }
         }
     }
@@ -26939,7 +29930,26 @@ class Diagram extends Component {
         this.initHistory();
     }
     startEditCommad() {
-        this.startTextEdit();
+        let laneHeader;
+        let node = (this.selectedItems.nodes[0]) ? this.selectedItems.nodes[0] : undefined;
+        if (node && node instanceof Node) {
+            if (node.isLane && node.parentId) {
+                let swimlane = this.nameTable[node.parentId];
+                let lanes = swimlane.shape.lanes;
+                let canvasId = (node.id.slice(swimlane.id.length));
+                let currentParentId = canvasId.substring(0, canvasId.length - 1);
+                for (let i = 0; i < lanes.length; i++) {
+                    if (node.isLane && currentParentId === lanes[i].id) {
+                        laneHeader = this.nameTable[lanes[i].header.id];
+                    }
+                }
+            }
+            else if (node.shape.type === 'SwimLane' && node.shape.header && node.shape.hasHeader) {
+                let id = node.wrapper.children[0].rows[0].cells[0].children[0].id;
+                laneHeader = this.nameTable[id];
+            }
+        }
+        this.startTextEdit(laneHeader);
     }
     /**
      * Specified annotation to edit mode
@@ -26974,9 +29984,11 @@ class Diagram extends Component {
                 }
                 if (!textWrapper) {
                     if (node.shape.type !== 'Text' && node.annotations.length === 0) {
-                        this.activeLabel.isGroup = true;
-                        this.startGroupAction();
-                        this.addLabels(node, [{ id: randomId(), content: '' }]);
+                        if (!(node.constraints & NodeConstraints.ReadOnly)) {
+                            this.activeLabel.isGroup = true;
+                            this.startGroupAction();
+                            this.addLabels(node, [{ id: randomId(), content: '' }]);
+                        }
                     }
                     if (!id && ((node.shape.type !== 'Text' && node.annotations.length > 0) || (node.shape.type === 'Text'))) {
                         id = (node.shape.type === 'Text') ? (node.wrapper.children[0].id).split('_')[1] : node.annotations[0].id;
@@ -27093,7 +30105,7 @@ class Diagram extends Component {
         this.protectPropertyChange(true);
         let viewPort = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.organizationalChartModule) {
-            layout = this.organizationalChartModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id);
+            layout = this.organizationalChartModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
             update = true;
             if (this.layoutAnimateModule && layout.rootNode && !this.diagramActions) {
                 this.updateNodeExpand(layout.rootNode, layout.rootNode.isExpanded);
@@ -27123,14 +30135,16 @@ class Diagram extends Component {
             let connectors = {};
             for (let obj of this.nodes) {
                 let node = obj;
-                if (!this.preventNodesUpdate) {
+                if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {
                     this.updateIcon(node);
                     this.updateDefaultLayoutIcons(node);
                 }
+                this.preventNodesUpdate = true;
                 this.nodePropertyChange(node, {}, { offsetX: node.offsetX, offsetY: node.offsetY }, true);
+                this.preventNodesUpdate = false;
                 node.wrapper.measure(new Size(node.wrapper.width, node.wrapper.height));
                 node.wrapper.arrange(node.wrapper.desiredSize);
-                this.updateDiagramObject(node);
+                this.updateDiagramObject(node, true);
                 if (node.inEdges.length > 0) {
                     for (let j = 0; j < node.inEdges.length; j++) {
                         let connector = this.nameTable[node.inEdges[j]];
@@ -27152,7 +30166,7 @@ class Diagram extends Component {
                 connector.wrapper.arrange(connector.wrapper.desiredSize);
                 this.updateConnectorAnnotation(connector);
                 this.updateQuad(connector);
-                this.updateDiagramObject(connector);
+                this.updateDiagramObject(connector, true);
             }
             this.preventUpdate = false;
             this.updatePage();
@@ -27177,6 +30191,72 @@ class Diagram extends Component {
      */
     loadDiagram(data) {
         return deserialize(data, this);
+    }
+    /**
+     * To  get the html diagram content
+     * @param styleSheets defines the collection of style files to be considered while exporting.
+     */
+    getDiagramContent(styleSheets) {
+        if (this.printandExportModule) {
+            let data = this.printandExportModule.getDiagramContent(styleSheets);
+            return data;
+        }
+        return '';
+    }
+    /**
+     * To export diagram native/html image
+     * @param image defines image content to be exported.
+     * @param options defines the image properties.
+     */
+    exportImage(image, options) {
+        if (this.printandExportModule) {
+            this.printandExportModule.exportImages(image, options);
+        }
+    }
+    /**
+     * To print native/html nodes of diagram
+     * @param image defines image content.
+     * @param options defines the properties of the image
+     */
+    printImage(image, options) {
+        if (this.printandExportModule) {
+            options.printOptions = true;
+            this.printandExportModule.exportImages(image, options);
+        }
+    }
+    /**
+     * To limit the history entry of the diagram
+     * @param stackLimit defines stackLimit of the history manager.
+     */
+    setStackLimit(stackLimit) {
+        if (this.undoRedoModule && stackLimit) {
+            this.historyManager.stackLimit = stackLimit;
+            this.undoRedoModule.applyLimit(this.historyManager.currentEntry, stackLimit, this, true);
+        }
+    }
+    /**
+     * To clear history of the diagram
+     */
+    clearHistory() {
+        if (this.undoRedoModule) {
+            this.undoRedoModule.clearHistory(this);
+        }
+    }
+    /**
+     * To get the bound of the diagram
+     */
+    getDiagramBounds() {
+        if (this.printandExportModule) {
+            let bounds = this.printandExportModule.getDiagramBounds('', {});
+            bounds.width = bounds.width > this.scrollSettings.viewPortWidth ?
+                bounds.width + (bounds.x > 0 ? bounds.x : 0) : this.scrollSettings.viewPortWidth;
+            bounds.height = bounds.height > this.scrollSettings.viewPortHeight ?
+                bounds.height + (bounds.y > 0 ? bounds.y : 0) : this.scrollSettings.viewPortHeight;
+            bounds.x = bounds.x > 0 ? 0 : bounds.x;
+            bounds.y = bounds.y > 0 ? 0 : bounds.y;
+            return bounds;
+        }
+        return new Rect();
     }
     /**
      * To export Diagram
@@ -27263,7 +30343,7 @@ class Diagram extends Component {
                 if (obj.children) {
                     let node = obj;
                     for (let i = 0; i < node.wrapper.children.length; i++) {
-                        if (node.wrapper.children[i].id === 'group_container') {
+                        if (node.wrapper.children[i].id === node.id + 'group_container') {
                             let container = node.wrapper.children[i];
                             container.children.push(obj.initAnnotationWrapper(obj.annotations[obj.annotations.length - 1], this.element.id));
                         }
@@ -27295,6 +30375,25 @@ class Diagram extends Component {
         obj.wrapper.arrange(canvas.desiredSize);
         this.updateDiagramObject(obj);
         this.protectPropertyChange(false);
+    }
+    /**
+     * Add dynamic Lanes to swimLane at runtime
+     */
+    addLanes(node, lane, index) {
+        for (let i = 0; i < lane.length; i++) {
+            addLane(this, node, lane[i], index);
+            if (index !== undefined) {
+                index += 1;
+            }
+        }
+    }
+    /**
+     * Add a phase to a swimLane at runtime
+     */
+    addPhases(node, phases) {
+        for (let i = 0; i < phases.length; i++) {
+            addPhase(this, node, phases[i]);
+        }
     }
     removelabelExtension(obj, labels, j, wrapper) {
         for (let i = 0; i < wrapper.children.length; i++) {
@@ -27909,13 +31008,19 @@ class Diagram extends Component {
                 if (sourceNode !== undefined && canOutConnect(sourceNode)) {
                     obj.sourceWrapper = this.getEndNodeWrapper(sourceNode, obj, true);
                     if (obj.sourcePortID) {
-                        obj.sourcePortWrapper = this.getWrapper(sourceNode.wrapper, obj.sourcePortID);
+                        let port = this.getConnectedPort(sourceNode, obj);
+                        if (port && port.constraints && !(port.constraints & PortConstraints.None)) {
+                            obj.sourcePortWrapper = this.getWrapper(sourceNode.wrapper, obj.sourcePortID);
+                        }
                     }
                 }
                 if (targetNode !== undefined && canInConnect(targetNode)) {
                     obj.targetWrapper = this.getEndNodeWrapper(targetNode, obj, false);
                     if (obj.targetPortID) {
-                        obj.targetPortWrapper = this.getWrapper(targetNode.wrapper, obj.targetPortID);
+                        let targetPort = this.getConnectedPort(targetNode, obj);
+                        if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None)) {
+                            obj.targetPortWrapper = this.getWrapper(targetNode.wrapper, obj.targetPortID);
+                        }
                     }
                 }
                 if (!independentObj) {
@@ -27971,6 +31076,19 @@ class Diagram extends Component {
         if (obj.visible === false) {
             this.updateElementVisibility(obj.wrapper, obj, false);
         }
+    }
+    getConnectedPort(node, connector) {
+        if (node && node.ports) {
+            for (let port of node.ports) {
+                if (port.id === connector.sourcePortID) {
+                    return port;
+                }
+                else if (port.id === connector.targetPortID) {
+                    return port;
+                }
+            }
+        }
+        return null;
     }
     scaleObject(obj, size, isWidth) {
         let actualSize = isWidth ? obj.wrapper.actualSize.width : obj.wrapper.actualSize.height;
@@ -28101,7 +31219,7 @@ class Diagram extends Component {
                     }
                 }
             }
-            portContainer.id = 'group_container';
+            portContainer.id = obj.id + 'group_container';
             portContainer.style.fill = 'none';
             portContainer.style.strokeColor = 'none';
             portContainer.horizontalAlignment = 'Stretch';
@@ -28139,60 +31257,18 @@ class Diagram extends Component {
         obj.initAnnotations(this.getDescription, container, this.element.id, canVitualize(this) ? true : false);
         obj.initPorts(this.getDescription, container);
         obj.initIcons(this.getDescription, this.layout, container, diagramId);
-        canvas.measure(new Size(obj.width, obj.height));
-        if (canvas instanceof GridPanel) {
-            canvas.arrange(canvas.desiredSize, true);
+        if (obj.shape.type === 'SwimLane' && obj.wrapper && obj.wrapper.children.length > 0 &&
+            obj.wrapper.children[0] instanceof GridPanel) {
+            swimLaneMeasureAndArrange(obj);
+            arrangeChildNodesInSwimLane(this, obj);
         }
         else {
-            canvas.arrange(canvas.desiredSize);
-        }
-        if (obj.shape.type === 'SwimLane') {
-            let nodesCollection = [];
-            let rowvalue;
-            let orientation = obj.shape.orientation === 'Horizontal' ? true : false;
-            if (orientation) {
-                rowvalue = (obj.shape.header ? 1 : 0)
-                    + (obj.shape.phases.length > 0 ? 1 : 0);
+            canvas.measure(new Size(obj.width, obj.height));
+            if (canvas instanceof GridPanel) {
+                canvas.arrange(canvas.desiredSize, true);
             }
             else {
-                rowvalue = (obj.shape.header ? 1 : 0);
-            }
-            let columnValue;
-            if (orientation) {
-                columnValue = 0;
-            }
-            else {
-                columnValue = obj.shape.phases.length > 0 ? 1 : 0;
-            }
-            let grid = obj.wrapper.children[0];
-            if (obj.shape.lanes.length > 0) {
-                for (let i = 0; i < obj.shape.lanes.length; i++) {
-                    for (let j = 0; j < obj.shape.lanes[i].childNodes.length; j++) {
-                        let node = obj.shape.lanes[i].childNodes[j];
-                        node.parentId = grid.rows[rowvalue].cells[columnValue].children[0].id;
-                        this.initObject(node);
-                        this.nodes.push(node);
-                        nodesCollection.push(node);
-                        let canvas = node.wrapper;
-                        if (orientation) {
-                            columnValue = 0;
-                        }
-                        if (orientation && canvas.actualSize.width + canvas.margin.left > grid.rows[rowvalue].cells[0].actualSize.width) {
-                            columnValue++;
-                            canvas.margin.left = canvas.margin.left - grid.rows[rowvalue].cells[0].actualSize.width;
-                        }
-                        canvas.measure(new Size(node.width, node.height));
-                        canvas.arrange(canvas.desiredSize);
-                        grid.rows[rowvalue].cells[columnValue].children[0].children.push(canvas);
-                    }
-                    orientation ? rowvalue++ : columnValue++;
-                }
-            }
-            grid.measure(new Size(obj.width, obj.height));
-            grid.arrange(canvas.desiredSize);
-            for (let i = 0; i < nodesCollection.length; i++) {
-                nodesCollection[i].offsetX = nodesCollection[i].wrapper.offsetX;
-                nodesCollection[i].offsetY = nodesCollection[i].wrapper.offsetY;
+                canvas.arrange(canvas.desiredSize);
             }
         }
         if (obj.wrapper.flip !== 'None' && obj.wrapper.elementActions & ElementAction.ElementIsGroup) {
@@ -28441,7 +31517,7 @@ class Diagram extends Component {
         return index;
     }
     /** @private */
-    updateDiagramObject(obj) {
+    updateDiagramObject(obj, canIgnoreIndex) {
         let view;
         for (let temp of this.views) {
             view = this.views[temp];
@@ -28452,7 +31528,7 @@ class Diagram extends Component {
                     if (this.diagramActions & DiagramAction.Interactions) {
                         this.updateCanupdateStyle(obj.wrapper.children, true);
                     }
-                    this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined, this.getZindexPosition(obj, view.element.id));
+                    this.diagramRenderer.updateNode(obj.wrapper, diagramElementsLayer, htmlLayer, undefined, canIgnoreIndex ? undefined : this.getZindexPosition(obj, view.element.id));
                     this.updateCanupdateStyle(obj.wrapper.children, true);
                 }
             }
@@ -28571,7 +31647,7 @@ class Diagram extends Component {
             let changed = false;
             for (let i = 0; i < ports.length; i++) {
                 portElement = this.getWrapper(node.wrapper, ports[i].id);
-                if (portVisibility & PortVisibility.Hover || portVisibility & PortVisibility.Connect) {
+                if ((portVisibility & PortVisibility.Hover || portVisibility & PortVisibility.Connect)) {
                     if (checkPortRestriction(ports[i], portVisibility)) {
                         portElement.visible = !inverse;
                         changed = true;
@@ -28669,7 +31745,7 @@ class Diagram extends Component {
                 this.scroller.oldCollectionObjects : undefined;
             for (let node of Object.keys(id || layer.zIndexTable)) {
                 let renderNode = id ? this.nameTable[id[node]] : this.nameTable[layer.zIndexTable[node]];
-                if (!(renderNode.parentId) &&
+                if (renderNode && !(renderNode.parentId) &&
                     !(renderNode.processId)) {
                     let transformValue = {
                         tx: this.scroller.transform.tx,
@@ -29004,10 +32080,14 @@ class Diagram extends Component {
         }
     }
     /** @private */
-    renderSelector(multipleSelection) {
+    renderSelector(multipleSelection, isSwimLane) {
         let size = new Size();
         let selectorModel = this.selectedItems;
         let selectorConstraints = selectorModel.constraints;
+        let rendererActions = this.diagramRenderer.rendererActions;
+        this.diagramRenderer.rendererActions = this.currentSymbol ?
+            this.addConstraints(rendererActions, RendererAction.DrawSelectorBorder) :
+            this.removeConstraints(rendererActions, RendererAction.DrawSelectorBorder);
         this.clearSelectorLayer();
         if (this.commandHandler.hasSelection()) {
             if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
@@ -29045,17 +32125,22 @@ class Diagram extends Component {
             }
             else if (selectorModel.nodes.length + selectorModel.connectors.length === 1) {
                 if (selectorModel.nodes[0] instanceof Node) {
-                    if (checkParentAsContainer(this, selectorModel.nodes[0])) {
-                        let stack = selectorModel.nodes[0];
-                        if (stack.shape.type !== 'UmlClassifier' && (!(stack.parentId || this.nameTable[stack.parentId]
-                            && this.nameTable[stack.parentId].shape.type === 'UmlClassifier'))) {
-                            selectorModel.nodes[0].constraints &= ~(NodeConstraints.Rotate | NodeConstraints.HideThumbs);
+                    let node = selectorModel.nodes[0];
+                    if (checkParentAsContainer(this, node)) {
+                        if (!isSwimLane && (node.shape.type !== 'UmlClassifier' && !(node.parentId &&
+                            this.nameTable[node.parentId]
+                            && this.nameTable[node.parentId].shape.type === 'UmlClassifier'))) {
+                            if (!(node.container && (node.container.type === 'Canvas' || node.container.type === 'Grid'))) {
+                                selectorModel.nodes[0].constraints &= ~(NodeConstraints.Rotate | NodeConstraints.HideThumbs);
+                            }
                             selectorModel.thumbsConstraints &= ~ThumbsConstraints.Rotate;
                         }
                     }
-                    this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel.nodes[0]), (selectorModel.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
+                    let constraints = isSwimLane ? true : ((node.constraints & NodeConstraints.HideThumbs) ? true : false);
+                    let swimlane = (node.shape.type === 'SwimLane' || node.isLane || node.isPhase || isSwimLane) ? true : false;
+                    this.diagramRenderer.renderResizeHandle(selectorModel.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(node), constraints, swimlane);
                 }
-                else if (selectorModel.connectors[0] instanceof Connector) {
+                else if (selectorModel.connectors[0] instanceof Connector && canDrawThumbs(this.diagramRenderer.rendererActions)) {
                     let connector = selectorModel.connectors[0];
                     this.diagramRenderer.renderEndPointHandle(connector, selectorElement, selectorModel.thumbsConstraints, selectorModel.constraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
                 }
@@ -29110,13 +32195,13 @@ class Diagram extends Component {
                     this.renderSelectorForAnnotation(selector, selectorEle);
                 }
                 else if (selector.nodes.length + selector.connectors.length === 1) {
-                    if (selector.connectors[0] instanceof Connector) {
+                    if (selector.connectors[0] instanceof Connector && canDrawThumbs(this.diagramRenderer.rendererActions)) {
                         let connector = selector.connectors[0];
                         this.diagramRenderer.renderEndPointHandle(connector, selectorEle, selector.thumbsConstraints, selectorConstraints, this.scroller.transform, connector.sourceWrapper !== undefined, connector.targetWrapper !== undefined, (this.connectorEditingToolModule && canDragSegmentThumb(connector)) ? true : false);
                     }
                     else if (selector.nodes[0] instanceof Node) {
+                        let stackPanel = selector.nodes[0];
                         if (checkParentAsContainer(this, selector.nodes[0])) {
-                            let stackPanel = selector.nodes[0];
                             if (stackPanel.shape.type !== 'UmlClassifier' && !(stackPanel.parentId &&
                                 this.nameTable[stackPanel.parentId]
                                 && this.nameTable[stackPanel.parentId].shape.type === 'UmlClassifier')) {
@@ -29127,7 +32212,9 @@ class Diagram extends Component {
                                 selector.thumbsConstraints &= ~ThumbsConstraints.Rotate;
                             }
                         }
-                        this.diagramRenderer.renderResizeHandle(selector.wrapper.children[0], selectorEle, selector.thumbsConstraints, this.scroller.currentZoom, selector.constraints, this.scroller.transform, canHideResizers, canMove(selector.nodes[0]), (selector.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false);
+                        let swimlane = (stackPanel.shape.type === 'SwimLane' || stackPanel.isLane ||
+                            stackPanel.isPhase) ? true : false;
+                        this.diagramRenderer.renderResizeHandle(selector.wrapper.children[0], selectorEle, selector.thumbsConstraints, this.scroller.currentZoom, selector.constraints, this.scroller.transform, canHideResizers, canMove(selector.nodes[0]), (selector.nodes[0].constraints & NodeConstraints.HideThumbs) ? true : false, swimlane);
                     }
                 }
                 else {
@@ -29181,17 +32268,24 @@ class Diagram extends Component {
     /** @private */
     clearSelectorLayer() {
         let adornerSvg = getAdornerLayerSvg(this.element.id);
-        let highlighter = adornerSvg.getElementById(adornerSvg.id + '_highlighter');
-        let selectionRect = adornerSvg.getElementById(this.adornerLayer.id + '_selected_region');
-        if (selectionRect) {
-            selectionRect.parentNode.removeChild(selectionRect);
+        if (!this.currentSymbol) {
+            let selectionRect = adornerSvg.getElementById(this.adornerLayer.id + '_selected_region');
+            if (selectionRect) {
+                selectionRect.parentNode.removeChild(selectionRect);
+            }
+            this.clearHighlighter();
+            let childNodes = getSelectorElement(this.element.id).childNodes;
+            let child;
+            for (let i = childNodes.length; i > 0; i--) {
+                child = childNodes[i - 1];
+                child.parentNode.removeChild(child);
+            }
         }
-        this.clearHighlighter();
-        let childNodes = getSelectorElement(this.element.id).childNodes;
-        let child;
-        for (let i = childNodes.length; i > 0; i--) {
-            child = childNodes[i - 1];
-            child.parentNode.removeChild(child);
+        else {
+            let symbolBorder = adornerSvg.getElementById('borderRect_symbol');
+            if (symbolBorder) {
+                symbolBorder.parentNode.removeChild(symbolBorder);
+            }
         }
     }
     /** @private */
@@ -29241,6 +32335,7 @@ class Diagram extends Component {
     }
     endEditCommand() {
         this.endEdit();
+        this.textEditing = false;
     }
     /**
      * @private
@@ -29286,9 +32381,15 @@ class Diagram extends Component {
                         && text.indexOf('~') === -1 && node.id.indexOf('_umlClass_header') === -1) {
                         text = ' + ' + text;
                     }
+                    if (node.isLane) {
+                        this.protectPropertyChange(true);
+                    }
                     annotation.content = text;
                     this.dataBind();
                     this.updateSelector();
+                    if (node.isLane) {
+                        this.protectPropertyChange(false);
+                    }
                 }
                 if (deleteNode) {
                     this.removeObjectsFromLayer(node);
@@ -29302,6 +32403,31 @@ class Diagram extends Component {
                         this.commandHandler.select(this.nameTable[node.id]);
                     }
                 }
+            }
+            if (this.selectedItems.nodes.length) {
+                let selectedNode = this.nameTable[this.activeLabel.parentId];
+                let swimLaneNode = this.nameTable[selectedNode.parentId];
+                if ((swimLaneNode && swimLaneNode.shape.type === 'SwimLane') || (selectedNode.shape.type === 'SwimLane')) {
+                    let laneHeader = 'LaneHeaderParent';
+                    let phaseHeader = 'PhaseHeaderParent';
+                    if ((selectedNode.shape.type === 'SwimLane')) {
+                        swimLaneNode = this.nameTable[this.activeLabel.parentId];
+                        selectedNode = node;
+                    }
+                    if ((selectedNode.isLane || selectedNode.isPhase)) {
+                        let collection = selectedNode.isLane ?
+                            swimLaneNode.shape.lanes : swimLaneNode.shape.phases;
+                        for (let j = 0; j < collection.length; j++) {
+                            if (collection[j].id === (selectedNode[laneHeader] || selectedNode[phaseHeader])) {
+                                collection[j].header.annotation.content = selectedNode.annotations[0].content;
+                            }
+                        }
+                    }
+                    else if (selectedNode.isHeader && swimLaneNode.shape.hasHeader) {
+                        swimLaneNode.shape.header.annotation.content = selectedNode.annotations[0].content;
+                    }
+                }
+                this.dataBind();
             }
             textWrapper.visible = true;
             this.updateDiagramObject(node);
@@ -29431,6 +32557,151 @@ class Diagram extends Component {
                 this.updateSelector();
                 update = true;
             }
+        }
+        this.swimLaneNodePropertyChange(actualObject, oldObject, node, update);
+        return update;
+    }
+    /* tslint:disable */
+    swimLaneNodePropertyChange(actualObject, oldObject, node, update) {
+        if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol) {
+            if (oldObject.shape) {
+                let shape = node.shape;
+                let actualShape = actualObject.shape;
+                let orientation = (actualShape.orientation === 'Horizontal') ? true : false;
+                let padding = actualShape.padding;
+                let oldShape = oldObject.shape;
+                let grid = actualObject.wrapper.children[0];
+                let oldObjects;
+                let newObjects;
+                let id;
+                if (oldShape.lanes || oldShape.phases) {
+                    if (oldShape.lanes) {
+                        for (let count of Object.keys(shape.lanes)) {
+                            let indexValue = Number(count);
+                            let lane = oldShape.lanes[indexValue];
+                            let laneIndex;
+                            let newLane = shape.lanes[indexValue];
+                            if (newLane && newLane.header) {
+                                id = actualShape.lanes[indexValue].header.id;
+                                oldObjects = lane.header;
+                                newObjects = newLane.header;
+                                this.nodePropertyChange(this.nameTable[id], oldObjects, newObjects);
+                            }
+                            if (lane.children) {
+                                for (let childNodeIndex of Object.keys(lane.children)) {
+                                    id = actualShape.lanes[indexValue].children[Number(childNodeIndex)].id;
+                                    let node = this.nameTable[id];
+                                    oldObjects = lane.children[Number(childNodeIndex)];
+                                    newObjects = newLane.children[Number(childNodeIndex)];
+                                    this.nodePropertyChange(node, oldObjects, newObjects);
+                                }
+                            }
+                            if (lane.width && !orientation) {
+                                laneIndex = (actualShape.phases && actualShape.phaseSize) ? indexValue + 1 : indexValue;
+                                grid.updateColumnWidth(laneIndex, newLane.width, true, padding);
+                            }
+                            if (lane.height && orientation) {
+                                laneIndex = (actualShape.header && actualShape.hasHeader) ? indexValue + 1 : indexValue;
+                                laneIndex += (actualShape.phases && actualShape.phaseSize) ? 1 : 0;
+                                grid.updateRowHeight(laneIndex, newLane.height, true, padding);
+                            }
+                        }
+                    }
+                    if (shape.phases) {
+                        for (let key of Object.keys(shape.phases)) {
+                            let indexValue = Number(key);
+                            let phase = shape.phases[indexValue];
+                            let size;
+                            let rowIndex = (actualShape.header && actualShape.hasHeader) ? 1 : 0;
+                            if (phase && phase.header) {
+                                id = actualShape.phases[indexValue].header.id;
+                                oldObjects = oldShape.phases[indexValue].header;
+                                newObjects = phase.header;
+                                this.nodePropertyChange(this.nameTable[id], oldObjects, newObjects);
+                            }
+                            if (phase.offset) {
+                                if (indexValue === 0) {
+                                    size = phase.offset;
+                                }
+                                else {
+                                    let previousPhase = actualShape.phases[indexValue - 1];
+                                    size = phase.offset - previousPhase.offset;
+                                    if (size <= 0) {
+                                        size = phase.offset;
+                                    }
+                                }
+                                if (orientation) {
+                                    grid.updateColumnWidth(indexValue, size, true, padding);
+                                    updatePhaseMaxWidth(actualObject, this, grid.rows[rowIndex].cells[indexValue], indexValue);
+                                }
+                                else {
+                                    grid.updateRowHeight(rowIndex + indexValue, size, true, padding);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (shape.phaseSize !== undefined && actualShape.phases.length) {
+                    if (shape.phaseSize === 0 || oldShape.phaseSize === 0) {
+                        if (oldShape.phaseSize) {
+                            if (orientation) {
+                                grid.removeRow((actualShape.header && actualShape.hasHeader) ? 1 : 0);
+                                actualObject.height = actualObject.wrapper.height = grid.height;
+                            }
+                            else {
+                                if (actualShape.header && actualShape.hasHeader) {
+                                    grid.rows[0].cells[1].children = grid.rows[0].cells[0].children;
+                                    grid.rows[0].cells[1].columnSpan = grid.rows[0].cells[0].columnSpan - 1;
+                                    grid.rows[0].cells[0].children = [];
+                                }
+                                grid.removeColumn(0);
+                            }
+                        }
+                        else {
+                            if (orientation) {
+                                let rowDef = new RowDefinition();
+                                rowDef.height = shape.phaseSize;
+                                grid.addRow((actualShape.header && actualShape.hasHeader) ? 1 : 0, rowDef, true);
+                                actualObject.height = actualObject.wrapper.height += shape.phaseSize;
+                            }
+                            else {
+                                let colDef = new ColumnDefinition();
+                                colDef.width = shape.phaseSize;
+                                grid.addColumn(0, colDef, true);
+                                if (actualShape.header && actualShape.hasHeader) {
+                                    grid.rows[0].cells[0].children = grid.rows[0].cells[1].children;
+                                    grid.rows[0].cells[1].children = [];
+                                    grid.rows[0].cells[1].columnSpan = 1;
+                                    grid.rows[0].cells[1].minWidth = undefined;
+                                    grid.rows[0].cells[0].columnSpan = actualShape.lanes.length + 1;
+                                }
+                            }
+                            for (let k = 0; k < actualShape.phases.length; k++) {
+                                if (actualShape.phases[k].id === '') {
+                                    actualShape.phases[k].id = randomId();
+                                }
+                                phaseDefine(grid, this, actualObject, (actualShape.header && actualShape.hasHeader) ? 1 : 0, orientation, k);
+                            }
+                        }
+                    }
+                    else {
+                        if (orientation) {
+                            grid.updateRowHeight((actualShape.header && actualShape.hasHeader) ? 1 : 0, shape.phaseSize, false);
+                        }
+                        else {
+                            grid.updateColumnWidth(0, shape.phaseSize, false);
+                        }
+                    }
+                }
+                if (actualShape.header && actualShape.hasHeader && oldShape.header) {
+                    let id = grid.rows[0].cells[0].children[0].id;
+                    let headerNode = this.nameTable[id];
+                    this.nodePropertyChange(headerNode, (oldShape.header), shape.header);
+                }
+                actualObject.height = actualObject.wrapper.height = grid.height;
+                actualObject.width = actualObject.wrapper.width = grid.width;
+            }
+            update = true;
         }
         return update;
     }
@@ -29592,11 +32863,17 @@ class Diagram extends Component {
                 updateConnector$$1 = true;
             }
         }
-        if (node.annotations !== undefined || node.width !== undefined) {
+        if (node.annotation !== undefined || node.annotations !== undefined || node.width !== undefined) {
             for (let key of Object.keys(node.annotations || actualObject.annotations)) {
                 let index = Number(key);
                 update = true;
-                let changedObject = node.annotations ? node.annotations[key] : actualObject.annotations;
+                let changedObject;
+                if (node.annotation) {
+                    changedObject = node.annotation;
+                }
+                else {
+                    changedObject = node.annotations ? node.annotations[key] : actualObject.annotations;
+                }
                 let actualAnnotation = actualObject.annotations[index];
                 if (actualAnnotation) {
                     let updateSize = actualObject.width ? true : false;
@@ -29622,6 +32899,18 @@ class Diagram extends Component {
             actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
             this.updateObject(actualObject, oldObject, node);
+            if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && !(this.diagramActions & DiagramAction.ToolAction)) {
+                updateHeaderMaxWidth(this, actualObject);
+                let grid = actualObject.wrapper.children[0];
+                let shape = actualObject.shape;
+                let column = grid.columnDefinitions().length;
+                if (shape.orientation === 'Horizontal') {
+                    let index = (shape.header && shape.hasHeader) ? 1 : 0;
+                    updatePhaseMaxWidth(actualObject, this, grid.rows[index].cells[column - 1], column - 1);
+                }
+                actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+                actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
+            }
             if ((!(this.diagramActions & DiagramAction.ToolAction)) || (this.diagramActions & DiagramAction.UndoRedo)) {
                 if (this.checkSelectedItem(actualObject)) {
                     this.updateSelector();
@@ -29661,6 +32950,10 @@ class Diagram extends Component {
                 if (actualObject.children) {
                     this.updateGroupOffset(actualObject);
                 }
+            }
+            if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol && (this.diagramActions & DiagramAction.Render)) {
+                let connectors = getConnectors(this, actualObject.wrapper.children[0], undefined, true);
+                updateConnectorsProperties(connectors, this);
             }
             if (!this.preventNodesUpdate) {
                 this.updateDiagramObject(actualObject);
@@ -29772,8 +33065,8 @@ class Diagram extends Component {
             this.updateElementVisibility(actualObject.wrapper, actualObject, actualObject.visible);
         }
         if (newProp.sourcePoint !== undefined || newProp.targetPoint !== undefined
-            || newProp.sourceID !== undefined || newProp.targetID !== undefined ||
-            newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined ||
+            || newProp.sourceID !== undefined || newProp.targetID !== undefined || newProp.targetPadding !== undefined ||
+            newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined || newProp.sourcePadding !== undefined ||
             newProp.type !== undefined || newProp.segments !== undefined || newProp.flip !== undefined) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 let sourceNode = this.nameTable[actualObject.sourceID];
@@ -29827,7 +33120,8 @@ class Diagram extends Component {
         if (newProp.style !== undefined) {
             updateStyle(newProp.style, actualObject.wrapper.children[0]);
         }
-        if (points.length > 0 || newProp.sourceDecorator !== undefined || newProp.targetDecorator !== undefined ||
+        if (points.length > 0 || newProp.sourceDecorator !== undefined || (newProp.targetDecorator !== undefined
+            && Object.keys(newProp.targetDecorator).indexOf('style') === -1) ||
             newProp.cornerRadius !== undefined) {
             updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
             if (newProp.type !== undefined) {
@@ -30266,7 +33560,7 @@ class Diagram extends Component {
     getPortContainer(actualObject) {
         if (actualObject.children) {
             for (let i = 0; i < actualObject.wrapper.children.length; i++) {
-                if (actualObject.wrapper.children[i].id === 'group_container') {
+                if (actualObject.wrapper.children[i].id === actualObject.id + 'group_container') {
                     return actualObject.wrapper.children[i];
                 }
             }
@@ -30299,11 +33593,6 @@ class Diagram extends Component {
     }
     /** @private */
     removeFromAQuad(obj) {
-        this.spatialSearch.removeFromAQuad(obj.wrapper);
-        let modified = this.spatialSearch.updateBounds(obj.wrapper);
-        if (modified && !this.preventUpdate) {
-            this.updatePage();
-        }
         if (obj.children) {
             let child;
             let children = obj.children;
@@ -30313,6 +33602,11 @@ class Diagram extends Component {
                     this.removeFromAQuad(child);
                 }
             }
+        }
+        this.spatialSearch.removeFromAQuad(obj.wrapper);
+        let modified = this.spatialSearch.updateBounds(obj.wrapper);
+        if (modified && !this.preventUpdate) {
+            this.updatePage();
         }
     }
     /** @private */
@@ -30389,13 +33683,14 @@ class Diagram extends Component {
         let header;
         let lane;
         this.droppable = new Droppable(this.element);
-        this.droppable.accept = '.e-dragclone';
+        // this.droppable.accept = '.e-dragclone';
         // tslint:disable-next-line:no-any
         this.droppable.over = (args) => {
             if (!this.currentSymbol) {
                 if (args.dragData) {
                     let newObj;
                     let isHorizontal;
+                    document.getElementById(this.element.id + 'content').focus();
                     let position = this.eventHandler.getMousePosition(args.event);
                     let clonedObject;
                     let selectedSymbol = args.dragData.helper;
@@ -30420,16 +33715,39 @@ class Diagram extends Component {
                                     newNode.shape.activity.subProcess.processes = [];
                                 }
                                 if (newNode.shape.type === 'SwimLane') {
+                                    this.diagramActions |= DiagramAction.PreventHistory;
                                     if (newNode.shape.isLane) {
                                         newNode.children = [];
                                         header = {
                                             id: 'header' + randomId(),
                                         };
+                                        if (newNode.shape.orientation === 'Horizontal') {
+                                            header.width = newNode.shape.lanes[0].header.width;
+                                            header.height = newNode.shape.lanes[0].height;
+                                        }
+                                        else {
+                                            header.width = newNode.shape.lanes[0].width;
+                                            header.height = newNode.shape.lanes[0].header.height;
+                                        }
                                         header.style = newNode.shape.lanes[0].header.style;
+                                        header.offsetX = position.x + 5 + header.width / 2;
+                                        header.offsetY = position.y + header.height / 2;
                                         header = this.add(header);
                                         lane = {
                                             id: 'body' + randomId(),
                                         };
+                                        if (newNode.shape.orientation === 'Horizontal') {
+                                            lane.width = newNode.shape.lanes[0].width - header.width;
+                                            lane.height = newNode.shape.lanes[0].height;
+                                            lane.offsetX = position.x + 5 + (newNode.shape.lanes[0].header.width + (lane.width / 2));
+                                            lane.offsetY = position.y + lane.height / 2;
+                                        }
+                                        else {
+                                            lane.width = newNode.shape.lanes[0].width;
+                                            lane.height = newNode.shape.lanes[0].height - header.height;
+                                            lane.offsetX = position.x + 5 + lane.width / 2;
+                                            lane.offsetY = position.y + (newNode.shape.lanes[0].header.height + (lane.height / 2));
+                                        }
                                         lane.style = newNode.shape.lanes[0].style;
                                         lane = this.add(lane);
                                         let group = {
@@ -30437,18 +33755,25 @@ class Diagram extends Component {
                                             children: [header.id, lane.id],
                                         };
                                         group.shape = newNode.shape;
+                                        group.width = newNode.shape.lanes[0].width;
+                                        group.height = newNode.shape.lanes[0].height;
                                         newNode = this.add(group);
                                     }
+                                    this.diagramActions &= ~DiagramAction.PreventHistory;
                                 }
                                 if (newNode.shape.isPhase) {
                                     isHorizontal = (newNode.shape.orientation === 'Horizontal') ? true : false;
                                     if (isHorizontal) {
+                                        newNode.offsetX = position.x + 5 + (newNode.width || wrapper.actualSize.width) / 2;
+                                        newNode.offsetY = position.y;
                                         newNode.shape.data =
                                             'M' + 20 + ',' + (newNode.height / 2) + ' L' + (newNode.width - 20) + ',' +
                                                 (newNode.height / 2) + 'z';
                                         newNode.height = 1;
                                     }
                                     else {
+                                        newNode.offsetX = position.x + 5;
+                                        newNode.offsetY = position.y + (newNode.height || wrapper.actualSize.height) / 2;
                                         newNode.shape.data =
                                             'M' + (newNode.width / 2) + ',' + 20 + ' L' + (newNode.width / 2) +
                                                 ',' + (newNode.height - 20) + 'z';
@@ -30466,8 +33791,8 @@ class Diagram extends Component {
                             else if (sourceElement[selectedSymbols] instanceof Connector) {
                                 newObj = new Connector(this, 'connectors', clonedObject, true);
                                 let bounds = Rect.toBounds([newObj.sourcePoint, newObj.targetPoint]);
-                                let tx = position.x - bounds.center.x;
-                                let ty = position.y - bounds.center.y;
+                                let tx = position.x - bounds.left;
+                                let ty = position.y - bounds.top;
                                 newObj.sourcePoint.x += tx;
                                 newObj.sourcePoint.y += ty;
                                 newObj.targetPoint.x += tx;
@@ -30496,19 +33821,19 @@ class Diagram extends Component {
                                     header.height = laneObj.height;
                                     lane.width = laneObj.width - header.width;
                                     lane.height = laneObj.height;
-                                    lane.offsetX = (laneObj.header.width + (child2.width / 2));
-                                    lane.offsetY = child2.height / 2;
+                                    lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
+                                    lane.offsetY = position.y + child2.height / 2;
                                 }
                                 else {
                                     header.width = laneObj.width;
                                     header.height = laneObj.header.height;
                                     lane.width = laneObj.width;
                                     lane.height = laneObj.height - header.height;
-                                    lane.offsetX = child2.width / 2;
-                                    lane.offsetY = (laneObj.header.height + (child2.height / 2));
+                                    lane.offsetX = position.x + 5 + child2.width / 2;
+                                    lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
                                 }
-                                header.offsetX = child1.width / 2;
-                                header.offsetY = child1.height / 2;
+                                header.offsetX = position.x + 5 + child1.width / 2;
+                                header.offsetY = position.y + child1.height / 2;
                                 newObj.width = laneObj.width;
                                 newObj.height = laneObj.height;
                             }
@@ -30553,16 +33878,21 @@ class Diagram extends Component {
         };
         // tslint:disable-next-line:no-any
         this.droppable.drop = (args) => {
+            let source = 'sourceElement';
+            let value;
             if (this.currentSymbol) {
+                let isPhase = false;
+                let orientation;
+                let isConnector;
+                isConnector = (this.currentSymbol instanceof Connector) ? true : false;
                 if (args.event.touches) {
                     this.eventHandler.mouseUp(args.event);
                 }
                 let newObj;
-                let source = 'sourceElement';
                 let arg = {
                     source: this.droppable[source],
                     element: this.currentSymbol,
-                    target: this.eventHandler['hoverNode'] || this, cancel: false,
+                    target: this.eventHandler['hoverNode'] || this.eventHandler['lastObjectUnderMouse'] || this, cancel: false,
                     position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
                 };
                 this.triggerEvent(DiagramEvent.drop, arg);
@@ -30573,14 +33903,29 @@ class Diagram extends Component {
                 this.removeFromAQuad(this.currentSymbol);
                 this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
                 this.removeElements(this.currentSymbol);
+                if (this.currentSymbol.shape.isLane ||
+                    this.currentSymbol.shape.isPhase) {
+                    this.removeChildInNodes(this.currentSymbol);
+                }
                 if (arg.cancel) {
-                    this.removeChildNodes(this.currentSymbol);
+                    removeChildNodes(this.currentSymbol, this);
+                }
+                if (this.currentSymbol.shape.isPhase) {
+                    isPhase = true;
+                    orientation = this.currentSymbol.shape.orientation;
                 }
                 delete this.nameTable[this.currentSymbol.id];
                 this.currentSymbol = null;
                 this.protectPropertyChange(true);
                 if (!arg.cancel) {
                     this.startGroupAction();
+                    if (clonedObject && (clonedObject.shape.isLane || isPhase)) {
+                        if (isPhase) {
+                            clonedObject.shape.isPhase = isPhase;
+                            clonedObject.shape.orientation = orientation;
+                        }
+                        this.eventHandler.addSwimLaneObject(clonedObject);
+                    }
                     if (clonedObject.shape.type === 'Bpmn' && clonedObject.shape.annotation
                         && clonedObject['hasTarget']) {
                         let nodeId = clonedObject.shape.annotation.nodeId;
@@ -30588,18 +33933,20 @@ class Diagram extends Component {
                         this.addTextAnnotation(clonedObject.shape.annotation, this.nameTable[nodeId]);
                         clonedObject.nodeId = '';
                     }
-                    if (clonedObject.children) {
-                        this.addChildNodes(clonedObject);
-                    }
-                    if (arg.target && (arg.target instanceof Node) && checkParentAsContainer(this, arg.target)
-                        && canAllowDrop(arg.target)) {
-                        addChildToContainer(this, arg.target, clonedObject);
-                    }
-                    else {
-                        this.add(clonedObject, true);
-                    }
-                    if (canSingleSelect(this)) {
-                        this.select([this.nameTable[clonedObject[id]]]);
+                    if (!clonedObject.shape.isLane && !isPhase) {
+                        if (clonedObject.children) {
+                            this.addChildNodes(clonedObject);
+                        }
+                        if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
+                            && canAllowDrop(arg.target)) {
+                            addChildToContainer(this, arg.target, clonedObject);
+                        }
+                        else {
+                            value = this.add(clonedObject, true);
+                        }
+                        if (value && canSingleSelect(this)) {
+                            this.select([this.nameTable[clonedObject[id]]]);
+                        }
                     }
                 }
                 this.protectPropertyChange(false);
@@ -30617,9 +33964,19 @@ class Diagram extends Component {
                     this.refreshDiagramLayer();
                 }
                 delete this.droppable[source];
+                let selectedSymbols = 'selectedSymbols';
+                remove(this.droppable[selectedSymbols]);
             }
-            let selectedSymbols = 'selectedSymbols';
-            remove(this.droppable[selectedSymbols]);
+            else {
+                let arg = {
+                    source: args.droppedElement,
+                    element: undefined,
+                    target: this.eventHandler['hoverNode'] || this.eventHandler['lastObjectUnderMouse'] || this, cancel: false,
+                    position: undefined
+                };
+                this.triggerEvent(DiagramEvent.drop, arg);
+                
+            }
         };
         this.droppable.out = (args) => {
             if (this.currentSymbol && !this.eventHandler.focus) {
@@ -30642,18 +33999,25 @@ class Diagram extends Component {
                 this.droppable[selectedSymbols].style.opacity = '1';
                 let source = 'sourceElement';
                 delete this.droppable[source];
+                this.diagramRenderer.rendererActions =
+                    this.removeConstraints(this.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
+                if (this.previousSelectedObject) {
+                    this.select(this.previousSelectedObject, this.previousSelectedObject.length > 1 ? true : false);
+                }
+                this.previousSelectedObject = null;
             }
         };
     }
-    removeChildNodes(node) {
-        if (node instanceof Node && node.children) {
-            for (let i = 0; i < node.children.length; i++) {
-                if (this.nameTable[node.children[i]].children) {
-                    this.removeChildNodes(node);
+    removeChildInNodes(node) {
+        if (node) {
+            if (node.children) {
+                for (let i = 0; i < node.children.length; i++) {
+                    this.removeChildInNodes(this.nameTable[node.children[i]]);
                 }
-                this.removeFromAQuad(this.nameTable[node.children[i]]);
-                this.removeObjectsFromLayer(this.nameTable[node.children[i]]);
-                delete this.nameTable[node.children[i]];
+            }
+            let index = this.nodes.indexOf(node);
+            if (index !== -1) {
+                this.nodes.splice(index, 1);
             }
         }
     }
@@ -30852,6 +34216,9 @@ __decorate([
     Complex({}, PageSettings)
 ], Diagram.prototype, "pageSettings", void 0);
 __decorate([
+    Complex({}, SerializationSettings)
+], Diagram.prototype, "serializationSettings", void 0);
+__decorate([
     Collection([], Node)
 ], Diagram.prototype, "nodes", void 0);
 __decorate([
@@ -30896,6 +34263,9 @@ __decorate([
 __decorate([
     Property()
 ], Diagram.prototype, "getCustomCursor", void 0);
+__decorate([
+    Property()
+], Diagram.prototype, "updateSelection", void 0);
 __decorate([
     Complex({}, Selector)
 ], Diagram.prototype, "selectedItems", void 0);
@@ -30965,6 +34335,9 @@ __decorate([
 __decorate([
     Event()
 ], Diagram.prototype, "collectionChange", void 0);
+__decorate([
+    Event()
+], Diagram.prototype, "expandStateChange", void 0);
 __decorate([
     Event()
 ], Diagram.prototype, "created", void 0);
@@ -31072,23 +34445,28 @@ class PrintAndExport {
         return null;
     }
     setCanvas(options, bounds, margin, mode, customBounds, region, fileName) {
-        let fileType;
         let content;
         options.bounds = bounds;
         options.region = region;
         let scaleX = 'scaleX';
         let scaleY = 'scaleY';
-        let images = [];
+        let scaleOffsetX = 'scaleOffsetX';
+        let scaleOffsetY = 'scaleOffsetY';
         this.setScaleValueforCanvas(options, bounds);
         let canvas = this.diagramAsCanvas({
             bounds: bounds, margin: margin, region: region, scaleX: options[scaleX],
-            scaleY: options[scaleY]
+            scaleY: options[scaleY], scaleOffsetX: options[scaleOffsetX], scaleOffsetY: options[scaleOffsetY]
         }, customBounds);
-        fileType = options.format || 'JPG';
         let image = content = canvas.toDataURL();
         if (mode === 'Data') {
             return content;
         }
+        this.canvasMultiplePage(options, canvas, margin, image, fileName);
+        return null;
+    }
+    canvasMultiplePage(options, canvas, margin, image, fileName) {
+        let images = [];
+        let fileType = options.format || 'JPG';
         if (options.multiplePage) {
             options.pageHeight = options.pageHeight ? options.pageHeight : this.diagram.pageSettings.height;
             options.pageWidth = options.pageWidth ? options.pageWidth : this.diagram.pageSettings.width;
@@ -31123,7 +34501,6 @@ class PrintAndExport {
             images = [image];
             this.exportImage(images, fileName, fileType, image);
         }
-        return null;
     }
     exportImage(images, fileName, fileType, image) {
         let buffers = [];
@@ -31193,6 +34570,7 @@ class PrintAndExport {
         }
         return nodebounds || new Rect(0, 0, 0, 0);
     }
+    /**   @private  */
     getDiagramBounds(mode, options) {
         let rect = this.getObjectsBound(options);
         let left = rect.left;
@@ -31239,10 +34617,35 @@ class PrintAndExport {
     setScaleValueforCanvas(options, bounds) {
         let scaleX = 'scaleX';
         let scaleY = 'scaleY';
+        let scaleOffsetX = 'scaleOffsetX';
+        let scaleOffsetY = 'scaleOffsetY';
         options[scaleX] = 1;
         options[scaleY] = 1;
+        options[scaleOffsetX] = 0;
+        options[scaleOffsetY] = 0;
         options.pageHeight = options.pageHeight || this.diagram.pageSettings.height;
         options.pageWidth = options.pageWidth || this.diagram.pageSettings.width;
+        let pageOrientation = options.pageOrientation || this.diagram.pageSettings.orientation;
+        if (!pageOrientation) {
+            pageOrientation = 'Portrait';
+        }
+        if (pageOrientation === 'Portrait') {
+            if (options.pageWidth > options.pageHeight) {
+                let temp = options.pageHeight;
+                options.pageHeight = options.pageWidth;
+                options.pageWidth = temp;
+            }
+        }
+        else {
+            if (options.pageHeight > options.pageWidth) {
+                let temp = options.pageWidth;
+                options.pageWidth = options.pageHeight;
+                options.pageHeight = temp;
+            }
+        }
+        if (options.pageWidth && options.pageHeight && !options.multiplePage) {
+            options.stretch = 'Meet';
+        }
         let height = options.pageHeight || bounds.height;
         let width = options.pageWidth || bounds.width;
         if (options.stretch === 'Stretch' || options.stretch === 'Meet' || options.stretch === 'Slice') {
@@ -31250,6 +34653,8 @@ class PrintAndExport {
             options[scaleY] = height / bounds.height;
             if (options.stretch === 'Meet') {
                 options[scaleX] = options[scaleY] = Math.min(options[scaleX], options[scaleY]);
+                options[scaleOffsetY] = (options.pageHeight - bounds.height * options[scaleX]) / 2;
+                options[scaleOffsetX] = (options.pageWidth - bounds.width * options[scaleX]) / 2;
             }
             else if (options.stretch === 'Slice') {
                 options[scaleX] = options[scaleY] = Math.max(options[scaleX], options[scaleY]);
@@ -31324,6 +34729,8 @@ class PrintAndExport {
     diagramAsCanvas(options, customBounds) {
         let scaleX = 'scaleX';
         let scaleY = 'scaleY';
+        let scaleOffsetX = 'scaleOffsetX';
+        let scaleOffsetY = 'scaleOffsetY';
         let region = options.bounds;
         let margin = options.margin;
         let mode = options && options.region ? options.region : 'Content';
@@ -31391,8 +34798,48 @@ class PrintAndExport {
         context.restore();
         let htmlLayer = getHTMLLayer(this.diagram.element.id);
         let renderer = new DiagramRenderer('', null, false);
+        this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], true);
         this.diagram.renderDiagramElements(canvas, renderer, htmlLayer, false, true);
+        this.updateObjectValue(options[scaleX], options[scaleOffsetX], options[scaleOffsetY], false);
         return canvas;
+    }
+    updateWrapper(canvas, value, scaleOffsetX, scaleOffsetY, isExport) {
+        if (canvas && canvas.length > 0) {
+            for (let j = 0; j < canvas.length; j++) {
+                if (canvas[j].children) {
+                    this.updateWrapper(canvas[j].children, value, scaleOffsetX, scaleOffsetY, isExport);
+                }
+                canvas[j].exportScaleValue.x = value;
+                canvas[j].exportScaleValue.y = value;
+                canvas[j].exportScaleOffset.x = scaleOffsetX;
+                canvas[j].exportScaleOffset.y = scaleOffsetY;
+                canvas[j].isExport = isExport;
+            }
+        }
+    }
+    updateObjectValue(value, scaleOffsetX, scaleOffsetY, isExport) {
+        let wrapper;
+        for (let i = 0; i < this.diagram.nodes.length; i++) {
+            wrapper = this.diagram.nodes[i].wrapper;
+            this.updateWrapper(wrapper.children, value, scaleOffsetX, scaleOffsetY, isExport);
+            wrapper.exportScaleValue.x = value;
+            wrapper.exportScaleValue.y = value;
+            wrapper.exportScaleOffset.x = scaleOffsetX;
+            wrapper.exportScaleOffset.y = scaleOffsetY;
+            wrapper.isExport = isExport;
+        }
+        for (let j = 0; j < this.diagram.connectors.length; j++) {
+            wrapper = this.diagram.connectors[j].wrapper;
+            for (let k = 0; k < wrapper.children.length; k++) {
+                wrapper.children[k].isExport = isExport;
+                if (isExport) {
+                    wrapper.children[k].exportScaleValue.x = value;
+                    wrapper.children[k].exportScaleValue.y = value;
+                    wrapper.children[k].exportScaleOffset.x = scaleOffsetX;
+                    wrapper.children[k].exportScaleOffset.y = scaleOffsetY;
+                }
+            }
+        }
     }
     isImageExportable(backgroundImage) {
         let state = true;
@@ -31547,12 +34994,15 @@ class PrintAndExport {
      */
     print(options) {
         options.mode = 'Data';
-        options.margin = { top: 0, bottom: 0, right: 0, left: 0 };
         let url = this.exportDiagram(options);
+        this.printImages(url, options);
+    }
+    printImages(url, options) {
         let attr = {
             'id': this.diagram.element.id + '_printImage',
             'src': url,
         };
+        options.margin = { top: 0, bottom: 0, right: 0, left: 0 };
         let img = createHtmlElement('img', attr);
         img.onload = () => {
             let div = this.getMultipleImage(img, options);
@@ -31568,6 +35018,105 @@ class PrintAndExport {
                     printWind.document.close();
                 }
             }
+        };
+    }
+    /** @private */
+    getDiagramContent(styleSheets) {
+        let container = document.getElementById(this.diagram.element.id + 'content');
+        let scrollerX = container.scrollLeft;
+        let scrollerY = container.scrollTop;
+        let oldZoom = this.diagram.scrollSettings.currentZoom;
+        let oldHorizontalOffset = this.diagram.scroller.horizontalOffset;
+        let oldVerticalOffset = this.diagram.scroller.verticalOffset;
+        let oldWidth = Number(String(this.diagram.width).split('px')[0]);
+        let oldHeight = Number(String(this.diagram.height).split('px')[0]);
+        let bounds = this.getDiagramBounds('', {});
+        this.diagram.scroller.zoom((1 / oldZoom));
+        let scrollX = 0;
+        let scrollY = 0;
+        scrollX = bounds.x;
+        scrollY = bounds.y;
+        this.diagram.scroller.transform = {
+            tx: -scrollX,
+            ty: -scrollY,
+            scale: this.diagram.scroller.currentZoom
+        };
+        this.diagram.scroller.horizontalOffset = -scrollX;
+        this.diagram.scroller.verticalOffset = -scrollY;
+        this.diagram.scroller.setSize();
+        this.diagram.setSize(bounds.width, bounds.height);
+        let snapConstraints = this.diagram.snapSettings.constraints;
+        this.diagram.snapSettings.constraints = (this.diagram.snapSettings.constraints & ~SnapConstraints.ShowLines);
+        this.diagram.dataBind();
+        this.diagram.clearSelection();
+        styleSheets = styleSheets || document.styleSheets;
+        let styleSheetRef = '';
+        for (let i = 0; i < styleSheets.length; i++) {
+            if (styleSheets[i].href || typeof styleSheets[i] === 'string') {
+                styleSheetRef += '<link href=\'' + (styleSheets[i].href || styleSheets[i]) + '\' rel=\'stylesheet\' />';
+            }
+        }
+        let htmlData = document.getElementById(this.diagram.element.id + 'content').innerHTML;
+        let marginStyle = 'margin-left:' + 0 + 'px;margin-top:' + 0 + 'px;margin-right:'
+            + 0 + 'px;margin-bottom:' + 0 + 'px;';
+        htmlData = styleSheetRef + '<body style="margin: 0px; padding: 0px"><div style=\'' +
+            marginStyle + '\'>' + htmlData + '</div></body>';
+        htmlData = htmlData.replace(/ transform: t/g, ' -webkit-transform: t');
+        this.diagram.setSize(oldWidth, oldHeight);
+        this.diagram.scroller.zoom(oldZoom / this.diagram.scrollSettings.currentZoom);
+        this.diagram.snapSettings.constraints = snapConstraints;
+        this.diagram.dataBind();
+        if (scrollerX || scrollerY) {
+            this.diagram.setOffset(scrollerX, scrollerY);
+        }
+        else {
+            this.diagram.scroller.transform = {
+                tx: (oldHorizontalOffset) / this.diagram.scroller.currentZoom,
+                ty: (oldVerticalOffset) / this.diagram.scroller.currentZoom,
+                scale: this.diagram.scroller.currentZoom
+            };
+            this.diagram.scroller.horizontalOffset = oldHorizontalOffset;
+            this.diagram.scroller.verticalOffset = oldVerticalOffset;
+        }
+        this.diagram.renderSelector(false);
+        return htmlData;
+    }
+    /** @private */
+    exportImages(image, options) {
+        let region = options && options.region ? options.region : 'Content';
+        let margin = options.margin || {};
+        margin = {
+            top: !isNaN(margin.top) ? margin.top : 0,
+            bottom: !isNaN(margin.bottom) ? margin.bottom : 0,
+            left: !isNaN(margin.left) ? margin.left : 0,
+            right: !isNaN(margin.right) ? margin.right : 0
+        };
+        let bounds = this.getDiagramBounds(region, {});
+        if (options.bounds) {
+            bounds.x = (!isNaN(options.bounds.x) ? options.bounds.x : bounds.x);
+            bounds.y = (!isNaN(options.bounds.y) ? options.bounds.y : bounds.y);
+            bounds.width = (options.bounds.width || bounds.width);
+            bounds.height = (options.bounds.height || bounds.height);
+        }
+        let img = document.createElement('img');
+        let attr = {
+            'src': image
+        };
+        setAttributeHtml(img, attr);
+        let context = this;
+        img.onload = () => {
+            let canvas = CanvasRenderer.createCanvas(context.diagram.element.id + 'innerImage', bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
+            let ctx = canvas.getContext('2d');
+            ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
+            ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, margin.left, margin.top, bounds.width, bounds.height);
+            image = canvas.toDataURL();
+            if (options.printOptions) {
+                context.printImages(image, options);
+                return;
+            }
+            ctx.restore();
+            let fileName = options.fileName || 'diagram';
+            this.canvasMultiplePage(options, canvas, margin, image, fileName);
         };
     }
     /**
@@ -32033,19 +35582,23 @@ class DiagramContextMenu {
         }
         this.eventArgs = args.event;
         this.parent.trigger(contextMenuOpen, diagramArgs);
-        if (diagramArgs.items.length === diagramArgs.hiddenItems.length) {
-            diagramArgs.cancel = true;
-            diagramArgs.hiddenItems = [];
-        }
-        else {
-            this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
-            this.contextMenu.enableItems(this.disableItems, false, true);
-            let contextItems = this;
-            args.items.forEach((item) => {
-                if (contextItems.hiddenItems.indexOf(item.id) > -1) {
-                    contextItems.contextMenu.hideItems([item.id], true);
-                }
-            });
+        let hidden = true;
+        this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
+        this.contextMenu.enableItems(this.disableItems, false, true);
+        let contextItems = this;
+        args.items.forEach((item) => {
+            if (contextItems.hiddenItems.indexOf(item.id) > -1) {
+                contextItems.contextMenu.hideItems([item.id], true);
+            }
+        });
+        contextItems.contextMenu.items.forEach((item) => {
+            if (contextItems.hiddenItems.indexOf(item.id) === -1) {
+                hidden = false;
+            }
+        });
+        if (hidden) {
+            diagramArgs.cancel = hidden;
+            this.hiddenItems = [];
         }
     }
     ensureTarget(item) {
@@ -32873,7 +36426,8 @@ class BpmnDiagrams {
     }
     /** @private */
     dropBPMNchild(target, source, diagram) {
-        if (source && source.shape.type === 'Bpmn' && source.shape.shape !== 'TextAnnotation') {
+        if (source && source.shape.type === 'Bpmn' && target.shape.type === 'Bpmn'
+            && source.shape.shape !== 'TextAnnotation') {
             let subProcess = diagram.nameTable[target.id].shape.activity.subProcess;
             if (diagram.currentSymbol && target.shape.type === 'Bpmn' && !subProcess.collapsed) {
                 source.processId = target.id;
@@ -36108,7 +39662,9 @@ class Snapping {
             if (quad.objects.length > 0) {
                 for (let j = 0; j < quad.objects.length; j++) {
                     nd = quad.objects[j];
-                    if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible) {
+                    if (!(this.diagram.nameTable[nd.id] instanceof Connector) && nd.visible
+                        && !(this.diagram.nameTable[nd.id].shape.type === 'SwimLane') && !(this.diagram.nameTable[nd.id].isLane) &&
+                        !(this.diagram.nameTable[nd.id].isPhase) && !(this.diagram.nameTable[nd.id].isHeader)) {
                         bounds = getBounds(nd);
                         if (nodes.indexOf(nd) === -1 && this.intersectsRect(child, bounds)) {
                             nodes.push(nd);
@@ -36326,6 +39882,9 @@ class UndoRedo {
     constructor() {
         this.groupUndo = false;
         this.childTable = [];
+        this.historyCount = 0;
+        this.hasGroup = false;
+        this.groupCount = 0;
         //constructs the undo redo module
     }
     /** @private */
@@ -36334,7 +39893,7 @@ class UndoRedo {
             canRedo: false, canUndo: false, currentEntry: null,
             push: diagram.addHistoryEntry.bind(diagram), undo: Function, redo: Function,
             startGroupAction: diagram.startGroupAction.bind(diagram), endGroupAction: diagram.endGroupAction.bind(diagram),
-            canLog: null, undoStack: [], redoStack: []
+            canLog: null, undoStack: [], redoStack: [], stackLimit: diagram.historyManager ? diagram.historyManager.stackLimit : undefined
         };
     }
     /** @private */
@@ -36363,9 +39922,82 @@ class UndoRedo {
             }
         }
         diagram.historyManager.currentEntry = entry;
+        if (diagram.historyManager.stackLimit) {
+            if (entry.type === 'StartGroup' || entry.type === 'EndGroup') {
+                let value = entry.type === 'EndGroup' ? true : false;
+                this.setEntryLimit(value);
+            }
+            if (!this.hasGroup && this.groupCount === 0) {
+                if (this.historyCount < diagram.historyManager.stackLimit) {
+                    this.historyCount++;
+                }
+                else {
+                    this.applyLimit(diagram.historyManager.currentEntry, diagram.historyManager.stackLimit, diagram);
+                }
+            }
+        }
         this.getHistoryList(diagram);
         diagram.historyManager.canUndo = true;
         diagram.historyManager.canRedo = false;
+    }
+    /** @private */
+    applyLimit(list, stackLimit, diagram, limitHistory) {
+        if (list && list.previous) {
+            if (list.type === 'StartGroup' || list.type === 'EndGroup') {
+                let value = list.type === 'StartGroup' ? true : false;
+                this.setEntryLimit(value);
+            }
+            if (!this.hasGroup && this.groupCount === 0) {
+                stackLimit--;
+            }
+            if (stackLimit === 0) {
+                if (limitHistory) {
+                    this.limitHistoryStack(list.previous, diagram);
+                }
+                if (diagram.historyManager.stackLimit < this.historyCount) {
+                    this.historyCount = diagram.historyManager.stackLimit;
+                }
+                delete list.previous;
+            }
+            else if (list.previous) {
+                this.applyLimit(list.previous, stackLimit, diagram, limitHistory);
+            }
+        }
+        this.groupCount = 0;
+    }
+    /** @private */
+    clearHistory(diagram) {
+        let hList = diagram.historyManager;
+        hList.currentEntry = undefined;
+        hList.canUndo = false;
+        hList.canRedo = false;
+        this.historyCount = 0;
+        this.groupCount = 0;
+        diagram.historyManager.undoStack = [];
+        diagram.historyManager.redoStack = [];
+    }
+    setEntryLimit(value) {
+        value ? this.groupCount-- : this.groupCount++;
+        value ? this.hasGroup = !value : this.hasGroup = value;
+    }
+    limitHistoryStack(list, diagram) {
+        if (list.type !== 'StartGroup' && list.type !== 'EndGroup') {
+            this.removeFromStack(diagram.historyManager.undoStack, list);
+            this.removeFromStack(diagram.historyManager.redoStack, list);
+        }
+        if (list.previous) {
+            this.limitHistoryStack(list.previous, diagram);
+        }
+    }
+    removeFromStack(entyList, list) {
+        if (entyList.length) {
+            for (let i = 0; i <= entyList.length; i++) {
+                if (entyList[i].undoObject === list.undoObject && entyList[i].redoObject === list.redoObject) {
+                    entyList.splice(i, 1);
+                    break;
+                }
+            }
+        }
     }
     /** @private */
     undo(diagram) {
@@ -36442,13 +40074,16 @@ class UndoRedo {
     }
     undoEntry(entry, diagram) {
         let obj;
+        let nodeObject;
         if (entry.type !== 'PropertyChanged' && entry.type !== 'CollectionChanged' && entry.type !== 'LabelCollectionChanged') {
             obj = (entry.undoObject);
+            nodeObject = (entry.undoObject);
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
             if (diagram.historyManager.undoStack.length > 0) {
                 let addObject = diagram.historyManager.undoStack.splice(0, 1);
                 diagram.historyManager.redoStack.splice(0, 0, addObject[0]);
+                nodeObject = (entry.undoObject);
             }
         }
         diagram.protectPropertyChange(true);
@@ -36508,10 +40143,61 @@ class UndoRedo {
             case 'StackChildPositionChanged':
                 this.recordStackPositionChanged(entry, diagram, false);
                 break;
+            case 'RowHeightChanged':
+                this.recordGridSizeChanged(entry, diagram, false, true);
+                break;
+            case 'ColumnWidthChanged':
+                this.recordGridSizeChanged(entry, diagram, false, false);
+                break;
+            case 'LanePositionChanged':
+                this.recordLanePositionChanged(entry, diagram, false);
+                break;
+            case 'LaneCollectionChanged':
+            case 'PhaseCollectionChanged':
+                entry.isUndo = true;
+                this.recordLaneOrPhaseCollectionChanged(entry, diagram, false);
+                entry.isUndo = false;
+                break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
         diagram.historyChangeTrigger(entry);
+        if (nodeObject) {
+            let object = this.checkNodeObject(nodeObject, diagram);
+            if (object) {
+                let getnodeDefaults = getFunction(diagram.updateSelection);
+                if (getnodeDefaults) {
+                    getnodeDefaults(object, diagram);
+                }
+            }
+        }
+    }
+    checkNodeObject(value, diagram) {
+        let object;
+        if (!value.id) {
+            if ((value.nodes && value.nodes.length > 0) ||
+                (value.connectors && value.connectors.length > 0)) {
+                let undoNode = value.nodes.length > 0 ?
+                    value.nodes : value.connectors;
+                for (object of undoNode) {
+                    object = diagram.nameTable[object.id];
+                }
+            }
+            else {
+                let knownNode = value.nodes ?
+                    value.nodes : value.connectors;
+                if (knownNode) {
+                    for (let key of Object.keys(knownNode)) {
+                        let index = Number(key);
+                        object = value.nodes ? diagram.nodes[index] : diagram.connectors[index];
+                    }
+                }
+            }
+        }
+        else {
+            object = diagram.nameTable[value.id];
+        }
+        return object;
     }
     group(historyEntry, diagram) {
         diagram.add(historyEntry.undoObject);
@@ -36539,6 +40225,37 @@ class UndoRedo {
             }
         }
     }
+    recordLaneOrPhaseCollectionChanged(entry, diagram, isRedo) {
+        let node = entry.redoObject;
+        let obj = entry.undoObject;
+        let changeType;
+        if (entry.isUndo) {
+            if (entry.changeType === 'Insert') {
+                changeType = 'Remove';
+            }
+            else {
+                changeType = 'Insert';
+            }
+        }
+        else {
+            changeType = entry.changeType;
+        }
+        if (changeType === 'Remove') {
+            diagram.remove(node);
+        }
+        else {
+            if (node.isPhase) {
+                let swimlane = diagram.nameTable[node.parentId];
+                diagram.addPhases(swimlane, [obj]);
+            }
+            else {
+                let swimlane = diagram.nameTable[node.parentId];
+                let laneIndex = findLaneIndex(swimlane, node);
+                diagram.addLanes(swimlane, [obj], laneIndex);
+            }
+        }
+        diagram.clearSelection();
+    }
     recordAnnotationChanged(entry, diagram, isRedo) {
         let entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
         let oldElement = findAnnotation(entryObject, entry.objectId);
@@ -36560,20 +40277,26 @@ class UndoRedo {
     }
     recordChildCollectionChanged(entry, diagram, isRedo) {
         let entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
-        let parentNode;
+        let parentNode = diagram.nameTable[entryObject.parentId];
         let actualObject = diagram.nameTable[entryObject.id];
-        if (actualObject.parentId) {
-            parentNode = diagram.nameTable[actualObject.parentId];
-            parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
-            parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+        if (parentNode) {
+            addChildToContainer(diagram, parentNode, actualObject, !isRedo);
         }
-        if (entryObject.parentId !== '') {
-            parentNode = diagram.nameTable[entryObject.parentId];
-            parentNode.children.push(entryObject.id);
-            parentNode.wrapper.children.push(actualObject.wrapper);
+        else {
+            if (actualObject.parentId) {
+                parentNode = diagram.nameTable[actualObject.parentId];
+                parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
+                parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+            }
+            if (entryObject.parentId !== '') {
+                parentNode = diagram.nameTable[entryObject.parentId];
+                parentNode.children.push(entryObject.id);
+                parentNode.wrapper.children.push(actualObject.wrapper);
+            }
+            actualObject.parentId = entryObject.parentId;
+            diagram.removeElements(actualObject);
+            diagram.updateDiagramObject(actualObject);
         }
-        actualObject.parentId = entryObject.parentId;
-        diagram.updateDiagramObject(actualObject);
     }
     recordStackPositionChanged(entry, diagram, isRedo) {
         let entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
@@ -36604,6 +40327,48 @@ class UndoRedo {
                 parent.wrapper.arrange(parent.wrapper.desiredSize);
                 diagram.updateDiagramObject(parent);
                 diagram.updateSelector();
+            }
+        }
+    }
+    recordGridSizeChanged(entry, diagram, isRedo, isRow) {
+        let obj = (isRedo) ? entry.redoObject : entry.undoObject;
+        let node = (!isRedo) ? entry.redoObject : entry.undoObject;
+        if (obj.parentId) {
+            let swimlane = diagram.nameTable[obj.parentId];
+            let actualObject = diagram.nameTable[obj.id];
+            let x = swimlane.wrapper.bounds.x;
+            let y = swimlane.wrapper.bounds.y;
+            if (swimlane.shape.type === 'SwimLane') {
+                let grid = swimlane.wrapper.children[0];
+                let padding = swimlane.shape.padding;
+                updateSwimLaneObject(diagram, node, swimlane, obj);
+                if (isRow) {
+                    grid.updateRowHeight(obj.rowIndex, obj.wrapper.actualSize.height, true, padding);
+                    swimlane.height = swimlane.wrapper.height = grid.height;
+                }
+                else {
+                    grid.updateColumnWidth(obj.columnIndex, obj.wrapper.actualSize.width, true, padding);
+                    swimlane.width = swimlane.wrapper.width = grid.width;
+                    if (obj.isPhase) {
+                        actualObject.maxWidth = actualObject.wrapper.maxWidth = obj.wrapper.actualSize.width;
+                    }
+                }
+                swimLaneMeasureAndArrange(swimlane);
+                let tx = x - swimlane.wrapper.bounds.x;
+                let ty = y - swimlane.wrapper.bounds.y;
+                diagram.drag(swimlane, tx, ty);
+                diagram.clearSelection();
+                diagram.updateDiagramObject(swimlane);
+            }
+        }
+    }
+    recordLanePositionChanged(entry, diagram, isRedo) {
+        let entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
+        if (entryObject.source) {
+            let parent = diagram.nameTable[entryObject.source.parentId];
+            if (parent && parent.shape.type === 'SwimLane') {
+                laneInterChanged(diagram, entryObject.target, entryObject.source);
+                diagram.clearSelection();
             }
         }
     }
@@ -36659,7 +40424,7 @@ class UndoRedo {
             }
         }
     }
-    positionChanged(obj, diagram, entry) {
+    positionChanged(obj, diagram) {
         let node = diagram.nameTable[obj.id];
         if (obj.processId && !node.processId) {
             diagram.addProcess(obj, obj.processId);
@@ -36673,8 +40438,15 @@ class UndoRedo {
             diagram.drag(node, tx, ty);
         }
         else {
-            let tx = obj.offsetX - node.wrapper.offsetX;
-            let ty = obj.offsetY - node.wrapper.offsetY;
+            if (node.parentId) {
+                let parent = diagram.nameTable[node.parentId];
+                if (parent.isLane) {
+                    obj.wrapper.offsetX = (obj.width / 2) + (parent.wrapper.bounds.x + obj.margin.left);
+                    obj.wrapper.offsetY = (obj.height / 2) + (parent.wrapper.bounds.y + obj.margin.top);
+                }
+            }
+            let tx = obj.wrapper.offsetX - node.offsetX;
+            let ty = obj.wrapper.offsetY - node.offsetY;
             diagram.drag(node, tx, ty);
         }
         if (diagram.bpmnModule) {
@@ -36695,7 +40467,7 @@ class UndoRedo {
                         let tempNode = entry.childTable[nodes[i].id];
                         if ((getObjectType(tempNode) === Node)) {
                             this.sizeChanged(tempNode, diagram, entry);
-                            this.positionChanged(tempNode, diagram, entry);
+                            this.positionChanged(tempNode, diagram);
                         }
                         else {
                             this.connectionChanged(tempNode, diagram, entry);
@@ -36852,6 +40624,9 @@ class UndoRedo {
                 }
                 else {
                     if (!diagram.nameTable[obj.id]) {
+                        if (obj && obj.shape && obj.shape.type === 'SwimLane' && entry.isUndo) {
+                            pasteSwimLane(obj, undefined, undefined, undefined, undefined, true);
+                        }
                         diagram.add(obj);
                     }
                 }
@@ -36952,14 +40727,17 @@ class UndoRedo {
     }
     redoEntry(historyEntry, diagram) {
         let redoObject;
+        let redovalue;
         if (historyEntry.type !== 'PropertyChanged' && historyEntry.type !== 'CollectionChanged') {
             redoObject = (historyEntry.redoObject);
+            redovalue = (historyEntry.redoObject);
         }
         diagram.diagramActions |= DiagramAction.UndoRedo;
         if (historyEntry.type !== 'StartGroup' && historyEntry.type !== 'EndGroup') {
             if (diagram.historyManager.redoStack.length > 0) {
                 let addObject = diagram.historyManager.redoStack.splice(0, 1);
                 diagram.historyManager.undoStack.splice(0, 0, addObject[0]);
+                redovalue = (historyEntry.redoObject);
             }
         }
         diagram.protectPropertyChange(true);
@@ -37012,10 +40790,32 @@ class UndoRedo {
             case 'StackChildPositionChanged':
                 this.recordStackPositionChanged(historyEntry, diagram, true);
                 break;
+            case 'RowHeightChanged':
+                this.recordGridSizeChanged(historyEntry, diagram, true, true);
+                break;
+            case 'ColumnWidthChanged':
+                this.recordGridSizeChanged(historyEntry, diagram, true, false);
+                break;
+            case 'LanePositionChanged':
+                this.recordLanePositionChanged(historyEntry, diagram, true);
+                break;
+            case 'LaneCollectionChanged':
+            case 'PhaseCollectionChanged':
+                this.recordLaneOrPhaseCollectionChanged(historyEntry, diagram, true);
+                break;
         }
         diagram.protectPropertyChange(false);
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.historyChangeTrigger(historyEntry);
+        if (redovalue) {
+            let value = this.checkNodeObject(redovalue, diagram);
+            if (value) {
+                let getnodeDefaults = getFunction(diagram.updateSelection);
+                if (getnodeDefaults) {
+                    getnodeDefaults(value, diagram);
+                }
+            }
+        }
     }
     getUndoEntry(diagram) {
         let undoEntry = null;
@@ -37099,7 +40899,7 @@ class LayoutAnimation {
         let j = 0;
         setIntervalObject[i] = setInterval(() => {
             j++;
-            return this.layoutAnimation(objects, setIntervalObject, j === 6, diagram);
+            return this.layoutAnimation(objects, setIntervalObject, j === 6, diagram, node);
         }, 20);
         if (node.isExpanded) {
             let opacity = .2;
@@ -37109,18 +40909,20 @@ class LayoutAnimation {
             //let objects: ILayout = diagram.doLayout();
             let setIntervalObjects = {};
             let x = 0;
-            this.updateOpacity(node, opacity, diagram);
-            setIntervalObjects[x] = setInterval(() => {
-                opacity <= 1 ? this.updateOpacity(node, opacity, diagram) : clearInterval(setIntervalObjects[0]);
-                opacity += .2;
-            }, 20);
+            if (animation) {
+                this.updateOpacity(node, opacity, diagram);
+                setIntervalObjects[x] = setInterval(() => {
+                    opacity <= 1 ? this.updateOpacity(node, opacity, diagram) : clearInterval(setIntervalObjects[0]);
+                    opacity += .2;
+                }, 20);
+            }
         }
     }
     /**
      * Setinterval and Clear interval for layout animation
      */
     /** @private */
-    layoutAnimation(objValue, layoutTimer, stop, diagram) {
+    layoutAnimation(objValue, layoutTimer, stop, diagram, node) {
         if (!stop) {
             for (let k = 0; k < objValue.objects.length; k++) {
                 let node = diagram.nameTable[objValue.objects[k].id];
@@ -37135,6 +40937,10 @@ class LayoutAnimation {
             diagram.organizationalChartModule.isAnimation = false;
             diagram.layout.fixedNode = '';
             diagram.protectPropertyChange(this.protectChange);
+            let arg = {
+                element: cloneObject(node), state: (node.isExpanded) ? true : false
+            };
+            diagram.triggerEvent(DiagramEvent.expandStateChange, arg);
         }
     }
     /**
@@ -37212,7 +41018,7 @@ class HierarchicalTree {
         return 'OrganizationalChart';
     }
     /**   @private  */
-    updateLayout(nodes, nameTable, layoutProp, viewport, uniqueId) {
+    updateLayout(nodes, nameTable, layoutProp, viewport, uniqueId, action) {
         let layout = {
             type: layoutProp.type,
             nameTable: nameTable, anchorX: 0, anchorY: 0,
@@ -37223,10 +41029,10 @@ class HierarchicalTree {
             fixedNode: layoutProp.fixedNode, getLayoutInfo: getFunction(layoutProp.getLayoutInfo), margin: layoutProp.margin,
             bounds: layoutProp.bounds, objects: [], root: layoutProp.root
         };
-        this.doLayout(layout, nodes, viewport, uniqueId);
+        this.doLayout(layout, nodes, viewport, uniqueId, action);
         return layout;
     }
-    doLayout(layout, nodes, viewport, uniqueId) {
+    doLayout(layout, nodes, viewport, uniqueId, action) {
         let node;
         let i;
         let layoutInfo = {};
@@ -37255,7 +41061,7 @@ class HierarchicalTree {
         //Update relationship(parent and children)
         for (i = 0; i < layout.firstLevelNodes.length; i++) {
             node = layout.firstLevelNodes[i];
-            this.updateEdges(layout, node, 1);
+            this.updateEdges(layout, node, 1, action);
         }
         if (layout.firstLevelNodes.length > 0) {
             layout.rootNode = layout.firstLevelNodes[0];
@@ -38314,11 +42120,11 @@ class HierarchicalTree {
         //Return the first parent node
         return layout.nameTable[layout.nameTable[node.inEdges[0]].sourceID];
     }
-    updateEdges(layout, node, depth) {
+    updateEdges(layout, node, depth, action) {
         let layoutInfo;
         layoutInfo = layout.graphNodes[node.id];
         let j;
-        if (node.outEdges && node.outEdges.length && (node.isExpanded || !this.isAnimation)) {
+        if (node.outEdges && node.outEdges.length && (node.isExpanded || (action === DiagramAction.Render))) {
             for (j = 0; j < node.outEdges.length; j++) {
                 let edge;
                 edge = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
@@ -38329,7 +42135,7 @@ class HierarchicalTree {
                     if (edge.outEdges && edge.outEdges.length && edge.isExpanded) {
                         layoutInfo.tree.hasSubTree = true;
                     }
-                    this.updateEdges(layout, edge, depth + 1);
+                    this.updateEdges(layout, edge, depth + 1, action);
                 }
             }
         }
@@ -41459,7 +45265,7 @@ class CrossReduction {
  * Diagram component exported items
  */
 
-var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -41481,22 +45287,22 @@ let getObjectType$1 = (obj) => {
  */
 class Palette extends ChildProperty {
 }
-__decorate$19([
+__decorate$20([
     Property('')
 ], Palette.prototype, "id", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], Palette.prototype, "height", void 0);
-__decorate$19([
+__decorate$20([
     Property(true)
 ], Palette.prototype, "expanded", void 0);
-__decorate$19([
+__decorate$20([
     Property('')
 ], Palette.prototype, "iconCss", void 0);
-__decorate$19([
+__decorate$20([
     Property('')
 ], Palette.prototype, "title", void 0);
-__decorate$19([
+__decorate$20([
     CollectionFactory(getObjectType$1)
 ], Palette.prototype, "symbols", void 0);
 /**
@@ -41504,13 +45310,13 @@ __decorate$19([
  */
 class SymbolPreview extends ChildProperty {
 }
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPreview.prototype, "width", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPreview.prototype, "height", void 0);
-__decorate$19([
+__decorate$20([
     Complex({}, Point)
 ], SymbolPreview.prototype, "offset", void 0);
 /**
@@ -41770,7 +45576,7 @@ class SymbolPalette extends Component {
                         width: isHorizontal ? header.width : swimLaneObj.width,
                         height: isHorizontal ? swimLaneObj.height : header.height,
                         style: headerStyle,
-                        annotations: [{ content: header.content.content }]
+                        annotations: [{ content: header.annotation.content }]
                     };
                     headerObj.offsetX = headerObj.width / 2;
                     headerObj.offsetY = headerObj.height / 2;
@@ -41791,12 +45597,10 @@ class SymbolPalette extends Component {
                     laneWidth = swimLaneObj.width ? swimLaneObj.width : this.symbolWidth;
                     symbol.shape.type = 'Path';
                     if (isHorizontal) {
-                        symbol.shape.data =
-                            'M' + 20 + ',' + (laneHeight / 2) + ' L' + (laneWidth - 20) + ',' + (laneHeight / 2) + 'z';
+                        symbol.shape.data = 'M0,0 L' + laneWidth + ',' + '0';
                     }
                     else {
-                        symbol.shape.data =
-                            'M' + (laneWidth / 2) + ',' + 20 + ' L' + (laneWidth / 2) + ',' + (laneHeight - 20) + 'z';
+                        symbol.shape.data = 'M0,0 L0,' + laneWidth;
                     }
                 }
             }
@@ -41950,6 +45754,10 @@ class SymbolPalette extends Component {
                 symbolInfo = getSymbolInfo(symbol);
             }
             symbolInfo = symbolInfo || {};
+            if (symbol.shape && symbol.shape.isPhase) {
+                symbolInfo.width = symbolInfo.width || this.symbolWidth;
+                symbolInfo.height = symbolInfo.height || this.symbolHeight;
+            }
             //defining custom templates
             content.relativeMode = 'Object';
             content.horizontalAlignment = content.verticalAlignment = 'Center';
@@ -41965,16 +45773,15 @@ class SymbolPalette extends Component {
                 let actualWidth = width;
                 let actualHeight = height;
                 let isLane = symbol.shape.isLane ? true : false;
+                let isPhase = symbol.shape.isPhase ? true : false;
                 if (this.symbolWidth !== undefined) {
-                    actualWidth = isLane ? this.laneTable[obj.id].width :
-                        this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
+                    actualWidth = this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
                 }
                 else {
                     width += obj.style.strokeWidth;
                 }
                 if (this.symbolHeight !== undefined) {
-                    actualHeight = isLane ? this.laneTable[obj.id].height :
-                        this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
+                    actualHeight = this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
                 }
                 else {
                     height += obj.style.strokeWidth;
@@ -41982,8 +45789,8 @@ class SymbolPalette extends Component {
                 if (symbolInfo.description && symbolInfo.description.text !== '') {
                     actualHeight -= 20; // default height of the text have been reduced from the container.
                 }
-                sw = actualWidth / (content.width || width);
-                sh = actualHeight / (content.height || height);
+                sw = actualWidth / ((!isPhase && content.width) || width);
+                sh = actualHeight / ((!isPhase && content.height) || height);
                 if (symbolInfo.fit) {
                     sw = actualWidth / symbolInfo.width;
                     sh = actualHeight / symbolInfo.height;
@@ -42183,7 +45990,7 @@ class SymbolPalette extends Component {
         let container = createHtmlElement('div', {
             id: symbol.id + '_container',
             style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-            title: symbolInfo.description ? symbolInfo.description.text : symbol.id
+            title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
         });
         parentDiv.appendChild(container);
         let canvas;
@@ -42223,10 +46030,27 @@ class SymbolPalette extends Component {
         if (!preview) {
             let actualWidth = symbol.wrapper.actualSize.width + symbol.style.strokeWidth;
             let actualHeight = symbol.wrapper.actualSize.height + symbol.style.strokeWidth;
-            let style = 'margin-left:' +
-                Math.max(this.symbolMargin.left, ((width - actualWidth) / 2))
-                + 'px;margin-top:' + Math.max(this.symbolMargin.top, ((height - actualHeight) / 2))
-                + 'px;pointer-events:none;transform-origin:0 0;overflow:hidden;';
+            let style = 'pointer-events:none;transform-origin:0 0;overflow:hidden;';
+            if (symbol.shape.isPhase) {
+                if (symbol.shape.orientation === 'Horizontal') {
+                    style += 'margin-left:' +
+                        Math.max(this.symbolMargin.left, ((width - actualWidth) / 2))
+                        + 'px;margin-top:' + size.height / 2
+                        + 'px;';
+                }
+                else {
+                    style += 'margin-left:' +
+                        size.width / 2
+                        + 'px;margin-top:' + Math.max(this.symbolMargin.top, ((height - actualHeight) / 2))
+                        + 'px;';
+                }
+            }
+            else {
+                style += 'margin-left:' +
+                    Math.max(this.symbolMargin.left, ((width - actualWidth) / 2))
+                    + 'px;margin-top:' + Math.max(this.symbolMargin.top, ((height - actualHeight) / 2))
+                    + 'px;';
+            }
             if (canvas instanceof HTMLCanvasElement) {
                 style += 'transform:scale(.5,.5);';
             }
@@ -42392,6 +46216,18 @@ class SymbolPalette extends Component {
             container.classList.add('e-symbol-selected');
             this.selectedSymbol = this.symbolTable[id];
             evt.preventDefault();
+        }
+    }
+    keyDown(evt) {
+        let palette = this;
+        let helperElement = 'helperElement';
+        let intDestroy = 'intDestroy';
+        if (evt && (evt.key === 'Escape')) {
+            let element = palette.draggable[helperElement];
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+                palette.draggable[intDestroy]();
+            }
         }
     }
     //end region - event handlers
@@ -42642,10 +46478,12 @@ class SymbolPalette extends Component {
         let stopEvent = Browser.touchEndEvent;
         let moveEvent = Browser.touchMoveEvent;
         let keyEvent = 'keyup';
+        let keyDownEvent = 'keydown';
         EventHandler.add(this.element, startEvent, this.mouseDown, this);
         EventHandler.add(this.element, moveEvent, this.mouseMove, this);
         EventHandler.add(this.element, stopEvent, this.mouseUp, this);
         EventHandler.add(this.element, keyEvent, this.keyUp, this);
+        EventHandler.add(document, keyDownEvent, this.keyDown, this);
         // initialize the draggable component
         this.initDraggable();
     }
@@ -42658,64 +46496,66 @@ class SymbolPalette extends Component {
         let moveEvent = Browser.touchMoveEvent;
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         let keyEvent = 'keyup';
+        let keyDownEvent = 'keydown';
         EventHandler.remove(this.element, startEvent, this.mouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
         EventHandler.remove(this.element, stopEvent, this.mouseUp);
         EventHandler.remove(this.element, keyEvent, this.keyUp);
+        EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
 }
-__decorate$19([
+__decorate$20([
     Property('S')
 ], SymbolPalette.prototype, "accessKey", void 0);
-__decorate$19([
+__decorate$20([
     Property('100%')
 ], SymbolPalette.prototype, "width", void 0);
-__decorate$19([
+__decorate$20([
     Property('100%')
 ], SymbolPalette.prototype, "height", void 0);
-__decorate$19([
+__decorate$20([
     Collection([], Palette)
 ], SymbolPalette.prototype, "palettes", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPalette.prototype, "getSymbolInfo", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPalette.prototype, "filterSymbols", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPalette.prototype, "getSymbolTemplate", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPalette.prototype, "symbolWidth", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPalette.prototype, "symbolHeight", void 0);
-__decorate$19([
+__decorate$20([
     Complex({ left: 10, right: 10, top: 10, bottom: 10 }, Margin)
 ], SymbolPalette.prototype, "symbolMargin", void 0);
-__decorate$19([
+__decorate$20([
     Property(true)
 ], SymbolPalette.prototype, "allowDrag", void 0);
-__decorate$19([
+__decorate$20([
     Complex({}, SymbolPreview)
 ], SymbolPalette.prototype, "symbolPreview", void 0);
-__decorate$19([
+__decorate$20([
     Property(false)
 ], SymbolPalette.prototype, "enableSearch", void 0);
-__decorate$19([
+__decorate$20([
     Property(true)
 ], SymbolPalette.prototype, "enableAnimation", void 0);
-__decorate$19([
+__decorate$20([
     Property('Multiple')
 ], SymbolPalette.prototype, "expandMode", void 0);
-__decorate$19([
+__decorate$20([
     Event()
 ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPalette.prototype, "getNodeDefaults", void 0);
-__decorate$19([
+__decorate$20([
     Property()
 ], SymbolPalette.prototype, "getConnectorDefaults", void 0);
 
@@ -42723,7 +46563,7 @@ __decorate$19([
  * Exported symbol palette files
  */
 
-var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -43586,16 +47426,16 @@ class Overview extends Component {
         return 'Overview';
     }
 }
-__decorate$20([
+__decorate$21([
     Property('100%')
 ], Overview.prototype, "width", void 0);
-__decorate$20([
+__decorate$21([
     Property('100%')
 ], Overview.prototype, "height", void 0);
-__decorate$20([
+__decorate$21([
     Property('')
 ], Overview.prototype, "sourceID", void 0);
-__decorate$20([
+__decorate$21([
     Event()
 ], Overview.prototype, "created", void 0);
 
@@ -43607,5 +47447,5 @@ __decorate$20([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, serialize, deserialize, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, renderStackHighlighter, moveChildInStack, initSwimLane, addObjectToGrid, headerDefine, phaseDefine, laneCollection, createRow, createColumn, initGridRow, initGridColumns, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

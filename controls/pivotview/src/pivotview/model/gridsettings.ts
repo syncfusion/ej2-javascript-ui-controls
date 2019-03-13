@@ -5,7 +5,7 @@ import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, CellSelectEventArgs, R
 import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
 import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { BeforeColumnRenderEventArgs } from '../../common';
+import { ColumnRenderEventArgs, SelectionSettings } from '../../common';
 
 /** 
  *  Represents Pivot widget model class.
@@ -93,7 +93,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
      * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
      */
     @Property({ mode: 'Row', cellSelectionMode: 'Flow', type: 'Single' })
-    public selectionSettings: SelectionSettingsModel;
+    public selectionSettings: SelectionSettingsModel | SelectionSettings;
 
     /**
      * Defines the print modes. The available print modes are
@@ -295,5 +295,5 @@ export class GridSettings extends ChildProperty<GridSettings> {
      * @event 
      */
     @Event()
-    public beforeColumnsRender: EmitType<BeforeColumnRenderEventArgs>;
+    public columnRender: EmitType<ColumnRenderEventArgs>;
 }

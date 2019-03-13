@@ -1,10 +1,11 @@
 import { Container } from './container';
 import { DiagramElement } from '../elements/diagram-element';
+
 import { rotateSize } from '../../utility/base-util';
+import { Transform, ElementAction } from '../../enum/enum';
 import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
-import { Transform, ElementAction } from '../../enum/enum';
 import { TextElement } from '../elements/text-element';
 
 /**
@@ -54,11 +55,12 @@ export class Canvas extends Container {
                         continue;
                     }
                 }
-
-                if (desiredBounds === undefined) {
-                    desiredBounds = childBounds;
-                } else {
-                    desiredBounds.uniteRect(childBounds);
+                if ((!(child instanceof TextElement)) || (child instanceof TextElement && child.canConsiderBounds)) {
+                    if (desiredBounds === undefined) {
+                        desiredBounds = childBounds;
+                    } else {
+                        desiredBounds.uniteRect(childBounds);
+                    }
                 }
             }
             if (desiredBounds) {
@@ -95,7 +97,6 @@ export class Canvas extends Container {
             for (let child of this.children) {
                 if ((child.transform & Transform.Parent) !== 0) {
                     child.parentTransform = this.parentTransform + this.rotateAngle;
-
                     if (this.flip !== 'None' || this.elementActions & ElementAction.ElementIsGroup) {
                         child.parentTransform = (this.flip === 'Horizontal' || this.flip === 'Vertical') ?
                             -child.parentTransform : child.parentTransform;
@@ -143,6 +144,8 @@ export class Canvas extends Container {
         this.outerBounds.uniteRect(this.bounds);
         return desiredSize;
     }
+
+
 
     /**
      * Aligns the child element based on its parent

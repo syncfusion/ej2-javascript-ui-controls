@@ -72,6 +72,15 @@ export namespace Theme {
         fontStyle: 'Normal',
         fontFamily: 'Segoe UI'
     };
+    /** @private */
+    export let stockEventFont: IFontMapping = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+
 }
 /** @private */
 export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] {
@@ -142,8 +151,7 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
         case 'FabricDark':
         case 'BootstrapDark':
             style = {
-                axisLabel: '#DADADA',
-                axisTitle: '#ffffff',
+                axisLabel: '#DADADA', axisTitle: '#ffffff',
                 axisLine: ' #6F6C6C',
                 majorGridLine: '#414040',
                 minorGridLine: '#514F4F',
@@ -165,6 +173,16 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
                 selectionRectFill: 'rgba(255, 217, 57, 0.3)',
                 selectionRectStroke: '#38A9FF',
                 selectionCircleStroke: '#282727'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                axisLabel: '#212529', axisTitle: '#ffffff', axisLine: '#CED4DA', majorGridLine: '#CED4DA',
+                minorGridLine: '#DEE2E6', majorTickLine: '#ADB5BD', minorTickLine: '#CED4DA', chartTitle: '#212529', legendLabel: '#212529',
+                background: '#FFFFFF', areaBorder: '#DEE2E6', errorBar: '#ffffff', crosshairLine: '#6C757D', crosshairFill: '#495057',
+                crosshairLabel: '#FFFFFF', tooltipFill: 'rgba(0, 0, 0, 0.9)', tooltipBoldLabel: 'rgba(255,255,255)',
+                tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: '#BFBFBF',
+                selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057'
             };
             break;
         default:

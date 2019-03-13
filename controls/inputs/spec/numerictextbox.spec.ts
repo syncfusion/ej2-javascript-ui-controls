@@ -9,15 +9,15 @@ import { NumericTextBox , ChangeEventArgs, NumericFocusEventArgs , NumericBlurEv
 import  {profile , inMB, getMemoryProfile} from './common.spec';
 
 describe('Numerictextbox Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('NumericTextBox creation', () => {
-		beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-        });
         let numerictextbox: NumericTextBox;
         let numerictextbox1: NumericTextBox;
         beforeEach((): void => {
@@ -5169,5 +5169,5 @@ describe('Change Event testing', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(inMB(profile.samples[profile.samples.length - 1]) + 0.25);
-    });
+    }); 
 });

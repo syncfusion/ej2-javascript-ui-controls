@@ -12,21 +12,21 @@ export class Column {
    * The bounded columns can be sort, filter etc.,
    * The `field` name must be a valid JavaScript identifier,
    * the first character must be an alphabet and should not contain spaces and special characters.
-   * @default undefined
+   * @default 'undefined'
    */
 
     public field: string;
   /**
    * Defines the header text of column which is used to display in column header.
    * If `headerText` is not defined, then field name value will be assigned to header text.
-   * @default undefined
+   * @default 'undefined'
    */
 
   public headerText: string;
 
     /**    
      * Gets the unique identifier value of the column. It is used to get the column object.   
-     * @default undefined    
+     * @default 'undefined'    
      */
 
     public uid: string;
@@ -39,6 +39,13 @@ export class Column {
      */
 
     public allowEditing: boolean = true;
+
+    /**    
+     * If `showCheckbox` set to true, then the checkboxes will be displayed in particular column. 
+     * @default false   
+     */
+
+    public showCheckbox: boolean;
 
     /**
      * Defines the custom sort comparer function.
@@ -73,12 +80,12 @@ export class Column {
     public commands: CommandModel[];
     /**
      * Defines the width of the column in pixels or percentage.
-     * @default undefined
+     * @default 'undefined'
      */
     public width: string | number;
     /**    
      * Defines the type of component for editable.
-     * @default stringedit         
+     * @default 'stringedit'         
      */
     public editType: string;
 
@@ -114,13 +121,13 @@ export class Column {
 
     /**    
      * Defines the minimum Width of the column in pixels or percentage.    
-     * @default undefined    
+     * @default 'undefined'    
      */
     public minWidth: string | number;
 
     /**    
      * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.   
-     * @default undefined    
+     * @default 'undefined'    
      */
     public maxWidth: string | number;
 
@@ -267,7 +274,7 @@ export class Column {
     /**
      * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
      * `hideAtMedia` accepts only valid Media Queries.
-     * @default undefined
+     * @default 'undefined'
      */
     public hideAtMedia: string;
 
@@ -308,46 +315,46 @@ export interface ColumnModel {
    * The bounded columns can be sort, filter etc.,
    * The `field` name must be a valid JavaScript identifier,
    * the first character must be an alphabet and should not contain spaces and special characters.
-   * @default undefined
+   * @default 'undefined'
    */
 
   field?: string;
     /**    
      * Gets the unique identifier value of the column. It is used to get the object.   
-     * @default undefined    
+     * @default 'undefined'    
      */
     uid?: string;
 /**
  * Defines the header text of column which is used to display in column header.
  * If `headerText` is not defined, then field name value will be assigned to header text.
- * @default undefined
+ * @default 'undefined'
  */
 
   headerText?: string;
 
   /**    
    * Defines the width of the column in pixels or percentage.    
-   * @default undefined    
+   * @default 'undefined'    
    */
 
   width?: string | number;
 
   /**    
    * Defines the minimum width of the column in pixels or percentage.    
-   * @default undefined    
+   * @default 'undefined'    
    */
   minWidth?: string | number;
 
   /**    
    * Defines the sort comparer property.    
-   * @default undefined
+   * @default 'undefined'
    */
 
   sortComparer?: SortComparer | string;
 
   /**    
    * Defines the maximum width of the column in pixels or percentage, which will restrict resizing beyond this pixels or percentage.   
-   * @default undefined    
+   * @default 'undefined'    
    */
   maxWidth?: string | number;
 
@@ -535,7 +542,7 @@ export interface ColumnModel {
   /**
    * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
    * `hideAtMedia` accepts only valid Media Queries.
-   * @default undefined
+   * @default 'undefined'
    */
   hideAtMedia?: string;
     /**    
@@ -587,8 +594,13 @@ export interface ColumnModel {
      */
     isPrimaryKey?: boolean;
     /**    
+     * If `showCheckbox` set to true, then the checkboxes will be displayed in particular column. 
+     * @default false   
+     */
+    showCheckbox?: boolean;
+    /**    
      * Defines the type of component for editing.
-     * @default stringedit         
+     * @default 'stringedit'         
      */
     editType?: string;
     /**    

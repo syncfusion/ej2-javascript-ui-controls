@@ -29,6 +29,12 @@
       font-weight: $pivotgrid-summary-font-weight;
     }
 
+    th.e-active,
+    th.e-cellselectionbackground {
+      background: $pivotgrid-header-selection-bg-color;
+      color: $pivotgrid-header-selection-color;
+    }
+
     .e-drop-indicator {
       display: block;
     }
@@ -41,6 +47,10 @@
 
     .e-sortfilterdiv {
       margin: $pivotgrid-vsort-mouse-margin !important;
+    }
+
+    .e-pivotchart > svg {
+      border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
     }
 
     .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
@@ -249,6 +259,9 @@
 
           &.e-list-selected {
             opacity: .5;
+            @if ($pivotgrid-skin == 'bootstrap4') {
+              opacity: .7;
+            }
           }
 
           &:hover {
@@ -260,12 +273,13 @@
             background-color: $pivotgrid-focus-color;
             color: $pivotgrid-button-acitve-font-color;
 
+            // sass-lint:disable-all
             .e-sort,
             .e-dropdown-icon,
             .e-pv-filter,
             .e-pv-filtered,
             .e-remove {
-              color: $pivotgrid-icon-focus-color;
+              color: $pivotgrid-icon-focus-color !important;
             }
           }
 
@@ -278,6 +292,10 @@
             overflow: hidden;
             text-align: left;
             text-overflow: ellipsis;
+
+            &.e-disable-drag {
+              cursor: auto;
+            }
           }
 
           .e-draggable {
@@ -293,7 +311,7 @@
           .e-pv-filter,
           .e-pv-filtered,
           .e-remove {
-            color: $pivotgrid-button-icon-color;
+            color: $pivotgrid-button-icon-color !important;
             cursor: pointer;
             display: inline-block;
             font-size: $pivotgrid-button-icon-size;
@@ -309,6 +327,7 @@
               display: none;
             }
           }
+          // sass-lint:enable-all
 
           .e-sort {
             height: $pivotgrid-button-icon-size;
@@ -385,7 +404,7 @@
             .e-pv-filter,
             .e-pv-filtered,
             .e-remove {
-              color: $pivotgrid-button-icon-color;
+              color: $pivotgrid-button-icon-color !important;
               font-size: $pivotgrid-button-icon-size;
               height: 20px;
               padding-left: 4px;
@@ -428,6 +447,22 @@
         padding-bottom: 0;
       }
     }
+
+    // sass-lint:disable-all
+    .e-chart-grouping-bar .e-axis-row {
+      height: 50% !important;
+    }
+
+    .e-chart-grouping-bar .e-axis-value {
+      height: auto !important;
+      padding-left: 6px;
+      border-bottom: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
+
+      .e-group-chart-multi-values {
+        padding-left: 2px;
+      }
+    }
+    // sass-lint:enable-all  
 
     .e-icons {
       height: auto;

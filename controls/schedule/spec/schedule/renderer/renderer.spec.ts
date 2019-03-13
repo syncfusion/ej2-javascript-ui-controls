@@ -7,10 +7,22 @@ import { Schedule, Day, Week, WorkWeek, Month, Agenda } from '../../../src/sched
 import { defaultData, timezoneData } from '../base/datasource.spec';
 import { triggerMouseEvent, disableScheduleAnimation } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Data module', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Locale data testing', () => {
         let scheduleObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -248,5 +260,17 @@ describe('Data module', () => {
                 done();
             };
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

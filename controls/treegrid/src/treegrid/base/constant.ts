@@ -15,7 +15,11 @@ export const actionBegin: string = 'actionBegin';
 /** @hidden */
 export const actionComplete: string = 'actionComplete';
 /** @hidden */
+export const rowSelecting: string = 'rowSelecting';
+/** @hidden */
 export const rowSelected: string = 'rowSelected';
+/** @hidden */
+export const checkboxChange: string = 'checkboxChange';
 /** @hidden */
 export const rowDeselected: string = 'rowDeselected';
 /** @hidden */
@@ -80,3 +84,4 @@ export const keyPressed: string = 'key-pressed';
 export const updateData: string = 'update-data';
 /** @hidden */
 export const doubleTap: string = 'double-tap';
+

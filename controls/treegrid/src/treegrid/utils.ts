@@ -35,7 +35,7 @@ export function findParentRecords(records: Object): Object {
  */
 export function getExpandStatus (parent: TreeGrid, record: ITreeData, parents: ITreeData[]) : boolean {
   let parentRecord: ITreeData = isNullOrUndefined(record.parentItem) ? null :
-       parents.filter((e: ITreeData) => {return e.uniqueID === record.parentItem.uniqueID; })[0];
+    getParentData(parent, record.parentItem.uniqueID);
   let childParent: ITreeData;
   if (parentRecord != null) {
       if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
@@ -45,7 +45,7 @@ export function getExpandStatus (parent: TreeGrid, record: ITreeData, parents: I
       } else if (parentRecord.expanded === false) {
           return false;
       } else if (parentRecord.parentItem) {
-          childParent = parents.filter((e: ITreeData) => {return e.uniqueID === parentRecord.parentItem.uniqueID; })[0];
+          childParent = getParentData(parent, parentRecord.parentItem.uniqueID);
           if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
             && !childParent[parent.expandStateMapping]) {
               childParent.expanded = false;
@@ -106,4 +106,14 @@ export function getPlainData(value: ITreeData): ITreeData {
   delete value.hasChildRecords; delete value.childRecords; delete value.index; delete value.parentItem;
   delete value.level;
   return value;
+}
+
+export function getParentData(parent: TreeGrid, value: string, requireFilter?: Boolean) : ITreeData {
+  if (requireFilter) {
+    let idFilter: string = 'uniqueIDFilterCollection';
+    return parent[idFilter][value];
+  } else {
+    let id: string = 'uniqueIDCollection';
+    return parent[id][value];
+  }
 }

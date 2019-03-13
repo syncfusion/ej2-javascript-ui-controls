@@ -214,6 +214,7 @@ $input-bigger-small-left-child-min-height: 30px !default;
 $input-bigger-small-left-child-min-width: 30px !default;
 $input-icon-inner-width: 10px !default;
 $input-icon-inner-height: 10px !default;
+$input-readonly-bg-color: none !default;;
 
 @mixin input-sizing {
   box-sizing: content-box;

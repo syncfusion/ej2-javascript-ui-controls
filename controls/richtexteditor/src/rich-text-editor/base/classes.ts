@@ -154,3 +154,17 @@ export const CLS_TB_ROW_RES: string = 'e-row-resize';
 export const CLS_TB_BOX_RES: string = 'e-table-box';
 /** @hidden */
 export const CLS_RTE_HIDDEN: string = 'e-rte-hidden';
+/** @hidden */
+export const CLS_RTE_PASTE_KEEP_FORMAT: string = 'e-rte-keepformat';
+/** @hidden */
+export const CLS_RTE_PASTE_REMOVE_FORMAT: string = 'e-rte-removeformat';
+/** @hidden */
+export const CLS_RTE_PASTE_PLAIN_FORMAT: string = 'e-rte-plainformat';
+/** @hidden */
+export const CLS_RTE_PASTE_OK: string = 'e-rte-pasteok';
+/** @hidden */
+export const CLS_RTE_PASTE_CANCEL: string = 'e-rte-pastecancel';
+/** @hidden */
+export const CLS_RTE_DIALOG_MIN_HEIGHT: string = 'e-rte-dialog-minheight';
+
+

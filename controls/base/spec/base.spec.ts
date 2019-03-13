@@ -165,6 +165,13 @@ describe("getcomponent funtion", function () {
         let comp: any = { ej2_instances: [new Touch(elem)] };
         expect(getComponent(comp, 'touch') instanceof Touch).toBe(true);
     });
+    it("For element value as string type", function () {
+        let elem: any = createElement('div', { id: 'test' });
+        let touchObj: any = new Touch(<HTMLElement>elem);
+        var stringElement: string = touchObj.element.id;
+        document.body.appendChild(elem);
+        expect(getComponent(stringElement, 'touch') instanceof Touch).toBe(true);
+    });
     it("else statement", function () {
         let elem:any =createElement('div', { id: 'test' });
         let comp: any = { ej2_instances: [new Touch(elem)] };

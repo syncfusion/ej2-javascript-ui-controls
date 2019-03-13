@@ -134,7 +134,6 @@ describe('Sfdt export for Table format Bidi validation', () => {
 });
 
 
-
 let tab: any = {
     "sections": [
         {
@@ -187,4 +186,3 @@ describe('Default tab width export validation', () => {
         expect(document.defaultTabWidth).toBe(36);
     });
 });
-

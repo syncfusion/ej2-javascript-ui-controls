@@ -3,8 +3,11 @@
  */
 import { createElement, EmitType } from '@syncfusion/ej2-base';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { Chart, DateTime, DateTimeCategory, LineSeries, BarSeries,
-         Series, ColumnSeries, ChartAnnotation, getElement, StripLine } from '../../../src/chart/index';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import {
+    Chart, DateTime, DateTimeCategory, LineSeries, BarSeries,
+    Series, ColumnSeries, ChartAnnotation, getElement, StripLine
+} from '../../../src/chart/index';
 import { datetimeData, datetimeCategoryYearData1, datetimeCategoryYearData2, datetimeCategoryYearData, dateTimedataInterval } from '../base/data.spec';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/common/model/interface';
 
@@ -15,6 +18,14 @@ export interface Arg {
 
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let ele: HTMLElement;
     let svg: HTMLElement;
     let loaded: EmitType<ILoadedEventArgs>;
@@ -250,7 +261,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let label1: any = document.getElementById('containerAxisLabels0').childNodes[0];
                 expect(label1.innerHTML === 'Monday, April 17, 2000 at 12:00:00 AM GMT+05:30' ||
-                       label1.innerHTML === 'Monday, April 17, 2000 at 12:00:00 AM GMT'). toBe(true);
+                    label1.innerHTML === 'Monday, April 17, 2000 at 12:00:00 AM GMT').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -444,8 +455,10 @@ describe('Chart Control', () => {
                 expect((element as HTMLElement).style.top == '249.167px' || (element as HTMLElement).style.top == '255.389px').toBe(true);
                 done();
             };
-            chart.annotations = [{ x: new Date(2017, 10, 2, 3, 2, 12), y: 20,  region: 'Series',
-                                 coordinateUnits: 'Point', content: '<div>AnnotationText</div>'}];
+            chart.annotations = [{
+                x: new Date(2017, 10, 2, 3, 2, 12), y: 20, region: 'Series',
+                coordinateUnits: 'Point', content: '<div>AnnotationText</div>'
+            }];
             chart.refresh();
         });
         it('checking with strip lines', (done: Function) => {
@@ -463,7 +476,7 @@ describe('Chart Control', () => {
             chart.loaded = loaded;
             chart.primaryXAxis.intervalType = 'Years';
             chart.axes = [];
-            chart.series = [{ dataSource: datetimeCategoryYearData1, xName: 'x', yName: 'y', name: 'striplLine'}];
+            chart.series = [{ dataSource: datetimeCategoryYearData1, xName: 'x', yName: 'y', name: 'striplLine' }];
             chart.primaryXAxis.stripLines = [
                 {
                     startFromAxis: false, start: new Date(2000, 3, 17), size: 2,
@@ -592,4 +605,90 @@ describe('Chart Control', () => {
             chartObj.appendTo('#chartContainer');
         });
     });
+    describe('Datetime category Axis label with line break', () => {
+        let chart: Chart;
+        let axisLine: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'DateTimeCategory',
+                    },
+                    primaryYAxis: {},
+                    series: [
+                        {
+                            type: 'Line', animation: { enable: false },
+                            dataSource: [
+                                { x: new Date(2017, 11, 20), y: 21 }, { x: new Date(2017, 11, 21), y: 24 },
+                                { x: new Date(2017, 11, 22), y: 24 }, { x: new Date(2017, 11, 26), y: 70 },
+                                { x: new Date(2017, 11, 27), y: 75 }, { x: new Date(2018, 0, 2), y: 82 },
+                                { x: new Date(2018, 0, 3), y: 53 }, { x: new Date(2018, 0, 4), y: 54 },
+                                { x: new Date(2018, 0, 5), y: 53 }, { x: new Date(2018, 0, 8), y: 45 }
+                            ], xName: 'x', yName: 'y'
+                        },
+                    ],
+                    height: '600', width: '900', legendSettings: { visible: false }
+                }, '#container');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('Checking line break label with datatimecategory axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 10).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 2).toBe(true);
+                let x: number = parseInt(label.getAttribute("x"));
+                console.log('datetime-default x: ' + x);
+                //expect(x == 155).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelFormat = 'dd<br>MMM<br>yyyy';
+            chart.refresh();
+        });
+        it('Checking line break labels with inversed datetimecategory axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('container0_AxisLabel_1');
+                let x: number = parseInt(label.getAttribute("x"));
+                console.log('inversed axis x: ' + x);
+                //expect(x == 755).toBe(true);
+                expect(label.childElementCount == 2).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = true;
+            chart.refresh();
+        });
+        it('datetimecategory line break labels with opposed position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 10).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 2).toBe(true);
+                let x: number = parseInt(label.getAttribute("x"));
+                console.log('opposed position x: ' + x);
+                //expect(x == 155).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+
 });

@@ -328,7 +328,7 @@ export function measureNativeSvg(nativeContent: SVGElement): Rect {
 }
 
 /** @private */
-export function updatePath(element: PathElement, bounds: Rect, child: PathElement): string {
+export function updatePath(element: PathElement, bounds: Rect, child: PathElement, options?: BaseAttributes): string {
     let initX: number = 0; let initY: number = 0;
     let scaleX: number = 0; let scaleY: number = 0; let isScale: boolean = false;
     let bBox: Rect; let isInit: boolean; let isResizing: boolean = true; let newPathString: string = '';
@@ -338,9 +338,9 @@ export function updatePath(element: PathElement, bounds: Rect, child: PathElemen
         scaleX = initX - Number(bBox.x);
         scaleY = initY - Number(bBox.y);
     }
-    if (element.actualSize.width !== bBox.width || element.actualSize.height !== bBox.height) {
-        scaleX = element.actualSize.width / Number(bBox.width ? bBox.width : 1);
-        scaleY = element.actualSize.height / Number(bBox.height ? bBox.height : 1);
+    if (element.actualSize.width !== bBox.width || element.actualSize.height !== bBox.height || options) {
+        scaleX = (options && options.width || element.actualSize.width) / Number(bBox.width ? bBox.width : 1);
+        scaleY = (options && options.height || element.actualSize.height) / Number(bBox.height ? bBox.height : 1);
         isScale = true;
     }
     arrayCollection = processPathData(element.data);
@@ -393,7 +393,6 @@ export function getDomIndex(viewId: string, elementId: string, layer: string): n
     }
     return index;
 }
-
 
 /**
  * @private

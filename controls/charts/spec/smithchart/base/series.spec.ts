@@ -235,6 +235,15 @@ describe('Smithchart Series properties tesing', () => {
             smithchart.theme = 'Bootstrap';
             smithchart.refresh();
         });
+        it('Checking with bootstrap4 theme', () => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById(smithchart.element.id + '_series0_points');
+                let color: string = element.getAttribute('stroke');
+                expect(color).toEqual('red');
+            };
+            smithchart.theme = 'Bootstrap4';
+            smithchart.refresh();
+        });
         it('Checking with highcontrast theme', () => {
             smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
                 let element: Element = document.getElementById(smithchart.element.id + '_series0_points');

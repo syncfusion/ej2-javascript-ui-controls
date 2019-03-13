@@ -163,7 +163,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * </table>
      *
      * > For more details about start refer to 
-     * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation. 
+     * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
     public start: CalendarView;
@@ -191,7 +191,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Calendar view shows up to the years of the decade.<br/></td></tr> 
      * </table> 
      * 
-     *  > For more details about depth refer to 
+     * > For more details about depth refer to 
      *  [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     @Property('Month')
@@ -308,11 +308,11 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected validateDate(value?: Date): void {
-        this.setProperties({ min: this.checkDateValue(new Date('' + this.min)) }, true);
-        this.setProperties({ max: this.checkDateValue(new Date('' + this.max)) }, true);
+        this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(this.min))) }, true);
+        this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(this.max))) }, true);
         this.currentDate = this.currentDate ? this.currentDate : new Date(new Date().setHours(0, 0, 0, 0));
         if (!isNullOrUndefined(value) && this.min <= this.max && value >= this.min && value <= this.max) {
-            this.currentDate = new Date('' + value);
+            this.currentDate = new Date(this.checkValue(value));
         }
     }
 
@@ -326,13 +326,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.min = isNullOrUndefined(this.min) || !(+this.min) ? this.min = new Date(1900, 0, 1) : this.min;
         this.max = isNullOrUndefined(this.max) || !(+this.max) ? this.max = new Date(2099, 11, 31) : this.max;
         if (+this.min <= +this.max && value && +value <= +this.max && +value >= +this.min) {
-            this.currentDate = new Date('' + value);
+            this.currentDate = new Date(this.checkValue(value));
         } else {
             if (+this.min <= +this.max && !value && +this.currentDate > +this.max) {
-                this.currentDate = new Date('' + this.max);
+                this.currentDate = new Date(this.checkValue(this.max));
             } else {
                 if (+this.currentDate < +this.min) {
-                    this.currentDate = new Date('' + this.min);
+                    this.currentDate = new Date(this.checkValue(this.min));
                 }
             }
         }
@@ -528,9 +528,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 this.effect = 'e-zoomin';
             }
             if (this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                this.navigateTo(this.depth, new Date('' + value));
+                this.navigateTo(this.depth, new Date(this.checkValue(value)));
             } else {
-                this.navigateTo('Month', new Date('' + value));
+                this.navigateTo('Month', new Date(this.checkValue(value)));
             }
         }
     }
@@ -646,7 +646,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected KeyboardNavigate(number: number, currentView: number, e: KeyboardEvent, max: Date, min: Date): void {
-        let date: Date = new Date('' + this.currentDate);
+        let date: Date = new Date(this.checkValue(this.currentDate));
         switch (currentView) {
             case 2:
                 this.addYears(this.currentDate, number);
@@ -731,7 +731,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected renderDays(currentDate: Date, e?: Event, value?: Date, multiSelection?: boolean, values?: Date[]): HTMLElement[] {
         let tdEles: HTMLElement[] = [];
         let cellsCount: number = 42;
-        let localDate: Date = new Date('' + currentDate);
+        let localDate: Date = new Date(this.checkValue(currentDate));
         let minMaxDate: Date;
         let numCells: number = this.weekNumber ? 8 : 7;
         // 8 and 7 denotes the number of columns to be specified.
@@ -822,7 +822,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     let formatOptions: object = { type: 'date', skeleton: 'short', calendar: type };
                     let localDateString: string = this.globalize.formatDate(localDate, formatOptions);
                     let tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
-                    if (localDateString === tempDateString && this.getDateVal(localDate, values[tempValue])) {
+                    if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
+                        || (this.getDateVal(localDate, value))) {
                         addClass([tdEle], SELECTED);
                     } else {
                         this.updateFocus(otherMnthBool, disabledCls, localDate, tdEle, currentDate);
@@ -865,15 +866,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let days: number[];
         let tdEles: HTMLElement[] = [];
         let valueUtil: boolean = isNullOrUndefined(value);
-        let curDate: Date = new Date('' + this.currentDate);
+        let curDate: Date = new Date(this.checkValue(this.currentDate));
         let mon: number = curDate.getMonth();
         let yr: number = curDate.getFullYear();
         let localDate: Date = curDate;
         let curYrs: number = localDate.getFullYear();
-        let minYr: number = new Date('' + this.min).getFullYear();
-        let minMonth: number = new Date('' + this.min).getMonth();
-        let maxYr: number = new Date('' + this.max).getFullYear();
-        let maxMonth: number = new Date('' + this.max).getMonth();
+        let minYr: number = new Date(this.checkValue(this.min)).getFullYear();
+        let minMonth: number = new Date(this.checkValue(this.min)).getMonth();
+        let maxYr: number = new Date(this.checkValue(this.max)).getFullYear();
+        let maxMonth: number = new Date(this.checkValue(this.max)).getMonth();
         localDate.setMonth(0);
         this.titleUpdate(this.currentDate, 'months');
         let disabled: boolean = (this.min > localDate) || (this.max < localDate);
@@ -909,7 +910,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let numCells: number = 4;
         let yearCell: number = 12;
         let tdEles: HTMLElement[] = [];
-        let localDate: Date = new Date('' + this.currentDate);
+        let localDate: Date = new Date(this.checkValue(this.currentDate));
         localDate.setMonth(0);
         localDate.setDate(1);
         let localYr: number = localDate.getFullYear();
@@ -931,8 +932,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERMONTH);
-            } else if (year < new Date('' + this.min).getFullYear() ||
-                year > new Date('' + this.max).getFullYear()) {
+            } else if (year < new Date(this.checkValue(this.min)).getFullYear() ||
+                year > new Date(this.checkValue(this.max)).getFullYear()) {
                 addClass([tdEle], DISABLED);
             } else if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
                 addClass([tdEle], SELECTED);
@@ -1203,8 +1204,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     break;
                 case 'min':
                 case 'max':
-                    prop === 'min' ? this.setProperties({ min: this.checkDateValue(new Date('' + newProp.min)) }, true) :
-                        this.setProperties({ max: this.checkDateValue(new Date('' + newProp.max)) }, true);
+                    prop === 'min' ? this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true) :
+                        this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
                     this.setProperties({ start: this.currentView() }, true);
                     detach(this.tableBodyElement);
                     this.minMaxUpdate();
@@ -1228,8 +1229,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     }
                     break;
                 case 'start':
+                case 'depth':
                 case 'weekNumber':
                 case 'firstDayOfWeek':
+                    this.checkView();
                     this.createContentHeader();
                     this.createContentBody();
                     break;
@@ -1336,19 +1339,19 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         return id;
     }
     protected iconHandler(): void {
-        new Date('' + this.currentDate).setDate(1);
+        new Date(this.checkValue(this.currentDate)).setDate(1);
         switch (this.currentView()) {
             case 'Month':
-                this.previousIconHandler(this.compareMonth(new Date('' + this.currentDate), this.min) < 1);
-                this.nextIconHandler(this.compareMonth(new Date('' + this.currentDate), this.max) > -1);
+                this.previousIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+                this.nextIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.max) > -1);
                 break;
             case 'Year':
-                this.previousIconHandler(this.compareYear(new Date('' + this.currentDate), this.min) < 1);
-                this.nextIconHandler(this.compareYear(new Date('' + this.currentDate), this.max) > -1);
+                this.previousIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+                this.nextIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.max) > -1);
                 break;
             case 'Decade':
-                this.previousIconHandler(this.compareDecade(new Date('' + this.currentDate), this.min) < 1);
-                this.nextIconHandler(this.compareDecade(new Date('' + this.currentDate), this.max) > -1);
+                this.previousIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+                this.nextIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.max) > -1);
         }
     }
     /**
@@ -1471,13 +1474,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.currentDate = date;
         }
         if (+date <= +this.min) {
-            this.currentDate = new Date('' + this.min);
+            this.currentDate = new Date(this.checkValue(this.min));
         }
         if (+date >= +this.max) {
-            this.currentDate = new Date('' + this.max);
-        }
-        if (this.getModuleName() === 'daterangepicker') {
-            this.currentDate = date;
+            this.currentDate = new Date(this.checkValue(this.max));
         }
         if ((this.getViewNumber(this.depth) >= this.getViewNumber(view))) {
             if ((this.getViewNumber(this.depth) <= this.getViewNumber(this.start))
@@ -1512,7 +1512,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     };
     protected getWeek(d: Date): number {
-        let currentDate: number = new Date('' + d).valueOf();
+        let currentDate: number = new Date(this.checkValue(d)).valueOf();
         let date: number = new Date(d.getFullYear(), 0, 1).valueOf();
         let a: number = (currentDate - date);
         return Math.ceil((((a) / dayMilliSeconds) + new Date(date).getDay() + 1) / 7);
@@ -1570,16 +1570,16 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (multiSelection && !this.checkPresentDate(date, values)) {
                 let copyValues: Date[] = this.copyValues(values);
                 if (!isNullOrUndefined(values) && copyValues.length > 0) {
-                    copyValues.push(new Date('' + date));
+                    copyValues.push(new Date(this.checkValue(date)));
                     this.setProperties({ values: copyValues }, true);
                     this.setProperties({ value: values[values.length - 1] }, true);
                 } else {
-                    this.setProperties({ values: [new Date('' + date)] }, true);
+                    this.setProperties({ values: [new Date(this.checkValue(date))] }, true);
                 }
             } else {
-                this.setProperties({ value: new Date('' + date) }, true);
+                this.setProperties({ value: new Date(this.checkValue(date)) }, true);
             }
-            this.currentDate = new Date('' + date);
+            this.currentDate = new Date(this.checkValue(date));
         }
         let tableBodyElement: Element = closest(element, '.' + ROOT);
         if (isNullOrUndefined(tableBodyElement)) {
@@ -1777,7 +1777,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getMaxDays(d: Date): number {
         let date: number;
         let month: number;
-        let tmpDate: Date = new Date('' + d);
+        let tmpDate: Date = new Date(this.checkValue(d));
         date = 28;
         month = tmpDate.getMonth();
         while (tmpDate.getMonth() === month) {
@@ -1788,15 +1788,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected setDateDecade(date: Date, year: number): void {
         date.setFullYear(year);
-        this.setProperties({ value: new Date('' + date) }, true);
+        this.setProperties({ value: new Date(this.checkValue(date)) }, true);
     };
     protected setDateYear(date: Date, value: Date): void {
         date.setFullYear(value.getFullYear(), value.getMonth(), date.getDate());
         if (value.getMonth() !== date.getMonth()) {
             date.setDate(0);
         }
-        this.setProperties({ value: new Date('' + date) }, true);
-        this.currentDate = new Date('' + value);
+        this.setProperties({ value: new Date(this.checkValue(date)) }, true);
+        this.currentDate = new Date(this.checkValue(value));
     }
     protected compareMonth(start: Date, end: Date): number {
         let result: number;
@@ -1808,6 +1808,24 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             result = start.getMonth() === end.getMonth() ? 0 : start.getMonth() > end.getMonth() ? 1 : -1;
         }
         return result;
+    }
+    protected checkValue(inValue: string | Date | number): string {
+        if (inValue instanceof Date) {
+            return (inValue.toUTCString());
+        } else {
+            return ('' + inValue);
+        }
+    }
+    protected checkView(): void {
+        if (this.start !== 'Decade' && this.start !== 'Year') {
+            this.start = 'Month';
+        }
+        if (this.depth !== 'Decade' && this.depth !== 'Year') {
+            this.depth = 'Month';
+        }
+        if (this.getViewNumber(this.depth) > this.getViewNumber(this.start)) {
+            this.depth = 'Month';
+        }
     }
 }
 
@@ -1886,8 +1904,8 @@ export class Calendar extends CalendarBase {
             this.setProperties({ values: copyValues }, true);
             for (let index: number = 0; index < this.values.length; index++) {
                 if (!this.checkDateValue(this.values[index])) {
-                    if (typeof (this.values[index]) === 'string' && this.checkDateValue(new Date('' + this.values[index]))) {
-                        let copyDate: Date = new Date('' + this.values[index]);
+                    if (typeof (this.values[index]) === 'string' && this.checkDateValue(new Date(this.checkValue(this.values[index])))) {
+                        let copyDate: Date = new Date(this.checkValue(this.values[index]));
                         this.values.splice(index, 1);
                         this.values.splice(index, 0, copyDate);
                     } else {
@@ -1913,11 +1931,11 @@ export class Calendar extends CalendarBase {
     }
     protected validateDate(): void {
         if (typeof this.value === 'string') {
-            this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true); // persist the value property.
+            this.setProperties({ value: this.checkDateValue(new Date(this.checkValue(this.value))) }, true); // persist the value property.
         }
         super.validateDate(this.value);
         if (!isNullOrUndefined(this.value) && this.min <= this.max && this.value >= this.min && this.value <= this.max) {
-            this.currentDate = new Date('' + this.value);
+            this.currentDate = new Date(this.checkValue(this.value));
         }
         if (isNaN(+this.value)) {
             this.setProperties({ value: null }, true);
@@ -1981,6 +1999,7 @@ export class Calendar extends CalendarBase {
         this.changeHandler = (e: MouseEvent): void => {
             this.triggerChange(e);
         };
+        this.checkView();
         super.preRender(this.value);
     };
 
@@ -2076,9 +2095,9 @@ export class Calendar extends CalendarBase {
             switch (prop) {
                 case 'value':
                     if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: new Date('' + newProp.value) }, true);
+                        this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
                     } else {
-                        newProp.value = new Date('' + newProp.value);
+                        newProp.value = new Date(this.checkValue(newProp.value));
                     }
                     if (isNaN(+this.value)) {
                         this.setProperties({ value: oldProp.value }, true);

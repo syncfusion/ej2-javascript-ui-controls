@@ -21,6 +21,7 @@ import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { Column } from '../../../src/grid/models/column';
 import { ContextMenuItemModel } from '../../../src/grid/base/interface';
 import { Freeze } from '../../../src/grid/actions/freeze';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Page, Selection, Reorder, CommandColumn, ContextMenu, Sort, Resize,
     Group, Edit, PdfExport, ExcelExport, Freeze);
@@ -109,6 +110,11 @@ describe('context menu module', () => {
         let headers: any;
         let columns: Column[];
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: data.map(data => data),
@@ -832,7 +838,58 @@ describe('context menu module', () => {
             let target = gridObj.getHeaderTable().querySelector('tr');
             expect((gridObj.contextMenuModule as any).ensureFrozenHeader(target)).toBe(true);
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('context menu with stacked header', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowPaging: true,
+                contextMenuItems: [{ text: 'Column', target: '.e-headercell' },
+                { text: 'Row', target: 'td' }, { text: 'Footer', target: '.e-gridpager' }],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120, minWidth: 10 },
+                    {
+                        headerText: 'Order Details', columns: [
+                            { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                            { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10 },
+                        ]
+                    },
+                    {
+                        headerText: 'Ship Details', columns: [
+                            { field: 'ShippedDate', headerText: 'Shipped Date', textAlign: 'Right', width: 145, format: 'yMd', minWidth: 10 },
+                            { field: 'ShipCountry', headerText: 'Ship Country', width: 140, minWidth: 10 },
+                        ]
+                    }
+                ]
+            }, done);
+        });
+    
+        it('context menu with Stacked header', () => {
+            (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getHeaderTable().querySelector('.e-stackedheadercell') };
+            let e = {
+                event: (gridObj.contextMenuModule as any).eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            (gridObj.contextMenuModule as any).contextMenuOpen();
+            expect(gridObj.contextMenuModule.isOpen).toBe(true);
+        });
+    
         afterAll(() => {
             destroy(gridObj);
         });

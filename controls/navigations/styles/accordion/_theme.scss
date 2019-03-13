@@ -6,6 +6,10 @@
     background: $acrdn-bg-color;
     border: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
 
+    @if $skin-name == 'bootstrap4' {
+      border-radius: $acrdn-border-radius;
+    }
+
     @if $skin-name == 'highcontrast' {
       background: $acrdn-bg;
     }
@@ -21,6 +25,14 @@
       @if $skin-name == 'fabric' {
         border-bottom: 1px solid $acrdn-item-border-color;
         border-top: 1px solid $acrdn-item-border-color;
+      }
+
+      @if $skin-name == 'bootstrap4' {
+        border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
+
+        &.e-select:last-child {
+          border-bottom: 0;
+        }
       }
 
       &.e-item-focus {
@@ -78,15 +90,30 @@
         }
       }
 
+      @if $skin-name == 'bootstrap4' {
+        &.e-overlay.e-select.e-expand-state {
+          .e-acrdn-header {
+            .e-icons,
+            .e-acrdn-header-content {
+              color: $acrdn-disable-color;
+            }
+          }
+        }
+      }
+
       &.e-overlay {
         background: $acrdn-bg-color;
 
-        @if $skin-name == 'highcontrast' {
+        @if $skin-name == 'bootstrap4' {
+          opacity: $acrdn-opacity;
+        }
+
+        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap4' {
           .e-acrdn-header {
 
             .e-icons,
             .e-acrdn-header-content {
-              color: $disable;
+              color: $acrdn-disable-color;
             }
           }
         }
@@ -108,6 +135,12 @@
       }
 
       .e-acrdn-panel.e-nested {
+
+        @if $skin-name == 'bootstrap4' {
+          .e-acrdn-content .e-acrdn-item:last-child {
+            border-bottom: $acrdn-border-size $acrdn-selected-border-type $acrdn-default-border;
+          }
+        }
 
         .e-acrdn-header .e-acrdn-header-content {
           color: $acrdn-header-font;
@@ -132,6 +165,11 @@
 
         .e-acrdn-panel .e-acrdn-content {
           color: $acrdn-content-color;
+
+          @if $skin-name == 'bootstrap4' {
+            background: $acrdn-item-panel-content-select-bg;
+            border-top: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
+          }
 
           @if $skin-name == 'highcontrast' {
             background: $acrdn-selected-item-content-color;
@@ -220,12 +258,46 @@
 
       &.e-select {
 
+        @if $skin-name == 'bootstrap4' {
+          &.e-acrdn-item > .e-acrdn-header {
+            &:hover {
+              .e-icons,
+              .e-acrdn-header-content {
+                color: $acrdn-exp-hdr-hover-color;
+              }
+
+              &:focus .e-icons,
+              &:focus .e-acrdn-header-content {
+                color: $acrdn-exp-hdr-hover-focus-hdr-color;
+              }
+            }
+          }
+
+          &.e-selected > .e-acrdn-header {
+            background: $acrdn-selected-header-color;
+          }
+        }
+
         &.e-selected.e-expand-state > .e-acrdn-header,
         &.e-expand-state > .e-acrdn-header {
           @if $skin-name == 'fabric' {
             border: 1px solid $acrdn-selected-header-color;
           }
           background: $acrdn-selected-header-color;
+
+          @if $skin-name == 'bootstrap4' {
+            &:hover {
+              .e-icons,
+              .e-acrdn-header-content {
+                color: $acrdn-exp-hdr-hover-color;
+              }
+
+              &:focus .e-icons,
+              &:focus .e-acrdn-header-content {
+                color: $acrdn-exp-hdr-hover-focus-hdr-color;
+              }
+            }
+          }
 
           @if $skin-name == 'highcontrast' {
             background: $acrdn-exp-hdr-bg-color;
@@ -301,6 +373,14 @@
           &.e-select {
             border-bottom: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
             border-top: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
+
+            @if $skin-name == 'bootstrap4' {
+              border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
+
+              &.e-select:last-child {
+                border-bottom: $acrdn-border-size $acrdn-selected-border-type $acrdn-default-border;
+              }
+            }
           }
         }
 
@@ -350,6 +430,10 @@
             border: 0;
             border-bottom:  $acrdn-border-size solid $acrdn-default-border;
             border-radius: 0;
+          }
+
+          @if $skin-name == 'bootstrap4' {
+            border-radius: 4px;
           }
 
           @if $skin-name == 'highcontrast' {

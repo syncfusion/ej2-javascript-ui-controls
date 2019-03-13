@@ -516,3 +516,21 @@ export interface IMapZoomEventArgs extends IMapsEventArgs {
      */
     scale?: Object;
 }
+
+
+/** @private */
+/**
+ * Specifies the Theme style for maps.
+ */
+export interface IThemeStyle {
+    backgroundColor: string;
+    areaBackgroundColor: string;
+    titleFontColor: string;
+    subTitleFontColor: string;
+    legendTitleFontColor: string;
+    legendTextColor: string;
+    dataLabelFontColor: string;
+    tooltipFontColor: string;
+    tooltipFillColor: string;
+    zoomFillColor: string;
+}

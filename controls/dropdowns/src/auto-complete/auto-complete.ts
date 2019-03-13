@@ -48,7 +48,7 @@ export class AutoComplete extends ComboBox {
     @Complex<FieldSettingsModel>({ value: null, iconCss: null, groupBy: null }, FieldSettings)
     public fields: FieldSettingsModel;
     /**
-     * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering) 
+     * When set to ‘false’, consider the [`case-sensitive`](../../auto-complete/filtering/#case-sensitive-filtering)
      * on performing the search to find suggestions.
      * By default consider the casing.
      * @default true
@@ -63,13 +63,13 @@ export class AutoComplete extends ComboBox {
     public showPopupButton: boolean;
     /**
      * When set to ‘true’, highlight the searched characters on suggested list items.
-     * > For more details about the highlight refer to [`Custom highlight search`](../../auto-complete/how-to/custom-search) documentation. 
+     * > For more details about the highlight refer to [`Custom highlight search`](../../auto-complete/how-to/custom-search) documentation.
      * @default false
      */
     @Property(false)
     public highlight: boolean;
     /**
-     * Supports the [`specified number`](../../auto-complete/filtering#filter-item-count) 
+     * Supports the [`specified number`](../../auto-complete/filtering#filter-item-count)
      * of list items on the suggestion popup.
      * @default 20
      */
@@ -107,7 +107,7 @@ export class AutoComplete extends ComboBox {
     public minLength: number;
     /**   
      * Determines on which filter type, the component needs to be considered on search action. 
-     * The available [`FilterType`](../../auto-complete/filtering/#change-the-filter-type) 
+     * The available [`FilterType`](../../auto-complete/filtering/#change-the-filter-type)
      * and its supported data types are 
      * 
      * <table> 

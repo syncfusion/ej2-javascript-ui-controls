@@ -222,7 +222,7 @@ export interface CapModel {
 
     /**
      * The color of the cap.
-     * @default '#ffffff'
+     * @default null
      */
 
     color?: string;

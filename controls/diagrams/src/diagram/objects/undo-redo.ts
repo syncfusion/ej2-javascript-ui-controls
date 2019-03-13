@@ -2,20 +2,22 @@ import { Diagram } from '../diagram';
 import { DiagramModel } from '../diagram-model';
 import { HistoryEntry, History, } from '../diagram/history';
 import { SelectorModel } from '../interaction/selector-model';
-import { NodeModel } from '../objects/node-model';
+import { NodeModel, PhaseModel, LaneModel } from '../objects/node-model';
+import { SwimLane } from '../objects/node';
 import { Node, BpmnAnnotation } from './node';
 import { Connector } from './connector';
 import { ConnectorModel } from '../objects/connector-model';
 import { DiagramAction } from '../enum/enum';
 import { removeItem, getObjectType } from '../utility/diagram-util';
-import { cloneObject } from '../utility/base-util';
+import { cloneObject, getFunction } from '../utility/base-util';
 import { IElement, StackEntryObject } from '../objects/interface/IElement';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { PointPortModel } from '../objects/port-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { findAnnotation, findPort } from '../utility/diagram-util';
 import { PointPort } from './port';
-import { Size } from '../index';
+import { Size, GridPanel, addChildToContainer } from '../index';
+import { swimLaneMeasureAndArrange, laneInterChanged, findLaneIndex, updateSwimLaneObject, pasteSwimLane } from '../utility/swim-lane-util';
 
 /**
  * Undo redo function used for revert and restore the changes
@@ -26,13 +28,19 @@ export class UndoRedo {
 
     private childTable: NodeModel[] = [];
 
+    private historyCount: number = 0;
+
+    private hasGroup: boolean = false;
+
+    private groupCount: number = 0;
+
     /** @private */
     public initHistory(diagram: Diagram): void {
         diagram.historyManager = {
             canRedo: false, canUndo: false, currentEntry: null,
             push: diagram.addHistoryEntry.bind(diagram), undo: Function, redo: Function,
             startGroupAction: diagram.startGroupAction.bind(diagram), endGroupAction: diagram.endGroupAction.bind(diagram),
-            canLog: null, undoStack: [], redoStack: []
+            canLog: null, undoStack: [], redoStack: [], stackLimit: diagram.historyManager ? diagram.historyManager.stackLimit : undefined
         };
     }
 
@@ -61,11 +69,84 @@ export class UndoRedo {
             }
         }
         diagram.historyManager.currentEntry = entry;
+        if (diagram.historyManager.stackLimit) {
+            if (entry.type === 'StartGroup' || entry.type === 'EndGroup') {
+                let value: boolean = entry.type === 'EndGroup' ? true : false;
+                this.setEntryLimit(value);
+            }
+            if (!this.hasGroup && this.groupCount === 0) {
+                if (this.historyCount < diagram.historyManager.stackLimit) {
+                    this.historyCount++;
+                } else {
+                    this.applyLimit(diagram.historyManager.currentEntry, diagram.historyManager.stackLimit, diagram);
+                }
+            }
+        }
         this.getHistoryList(diagram);
         diagram.historyManager.canUndo = true;
         diagram.historyManager.canRedo = false;
     }
 
+    /** @private */
+    public applyLimit(list: HistoryEntry, stackLimit: number, diagram: Diagram, limitHistory?: boolean): void {
+        if (list && list.previous) {
+            if (list.type === 'StartGroup' || list.type === 'EndGroup') {
+                let value: boolean = list.type === 'StartGroup' ? true : false;
+                this.setEntryLimit(value);
+            }
+            if (!this.hasGroup && this.groupCount === 0) {
+                stackLimit--;
+            }
+            if (stackLimit === 0) {
+                if (limitHistory) {
+                    this.limitHistoryStack(list.previous, diagram);
+                }
+                if (diagram.historyManager.stackLimit < this.historyCount) {
+                    this.historyCount = diagram.historyManager.stackLimit;
+                }
+                delete list.previous;
+            } else if (list.previous) {
+                this.applyLimit(list.previous, stackLimit, diagram, limitHistory);
+            }
+        }
+        this.groupCount = 0;
+    }
+
+    /** @private */
+    public clearHistory(diagram: Diagram): void {
+        let hList: History = diagram.historyManager;
+        hList.currentEntry = undefined;
+        hList.canUndo = false;
+        hList.canRedo = false;
+        this.historyCount = 0;
+        this.groupCount = 0;
+        diagram.historyManager.undoStack = [];
+        diagram.historyManager.redoStack = [];
+    }
+
+    private setEntryLimit(value: boolean): void {
+        value ? this.groupCount-- : this.groupCount++;
+        value ? this.hasGroup = !value : this.hasGroup = value;
+    }
+
+    private limitHistoryStack(list: HistoryEntry, diagram: Diagram): void {
+        if (list.type !== 'StartGroup' && list.type !== 'EndGroup') {
+            this.removeFromStack(diagram.historyManager.undoStack, list);
+            this.removeFromStack(diagram.historyManager.redoStack, list);
+        }
+        if (list.previous) {
+            this.limitHistoryStack(list.previous, diagram);
+        }
+    }
+    private removeFromStack(entyList: HistoryEntry[], list: HistoryEntry): void {
+        if (entyList.length) {
+            for (let i: number = 0; i <= entyList.length; i++) {
+                if (entyList[i].undoObject === list.undoObject && entyList[i].redoObject === list.redoObject) {
+                    entyList.splice(i, 1); break;
+                }
+            }
+        }
+    }
     /** @private */
     public undo(diagram: Diagram): void {
         let entry: HistoryEntry = this.getUndoEntry(diagram);
@@ -144,13 +225,16 @@ export class UndoRedo {
 
     private undoEntry(entry: HistoryEntry, diagram: Diagram): void {
         let obj: SelectorModel;
+        let nodeObject: SelectorModel | Node;
         if (entry.type !== 'PropertyChanged' && entry.type !== 'CollectionChanged' && entry.type !== 'LabelCollectionChanged') {
             obj = (entry.undoObject) as SelectorModel;
+            nodeObject = (entry.undoObject) as SelectorModel;
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
             if (diagram.historyManager.undoStack.length > 0) {
                 let addObject: HistoryEntry[] = diagram.historyManager.undoStack.splice(0, 1);
                 diagram.historyManager.redoStack.splice(0, 0, addObject[0]);
+                nodeObject = (entry.undoObject) as SelectorModel;
             }
         }
         diagram.protectPropertyChange(true);
@@ -210,10 +294,60 @@ export class UndoRedo {
             case 'StackChildPositionChanged':
                 this.recordStackPositionChanged(entry, diagram, false);
                 break;
+            case 'RowHeightChanged':
+                this.recordGridSizeChanged(entry, diagram, false, true);
+                break;
+            case 'ColumnWidthChanged':
+                this.recordGridSizeChanged(entry, diagram, false, false);
+                break;
+            case 'LanePositionChanged':
+                this.recordLanePositionChanged(entry, diagram, false);
+                break;
+            case 'LaneCollectionChanged':
+            case 'PhaseCollectionChanged':
+                entry.isUndo = true;
+                this.recordLaneOrPhaseCollectionChanged(entry, diagram, false);
+                entry.isUndo = false;
+                break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
         diagram.historyChangeTrigger(entry);
+        if (nodeObject) {
+            let object: NodeModel | ConnectorModel = this.checkNodeObject(nodeObject, diagram);
+            if (object) {
+                let getnodeDefaults: Function = getFunction(diagram.updateSelection);
+                if (getnodeDefaults) {
+                    getnodeDefaults(object, diagram);
+                }
+            }
+        }
+    }
+
+    private checkNodeObject(value: SelectorModel | Node, diagram: Diagram): NodeModel | ConnectorModel {
+        let object: NodeModel | ConnectorModel;
+        if (!(value as Node).id) {
+            if (((value as SelectorModel).nodes && (value as SelectorModel).nodes.length > 0) ||
+                ((value as SelectorModel).connectors && (value as SelectorModel).connectors.length > 0)) {
+                let undoNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes.length > 0 ?
+                    (value as SelectorModel).nodes : (value as SelectorModel).connectors;
+                for (object of undoNode) {
+                    object = diagram.nameTable[object.id];
+                }
+            } else {
+                let knownNode: NodeModel[] | ConnectorModel[] = (value as SelectorModel).nodes ?
+                    (value as SelectorModel).nodes : (value as SelectorModel).connectors;
+                if (knownNode) {
+                    for (let key of Object.keys(knownNode)) {
+                        let index: number = Number(key);
+                        object = (value as SelectorModel).nodes ? diagram.nodes[index] as Node : diagram.connectors[index];
+                    }
+                }
+            }
+        } else {
+            object = diagram.nameTable[(value as Node).id];
+        }
+        return object;
     }
 
     private group(historyEntry: HistoryEntry, diagram: Diagram): void {
@@ -246,6 +380,34 @@ export class UndoRedo {
         }
     }
 
+    private recordLaneOrPhaseCollectionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
+        let node: NodeModel = entry.redoObject as NodeModel;
+        let obj: LaneModel | PhaseModel = entry.undoObject as LaneModel | PhaseModel;
+        let changeType: string;
+        if (entry.isUndo) {
+            if (entry.changeType === 'Insert') {
+                changeType = 'Remove';
+            } else {
+                changeType = 'Insert';
+            }
+        } else {
+            changeType = entry.changeType;
+        }
+        if (changeType === 'Remove') {
+            diagram.remove(node);
+        } else {
+            if ((node as Node).isPhase) {
+                let swimlane: NodeModel = diagram.nameTable[(node as Node).parentId];
+                diagram.addPhases(swimlane, [obj]);
+            } else {
+                let swimlane: NodeModel = diagram.nameTable[(node as Node).parentId];
+                let laneIndex: number = findLaneIndex(swimlane, node);
+                diagram.addLanes(swimlane, [obj], laneIndex);
+            }
+        }
+        diagram.clearSelection();
+    }
+
     private recordAnnotationChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
         let entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
         let oldElement: ShapeAnnotation | PathAnnotation = findAnnotation(
@@ -267,20 +429,25 @@ export class UndoRedo {
 
     private recordChildCollectionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
         let entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
-        let parentNode: NodeModel;
+        let parentNode: NodeModel = diagram.nameTable[(entryObject as Node).parentId];
         let actualObject: Node = diagram.nameTable[(entryObject as Node).id];
-        if (actualObject.parentId) {
-            parentNode = diagram.nameTable[actualObject.parentId];
-            parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
-            parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+        if (parentNode) {
+            addChildToContainer(diagram, parentNode, actualObject, !isRedo);
+        } else {
+            if (actualObject.parentId) {
+                parentNode = diagram.nameTable[actualObject.parentId];
+                parentNode.children.splice(parentNode.children.indexOf(actualObject.id), 1);
+                parentNode.wrapper.children.splice(parentNode.wrapper.children.indexOf(actualObject.wrapper), 1);
+            }
+            if ((entryObject as Node).parentId !== '') {
+                parentNode = diagram.nameTable[(entryObject as Node).parentId];
+                parentNode.children.push((entryObject as Node).id);
+                parentNode.wrapper.children.push(actualObject.wrapper);
+            }
+            actualObject.parentId = (entryObject as Node).parentId;
+            diagram.removeElements(actualObject);
+            diagram.updateDiagramObject(actualObject);
         }
-        if ((entryObject as Node).parentId !== '') {
-            parentNode = diagram.nameTable[(entryObject as Node).parentId];
-            parentNode.children.push((entryObject as Node).id);
-            parentNode.wrapper.children.push(actualObject.wrapper);
-        }
-        actualObject.parentId = (entryObject as Node).parentId;
-        diagram.updateDiagramObject(actualObject);
     }
 
     private recordStackPositionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
@@ -311,6 +478,50 @@ export class UndoRedo {
                 parent.wrapper.arrange(parent.wrapper.desiredSize);
                 diagram.updateDiagramObject(parent);
                 diagram.updateSelector();
+            }
+        }
+    }
+
+    private recordGridSizeChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean, isRow: boolean): void {
+        let obj: Node = (isRedo) ? entry.redoObject as Node : entry.undoObject as Node;
+        let node: Node = (!isRedo) ? entry.redoObject as Node : entry.undoObject as Node;
+        if (obj.parentId) {
+            let swimlane: NodeModel = diagram.nameTable[obj.parentId];
+            let actualObject: NodeModel = diagram.nameTable[obj.id];
+            let x: number = swimlane.wrapper.bounds.x;
+            let y: number = swimlane.wrapper.bounds.y;
+            if (swimlane.shape.type === 'SwimLane') {
+                let grid: GridPanel = swimlane.wrapper.children[0] as GridPanel;
+                let padding: number = (swimlane.shape as SwimLane).padding;
+                updateSwimLaneObject(diagram, node, swimlane, obj);
+                if (isRow) {
+                    grid.updateRowHeight(obj.rowIndex, obj.wrapper.actualSize.height, true, padding);
+                    swimlane.height = swimlane.wrapper.height = grid.height;
+                } else {
+                    grid.updateColumnWidth(obj.columnIndex, obj.wrapper.actualSize.width, true, padding);
+                    swimlane.width = swimlane.wrapper.width = grid.width;
+                    if (obj.isPhase) {
+                        actualObject.maxWidth = actualObject.wrapper.maxWidth = obj.wrapper.actualSize.width;
+                    }
+                }
+                swimLaneMeasureAndArrange(swimlane);
+                let tx: number = x - swimlane.wrapper.bounds.x;
+                let ty: number = y - swimlane.wrapper.bounds.y;
+                diagram.drag(swimlane, tx, ty);
+                diagram.clearSelection();
+                diagram.updateDiagramObject(swimlane);
+            }
+        }
+
+    }
+
+    private recordLanePositionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
+        let entryObject: StackEntryObject = ((isRedo) ? entry.redoObject : entry.undoObject) as StackEntryObject;
+        if (entryObject.source) {
+            let parent: Node = diagram.nameTable[(entryObject.source as Node).parentId];
+            if (parent && parent.shape.type === 'SwimLane') {
+                laneInterChanged(diagram, entryObject.target, entryObject.source);
+                diagram.clearSelection();
             }
         }
     }
@@ -373,7 +584,7 @@ export class UndoRedo {
         }
     }
 
-    private positionChanged(obj: NodeModel, diagram: Diagram, entry?: HistoryEntry): void {
+    private positionChanged(obj: NodeModel, diagram: Diagram): void {
         let node: NodeModel = diagram.nameTable[obj.id];
         if ((obj as Node).processId && !(node as Node).processId) {
             diagram.addProcess(obj as Node, (obj as Node).processId);
@@ -386,8 +597,15 @@ export class UndoRedo {
             let ty: number = (obj as NodeModel).margin.top - node.margin.top;
             diagram.drag(node, tx, ty);
         } else {
-            let tx: number = (obj as NodeModel).offsetX - node.wrapper.offsetX;
-            let ty: number = (obj as NodeModel).offsetY - node.wrapper.offsetY;
+            if ((node as Node).parentId) {
+                let parent: Node = diagram.nameTable[(node as Node).parentId];
+                if (parent.isLane) {
+                    obj.wrapper.offsetX = (obj.width / 2) + (parent.wrapper.bounds.x + obj.margin.left);
+                    obj.wrapper.offsetY = (obj.height / 2) + (parent.wrapper.bounds.y + obj.margin.top);
+                }
+            }
+            let tx: number = (obj as NodeModel).wrapper.offsetX - node.offsetX;
+            let ty: number = (obj as NodeModel).wrapper.offsetY - node.offsetY;
             diagram.drag(node, tx, ty);
         }
         if (diagram.bpmnModule) {
@@ -409,7 +627,7 @@ export class UndoRedo {
                         let tempNode: NodeModel | ConnectorModel = entry.childTable[nodes[i].id];
                         if ((getObjectType(tempNode) === Node)) {
                             this.sizeChanged(tempNode, diagram, entry);
-                            this.positionChanged(tempNode as NodeModel, diagram, entry);
+                            this.positionChanged(tempNode as NodeModel, diagram);
                         } else {
                             this.connectionChanged(tempNode as ConnectorModel, diagram, entry);
                         }
@@ -562,7 +780,11 @@ export class UndoRedo {
                     diagram.addTextAnnotation(obj, diagram.nameTable[(obj as BpmnAnnotation).nodeId]);
                 } else {
                     if (!diagram.nameTable[obj.id]) {
+                        if (obj && obj.shape && (obj as Node).shape.type === 'SwimLane' && entry.isUndo) {
+                            pasteSwimLane(obj as NodeModel, undefined, undefined, undefined, undefined, true);
+                        }
                         diagram.add(obj);
+
                     }
                 }
                 if ((obj as Node).processId && diagram.nameTable[(obj as Node).processId]) {
@@ -661,14 +883,17 @@ export class UndoRedo {
 
     private redoEntry(historyEntry: HistoryEntry, diagram: Diagram): void {
         let redoObject: SelectorModel;
+        let redovalue: SelectorModel | Node;
         if (historyEntry.type !== 'PropertyChanged' && historyEntry.type !== 'CollectionChanged') {
             redoObject = (historyEntry.redoObject) as SelectorModel;
+            redovalue = (historyEntry.redoObject) as SelectorModel;
         }
         diagram.diagramActions |= DiagramAction.UndoRedo;
         if (historyEntry.type !== 'StartGroup' && historyEntry.type !== 'EndGroup') {
             if (diagram.historyManager.redoStack.length > 0) {
                 let addObject: HistoryEntry[] = diagram.historyManager.redoStack.splice(0, 1);
                 diagram.historyManager.undoStack.splice(0, 0, addObject[0]);
+                redovalue = (historyEntry.redoObject) as SelectorModel;
             }
         }
         diagram.protectPropertyChange(true);
@@ -721,11 +946,33 @@ export class UndoRedo {
             case 'StackChildPositionChanged':
                 this.recordStackPositionChanged(historyEntry, diagram, true);
                 break;
+            case 'RowHeightChanged':
+                this.recordGridSizeChanged(historyEntry, diagram, true, true);
+                break;
+            case 'ColumnWidthChanged':
+                this.recordGridSizeChanged(historyEntry, diagram, true, false);
+                break;
+            case 'LanePositionChanged':
+                this.recordLanePositionChanged(historyEntry, diagram, true);
+                break;
+            case 'LaneCollectionChanged':
+            case 'PhaseCollectionChanged':
+                this.recordLaneOrPhaseCollectionChanged(historyEntry, diagram, true);
+                break;
         }
         diagram.protectPropertyChange(false);
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.historyChangeTrigger(historyEntry);
 
+        if (redovalue) {
+            let value: NodeModel | ConnectorModel = this.checkNodeObject(redovalue, diagram);
+            if (value) {
+                let getnodeDefaults: Function = getFunction(diagram.updateSelection);
+                if (getnodeDefaults) {
+                    getnodeDefaults(value, diagram);
+                }
+            }
+        }
     }
 
     private getUndoEntry(diagram: Diagram): HistoryEntry {

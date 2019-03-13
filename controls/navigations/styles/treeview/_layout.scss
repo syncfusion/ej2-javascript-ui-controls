@@ -63,7 +63,12 @@
 
     .e-list-text {
       line-height: $treeview-big-text-height;
-      min-height: $treeview-big-text-height;
+      @if $treeview-skin-name != 'bootstrap4' {
+        min-height: $treeview-big-text-height;
+      }
+      @else if $treeview-skin-name == 'bootstrap4' {
+        min-height: 38px;
+      }
       padding: $treeview-big-text-padding;
 
       .e-input-group {
@@ -89,6 +94,14 @@
     .e-list-icon,
     .e-list-img {
       margin: $treeview-big-image-margin;
+      @if $treeview-skin-name == 'bootstrap4' {
+        font-size: $treeview-big-image-font-size;
+        }
+      @if $treeview-skin-name == 'bootstrap4' {
+        & + .e-list-text {
+          padding: $treeview-big-image-text-padding;
+        }
+      }
 
       & + .e-list-icon,
       & + .e-list-img {
@@ -96,12 +109,43 @@
       }
     }
 
+    .e-icon-collapsible,
+    .e-icon-expandable {
+      @if $treeview-skin-name == 'bootstrap4' {
+        height: $treeview-big-icon-size;
+        margin: $treeview-big-icon-margin;
+        width: $treeview-big-icon-size;
+      }
+  }
+
     .e-icon-collapsible::before,
     .e-icon-expandable::before {
       padding: $treeview-big-icon-padding;
     }
 
+    &.e-drag-item {
+
+      @if $treeview-skin-name == 'bootstrap4' {
+
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          font-size: $treeview-big-drag-icon-font-size;
+          padding: $treeview-big-drag-icon-padding;
+        }
+
+        .e-drop-count {
+          border: $treeview-big-drop-count-border-size solid;
+        }
+      }
+    }
+
     &.e-rtl {
+      @if $treeview-skin-name == 'bootstrap4' {
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          margin: $treeview-big-rtl-icon-margin;
+        }
+      }
 
       .e-checkbox-wrapper {
         margin: $treeview-big-rtl-check-margin;
@@ -223,7 +267,12 @@
       display: inline-block;
       line-height: $treeview-text-height;
       margin: $treeview-text-margin;
-      min-height: $treeview-text-height;
+      @if $treeview-skin-name != 'bootstrap4' {
+        min-height: $treeview-text-height;
+      }
+      @else if $treeview-skin-name == 'bootstrap4' {
+        min-height: 30px;
+      }
       padding: $treeview-text-padding;
       text-decoration: none;
       vertical-align: middle;
@@ -362,9 +411,16 @@
       .e-text-content {
         float: left;
       }
+      @if $treeview-skin-name == 'bootstrap4' {
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          margin:  $treeview-drag-icon-margin;
+        }
+      }
 
       .e-icon-collapsible::before,
       .e-icon-expandable::before {
+        font-size: $treeview-drag-icon-font-size;
         padding: $treeview-drag-icon-padding;
       }
 
@@ -373,10 +429,18 @@
         border-radius: 15px;
         box-sizing: content-box;
         font-size: $treeview-drop-count-font-size;
-        line-height: normal;
+        @if $treeview-skin-name == 'bootstrap4' {
+          font-family: 'Helvetica Neue';
+          line-height: 1.5;
+          min-width: 10px;
+          padding: 0 5px;
+        }
+        @else {
+          line-height: normal;
+          min-width: 12px;
+          padding: 3px 5px 4px;
+        }
         margin-left: -12px;
-        min-width: 12px;
-        padding: 3px 5px 4px;
         position: absolute;
         text-align: center;
         top: -10px;
@@ -440,6 +504,13 @@
 
         .e-text-content {
           float: right;
+        }
+
+        .e-icon-collapsible,
+        .e-icon-expandable {
+          @if $treeview-skin-name == 'bootstrap4' {
+            margin: $treeview-rtl-drag-margin;
+          }
         }
 
         .e-drop-count {

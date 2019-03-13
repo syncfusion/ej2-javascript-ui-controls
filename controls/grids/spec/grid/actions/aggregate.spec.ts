@@ -18,6 +18,7 @@ import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { DataManager, ODataAdaptor, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Aggregate, Edit, Group, Toolbar, Selection, Freeze);
 
@@ -51,6 +52,11 @@ describe('Aggregates Functionality testing', () => {
         let grid: Grid;
         let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             grid = createGrid(
                 {
                     columns: [
@@ -1115,6 +1121,15 @@ describe('Aggregates Functionality testing', () => {
             grid.editModule.saveCell();
             expect((grid.getFooterContent().querySelector('.e-templatecell') as HTMLElement).innerText).toBe('Sum: $696.45');
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
         afterAll(() => {
             destroy(grid);
         });

@@ -211,6 +211,7 @@ $input-bigger-small-left-child-min-height: $zero-value !default;
 $input-bigger-small-left-child-min-width: $zero-value !default;
 $input-icon-inner-width: $zero-value !default;
 $input-icon-inner-height: $zero-value !default;
+$input-readonly-bg-color: none !default;;
 $input-icon-shadow: inset  0 3px 5px rgba(0, 0, 0, .125) !default;
 $input-border-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-box-border-focus, .6) !default;
 $input-error-border-shadow:  inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba($input-error-color, .6) !default;

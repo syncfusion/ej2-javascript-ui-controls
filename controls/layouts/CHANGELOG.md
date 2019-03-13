@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### Splitter
+
+#### Bug Fixes
+
+- The issue with not able to set null value value for `cssClass` API has been fixed
+
+#### New Features
+
+- **Expand and Collapse**: This feature allows you configure and interact with the expand and collapse functionality of splitter.
+
 ## 16.4.55 (2019-02-27)
 
 ### Splitter
@@ -25,6 +37,17 @@
 #### Bug Fixes
 
 - The issue with white background for the Card control has been fixed in Material theme.
+
+## 17.1.1-beta (2019-01-29)
+
+### DashboardLayout
+
+The DashboardLayout is a grid structured layout control that helps create a dashboard with panels. Panels hold the UI components and allow resize, reorder, drag-n-drop, remove and add options. This allows users to easily place the components at the desired position within the grid layout.
+
+- **Drag and Drop**: Allows drag and drop of panels at the desired location within the dashboard.
+- **Resizing**: Support to resize the panels in any direction as per the requirement.
+- **Floating**: Floats the panels upward when the dragging option is enabled.
+- **Media Query**: Allows the panels to be stacked when the specified resolution is met.
 
 ## 16.4.47 (2019-01-16)
 

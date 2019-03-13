@@ -118,10 +118,10 @@ export abstract class Port extends ChildProperty<Port> {
 
     /**
      * Defines the constraints of port
-     * @default 'None'
+     * @default 'Default'
      * @aspNumberEnum 
      */
-    @Property(PortConstraints.None)
+    @Property(PortConstraints.Default)
     public constraints: PortConstraints;
 
     /**
@@ -146,5 +146,13 @@ export class PointPort extends Port {
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
+    }
+
+    /**
+     * @private
+     * Returns the name of class PointPort
+     */
+    public getClassName(): string {
+        return 'PointPort';
     }
 }

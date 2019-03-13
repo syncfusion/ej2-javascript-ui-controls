@@ -7,6 +7,7 @@
 
     & .e-switch-off {
       background-color: $switch-off-bg-color;
+      color: $switch-inner-off-font-color;
     }
 
     & .e-switch-handle {
@@ -41,14 +42,23 @@
     }
 
     &.e-switch-disabled {
+      & .e-switch-handle.e-switch-active {
+        box-shadow: $switch-handle-shadow-disabled;
+      }
+
       & .e-switch-handle {
         background-color: $switch-handle-disabled-bg-color;
         box-shadow: $switch-handle-shadow-disabled;
       }
 
-      & .e-switch-inner .e-switch-on,
       & .e-switch-inner .e-switch-off {
         background-color: $switch-on-off-disabled-bg-color;
+        color: $switch-disabled-font-color;
+        opacity: $switch-on-off-disabled-bg-color-opacity;
+      }
+
+      & .e-switch-inner .e-switch-on {
+        background-color: $switch-on-disabled-bg-color;
         color: $switch-disabled-font-color;
         opacity: $switch-on-off-disabled-bg-color-opacity;
       }
@@ -105,6 +115,12 @@
         background-color: $switch-handle-hover-bg-color;
       }
       }
+
+    &:not(.e-switch-disabled):hover {
+      & .e-switch-handle:not(.e-switch-active) {
+        background-color: $switch-handle-off-hover-bg-color;
+      }
+    }
 
     &.e-focus {
       & .e-switch-inner {
@@ -186,16 +202,21 @@
     }
 
       &.e-switch-disabled {
-        & .e-switch-handle {
-          background-color: $switch-handle-disabled-bg-color;
-          box-shadow: $switch-handle-shadow-disabled;
-        }
-
         & .e-switch-inner .e-switch-on,
         & .e-switch-inner .e-switch-off {
           background-color: $switch-on-off-disabled-bg-color;
           color: $switch-disabled-font-color;
           opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
+
+        & .e-switch-handle {
+          background-color: $switch-handle-disabled-bg-color;
+          box-shadow: $switch-handle-shadow-disabled;
+        }
+
+        & .e-switch-handle.e-switch-active {
+          background-color: $switch-handle-on-disabled-bg-color;
+          box-shadow: $switch-handle-shadow-disabled;
         }
 
         & .e-switch-inner {

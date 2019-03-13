@@ -63,6 +63,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private changeEventArgs: ChangeEventArgs;
     private focusEventArgs: NumericFocusEventArgs;
     private blurEventArgs: NumericBlurEventArgs;
+
     private isInteract: boolean;
 
     /*NumericTextBox Options */
@@ -289,6 +290,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     @Event()
     public blur: EmitType<NumericBlurEventArgs>;
+
 
     constructor(options?: NumericTextBoxModel, element?: string | HTMLInputElement) {
         super(options, <HTMLInputElement | string>element);

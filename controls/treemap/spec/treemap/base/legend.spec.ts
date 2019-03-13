@@ -2,10 +2,11 @@
 import { TreeMap } from '../../../src/treemap/treemap';
 import { TreeMapLegend } from '../../../src/treemap/layout/legend';
 import { ILoadedEventArgs } from '../../../src/treemap/model/interface';
+import { TreeMapHighlight } from '../../../src/treemap/user-interaction/highlight-selection';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { jobData, sportsData, hierarchicalData, Country_Population, CarSales, Metals } from '../base/data.spec';
-TreeMap.Inject(TreeMapLegend);
+TreeMap.Inject(TreeMapLegend, TreeMapHighlight);
 
 let jobDataSource: Object[] = jobData;
 let gameDataSource: Object[] = sportsData;
@@ -1481,5 +1482,290 @@ describe('TreeMap Component Base Spec', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+    describe('TreeMap Default legend spec with RTL', () => {
+        let element: Element; let elementShape : Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            elementShape = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                titleSettings: {
+                    text: 'Car Sales by Country - 2017',
+                    textStyle: { size: '15px' }
+                },
+                format: 'n',
+                useGroupingSeparator: true,
+                dataSource: CarSales,
+                enableRtl:true,
+                colorValuePath: 'color',
+                legendSettings: {
+                    visible: true,
+                    position: 'Left',
+                    shape: 'Rectangle',
+                },
+                tooltipSettings: {
+                    visible: true
+                },
+                weightValuePath: 'Sales',
+                leafItemSettings: {
+                    labelPath: 'Company',
+                    border: { color: 'white', width: 0.5 }
+                },
+                levels: [
+                    {
+                        groupPath: 'Continent', border: { color: 'white', width: 0.5 },
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Checking default legend with RTL position as left', () => {            
+            treemap.loaded = (args: ILoadedEventArgs) => {                
+                elementShape = document.getElementById('container_Legend_Shape_Index_3');
+                expect(elementShape.getAttribute('aria-label')).toBe('India');
+                expect(elementShape.getAttribute('fill')).toBe('#483D8B');                
+            };
+            treemap.refresh();
+        });
+    });
+    describe('TreeMap Interactive legend spec with RTL', () => {
+        let element: Element; let elementShape : Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        beforeAll(() => {            
+            element = createElement('div', { id: id });
+            elementShape = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                titleSettings: {
+                    text: 'Car Sales by Country - 2017',
+                    textStyle: { size: '15px' }
+                },
+                format: 'n',
+                useGroupingSeparator: true,
+                dataSource: CarSales,
+                enableRtl:true,
+                colorValuePath: 'color',
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',                    
+                    mode:'Interactive'
+                },
+                tooltipSettings: {
+                    visible: true
+                },
+                highlightSettings:{
+                    enable:true
+                },
+                weightValuePath: 'Sales',
+                leafItemSettings: {
+                    labelPath: 'Company',
+                    border: { color: 'white', width: 0.5 }
+                },
+                levels: [
+                    {
+                        groupPath: 'Continent', border: { color: 'white', width: 0.5 },
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Checking Interactive legend with RTL', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('container_Legend_Index_3');
+                expect(element.getAttribute('x')).toBe('406');
+                expect(element.getAttribute('y')).toBe('10');
+                expect(element.getAttribute('width')).toBe('58');
+                expect(element.getAttribute('height')).toBe('25');                
+                
+            };
+            treemap.refresh();
+        });
+        it('Checking Mouse Leave on Interactive legend', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                debugger
+                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_1_Item_Index_14_RectPath');               
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+               treemap.mouseLeaveOnTreeMap(<PointerEvent>eventObj);                               
+            };
+            //treemap.highlightSettings.enable = true;
+            treemap.refresh();
+        });        
+    });
+    describe('TreeMap Interactive legend RTL support in colormapping', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'interactive-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: jobData,
+                enableRtl:true,                
+                highlightSettings: {
+                    enable: false
+                },
+                selectionSettings: {
+                    enable: false
+                },
+                legendSettings: {
+                    visible: true,
+                    mode:'Interactive',
+                    title: {
+                        text: 'Legend'
+                    },
+                    border: {
+                        color: 'black',
+                        width: 2
+                    }
+                },
+                weightValuePath: 'EmployeesCount',
+                rangeColorValuePath: 'EmployeesCount',
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    colorMapping: [{
+                        from: 10,
+                        to: 35,
+                        color: ['red','green'],
+                    },                   
+                    {
+                        from: 70,
+                        to: 80,
+                        color: ['#A52A2A','#FFFF00','blue','#3d2b1f'],
+                    },
+                    {
+                        from: 90,
+                        to: 150,
+                        color: ['#FFA500','#800080','Orange','#79443b','#dcb68a'],
+                    },
+                 ]
+                },            
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+                		
+        it('Checking interactive legend with RTL in colormapping ', () => {            
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('interactive-container_Legend_Index_0');
+                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                
+            };            
+            treemap.refresh();
+        });
+        it('Checking Interactive legend with RTL with left position', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('interactive-container_Legend_Index_0');
+                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                    
+                
+            };
+            treemap.legendSettings.position='Left';
+            treemap.refresh();
+        });
+        it('Checking Interactive legend with RTL with right position', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('interactive-container_Legend_Index_0');
+                expect(element.getAttribute('fill')).toBe('url(#linear_0)');                    
+                
+            };
+            treemap.legendSettings.position='Right';
+            treemap.refresh();
+        });
+    
+    });
+    describe('TreeMap Legend Responsive spec', () => {
+        let element: Element; let elementShape : Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            elementShape = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                titleSettings: {
+                    text: 'Car Sales by Country - 2017',
+                    textStyle: { size: '15px' }
+                },
+                format: 'n',
+                useGroupingSeparator: true,
+                dataSource: CarSales,
+                enableRtl:true,
+                colorValuePath: 'color',
+                legendSettings: {
+                    visible: true,
+                    position: 'Auto',
+                    shape: 'Rectangle',
+                },
+                tooltipSettings: {
+                    visible: true
+                },
+                weightValuePath: 'Sales',
+                leafItemSettings: {
+                    labelPath: 'Company',
+                    border: { color: 'white', width: 0.5 }
+                },
+                levels: [
+                    {
+                        groupPath: 'Continent', border: { color: 'white', width: 0.5 },
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Checking Legend Responsive support with legend position as auto with greater width', () => {            
+            treemap.loaded = (args: ILoadedEventArgs) => {                
+                elementShape = document.getElementById('container_Legend_Shape_Index_3');               
+                expect(elementShape.getAttribute('aria-label')).toBe('India');
+                expect(elementShape.getAttribute('fill')).toBe('#483D8B');  
+                
+            };
+            treemap.width = '700';
+            treemap.height = '600';
+            treemap.refresh();
+        });
+        it('Checking Legend Responsive support with legend position as auto with greater height', () => {            
+            treemap.loaded = (args: ILoadedEventArgs) => {                
+                elementShape = document.getElementById('container_Legend_Shape_Index_3');               
+                expect(elementShape.getAttribute('aria-label')).toBe('India');
+                expect(elementShape.getAttribute('fill')).toBe('#483D8B');  
+                
+            };
+            treemap.width = '500';
+            treemap.height = '600';
+            treemap.refresh();
+        });
     });
 });

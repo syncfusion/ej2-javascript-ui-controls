@@ -124,14 +124,17 @@ export class LinkAnnotation {
      */
     public modifyZindexForTextSelection(pageNumber: number, isAdd: boolean): void {
         if (this.pdfViewerBase.pageCount > 0) {
-            let pageChildNodes: NodeList = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).childNodes;
-            for (let i: number = 0; i < pageChildNodes.length; i++) {
-                let childElement: HTMLElement = (pageChildNodes[i] as HTMLElement);
-                if (childElement.tagName === 'A') {
-                    if (isAdd) {
-                        childElement.classList.add('e-pv-onselection');
-                    } else {
-                        childElement.classList.remove('e-pv-onselection');
+            let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber);
+            if (pageDiv) {
+                let pageChildNodes: NodeList = pageDiv.childNodes;
+                for (let i: number = 0; i < pageChildNodes.length; i++) {
+                    let childElement: HTMLElement = (pageChildNodes[i] as HTMLElement);
+                    if (childElement.tagName === 'A') {
+                        if (isAdd) {
+                            childElement.classList.add('e-pv-onselection');
+                        } else {
+                            childElement.classList.remove('e-pv-onselection');
+                        }
                     }
                 }
             }

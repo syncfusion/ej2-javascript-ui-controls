@@ -6,9 +6,10 @@ import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
 import { StripLineSettingsModel } from '../model/chart-base-model';
 import {
-    Rect, TextOption, measureText, valueToCoefficient, textElement, RectOption,
-    Size, PathOption, appendChildElement, appendClipElement, withIn, getElement
+    valueToCoefficient, textElement, RectOption,
+    appendChildElement, appendClipElement, withIn, getElement
 } from '../../common/utils/helper';
+import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { ZIndex, Anchor, sizeType } from '../utils/enum';
 /**
  * `StripLine` module is used to render the stripLine in chart.

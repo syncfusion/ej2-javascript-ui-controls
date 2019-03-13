@@ -2,7 +2,8 @@
 @import 'group-button-mixin.scss';
 @include export-module('button-group-theme') {
 // sass-lint:disable-all
-  .e-btn-group {
+  .e-btn-group,
+  .e-css.e-btn-group {
     &:not(.e-outline) {
       box-shadow: $btn-box-shadow;
     }

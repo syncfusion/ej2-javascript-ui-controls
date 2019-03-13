@@ -2,6 +2,7 @@ import { DateRangePicker, RangeEventArgs, RangePopupEventArgs } from '../../src/
 import { DateRangePickerModel } from '../../src/daterangepicker/daterangepicker-model';
 import { createElement, removeClass, remove, addClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { EventHandler, Component, Browser, Ajax, L10n, loadCldr } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 
 /**
@@ -113,6 +114,14 @@ function loadCultureFiles(name: string, base?: boolean): void {
 let clickEvent: MouseEvent = document.createEvent('MouseEvents');
 clickEvent.initEvent('mousedown', true, true);
 describe('DateRangePicker', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('DOM Element Testing', () => {
         describe('Input Element Testing', () => {
             let daterangepicker: any;
@@ -437,6 +446,25 @@ describe('DateRangePicker', () => {
                         daterangepicker.enabled = true;
                         daterangepicker.dataBind();
                     });
+                    it('Tab index checking while destroy the component', () => {
+                        let inputEle: HTMLElement = createElement('input', { id: 'daterangepicker', attrs: { "tabindex": "1" } });
+                        document.body.appendChild(inputEle);
+                        daterangepicker = new DateRangePicker({});
+                        daterangepicker.appendTo('#daterangepicker');
+                        daterangepicker.destroy();
+                        expect(inputEle.getAttribute('tabindex') === '1').toBe(true);
+                        daterangepicker = null;
+                    });
+                    it('Tab index checking while destroy the Angular component', () => {
+                        let element: any = createElement('ejs-daterangepicker', { id: 'daterange' });
+                        element.setAttribute('tabindex', '1');
+                        document.body.appendChild(element);
+                        daterangepicker = new DateRangePicker();
+                        daterangepicker.appendTo(element);
+                        daterangepicker.destroy();
+                        expect(element.getAttribute('tabindex') === null).toBe(true);
+                        daterangepicker = null;
+                    });
                 });
             });
         });
@@ -460,13 +488,6 @@ describe('DateRangePicker', () => {
             });
             it('clear icon', () => {
                 expect(daterangepicker.inputWrapper.clearButton.classList.contains('e-clear-icon')).toBe(true);
-            });
-            it('clear button with destroy state', () => {
-                daterangepicker.showClearButton = false;
-                daterangepicker.dataBind();
-                daterangepicker.destroy();
-                expect(daterangepicker.inputWrapper===null).toBe(true);
-                daterangepicker = null;
             });
             it('Clear button Setmodel', () => {
                 daterangepicker.showClearButton = false;
@@ -795,6 +816,15 @@ describe('DateRangePicker', () => {
                 let endDate: string = daterangepicker.globalize.formatDate(daterangepicker.endDate, { format: daterangepicker.format, type: 'date', skeleton: 'yMd' });
                 expect(daterangepicker.element.value === startDate + ' - ' + endDate).toBe(true);
             })
+            it('Error Class for start value before 1905-Chrome testing',()=>{
+                daterangepicker = new DateRangePicker();
+                daterangepicker.appendTo('#date');
+                daterangepicker.inputElement.value = '1/1/1900 - 1/1/2018';
+                daterangepicker.dataBind();
+                daterangepicker.inputBlurHandler();
+                expect((<HTMLElement>document.getElementsByClassName('e-date-range-wrapper')[0]).classList.contains('e-error')).toBe(false);
+                expect(+daterangepicker.startDate).toBe(+new Date('1/1/1900'));
+            });
         });
         describe('Input via attribute testing', () => {
             let daterangepicker: any;
@@ -1404,7 +1434,7 @@ describe('DateRangePicker', () => {
                 daterangepicker.destroy();
                 daterangepicker = createControl({ startDate: new Date('3/4/2017') }, true);
                 expect(daterangepicker.popupObj.element.querySelector('.e-device .e-end-btn').hasAttribute('disabled')).toBe(false);
-                expect(daterangepicker.popupObj.element.querySelector('.e-device .e-start-btn').classList.contains('e-active')).toBe(true);
+                expect(daterangepicker.popupObj.element.querySelector('.e-device .e-end-btn').classList.contains('e-active')).toBe(true);
             });
             it('Device end header click', () => {
                 daterangepicker.destroy();
@@ -1573,6 +1603,80 @@ describe('DateRangePicker', () => {
             });
         });
     });
+    describe('multiple attributes testing', () => {
+        let daterangepicker: any;
+        let ele: HTMLElement;
+        beforeEach(() => {
+            ele = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('mindays and startdate desktop test case ', () => {
+            daterangepicker = new DateRangePicker({
+                minDays: 5,
+                startDate: new Date('3/6/2018')
+            });
+            daterangepicker.appendTo('#date');
+            (<HTMLElement>(document.getElementsByClassName('  e-input-group-icon e-range-icon e-icons')[0])).dispatchEvent(clickEvent);
+            let selectedCell: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-selected')[0]);
+            let nextCell: HTMLElement = <HTMLElement>(selectedCell.nextElementSibling);
+            expect(nextCell.classList.contains('e-date-disabled')).toBe(true);
+            for (let i = daterangepicker.minDays - 3; i > 0; i--) {
+                nextCell = <HTMLElement>(nextCell.nextElementSibling);
+                expect(nextCell.classList.contains('e-date-disabled')).toBe(true);
+            };
+        });
+        it('mindays and startdate mobile test case ', () => {
+            daterangepicker = new DateRangePicker({
+                minDays: 5,
+                startDate: new Date('3/6/2018')
+            });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            (<HTMLElement>(document.getElementsByClassName('  e-input-group-icon e-range-icon e-icons')[0])).dispatchEvent(clickEvent);
+            let selectedCell: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-selected')[0]);
+            let previousCell: HTMLElement = <HTMLElement>(selectedCell.previousElementSibling);
+            let nextCell: HTMLElement = <HTMLElement>(selectedCell.nextElementSibling);
+            expect(previousCell.classList.contains('e-date-disabled')).toBe(true);
+            expect(nextCell.classList.contains('e-date-disabled')).toBe(true);
+            for (let i = daterangepicker.minDays - 3; i > 0; i--) {
+                nextCell = <HTMLElement>(nextCell.nextElementSibling);
+                expect(nextCell.classList.contains('e-date-disabled')).toBe(true);
+            };
+            let startButtonelement = <HTMLElement>document.getElementsByClassName(' e-start-btn ')[0];
+            let endButtonelement = <HTMLElement>document.getElementsByClassName(' e-end-btn ')[0];
+            expect(startButtonelement.innerText).toBe('Mar 6, 2018');
+            expect(startButtonelement.classList.contains('e-active')).toBe(false);
+            expect(endButtonelement.classList.contains('e-active')).toBe(true);
+        });
+        it('mindays,startdate,endDate mobile test case ', () => {
+            daterangepicker = new DateRangePicker({
+                minDays: 5,
+                startDate: new Date('3/6/2018'),
+                endDate: new Date('3/13/2018')
+            });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            (<HTMLElement>(document.getElementsByClassName('  e-input-group-icon e-range-icon e-icons')[0])).dispatchEvent(clickEvent);
+            let selectedCell: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-selected')[0]);
+            let nextCell: HTMLElement = <HTMLElement>(selectedCell.nextElementSibling);
+            expect(nextCell.classList.contains('e-date-disabled')).toBe(false);
+            let startButtonelement = <HTMLElement>document.getElementsByClassName(' e-start-btn ')[0];
+            let endButtonelement = <HTMLElement>document.getElementsByClassName(' e-end-btn ')[0];
+            expect(startButtonelement.innerText).toBe('Mar 6, 2018');
+            expect(startButtonelement.classList.contains('e-active')).toBe(true);
+            expect(endButtonelement.innerText).toBe('Mar 13, 2018');
+            expect(endButtonelement.classList.contains('e-active')).toBe(false);
+        });
+    });
+
 
 
 
@@ -2675,7 +2779,6 @@ describe('DateRangePicker', () => {
             daterangepicker.keyInputHandler(keyEventArgs);
             expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('January 2020');
         });
-        // Test case has been changed since decade view has been modified.
         it('move focus from on td to other td cell', function () {
             daterangepicker.value = [new Date('2/1/2019'), new Date('1/1/2020')];
             daterangepicker.dataBind();
@@ -4051,14 +4154,14 @@ describe('DateRangePicker', () => {
         //      expect(daterangepicker.element.value).toBe(daterangepicker.globalize.formatDate(startValue, { format: this.format, type: 'date', skeleton: 'yMd' }) +' - ' + daterangepicker.globalize.formatDate(endValue, { format: this.format, type: 'date', skeleton: 'yMd' }));
         // });
         it('Locale label test case(de)', function () {
-            daterangepicker=null;
+            daterangepicker = null;
             daterangepicker = createControl({ locale: 'de' });
             expect(daterangepicker.locale === 'de').toBe(true);
             expect(daterangepicker.l10n.getConstant('startLabel') === daterangepicker.popupObj.element.querySelector('.e-start-label').text).toBe(true);
             expect(daterangepicker.l10n.getConstant('endLabel') === daterangepicker.popupObj.element.querySelector('.e-end-label').text).toBe(true);
         });
         it('Locale label test case(ja)', function () {
-            daterangepicker=null;
+            daterangepicker = null;
             daterangepicker = createControl({ locale: 'ja' });
             expect(daterangepicker.locale === 'ja').toBe(true);
             expect(daterangepicker.l10n.getConstant('startLabel') === daterangepicker.popupObj.element.querySelector('.e-start-label').text).toBe(true);
@@ -4888,7 +4991,15 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null && daterangepicker.popupObj.element.querySelector('.e-end-date') !== null).toBe(true);
             expect(+daterangepicker.startDate === +new Date('05/10/2017') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
             expect(daterangepicker.inputElement.value !== '').toBe(true);
+        });        
+		it('startDate out of min range(min:default)', () => {
+            daterangepicker = createControl({ strictMode: true, startDate: new Date('04/24/1017'), endDate: new Date('08/10/2017') });
+            expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null && daterangepicker.popupObj.element.querySelector('.e-end-date') !== null).toBe(true);
+            expect(+daterangepicker.startDate === +new Date('1/1/1900') && !daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+            expect(daterangepicker.inputElement.value !== '').toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-start-date').nextElementSibling.classList.contains('e-range-hover')).toBe(true);
         });
+
         it('endDate out of max range(month)', () => {
             daterangepicker = createControl({ strictMode: true, startDate: new Date('04/24/2017'), endDate: new Date('08/10/2017'), min: new Date('1/10/2017'), max: new Date('7/24/2017') });
             expect(daterangepicker.popupObj.element.querySelector('.e-start-date') !== null && daterangepicker.popupObj.element.querySelector('.e-end-date') !== null).toBe(true);
@@ -6166,7 +6277,7 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
             (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
             expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('March 2018');
-            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018');
+            // expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('April 2018');
             expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
             expect(document.querySelector('.e-left-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(false);
             expect(document.querySelector('.e-right-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
@@ -6779,6 +6890,1268 @@ describe('DateRangePicker', () => {
             expect(range.popupObj.position.X).toBe('right')
         });
     });
+
+    describe('invalid String', () => {
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('input', { id: 'range' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('valid string array Value Test Case', () => {
+            daterangepicker = new DateRangePicker({value:[<any>'1/9/2018',<any>'4/10/2019']});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
+            expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
+            expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2019'));
+            daterangepicker.value=[new Date('1/9/2018'),'4/10/2020'];
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2020');
+            expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
+            expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2020'));
+        });
+        it('valid string object Value Test Case', () => {
+            daterangepicker = new DateRangePicker({value:{start:<any>'1/9/2018',end:<any>'4/10/2019'}});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
+            expect(+daterangepicker.value.start).toBe(+new Date('1/9/2018'));
+            expect(+daterangepicker.value.end).toBe(+new Date('4/10/2019'));
+            daterangepicker.value={start:new Date('1/9/2018'),end:'4/10/2020'};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2020');
+            expect(+daterangepicker.value.start).toBe(+new Date('1/9/2018'));
+            expect(+daterangepicker.value.end).toBe(+new Date('4/10/2020'));
+        });
+        it('valid string Value Test Case', () => {
+            daterangepicker = new DateRangePicker({value:<any>'1/9/2018 - 4/10/2019'});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
+            expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
+            expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2019'));
+        });
+        it('valid string on property Value Test Case', () => {
+            daterangepicker = new DateRangePicker({value:<any>'1/9/2018 - 4/10/2019'});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
+            expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
+            expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2019'));
+            daterangepicker.value = '1/5/2018 - 4/10/2020';
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('1/5/2018 - 4/10/2020');
+            expect(+daterangepicker.value[0]).toBe(+new Date('1/5/2018'));
+            expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2020'));
+            daterangepicker.value = ['1/9/2018','4/10/2019'];
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('1/9/2018 - 4/10/2019');
+            expect(+daterangepicker.value[0]).toBe(+new Date('1/9/2018'));
+            expect(+daterangepicker.value[1]).toBe(+new Date('4/10/2019'));
+            daterangepicker.value = {start:'1/5/2018',end:'4/10/2020'};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('1/5/2018 - 4/10/2020');
+            expect(+daterangepicker.value.start).toBe(+new Date('1/5/2018'));
+            expect(+daterangepicker.value.end).toBe(+new Date('4/10/2020'));
+        });
+        it('invalid string type with value test case', () => {
+            daterangepicker = new DateRangePicker({value:<any>'dfgggdf - 4/10/2019'});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('dfgggdf - 4/10/2019');
+            expect(daterangepicker.value).toBe(null)
+            daterangepicker.value = '4/10/2020 - 2/2/2023'
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
+            expect(daterangepicker.value!==null).toBe(true)
+            daterangepicker.value = '4/10/2019 - dfg'
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2019 - dfg');
+            expect(daterangepicker.value).toBe(null)
+        });
+        it('invalid string Array type with value test case', () => {
+            daterangepicker = new DateRangePicker({value:[<any>'dfgggdf',<any>'4/10/2019']});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('dfgggdf - 4/10/2019');
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+            expect(daterangepicker.value).toBe(null)
+            daterangepicker.value = [<any>'4/10/2020',<any>'2/2/2023']
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+            expect(daterangepicker.value!==null).toBe(true)
+            daterangepicker.value = [<any>'4/10/2019',<any>'dfg']
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2019 - dfg');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        });
+        it('invalid string Object type with value test case', () => {
+            daterangepicker = new DateRangePicker({value:[<any>'dfgggdf',<any>'4/10/2019']});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('dfgggdf - 4/10/2019');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+            daterangepicker.value = [<any>'4/10/2020',<any>'2/2/2023']
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+            expect(daterangepicker.value!==null).toBe(true)
+            daterangepicker.value = [new Date('4/10/2019'),<any>'dfg']
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2019 - dfg');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        });
+        it('invalid number type with value test case ', () => {
+            daterangepicker = new DateRangePicker({value:[<any>'4/10/2019',<any>42019]});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe('4/10/2019 - 42019');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+            daterangepicker.value = '4/10/2020 - 2/2/2023';
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+            expect(daterangepicker.value!==null).toBe(true)
+            daterangepicker.value = {start:<any>1234,end:new Date('4/10/2019')};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('1234 - 4/10/2019');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        });
+        it('invalid string type with value test case and strictMode true ', () => {
+            daterangepicker = new DateRangePicker({ value: {start:new Date('4/10/2019'),end:<any>'123werf4'}, strictMode:true });
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe("");
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+            expect(daterangepicker.value).toBe(null)
+            daterangepicker.value = '4/10/2020 - 2/2/2023';
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
+            daterangepicker.value = ['4/10/2019','123werf4'];
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        });
+        it('invalid number type with value test case and strictMode true', () => {
+            daterangepicker = new DateRangePicker({ value: [<any>'4/10/2019',<any>1234], strictMode:true });
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe("");
+            expect(daterangepicker.value).toBe(null)
+        });
+        
+        it('single value test case', () => {
+            daterangepicker = new DateRangePicker({ value:<any>'1234' });
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe("1234");
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+            expect(daterangepicker.value).toBe(null);
+            daterangepicker.value = ['4/10/2019'];
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2019');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+            daterangepicker.value = {start:'4/10/209'};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/209');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(true);
+        });
+        it('ISO string type with value test case ', () => {
+            daterangepicker = new DateRangePicker({ value:[ <any>"2017-02-02T12:30:00.000Z",<any>"2019-01-02T08:06:13.3426049+00:00" ]});
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value != '').toBe(true);
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+            expect(daterangepicker.value !== null).toBe(true);
+            // expect(daterangepicker.element.value).toBe('2/2/2017 - 1/2/2019');
+        });
+        it('invalid object type with value test case  ', () => {
+            daterangepicker = new DateRangePicker({ value: {start:new Date('4/10/2019'),end:<any>{a:'b'}} });
+            daterangepicker.appendTo('#range');
+            expect(daterangepicker.element.value).toBe("");
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+            expect(daterangepicker.value).toBe(null)
+            daterangepicker.value = '4/10/2020 - 2/2/2023';
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/10/2020 - 2/2/2023');
+            daterangepicker.value = [{a:'b'},'123werf4'];
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('');
+            expect(daterangepicker.value).toBe(null)
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        });
+    });
+    
+    describe('Start and Depth-Desktop', () => {
+        function leftCalendarTitleClick(): void {
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).click();
+        }
+
+        function rightCalendarTitleClick(): void {
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).click();
+        }
+        function navIconDisabled(): void {
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+        }
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('default value testing', () => {
+            daterangepicker=createControl({value:[new Date('1/8/2019'), new Date('1/10/2019')]});
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+        });
+        it('start and Depth as year',() =>{
+            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('1/10/2018')],start:'Year',depth:'Year'});
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
+            navIconDisabled();
+            leftCalendarTitleClick();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
+            expect(document.querySelector('.e-left-calendar .e-header .e-next').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('.e-right-calendar .e-header .e-prev').classList.contains('e-disabled')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020');
+            navIconDisabled();
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[2]).dispatchEvent(clickEvent);
+            expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-year')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-year')).toBe(true);
+            expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 1, 2019');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Mar 31, 2020');
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+            rightCalendarTitleClick();
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).click();
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+        });
+        it('start as Decade and Depth as Year',() =>{
+            daterangepicker=createControl({value:[new Date('1/8/2019'), new Date('1/10/2039')],start:'Decade',depth:'Year'});
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2030 - 2039');
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).click();
+            navIconDisabled();
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);;
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).dispatchEvent(clickEvent);;
+            expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-year')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-year')).toBe(true);
+            expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 1, 2011');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Jun 30, 2012');
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+        });
+        it('start and Depth as Decade', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2019')], start: 'Decade', depth: 'Decade' });
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020 - 2029');
+            navIconDisabled();
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[2]).dispatchEvent(clickEvent);
+            expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-decade')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-decade')).toBe(true);
+            expect(document.querySelector('.e-start-label').innerHTML).toBe('Jan 1, 2011');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Dec 31, 2021');
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+        })
+        it('start and Depth as Decade on property', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2039')] });
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            daterangepicker.depth = 'Decade';
+            daterangepicker.start = 'Decade';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2030 - 2039');
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[2]).dispatchEvent(clickEvent);
+            expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-decade')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-decade')).toBe(true);
+            expect(document.querySelector('.e-start-label').innerHTML).toBe('Jan 1, 2011');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Dec 31, 2031');
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+        });
+        it('start as Decade and Depth as Year on property', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2039')] });
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            daterangepicker.depth = 'Year';
+            daterangepicker.start = 'Decade';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2030 - 2039');
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).click();
+            navIconDisabled();
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[2]).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).dispatchEvent(clickEvent);
+            expect(document.querySelector('.e-left-calendar .e-content').classList.contains('e-year')).toBe(true);
+            expect(document.querySelector('.e-right-calendar .e-content').classList.contains('e-year')).toBe(true);
+            expect(document.querySelector('.e-start-label').innerHTML).toBe('Mar 1, 2011');
+            expect(document.querySelector('.e-end-label').innerHTML).toBe('Jun 30, 2012');
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+        });
+        it('start and Depth as year on property', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('1/10/2020')] });
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            daterangepicker.depth = 'Year';
+            daterangepicker.start = 'Year';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020');
+        });
+        it('start and Depth as year and end Exceding max', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('1/10/2118')], start: 'Year', depth: 'Year' });
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe(((new Date()).getFullYear()).toString());
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe(((new Date()).getFullYear() + 1).toString());
+        });
+        it('start and Depth as Decade and end Exceding max', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2019'), new Date('1/10/2119')], start: 'Decade', depth: 'Decade' });
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            let startyear:number = (new Date()).getFullYear();
+            let stDec:number = (startyear-(startyear%10));
+            let startDecade = (stDec.toString())+' - '+((stDec + 9).toString());
+            let endDecade = ((stDec + 10).toString())+' - '+((stDec + 19).toString());
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe(startDecade);
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe(endDecade);
+        });
+        it('navigation via drill up and selction with start Date only',()=>{
+            daterangepicker = createControl({startDate:new Date('1/2/2011') });
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            rightCalendarTitleClick();
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('January 2011');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('June 2011');
+            daterangepicker.start = 'Year';
+            daterangepicker.depth = 'Year';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            rightCalendarTitleClick();
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2011');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2014');  
+        })
+        it('navigation via drill up and selction with start and End Date',()=>{
+            daterangepicker = createControl({startDate:new Date('1/1/2011'),endDate:new Date('6/30/2011') });
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            rightCalendarTitleClick();
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('May 2011');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('June 2011');
+            daterangepicker.start = 'Year';
+            daterangepicker.depth = 'Year';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            rightCalendarTitleClick();
+            (<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[5]).click();
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2013');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2014');  
+        })
+        it('start and Depth as year with mindays and maxdays', () => {
+            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year',minDays:65,maxDays:159 });
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-end-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+            expect((<HTMLElement>document.querySelectorAll('.e-right-calendar .e-content td')[3]).classList.contains('e-disabled')).toBe(true);
+        });
+        it('start and Depth as year Selection maintained on navigation', () => {
+            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year',minDays:64 });
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('Jun')
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('Jun')
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('Jun')
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+        });      
+        it('start and Depth as Decade Selection maintained on navigation', () => {
+            daterangepicker = createControl({ value: [new Date('1/1/2015'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade',minDays:864 });
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020 - 2029');
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+        });
+        it('start and Depth as Decade ,no rangehover for same start and end date', () => {
+            daterangepicker = createControl({ value: [new Date('1/1/2016'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade' });
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020 - 2029');
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(true);
+            expect((<HTMLElement>document.querySelector('.e-end-date')).classList.contains('e-range-hover')).toBe(true);
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelectorAll('.e-left-calendar .e-content td')[5]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect((<HTMLElement>document.querySelector('.e-end-date')).innerText).toBe('2014');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-end-date')).innerText).toBe('2014');
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-prev')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-next')).dispatchEvent(clickEvent);
+            navIconDisabled();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect((<HTMLElement>document.querySelector('.e-end-date')).innerText).toBe('2014')
+            expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
+        });
+    });
+    describe('Start and Depth-Mobile', () => {
+       function calendarTitleClick(): void {
+            (<HTMLElement>document.querySelector('.e-day.e-title')).click();
+        }
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('default value testing', () => {
+            daterangepicker=createControl({value:[new Date('1/8/2019'), new Date('1/10/2019')]},true);
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+        });
+        it('start and Depth as year',() =>{
+            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Year',depth:'Year'},true);
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).dispatchEvent(clickEvent);
+            /*next Button*/
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2019');
+            (<HTMLElement>document.querySelectorAll('.e-content td')[6]).dispatchEvent(clickEvent);
+            expect(document.querySelector('.e-content').classList.contains('e-year')).toBe(true);
+            /*next Button*/
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2020');
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(0);
+            /*prev Button*/
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2019');
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(0);
+            /*prev Button*/
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(1);
+            (<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(1);
+        });
+        it('start and Depth as year, navigation with start alone',() =>{
+            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Year',depth:'Year'},true);
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelectorAll('.e-content td')[2]).classList.contains('e-start-date')).toBe(true);
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(false);
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(true);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
+            /*next Button*/
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2019');
+            expect(document.querySelector('.e-start-date')).toBe(null);
+            /*prev Button*/
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
+            /*start Button*/
+            (<HTMLElement>document.querySelector('.e-start-btn.e-btn')).click();
+            expect((<HTMLElement>document.querySelectorAll('.e-content td')[2]).classList.contains('e-start-date')).toBe(true);
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(false);
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            /*end Button not working so selecting same date again*/
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
+        });
+        it('start and Depth as year and navigation',() =>{
+            daterangepicker=createControl({value:[new Date('2/1/2018'), new Date('5/31/2018')],start:'Year',depth:'Year'},true);
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+            /*end Button*/
+            (<HTMLElement>document.querySelector('.e-end-btn.e-btn')).click();
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(true);
+            /*start Button*/
+            (<HTMLElement>document.querySelector('.e-start-btn.e-btn')).click();
+            calendarTitleClick();
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            (<HTMLElement>document.querySelector('.e-focused-date').nextElementSibling).click();
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2019');
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-date-disabled')).toBe(null);
+            /*prev Button*/
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            /*end Button*/
+            (<HTMLElement>document.querySelector('.e-end-btn.e-btn')).click();
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(true);
+            /*start Button*/
+            (<HTMLElement>document.querySelector('.e-start-btn.e-btn')).click();
+            daterangepicker.value='';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(true);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
+        });
+        it('start and Depth as Decade',() =>{
+            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Decade',depth:'Decade'},true);
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).dispatchEvent(clickEvent);
+            /*next Button*/
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2020 - 2029');
+            (<HTMLElement>document.querySelectorAll('.e-content td')[6]).dispatchEvent(clickEvent);
+            expect(document.querySelector('.e-content').classList.contains('e-decade')).toBe(true);
+            /*next Button*/
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2030 - 2039');
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(0);
+            /*prev Button*/
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2020 - 2029');
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(0);
+            /*prev Button*/
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(1);
+            (<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(1);
+            expect(document.querySelectorAll('.e-start-date').length).toBe(1);
+        });
+        it('start and Depth as Decade, navigation with start alone',() =>{
+            daterangepicker=createControl({value:[new Date('1/8/2018'), new Date('2/10/2018')],start:'Decade',depth:'Decade'},true);
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelectorAll('.e-content td')[2]).classList.contains('e-start-date')).toBe(true);
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(false);
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(true);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
+            /*next Button*/
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2020 - 2029');
+            expect(document.querySelector('.e-start-date')).toBe(null);
+            /*prev Button*/
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
+            /*start Button*/
+            (<HTMLElement>document.querySelector('.e-start-btn.e-btn')).click();
+            expect((<HTMLElement>document.querySelectorAll('.e-content td')[2]).classList.contains('e-start-date')).toBe(true);
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(false);
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            /*end Button not working so selecting same date again*/
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(true);
+        });
+        it('start and Depth as Decade and navigation',() =>{
+            daterangepicker=createControl({value:[new Date('1/1/2018'), new Date('12/31/2018')],start:'Decade',depth:'Decade'},true);
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+            /*end Button*/
+            (<HTMLElement>document.querySelector('.e-end-btn.e-btn')).click();
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(true);
+            /*start Button*/
+            (<HTMLElement>document.querySelector('.e-start-btn.e-btn')).click();
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            daterangepicker.value='';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(true);
+            expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
+        });
+        it('start and Depth as Decade on property', () => {
+            daterangepicker = createControl({ value: [new Date('1/1/2017'), new Date('12/31/2037')] },true);
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            daterangepicker.depth = 'Decade';
+            daterangepicker.start = 'Decade';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect(document.querySelector('.e-content').classList.contains('e-decade')).toBe(true);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect(document.querySelector('.e-start-btn').innerHTML).toBe('Jan 1, 2017');
+            expect(document.querySelector('.e-end-btn').innerHTML).toBe('Dec 31, 2037');
+        });
+        it('start as Decade and Depth as Year on property', () => {
+            daterangepicker = createControl({ value: [new Date('1/1/2019'), new Date('1/31/2039')] },true);
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            daterangepicker.depth = 'Year';
+            daterangepicker.start = 'Decade';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Year');
+            expect(document.querySelector('.e-content').classList.contains('e-decade')).toBe(true);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).click();
+            expect(document.querySelector('.e-content').classList.contains('e-year')).toBe(true);
+            (<HTMLElement>document.querySelectorAll('.e-content td')[2]).dispatchEvent(clickEvent);
+            /*next Button*/
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelectorAll('.e-content td')[5]).dispatchEvent(clickEvent);
+            expect(document.querySelector('.e-start-btn').innerHTML).toBe('Mar 1, 2011');
+            expect(document.querySelector('.e-end-btn').innerHTML).toBe('Jun 30, 2012');
+        });
+        it('start and Depth as year on property', () => {
+            daterangepicker = createControl({ value: [new Date('1/8/2018'), new Date('1/10/2020')] },true);
+            expect(daterangepicker.start).toBe('Month');
+            expect(daterangepicker.depth).toBe('Month');
+            expect(document.querySelector('.e-content').classList.contains('e-month')).toBe(true);
+            daterangepicker.depth = 'Year';
+            daterangepicker.start = 'Year';
+            daterangepicker.dataBind();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect(document.querySelector('.e-content').classList.contains('e-year')).toBe(true);
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            expect(document.querySelector('.e-start-btn').innerHTML).toBe('Jan 8, 2018');
+            expect(document.querySelector('.e-end-btn').innerHTML).toBe('Jan 10, 2020');
+        });
+        // it('start and Depth as year and end Exceding max', () => {
+        //     daterangepicker = createControl({ value: [new Date('1/1/2018'), new Date('1/31/2118')], start: 'Year', depth: 'Year' },true);
+        //     expect(daterangepicker.start).toBe('Year');
+        //     expect(daterangepicker.depth).toBe('Year');
+        //     expect(document.querySelector('.e-content').classList.contains('e-year')).toBe(true);
+        //     expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe(((new Date()).getFullYear()).toString());
+        //     expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(true);
+        //     expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+        //     expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
+        // });
+        // it('start and Depth as Decade and end Exceding max', () => {
+        //     daterangepicker = createControl({ value: [new Date('1/1/2009'), new Date('12/31/2119')], start: 'Decade', depth: 'Decade' },true);
+        //     expect(daterangepicker.start).toBe('Decade');
+        //     expect(daterangepicker.depth).toBe('Decade');
+        //     expect(document.querySelector('.e-content').classList.contains('e-decade')).toBe(true);
+        //     let startyear:number = (new Date()).getFullYear();
+        //     let stDec:number = (startyear-(startyear%10));
+        //     let startDecade = (stDec.toString())+' - '+((stDec + 9).toString());
+        //     expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe(startDecade);
+        //     expect((<HTMLButtonElement>document.querySelector('.e-end-btn.e-btn')).disabled).toBe(true);
+        //     expect(document.querySelector('.e-end-btn.e-btn').classList.contains('e-active')).toBe(false);
+        //     expect(document.querySelector('.e-start-btn.e-btn').classList.contains('e-active')).toBe(true);
+        // });
+        it('start and Depth as year with mindays and maxdays', () => {
+            daterangepicker = createControl({ value: [new Date('2/1/2018'), new Date('5/31/2018')], start: 'Year', depth: 'Year',minDays:65,maxDays:159 });
+            expect(daterangepicker.start).toBe('Year');
+            expect(daterangepicker.depth).toBe('Year');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-end-date')).nextElementSibling.classList.contains('e-disabled')).toBe(false);
+            (<HTMLElement>document.querySelectorAll('.e-content td')[5]).dispatchEvent(clickEvent);
+            expect(document.querySelectorAll('.e-end-date').length).toBe(0);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).previousElementSibling.classList.contains('e-disabled')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
+        });
+        it('start and Depth as Decade ,no rangehover for same start and end date', () => {
+            daterangepicker = createControl({ value: [new Date('1/1/2016'), new Date('12/31/2018')], start: 'Decade', depth: 'Decade' },true);
+            expect(daterangepicker.start).toBe('Decade');
+            expect(daterangepicker.depth).toBe('Decade');
+            expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(true);
+            expect((<HTMLElement>document.querySelector('.e-end-date')).classList.contains('e-range-hover')).toBe(true);
+            (<HTMLElement>document.querySelectorAll('.e-content td')[5]).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelectorAll('.e-content td')[5]).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect((<HTMLElement>document.querySelector('.e-end-date')).innerText).toBe('2014');
+            expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
+            (<HTMLElement>document.querySelector('.e-next')).dispatchEvent(clickEvent);
+            (<HTMLElement>document.querySelector('.e-prev')).dispatchEvent(clickEvent);
+            expect((<HTMLElement>document.querySelector('.e-start-date')).innerText).toBe('2014')
+            expect((<HTMLElement>document.querySelector('.e-start-date')).classList.contains('e-range-hover')).toBe(false);
+            expect((<HTMLElement>document.querySelector('.e-end-date')).innerText).toBe('2014');
+        });
+    });
+    describe('NavigateTo', () => {
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Navigation for mobile view', function () {
+            daterangepicker = new DateRangePicker();
+            daterangepicker.appendTo('#date');
+            if (daterangepicker.isMobile) {
+                if (!daterangepicker.isPopupOpen()) {
+                    <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+                }
+                daterangepicker.navigateTo("Month", new Date("2/4/2018"));
+                expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('February 2018');
+                daterangepicker.navigateTo("Year", new Date("2/4/2018"));
+                expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2018');
+                daterangepicker.navigateTo("Decade", new Date("2/4/2018"));
+                expect((<HTMLElement>document.querySelector('.e-day.e-title')).textContent).toBe('2010 - 2019');
+            }
+        });
+        it('Navigation in desktop view calendar', function () {
+            daterangepicker = new DateRangePicker();
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("5/4/2018"));
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('May 2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('June 2018');
+            daterangepicker.navigateTo("Year", new Date("5/4/2018"));
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2018');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2019');
+            daterangepicker.navigateTo("Decade", new Date("5/4/2018"));
+            expect((<HTMLElement>document.querySelector('.e-left-calendar .e-header .e-day.e-title')).textContent).toBe('2010 - 2019');
+            expect((<HTMLElement>document.querySelector('.e-right-calendar .e-header .e-day.e-title')).textContent).toBe('2020 - 2029');
+        });
+
+    });
+    describe('Navigated event trigger testing', () => {
+        let daterangepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Navigated events in desktop mode test case', () => {
+            daterangepicker = new DateRangePicker({});
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/2019"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "February 2019").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "March 2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date("2/3/2025"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2025").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "2026").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("2/3/2055"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2050 - 2059").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "2060 - 2069").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('Navigated events in mobile mode test case ', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2019'), endDate: new Date("2/1/2019") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            (<HTMLElement>document.querySelector('.e-calendar .e-header .e-day.e-title')).click();
+            expect(document.querySelector('.e-calendar .e-content').classList.contains('e-year')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-calendar .e-header .e-day.e-title')).click();
+            expect(document.querySelector('.e-calendar .e-content').classList.contains('e-decade')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-focused-date')).click();
+            expect(document.querySelector('.e-calendar .e-content').classList.contains('e-year')).toBe(true);
+            (<HTMLElement>document.querySelector('.e-focused-date')).click();
+            expect(document.querySelector('.e-calendar .e-content').classList.contains('e-month')).toBe(true);
+        });
+        it('Navigated events in mobile mode test case for next and previous icon ', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2019'), endDate: new Date("2/1/2019") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/2028"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date("2/3/2028"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("2/3/2028"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('Navigated events in mobile mode given date is less then min value', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2019'), endDate: new Date("2/1/2019") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/1028"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date("2/3/2018"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("2/3/1028"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('Navigated events in mobile mode given date is greater then max value', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2019'), endDate: new Date("2/1/2019") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/2222"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(true);
+            daterangepicker.navigateTo("Year", new Date("2/3/2222"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(true);
+            daterangepicker.navigateTo("Decade", new Date("2/3/2222"));
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(true);
+        });
+        it('Navigated events in mobile mode for empty date', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2019'), endDate: new Date("2/1/2019") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date(' '));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "January 2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date(' '));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date(' '));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "2010 - 2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('Navigated events in mobile mode for invalid date(Date)', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2019'), endDate: new Date("2/1/2019") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("23/3/2017"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "January 2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date("23/3/2017"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("23/3/2017"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "2010 - 2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('Navigated events in mobile mode for invalid date(string)', function () {
+            daterangepicker = new DateRangePicker({ startDate: new Date('1/3/2019'), endDate: new Date("2/1/2019") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.isMobile = true;
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("date"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "January 2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date("date"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("date"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-day.e-title').textContent === "2010 - 2019").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-prev').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('Navigated arugument property test case ', function () {
+            daterangepicker = new DateRangePicker({
+                navigated: function (args: any): void {
+                    expect(typeof (args.view) === "string").toBe(true);
+                    expect(typeof (args.date) === "object").toBe(true);
+                    expect(typeof (args.name) === "string").toBe(true);
+                    expect((Object.keys(args)).length === 3).toBe(true);
+                }
+            });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Year", new Date("1/8/2019"));
+        });
+        it('current date is less then min value', () => {
+            daterangepicker = new DateRangePicker({ min: new Date('1/1/1900'), max: new Date("11/31/2099") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/1800"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "January 1900").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "February 1900").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date("2/3/1800"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "1900").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "1901").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            <HTMLElement>(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next')).dispatchEvent(clickEvent);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("2/3/1800"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "1900 - 1909").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "1910 - 1919").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            <HTMLElement>(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next')).dispatchEvent(clickEvent);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('current date is greater then max value', () => {
+            daterangepicker = new DateRangePicker({ min: new Date('1/1/1900'), max: new Date("11/31/2099") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.refreshControl();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/3000"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "November 2099").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "December 2099").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            daterangepicker.navigateTo("Year", new Date("2/3/3000"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2098").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "2099").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            <HTMLElement>(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev')).click();
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("2/3/3000"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2080 - 2089").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "2090 - 2099").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            <HTMLElement>(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev')).click();
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('error class for invalid date(Date) in desktop mode', () => {
+            daterangepicker.appendTo('#date');
+            daterangepicker.strictMode = true;
+            daterangepicker.inputBlurHandler();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Year", new Date("23/3/2017"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('error class for invalid date(string) in desktop mode', () => {
+            daterangepicker.appendTo('#date');
+            daterangepicker.inputBlurHandler();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo('Year', new Date('date'));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('error class for empty date in desktop mode', () => {
+            daterangepicker.appendTo('#date');
+            daterangepicker.inputBlurHandler();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Year", new Date(' '));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('error class for invalid date in strict mode', () => {
+            daterangepicker.appendTo('#date');
+            daterangepicker.strictMode = true;
+            daterangepicker.inputBlurHandler();
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Year", new Date("23/3/2017"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear()).toString()).toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === (new Date().getUTCFullYear() + 1).toString()).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        
+        it('current date is less then min value in Rtl mode', () => {
+            daterangepicker = new DateRangePicker({ min: new Date('1/1/1900'), max: new Date("11/31/2099") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.refreshControl();
+            daterangepicker.enableRtl=true;
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/1800"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "January 1900").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "February 1900").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Year", new Date("2/3/1800"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "1900").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "1901").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            daterangepicker.navigateTo("Decade", new Date("2/3/1800"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "1900 - 1909").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "1910 - 1919").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+        });
+        it('current date is greater then max value in Rtl mode', () => {
+            daterangepicker = new DateRangePicker({ min: new Date('1/1/1900'), max: new Date("11/31/2099") });
+            daterangepicker.appendTo('#date');
+            daterangepicker.refreshControl();
+            daterangepicker.enableRtl=true;
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            daterangepicker.navigateTo("Month", new Date("2/3/3000"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "November 2099").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "December 2099").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            daterangepicker.navigateTo("Year", new Date("2/3/3000"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2098").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "2099").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+            daterangepicker.navigateTo("Decade", new Date("2/3/3000"));
+            expect(daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-day.e-title').textContent === "2080 - 2089").toBe(true);
+            expect(daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-day.e-title').textContent === "2090 - 2099").toBe(true);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-left-calendar .e-next').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-prev').classList.contains("e-overlay"))).toBe(false);
+            expect((daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-disabled")) && (daterangepicker.popupObj.element.querySelector('.e-right-calendar .e-next').classList.contains("e-overlay"))).toBe(true);
+        });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

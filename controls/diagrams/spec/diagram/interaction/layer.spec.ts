@@ -6,6 +6,7 @@ import { Layer } from '../../../src/diagram/diagram/layer';
 import { PortVisibility } from '../../../src/diagram/enum/enum';
 import { LayerModel } from '../../../src/diagram/diagram/layer-model';
 import { MouseEvents } from './mouseevents.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
  * layer spec
@@ -18,6 +19,12 @@ describe('Diagram Control', () => {
         let selArray: any = [];
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -28,7 +35,7 @@ describe('Diagram Control', () => {
                 id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
                 shape: {
                     type: 'Path', data: 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,' +
-                    '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z'
+                        '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z'
                 },
                 annotations: [{ content: 'Path Element' }]
             }
@@ -122,6 +129,12 @@ describe('Diagram Control', () => {
         let selArray: any = [];
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -132,7 +145,7 @@ describe('Diagram Control', () => {
                 id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
                 shape: {
                     type: 'Path', data: 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,' +
-                    '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z'
+                        '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z'
                 },
                 annotations: [{ content: 'Path Element' }]
             }
@@ -213,6 +226,12 @@ describe('Diagram Control', () => {
         let selArray: any = [];
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -262,6 +281,12 @@ describe('Diagram Control', () => {
         let selArray: any = [];
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
@@ -301,6 +326,15 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             done();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 
 
@@ -310,6 +344,12 @@ describe('Diagram Control', () => {
         let selArray: any = [];
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{

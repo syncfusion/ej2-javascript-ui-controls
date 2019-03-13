@@ -66,25 +66,9 @@ export class FieldList implements IAction {
     private updateControl(): void {
         if (this.element) {
             prepend([this.element], this.parent.element);
-            if (this.parent.grid && this.parent.showGroupingBar && this.parent.groupingBarModule) {
+            if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
                 clearTimeout(this.timeOutObj);
-                this.timeOutObj = setTimeout(() => {
-                    if (this.parent.grid && this.parent.grid.element) {
-                        let actWidth: number = this.parent.grid.element.offsetWidth < 400 ? 400 : this.parent.grid.element.offsetWidth;
-                        setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
-                            left: formatUnit(this.parent.enableRtl ?
-                                -Math.abs((actWidth) -
-                                    (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
-                                (actWidth) -
-                                (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
-                        });
-                        if (this.parent.enableRtl) {
-                            addClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
-                        } else {
-                            removeClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
-                        }
-                    }
-                });
+                this.timeOutObj = setTimeout(this.update.bind(this));
             } else {
                 if (this.parent.enableRtl) {
                     removeClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
@@ -97,6 +81,30 @@ export class FieldList implements IAction {
             });
         }
         this.parent.pivotFieldListModule.update(this.parent);
+    }
+
+    private update(): void {
+        let currentWidth: number;
+        if (this.parent.currentView !== 'Table') {
+            currentWidth = this.parent.chart ? this.parent.chartModule.calculatedWidth : currentWidth;
+        } else {
+            currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
+        }
+        if (currentWidth) {
+            let actualWidth: number = currentWidth < 400 ? 400 : currentWidth;
+            setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
+                left: formatUnit(this.parent.enableRtl ?
+                    -Math.abs((actualWidth) -
+                        (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
+                    (actualWidth) -
+                    (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
+            });
+            if (this.parent.enableRtl) {
+                addClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
+            } else {
+                removeClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
+            }
+        }
     }
 
     /**

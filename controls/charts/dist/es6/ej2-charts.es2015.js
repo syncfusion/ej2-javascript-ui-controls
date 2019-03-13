@@ -1,7 +1,7 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SvgRenderer, Touch, compile, createElement, extend, getValue, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isNullOrUndefined, merge, print, remove, setValue } from '@syncfusion/ej2-base';
+import { PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, measureText } from '@syncfusion/ej2-svg-base';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DateRangePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -76,6 +76,14 @@ var Theme;
         fontStyle: 'Normal',
         fontFamily: 'Segoe UI'
     };
+    /** @private */
+    Theme.stockEventFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
 })(Theme || (Theme = {}));
 /** @private */
 function getSeriesColor(theme) {
@@ -146,8 +154,7 @@ function getThemeColor(theme) {
         case 'FabricDark':
         case 'BootstrapDark':
             style = {
-                axisLabel: '#DADADA',
-                axisTitle: '#ffffff',
+                axisLabel: '#DADADA', axisTitle: '#ffffff',
                 axisLine: ' #6F6C6C',
                 majorGridLine: '#414040',
                 minorGridLine: '#514F4F',
@@ -169,6 +176,16 @@ function getThemeColor(theme) {
                 selectionRectFill: 'rgba(255, 217, 57, 0.3)',
                 selectionRectStroke: '#38A9FF',
                 selectionCircleStroke: '#282727'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                axisLabel: '#212529', axisTitle: '#ffffff', axisLine: '#CED4DA', majorGridLine: '#CED4DA',
+                minorGridLine: '#DEE2E6', majorTickLine: '#ADB5BD', minorTickLine: '#CED4DA', chartTitle: '#212529', legendLabel: '#212529',
+                background: '#FFFFFF', areaBorder: '#DEE2E6', errorBar: '#ffffff', crosshairLine: '#6C757D', crosshairFill: '#495057',
+                crosshairLabel: '#FFFFFF', tooltipFill: 'rgba(0, 0, 0, 0.9)', tooltipBoldLabel: 'rgba(255,255,255)',
+                tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: '#BFBFBF',
+                selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057'
             };
             break;
         default:
@@ -283,26 +300,26 @@ __decorate$1([
 class Font extends ChildProperty {
 }
 __decorate$1([
+    Property('Normal')
+], Font.prototype, "fontStyle", void 0);
+__decorate$1([
     Property('16px')
 ], Font.prototype, "size", void 0);
-__decorate$1([
-    Property('')
-], Font.prototype, "color", void 0);
-__decorate$1([
-    Property('Segoe UI')
-], Font.prototype, "fontFamily", void 0);
 __decorate$1([
     Property('Normal')
 ], Font.prototype, "fontWeight", void 0);
 __decorate$1([
-    Property('Normal')
-], Font.prototype, "fontStyle", void 0);
-__decorate$1([
-    Property(1)
-], Font.prototype, "opacity", void 0);
+    Property('')
+], Font.prototype, "color", void 0);
 __decorate$1([
     Property('Center')
 ], Font.prototype, "textAlignment", void 0);
+__decorate$1([
+    Property('Segoe UI')
+], Font.prototype, "fontFamily", void 0);
+__decorate$1([
+    Property(1)
+], Font.prototype, "opacity", void 0);
 __decorate$1([
     Property('Trim')
 ], Font.prototype, "textOverflow", void 0);
@@ -867,6 +884,8 @@ const scrollStart = 'scrollStart';
 const scrollEnd = 'scrollEnd';
 /** @private */
 const scrollChanged = 'scrollChanged';
+/** @private */
+const stockEventRender = 'stockEventRender';
 
 var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1462,15 +1481,29 @@ class Axis extends ChildProperty {
         this.maxLabelSize = new Size(0, 0);
         let action = this.labelIntersectAction;
         let label;
+        let breakLabels;
         for (let i = 0; i < this.visibleLabels.length; i++) {
             label = this.visibleLabels[i];
-            label.size = measureText(label.text, this.labelStyle);
-            if (label.size.width > this.maxLabelSize.width) {
-                this.maxLabelSize.width = label.size.width;
+            breakLabels = label.originalText.indexOf('<br>') !== -1 ? label.originalText : label.text;
+            if (breakLabels.indexOf('<br>') !== -1) {
+                let labelText = this.enableTrim ? breakLabels : breakLabels.replace(/<br>/g, ' ');
+                label.size = measureText(labelText, this.labelStyle);
+                label.breakLabelSize = measureText(breakLabels, this.labelStyle);
+            }
+            else {
+                label.size = measureText(label.text, this.labelStyle);
+            }
+            let width = (breakLabels.indexOf('<br>') !== -1) ? label.breakLabelSize.width : label.size.width;
+            if (width > this.maxLabelSize.width) {
+                this.maxLabelSize.width = width;
                 this.rotatedLabel = label.text;
             }
-            if (label.size.height > this.maxLabelSize.height) {
-                this.maxLabelSize.height = label.size.height;
+            let height = (breakLabels.indexOf('<br>') !== -1) ? label.breakLabelSize.height : label.size.height;
+            if (height > this.maxLabelSize.height) {
+                this.maxLabelSize.height = height;
+            }
+            if (breakLabels.indexOf('<br>') !== -1) {
+                label.text = this.enableTrim ? label.text : this.getLineBreakText(breakLabels);
             }
             if (action === 'None' || action === 'Hide' || action === 'Trim') {
                 continue;
@@ -1501,7 +1534,27 @@ class Axis extends ChildProperty {
                         }
                         break;
                     default:
-                        label.text = textWrap(label.text, this.rect.width / this.visibleLabels.length, this.labelStyle);
+                        if (breakLabels.indexOf('<br>') !== -1) {
+                            let result;
+                            let result1 = [];
+                            let str;
+                            for (let index = 0; index < label.text.length; index++) {
+                                result = textWrap(label.text[index], this.rect.width / this.visibleLabels.length, this.labelStyle);
+                                if (result.length > 1) {
+                                    for (let j = 0; j < result.length; j++) {
+                                        str = result[j];
+                                        result1.push(str);
+                                    }
+                                }
+                                else {
+                                    result1.push(result[0]);
+                                }
+                            }
+                            label.text = result1;
+                        }
+                        else {
+                            label.text = textWrap(label.text, this.rect.width / this.visibleLabels.length, this.labelStyle);
+                        }
                         let height = (label.size.height * label.text.length);
                         if (height > this.maxLabelSize.height) {
                             this.maxLabelSize.height = height;
@@ -1512,11 +1565,31 @@ class Axis extends ChildProperty {
             }
         }
         if (this.angle !== 0 && this.orientation === 'Horizontal') {
-            this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+            if (this.rotatedLabel.indexOf('<br>') !== -1) {
+                this.maxLabelSize.height = measureText(this.rotatedLabel, this.labelStyle).width;
+                this.maxLabelSize.width = measureText(this.rotatedLabel, this.labelStyle).height;
+            }
+            else {
+                this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
+            }
         }
         if (chart.multiLevelLabelModule && this.multiLevelLabels.length > 0) {
             chart.multiLevelLabelModule.getMultilevelLabelsHeight(this);
         }
+    }
+    /**
+     * To get line break text collection
+     * @param breakLabels
+     */
+    getLineBreakText(breakLabels) {
+        let breakLabelCollection;
+        let breakLabelCollection1 = [];
+        breakLabelCollection = breakLabels.split('<br>');
+        for (let i = 0, len = breakLabelCollection.length; i < len; i++) {
+            breakLabelCollection1.push(breakLabelCollection[i]);
+            //breakLabelCollection1.push(textTrim(220, breakLabelCollection[i], this.labelStyle));
+        }
+        return breakLabelCollection1;
     }
     /**
      * Finds the multiple rows for axis.
@@ -1720,47 +1793,17 @@ __decorate$2([
 ], Axis.prototype, "scrollbarSettings", void 0);
 /** @private */
 class VisibleLabels {
-    constructor(text, value, labelStyle, originalText, size = new Size(0, 0), index = 1) {
+    constructor(text, value, labelStyle, originalText, size = new Size(0, 0), breakLabelSize = new Size(0, 0), index = 1) {
         this.text = text;
         this.originalText = originalText;
         this.value = value;
         this.labelStyle = labelStyle;
         this.size = size;
+        this.breakLabelSize = breakLabelSize;
         this.index = 1;
     }
 }
 
-/**
- * Methods for calculating the text size.
- */
-/**
- * Function to measure the height and width of the text.
- * @param  {string} text
- * @param  {FontModel} font
- * @param  {string} id
- * @returns no
- * @private
- */
-function measureText(text, font) {
-    let htmlObject = document.getElementById('chartmeasuretext');
-    if (htmlObject === null) {
-        htmlObject = createElement('text', { id: 'chartmeasuretext' });
-        document.body.appendChild(htmlObject);
-    }
-    htmlObject.innerHTML = text;
-    htmlObject.style.position = 'absolute';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontFamily = font.fontFamily;
-    htmlObject.style.visibility = 'hidden';
-    htmlObject.style.top = '-100';
-    htmlObject.style.left = '0';
-    htmlObject.style.whiteSpace = 'nowrap';
-    // For bootstrap line height issue
-    htmlObject.style.lineHeight = 'normal';
-    return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
-}
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
  * @param  {Object} data
@@ -2248,9 +2291,13 @@ function animateRectElement(element, delay, duration, currentRect, previousRect)
  * @param direction current direction of the path
  * @param previousDirection previous direction of the path
  */
-function pathAnimation(element, direction, redraw, previousDirection) {
+function pathAnimation(element, direction, redraw, previousDirection, animateduration) {
     if (!redraw || (!previousDirection && !element)) {
         return null;
+    }
+    let duration = 300;
+    if (animateduration) {
+        duration = animateduration;
     }
     let startDirections = previousDirection || element.getAttribute('d');
     let splitDirections = startDirections.split(/(?=[LMCZAQ])/);
@@ -2262,7 +2309,7 @@ function pathAnimation(element, direction, redraw, previousDirection) {
     let end;
     element.setAttribute('d', startDirections);
     new Animation({}).animate(createElement('div'), {
-        duration: 300,
+        duration: duration,
         progress: (args) => {
             currentDireciton = '';
             splitDirections.map((directions, index) => {
@@ -2329,7 +2376,10 @@ function triggerLabelRender(chart, tempInterval, text, labelStyle, axis) {
     };
     chart.trigger(axisLabelRender, argsData);
     if (!argsData.cancel) {
-        let text = (axis.enableTrim) ? textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle) : argsData.text;
+        let isLineBreakLabels = argsData.text.indexOf('<br>') !== -1;
+        let text = (axis.enableTrim) ? (isLineBreakLabels ?
+            lineBreakLabelTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle) :
+            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle)) : argsData.text;
         axis.visibleLabels.push(new VisibleLabels(text, argsData.value, argsData.labelStyle, argsData.text));
     }
 }
@@ -2381,49 +2431,49 @@ function templateAnimate(element, delay, duration, name, isRemove) {
 }
 /** @private */
 function drawSymbol(location, shape, size, url, options, label) {
-    let renderer = new SvgRenderer('');
-    let temp = calculateShapes(location, size, shape, options, url);
-    let htmlObject = renderer['draw' + temp.functionName](temp.renderOption);
-    htmlObject.setAttribute('aria-label', label);
-    return htmlObject;
+    let chartRenderer = new SvgRenderer('');
+    let shapeOption = calculateShapes(location, size, shape, options, url);
+    let drawElement = chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption);
+    drawElement.setAttribute('aria-label', label);
+    return drawElement;
 }
 /** @private */
 function calculateShapes(location, size, shape, options, url) {
-    let path;
+    let dir;
     let functionName = 'Path';
     let width = size.width;
     let height = size.height;
-    let locX = location.x;
-    let locY = location.y;
-    let x = location.x + (-width / 2);
+    let lx = location.x;
+    let ly = location.y;
     let y = location.y + (-height / 2);
+    let x = location.x + (-width / 2);
     switch (shape) {
-        case 'Circle':
         case 'Bubble':
+        case 'Circle':
             functionName = 'Ellipse';
-            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
+            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': lx, 'cy': ly });
             break;
         case 'Cross':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
-                (locY + (-height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
+                'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' +
+                (ly + (-height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'HorizontalLine':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY;
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
+            merge(options, { 'd': dir });
             break;
         case 'VerticalLine':
-            path = 'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' + (locY + (-height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' + (ly + (-height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'Diamond':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + locY + ' z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + ly + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + ly + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Rectangle':
         case 'Hilo':
@@ -2432,45 +2482,47 @@ function calculateShapes(location, size, shape, options, url) {
         case 'Waterfall':
         case 'BoxAndWhisker':
         case 'StepArea':
-            path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
-            merge(options, { 'd': path });
+        case 'Square':
+        case 'Flag':
+            dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (-height / 2)) + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Pyramid':
         case 'Triangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (height / 2)) + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Funnel':
         case 'InvertedTriangle':
-            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + (locX - (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Pentagon':
             let eq = 72;
-            let xValue;
-            let yValue;
+            let xVal;
+            let yVal;
             for (let i = 0; i <= 5; i++) {
-                xValue = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+                xVal = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+                yVal = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
                 if (i === 0) {
-                    path = 'M' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ';
+                    dir = 'M' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ';
                 }
                 else {
-                    path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
+                    dir = dir.concat('L' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ');
                 }
             }
-            path = path.concat('Z');
-            merge(options, { 'd': path });
+            dir = dir.concat('Z');
+            merge(options, { 'd': dir });
             break;
         case 'Image':
             functionName = 'Image';
@@ -2591,25 +2643,26 @@ function appendElement(child, parent, redraw = false, animate = false, x = 'x', 
  * @param childElement
  * @param isReplace
  */
-function appendChildElement(parent, childElement, redraw, isAnimate = false, x = 'x', y = 'y', start, direction, forceAnimate = false, isRect = false, previousRect = null) {
+function appendChildElement(parent, childElement, redraw, isAnimate = false, x = 'x', y = 'y', start, direction, forceAnimate = false, isRect = false, previousRect = null, animateduration) {
     let existChild = parent.querySelector('#' + childElement.id);
     let element = (existChild || getElement(childElement.id));
     let child = childElement;
+    let duration = animateduration ? animateduration : 300;
     if (redraw && isAnimate && element) {
         start = start || (element.tagName === 'DIV' ?
             new ChartLocation(+(element.style[x].split('px')[0]), +(element.style[y].split('px')[0])) :
             new ChartLocation(+element.getAttribute(x), +element.getAttribute(y)));
         if (direction && direction !== 'undefined') {
-            pathAnimation(childElement, childElement.getAttribute('d'), redraw, direction);
+            pathAnimation(childElement, childElement.getAttribute('d'), redraw, direction, duration);
         }
         else if (isRect && previousRect) {
-            animateRectElement(child, 0, 300, new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')), previousRect);
+            animateRectElement(child, 0, duration, new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')), previousRect);
         }
         else {
             let end = child.tagName === 'DIV' ?
                 new ChartLocation(+(child.style[x].split('px')[0]), +(child.style[y].split('px')[0])) :
                 new ChartLocation(+child.getAttribute(x), +child.getAttribute(y));
-            animateRedrawElement(child, 300, start, end, x, y);
+            animateRedrawElement(child, duration, start, end, x, y);
         }
     }
     else if (redraw && isAnimate && !element && forceAnimate) {
@@ -2761,48 +2814,50 @@ function getMedian(values) {
 // tslint:disable-next-line:max-func-body-length
 function calculateLegendShapes(location, size, shape, options) {
     let padding = 10;
-    let path = '';
+    let dir = '';
     let height = size.height;
     let width = size.width;
-    let locX = location.x;
-    let locY = location.y;
+    let lx = location.x;
+    let ly = location.y;
     switch (shape) {
         case 'MultiColoredLine':
         case 'Line':
-            path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY);
-            merge(options, { 'd': path });
+        case 'StackingLine':
+        case 'StackingLine100':
+            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly);
+            merge(options, { 'd': dir });
             break;
         case 'StepLine':
             options.fill = 'transparent';
-            path = 'M' + ' ' + (locX + (-width / 2) - (padding / 4)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX +
-                (-width / 2) + (width / 10)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX + (-width / 2) + (width / 10))
-                + ' ' + (locY) + ' ' + 'L' + ' ' + (locX + (-width / 10)) + ' ' + (locY) + ' ' + 'L' + ' ' + (locX + (-width / 10))
-                + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 5)) + ' ' + (locY + (height / 2)) + ' ' + 'L' +
-                ' ' + (locX + (width / 5)) + ' ' + (locY + (-height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY +
-                (-height / 2)) + 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + '' + (locX + (width / 2)
-                + (padding / 4)) + ' ' + (locY + (height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (-width / 2) - (padding / 4)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx +
+                (-width / 2) + (width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (-width / 2) + (width / 10))
+                + ' ' + (ly) + ' ' + 'L' + ' ' + (lx + (-width / 10)) + ' ' + (ly) + ' ' + 'L' + ' ' + (lx + (-width / 10))
+                + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'L' +
+                ' ' + (lx + (width / 5)) + ' ' + (ly + (-height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly +
+                (-height / 2)) + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + '' + (lx + (width / 2)
+                + (padding / 4)) + ' ' + (ly + (height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'RightArrow':
             let space = 2;
-            path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
-                (locX + (-width / 2)) + ' ' + (locY + (height / 2)) + ' L' + ' ' + (locX + (-width / 2)) + ' ' +
-                (locY + (height / 2) - space) + ' ' + 'L' + ' ' + (locX + (width / 2) - (2 * space)) + ' ' + (locY) +
-                ' L' + (locX + (-width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
+                (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' L' + ' ' + (lx + (-width / 2)) + ' ' +
+                (ly + (height / 2) - space) + ' ' + 'L' + ' ' + (lx + (width / 2) - (2 * space)) + ' ' + (ly) +
+                ' L' + (lx + (-width / 2)) + ' ' + (ly - (height / 2) + space) + ' Z';
+            merge(options, { 'd': dir });
             break;
         case 'LeftArrow':
             options.fill = options.stroke;
             options.stroke = 'transparent';
             space = 2;
-            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (-width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
-                (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' +
-                (locX + (width / 2)) + ' ' + (locY + (height / 2) - space) + ' L' + ' ' + (locX + (-width / 2) + (2 * space))
-                + ' ' + (locY) + ' L' + (locX + (width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
+                (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' +
+                (lx + (width / 2)) + ' ' + (ly + (height / 2) - space) + ' L' + ' ' + (lx + (-width / 2) + (2 * space))
+                + ' ' + (ly) + ' L' + (lx + (width / 2)) + ' ' + (ly - (height / 2) + space) + ' Z';
+            merge(options, { 'd': dir });
             break;
         case 'Column':
         case 'Pareto':
@@ -2810,74 +2865,74 @@ function calculateLegendShapes(location, size, shape, options) {
         case 'StackingColumn100':
         case 'RangeColumn':
         case 'Histogram':
-            path = 'M' + ' ' + (locX - 3 * (width / 5)) + ' ' + (locY - (height / 5)) + ' ' + 'L' + ' ' +
-                (locX + 3 * (-width / 10)) + ' ' + (locY - (height / 5)) + ' ' + 'L' + ' ' +
-                (locX + 3 * (-width / 10)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX - 3 *
-                (width / 5)) + ' ' + (locY + (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' +
-                (locX + (-width / 10) - (width / 20)) + ' ' + (locY - (height / 4) - (padding / 2))
-                + ' ' + 'L' + ' ' + (locX + (width / 10) + (width / 20)) + ' ' + (locY - (height / 4) -
-                (padding / 2)) + ' ' + 'L' + ' ' + (locX + (width / 10) + (width / 20)) + ' ' + (locY
-                + (height / 2)) + ' ' + 'L' + ' ' + (locX + (-width / 10) - (width / 20)) + ' ' + (locY +
-                (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' + (locX + 3 * (width / 10)) + ' ' + (locY) + ' ' +
-                'L' + ' ' + (locX + 3 * (width / 5)) + ' ' + (locY) + ' ' + 'L' + ' '
-                + (locX + 3 * (width / 5)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' '
-                + (locX + 3 * (width / 10)) + ' ' + (locY + (height / 2)) + ' ' + 'Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - 3 * (width / 5)) + ' ' + (ly - (height / 5)) + ' ' + 'L' + ' ' +
+                (lx + 3 * (-width / 10)) + ' ' + (ly - (height / 5)) + ' ' + 'L' + ' ' +
+                (lx + 3 * (-width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx - 3 *
+                (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' +
+                (lx + (-width / 10) - (width / 20)) + ' ' + (ly - (height / 4) - (padding / 2))
+                + ' ' + 'L' + ' ' + (lx + (width / 10) + (width / 20)) + ' ' + (ly - (height / 4) -
+                (padding / 2)) + ' ' + 'L' + ' ' + (lx + (width / 10) + (width / 20)) + ' ' + (ly
+                + (height / 2)) + ' ' + 'L' + ' ' + (lx + (-width / 10) - (width / 20)) + ' ' + (ly +
+                (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' + (lx + 3 * (width / 10)) + ' ' + (ly) + ' ' +
+                'L' + ' ' + (lx + 3 * (width / 5)) + ' ' + (ly) + ' ' + 'L' + ' '
+                + (lx + 3 * (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' '
+                + (lx + 3 * (width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'Z';
+            merge(options, { 'd': dir });
             break;
         case 'Bar':
         case 'StackingBar':
         case 'StackingBar100':
-            path = 'M' + ' ' + (locX + (-width / 2) + (-padding / 4)) + ' ' + (locY - 3 * (height / 5)) + ' '
-                + 'L' + ' ' + (locX + 3 * (width / 10)) + ' ' + (locY - 3 * (height / 5)) + ' ' + 'L' + ' ' +
-                (locX + 3 * (width / 10)) + ' ' + (locY - 3 * (height / 10)) + ' ' + 'L' + ' ' +
-                (locX - (width / 2) + (-padding / 4)) + ' ' + (locY - 3 * (height / 10)) + ' ' + 'Z' + ' '
-                + 'M' + ' ' + (locX + (-width / 2) + (-padding / 4)) + ' ' + (locY - (height / 5)
-                + (padding / 20)) + ' ' + 'L' + ' ' + (locX + (width / 2) + (padding / 4)) + ' ' + (locY
-                - (height / 5) + (padding / 20)) + ' ' + 'L' + ' ' + (locX + (width / 2) + (padding / 4))
-                + ' ' + (locY + (height / 10) + (padding / 20)) + ' ' + 'L' + ' ' + (locX - (width / 2)
-                + (-padding / 4)) + ' ' + (locY + (height / 10) + (padding / 20)) + ' ' + 'Z' + ' ' + 'M'
-                + ' ' + (locX - (width / 2) + (-padding / 4)) + ' ' + (locY + (height / 5)
-                + (padding / 10)) + ' ' + 'L' + ' ' + (locX + (-width / 4)) + ' ' + (locY + (height / 5)
-                + (padding / 10)) + ' ' + 'L' + ' ' + (locX + (-width / 4)) + ' ' + (locY + (height / 2)
-                + (padding / 10)) + ' ' + 'L' + ' ' + (locX - (width / 2) + (-padding / 4))
-                + ' ' + (locY + (height / 2) + (padding / 10)) + ' ' + 'Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (-width / 2) + (-padding / 4)) + ' ' + (ly - 3 * (height / 5)) + ' '
+                + 'L' + ' ' + (lx + 3 * (width / 10)) + ' ' + (ly - 3 * (height / 5)) + ' ' + 'L' + ' ' +
+                (lx + 3 * (width / 10)) + ' ' + (ly - 3 * (height / 10)) + ' ' + 'L' + ' ' +
+                (lx - (width / 2) + (-padding / 4)) + ' ' + (ly - 3 * (height / 10)) + ' ' + 'Z' + ' '
+                + 'M' + ' ' + (lx + (-width / 2) + (-padding / 4)) + ' ' + (ly - (height / 5)
+                + (padding / 20)) + ' ' + 'L' + ' ' + (lx + (width / 2) + (padding / 4)) + ' ' + (ly
+                - (height / 5) + (padding / 20)) + ' ' + 'L' + ' ' + (lx + (width / 2) + (padding / 4))
+                + ' ' + (ly + (height / 10) + (padding / 20)) + ' ' + 'L' + ' ' + (lx - (width / 2)
+                + (-padding / 4)) + ' ' + (ly + (height / 10) + (padding / 20)) + ' ' + 'Z' + ' ' + 'M'
+                + ' ' + (lx - (width / 2) + (-padding / 4)) + ' ' + (ly + (height / 5)
+                + (padding / 10)) + ' ' + 'L' + ' ' + (lx + (-width / 4)) + ' ' + (ly + (height / 5)
+                + (padding / 10)) + ' ' + 'L' + ' ' + (lx + (-width / 4)) + ' ' + (ly + (height / 2)
+                + (padding / 10)) + ' ' + 'L' + ' ' + (lx - (width / 2) + (-padding / 4))
+                + ' ' + (ly + (height / 2) + (padding / 10)) + ' ' + 'Z';
+            merge(options, { 'd': dir });
             break;
         case 'Spline':
             options.fill = 'transparent';
-            path = 'M' + ' ' + (locX - (width / 2)) + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' '
-                + locX + ' ' + (locY - height) + ' ' + locX + ' ' + (locY + (height / 5))
-                + ' ' + 'M' + ' ' + locX + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' ' + (locX
-                + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + (locX + (width / 2)) + ' '
-                + (locY - (height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' '
+                + lx + ' ' + (ly - height) + ' ' + lx + ' ' + (ly + (height / 5))
+                + ' ' + 'M' + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + (lx
+                + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + (lx + (width / 2)) + ' '
+                + (ly - (height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'Area':
         case 'MultiColoredArea':
         case 'RangeArea':
         case 'StackingArea':
         case 'StackingArea100':
-            path = 'M' + ' ' + (locX - (width / 2) - (padding / 4)) + ' ' + (locY + (height / 2))
-                + ' ' + 'L' + ' ' + (locX + (-width / 4) + (-padding / 8)) + ' ' + (locY - (height / 2))
-                + ' ' + 'L' + ' ' + (locX) + ' ' + (locY + (height / 4)) + ' ' + 'L' + ' ' + (locX
-                + (width / 4) + (padding / 8)) + ' ' + (locY + (-height / 2) + (height / 4)) + ' '
-                + 'L' + ' ' + (locX + (height / 2) + (padding / 4)) + ' ' + (locY + (height / 2)) + ' ' + 'Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - (width / 2) - (padding / 4)) + ' ' + (ly + (height / 2))
+                + ' ' + 'L' + ' ' + (lx + (-width / 4) + (-padding / 8)) + ' ' + (ly - (height / 2))
+                + ' ' + 'L' + ' ' + (lx) + ' ' + (ly + (height / 4)) + ' ' + 'L' + ' ' + (lx
+                + (width / 4) + (padding / 8)) + ' ' + (ly + (-height / 2) + (height / 4)) + ' '
+                + 'L' + ' ' + (lx + (height / 2) + (padding / 4)) + ' ' + (ly + (height / 2)) + ' ' + 'Z';
+            merge(options, { 'd': dir });
             break;
         case 'SplineArea':
-            path = 'M' + ' ' + (locX - (width / 2)) + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' ' + locX
-                + ' ' + (locY - height) + ' ' + locX + ' ' + (locY + (height / 5)) + ' ' + 'Z' + ' ' + 'M'
-                + ' ' + locX + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' ' + (locX + (width / 2)) + ' '
-                + (locY + (height / 2)) + ' ' + (locX + (width / 2)) + ' '
-                + (locY - (height / 2)) + ' ' + ' Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + lx
+                + ' ' + (ly - height) + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Z' + ' ' + 'M'
+                + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + (lx + (width / 2)) + ' '
+                + (ly + (height / 2)) + ' ' + (lx + (width / 2)) + ' '
+                + (ly - (height / 2)) + ' ' + ' Z';
+            merge(options, { 'd': dir });
             break;
         case 'Pie':
         case 'Doughnut':
             options.stroke = 'transparent';
             let r = Math.min(height, width) / 2;
-            path = getAccumulationLegend(locX, locY, r, height, width, shape);
-            merge(options, { 'd': path });
+            dir = getAccumulationLegend(lx, ly, r, height, width, shape);
+            merge(options, { 'd': dir });
             break;
     }
     return { renderOption: options };
@@ -2898,87 +2953,41 @@ function textTrim(maxWidth, text, font) {
     }
     return label;
 }
+/**
+ * To trim the line break label
+ * @param maxWidth
+ * @param text
+ * @param font
+ */
+function lineBreakLabelTrim(maxWidth, text, font) {
+    let labelCollection = [];
+    let breakLabels = text.split('<br>');
+    for (let i = 0; i < breakLabels.length; i++) {
+        text = breakLabels[i];
+        let size = measureText(text, font).width;
+        if (size > maxWidth) {
+            let textLength = text.length;
+            for (let i = textLength - 1; i >= 0; --i) {
+                text = text.substring(0, i) + '...';
+                size = measureText(text, font).width;
+                if (size <= maxWidth) {
+                    labelCollection.push(text);
+                    break;
+                }
+            }
+        }
+        else {
+            labelCollection.push(text);
+        }
+    }
+    return labelCollection;
+}
 /** @private */
 function stringToNumber(value, containerSize) {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
     }
     return null;
-}
-/** @private */
-function findDirection(rX, rY, rect, arrowLocation, arrowPadding, top, bottom, left, tipX, tipY, tipRadius) {
-    let direction = '';
-    let startX = rect.x;
-    let startY = rect.y;
-    let width = rect.x + rect.width;
-    let height = rect.y + rect.height;
-    tipRadius = tipRadius ? tipRadius : 0;
-    if (top) {
-        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + startY + ' ' + (startX + rX) + ' ' + startY + ' ' +
-            ' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + width + ' '
-            + startY + ' ' + (width) + ' ' + (startY + rY));
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' '
-            + (height) + ' ' + (width - rX) + ' ' + (height));
-        if (arrowPadding !== 0) {
-            direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (height));
-            direction = direction.concat(' L' + ' ' + (tipX + tipRadius) + ' ' + (height + arrowPadding - tipRadius));
-            direction += ' Q' + ' ' + (tipX) + ' ' + (height + arrowPadding) + ' ' + (tipX - tipRadius) +
-                ' ' + (height + arrowPadding - tipRadius);
-        }
-        if ((arrowLocation.x - arrowPadding / 2) > startX) {
-            direction = direction.concat(' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + height +
-                ' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
-                + height + ' ' + (startX) + ' ' + (height - rY) + ' z');
-        }
-        else {
-            if (arrowPadding === 0) {
-                direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
-                    + height + ' ' + (startX) + ' ' + (height - rY) + ' z');
-            }
-            else {
-                direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height + rY) + ' z');
-            }
-        }
-    }
-    else if (bottom) {
-        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + (startY) + ' ' + (startX + rX) + ' ' + (startY) + ' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + (startY));
-        direction = direction.concat(' L' + ' ' + (tipX - tipRadius) + ' ' + (arrowLocation.y + tipRadius));
-        direction += ' Q' + ' ' + (tipX) + ' ' + (arrowLocation.y) + ' ' + (tipX + tipRadius) + ' ' + (arrowLocation.y + tipRadius);
-        direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (startY) + ' L' + ' '
-            + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' ' + (startY) + ' ' + (width) + ' ' + (startY + rY));
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + (width) + ' '
-            + (height) + ' ' + (width - rX) + ' ' + (height) +
-            ' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + (startX) + ' '
-            + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
-    }
-    else if (left) {
-        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + (startY) + ' ' + (startX + rX) + ' ' + (startY));
-        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' '
-            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding / 2));
-        direction = direction.concat(' L' + ' ' + (width + arrowPadding - tipRadius) + ' ' + (tipY - tipRadius));
-        direction += ' Q ' + (width + arrowPadding) + ' ' + (tipY) + ' ' + (width + arrowPadding - tipRadius) + ' ' + (tipY + tipRadius);
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding / 2) +
-            ' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));
-        direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + startX + ' '
-            + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
-    }
-    else {
-        direction = direction.concat('M' + ' ' + (startX + rX) + ' ' + (startY) + ' Q ' + (startX) + ' '
-            + (startY) + ' ' + (startX) + ' ' + (startY + rY) + ' L' + ' ' + (startX) + ' ' + (arrowLocation.y - arrowPadding / 2));
-        direction = direction.concat(' L' + ' ' + (startX - arrowPadding + tipRadius) + ' ' + (tipY - tipRadius));
-        direction += ' Q ' + (startX - arrowPadding) + ' ' + (tipY) + ' ' + (startX - arrowPadding + tipRadius) + ' ' + (tipY + tipRadius);
-        direction = direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding / 2) +
-            ' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
-            + (height) + ' ' + (startX + rX) + ' ' + (height));
-        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (height) + ' Q ' + width + ' '
-            + (height) + ' ' + (width) + ' ' + (height - rY) +
-            ' L' + ' ' + (width) + ' ' + (startY + rY) + ' Q ' + width + ' '
-            + (startY) + ' ' + (width - rX) + ' ' + (startY) + ' z');
-    }
-    return direction;
 }
 /** @private */
 function redrawElement(redraw, id, options, renderer) {
@@ -3016,7 +3025,7 @@ function animateRedrawElement(element, duration, start, end, x = 'x', y = 'y') {
     });
 }
 /** @private */
-function textElement(options, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false) {
+function textElement(option, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false, animateduration) {
     let renderOptions = {};
     let htmlObject;
     let tspanElement;
@@ -3024,32 +3033,32 @@ function textElement(options, font, color, parent, isMinus = false, redraw, isAn
     let text;
     let height;
     renderOptions = {
-        'id': options.id,
-        'x': options.x,
-        'y': options.y,
+        'id': option.id,
+        'x': option.x,
+        'y': option.y,
         'fill': color,
         'font-size': font.size,
         'font-style': font.fontStyle,
         'font-family': font.fontFamily,
         'font-weight': font.fontWeight,
-        'text-anchor': options.anchor,
-        'transform': options.transform,
+        'text-anchor': option.anchor,
+        'transform': option.transform,
         'opacity': font.opacity,
-        'dominant-baseline': options.baseLine
+        'dominant-baseline': option.baseLine
     };
-    text = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
+    text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
     htmlObject = renderer.createText(renderOptions, text);
-    if (typeof options.text !== 'string' && options.text.length > 1) {
-        for (let i = 1, len = options.text.length; i < len; i++) {
-            height = (measureText(options.text[i], font).height);
+    if (typeof option.text !== 'string' && option.text.length > 1) {
+        for (let i = 1, len = option.text.length; i < len; i++) {
+            height = (measureText(option.text[i], font).height);
             tspanElement = renderer.createTSpan({
-                'x': options.x, 'id': options.id,
-                'y': (options.y) + ((isMinus) ? -(i * height) : (i * height))
-            }, isMinus ? options.text[options.text.length - (i + 1)] : options.text[i]);
+                'x': option.x, 'id': option.id,
+                'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
+            }, isMinus ? option.text[option.text.length - (i + 1)] : option.text[i]);
             htmlObject.appendChild(tspanElement);
         }
     }
-    appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate);
+    appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateduration);
     return htmlObject;
 }
 /**
@@ -3176,32 +3185,6 @@ class StackValues {
     }
 }
 /** @private */
-class TextOption extends CustomizeOption {
-    constructor(id, x, y, anchor, text, transform = '', baseLine) {
-        super(id);
-        this.transform = '';
-        this.baseLine = 'auto';
-        this.x = x;
-        this.y = y;
-        this.anchor = anchor;
-        this.text = text;
-        this.transform = transform;
-        this.baseLine = baseLine;
-    }
-}
-/** @private */
-class PathOption extends CustomizeOption {
-    constructor(id, fill, width, color, opacity, dashArray, d) {
-        super(id);
-        this.opacity = opacity;
-        this.fill = fill;
-        this.stroke = color;
-        this['stroke-width'] = width;
-        this['stroke-dasharray'] = dashArray;
-        this.d = d;
-    }
-}
-/** @private */
 class RectOption extends PathOption {
     constructor(id, fill, border, opacity, rect, rx, ry, transform, dashArray) {
         super(id, fill, border.width, border.color, opacity, dashArray);
@@ -3229,22 +3212,6 @@ class PolygonOption {
         this.id = id;
         this.points = points;
         this.fill = fill;
-    }
-}
-/** @private */
-class Size {
-    constructor(width, height) {
-        this.width = width;
-        this.height = height;
-    }
-}
-/** @private */
-class Rect {
-    constructor(x, y, width, height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
     }
 }
 /** @private */
@@ -3907,7 +3874,18 @@ class CartesianAxisLayoutPanel {
             elementSize = axis.visibleLabels[i].size;
             pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY + (elementSize.height / 4), anchor, axis.visibleLabels[i].text);
+            if (typeof axis.visibleLabels[i].text !== 'string') {
+                if (axis.isInversed) {
+                    pointY = i === 0 ? pointY + 5 : (i === axis.visibleLabels.length - 1 ? pointY - 5 : pointY);
+                }
+                else {
+                    pointY = i === 0 ? pointY - 5 : pointY - (elementSize.height / 4);
+                }
+            }
+            else {
+                pointY = pointY + (elementSize.height / 4);
+            }
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
                     case 'None':
@@ -4191,11 +4169,12 @@ class CartesianAxisLayoutPanel {
         let pointX = 0;
         let pointY = 0;
         let elementSize;
+        let labelPadding;
+        let xValue = 0;
         let labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let islabelInside = axis.labelPosition === 'Inside';
         let isOpposed = axis.opposedPosition;
         let tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        let labelPadding;
         let padding = tickSpace + this.padding + axis.lineStyle.width / 2;
         let rotateSize;
         let diffHeight;
@@ -4208,16 +4187,29 @@ class CartesianAxisLayoutPanel {
         let length = axis.visibleLabels.length;
         let intervalLength;
         let label;
+        let breakLabels;
         let scrollBarHeight = axis.scrollbarSettings.enable || (!islabelInside && isNullOrUndefined(axis.crossesAt)
             && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) ? axis.scrollBarHeight : 0;
         for (let i = 0, len = length; i < len; i++) {
             label = axis.visibleLabels[i];
-            pointX = (valueToCoefficient(label.value, axis) * rect.width) + rect.x;
-            elementSize = label.size;
+            breakLabels = label.originalText;
+            pointX = xValue = (valueToCoefficient(label.value, axis) * rect.width) + rect.x;
+            if (breakLabels.indexOf('<br>') !== -1) {
+                elementSize = measureText(breakLabels.replace(/<br>/g, ' '), axis.labelStyle);
+            }
+            else {
+                elementSize = label.size;
+            }
             intervalLength = rect.width / length;
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0
                 && elementSize.width > intervalLength) ? intervalLength : elementSize.width;
-            pointX -= width / 2;
+            if (breakLabels.indexOf('<br>') !== -1 && label.breakLabelSize.width < axis.maxLabelSize.width) {
+                pointX -= label.breakLabelSize.width / 2;
+            }
+            else {
+                pointX -= width / 2;
+            }
+            pointX = axis.enableTrim && breakLabels.indexOf('<br>') !== -1 ? (xValue - (label.breakLabelSize.height / 4)) : pointX;
             if (islabelInside && angle) {
                 pointY = isOpposed ? (rect.y + padding) : (rect.y - padding);
             }
@@ -4256,7 +4248,7 @@ class CartesianAxisLayoutPanel {
                         break;
                 }
             }
-            options.text = this.findAxisLabel(axis, label.text, intervalLength);
+            options.text = this.getLabelText(breakLabels, label, axis, intervalLength);
             if (angle === 0 && axis.labelIntersectAction === 'Hide' && i !== 0 &&
                 (!axis.isInversed ? options.x <= previousEnd : options.x + width >= previousEnd)) {
                 continue;
@@ -4278,6 +4270,37 @@ class CartesianAxisLayoutPanel {
         }
         else if (axis.visible) {
             this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
+        }
+    }
+    /**
+     * To get axis label text
+     * @param breakLabels
+     * @param label
+     * @param axis
+     * @param intervalLength
+     */
+    getLabelText(breakLabels, label, axis, intervalLength) {
+        if (breakLabels.indexOf('<br>') !== -1) {
+            let result1 = [];
+            let str;
+            let labelArray = breakLabels.split('<br>');
+            if (axis.enableTrim) {
+                for (let index = 0; index < labelArray.length; index++) {
+                    str = textTrim(axis.maximumLabelWidth, labelArray[index], axis.labelStyle);
+                    result1.push(str);
+                }
+                return result1;
+            }
+            else {
+                for (let index = 0; index < label.text.length; index++) {
+                    str = this.findAxisLabel(axis, label.text[index], intervalLength);
+                    result1.push(str);
+                }
+                return result1;
+            }
+        }
+        else {
+            return this.findAxisLabel(axis, label.text, intervalLength);
         }
     }
     /**
@@ -4563,6 +4586,9 @@ class ChartData {
             return withInBounds(x, y, new Rect((this.chart.chartAreaType === 'Cartesian' ? rect.x : 0) + region.x, (this.chart.chartAreaType === 'Cartesian' ? rect.y : 0) + region.y, region.width, region.height));
         });
     }
+    /**
+     * @private
+     */
     getClosest(series, value) {
         let xData = series.xData;
         let closest;
@@ -4923,20 +4949,24 @@ class SeriesBase extends ChildProperty {
         this.points[i] = new Points();
         point = this.points[i];
         let currentViewData = this.currentViewData;
-        point.x = getValue(xName, currentViewData[i]);
-        point.high = getValue(this.high, currentViewData[i]);
-        point.low = getValue(this.low, currentViewData[i]);
-        point.open = getValue(this.open, currentViewData[i]);
-        point.close = getValue(this.close, currentViewData[i]);
-        point.volume = getValue(this.volume, currentViewData[i]);
-        point.interior = getValue(this.pointColorMapping, currentViewData[i]);
+        let getObjectValueByMappingString = this.improveChartPerformance ? this.getObjectValue : getValue;
+        point.x = getObjectValueByMappingString(xName, currentViewData[i]);
+        point.high = getObjectValueByMappingString(this.high, currentViewData[i]);
+        point.low = getObjectValueByMappingString(this.low, currentViewData[i]);
+        point.open = getObjectValueByMappingString(this.open, currentViewData[i]);
+        point.close = getObjectValueByMappingString(this.close, currentViewData[i]);
+        point.volume = getObjectValueByMappingString(this.volume, currentViewData[i]);
+        point.interior = getObjectValueByMappingString(this.pointColorMapping, currentViewData[i]);
         if (this instanceof Series) {
-            point.y = getValue(this.yName, currentViewData[i]);
-            point.size = getValue(this.size, currentViewData[i]);
-            point.text = getValue(textMappingName, currentViewData[i]);
-            point.tooltip = getValue(this.tooltipMappingName, currentViewData[i]);
+            point.y = getObjectValueByMappingString(this.yName, currentViewData[i]);
+            point.size = getObjectValueByMappingString(this.size, currentViewData[i]);
+            point.text = getObjectValueByMappingString(textMappingName, currentViewData[i]);
+            point.tooltip = getObjectValueByMappingString(this.tooltipMappingName, currentViewData[i]);
         }
         return point;
+    }
+    getObjectValue(mappingName, data) {
+        return data[mappingName];
     }
     /**
      * To set empty point value based on empty point mode
@@ -5185,6 +5215,9 @@ __decorate$4([
 __decorate$4([
     Property('X')
 ], SeriesBase.prototype, "segmentAxis", void 0);
+__decorate$4([
+    Property(true)
+], SeriesBase.prototype, "improveChartPerformance", void 0);
 /**
  *  Configures the series in charts.
  */
@@ -5918,7 +5951,7 @@ class Marker extends MarkerExplode {
                     previousPath = markerElement.getAttribute('d');
                 }
                 markerElement = drawSymbol(location, argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + y.toString());
-                appendChildElement(parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y', previousLocation, previousPath);
+                appendChildElement(parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y', previousLocation, previousPath, false, false, null, series.chart.duration);
             }
             point.marker = {
                 border: argsData.border,
@@ -5993,16 +6026,17 @@ class Marker extends MarkerExplode {
             series.type === 'HiloOpenClose' || (series.chart.chartAreaType === 'PolarRadar' && (series.drawType === 'Scatter')))) {
             let markerElements = series.symbolElement.childNodes;
             let delay = series.animation.delay + series.animation.duration;
+            let duration = series.chart.animated ? series.chart.duration : 200;
             let j = 1;
             let incFactor = (series.type === 'RangeArea' || series.type === 'RangeColumn') ? 2 : 1;
             for (let i = 0; i < series.points.length; i++) {
                 if (!series.points[i].symbolLocations.length || !markerElements[j]) {
                     continue;
                 }
-                markerAnimate(markerElements[j], delay, 200, series, i, series.points[i].symbolLocations[0], false);
+                markerAnimate(markerElements[j], delay, duration, series, i, series.points[i].symbolLocations[0], false);
                 if (incFactor === 2) {
                     let lowPoint = this.getRangeLowPoint(series.points[i].regions[0], series);
-                    markerAnimate(markerElements[j + 1], delay, 200, series, i, lowPoint, false);
+                    markerAnimate(markerElements[j + 1], delay, duration, series, i, lowPoint, false);
                 }
                 j += incFactor;
             }
@@ -6617,7 +6651,13 @@ class ExportUtils {
         let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
             [(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'image/svg+xml' }));
         if (type === 'SVG') {
-            this.triggerDownload(fileName, type, url, isDownload);
+            if (Browser.info.name === 'msie') {
+                let svg = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
+                window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
+            }
+            else {
+                this.triggerDownload(fileName, type, url, isDownload);
+            }
         }
         else {
             let image = new Image();
@@ -6777,9 +6817,32 @@ let Chart = class Chart extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /** @public */
+        this.animated = false;
         /** @private */
         this.chartAreaType = 'Cartesian';
         this.chartid = 57723;
+        setValue('mergePersistData', this.mergePersistChartData, this);
+    }
+    /**
+     * To manage persist chart data
+     */
+    mergePersistChartData() {
+        let data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        if (!(isNullOrUndefined(data) || (data === ''))) {
+            let dataObj = JSON.parse(data);
+            let keys = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (let key of keys) {
+                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
+                    extend(this[key], dataObj[key]);
+                }
+                else {
+                    this[key] = dataObj[key];
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
     }
     /**
      * Initialize the event handler.
@@ -6830,6 +6893,15 @@ let Chart = class Chart extends Component {
      */
     getLocalizedLabel(key) {
         return this.localeObject.getConstant(key);
+    }
+    /**
+     * Animate the series bounds.
+     * @private
+     */
+    animate(duration) {
+        this.redraw = true;
+        this.animated = true; //used to set duration as 1000 for animation at default 300
+        this.duration = duration ? duration : 1000;
     }
     /**
      * Refresh the chart bounds.
@@ -7017,10 +7089,16 @@ let Chart = class Chart extends Component {
         if (!this.tooltip.enable) {
             appendChildElement(this.svgObject, this.renderer.createGroup({ id: this.element.id + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
         }
+        if (this.stockChart) {
+            this.stockChart.calculateStockEvents();
+        }
     }
     applyZoomkit() {
-        if (!this.redraw && this.zoomModule && this.zoomModule.isZoomed &&
-            (!this.zoomSettings.enablePan || this.zoomModule.performedUI)) {
+        /**
+         * Issue: Zoomkit not visible after performing refresh()
+         * Fix: this method called without checking `zoomModule.isZoomed`
+         */
+        if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI)) {
             this.zoomModule.applyZoomToolkit(this, this.axisCollections);
         }
     }
@@ -7157,7 +7235,7 @@ let Chart = class Chart extends Component {
         let axis;
         let axes = [this.primaryXAxis, this.primaryYAxis];
         axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
-        if (this.paretoSeriesModule) {
+        if (this.paretoSeriesModule && this.series[0].type === 'Pareto') {
             axes = axes.concat(this.paretoSeriesModule.paretoAxes);
         }
         this.axisCollections = [];
@@ -7252,6 +7330,8 @@ let Chart = class Chart extends Component {
         let count = colors.length;
         for (let i = 0, len = this.series.length; i < len; i++) {
             series = this.series[i];
+            // for y axis label issue during chart navigation
+            series.category = this.series[0].type === 'Pareto' ? 'Pareto' : 'Series';
             series.index = i;
             series.interior = series.fill || colors[i % count];
             switch (series.type) {
@@ -7395,7 +7475,7 @@ let Chart = class Chart extends Component {
      * @private
      */
     getPersistData() {
-        let keyEntity = ['loaded', 'animationComplete'];
+        let keyEntity = ['loaded', 'animationComplete', 'primaryXAxis', 'primaryYAxis'];
         return this.addOnPersist(keyEntity);
     }
     /**
@@ -8110,7 +8190,7 @@ let Chart = class Chart extends Component {
             axis.rect = new Rect(undefined, undefined, 0, 0);
             axis.isStack100 = false;
         }
-        if (this.paretoSeriesModule) {
+        if (this.paretoSeriesModule && this.series[0].type === 'Pareto') {
             for (let item of this.paretoSeriesModule.paretoAxes) {
                 axis = item;
                 axis.rect = new Rect(undefined, undefined, 0, 0);
@@ -8304,6 +8384,8 @@ let Chart = class Chart extends Component {
                 this.refreshAxis();
                 this.refreshBound();
                 this.trigger('loaded', { chart: this });
+                this.redraw = false;
+                this.animated = false;
             }
         }
     }
@@ -9753,13 +9835,14 @@ class LineBase {
      */
     appendLinePath(options, series, clipRect) {
         let element = getElement(options.id);
+        let chart = series.chart;
         let previousDirection = element ? element.getAttribute('d') : null;
         let htmlObject = series.chart.renderer.drawPath(options);
         htmlObject.setAttribute('clip-path', clipRect);
         series.pathElement = htmlObject;
         series.seriesElement.appendChild(htmlObject);
         series.isRectSeries = false;
-        pathAnimation(element, options.d, series.chart.redraw, previousDirection);
+        pathAnimation(element, options.d, series.chart.redraw, previousDirection, chart.duration);
     }
     /**
      * To render the marker for the series.
@@ -9819,6 +9902,7 @@ class LineBase {
      */
     doLinearAnimation(series, animation) {
         let clipRect = series.clipRectElement.childNodes[0].childNodes[0];
+        let duration = series.chart.animated ? series.chart.duration : animation.duration;
         let effect = getAnimationFunction('Linear');
         let elementHeight = +clipRect.getAttribute('height');
         let elementWidth = +clipRect.getAttribute('width');
@@ -9828,7 +9912,7 @@ class LineBase {
         let value;
         clipRect.style.visibility = 'hidden';
         new Animation({}).animate(clipRect, {
-            duration: animation.duration,
+            duration: duration,
             delay: animation.delay,
             progress: (args) => {
                 if (args.timeStamp >= args.delay) {
@@ -10125,7 +10209,7 @@ class ColumnBase {
                 break;
         }
         appendChildElement(series.seriesElement, element, chart.redraw);
-        pathAnimation(element, direction, chart.redraw, previousDirection);
+        pathAnimation(element, direction, chart.redraw, previousDirection, chart.duration);
     }
     /**
      * To animate the series.
@@ -10150,6 +10234,7 @@ class ColumnBase {
      */
     animateRect(element, series, point) {
         let option = series.animation;
+        let duration = series.chart.animated ? series.chart.duration : option.duration;
         let effect = getAnimationFunction('Linear');
         let isPlot = point.yValue < 0;
         let x;
@@ -10189,7 +10274,7 @@ class ColumnBase {
         let value;
         element.style.visibility = 'hidden';
         new Animation({}).animate(element, {
-            duration: option.duration,
+            duration: duration,
             delay: option.delay,
             progress: (args) => {
                 if (args.timeStamp >= args.delay) {
@@ -11881,6 +11966,86 @@ class StackingAreaSeries extends LineBase {
             }
         }
         return seriesCollection[0];
+    }
+}
+
+/**
+ * `StackingLineSeries` module used to render the Stacking Line series.
+ */
+class StackingLineSeries extends LineBase {
+    /**
+     * Render the Stacking line series.
+     * @return {void}
+     * @private
+     */
+    render(series, xAxis, yAxis, isInverted) {
+        let polarType = series.chart.chartAreaType === 'PolarRadar';
+        let getCoordinate = polarType ? TransformToVisible : getPoint;
+        let direction = '';
+        let visiblePts = series.points;
+        let pointsLength = visiblePts.length;
+        let stackedvalue = series.stackedValues;
+        let origin = polarType ?
+            Math.max(series.yAxis.visibleRange.min, stackedvalue.endValues[0]) :
+            Math.max(series.yAxis.visibleRange.min, stackedvalue.startValues[0]);
+        let options;
+        let point1;
+        let point2;
+        for (let i = 0; i < pointsLength; i++) {
+            visiblePts[i].regions = [];
+            visiblePts[i].symbolLocations = [];
+            if (visiblePts[i].visible && withInRange(visiblePts[i - 1], visiblePts[i], visiblePts[i + 1], series)) {
+                point1 = getCoordinate(visiblePts[i].xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted, series);
+                direction = direction.concat((i ? 'L' : 'M') + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+                visiblePts[i].symbolLocations.push(getCoordinate(visiblePts[i].xValue, stackedvalue.endValues[i], xAxis, yAxis, isInverted, series));
+                visiblePts[i].regions.push(new Rect(visiblePts[i].symbolLocations[0].x - series.marker.width, visiblePts[i].symbolLocations[0].y - series.marker.height, 2 * series.marker.width, 2 * series.marker.height));
+            }
+            else {
+                if (series.emptyPointSettings.mode !== 'Drop') {
+                    if (visiblePts[i + 1] && visiblePts[i + 1].visible) {
+                        point1 = getCoordinate(visiblePts[i + 1].xValue, stackedvalue.endValues[i + 1], xAxis, yAxis, isInverted, series);
+                        direction = direction.concat('M' + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+                    }
+                    
+                }
+            }
+        }
+        if (series.chart.chartAreaType === 'PolarRadar' && visiblePts.length > 1) {
+            point1 = { 'y': stackedvalue.endValues[0], 'x': series.points[0].xValue, };
+            point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
+            direction += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+        }
+        options = new PathOption(series.chart.element.id + '_Series_' + series.index, 'none', series.width, series.interior, series.opacity, series.dashArray, direction);
+        this.appendLinePath(options, series, '');
+        this.renderMarker(series);
+    }
+    /**
+     * Animates the series.
+     * @param  {Series} series - Defines the series to animate.
+     * @return {void}
+     */
+    doAnimation(series) {
+        let option = series.animation;
+        this.doLinearAnimation(series, option);
+    }
+    /**
+     * To destroy the stacking line.
+     * @return {void}
+     * @private
+     */
+    destroy(chart) {
+        /**
+         * Destroy method calling here
+         */
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        /**
+         * Returns the module name of the series
+         */
+        return 'StackingLineSeries';
     }
 }
 
@@ -17714,7 +17879,7 @@ class DataLabel {
                                 rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
                                 textElement(new TextOption(this.commonId + index + '_Text_' + i, rect.x + this.margin.left + textSize.width / 2, rect.y + this.margin.top + textSize.height * 3 / 4, 'middle', argsData.text, 'rotate(0,' + (rect.x) + ',' + (rect.y) + ')', 'auto'), argsData.font, argsData.font.color ||
-                                    ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true);
+                                    ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true, false, series.chart.duration);
                             }
                         }
                     }
@@ -17722,7 +17887,7 @@ class DataLabel {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw);
+            appendChildElement(getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     }
     /**
@@ -18185,6 +18350,7 @@ class DataLabel {
         let shapeElements = series.shapeElement.childNodes;
         let textNode = series.textElement.childNodes;
         let delay = series.animation.delay + series.animation.duration;
+        let duration = series.chart.animated ? series.chart.duration : 200;
         let location;
         let length = element ? 1 : textNode.length;
         let tempElement;
@@ -18192,15 +18358,15 @@ class DataLabel {
             tempElement = textNode[i];
             if (element) {
                 element.style.visibility = 'hidden';
-                templateAnimate(element, delay, 200, 'ZoomIn');
+                templateAnimate(element, delay, duration, 'ZoomIn');
             }
             else {
                 location = new ChartLocation((+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2), (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
-                markerAnimate(tempElement, delay, 200, series, null, location, true);
+                markerAnimate(tempElement, delay, duration, series, null, location, true);
                 if (shapeElements[i]) {
                     tempElement = shapeElements[i];
                     location = new ChartLocation((+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2), (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
-                    markerAnimate(tempElement, delay, 200, series, null, location, true);
+                    markerAnimate(tempElement, delay, duration, series, null, location, true);
                 }
             }
         }
@@ -21865,18 +22031,21 @@ class PieBase extends AccumulationBase {
      */
     doAnimation(slice, series) {
         let startAngle = series.startAngle - 90;
+        let duration = this.accumulation.duration ? this.accumulation.duration : series.animation.duration;
         let value;
+        this.center.x += 1;
         let radius = Math.max(this.accumulation.availableSize.height, this.accumulation.availableSize.width) * 0.75;
         radius += radius * (0.414); // formula r + r / 2 * (1.414 -1)
         let effect = getAnimationFunction('Linear'); // need to check animation type
         new Animation({}).animate(slice, {
-            duration: series.animation.duration,
+            duration: duration,
             delay: series.animation.delay,
             progress: (args) => {
                 value = effect(args.timeStamp, startAngle, this.totalAngle, args.duration);
                 slice.setAttribute('d', this.getPathArc(this.center, startAngle, value, radius, 0));
             },
             end: (args) => {
+                this.center.x -= 1;
                 slice.setAttribute('d', this.getPathArc(this.center, 0, 359.99999, radius, 0));
                 this.accumulation.trigger(animationComplete, { series: series, accumulation: this.accumulation, chart: this.accumulation });
                 let datalabelGroup = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);
@@ -21915,10 +22084,11 @@ class PieSeries extends PieBase {
     }
     refresh(point, degree, start, chart, option, seriesGroup) {
         let seriesElement = getElement(option.id);
+        let duration = chart.duration ? chart.duration : 300;
         let currentStartAngle;
         let curentDegree;
         new Animation({}).animate(createElement('div'), {
-            duration: 300,
+            duration: duration,
             delay: 0,
             progress: (args) => {
                 curentDegree = linear(args.timeStamp, point.degree, (degree - point.degree), args.duration);
@@ -22010,9 +22180,74 @@ let AccumulationChart = class AccumulationChart extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /** @private */
+        this.animateselected = false;
         /** @private explode radius internal property */
         this.explodeDistance = 0;
         this.chartid = 57724;
+    }
+    /**
+     * Animate the series bounds on data change.
+     * @private
+     */
+    animate(duration) {
+        this.duration = duration ? duration : 700;
+        this.animateselected = true;
+        this.animateSeries = false;
+        let temIndex = 0;
+        let tempcolor = [];
+        let tempindex = [];
+        let tempindex1 = [];
+        let currentSeries = this.visibleSeries[0];
+        let datasource = [];
+        datasource = currentSeries.dataSource;
+        currentSeries.sumOfPoints = 0;
+        if (currentSeries.points.length < Object.keys(currentSeries.dataSource).length) {
+            this.refresh();
+        }
+        else if (currentSeries.points.length > Object.keys(currentSeries.dataSource).length) {
+            let currentSeries = this.visibleSeries[0];
+            currentSeries.points = currentSeries.points.filter((entry1) => {
+                entry1.visible = false;
+                tempindex.push(entry1.index);
+                tempcolor.push(entry1.color);
+                return (datasource).some((entry2) => {
+                    let accPoint = entry2;
+                    if (entry1.x === accPoint.x) {
+                        entry1.visible = true;
+                        tempindex1.push(entry1.index);
+                        entry1.index = temIndex;
+                        temIndex++;
+                    }
+                    return entry1.x === accPoint.x;
+                });
+            });
+            let missing = tempindex.filter((item) => tempindex1.indexOf(item) < 0);
+            let interval = tempindex.length - missing.length;
+            for (let i = (tempindex.length - 1); i >= interval; i--) {
+                removeElement('container_Series_0_Point_' + tempindex[i]);
+            }
+            for (let i = 0; i < currentSeries.points.length; i++) {
+                currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.points[i].color = tempcolor[i];
+                currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
+            }
+            this.redraw = this.enableAnimation;
+            this.animateSeries = false;
+            this.calculateBounds();
+            this.renderElements();
+        }
+        else {
+            for (let i = 0; i < currentSeries.points.length; i++) {
+                currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
+            }
+            this.redraw = this.enableAnimation;
+            this.animateSeries = false;
+            this.removeSvg();
+            this.refreshPoints(currentSeries.points);
+            this.renderElements();
+        }
     }
     /** @private */
     get type() {
@@ -22199,6 +22434,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         element.style.msUserSelect = 'none';
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
+        element.style.display = 'block';
     }
     /**
      * Method to set the annotation content dynamically for accumulation.
@@ -22732,21 +22968,25 @@ let AccumulationChart = class AccumulationChart extends Component {
                     update.refreshBounds = true;
                     break;
                 case 'series':
-                    let len = this.series.length;
-                    let seriesRefresh = false;
-                    for (let i = 0; i < len; i++) {
-                        if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
-                            seriesRefresh = true;
+                    if (!this.animateselected) {
+                        let len = this.series.length;
+                        let seriesRefresh = false;
+                        for (let i = 0; i < len; i++) {
+                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                                seriesRefresh = true;
+                            }
+                            if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
+                                this.accBaseModule.explodePoints(newProp.series[i].explodeIndex, this);
+                                this.accBaseModule.deExplodeAll(newProp.series[i].explodeIndex, this.enableAnimation ? 300 : 0);
+                            }
                         }
-                        if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
-                            this.accBaseModule.explodePoints(newProp.series[i].explodeIndex, this);
-                            this.accBaseModule.deExplodeAll(newProp.series[i].explodeIndex, this.enableAnimation ? 300 : 0);
+                        if (seriesRefresh) {
+                            this.processData(false);
+                            update.refreshBounds = true;
                         }
                     }
-                    if (seriesRefresh) {
-                        this.processData(false);
-                        update.refreshBounds = true;
-                    }
+                    this.animateselected = false;
+                    this.redraw = false;
                     break;
                 case 'locale':
                 case 'currencyCode':
@@ -23121,6 +23361,50 @@ class Size$1 {
         this.width = width;
         this.height = height;
     }
+}
+/**
+ * To find the default colors based on theme.
+ * @private
+ */
+function getThemeColor$1(theme) {
+    let themeColors;
+    switch (theme.toLowerCase()) {
+        case 'bootstrapdark':
+        case 'fabricdark':
+        case 'materialdark':
+        case 'highcontrast':
+            themeColors = {
+                axisLineColor: '#ffffff',
+                dataLabelColor: '#ffffff',
+                rangeBandColor: '#ffffff',
+                tooltipFill: '#ffffff',
+                tooltipFontColor: '#363F4C',
+                trackerLineColor: '#ffffff'
+            };
+            break;
+        case 'Bootstrap4':
+            themeColors = {
+                axisLineColor: '#6C757D',
+                dataLabelColor: '#212529',
+                rangeBandColor: '#212529',
+                tooltipFill: '#000000',
+                tooltipFontColor: '#FFFFFF',
+                trackerLineColor: '#212529'
+            };
+            break;
+        default: {
+            themeColors = {
+                axisLineColor: '#000000',
+                dataLabelColor: '#424242',
+                rangeBandColor: '#000000',
+                tooltipFill: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                trackerLineColor: '#000000'
+            };
+            break;
+        }
+    }
+    return themeColors;
 }
 /**
  * To find number from string
@@ -24331,8 +24615,8 @@ class AccumulationDataLabel extends AccumulationBase {
                 element = getElement(id + 'shape_' + point.index);
                 let startLocation = element ? new ChartLocation(+element.getAttribute('x'), +element.getAttribute('y')) : null;
                 dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
-                appendChildElement(datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation);
-                textElement(new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, '', 'auto'), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true);
+                appendChildElement(datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
+                textElement(new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, '', 'auto'), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
                 element = null;
             }
             if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
@@ -24342,7 +24626,7 @@ class AccumulationDataLabel extends AccumulationBase {
                 let element = getElement(id + 'connector_' + point.index);
                 let previousDirection = element ? element.getAttribute('d') : '';
                 let pathElement = this.accumulation.renderer.drawPath(new PathOption(id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width, dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray, this.getConnectorPath(extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle)));
-                appendChildElement(datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection);
+                appendChildElement(datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection, false, false, null, this.accumulation.duration);
             }
             appendChildElement(parent, datalabelGroup, redraw);
         }
@@ -24584,6 +24868,9 @@ class AccumulationTooltip extends BaseTooltip {
     }
 }
 
+/**
+ * AccumulationChart Selection src file
+ */
 /**
  * `AccumulationSelection` module handles the selection for accumulation chart.
  */
@@ -25662,6 +25949,24 @@ function getRangeThemeColor(theme, range) {
                 selectedRegionColor: range.series.length ? 'rgba(22, 22, 22, 0.6)' : '#FFD939',
                 tooltipBackground: '#F4F4F4',
                 tooltipFontColor: '#282727',
+                thumbWidth: thumbWidth,
+                thumbHeight: thumbHeight
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                gridLineColor: darkGridlineColor,
+                axisLineColor: '#CED4DA',
+                labelFontColor: '#212529',
+                unselectedRectColor: range.series.length ? 'rgba(255, 255, 255, 0.6)' : '#514F4F',
+                thumpLineColor: '#495057',
+                thumbBackground: '#FFFFFF',
+                gripColor: '#495057',
+                background: 'rgba(255, 255, 255, 0.6)',
+                thumbHoverColor: '#BFBFBF',
+                selectedRegionColor: range.series.length ? '#FFFFFF' : '#FFD939',
+                tooltipBackground: 'rgba(0, 0, 0, 0.9)',
+                tooltipFontColor: 'rgba(255, 255, 255)',
                 thumbWidth: thumbWidth,
                 thumbHeight: thumbHeight
             };
@@ -26912,6 +27217,7 @@ class PeriodSelector {
     /**
      * renderSelector elements
      */
+    // tslint:disable-next-line:max-func-body-length
     renderSelector() {
         this.setControlValues(this.rootControl);
         let enableCustom = true;
@@ -26935,14 +27241,17 @@ class PeriodSelector {
             };
         }
         if (this.rootControl.getModuleName() === 'stockChart') {
-            selector.push({ template: createElement('button', { id: 'resetClick', innerHTML: 'Reset', styles: buttonStyles }),
+            selector.push({ template: createElement('button', { id: 'resetClick', innerHTML: 'Reset',
+                    styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
                 align: 'Right' });
             if (this.rootControl.exportType.indexOf('Print') > -1) {
-                selector.push({ template: createElement('button', { id: 'print', innerHTML: 'Print', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: 'print', innerHTML: 'Print', styles: buttonStyles,
+                        className: 'e-dropdown-btn e-btn' }),
                     align: 'Right' });
             }
             if (this.rootControl.exportType.length) {
-                selector.push({ template: createElement('button', { id: 'export', innerHTML: 'Export', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: 'export', innerHTML: 'Export', styles: buttonStyles,
+                        className: 'e-dropdown-btn e-btn' }),
                     align: 'Right' });
             }
         }
@@ -26978,7 +27287,7 @@ class PeriodSelector {
                     datePickerElement.style.display = 'none';
                     datePickerElement.insertAdjacentElement('afterend', createElement('div', {
                         id: 'customRange',
-                        innerHTML: selctorArgs.content, className: 'e-btn e-flat',
+                        innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
                         styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                     }));
                     getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
@@ -26999,7 +27308,11 @@ class PeriodSelector {
                         this.rootControl.rangeChanged(args.startDate.getTime(), args.endDate.getTime());
                     }
                     this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                    if (!this.rootControl.resizeTo && this.control.rangeSlider.isDrag) {
+                    if (!this.rootControl.resizeTo && this.control.rangeSlider && this.control.rangeSlider.isDrag) {
+                        /**
+                         * Issue: While disabling range navigator console error throws
+                         * Fix:Check with rangeSlider present or not. Then checked with isDrag.
+                         */
                         for (let i = 0, length = this.nodes.childNodes.length; i < length; i++) {
                             this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
                             this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
@@ -27697,7 +28010,7 @@ class ToolBarSelector {
         seriesType.appendTo('#seriesType');
     }
     resetButton() {
-        let reset = new Button({ cssClass: 'e-flat' });
+        let reset = new Button();
         reset.appendTo('#resetClick');
         document.getElementById('resetClick').onclick = () => {
             let indicatorlength = this.indicators.length;
@@ -27925,9 +28238,7 @@ class ToolBarSelector {
     }
     printButton() {
         if (this.stockChart.exportType.indexOf('Print') > -1) {
-            let print$$1 = new Button({
-                cssClass: 'e-flat'
-            });
+            let print$$1 = new Button();
             print$$1.appendTo('#print');
             document.getElementById('print').onclick = () => {
                 this.stockChart.chart.print(this.stockChart.element.id);
@@ -28619,6 +28930,269 @@ __decorate$12([
 __decorate$12([
     Property(0)
 ], StockChartIndexes.prototype, "series", void 0);
+/**
+ * Configures the Stock events for stock chart.
+ */
+class StockEventsSettings extends ChildProperty {
+}
+__decorate$12([
+    Property('Circle')
+], StockEventsSettings.prototype, "type", void 0);
+__decorate$12([
+    Property('')
+], StockEventsSettings.prototype, "text", void 0);
+__decorate$12([
+    Property('')
+], StockEventsSettings.prototype, "description", void 0);
+__decorate$12([
+    Property()
+], StockEventsSettings.prototype, "date", void 0);
+__decorate$12([
+    Complex({ color: 'black', width: 1 }, StockChartBorder)
+], StockEventsSettings.prototype, "border", void 0);
+__decorate$12([
+    Property('transparent')
+], StockEventsSettings.prototype, "background", void 0);
+__decorate$12([
+    Property(true)
+], StockEventsSettings.prototype, "showOnSeries", void 0);
+__decorate$12([
+    Property('close')
+], StockEventsSettings.prototype, "placeAt", void 0);
+__decorate$12([
+    Complex(Theme.stockEventFont, StockChartFont)
+], StockEventsSettings.prototype, "textStyle", void 0);
+
+/**
+ * @private
+ */
+class StockEvents extends BaseTooltip {
+    constructor(stockChart) {
+        super(stockChart.chart);
+        /** @private */
+        this.symbolLocations = [];
+        this.stockChart = stockChart;
+        this.chartId = this.stockChart.element.id;
+    }
+    /**
+     * @private
+     * To render stock events in chart
+     */
+    renderStockEvents() {
+        let sChart = this.stockChart;
+        let stockEvent;
+        let stockEventElement;
+        let symbolLocation;
+        let textSize;
+        // Creation of group elements for stock events
+        let stockEventsElementGroup = sChart.renderer.createGroup({ id: this.chartId + '_StockEvents' });
+        this.symbolLocations = initialArray(sChart.series.length, sChart.stockEvents.length, new ChartLocation(0, 0));
+        for (let i = 0; i < sChart.stockEvents.length; i++) {
+            stockEvent = this.stockChart.stockEvents[i];
+            for (let series of sChart.chart.series) {
+                let argsData = {
+                    name: stockEventRender, stockChart: sChart, text: stockEvent.text,
+                    type: stockEvent.type, cancel: false, series: series
+                };
+                sChart.trigger(stockEventRender, argsData);
+                stockEvent.text = argsData.text;
+                stockEvent.type = argsData.type;
+                textSize = measureText(stockEvent.text + 'W', stockEvent.textStyle);
+                if (!argsData.cancel) {
+                    stockEventElement = sChart.renderer.createGroup({ id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i });
+                    if (withIn(stockEvent.date.getTime(), series.xAxis.visibleRange)) {
+                        symbolLocation = this.findClosePoint(series, stockEvent);
+                        if (!stockEvent.showOnSeries) {
+                            symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
+                        }
+                        this.symbolLocations[series.index][i] = symbolLocation;
+                        this.createStockElements(stockEventElement, stockEvent, series, i, symbolLocation, textSize);
+                        stockEventsElementGroup.appendChild(stockEventElement);
+                    }
+                }
+            }
+        }
+        return stockEventsElementGroup;
+    }
+    findClosePoint(series, sEvent) {
+        let closeIndex = this.getClosest(series, sEvent.date.getTime());
+        let pointData;
+        let point;
+        let xPixel;
+        let yPixel;
+        for (let k = 0; k < series.points.length; k++) {
+            point = series.points[k];
+            if (closeIndex === point.xValue && point.visible) {
+                pointData = new PointData(point, series);
+            }
+            else if (k !== 0 && k !== series.points.length) {
+                if (closeIndex > series.points[k - 1].xValue && closeIndex < series.points[k + 1].xValue) {
+                    pointData = new PointData(point, series);
+                }
+            }
+        }
+        xPixel = series.xAxis.rect.x + valueToCoefficient(pointData.point.xValue, series.xAxis) * series.xAxis.rect.width;
+        yPixel = valueToCoefficient(pointData.point[sEvent.placeAt], series.yAxis) * series.yAxis.rect.height;
+        yPixel = (yPixel * -1) + (series.yAxis.rect.y + series.yAxis.rect.height);
+        return new ChartLocation(xPixel, yPixel);
+    }
+    createStockElements(stockEventElement, stockEve, series, i, symbolLocation, textSize) {
+        let result = new Size(textSize.width > 20 ? textSize.width : 20, textSize.height > 20 ? textSize.height : 20);
+        let pathString;
+        let pathOption;
+        let lx = symbolLocation.x;
+        let ly = symbolLocation.y;
+        let stockId = this.chartId + '_Series_' + series.index + '_StockEvents_' + i;
+        let border = stockEve.border;
+        switch (stockEve.type) {
+            case 'Flag':
+            case 'Circle':
+            case 'Square':
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), stockEve.date.toDateString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), stockEve.date.toDateString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), stockEve.date.toDateString()));
+                textElement(new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                break;
+            case 'ArrowUp':
+            case 'ArrowDown':
+            case 'ArrowRight':
+            case 'ArrowLeft':
+                pathString = 'M' + ' ' + lx + ' ' + ly + ' ' + this.findArrowpaths(stockEve.type);
+                pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
+                stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
+                break;
+            case 'Triangle':
+            case 'InvertedTriangle':
+                result.height = 3 * textSize.height;
+                result.width = textSize.width + (1.5 * textSize.width);
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), stockEve.date.toDateString()));
+                textElement(new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                break;
+            case 'Text':
+                textSize.height += 8; //padding for text height
+                pathString = 'M' + ' ' + (lx) + ' ' + (ly) + ' ' +
+                    'L' + ' ' + (lx - 5) + ' ' + (ly - 5) + ' ' +
+                    'L' + ' ' + (lx - ((textSize.width) / 2)) + ' ' + (ly - 5) + ' ' +
+                    'L' + ' ' + (lx - ((textSize.width) / 2)) + ' ' + (ly - textSize.height) + ' ' +
+                    'L' + ' ' + (lx + ((textSize.width) / 2)) + ' ' + (ly - textSize.height) + ' ' +
+                    'L' + ' ' + (lx + ((textSize.width) / 2)) + ' ' + (ly - 5) + ' ' +
+                    'L' + ' ' + (lx + 5) + ' ' + (ly - 5) + ' ' + 'Z';
+                pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
+                stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
+                textElement(new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                break;
+            default:
+                //pin type calculation.
+                pathString = 'M' + ' ' + lx + ' ' + ly + ' ' +
+                    'L' + ' ' + (lx - ((textSize.width) / 2)) + ' ' + (ly - textSize.height / 3) + ' ' +
+                    'L' + ' ' + (lx - ((textSize.width) / 2)) + ' ' + (ly - textSize.height) + ' ' +
+                    'L' + ' ' + (lx + ((textSize.width) / 2)) + ' ' + (ly - textSize.height) + ' ' +
+                    'L' + ' ' + (lx + ((textSize.width) / 2)) + ' ' + (ly - textSize.height / 3) + ' ' + 'Z';
+                pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
+                stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
+                //append text element
+                textElement(new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+        }
+    }
+    renderStockEventTooltip(targetId) {
+        let seriesIndex = parseInt(targetId.split('_StockEvents_')[0].replace(/\D+/g, ''), 10);
+        let pointIndex = parseInt(targetId.split('_StockEvents_')[1].replace(/\D+/g, ''), 10);
+        let updatedLocation = this.symbolLocations[seriesIndex][pointIndex];
+        let pointLocation = new ChartLocation(updatedLocation.x, updatedLocation.y + this.stockChart.toolbarHeight + this.stockChart.titleSize.height);
+        this.applyHighLights(pointIndex, seriesIndex);
+        //title size and toolbar height is added location for placing tooltip
+        let svgElement = this.getElement(this.chartId + '_StockEvents_Tooltip_svg');
+        let isTooltip = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+        if (!isTooltip) {
+            if (getElement(this.chartId + '_StockEvents_Tooltip_svg')) {
+                remove(getElement(this.chartId + '_StockEvents_Tooltip'));
+            }
+            let tooltipElement = createElement('div', {
+                id: this.chartId + '_StockEvents_Tooltip', className: 'ejSVGTooltip',
+                attrs: { 'style': 'pointer-events:none; position:absolute;z-index: 1' }
+            });
+            getElement(this.chartId + '_Secondary_Element').appendChild(tooltipElement);
+            this.stockEventTooltip = new Tooltip({
+                opacity: 1,
+                header: '', content: [(this.stockChart.stockEvents[pointIndex].description)],
+                enableAnimation: true, location: pointLocation,
+                theme: this.stockChart.theme,
+                inverted: true,
+                areaBounds: this.stockChart.chart.chartAxisLayoutPanel.seriesClipRect
+            });
+            this.stockEventTooltip.areaBounds.y += this.stockChart.toolbarHeight + this.stockChart.titleSize.height;
+            this.stockEventTooltip.appendTo('#' + tooltipElement.id);
+        }
+        else {
+            this.stockEventTooltip.content = [(this.stockChart.stockEvents[pointIndex].description)];
+            this.stockEventTooltip.location = pointLocation;
+            this.stockEventTooltip.dataBind();
+        }
+    }
+    /**
+     * Remove the stock event tooltip
+     * @param duration
+     */
+    removeStockEventTooltip(duration) {
+        let tooltipElement = this.getElement(this.chartId + '_StockEvents_Tooltip');
+        this.stopAnimation();
+        if (tooltipElement && this.stockEventTooltip) {
+            this.toolTipInterval = setTimeout(() => {
+                this.stockEventTooltip.fadeOut();
+                this.removeHighLights();
+            }, duration);
+        }
+    }
+    findArrowpaths(type) {
+        let arrowString = '';
+        switch (type) {
+            case 'ArrowUp':
+                arrowString = 'l -10 10 l 5 0 l 0 10 l 10 0 l 0 -10 l 5 0 z';
+                break;
+            case 'ArrowDown':
+                arrowString = 'l -10 -10 l 5 0 l 0 -10 l 10 0 l 0 10 l 5 0 z';
+                break;
+            case 'ArrowLeft':
+                arrowString = 'l -10 -10 l 0 5 l -10 0 l 0 10 l 10 0 l 0 5 z';
+                break;
+            case 'ArrowRight':
+                arrowString = 'l 10 -10 l 0 5 l 10 0 l 0 10 l -10 0 l 0 5 z';
+                break;
+        }
+        return arrowString;
+    }
+    applyHighLights(pointIndex, seriesIndex) {
+        if (this.pointIndex !== pointIndex || this.seriesIndex !== seriesIndex) {
+            this.removeHighLights();
+        }
+        this.pointIndex = pointIndex;
+        this.seriesIndex = seriesIndex;
+        let stockId = this.chartId + '_Series_' + seriesIndex + '_StockEvents_' + pointIndex;
+        this.setOpacity(stockId + '_Shape', 0.5);
+        this.setOpacity(stockId + '_Text', 0.5);
+    }
+    removeHighLights() {
+        let stockId = this.chartId + '_Series_' + this.seriesIndex + '_StockEvents_' + this.pointIndex;
+        this.setOpacity(stockId + '_Shape', 1);
+        this.setOpacity(stockId + '_Text', 1);
+    }
+    setOpacity(elementId, opacity) {
+        if (getElement(elementId)) {
+            getElement(elementId).setAttribute('opacity', opacity.toString());
+        }
+    }
+}
+function initialArray(numrows, numcols, initial) {
+    let arr = [];
+    for (let i = 0; i < numrows; ++i) {
+        let columns = [];
+        for (let j = 0; j < numcols; ++j) {
+            columns[j] = initial;
+        }
+        arr[i] = columns;
+    }
+    return arr;
+}
 
 var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -29019,6 +29593,9 @@ class StockChart extends Component {
             this.threshold = new Date().getTime() + 300;
         }
         this.notify(Browser.touchEndEvent, e);
+        if (this.stockEvent) {
+            this.stockEvent.removeStockEventTooltip(0);
+        }
         return false;
     }
     /**
@@ -29079,13 +29656,25 @@ class StockChart extends Component {
             }
         }
         this.notify(Browser.touchMoveEvent, e);
-        if (e.target.id.indexOf(this.element.id + '_stockChart_chart') === -1) {
+        if (e.target.id === '') { //to remove the tooltip when hover on mouse move
             let element;
             if (this.chart.tooltip.enable || this.crosshair.enable) {
                 element = document.getElementById(this.element.id + '_stockChart_chart_tooltip');
                 if (element) {
                     remove(element);
                 }
+            }
+            if (getElement(this.element.id + '_StockEvents_Tooltip')) {
+                this.stockEvent.removeStockEventTooltip(0);
+            }
+        }
+        if (e.target.id.indexOf('StockEvents') !== -1) {
+            clearInterval(this.stockEvent.toolTipInterval);
+            this.stockEvent.renderStockEventTooltip(e.target.id);
+        }
+        else {
+            if (this.stockEvent) {
+                this.stockEvent.removeStockEventTooltip(1000);
             }
         }
         this.isTouch = false;
@@ -29146,6 +29735,9 @@ class StockChart extends Component {
         //this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.notify(cancelEvent, e);
+        if (this.stockEvent) {
+            this.stockEvent.removeStockEventTooltip(1000);
+        }
         return false;
     }
     /**
@@ -29192,6 +29784,15 @@ class StockChart extends Component {
         }
         return '#424242';
     }
+    /**
+     * @private
+     */
+    calculateStockEvents() {
+        if (this.stockEvents.length) {
+            this.stockEvent = new StockEvents(this);
+            appendChildElement(this.chartObject, this.stockEvent.renderStockEvents());
+        }
+    }
 }
 __decorate$9([
     Property(null)
@@ -29232,6 +29833,9 @@ __decorate$9([
 __decorate$9([
     Collection([], StockSeries)
 ], StockChart.prototype, "series", void 0);
+__decorate$9([
+    Collection([], StockEventsSettings)
+], StockChart.prototype, "stockEvents", void 0);
 __decorate$9([
     Property(false)
 ], StockChart.prototype, "isTransposed", void 0);
@@ -29298,6 +29902,9 @@ __decorate$9([
 __decorate$9([
     Event()
 ], StockChart.prototype, "seriesRender", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "stockEventRender", void 0);
 __decorate$9([
     Collection([], StockChartIndexes)
 ], StockChart.prototype, "selectedDataIndexes", void 0);
@@ -29745,7 +30352,7 @@ function getSeriesColor$1(theme) {
     return palette;
 }
 /** @private */
-function getThemeColor$1(theme) {
+function getThemeColor$2(theme) {
     let style;
     let themes = theme.toLowerCase();
     switch (themes) {
@@ -29783,6 +30390,23 @@ function getThemeColor$1(theme) {
                 tooltipBoldLabel: '#282727',
                 tooltipLightLabel: '#333232',
                 tooltipHeaderLine: '#9A9A9A'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                axisLabel: '#212529',
+                axisLine: '#ADB5BD',
+                majorGridLine: '#CED4DA',
+                minorGridLine: '#DEE2E6',
+                chartTitle: '#212529',
+                legendLabel: '#212529',
+                background: '#F8F9FA',
+                areaBorder: '#DEE2E6',
+                tooltipFill: '#000000',
+                dataLabel: '#212529',
+                tooltipBoldLabel: '#FFFFFF',
+                tooltipLightLabel: '#FFFFFF',
+                tooltipHeaderLine: '#FFFFFF'
             };
             break;
         default:
@@ -32239,7 +32863,7 @@ let Smithchart = class Smithchart extends Component {
      */
     setTheme() {
         /*! Set theme */
-        this.themeStyle = getThemeColor$1(this.theme);
+        this.themeStyle = getThemeColor$2(this.theme);
         this.seriesColors = getSeriesColor$1(this.theme);
         // let count: number = colors.length;
         // for (let i: number = 0; i < this.series.length; i++) {
@@ -33346,6 +33970,7 @@ class SparklineRenderer {
         let edValue = rangeBandSettings.endRange;
         let stHeight = (height - ((height / this.unitY) * (stValue - this.min))) + model.padding.top;
         let edHeight = (height - ((height / this.unitY) * (edValue - this.min))) + model.padding.top;
+        let color = rangeBandSettings.color || this.sparkline.sparkTheme.rangeBandColor;
         if (edHeight > (height + model.padding.top)) {
             edHeight = (height + model.padding.top);
         }
@@ -33362,7 +33987,7 @@ class SparklineRenderer {
             ' L ' + (width + (model.padding.left)) + ' ' + edHeight + ' L ' + (model.padding.left) + ' ' + edHeight + ' Z ';
         let pathOption = {
             'id': model.element.id + '_rangeBand_' + index,
-            'fill': rangeBandSettings.color,
+            'fill': color,
             'opacity': rangeBandSettings.opacity,
             'stroke': 'transparent',
             'stroke-width': model.lineWidth,
@@ -33683,10 +34308,7 @@ class SparklineRenderer {
     renderLabel(points) {
         let spark = this.sparkline;
         let dataLabel = spark.dataLabelSettings;
-        let theme = spark.theme.toLowerCase();
-        let color = theme.indexOf('dark') > -1 || theme === 'highcontrast'
-            ? '#FFFFFF' : '#424242';
-        color = (dataLabel.textStyle.color) ? dataLabel.textStyle.color : color;
+        let color = dataLabel.textStyle.color || spark.sparkTheme.dataLabelColor;
         if ((spark.type === 'WinLoss' || !dataLabel.visible.length)) {
             return;
         }
@@ -33908,8 +34530,7 @@ class SparklineRenderer {
             minX = isNullOrUndefined(axis.minX) ? minX : axis.minX;
             max = isNullOrUndefined(axis.maxY) ? max : axis.maxY;
             min = isNullOrUndefined(axis.minY) ? min : axis.minY;
-            let color = theme.indexOf('dark') > -1 || theme === 'highcontrast' ? '#FFFFFF' : '#000000';
-            color = (axis.lineSettings.color) ? axis.lineSettings.color : color;
+            let color = axis.lineSettings.color || this.sparkline.sparkTheme.axisLineColor;
             let eventArgs = {
                 name: 'axisRendering', cancel: false, sparkline: model, maxX: maxX, minX: minX, maxY: max, minY: min,
                 value: axis.value, lineColor: color, lineWidth: axis.lineSettings.width
@@ -34084,6 +34705,7 @@ let Sparkline = class Sparkline extends Component {
     preRender() {
         this.unWireEvents();
         this.trigger('load', { sparkline: this });
+        this.sparkTheme = getThemeColor$1(this.theme);
         this.sparklineRenderer = new SparklineRenderer(this);
         this.createSVG();
         this.wireEvents();
@@ -34639,8 +35261,7 @@ class SparklineTooltip {
         let spark = this.sparkline;
         let theme = spark.theme.toLowerCase();
         let tracker = spark.tooltipSettings.trackLineSettings;
-        let color = (theme.indexOf('dark') > -1 ? '#FFFFFF' : '#000000');
-        color = (tracker.color) ? tracker.color : color;
+        let color = tracker.color || spark.sparkTheme.trackerLineColor;
         if (!tracker.visible || spark.type === 'Pie') {
             return;
         }
@@ -34692,6 +35313,8 @@ class SparklineTooltip {
         let text = this.getFormat(spark.tooltipSettings.format, spark, x, this.formatValue(points.yVal, spark).toString());
         let location = { x: points.location.x, y: points.location.y };
         location = spark.type === 'Pie' ? { x: points.location.x, y: points.location.y } : location;
+        let textColor = tooltip.textStyle.color || spark.sparkTheme.tooltipFontColor;
+        let backgroundColor = tooltip.fill === '' ? spark.sparkTheme.tooltipFill : tooltip.fill;
         let tooltipEvent = {
             name: 'tooltipInitialize', cancel: false, text: text,
             textStyle: {
@@ -34700,7 +35323,7 @@ class SparklineTooltip {
                 fontWeight: tooltip.textStyle.fontWeight,
                 fontStyle: tooltip.textStyle.fontStyle,
                 fontFamily: tooltip.textStyle.fontFamily,
-                color: tooltip.textStyle.color,
+                color: textColor
             }
         };
         spark.trigger(tooltipEvent.name, tooltipEvent);
@@ -34712,7 +35335,7 @@ class SparklineTooltip {
             border: tooltip.border,
             template: tooltip.template,
             data: spark.dataSource[this.pointIndex],
-            fill: tooltip.fill,
+            fill: backgroundColor,
             textStyle: tooltipEvent.textStyle,
             enableAnimation: false,
             location: { x: location.x, y: location.y },
@@ -34782,5 +35405,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, measureText, sort, rotateTextSize, removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, stringToNumber, findDirection, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, CustomizeOption, StackValues, TextOption, PathOption, RectOption, CircleOption, PolygonOption, Size, Rect, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, loaded, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, rotateTextSize, removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, CustomizeOption, StackValues, RectOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

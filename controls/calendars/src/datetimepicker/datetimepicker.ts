@@ -98,6 +98,13 @@ export class DateTimePicker extends DatePicker {
     @Property(30)
     public step: number;
     /**
+     * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
+     * the given value is not present in the timepicker popup list.
+     * @default null
+     */
+    @Property(null)
+    public scrollTo: Date;
+    /**
      * specifies the z-index value of the popup element.
      * @default 1000
      * @aspType int
@@ -762,7 +769,7 @@ export class DateTimePicker extends DatePicker {
         this.setInputValue('time');
         if (+this.previousDateTime !== +this.value) {
             this.changedArgs = {
-                value: this.value, event: e,
+                value: this.value, event: e || null,
                 isInteracted: !isNullOrUndefined(e),
                 element: this.element
             };
@@ -772,18 +779,39 @@ export class DateTimePicker extends DatePicker {
         }
     }
     private setTimeScrollPosition(): void {
-        let popupHeight: number = this.getPopupHeight();
         let popupElement: HTMLElement;
         popupElement = this.selectedElement;
         if (!isNullOrUndefined(popupElement)) {
-            let nextEle: Element = popupElement.nextElementSibling;
-            let height: number = nextEle ? (<HTMLElement>nextEle).offsetTop : popupElement.offsetTop;
-            let liHeight: number = popupElement.getBoundingClientRect().height;
-            if ((height + popupElement.offsetTop) > popupHeight) {
-                this.dateTimeWrapper.scrollTop = nextEle ? (height - (popupHeight / HALFPOSITION + liHeight / HALFPOSITION)) : height;
-            } else {
-                this.dateTimeWrapper.scrollTop = 0;
-            }
+            this.findScrollTop(popupElement);
+        } else if (this.dateTimeWrapper && this.checkDateValue(this.scrollTo)) {
+            this.setScrollTo();
+        }
+    }
+    private findScrollTop(element: HTMLElement): void {
+        let listHeight: number = this.getPopupHeight();
+        let nextElement: Element = element.nextElementSibling;
+        let height: number = nextElement ? (<HTMLElement>nextElement).offsetTop : element.offsetTop;
+        let lineHeight: number = element.getBoundingClientRect().height;
+        if ((height + element.offsetTop) > listHeight) {
+            this.dateTimeWrapper.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION + lineHeight / HALFPOSITION)) : height;
+        } else {
+            this.dateTimeWrapper.scrollTop = 0;
+        }
+    }
+    private setScrollTo(): void {
+        let element: HTMLElement;
+        let items: HTMLElement[] = <NodeListOf<HTMLLIElement> & HTMLElement[]>this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS);
+        if (items.length >= 0) {
+            let initialTime: number = this.timeCollections[0];
+            let scrollTime: number = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
+            element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
+        } else {
+            this.dateTimeWrapper.scrollTop = 0;
+        }
+        if (!isNullOrUndefined(element)) {
+            this.findScrollTop(element);
+        } else {
+            this.dateTimeWrapper.scrollTop = 0;
         }
     }
     private setInputValue(type: string): void {
@@ -1251,10 +1279,9 @@ export class DateTimePicker extends DatePicker {
             switch (prop) {
                 case 'value':
                     let options: object = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
-                    if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: this.checkDateValue(new Date('' + newProp.value)) }, true);
-                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
-                    }
+                    this.invalidValueString = null;
+                    this.checkInvalidValue(newProp.value);
+                    newProp.value = this.value;
                     newProp.value = this.validateValue(newProp.value);
                     Input.setValue(this.getFormattedValue(newProp.value), this.inputElement, this.floatLabelType, this.showClearButton);
                     this.valueWithMinutes = newProp.value;
@@ -1286,8 +1313,9 @@ export class DateTimePicker extends DatePicker {
                     super.updateInput();
                     break;
                 case 'format':
-                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkFormat();
+                    this.dateTimeFormat = this.formatString;
                     this.setValue();
                     break;
                 case 'placeholder':
@@ -1302,6 +1330,7 @@ export class DateTimePicker extends DatePicker {
                     this.bindEvents();
                     break;
                 case 'strictMode':
+                    this.invalidValueString = null;
                     this.updateInput();
                     break;
                 case 'width':
@@ -1314,6 +1343,14 @@ export class DateTimePicker extends DatePicker {
                     this.floatLabelType = newProp.floatLabelType;
                     Input.removeFloating(this.inputWrapper);
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                    break;
+                case 'scrollTo':
+                    if (this.checkDateValue(new Date(this.checkValue(newProp.scrollTo)))) {
+                        if (this.dateTimeWrapper) { this.setScrollTo(); }
+                        this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                    } else {
+                        this.setProperties({ scrollTo: null }, true);
+                    }
                     break;
                 default:
                     super.onPropertyChanged(newProp, oldProp);

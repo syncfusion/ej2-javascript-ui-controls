@@ -7,9 +7,9 @@ import { getInstance, addClass, removeClass, rippleEffect, detach, classList } f
 import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RulesModel, RuleModel } from './query-builder-model';
 import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';
-import { DropDownList, ChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
-import { MultiSelect, MultiSelectChangeEventArgs } from '@syncfusion/ej2-dropdowns';
-import { EmitType, Event, EventHandler, getValue, Animation } from '@syncfusion/ej2-base';
+import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
+import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';
+import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';
 import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';
@@ -200,79 +200,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @event 
      */
     @Event()
-    public created: EmitType<Object>;
+    public created: EmitType<Event>;
     /**
-     * Triggers before the condition (And/Or) is changed.
+     * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
      */
     @Event()
-    public beforeConditionChange: EmitType<Object>;
+    public beforeChange: EmitType<ChangeEventArgs>;
     /**
-     * Triggers before the field is changed.
+     * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
      */
     @Event()
-    public beforeFieldChange: EmitType<Object>;
-    /**
-     * Triggers before the operator is changed. (e.g., equal, less etc.).
-     * @event
-     */
-    @Event()
-    public beforeOperatorChange: EmitType<Object>;
-    /**
-     * Triggers before the value is changed.
-     * @event
-     */
-    @Event()
-    public beforeValueChange: EmitType<Object>;
-    /**
-     * Triggers when changing the condition(AND/OR) in button group.
-     * @event
-     */
-    @Event()
-    public conditionChanged: EmitType<Object>;
-    /**
-     * Triggers when changing the fields using the drop-down list.
-     * @event
-     */
-    @Event()
-    public fieldChanged: EmitType<Object>;
-    /**
-     * Triggers when changing the rule value.
-     * @event
-     */
-    @Event()
-    public valueChanged: EmitType<Object>;
-    /**
-     * Triggers when changing the operator value.
-     * @event
-     */
-    @Event()
-    public operatorChanged: EmitType<Object>;
-    /**
-     * Triggers when deleting a group.
-     * @event
-     */
-    @Event()
-    public groupDelete: EmitType<Object>;
-    /**
-     * Triggers when deleting the rule.
-     * @event
-     */
-    @Event()
-    public ruleDelete: EmitType<Object>;
-    /**
-     * Triggers when adding a Group.
-     * @event
-     */
-    @Event()
-    public groupInsert: EmitType<Object>;
-    /**
-     * Triggers when adding the rule.
-     * @event
-     */
-    @Event()
-    public ruleInsert: EmitType<Object>;
+    public change: EmitType<ChangeEventArgs>;
     /**
      * Specifies the showButtons settings of the query builder component.
      * The showButtons can be enable Enables or disables the ruleDelete, groupInsert, and groupDelete buttons.
@@ -379,7 +319,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let bodeElem: Element = this.element.querySelector('.e-group-body');
         bodeElem.innerHTML = '';
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
-        this.levelColl[this.element.id + '_e_group0'] = [0];
+        this.levelColl[this.element.id + '_group0'] = [0];
         this.rule = { condition: 'and', rules: [] };
     }
     private getWrapper(): Element {
@@ -436,10 +376,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
     }
-
+    private triggerEvents(args: ChangeEventArgs, type ?: string): ChangeEventArgs | void {
+        if (this.isImportRules) {
+            return args;
+        }
+        if (type === 'before') {
+            this.trigger('beforeChange', args);
+        } else {
+            this.trigger('change', args);
+        }
+        return args;
+    }
     private clickEventHandler(event: MouseEventArgs): void {
-        let target: Element = event.target as Element;
-        this.isImportRules = false;
+        let target: Element = event.target as Element; let args: ChangeEventArgs;
+        this.isImportRules = false; let groupID: string;
         if (target.tagName === 'SPAN') {
             target = target.parentElement;
         }
@@ -482,12 +432,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         } else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
             let element: Element = closest(target, '.e-group-container');
-            let args: { [key: string]: string | Element | boolean } = { groupID: element.id, selectedItem: target, cancel: false };
-            this.trigger('beforeConditionChange', args);
+            groupID = element.id.replace(this.element.id + '_', '');
+            args = { groupID: groupID, cancel: false, type: 'condition', value: target.textContent.toLowerCase() };
+            args = this.triggerEvents(args, 'before') as ChangeEventArgs;
+            if (args.cancel) {
+                return;
+            }
             let rule: RuleModel = this.getGroup(element);
-            rule.condition = target.textContent.toLowerCase();
-            args = { groupID: element.id, selectedItem: target };
-            this.trigger('conditionChanged', args);
+            rule.condition = args.value as string;
+            this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
         }
     }
 
@@ -506,6 +459,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     }
     private addRuleElement(target: Element, rule?: RulesModel): void {
+        let args: ChangeEventArgs = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertRule' };
+        args = this.triggerEvents(args, 'before') as ChangeEventArgs;
+        if (args.cancel) {
+            return;
+        }
         let ruleElem: Element = this.ruleElem.cloneNode(true) as Element;
         if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
             ruleElem.className = 'e-rule-container e-vertical-mode';
@@ -529,7 +487,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
             ruleElem.querySelector('button').appendChild(element);
         }
-        ruleElem.setAttribute('id', target.id + '_e_rule' + this.ruleIdCounter);
+        ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
         this.ruleIdCounter++;
         ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
         ruleListElem.appendChild(ruleElem);
@@ -574,8 +532,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.changeRule(rule, {
                 element: dropDownList.element,
                 itemData: this.columns[this.filterIndex] as FieldSettingsModel
-            } as ChangeEventArgs);
+            } as DropDownChangeEventArgs);
         }
+        this.triggerEvents({groupID: target.id.replace(this.element.id + '_', ''), type: 'insertRule'});
     }
     private renderToolTip(element: HTMLElement): void {
         let tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
@@ -650,6 +609,34 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return isValid;
     }
+    private refreshLevelColl(): void {
+        this.levelColl = {};
+        let groupElem: Element = this.element.querySelector('.e-group-container');
+        this.levelColl[groupElem.id] = [0];
+        let obj: LevelColl = {groupElement: groupElem, level: [0]};
+        this.refreshLevel(obj);
+    }
+    private refreshLevel(obj: LevelColl): LevelColl | void {
+        let ruleList: HTMLCollection = obj.groupElement.querySelector('.e-rule-list').children;
+        let childElem: Element;
+        let groupElem: Element = obj.groupElement;
+        let i: number; let iLen: number = ruleList.length;
+        let groupCount: number = 0;
+        for (i = 0; i < iLen; i++ ) {
+            childElem = (ruleList[i] as Element);
+            if (childElem.className.indexOf('e-group-container') > -1) {
+                obj.level.push(groupCount);
+                this.levelColl[childElem.id] = obj.level.slice();
+                groupCount++;
+                obj.groupElement = childElem;
+                obj = this.refreshLevel(obj) as LevelColl;
+            }
+        }
+        let ruleListElem: Element = groupElem.closest('.e-rule-list');
+        obj.groupElement = ruleListElem ? ruleListElem.closest('.e-group-container') : groupElem;
+        obj.level = this.levelColl[obj.groupElement.id].slice();
+        return obj;
+    }
     private groupTemplate(): Element {
         let groupElem: Element; let grpBodyElem: Element; let groupHdrElem: Element;
         let rulesElem: Element; let glueElem: Element; let inputElem: Element;
@@ -706,12 +693,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return ruleElem;
     }
     private addGroupElement(isGroup: boolean, target: Element, condition?: string, isBtnClick?: boolean): void {
-        if (this.element.querySelectorAll('.e-group-container').length >= this.maxGroupCount) {
+        let args: ChangeEventArgs = { groupID: target.id.replace(this.element.id + '_', ''), cancel: false, type: 'insertGroup' };
+        args = this.triggerEvents(args, 'before') as ChangeEventArgs;
+        if ( args.cancel || (this.element.querySelectorAll('.e-group-container').length >= this.maxGroupCount)) {
             return;
         }
         let dltGroupBtn: HTMLElement;
         let groupElem: Element = this.groupElem.cloneNode(true) as Element;
-        groupElem.setAttribute('id', this.element.id + '_e_group' + this.groupIdCounter);
+        groupElem.setAttribute('id', this.element.id + '_group' + this.groupIdCounter);
         this.groupIdCounter++;
         let andInpElem: Element = groupElem.querySelector('.e-btngroup-and');
         let orInpElem: Element = groupElem.querySelector('.e-btngroup-or');
@@ -734,13 +723,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             rippleEffect(dltGroupBtn, { selector: '.deletegroup' });
             groupElem.querySelector('.e-group-action').appendChild(dltGroupBtn);
             let ruleList: Element = target.querySelector('.e-rule-list');
-            let grpLen: number = target.querySelectorAll('.e-group-container').length;
+            let childElems: HTMLCollection = ruleList.children;
+            let grpLen: number = 0;
+            for (let j: number = 0, jLen: number = childElems.length; j < jLen; j++) {
+                if (childElems[j].className.indexOf('e-group-container') > -1) {
+                    grpLen += 1;
+                }
+            }
             ruleList.appendChild(groupElem);
             let level: number[] = this.levelColl[target.id].slice(0);
             level.push(grpLen);
             this.levelColl[groupElem.id] = level;
             if (!this.isImportRules) {
-                this.addGroups([], target.id);
+                this.addGroups([], target.id.replace(this.element.id + '_', ''));
                 if (isBtnClick) {
                     this.addRuleElement(groupElem, {});
                 }
@@ -763,6 +758,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         });
         btnObj.appendTo(groupBtn);
         rippleEffect(groupBtn, { selector: '.e-round' });
+        this.triggerEvents({ groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
     }
     public notifyChange(value: string | number | boolean | Date | string[] | number[] | Date[], element: Element): void {
         let tempColl: NodeListOf<Element> = closest(element, '.e-rule-value').querySelectorAll('.e-template');
@@ -778,7 +774,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private changeValue(i: number, args: ButtonChangeEventArgs | InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs): void {
-        let eventsArgs: { [key: string]: string | number | Date | boolean | string[] };
+        let eventsArgs: ChangeEventArgs; let groupID: string; let ruleID: string;
         let element: Element;
         if (args.event) {
             element = args.event.target as Element;
@@ -792,6 +788,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         let groupElem: Element = closest(element, '.e-group-container');
         let ruleElem: Element = closest(element, '.e-rule-container');
+        groupID = groupElem.id.replace(this.element.id + '_', '');
+        ruleID = ruleElem.id.replace(this.element.id + '_', '');
         let dateElement: CalendarChangeEventArgs = args as CalendarChangeEventArgs;
         if (dateElement.element && dateElement.element.className.indexOf('e-datepicker') > -1) {
             element = dateElement.element;
@@ -804,14 +802,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             value = (<InputEventArgs | InputChangeEventArgs | CalendarChangeEventArgs>args).value;
         }
-        eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: value, cancel: false };
-        this.trigger('beforeValueChange', eventsArgs);
-        this.updateRules(element, value, i);
-        eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: value, cancel: false };
-        this.trigger('valueChanged', eventsArgs);
+        eventsArgs = { groupID: groupID, ruleID: ruleID, value: value, cancel: false, type: 'value' };
+        eventsArgs = this.triggerEvents(eventsArgs, 'before') as ChangeEventArgs;
+        if (eventsArgs.cancel) {
+            return;
+        }
+        this.updateRules(element, eventsArgs.value, i);
+        this.triggerEvents({ groupID: groupID, ruleID: ruleID, value: eventsArgs.value, cancel: false, type: 'value' });
     }
-
-    private changeField(args: ChangeEventArgs): void {
+    private changeField(args: DropDownChangeEventArgs): void {
         if (args.isInteracted) {
             let groupElem: Element = closest(args.element, '.e-group-container');
             let rules: RuleModel = this.getGroup(groupElem);
@@ -825,44 +824,50 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
 
-    private changeRule(rule: RulesModel, args: ChangeEventArgs): void {
+    private changeRule(rule: RulesModel, args: DropDownChangeEventArgs): void {
         if (!args.itemData) {
             return;
         }
-        let tempRule: RulesModel = {}; let ddlObj: DropDownList; let inOperator: string [] = ['in', 'notin'];
-        let operatorList: { [key: string]: Object }[]; let betweenOperator: string [] = ['between', 'notbetween'];
+        let tempRule: RulesModel = {}; let ddlObj: DropDownList; let ruleElem: Element;
+        let operatorList: { [key: string]: Object }[]; let groupID: string; let ruleID: string;
         let filterElem: Element; let operatorElem: Element; let oprElem: Element;
         let prevOper: string = rule.operator ? rule.operator.toLowerCase() : '';
-        filterElem = closest(args.element, '.e-rule-filter');
-        operatorElem = closest(args.element, '.e-rule-operator');
+        filterElem = closest(args.element, '.e-rule-filter'); operatorElem = closest(args.element, '.e-rule-operator');
         let dropDownObj: DropDownList = getComponent(args.element, 'dropdownlist') as DropDownList;
         let element: Element = closest(args.element, '.e-group-container');
+        groupID = element.id.replace(this.element.id + '_', '');
+        let eventsArgs: ChangeEventArgs;
         if (filterElem) {
-            let ruleElem: Element = closest(filterElem, '.e-rule-container');
-            let eventsArgs: { [key: string]: string | Element | boolean } = {
-                groupID: element.id, ruleID: ruleElem.id, selectedItem: args.item, cancel: false
-            };
-            this.trigger('beforeFieldChange', eventsArgs);
+            ruleElem = closest(filterElem, '.e-rule-container'); ruleID = ruleElem.id.replace(this.element.id + '_', '');
+            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedIndex: dropDownObj.index, cancel: false, type: 'field' };
+            eventsArgs = this.triggerEvents(eventsArgs, 'before') as ChangeEventArgs;
+            if (eventsArgs.cancel) {
+                return;
+            }
+            if (dropDownObj.index !== eventsArgs.selectedIndex) {
+                dropDownObj.index = eventsArgs.selectedIndex;
+            }
             tempRule.type = this.columns[dropDownObj.index].type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
         }
         if (operatorElem) {
-            let ruleElem: Element = closest(operatorElem, '.e-rule-container');
-            let eventsArgs: { [key: string]: string | Element | boolean } = {
-                groupID: element.id, ruleID: ruleElem.id, selectedItem: args.item, cancel: false
-            };
-            this.trigger('beforeOperatorChange', eventsArgs);
-            tempRule.operator = args.itemData.value;
+            ruleElem = closest(operatorElem, '.e-rule-container'); ruleID = ruleElem.id.replace(this.element.id + '_', '');
+            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedIndex: dropDownObj.index, cancel: false, type: 'operator' };
+            eventsArgs = this.triggerEvents(eventsArgs, 'before') as ChangeEventArgs;
+            if (eventsArgs.cancel) {
+                return;
+            }
+            if (dropDownObj.index !== eventsArgs.selectedIndex) {
+                dropDownObj.index = eventsArgs.selectedIndex;
+            }
+            tempRule.operator = dropDownObj.value as string;
             let currOper: string = tempRule.operator.toLowerCase();
-            if (inOperator.indexOf(currOper) > -1 || betweenOperator.indexOf(currOper) > -1) {
+            if (tempRule.operator.toLowerCase().indexOf('between') > -1 || (tempRule.operator.toLowerCase().indexOf('in') > -1
+                && tempRule.operator.toLowerCase().indexOf('contains') < 0)) {
                 filterElem = operatorElem.previousElementSibling;
-                tempRule.type = rule.type;
-                if (!(inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) &&
-                    !(betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
-                    rule.value = [];
-                }
+                tempRule.type = rule.type; rule.value = [];
             } else if (typeof rule.value === 'object') {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
             }
@@ -872,8 +877,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     filterElem = operatorElem.previousElementSibling; tempRule.type = rule.type;
                 }
             }
-            if ((inOperator.indexOf(currOper) > -1 && inOperator.indexOf(prevOper) > -1) ||
-                (betweenOperator.indexOf(currOper) > -1 && betweenOperator.indexOf(prevOper) > -1)) {
+            if ((prevOper.indexOf('in') > -1 && prevOper.indexOf('in') < 5) && (currOper.indexOf('in') > -1
+                && currOper.indexOf('in') < 5)) {
                 filterElem = null;
             }
         }
@@ -1004,9 +1009,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             value: selectedValue,
             mode: 'CheckBox',
             width: '100%',
-            change: this.changeValue.bind(this, i)
+            change: this.changeValue.bind(this, i),
+            close: this.closePopup.bind(this, i)
         });
         multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+    }
+    private closePopup(i: number, args: PopupEventArgs): void {
+        let element: Element = document.getElementById(args.popup.element.id.replace('_popup', ''));
+        let value: string[] = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect).value as string[];
+        this.updateRules(element, value, i);
     }
     private processTemplate(target: Element, itemData: ColumnsModel, rule: RulesModel, tempRule: RulesModel): void {
         let tempElements: NodeListOf<Element> = closest(target, '.e-rule-container').querySelectorAll('.e-template');
@@ -1080,7 +1091,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let min: number = (itemData.validation && itemData.validation.min) ? itemData.validation.min : 0;
             let max: number =
                 (itemData.validation && itemData.validation.max) ? itemData.validation.max : Number.MAX_VALUE;
-            let format: string = itemData.format ? itemData.format : '#';
+            let format: string = itemData.format ? itemData.format : 'n';
             if (length > 1 && rule) {
                 selectedValue = rule.value[idx] ? rule.value[idx] : 0;
             }
@@ -1149,14 +1160,24 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 let format: DateFormatOptions;
                                 let column: ColumnsModel = this.getColumn(rule.field);
                                 selVal = (length > 1) ? rule.value[i] as string : rule.value as string;
-                                format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
-                                selectedValue = this.intl.parseDate(selVal, format) as Date;
+                                if (column.format) {
+                                    let dParser: Function = this.intl.getDateParser({skeleton: 'full', type: 'dateTime'});
+                                    format = { type: 'dateTime', format: column.format } as DateFormatOptions;
+                                    if (selectedValue.toLocaleDateString() === 'Invalid Date') {
+                                        selectedValue = dParser(selVal);
+                                        if (isNullOrUndefined(selectedValue)) {
+                                            selectedValue = this.intl.parseDate(selVal, format);
+                                        }
+                                    }
+                                }
                             }
-                            let format: string = itemData.format ? itemData.format : 'MM/dd/yyyy';
-                            let datepick: DatePicker = new DatePicker({
-                                value: selectedValue, format: format,
-                                change: this.changeValue.bind(this, i)
-                            });
+                            let  datepick: DatePicker;
+                            if (itemData.format) {
+                                datepick =
+                                new DatePicker({ value: selectedValue, format: itemData.format, change: this.changeValue.bind(this, i) });
+                            } else {
+                                datepick = new DatePicker({ value: selectedValue, change: this.changeValue.bind(this, i) });
+                            }
                             datepick.appendTo('#' + parentId + '_valuekey' + i);
                         }
                             break;
@@ -1255,9 +1276,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             case 'datepicker':
                 let column: ColumnsModel = this.getColumn(rule.field);
-                let format: DateFormatOptions = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
+                let format: DateFormatOptions = { type: 'dateTime', format: column.format } as DateFormatOptions;
                 if (rule.operator.indexOf('between') > -1) {
                     rule.value[i] = (getComponent(element, controlName) as DatePicker).value;
+                } else if (isNullOrUndefined(format.format)) {
+                    rule.value = this.intl.formatDate((getComponent(element, controlName) as DatePicker).value);
                 } else {
                     rule.value = this.intl.formatDate((getComponent(element, controlName) as DatePicker).value, format);
                 }
@@ -1269,12 +1292,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         target: Element, selectedValue: string | number | Date | boolean | string[] | number[] | Date[] | Element, i?: number): void {
         let groupElem: Element = closest(target, '.e-group-container'); let rule: RuleModel = this.getGroup(groupElem);
         let ruleElem: Element = closest(target, '.e-rule-container'); let index: number = 0; let dropDownObj: DropDownList;
-        let eventsArgs: { [key: string]: string | Element | boolean };
+        let eventsArgs: ChangeEventArgs; let groupID: string = groupElem.id.replace(this.element.id + '_', ''); let ruleID: string;
         while (ruleElem && ruleElem.previousElementSibling !== null) {
             ruleElem = ruleElem.previousElementSibling;
             index++;
         }
-        ruleElem = closest(target, '.e-rule-container');
+        ruleElem = closest(target, '.e-rule-container'); ruleID = ruleElem.id.replace(this.element.id + '_', '');
         if (closest(target, '.e-rule-filter')) {
             dropDownObj = getComponent(target as HTMLElement, 'dropdownlist') as DropDownList;
             rule.rules[index].field = this.columns[dropDownObj.index].field; rule.rules[index].type = this.columns[dropDownObj.index].type;
@@ -1287,8 +1310,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (!element) {
                 element = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control') as HTMLElement;
             }
-            eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue as Element, cancel: false };
-            this.updateValues(element, rule.rules[index]); this.trigger('fieldChanged', eventsArgs);
+            eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field , type: 'field' };
+            this.updateValues(element, rule.rules[index]);
+            this.triggerEvents(eventsArgs);
             if (this.allowValidation && rule.rules[index].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 (getComponent(target.parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
             }
@@ -1297,7 +1321,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             rule.rules[index].operator = dropDownObj.value as string;
             let inputElem: NodeListOf<HTMLElement>; let parentElem: HTMLElement = target.parentElement;
             inputElem = ruleElem.querySelectorAll('.e-rule-value input.e-control') as NodeListOf<HTMLElement>;
-            eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue as Element, cancel: false };
+            eventsArgs = { groupID: groupID, ruleID: ruleID, value: dropDownObj.value, type: 'operator'};
             if (this.allowValidation && rule.rules[index].operator && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 (getComponent(target.parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
             }
@@ -1307,7 +1331,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             for (let i: number = 0; i < inputElem.length; i++) {
                 this.updateValues(inputElem[i], rule.rules[index]);
             }
-            this.trigger('operatorChanged', eventsArgs);
+            this.triggerEvents(eventsArgs);
         } else if (closest(target, '.e-rule-value')) {
             this.ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i);
         }
@@ -1315,8 +1339,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private ruleValueUpdate(
         target: Element, selectedValue: string | number | Date | boolean | string[] | number[] | Date[] | Element,
         rule: RuleModel, index: number, groupElem: Element, ruleElem: Element, i: number): void {
-        let eventsArgs: { [key: string]: string | Element | boolean };
-        let arrOperator: string [] = ['in', 'between'];
+        let eventsArgs: ChangeEventArgs;
+        let arrOperator: string [] = ['in', 'between', 'notin', 'notbetween'];
         if (selectedValue !== null) {
             let oper: string = rule.rules[index].operator.toLowerCase();
             if (target.className.indexOf('e-multiselect') > -1 && rule.rules[index].type === 'number') {
@@ -1340,8 +1364,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     rule.rules[index].value = selectedValue as string | number | string[] | number[];
                 }
-                eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, selectedItem: selectedValue as Element, cancel: false };
-                this.trigger('valueChanged', eventsArgs);
+                eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value as string, type: 'value'};
+                this.triggerEvents(eventsArgs);
             } else if (target.className.indexOf('e-spin') > -1 || target.className.indexOf('e-numeric') > -1) {
                 if (arrOperator.indexOf(oper) > -1) {
                     rule.rules[index].value[i] = selectedValue as string | number;
@@ -1394,18 +1418,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private findGroupByIdx(groupIdx: number, rule: RuleModel, isRoot: boolean): RulesModel {
         let ruleColl: RulesModel[] = rule.rules;
-        if (!isRoot && ruleColl[groupIdx]) {
-            rule = ruleColl[groupIdx];
-            if (rule.rules) {
-                return rule;
-            } else {
-                for (let j: number = groupIdx + 1, jLen: number = ruleColl.length; j < jLen; j++) {
-                    rule = ruleColl[j];
-                    if (rule.rules) {
-                        return rule;
-                    }
+        let dupRuleColl: RulesModel[] = [];
+        if (!isRoot) {
+            for (let j: number = 0, jLen: number = ruleColl.length; j < jLen; j++) {
+                rule = ruleColl[j];
+                if (rule.rules) {
+                    dupRuleColl.push(rule);
                 }
             }
+            return dupRuleColl[groupIdx];
         }
         return rule;
     }
@@ -1440,7 +1461,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         this.isImportRules = false;
         this.unWireEvents();
-        this.levelColl[this.element.id + '_e_group0'] = [0];
+        this.levelColl[this.element.id + '_group0'] = [0];
         this.rule = { condition: 'and', rules: [] };
         this.element.innerHTML = '';
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
@@ -1450,20 +1471,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns void.
      */
     public addRules(rule: RulesModel[], groupID: string): void {
-        let args: { [key: string]: string } = { groupID: groupID };
+        groupID = this.element.id + '_' + groupID;
         for (let i: number = 0, len: number = rule.length; i < len; i++) {
             this.addRuleElement(document.getElementById(groupID), rule[i]);
         }
-        this.trigger('ruleInsert', args);
     }
     /**
      * Adds single or multiple groups, which contains the collection of rules.
      * @returns void.
      */
     public addGroups(groups: RuleModel[], groupID: string): void {
+        groupID = this.element.id + '_' + groupID;
         let groupElem: Element = document.getElementById(groupID);
         let rule: RuleModel = this.getGroup(groupElem); let grouplen: number = groups.length;
-        let args: { [key: string]: string } = { groupID: groupID };
         if (grouplen) {
             for (let i: number = 0, len: number = groups.length; i < len; i++) {
                 this.importRules(groups[i], groupElem);
@@ -1471,7 +1491,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             rule.rules.push({ 'condition': 'and', rules: [] });
         }
-        this.trigger('groupInsert', args);
     }
     private initWrapper(): void {
         if (this.cssClass) {
@@ -1644,6 +1663,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     break;
                 case 'locale':
                     this.locale = newProp.locale;
+                    this.intl = new Internationalization(this.locale);
                     break;
             }
         }
@@ -1675,7 +1695,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             SummaryViewTitle: 'Summary View'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
-        this.intl = new Internationalization();
+        this.intl = new Internationalization(this.locale);
         this.groupIdCounter = 0;
         this.ruleIdCounter = 0;
         this.btnGroupId = 0;
@@ -1779,12 +1799,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return rule;
     }
     private deleteGroup(target: Element): void {
-        let groupElem: Element = target;
-        let groupId: string = groupElem.id;
+        let groupElem: Element = target; let groupId: string = groupElem.id.replace(this.element.id + '_', '');
         let rule: RuleModel = this.getGroup(groupElem, true);
         let index: number = 0; let i: number; let len: number;
-        let args: { [key: string]: string | Element | boolean } = { groupID: groupId };
-        this.trigger('groupDelete', args);
+        let args: ChangeEventArgs = { groupID: groupId, cancel: false, type: 'deleteGroup' };
+        args = this.triggerEvents(args, 'before') as ChangeEventArgs;
+        if (args.cancel) {
+            return;
+        }
         let nextElem: Element = groupElem.nextElementSibling;
         let prevElem: Element = groupElem.previousElementSibling;
         let element: NodeListOf<Element> = groupElem.querySelectorAll('.e-group-container');
@@ -1810,15 +1832,22 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         rule.rules.splice(index, 1);
         delete this.levelColl[groupId];
         detach(target);
+        this.refreshLevelColl();
+        this.triggerEvents(args);
     }
     private deleteRule(target: Element): void {
-        let groupElem: Element = closest(target, '.e-group-container');
-        let rule: RuleModel = this.getGroup(groupElem);
-        let ruleElem: Element = closest(target, '.e-rule-container');
+        let groupElem: Element = closest(target, '.e-group-container'); let ruleID: string; let groupID: string;
+        let rule: RuleModel = this.getGroup(groupElem); let ruleElem: Element = closest(target, '.e-rule-container');
+        groupID = groupElem.id.replace(this.element.id + '_', '');
+        ruleID = target.closest('.e-rule-container').id.replace(this.element.id + '_', '');
+        let args: ChangeEventArgs = { groupID: groupID, ruleID: ruleID, cancel: false, type: 'deleteRule' };
+        args = this.triggerEvents(args, 'before') as ChangeEventArgs;
+        if (args.cancel) {
+            return;
+        }
         let clnruleElem: Element = ruleElem;
         let nextElem: Element = ruleElem.nextElementSibling;
         let prevElem: Element = ruleElem.previousElementSibling;
-        let args: { [key: string]: string | Element | boolean } = { groupID: groupElem.id, ruleID: ruleElem.id };
         let index: number = 0;
         let valElem: NodeListOf<Element> = ruleElem.querySelectorAll('.e-tooltip');
         let i: number; let len: number = valElem.length;
@@ -1830,7 +1859,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             index++;
         }
         rule.rules.splice(index, 1);
-        this.trigger('ruleDelete', args);
         if (!prevElem || prevElem.className.indexOf('e-rule-container') < 0) {
             if (nextElem) {
                 removeClass([nextElem], 'e-joined-rule');
@@ -1842,6 +1870,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         detach(clnruleElem);
+        this.triggerEvents(args);
     }
     private setGroupRules(rule: RuleModel): void {
         this.reset();
@@ -1871,10 +1900,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * Deletes the group or groups based on the group ID.
      * @returns void.
      */
-    public deleteGroups(groupID: string[]): void {
-        let i: number; let len: number = groupID.length;
+    public deleteGroups(groupIdColl: string[]): void {
+        let i: number; let len: number = groupIdColl.length; let groupID: string;
         for (i = 0; i < len; i++) {
-            this.deleteGroup(document.getElementById(groupID[i]));
+            groupID = this.element.id + '_' + groupIdColl[i];
+            this.deleteGroup(document.getElementById(groupID));
         }
     }
     /**
@@ -1890,10 +1920,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * Deletes the rule or rules based on the rule ID.
      * @returns void.
      */
-    public deleteRules(ruleID: string[]): void {
-        let i: number; let len: number = ruleID.length;
+    public deleteRules(ruleIdColl: string[]): void {
+        let i: number; let len: number = ruleIdColl.length; let ruleID: string;
         for (i = 0; i < len; i++) {
-            this.deleteRule(document.getElementById(ruleID[i]));
+            ruleID = this.element.id + '_' + ruleIdColl[i];
+            this.deleteRule(document.getElementById(ruleID));
         }
     }
     /**
@@ -2052,13 +2083,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             parentElem = this.renderGroup(rule.condition, parentElem);
         }
         let ruleColl: RulesModel[] = rule.rules;
-        for (let i: number = 0, len: number = ruleColl.length; i < len; i++) {
-            let keys: string[] = Object.keys(ruleColl[i]);
-            if (keys.indexOf('rules') > -1) {
-                parentElem = this.renderGroup(ruleColl[i].condition, parentElem);
-                parentElem = this.importRules(ruleColl[i], parentElem, true);
-            } else {
-                this.renderRule(ruleColl[i], parentElem);
+        if (!isNullOrUndefined(ruleColl)) {
+            for (let i: number = 0, len: number = ruleColl.length; i < len; i++) {
+                let keys: string[] = Object.keys(ruleColl[i]);
+                if (!isNullOrUndefined(ruleColl[i].rules) && keys.indexOf('rules') > -1) {
+                    parentElem = this.renderGroup(ruleColl[i].condition, parentElem);
+                    parentElem = this.importRules(ruleColl[i], parentElem, true);
+                } else {
+                    this.renderRule(ruleColl[i], parentElem);
+                }
             }
         }
         parentElem = closest(parentElem, '.e-rule-list');
@@ -2095,14 +2128,18 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 let rule: RulesModel = rules.rules[j];
                 let valueStr: string = '';
                 if (rule.value instanceof Array) {
-                    if (typeof rule.value[0] === 'string') {
-                        valueStr += '("' + rule.value[0] + '"';
-                        for (let k: number = 1, kLen: number = rule.value.length; k < kLen; k++) {
-                            valueStr += ',"' + rule.value[k] + '"';
-                        }
-                        valueStr += ')';
+                    if (rule.operator.indexOf('between') > -1) {
+                        valueStr += rule.value[0] + ' AND ' + rule.value[1];
                     } else {
-                        valueStr += '(' + rule.value + ')';
+                        if (typeof rule.value[0] === 'string') {
+                            valueStr += '("' + rule.value[0] + '"';
+                            for (let k: number = 1, kLen: number = rule.value.length; k < kLen; k++) {
+                                valueStr += ',"' + rule.value[k] + '"';
+                            }
+                            valueStr += ')';
+                        } else {
+                            valueStr += '(' + rule.value + ')';
+                        }
                     }
                 } else {
                     if (rule.operator === 'startswith') {
@@ -2271,6 +2308,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             if (operator === 'like' && parser[j][0] === 'String') {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
+                            } else if (operator === 'between') {
+                                if (parser[j][0] === 'Literal' || parser[j][0] === 'Left') {
+                                    break;
+                                }
+                                if (parser[j][0] === 'Number') {
+                                    numVal.push(Number(parser[j][1]));
+                                }
                             } else {
                                 if (parser[j][0] === 'Number') {
                                     numVal.push(Number(parser[j][1]));
@@ -2287,6 +2331,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         } else if (parser[j - 1][0] === 'String') {
                             rule.value = strVal;
                             rule.type = 'string';
+                        } else if (operator === 'between' && parser[j - 1][0] === 'Conditions') {
+                            rule.value = numVal;
+                            rule.type = 'number';
                         }
                     }
                 } else if (parser[i + 1][0] === 'Operators') {
@@ -2333,6 +2380,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 }
 
+class LevelColl {
+    public groupElement: Element;
+    public level: number[];
+}
+
 export interface Level {
     [key: string]: number[];
 }
@@ -2370,4 +2422,16 @@ export interface Validation {
      * @default true
      */
     isRequired: boolean;
+}
+
+/**
+ * Interface for change event.
+ */
+export interface ChangeEventArgs extends BaseEventArgs {
+    groupID: string;
+    ruleID?: string;
+    value?: string | number | Date | boolean | string[];
+    selectedIndex?: number;
+    cancel?: boolean;
+    type?: string;
 }

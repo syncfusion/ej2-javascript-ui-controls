@@ -9,7 +9,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/common/model/interface';
-Chart.Inject(LineSeries);
+import { Category } from '../../../src/chart/axis/category-axis';
+Chart.Inject(LineSeries, Category);
 
 describe('Chart Control', () => {
     let ele: HTMLElement;
@@ -324,6 +325,73 @@ describe('Chart Control', () => {
             chartEle.primaryYAxis.opposedPosition = true;
             chartEle.primaryYAxis.placeNextToAxisLine = false;
             chartEle.refresh();
+        });
+    });
+    describe('Line break axis label checking with rows', () => {
+        let chart: Chart;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    primaryYAxis: {},
+                    axes: [{
+                        rowIndex: 1, name: 'yAxis1'
+                    }],
+                    series: [
+                        {
+                            name: 'series1', type: 'Line',
+                            animation: { enable: false }, dataSource: [
+                                { x: "India", y: 61.3 },
+                                { x: "United<br>States<br>of<br>America", y: 31 },
+                                { x: "South<br>Korea", y: 39.4 },
+                                { x: "United<br>Arab<br>Emirates", y: 65.1 },
+                                { x: "United<br>Kingdom", y: 75.9 }
+                            ], xName: 'x', yName: 'y'
+                        },
+                        {
+                            name: 'series2', type: 'Line', yAxisName: 'yAxis1',
+                            animation: { enable: false }, dataSource: [
+                                { x: "India", y: 61.3 },
+                                { x: "United<br>States<br>of<br>America", y: 31 },
+                                { x: "South<br>Korea", y: 39.4 },
+                                { x: "United<br>Arab<br>Emirates", y: 65.1 },
+                                { x: "United<br>Kingdom", y: 75.9 }
+                            ], xName: 'x', yName: 'y'
+                        }],
+                    rows: [{ height: '50%' },
+                    { height: '50%' }], legendSettings: { visible: false }
+                }, '#container');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+
+        it('Checking line break labels', (done: Function) => {
+
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking line break labels with opposed position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.refresh();
         });
     });
 });

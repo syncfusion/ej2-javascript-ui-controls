@@ -142,11 +142,11 @@ let diagram: Diagram = new Diagram({ width: "850px", height: "2000px",  basicEle
 diagram.appendTo('#diagram');
 
 document.getElementById('rowHeight').onclick = function () {
-    grid.updateRowHeight(1, 240);
+    grid.updateRowHeight(1, 240, true);
     diagram.updateGridContainer(grid);
 }
 
 document.getElementById('columnWidth').onclick = function () {
-    grid.updateColumnWidth(1, 240);
+    grid.updateColumnWidth(1, 240, true);
     diagram.updateGridContainer(grid);
 }

@@ -2320,16 +2320,13 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     this.setCSSClass(oldProp.cssClass);
                     break;
                 case 'buttons':
-                    var buttonCount = this.buttons.length;
-                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
-                        detach(this.ftrTemplateContent);
-                        this.ftrTemplateContent = null;
-                    }
-                    for (var i = 0; i < buttonCount; i++) {
-                        if (!isNullOrUndefined(this.buttons[i].buttonModel)) {
-                            this.footerTemplate = '';
-                            this.setButton();
+                    if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
+                        if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                            detach(this.ftrTemplateContent);
+                            this.ftrTemplateContent = null;
                         }
+                        this.footerTemplate = '';
+                        this.setButton();
                     }
                     break;
                 case 'allowDragging':
@@ -3940,11 +3937,13 @@ var spinCSSClass = null;
 var DEFT_MAT_WIDTH = 30;
 var DEFT_FAB_WIDTH = 30;
 var DEFT_BOOT_WIDTH = 30;
+var DEFT_BOOT4_WIDTH = 36;
 var CLS_SHOWSPIN = 'e-spin-show';
 var CLS_HIDESPIN = 'e-spin-hide';
 var CLS_MATERIALSPIN = 'e-spin-material';
 var CLS_FABRICSPIN = 'e-spin-fabric';
 var CLS_BOOTSPIN = 'e-spin-bootstrap';
+var CLS_BOOT4SPIN = 'e-spin-bootstrap4';
 var CLS_HIGHCONTRASTSPIN = 'e-spin-high-contrast';
 var CLS_SPINWRAP = 'e-spinner-pane';
 var CLS_SPININWRAP = 'e-spinner-inner';
@@ -3994,8 +3993,14 @@ function createLabel(container, label, makeElement) {
 function createMaterialSpinner(container, radius, makeElement) {
     var uniqueID = random_generator();
     globalTimeOut[uniqueID] = { timeOut: 0, type: 'Material', radius: radius };
-    create_material_element(container, uniqueID, makeElement);
-    mat_calculate_attributes(radius, container);
+    create_material_element(container, uniqueID, makeElement, CLS_MATERIALSPIN);
+    mat_calculate_attributes(radius, container, 'Material', CLS_MATERIALSPIN);
+}
+function createBootstrap4Spinner(container, radius, makeElement) {
+    var uniqueID = random_generator();
+    globalTimeOut[uniqueID] = { timeOut: 0, type: 'Bootstrap4', radius: radius };
+    create_material_element(container, uniqueID, makeElement, CLS_BOOT4SPIN);
+    mat_calculate_attributes(radius, container, 'Bootstrap4', CLS_BOOT4SPIN);
 }
 function startMatAnimate(container, uniqueID, radius) {
     var globalObject = {};
@@ -4039,6 +4044,9 @@ function setTheme(theme, container, radius, makeElement) {
             break;
         case 'HighContrast':
             createHighContrastSpinner(innerContainer, radius, makeElement);
+            break;
+        case 'Bootstrap4':
+            createBootstrap4Spinner(innerContainer, radius, makeElement);
             break;
     }
 }
@@ -4145,7 +4153,20 @@ function replaceContent(container, template, cssClass) {
     inner.innerHTML = template;
 }
 function calculateRadius(width, theme) {
-    var defaultSize = theme === 'Material' ? DEFT_MAT_WIDTH : theme === 'Fabric' ? DEFT_FAB_WIDTH : DEFT_BOOT_WIDTH;
+    var defaultSize;
+    switch (theme) {
+        case 'Material':
+            defaultSize = DEFT_MAT_WIDTH;
+            break;
+        case 'Fabric':
+            defaultSize = DEFT_FAB_WIDTH;
+            break;
+        case 'Bootstrap4':
+            defaultSize = DEFT_BOOT4_WIDTH;
+            break;
+        default:
+            defaultSize = DEFT_BOOT_WIDTH;
+    }
     width = width ? parseFloat(width + '') : defaultSize;
     return theme === 'Bootstrap' ? width : width / 2;
 }
@@ -4176,9 +4197,9 @@ function create_fabric_element(innerCon, uniqueID, themeClass, makeElement) {
     svgFabric.appendChild(fabricCirclePath);
     svgFabric.appendChild(fabricCircleArc);
 }
-function create_material_element(innerContainer, uniqueID, makeElement) {
+function create_material_element(innerContainer, uniqueID, makeElement, cls) {
     var svgMaterial = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgMaterial.setAttribute('class', CLS_MATERIALSPIN);
+    svgMaterial.setAttribute('class', cls);
     svgMaterial.setAttribute('id', uniqueID);
     var matCirclePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     matCirclePath.setAttribute('class', CLS_SPINCIRCLE);
@@ -4230,19 +4251,21 @@ function createCircle(start, end, easing, duration, count, max, spinnerInfo) {
         }
     }
 }
-function mat_calculate_attributes(radius, container) {
+function mat_calculate_attributes(radius, container, type, cls) {
     var diameter = radius * 2;
-    var svg = container.querySelector('svg.e-spin-material');
+    var svg = container.querySelector('svg.' + cls);
     var path = svg.querySelector('path.e-path-circle');
     var strokeSize = getStrokeSize(diameter);
     var transformOrigin = (diameter / 2) + 'px';
     svg.setAttribute('viewBox', '0 0 ' + diameter + ' ' + diameter);
     svg.style.width = svg.style.height = diameter + 'px';
     svg.style.transformOrigin = transformOrigin + ' ' + transformOrigin + ' ' + transformOrigin;
-    path.setAttribute('stroke-width', strokeSize + '');
     path.setAttribute('d', drawArc(diameter, strokeSize));
-    path.setAttribute('stroke-dasharray', ((diameter - strokeSize) * Math.PI * 0.75) + '');
-    path.setAttribute('stroke-dashoffset', getDashOffset(diameter, strokeSize, 1, 75) + '');
+    if (type === 'Material') {
+        path.setAttribute('stroke-width', strokeSize + '');
+        path.setAttribute('stroke-dasharray', ((diameter - strokeSize) * Math.PI * 0.75) + '');
+        path.setAttribute('stroke-dashoffset', getDashOffset(diameter, strokeSize, 1, 75) + '');
+    }
 }
 function getSize(value) {
     var parsed = parseFloat(value);

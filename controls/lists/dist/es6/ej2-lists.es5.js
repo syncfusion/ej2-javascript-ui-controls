@@ -1,4 +1,4 @@
-import { Animation, ChildProperty, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compile, detach, extend, formatUnit, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -1457,9 +1457,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.keyActionHandler = function (e) {
-        if (e.keyCode !== 9) {
-            e.preventDefault();
-        }
         switch (e.keyCode) {
             case 36:
                 this.homeKeyHandler(e);
@@ -1802,6 +1799,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     return;
                 }
                 _this.localData = e.result;
+                _this.removeElement(_this.contentContainer);
                 _this.renderList();
                 _this.trigger('actionComplete', e);
             }).catch(function (e) {
@@ -2051,7 +2049,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return parentId;
     };
     /**
-     * It is used to get the currently [here](./selectedItem/)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     ListView.prototype.getSelectedItems = function () {
@@ -3313,9 +3311,357 @@ var Virtualization = /** @__PURE__ @class */ (function () {
  * Listview Component
  */
 
+var __extends$1 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Sortable Module provides support to enable sortable functionality in Dom Elements.
+ * ```html
+ * <div id="sortable">
+ *   <div>Item 1</div>
+ *   <div>Item 2</div>
+ *   <div>Item 3</div>
+ *   <div>Item 4</div>
+ *   <div>Item 5</div>
+ * </div>
+ * ```
+ * ```typescript
+ *   let ele: HTMLElement = document.getElementById('sortable');
+ *   let sortObj: Sortable = new Sortable(ele, {});
+ * ```
+ */
+var Sortable = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(Sortable, _super);
+    function Sortable(element, options) {
+        var _this = _super.call(this, options, element) || this;
+        _this.getHelper = function (e) {
+            var target = _this.getSortableElement(e.sender.target);
+            if (!_this.isValidTarget(target, _this)) {
+                return false;
+            }
+            var element;
+            if (_this.helper) {
+                element = _this.helper({ sender: target, element: e.element });
+            }
+            else {
+                element = target.cloneNode(true);
+                element.style.width = target.offsetWidth + "px";
+                element.style.height = target.offsetHeight + "px";
+            }
+            addClass([element], ['e-sortableclone']);
+            _this.element.appendChild(element);
+            return element;
+        };
+        _this.onDrag = function (e) {
+            _this.trigger('drag', { event: e.event, element: _this.element, target: e.target });
+            var newInst = _this.getSortableInstance(e.target);
+            var target = _this.getSortableElement(e.target, newInst);
+            if (_this.isValidTarget(target, newInst) && _this.curTarget !== target &&
+                (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
+                _this.curTarget = target;
+                var oldIdx = _this.getIndex(newInst.placeHolderElement, newInst);
+                oldIdx = isNullOrUndefined(oldIdx) ? _this.getIndex(_this.target) :
+                    _this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
+                newInst.placeHolderElement = _this.getPlaceHolder(target, newInst);
+                var newIdx = _this.getIndex(target, newInst);
+                var idx = newInst.element !== _this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
+                if (newInst.placeHolderElement) {
+                    if (newInst.element !== _this.element && idx === newInst.element.childElementCount - 1) {
+                        newInst.element.appendChild(newInst.placeHolderElement);
+                    }
+                    else {
+                        newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[idx]);
+                    }
+                    _this.refreshDisabled(oldIdx, newIdx, newInst);
+                }
+                else {
+                    _this.updateItemClass(newInst);
+                    newInst.element.insertBefore(_this.target, newInst.element.children[idx]);
+                    _this.refreshDisabled(oldIdx, newIdx, newInst);
+                    _this.curTarget = _this.target;
+                    _this.trigger('drop', { event: e.event, element: newInst.element, previousIndex: oldIdx, currentIndex: newIdx,
+                        target: e.target, helper: newInst.element.lastChild, droppedElement: _this.target, scope: _this.scope });
+                }
+            }
+            newInst = _this.getSortableInstance(_this.curTarget);
+            if (isNullOrUndefined(target) && e.target !== newInst.placeHolderElement) {
+                if (_this.isPlaceHolderPresent(newInst)) {
+                    _this.removePlaceHolder(newInst);
+                }
+            }
+            else {
+                var placeHolders = [].slice.call(document.getElementsByClassName('e-sortable-placeholder'));
+                var inst_1;
+                placeHolders.forEach(function (placeHolder) {
+                    inst_1 = _this.getSortableInstance(placeHolder);
+                    if (inst_1.element && inst_1 !== newInst) {
+                        _this.removePlaceHolder(inst_1);
+                    }
+                });
+            }
+        };
+        _this.onDragStart = function (e) {
+            _this.target = _this.getSortableElement(e.target);
+            _this.target.classList.add('e-grabbed');
+            _this.curTarget = _this.target;
+            _this.trigger('dragStart', { event: e.event, element: _this.element, target: _this.target });
+        };
+        _this.onDragStop = function (e) {
+            var dropInst = _this.getSortableInstance(_this.curTarget);
+            var prevIdx;
+            if (_this.isPlaceHolderPresent(dropInst)) {
+                prevIdx = _this.getIndex(_this.target);
+                _this.updateItemClass(dropInst);
+                dropInst.element.insertBefore(_this.target, dropInst.placeHolderElement);
+                var curIdx = _this.getIndex(_this.target, dropInst);
+                prevIdx = _this === dropInst && (prevIdx - curIdx) > 1 ? prevIdx - 1 : prevIdx;
+                _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
+                    target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
+                remove(dropInst.placeHolderElement);
+            }
+            dropInst = _this.getSortableInstance(e.target);
+            if (dropInst.element === e.target && !dropInst.element.childElementCount) {
+                prevIdx = _this.getIndex(_this.target);
+                _this.updateItemClass(dropInst);
+                dropInst.element.appendChild(_this.target);
+                _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,
+                    target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
+            }
+            _this.target.classList.remove('e-grabbed');
+            _this.target = null;
+            _this.curTarget = null;
+            remove(e.helper);
+        };
+        _this.bind();
+        return _this;
+    }
+    Sortable_1 = Sortable;
+    Sortable.prototype.bind = function () {
+        if (!this.element.id) {
+            this.element.id = getUniqueID('sortable');
+        }
+        if (!this.itemClass) {
+            this.itemClass = 'e-sort-item';
+            this.dataBind();
+        }
+        this.initializeDraggable();
+    };
+    Sortable.prototype.initializeDraggable = function () {
+        new Draggable(this.element, {
+            helper: this.getHelper,
+            dragStart: this.onDragStart,
+            drag: this.onDrag,
+            dragStop: this.onDragStop,
+            dragTarget: "." + this.itemClass,
+            enableTapHold: true,
+            tapHoldThreshold: 200,
+            queryPositionInfo: this.queryPositionInfo
+        });
+    };
+    Sortable.prototype.getPlaceHolder = function (target, instance) {
+        if (instance.placeHolder) {
+            if (this.isPlaceHolderPresent(instance)) {
+                remove(instance.placeHolderElement);
+            }
+            instance.placeHolderElement = instance.placeHolder({ element: instance.element, grabbedElement: this.target, target: target });
+            instance.placeHolderElement.classList.add('e-sortable-placeholder');
+            return instance.placeHolderElement;
+        }
+        return null;
+    };
+    Sortable.prototype.isValidTarget = function (target, instance) {
+        return target && compareElementParent(target, instance.element) && target.classList.contains(instance.itemClass) &&
+            !target.classList.contains('e-disabled');
+    };
+    Sortable.prototype.removePlaceHolder = function (instance) {
+        remove(instance.placeHolderElement);
+        instance.placeHolderElement = null;
+    };
+    Sortable.prototype.updateItemClass = function (instance) {
+        if (this !== instance) {
+            this.target.classList.remove(this.itemClass);
+            this.target.classList.add(instance.itemClass);
+        }
+    };
+    Sortable.prototype.getSortableInstance = function (element) {
+        element = closest(element, ".e-" + this.getModuleName());
+        if (element) {
+            var inst = getComponent(element, Sortable_1);
+            return inst.scope && this.scope && inst.scope === this.scope ? inst : this;
+        }
+        else {
+            return this;
+        }
+    };
+    Sortable.prototype.refreshDisabled = function (oldIdx, newIdx, instance) {
+        if (instance === this) {
+            var element = void 0;
+            var increased = oldIdx < newIdx;
+            var disabledIdx = void 0;
+            var start = increased ? oldIdx : newIdx;
+            var end = increased ? newIdx : oldIdx;
+            while (start <= end) {
+                element = this.element.children[start];
+                if (element.classList.contains('e-disabled')) {
+                    disabledIdx = this.getIndex(element);
+                    this.element.insertBefore(element, this.element.children[increased ? disabledIdx + 2 : disabledIdx - 1]);
+                    start = increased ? disabledIdx + 2 : disabledIdx + 1;
+                }
+                else {
+                    start++;
+                }
+            }
+        }
+    };
+    Sortable.prototype.getIndex = function (target, instance) {
+        if (instance === void 0) { instance = this; }
+        var idx;
+        [].slice.call(instance.element.children).forEach(function (element, index) {
+            if (element === target) {
+                idx = index;
+            }
+        });
+        return idx;
+    };
+    Sortable.prototype.getSortableElement = function (element, instance) {
+        if (instance === void 0) { instance = this; }
+        return closest(element, "." + instance.itemClass);
+    };
+    Sortable.prototype.queryPositionInfo = function (value) {
+        value.left = pageXOffset ? parseFloat(value.left) - pageXOffset + "px" : value.left;
+        value.top = pageYOffset ? parseFloat(value.top) - pageYOffset + "px" : value.top;
+        return value;
+    };
+    Sortable.prototype.isPlaceHolderPresent = function (instance) {
+        return instance.placeHolderElement && !!closest(instance.placeHolderElement, "#" + instance.element.id);
+    };
+    /**
+     * It is used to sort array of elements from source element to destination element.
+     * @param destination - Defines the destination element to which the sortable elements needs to be appended.
+     * If it is null, then the Sortable library element will be considered as destination.
+     * @param targetIndexes - Specifies the sortable elements indexes which needs to be sorted.
+     * @param insertBefore - Specifies the index before which the sortable elements needs to be appended.
+     * If it is null, elements will be appended as last child.
+     * @method moveTo
+     * @return {void}
+     */
+    Sortable.prototype.moveTo = function (destination, targetIndexes, insertBefore) {
+        moveTo(this.element, destination, targetIndexes, insertBefore);
+    };
+    /**
+     * It is used to destroy the Sortable library.
+     */
+    Sortable.prototype.destroy = function () {
+        if (this.itemClass === 'e-sort-item') {
+            this.itemClass = null;
+            this.dataBind();
+        }
+        getComponent(this.element, Draggable).destroy();
+        _super.prototype.destroy.call(this);
+    };
+    Sortable.prototype.getModuleName = function () {
+        return 'sortable';
+    };
+    Sortable.prototype.onPropertyChanged = function (newProp, oldProp) {
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'itemClass':
+                    [].slice.call(this.element.children).forEach(function (element) {
+                        if (element.classList.contains(oldProp.itemClass)) {
+                            element.classList.remove(oldProp.itemClass);
+                        }
+                        if (newProp.itemClass) {
+                            element.classList.add(newProp.itemClass);
+                        }
+                    });
+                    break;
+            }
+        }
+    };
+    var Sortable_1;
+    __decorate$1([
+        Property(false)
+    ], Sortable.prototype, "enableAnimation", void 0);
+    __decorate$1([
+        Property(null)
+    ], Sortable.prototype, "itemClass", void 0);
+    __decorate$1([
+        Property(null)
+    ], Sortable.prototype, "scope", void 0);
+    __decorate$1([
+        Property()
+    ], Sortable.prototype, "helper", void 0);
+    __decorate$1([
+        Property()
+    ], Sortable.prototype, "placeHolder", void 0);
+    __decorate$1([
+        Event()
+    ], Sortable.prototype, "drag", void 0);
+    __decorate$1([
+        Event()
+    ], Sortable.prototype, "dragStart", void 0);
+    __decorate$1([
+        Event()
+    ], Sortable.prototype, "drop", void 0);
+    Sortable = Sortable_1 = __decorate$1([
+        NotifyPropertyChanges
+    ], Sortable);
+    return Sortable;
+}(Base));
+/**
+ * It is used to sort array of elements from source element to destination element.
+ * @private
+ */
+function moveTo(from, to, targetIndexes, insertBefore) {
+    var targetElements = [];
+    if (!to) {
+        to = from;
+    }
+    if (targetIndexes && targetIndexes.length) {
+        targetIndexes.forEach(function (index) {
+            targetElements.push(from.children[index]);
+        });
+    }
+    else {
+        targetElements = [].slice.call(from.children);
+    }
+    if (isNullOrUndefined(insertBefore)) {
+        targetElements.forEach(function (target) {
+            to.appendChild(target);
+        });
+    }
+    else {
+        var insertElement_1 = to.children[insertBefore];
+        targetElements.forEach(function (target) {
+            to.insertBefore(target, insertElement_1);
+        });
+    }
+}
+
+/**
+ * Sortable Module
+ */
+
 /**
  * List Components
  */
 
-export { classNames, FieldSettings, ListView, Virtualization, cssClass, ListBase, getFieldValues };
+export { classNames, FieldSettings, ListView, Virtualization, cssClass, ListBase, getFieldValues, Sortable, moveTo };
 //# sourceMappingURL=ej2-lists.es5.js.map

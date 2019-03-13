@@ -71,7 +71,7 @@ public drawDataLabel(smithchart: Smithchart, seriesindex: number,
             this.drawDatalabelSymbol(smithchart, seriesindex, dataLabel, groupElement, bounds, pointsRegion);
 }
 
-public calculateSmartLabels(points: Object, seriesIndex: number): void {
+public calculateSmartLabels(points: object, seriesIndex: number): void {
     let length : number = points['textOptions'].length;
     let count: number = 0;
 
@@ -84,7 +84,7 @@ public calculateSmartLabels(points: Object, seriesIndex: number): void {
             }
 
 }
-private compareDataLabels(i: number, points: Object, count: number, m: number): void {
+private compareDataLabels(i: number, points: object, count: number, m: number): void {
   let length: number = this.allPoints.length;
   let padding: number = 10;
   let collide: boolean;
@@ -253,7 +253,7 @@ public drawConnectorLines(smithchart: Smithchart, seriesIndex: number, index: nu
             let templateFn: Function;
             let labelElement: HTMLElement;
             let id: string = dataLabel.template + '_seriesIndex' + seriesindex + '_pointIndex' + i + smithchart.element.id;
-            let data: Object = {point: smithchart.series[seriesindex].points[i].reactance};
+            let data: object = {point: smithchart.series[seriesindex].points[i].reactance};
             templateFn = getTemplateFunction(dataLabel.template);
             let templateElement: Element = templateFn(smithchart);
             labelElement = <HTMLElement>convertElementFromLabel(

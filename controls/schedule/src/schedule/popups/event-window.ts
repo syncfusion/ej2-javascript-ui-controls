@@ -711,7 +711,10 @@ export class EventWindow {
             addClass([deleteButton], cls.DISABLE_CLASS);
         }
         if (this.recurrenceEditor) {
-            this.recurrenceEditor.setProperties({ startDate: <Date>eventObj[this.fields.startTime], selectedType: repeatType || 0 });
+            this.recurrenceEditor.setProperties({
+                startDate: <Date>eventObj[this.fields.startTime],
+                selectedType: repeatType || 0
+            });
         }
         if (this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             let element: HTMLElement = <HTMLElement>this.element.querySelector('.' + REPEAT_CONTAINER_CLASS);
@@ -866,7 +869,7 @@ export class EventWindow {
     private getFormat(formatType: string): string {
         let format: string;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-            format = getValue(formatType + '.short', getDefaultDateObject());
+            format = getValue(formatType + '.short', getDefaultDateObject(this.parent.getCalendarMode()));
         } else {
             format = getValue(
                 // tslint:disable-next-line:max-line-length
@@ -1042,7 +1045,11 @@ export class EventWindow {
         }
         if (this.recurrenceEditor && this.recurrenceEditor.value && this.recurrenceEditor.value !== '') {
             alertType = this.recurrenceValidation(<Date>eventObj[this.fields.startTime], <Date>eventObj[this.fields.endTime], alert);
-            if (!isNullOrUndefined(alertType)) {
+            let isShowAlert: boolean = true;
+            if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
+                isShowAlert = false;
+            }
+            if (!isNullOrUndefined(alertType) && isShowAlert) {
                 this.parent.quickPopup.openRecurrenceValidationAlert(alertType);
                 return;
             }

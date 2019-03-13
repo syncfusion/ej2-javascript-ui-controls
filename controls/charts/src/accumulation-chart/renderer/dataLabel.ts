@@ -2,11 +2,11 @@
  * AccumulationChart DataLabel module file
  */
 import { extend, createElement, getValue } from '@syncfusion/ej2-base';
-import { ChartLocation, degreeToLocation, Size, Rect,
-    isOverlap, stringToNumber, getAngle, TextOption, appendChildElement } from '../../common/utils/helper';
+import { Rect, Size, PathOption, measureText, TextOption } from '@syncfusion/ej2-svg-base';
+import { ChartLocation, degreeToLocation, isOverlap, stringToNumber, getAngle, appendChildElement } from '../../common/utils/helper';
 import { textTrim, subtractThickness, Thickness, getElement } from '../../common/utils/helper';
-import { removeElement, measureText, RectOption, textElement, showTooltip } from '../../common/utils/helper';
-import { PathOption, ColorValue, colorNameToHex, convertHexToColor, containsRect } from '../../common/utils/helper';
+import { removeElement, RectOption, textElement, showTooltip } from '../../common/utils/helper';
+import { ColorValue, colorNameToHex, convertHexToColor, containsRect } from '../../common/utils/helper';
 import { AccumulationLabelPosition } from '../model/enum';
 import { AccPoints, getSeriesFromIndex, AccumulationSeries } from '../model/acc-base';
 import { IAccTextRenderEventArgs } from '../model/pie-interface';
@@ -592,14 +592,15 @@ export class AccumulationDataLabel extends AccumulationBase {
                 ) : null;
                 dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
                     id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
-                appendChildElement(datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation);
+                appendChildElement(datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
+                                   false, false, null, this.accumulation.duration);
                 textElement(
                     new TextOption(
                         id + 'text_' + point.index, location.x, location.y,
                         'start', point.label, '', 'auto'
                     ),
                     argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup,
-                    false, redraw, true
+                    false, redraw, true, false, this.accumulation.duration
                 );
                 element = null;
             }
@@ -616,7 +617,8 @@ export class AccumulationDataLabel extends AccumulationBase {
                         <Rect>extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle
                     )
                 ));
-                appendChildElement(datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection);
+                appendChildElement(datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection,
+                                   false, false, null, this.accumulation.duration);
             }
             appendChildElement(parent, datalabelGroup, redraw);
         }

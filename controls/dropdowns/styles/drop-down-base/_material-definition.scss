@@ -30,6 +30,8 @@ $ddl-list-header-padding-left: 16px !default;
 $ddl-list-text-indent: 16px !default;
 $ddl-list-padding-right: 16px !default;
 $ddl-bigger-list-header-font-size: 14px !default;
+$ddl-multi-column-border-width: 0 0 1px 0 !default;
+$ddl-multi-column-border-color: $grey-300 !default;
 
 @include export-module('dropdownbase-material') {
   .e-dropdownbase .e-list-item .e-list-icon {

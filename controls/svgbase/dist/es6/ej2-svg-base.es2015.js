@@ -1,4 +1,780 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, extend, merge, remove } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+
+/**
+ * To import utils
+ */
+class SvgRenderer {
+    /* End-Properties */
+    constructor(rootID) {
+        //Internal Variables 
+        this.svgLink = 'http://www.w3.org/2000/svg';
+        this.rootId = rootID;
+    }
+    // method to get the attributes value
+    /* tslint:disable */
+    getOptionValue(options, key) {
+        return options[key];
+    } /* tslint:enable */
+    /**
+     * To create a Html5 SVG element
+     * @param {SVGAttributes} options - Options to create SVG
+     * @return {Element}
+     */
+    createSvg(options) {
+        if (isNullOrUndefined(options.id)) {
+            options.id = this.rootId + '_svg';
+        }
+        this.svgObj = document.getElementById(options.id);
+        if (isNullOrUndefined(document.getElementById(options.id))) {
+            this.svgObj = document.createElementNS(this.svgLink, 'svg');
+        }
+        this.svgObj = this.setElementAttributes(options, this.svgObj);
+        this.setSVGSize(options.width, options.height);
+        return this.svgObj;
+    }
+    // method to set the height and width for the SVG element
+    setSVGSize(width, height) {
+        let element = document.getElementById(this.rootId);
+        let size = !isNullOrUndefined(element) ? element.getBoundingClientRect() : null;
+        if (isNullOrUndefined(this.width) || this.width <= 0) {
+            this.svgObj.setAttribute('width', width ? width.toString() : size.width.toString());
+        }
+        else {
+            this.svgObj.setAttribute('width', this.width.toString());
+        }
+        if (isNullOrUndefined(this.height) || this.height <= 0) {
+            this.svgObj.setAttribute('height', height ? height.toString() : '450');
+        }
+        else {
+            this.svgObj.setAttribute('height', this.height.toString());
+        }
+    }
+    /**
+     * To draw a path
+     * @param {PathAttributes} options - Options to draw a path in SVG
+     * @return {Element}
+     */
+    drawPath(options) {
+        let path = document.getElementById(options.id);
+        if (path === null) {
+            path = document.createElementNS(this.svgLink, 'path');
+        }
+        path = this.setElementAttributes(options, path);
+        return path;
+    }
+    /**
+     * To draw a line
+     * @param {LineAttributes} options - Options to draw a line in SVG
+     * @return {Element}
+     */
+    drawLine(options) {
+        let line = document.getElementById(options.id);
+        if (line === null) {
+            line = document.createElementNS(this.svgLink, 'line');
+        }
+        line = this.setElementAttributes(options, line);
+        return line;
+    }
+    /**
+     * To draw a rectangle
+     * @param {BaseAttibutes} options - Required options to draw a rectangle in SVG
+     * @return {Element}
+     */
+    drawRectangle(options) {
+        let rectangle = document.getElementById(options.id);
+        if (rectangle === null) {
+            rectangle = document.createElementNS(this.svgLink, 'rect');
+        }
+        rectangle = this.setElementAttributes(options, rectangle);
+        return rectangle;
+    }
+    /**
+     * To draw a circle
+     * @param {CircleAttributes} options - Required options to draw a circle in SVG
+     * @return {Element}
+     */
+    drawCircle(options) {
+        let circle = document.getElementById(options.id);
+        if (circle === null) {
+            circle = document.createElementNS(this.svgLink, 'circle');
+        }
+        circle = this.setElementAttributes(options, circle);
+        return circle;
+    }
+    /**
+     * To draw a polyline
+     * @param {PolylineAttributes} options - Options required to draw a polyline
+     * @return {Element}
+     */
+    drawPolyline(options) {
+        let polyline = document.getElementById(options.id);
+        if (polyline === null) {
+            polyline = document.createElementNS(this.svgLink, 'polyline');
+        }
+        polyline = this.setElementAttributes(options, polyline);
+        return polyline;
+    }
+    /**
+     * To draw an ellipse
+     * @param {EllipseAttributes} options - Options required to draw an ellipse
+     * @return {Element}
+     */
+    drawEllipse(options) {
+        let ellipse = document.getElementById(options.id);
+        if (ellipse === null) {
+            ellipse = document.createElementNS(this.svgLink, 'ellipse');
+        }
+        ellipse = this.setElementAttributes(options, ellipse);
+        return ellipse;
+    }
+    /**
+     * To draw a polygon
+     * @param {PolylineAttributes} options - Options needed to draw a polygon in SVG
+     * @return {Element}
+     */
+    drawPolygon(options) {
+        let polygon = document.getElementById(options.id);
+        if (polygon === null) {
+            polygon = document.createElementNS(this.svgLink, 'polygon');
+        }
+        polygon = this.setElementAttributes(options, polygon);
+        return polygon;
+    }
+    /**
+     * To draw an image
+     * @param {ImageAttributes} options - Required options to draw an image in SVG
+     * @return {Element}
+     */
+    drawImage(options) {
+        let img = document.createElementNS(this.svgLink, 'image');
+        img.setAttributeNS(null, 'height', options.height.toString());
+        img.setAttributeNS(null, 'width', options.width.toString());
+        img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', options.href);
+        img.setAttributeNS(null, 'x', options.x.toString());
+        img.setAttributeNS(null, 'y', options.y.toString());
+        img.setAttributeNS(null, 'id', options.id);
+        img.setAttributeNS(null, 'visibility', options.visibility);
+        if (!isNullOrUndefined(this.getOptionValue(options, 'clip-path'))) {
+            img.setAttributeNS(null, 'clip-path', this.getOptionValue(options, 'clip-path'));
+        }
+        if (!isNullOrUndefined(options.preserveAspectRatio)) {
+            img.setAttributeNS(null, 'preserveAspectRatio', options.preserveAspectRatio);
+        }
+        return img;
+    }
+    /**
+     * To draw a text
+     * @param {TextAttributes} options - Options needed to draw a text in SVG
+     * @return {Element}
+     */
+    createText(options, label) {
+        let text = document.createElementNS(this.svgLink, 'text');
+        text = this.setElementAttributes(options, text);
+        if (!isNullOrUndefined(label)) {
+            text.textContent = label;
+        }
+        return text;
+    }
+    /**
+     * To create a tSpan
+     * @param {TextAttributes} options - Options to create tSpan
+     * @param {string} label - The text content which is to be rendered in the tSpan
+     * @return {Element}
+     */
+    createTSpan(options, label) {
+        let tSpan = document.createElementNS(this.svgLink, 'tspan');
+        tSpan = this.setElementAttributes(options, tSpan);
+        if (!isNullOrUndefined(label)) {
+            tSpan.textContent = label;
+        }
+        return tSpan;
+    }
+    /**
+     * To create a title
+     * @param {string} text - The text content which is to be rendered in the title
+     * @return {Element}
+     */
+    createTitle(text) {
+        let title = document.createElementNS(this.svgLink, 'title');
+        title.textContent = text;
+        return title;
+    }
+    /**
+     * To create defs element in SVG
+     * @return {Element}
+     */
+    createDefs() {
+        let defs = document.createElementNS(this.svgLink, 'defs');
+        return defs;
+    }
+    /**
+     * To create clip path in SVG
+     * @param {BaseAttibutes} options - Options needed to create clip path
+     * @return {Element}
+     */
+    createClipPath(options) {
+        let clipPath = document.createElementNS(this.svgLink, 'clipPath');
+        clipPath = this.setElementAttributes(options, clipPath);
+        return clipPath;
+    }
+    /**
+     * To create foreign object in SVG
+     * @param {BaseAttibutes} options - Options needed to create foreign object
+     * @return {Element}
+     */
+    createForeignObject(options) {
+        let foreignObject = document.createElementNS(this.svgLink, 'foreignObject');
+        foreignObject = this.setElementAttributes(options, foreignObject);
+        return foreignObject;
+    }
+    /**
+     * To create group element in SVG
+     * @param {BaseAttibutes} options - Options needed to create group
+     * @return {Element}
+     */
+    createGroup(options) {
+        let group = document.createElementNS(this.svgLink, 'g');
+        group = this.setElementAttributes(options, group);
+        return group;
+    }
+    /**
+     * To create pattern in SVG
+     * @param {PatternAttributes} options - Required options to create pattern in SVG
+     * @param {string} type - Specifies the name of the pattern
+     * @return {Element}
+     */
+    createPattern(options, element) {
+        let pattern = document.createElementNS(this.svgLink, element);
+        pattern = this.setElementAttributes(options, pattern);
+        return pattern;
+    }
+    /**
+     * To create radial gradient in SVG
+     * @param {string[]} colors - Specifies the colors required to create radial gradient
+     * @param {string[]} colorStop - Specifies the colorstop required to create radial gradient
+     * @param {string} name - Specifies the name of the gradient
+     * @param {RadialGradient} options - value for radial gradient
+     * @return {string}
+     */
+    createRadialGradient(colors, name, options) {
+        let colorName;
+        if (!isNullOrUndefined(colors[0].colorStop)) {
+            let newOptions = {
+                'id': this.rootId + '_' + name + 'radialGradient',
+                'cx': options.cx + '%',
+                'cy': options.cy + '%',
+                'r': options.r + '%',
+                'fx': options.fx + '%',
+                'fy': options.fy + '%'
+            };
+            this.drawGradient('radialGradient', newOptions, colors);
+            colorName = 'url(#' + this.rootId + '_' + name + 'radialGradient)';
+        }
+        else {
+            colorName = colors[0].color.toString();
+        }
+        return colorName;
+    }
+    /**
+     * To create linear gradient in SVG
+     * @param {string[]} colors - Array of string specifies the values for color
+     * @param {string[]} colors - Array of string specifies the values for colorStop
+     * @param {string} name - Specifies the name of the gradient
+     * @param {LinearGradient} options - Specifies the options for gradient
+     * @return {string}
+     */
+    createLinearGradient(colors, name, options) {
+        let colorName;
+        if (!isNullOrUndefined(colors[0].colorStop)) {
+            let newOptions = {
+                'id': this.rootId + '_' + name + 'linearGradient',
+                'x1': options.x1 + '%',
+                'y1': options.y1 + '%',
+                'x2': options.x2 + '%',
+                'y2': options.y2 + '%'
+            };
+            this.drawGradient('linearGradient', newOptions, colors);
+            colorName = 'url(#' + this.rootId + '_' + name + 'linearGradient)';
+        }
+        else {
+            colorName = colors[0].color.toString();
+        }
+        return colorName;
+    }
+    /**
+     * To render the gradient element in SVG
+     * @param {string} gradientType - Specifies the type of the gradient
+     * @param {RadialGradient | LinearGradient} options - Options required to render a gradient
+     * @param {string[]} colors - Array of string specifies the values for color
+     * @param {string[]} colorStop - Array of string specifies the values for colorStop
+     * @return {Element}
+     */
+    drawGradient(gradientType, options, colors) {
+        let defs = this.createDefs();
+        let gradient = document.createElementNS(this.svgLink, gradientType);
+        gradient = this.setElementAttributes(options, gradient);
+        for (let i = 0; i < colors.length; i++) {
+            let stop = document.createElementNS(this.svgLink, 'stop');
+            stop.setAttribute('offset', colors[i].colorStop);
+            stop.setAttribute('stop-color', colors[i].color);
+            stop.setAttribute('stop-opacity', '1');
+            gradient.appendChild(stop);
+        }
+        defs.appendChild(gradient);
+        return defs;
+    }
+    /**
+     * To render a clip path
+     * @param {BaseAttibutes} options - Options required to render a clip path
+     * @return {Element}
+     */
+    drawClipPath(options) {
+        let defs = this.createDefs();
+        let clipPath = this.createClipPath({ 'id': options.id });
+        options.id = options.id + '_Rect';
+        let rect = this.drawRectangle(options);
+        clipPath.appendChild(rect);
+        defs.appendChild(clipPath);
+        return defs;
+    }
+    /**
+     * To create circular clip path in SVG
+     * @param {CircleAttributes} options - Options required to create circular clip path
+     * @return {Element}
+     */
+    drawCircularClipPath(options) {
+        let defs = this.createDefs();
+        let clipPath = this.createClipPath({ 'id': options.id });
+        options.id = options.id + '_Circle';
+        let circle = this.drawCircle(options);
+        clipPath.appendChild(circle);
+        defs.appendChild(clipPath);
+        return defs;
+    }
+    /**
+     * To set the attributes to the element
+     * @param {SVGCanvasAttributes} options - Attributes to set for the element
+     * @param {Element} element - The element to which the attributes need to be set
+     * @return {Element}
+     */
+    setElementAttributes(options, element) {
+        let keys = Object.keys(options);
+        for (let i = 0; i < keys.length; i++) {
+            element.setAttribute(keys[i], options[keys[i]]);
+        }
+        return element;
+    }
+}
+
+/**
+ * To import utils
+ */
+/**
+ * @private
+ */
+class CanvasRenderer {
+    /* End-Properties */
+    constructor(rootID) {
+        this.rootId = rootID;
+    }
+    // method to get the attributes value
+    /* tslint:disable */
+    getOptionValue(options, key) {
+        return options[key];
+    }
+    /* tslint:enable */
+    /**
+     * To create a Html5 canvas element
+     * @param {BaseAttibutes} options - Options to create canvas
+     * @return {HTMLCanvasElement}
+     */
+    createCanvas(options) {
+        let canvasObj = document.createElement('canvas');
+        canvasObj.setAttribute('id', this.rootId + '_canvas');
+        this.ctx = canvasObj.getContext('2d');
+        this.canvasObj = canvasObj;
+        this.setCanvasSize(options.width, options.height);
+        return this.canvasObj;
+    }
+    /**
+     * To set the width and height for the Html5 canvas element
+     * @param {number} width - width of the canvas
+     * @param {number} height - height of the canvas
+     * @return {void}
+     */
+    setCanvasSize(width, height) {
+        let element = document.getElementById(this.rootId);
+        let size = !isNullOrUndefined(element) ? element.getBoundingClientRect() : null;
+        if (isNullOrUndefined(this.width)) {
+            this.canvasObj.setAttribute('width', width ? width.toString() : size.width.toString());
+        }
+        else {
+            this.canvasObj.setAttribute('width', this.width.toString());
+        }
+        if (isNullOrUndefined(this.height)) {
+            this.canvasObj.setAttribute('height', height ? height.toString() : '450');
+        }
+        else {
+            this.canvasObj.setAttribute('height', this.height.toString());
+        }
+    }
+    // To set the values to the attributes
+    setAttributes(options) {
+        this.ctx.lineWidth = this.getOptionValue(options, 'stroke-width');
+        let dashArray = this.getOptionValue(options, 'stroke-dasharray');
+        if (!isNullOrUndefined(dashArray)) {
+            let dashArrayString = dashArray.split(',');
+            this.ctx.setLineDash([parseInt(dashArrayString[0], 10), parseInt(dashArrayString[1], 10)]);
+        }
+        this.ctx.strokeStyle = this.getOptionValue(options, 'stroke');
+    }
+    /**
+     * To draw a line
+     * @param {LineAttributes} options - required options to draw a line on the canvas
+     * @return {void}
+     */
+    drawLine(options) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.lineWidth = this.getOptionValue(options, 'stroke-width');
+        this.ctx.strokeStyle = options.stroke;
+        this.ctx.moveTo(options.x1, options.y1);
+        this.ctx.lineTo(options.x2, options.y2);
+        this.ctx.stroke();
+        this.ctx.restore();
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To draw a rectangle
+     * @param {RectAttributes} options - required options to draw a rectangle on the canvas
+     * @return {void}
+     */
+    drawRectangle(options) {
+        let canvasCtx = this.ctx;
+        let cornerRadius = options.rx;
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.globalAlpha = this.getOptionValue(options, 'opacity');
+        this.setAttributes(options);
+        this.ctx.rect(options.x, options.y, options.width, options.height);
+        if (cornerRadius !== null && cornerRadius >= 0) {
+            this.drawCornerRadius(options);
+        }
+        else {
+            if (options.fill === 'none') {
+                options.fill = 'transparent';
+            }
+            this.ctx.fillStyle = options.fill;
+            this.ctx.fillRect(options.x, options.y, options.width, options.height);
+            this.ctx.stroke();
+        }
+        this.ctx.restore();
+        this.ctx = canvasCtx;
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    // To draw the corner of a rectangle
+    drawCornerRadius(options) {
+        let cornerRadius = options.rx;
+        let x = options.x;
+        let y = options.y;
+        let width = options.width;
+        let height = options.height;
+        if (options.fill === 'none') {
+            options.fill = 'transparent';
+        }
+        this.ctx.fillStyle = options.fill;
+        if (width < 2 * cornerRadius) {
+            cornerRadius = width / 2;
+        }
+        if (height < 2 * cornerRadius) {
+            cornerRadius = height / 2;
+        }
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + width - cornerRadius, y);
+        this.ctx.arcTo(x + width, y, x + width, y + height, cornerRadius);
+        this.ctx.arcTo(x + width, y + height, x, y + height, cornerRadius);
+        this.ctx.arcTo(x, y + height, x, y, cornerRadius);
+        this.ctx.arcTo(x, y, x + width, y, cornerRadius);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To draw a path on the canvas
+     * @param {PathAttributes} options - options needed to draw path
+     * @param {Int32Array} canvasTranslate - Array of numbers to translate the canvas
+     * @return {void}
+     */
+    drawPath(options, canvasTranslate) {
+        let path = options.d;
+        let dataSplit = path.split(' ');
+        let borderWidth = this.getOptionValue(options, 'stroke-width');
+        let canvasCtx = this.ctx;
+        let flag = true;
+        this.ctx.save();
+        this.ctx.beginPath();
+        if (canvasTranslate) {
+            this.ctx.translate(canvasTranslate[0], canvasTranslate[1]);
+        }
+        this.ctx.globalAlpha = options.opacity ? options.opacity : this.getOptionValue(options, 'fill-opacity');
+        this.setAttributes(options);
+        for (let i = 0; i < dataSplit.length; i = i + 3) {
+            let x1 = parseFloat(dataSplit[i + 1]);
+            let y1 = parseFloat(dataSplit[i + 2]);
+            switch (dataSplit[i]) {
+                case 'M':
+                    if (!options.innerR && !options.cx) {
+                        this.ctx.moveTo(x1, y1);
+                    }
+                    break;
+                case 'L':
+                    if (!options.innerR) {
+                        this.ctx.lineTo(x1, y1);
+                    }
+                    break;
+                case 'C':
+                    let c1 = parseFloat(dataSplit[i + 3]);
+                    let c2 = parseFloat(dataSplit[i + 4]);
+                    let c3 = parseFloat(dataSplit[i + 5]);
+                    let c4 = parseFloat(dataSplit[i + 6]);
+                    this.ctx.bezierCurveTo(x1, y1, c1, c2, c3, c4);
+                    i = i + 4;
+                    break;
+                case 'A':
+                    if (!options.innerR) {
+                        if (options.cx) {
+                            this.ctx.arc(options.cx, options.cy, options.radius, 0, 2 * Math.PI, options.counterClockWise);
+                        }
+                        else {
+                            this.ctx.moveTo(options.x, options.y);
+                            this.ctx.arc(options.x, options.y, options.radius, options.start, options.end, options.counterClockWise);
+                            this.ctx.lineTo(options.x, options.y);
+                        }
+                    }
+                    else if (flag) {
+                        this.ctx.arc(options.x, options.y, options.radius, options.start, options.end, options.counterClockWise);
+                        this.ctx.arc(options.x, options.y, options.innerR, options.end, options.start, !options.counterClockWise);
+                        flag = false;
+                    }
+                    i = i + 5;
+                    break;
+                case 'z':
+                    this.ctx.closePath();
+                    break;
+            }
+        }
+        if (options.fill !== 'none' && options.fill !== undefined) {
+            this.ctx.fillStyle = options.fill;
+            this.ctx.fill();
+        }
+        if (borderWidth > 0) {
+            this.ctx.stroke();
+        }
+        this.ctx.restore();
+        this.ctx = canvasCtx;
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To draw a text
+     * @param {TextAttributes} options - options required to draw text
+     * @param {string} label - Specifies the text which has to be drawn on the canvas
+     * @return {void}
+     */
+    drawText(options, label) {
+        let fontWeight = this.getOptionValue(options, 'font-weight');
+        if (!isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
+            fontWeight = 'normal';
+        }
+        let fontSize = this.getOptionValue(options, 'font-size');
+        let fontFamily = this.getOptionValue(options, 'font-family');
+        let fontStyle = this.getOptionValue(options, 'font-style').toLowerCase();
+        let font = (fontStyle + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily);
+        let anchor = this.getOptionValue(options, 'text-anchor');
+        let opacity = options.opacity !== undefined ? options.opacity : 1;
+        if (anchor === 'middle') {
+            anchor = 'center';
+        }
+        this.ctx.save();
+        this.ctx.fillStyle = options.fill;
+        this.ctx.font = font;
+        this.ctx.textAlign = anchor;
+        this.ctx.globalAlpha = opacity;
+        if (options.baseline) {
+            this.ctx.textBaseline = options.baseline;
+        }
+        let txtlngth = 0;
+        this.ctx.translate(options.x + (txtlngth / 2), options.y);
+        this.ctx.rotate(options.labelRotation * Math.PI / 180);
+        this.ctx.fillText(label, 0, 0);
+        this.ctx.restore();
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To draw circle on the canvas
+     * @param {CircleAttributes} options - required options to draw the circle
+     * @return {void}
+     */
+    drawCircle(options) {
+        let canvasCtx = this.ctx;
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(options.cx, options.cy, options.r, 0, 2 * Math.PI);
+        this.ctx.fillStyle = options.fill;
+        this.ctx.globalAlpha = options.opacity;
+        this.ctx.fill();
+        this.setAttributes(options);
+        this.ctx.stroke();
+        this.ctx.restore();
+        this.ctx = canvasCtx;
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To draw polyline
+     * @param {PolylineAttributes} options - options needed to draw polyline
+     * @return {void}
+     */
+    drawPolyline(options) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        let points = options.points.split(' ');
+        for (let i = 0; i < points.length - 1; i++) {
+            let point = points[i].split(',');
+            let x = parseFloat(point[0]);
+            let y = parseFloat(point[1]);
+            if (i === 0) {
+                this.ctx.moveTo(x, y);
+            }
+            else {
+                this.ctx.lineTo(x, y);
+            }
+        }
+        this.ctx.lineWidth = this.getOptionValue(options, 'stroke-width');
+        this.ctx.strokeStyle = options.stroke;
+        this.ctx.stroke();
+        this.ctx.restore();
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To draw an ellipse on the canvas
+     * @param {EllipseAttributes} options - options needed to draw ellipse
+     * @return {void}
+     */
+    drawEllipse(options) {
+        let canvasCtx = this.ctx;
+        let circumference = Math.max(options.rx, options.ry);
+        let scaleX = options.rx / circumference;
+        let scaleY = options.ry / circumference;
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.translate(options.cx, options.cy);
+        this.ctx.save();
+        this.ctx.scale(scaleX, scaleY);
+        this.ctx.arc(0, 0, circumference, 0, 2 * Math.PI, false);
+        this.ctx.fillStyle = options.fill;
+        this.ctx.fill();
+        this.ctx.restore();
+        this.ctx.lineWidth = this.getOptionValue(options, 'stroke-width');
+        this.ctx.strokeStyle = options.stroke;
+        this.ctx.stroke();
+        this.ctx.restore();
+        this.ctx = canvasCtx;
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To draw an image
+     * @param {ImageAttributes} options - options required to draw an image on the canvas
+     * @return {void}
+     */
+    drawImage(options) {
+        this.ctx.save();
+        let imageObj = new Image();
+        if (!isNullOrUndefined(options.href)) {
+            imageObj.src = options.href;
+            this.ctx.drawImage(imageObj, options.x, options.y, options.width, options.height);
+        }
+        this.ctx.restore();
+        this.dataUrl = this.canvasObj.toDataURL();
+    }
+    /**
+     * To create a linear gradient
+     * @param {string[]} colors - Specifies the colors required to create linear gradient
+     * @return {string}
+     */
+    createLinearGradient(colors) {
+        let myGradient;
+        if (!isNullOrUndefined(colors[0].colorStop)) {
+            myGradient = this.ctx.createLinearGradient(0, 0, 0, this.canvasObj.height);
+        }
+        let color = this.setGradientValues(colors, myGradient);
+        return color;
+    }
+    /**
+     * To create a radial gradient
+     * @param {string[]} colors - Specifies the colors required to create linear gradient
+     * @return {string}
+     */
+    createRadialGradient(colors) {
+        let myGradient;
+        if (!isNullOrUndefined(colors[0].colorStop)) {
+            myGradient = this.ctx.createRadialGradient(0, 0, 0, 0, 0, this.canvasObj.height);
+        }
+        let colorName = this.setGradientValues(colors, myGradient);
+        return colorName;
+    }
+    // To set the gradient values
+    setGradientValues(colors, myGradient) {
+        let colorName;
+        if (!isNullOrUndefined(colors[0].colorStop)) {
+            for (let i = 0; i <= colors.length - 1; i++) {
+                let color = colors[i].color;
+                let newColorStop = (colors[i].colorStop).slice(0, -1);
+                let stopColor = parseInt(newColorStop, 10) / 100;
+                myGradient.addColorStop(stopColor, color);
+            }
+            colorName = myGradient.toString();
+        }
+        else {
+            colorName = colors[0].color.toString();
+        }
+        this.dataUrl = this.canvasObj.toDataURL();
+        return colorName;
+    }
+    /**
+     * To set the attributes to the element
+     * @param {SVGCanvasAttributes} options - Attributes to set for the element
+     * @param {HTMLElement} element - The element to which the attributes need to be set
+     * @return {HTMLElement}
+     */
+    setElementAttributes(options, element) {
+        let keys = Object.keys(options);
+        let values = Object.keys(options).map((key) => { return options[key]; });
+        for (let i = 0; i < keys.length; i++) {
+            element.setAttribute(keys[i], values[i]);
+        }
+        return element;
+    }
+    /**
+     * To update the values of the canvas element attributes
+     * @param {SVGCanvasAttributes} options - Specifies the colors required to create gradient
+     * @return {void}
+     */
+    updateCanvasAttributes(options) {
+        this.setElementAttributes(options, this.canvasObj);
+        let ctx = this.ctx;
+        if (!isNullOrUndefined(this.dataUrl)) {
+            let img = new Image;
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = this.dataUrl;
+        }
+    }
+}
+
+/**
+ * Base modules
+ */
 
 /** @private */
 function getTooltipThemeColor(theme) {
@@ -20,6 +796,14 @@ function getTooltipThemeColor(theme) {
                 tooltipBoldLabel: '#282727',
                 tooltipLightLabel: '#333232',
                 tooltipHeaderLine: '#9A9A9A'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                tooltipBoldLabel: 'rgba(255, 255, 255)',
+                tooltipLightLabel: 'rgba(255, 255, 255, 0.9)',
+                tooltipHeaderLine: 'rgba(255, 255, 255, 0.2)'
             };
             break;
         default:
@@ -1024,5 +1808,5 @@ Tooltip = __decorate([
  * Chart components exported.
  */
 
-export { TextStyle, TooltipBorder, AreaBounds, ToolLocation, Tooltip, getTooltipThemeColor };
+export { TextStyle, TooltipBorder, AreaBounds, ToolLocation, Tooltip, getTooltipThemeColor, measureText, findDirection, Size, Rect, Side, CustomizeOption, TextOption, getElement, removeElement, drawSymbol, calculateShapes, PathOption, textElement, TooltipLocation, SvgRenderer, CanvasRenderer };
 //# sourceMappingURL=ej2-svg-base.es2015.js.map

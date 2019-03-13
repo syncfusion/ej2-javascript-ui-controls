@@ -1,5 +1,5 @@
 import { DocumentEditor, ContextType, TableOfContentsSettings } from '../../document-editor/index';
-import { createElement, L10n } from '@syncfusion/ej2-base';
+import { createElement, L10n, classList } from '@syncfusion/ej2-base';
 import { Button, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Toolbar } from '../tool-bar';
@@ -95,10 +95,9 @@ export class TocProperties {
             headerDivMargin = 'margin-right:5.5px;';
             closeButtonMargin = 'margin-left:7px;';
         }
-
         let headerDiv: HTMLElement = createElement('div', {
             id: this.elementId + 'toc_id',
-            styles: 'display: block;'
+            styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
         });
         container.appendChild(headerDiv);
         this.element.appendChild(container);

@@ -6,9 +6,18 @@ import { Adaptor } from '../../src/heatmap/index';
 import { Legend } from '../../src/heatmap/index';
 import { Tooltip } from '../../src/heatmap/index';
 import { MouseEvents } from '../base/event.spec';
+import { profile , inMB, getMemoryProfile } from '../../spec/common.spec';
 HeatMap.Inject(Adaptor, Legend, Tooltip);
 
 describe('Heatmap Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Heatmap tooltip properties and its behavior', () => {
         let heatmap: HeatMap;
         let ele: HTMLElement;
@@ -59,7 +68,7 @@ describe('Heatmap Control', () => {
         });
         it('Check tooltip visibility for a null cell', () => {
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 220);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 220, false);
             tempElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tempElement).toBe(null);
         });
@@ -67,25 +76,25 @@ describe('Heatmap Control', () => {
             heatmap.cellSettings.enableCellHighlighting = true;
             heatmap.refresh();
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             tempElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tempElement).not.toBe(null);
         });
         it('Check tooltip visibility for a value exist cell and move to another cell', () => {
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 60);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 60, false);
             tempElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tempElement).not.toBe(null);
         });
         it('Check tooltip visibility for a value exist cell and move to outer and come back', () => {
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 0);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 0, false);
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 60);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 60, false);
             tempElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tempElement).not.toBe(null);
         });
@@ -95,13 +104,13 @@ describe('Heatmap Control', () => {
             };
             heatmap.refresh();
             tempElement = document.getElementById('container_HeatMapRect_1');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             tempElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tempElement).not.toBe(null);
         });
         it('Check tooltip template visibility in empty text cell', () => {
             tempElement = document.getElementById('container_HeatMapRect_24');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 220);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 220, false);
             tempElement = document.getElementById('containerCelltooltipcontainer');
             expect(tempElement.style.visibility).toBe("hidden");
         });
@@ -161,7 +170,7 @@ describe('Heatmap Control', () => {
             heatmap.renderingMode = 'SVG';
             heatmap.refresh();
             tempElement = document.getElementById('container_HeatMapRect_1');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             tempElement = document.getElementById('containerCelltooltipcontainer_svg');
             expect(tempElement).toBe(null);
         });
@@ -172,15 +181,24 @@ describe('Heatmap Control', () => {
             heatmap.tooltipSettings.fill = "RED";
             heatmap.refresh();
             tempElement = document.getElementById('container_HeatMapRect_0');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("RED");
         });
         it('Changing tooltip color dynamically', () => {
             heatmap.tooltipSettings.fill = "Pink";
             heatmap.dataBind();
             tempElement = document.getElementById('container_HeatMapRect_0');
-            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20);
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("Pink");
         });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

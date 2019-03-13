@@ -5,6 +5,8 @@ import { ILoadedEventArgs } from '../../src/heatmap/model/interface';
 import { Legend } from '../../src/heatmap/legend/legend';
 import { Tooltip } from '../../src/heatmap/utils/tooltip';
 import { MouseEvents } from '../base/event.spec'
+import { profile , inMB, getMemoryProfile } from '../../spec/common.spec';
+import { CellSettings } from '../../src';
 HeatMap.Inject(Legend, Tooltip);
 
 // export class MouseEvents {
@@ -16,6 +18,14 @@ HeatMap.Inject(Legend, Tooltip);
 // }
 
 describe('Heatmap Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Heatmap Legend', () => {
         let heatmap: HeatMap;
         let legend: Legend = new Legend(heatmap);
@@ -168,9 +178,9 @@ describe('Heatmap Control', () => {
             heatmap.legendSettings.textStyle.textOverflow = 'Trim';
             heatmap.refresh();
             legendElement = document.getElementById('heatmapContainer_Legend_Label1');
-            trigger.mousemoveEvent(legendElement, 5, 5, 715, 73);
-            trigger.mousemoveEvent(legendElement, 5, 5, 715, 100);
-            trigger.mousemoveEvent(legendElement, 5, 5, 715, 73);
+            trigger.mousemoveEvent(legendElement, 5, 5, 715, 73, false);
+            trigger.mousemoveEvent(legendElement, 5, 5, 715, 100, false);
+            trigger.mousemoveEvent(legendElement, 5, 5, 715, 73, false);
             expect(document.getElementById('heatmapContainer_LegendLabel_Tooltip').textContent == 'average').toBe(true);
         });
 
@@ -182,7 +192,7 @@ describe('Heatmap Control', () => {
             heatmap.width = '100%';
             heatmap.refresh();
             legendElement = document.getElementById('heatmapContainer_HeatMapRect_26');
-            trigger.mousemoveEvent(legendElement, 10, 10, 646, 179);
+            trigger.mousemoveEvent(legendElement, 10, 10, 646, 179, false);
             tempElement = document.getElementById('heatmapContainer_Gradient_Pointer');
             expect(heatmap.legendModule.gradientPointer != null).toBe(true);
         });
@@ -261,8 +271,8 @@ describe('Heatmap Control', () => {
             heatmap.renderingMode = 'SVG';
             heatmap.refresh();
             legendElement = document.getElementById('heatmapContainer_svg');
-            trigger.mousemoveEvent(legendElement, 5, 5, 100, 73);
-            trigger.mousemoveEvent(legendElement, 5, 5, 400, 640);
+            trigger.mousemoveEvent(legendElement, 5, 5, 100, 73, false);
+            trigger.mousemoveEvent(legendElement, 5, 5, 400, 640, false);
             let pointerElement : HTMLElement = document.getElementById('heatmapContainer_Gradient_Pointer')
             expect(pointerElement.style.visibility == 'hidden');
         });
@@ -271,16 +281,16 @@ describe('Heatmap Control', () => {
             heatmap.renderingMode = 'Canvas';
             heatmap.refresh();
             legendElement = document.getElementById('heatmapContainer_canvas');
-            trigger.mousemoveEvent(legendElement, 5, 5, 100, 73);
-            trigger.mousemoveEvent(legendElement, 5, 5, 400, 40);
+            trigger.mousemoveEvent(legendElement, 5, 5, 100, 73, false);
+            trigger.mousemoveEvent(legendElement, 5, 5, 400, 40, false);
             expect(heatmap.legendModule.previousOptions.pathX1 == 707 && heatmap.legendModule.previousOptions.pathX2 == 700);
         });
         it('Remove previously rendered gradient pointer in canvas in horizontal direction', () => {
             heatmap.legendSettings.position = 'Bottom';
             heatmap.refresh();
             legendElement = document.getElementById('heatmapContainer_canvas');
-            trigger.mousemoveEvent(legendElement, 5, 5, 400, 73);
-            trigger.mousemoveEvent(legendElement, 5, 5, 100, 40);
+            trigger.mousemoveEvent(legendElement, 5, 5, 400, 73, false);
+            trigger.mousemoveEvent(legendElement, 5, 5, 100, 40, false);
             expect(heatmap.legendModule.previousOptions.pathX1 === 648 && heatmap.legendModule.previousOptions.pathY1 === 413);
         });
         it('Disabling showLabel', function () {
@@ -338,9 +348,9 @@ describe('Heatmap Control', () => {
             heatmap.legendSettings.labelDisplayType = 'None';
             heatmap.dataBind();
             legendElement = document.getElementById('heatmapContainer_Smart_Legend0');
-            trigger.mousemoveEvent(legendElement, 5, 5, 30,35);
-            trigger.mousemoveEvent(legendElement, 5, 5, 130,135);
-            trigger.mousemoveEvent(legendElement, 5, 5, 30,35);
+            trigger.mousemoveEvent(legendElement, 5, 5, 30, 35, false);
+            trigger.mousemoveEvent(legendElement, 5, 5, 130, 135, false);
+            trigger.mousemoveEvent(legendElement, 5, 5, 30, 35, false);
             let tooltip: Element = document.getElementById('heatmapContainerlegendLabelTooltipContainer_text');
             expect(tooltip.textContent == 'text1 text1');
       });
@@ -348,7 +358,7 @@ describe('Heatmap Control', () => {
             heatmap.renderingMode = 'Canvas';
             heatmap.dataBind();
             legendElement = document.getElementById('heatmapContainer_canvas');
-            trigger.mousemoveEvent(legendElement, 5, 5, 30, 35);
+            trigger.mousemoveEvent(legendElement, 5, 5, 30, 35, false);
             let tooltip: Element = document.getElementById('heatmapContainerlegendLabelTooltipContainer_text');
             expect(tooltip.textContent == 'text1 text1');
         });
@@ -420,5 +430,22 @@ describe('Heatmap Control', () => {
             trigger.clickEvent(legendElement, 0, 0, region.left + 2, region.top +5);
             expect(heatmap.legendModule.visibilityCollections[4]).toBe(false);
     });
+    it('Checking cell toggle for smart legend for bubble type size and color', function () {
+        heatmap.cellSettings.tileType = 'Bubble';
+        heatmap.cellSettings.bubbleType = 'SizeAndColor';
+        legendElement = document.getElementById('heatmapContainer_Smart_Legend1');
+        let element:ClientRect = legendElement.getBoundingClientRect();
+        trigger.clickEvent(legendElement, 0, 0, element.left + 2, element.top + 2);
+        expect(legendElement.getAttribute('fill') == 'rgb(153, 153, 255)');
     });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

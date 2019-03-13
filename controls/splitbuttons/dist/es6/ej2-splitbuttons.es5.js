@@ -935,7 +935,7 @@ function createButtonGroup(selector, options, createElement$$1) {
         createElement$$1 = createElement;
     }
     var wrapper = document.querySelector(selector);
-    addClass([wrapper], ['e-btn-group']);
+    addClass([wrapper], ['e-btn-group', 'e-css']);
     wrapper.setAttribute('role', 'group');
     var childs = wrapper.children;
     options.buttons = options.buttons || [];
@@ -1304,8 +1304,8 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Called internally if any of the property value changed.
-     * @param  {ProgressButton} newProp
-     * @param  {ProgressButton} oldProp
+     * @param  {ProgressButtonModel} newProp
+     * @param  {ProgressButtonModel} oldProp
      * @returns void
      * @private
      */

@@ -166,7 +166,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Specifies the value to disable/enable the VScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, VScroll will be enabled (false) or disabled (true).
      * @returns void.
      */

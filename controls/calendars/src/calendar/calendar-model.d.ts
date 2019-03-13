@@ -60,7 +60,7 @@ export interface CalendarBaseModel extends ComponentModel{
      * </table>
      *
      * > For more details about start refer to 
-     * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation. 
+     * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     start?: CalendarView;
 
@@ -88,7 +88,7 @@ export interface CalendarBaseModel extends ComponentModel{
      * Calendar view shows up to the years of the decade.<br/></td></tr> 
      * </table> 
      * 
-     *  > For more details about depth refer to 
+     * > For more details about depth refer to 
      *  [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
      */
     depth?: CalendarView;

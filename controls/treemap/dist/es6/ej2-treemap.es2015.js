@@ -1,7 +1,7 @@
-import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
 
 /**
  * TreeMap constants doc
@@ -67,6 +67,16 @@ const itemMove = 'itemMove';
  */
 const click = 'click';
 /**
+ * Specifies maps double click event name.
+ * @private
+ */
+const doubleClick = 'doubleClick';
+/**
+ * Specifies maps right click event name.
+ * @private
+ */
+const rightClick = 'rightClick';
+/**
  * Specifies the mouse move event name.
  * @private
  */
@@ -76,6 +86,11 @@ const mouseMove = 'mouseMove';
  * @private
  */
 const legendItemRendering = 'legendItemRendering';
+/**
+ * Specifies legend rendering event name.
+ * @private
+ */
+const legendRendering = 'legendRendering';
 /**
  * Specifies treemap resize event name.
  * @private
@@ -547,7 +562,7 @@ function measureText(text, font) {
  * @private
  */
 class TextOption {
-    constructor(id, x, y, anchor, text, transform = '', baseLine) {
+    constructor(id, x, y, anchor, text, transform = '', baseLine, connectorText) {
         this.transform = '';
         this.baseLine = 'auto';
         this.id = id;
@@ -557,6 +572,7 @@ class TextOption {
         this.x = x;
         this.y = y;
         this.baseLine = baseLine;
+        this.connectorText = connectorText;
     }
 }
 /**
@@ -612,10 +628,23 @@ function findPosition(location, alignment, textSize, type) {
     y = (type === 'title') ? location.y + (textSize.height / 2) : ((location.y + location.height / 2) + textSize.height / 2);
     return new Location(x, y);
 }
+function createTextStyle(renderer, renderOptions, text) {
+    let htmlObject;
+    htmlObject = renderer.createText(renderOptions, text);
+    htmlObject.style['user-select'] = 'none';
+    htmlObject.style['-moz-user-select'] = 'none';
+    htmlObject.style['-webkit-touch-callout'] = 'none';
+    htmlObject.style['-webkit-user-select'] = 'none';
+    htmlObject.style['-khtml-user-select'] = 'none';
+    htmlObject.style['-ms-user-select'] = 'none';
+    htmlObject.style['-o-user-select'] = 'none';
+    return htmlObject;
+}
 /**
  * Internal rendering of text
  * @private
  */
+/* tslint:disable:no-string-literal */
 function renderTextElement(options, font, color, parent, isMinus = false) {
     let renderOptions = {
         'font-size': font.size,
@@ -635,14 +664,28 @@ function renderTextElement(options, font, color, parent, isMinus = false) {
     let tspanElement;
     let renderer = new SvgRenderer('');
     let height;
-    let htmlObject = renderer.createText(renderOptions, text);
-    htmlObject.style['user-select'] = 'none';
-    htmlObject.style['-moz-user-select'] = 'none';
-    htmlObject.style['-webkit-touch-callout'] = 'none';
-    htmlObject.style['-webkit-user-select'] = 'none';
-    htmlObject.style['-khtml-user-select'] = 'none';
-    htmlObject.style['-ms-user-select'] = 'none';
-    htmlObject.style['-o-user-select'] = 'none';
+    let htmlObject;
+    let breadCrumbText = !isNullOrUndefined(text) && !isNullOrUndefined(options.connectorText) ?
+        (text.search(options.connectorText[1]) >= 0) : false;
+    if (breadCrumbText) {
+        let drilledLabel = text;
+        let drillLevelText;
+        let spacing = 5;
+        drillLevelText = drilledLabel.split('_');
+        for (let z = 0; z < drillLevelText.length; z++) {
+            let drillText = (drillLevelText[z].search(options.connectorText) !== -1 && !isNullOrUndefined(options.connectorText)) ?
+                options.connectorText : drillLevelText[z];
+            renderOptions['id'] = options.id + '_' + z;
+            htmlObject = createTextStyle(renderer, renderOptions, drillText);
+            let size = measureText(drillText, font);
+            renderOptions['x'] = z !== 0 ? renderOptions['x'] + size.width : renderOptions['x'] + size.width + spacing;
+            parent.appendChild(htmlObject);
+        }
+    }
+    else {
+        htmlObject = createTextStyle(renderer, renderOptions, text);
+        parent.appendChild(htmlObject);
+    }
     if (typeof options.text !== 'string' && options.text.length > 1) {
         for (let i = 1, len = options.text.length; i < len; i++) {
             height = (measureText(options.text[i], font).height);
@@ -652,8 +695,8 @@ function renderTextElement(options, font, color, parent, isMinus = false) {
             }, options.text[i]);
             htmlObject.appendChild(tspanElement);
         }
+        parent.appendChild(htmlObject);
     }
-    parent.appendChild(htmlObject);
     return htmlObject;
 }
 function getElement(id) {
@@ -776,9 +819,15 @@ function findLabelLocation(rect, position, labelSize, type, treemap) {
     let y = (type === 'Template') ? treemap.areaRect.y : 0;
     location.x = (Math.abs(x - ((position.indexOf('Left') > -1) ? rect.x + padding : !(position.indexOf('Right') > -1) ?
         rect.x + ((rect.width / 2) - (labelSize.width / 2)) : (rect.x + rect.width) - labelSize.width))) - paddings;
-    location.y = Math.abs(y - ((position.indexOf('Top') > -1) ? (type === 'Template' ? rect.y : rect.y + labelSize.height) :
-        !(position.indexOf('Bottom') > -1) ? type === 'Template' ? (rect.y + ((rect.height / 2) - (labelSize.height / 2))) :
-            (rect.y + (rect.height / 2) + labelSize.height / 4) : (rect.y + rect.height) - labelSize.height));
+    if (treemap.enableDrillDown && (treemap.renderDirection === 'BottomLeftTopRight'
+        || treemap.renderDirection === 'BottomRightTopLeft')) {
+        location.y = Math.abs((rect.y + rect.height) - labelSize.height + padding);
+    }
+    else {
+        location.y = Math.abs(y - ((position.indexOf('Top') > -1) ? (type === 'Template' ? rect.y : rect.y + labelSize.height) :
+            !(position.indexOf('Bottom') > -1) ? type === 'Template' ? (rect.y + ((rect.height / 2) - (labelSize.height / 2))) :
+                (rect.y + (rect.height / 2) + labelSize.height / 4) : (rect.y + rect.height) - labelSize.height));
+    }
     return location;
 }
 function measureElement(element, parentElement) {
@@ -1321,14 +1370,38 @@ class LayoutPanel {
         let totalRect;
         if (this.treemap.levelsOfData && this.treemap.levelsOfData.length > 0) {
             data = (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
-                !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) ?
+                !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) &&
+                (isNullOrUndefined(this.treemap.drilledItems) ? isNullOrUndefined(this.treemap.drilledItems)
+                    : this.treemap.drilledItems.length === 0) ?
                 this.getDrilldownData(this.treemap.levelsOfData[0], [])[0] : this.treemap.levelsOfData[0];
             totalRect = extend({}, this.treemap.areaRect, totalRect, false);
             if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
-                totalRect = this.treemap.totalRect;
+                if (this.treemap.legendSettings.position !== 'Float') {
+                    totalRect = this.treemap.totalRect;
+                }
             }
-            this.calculateLayoutItems(data || this.treemap.levelsOfData[0], totalRect);
-            this.renderLayoutItems(data || this.treemap.levelsOfData[0]);
+            if (!isNullOrUndefined(this.treemap.currentLevel) &&
+                (isNullOrUndefined(this.treemap.drilledItems) ? !isNullOrUndefined(this.treemap.drilledItems)
+                    : this.treemap.drilledItems.length !== 0)) {
+                let count = this.treemap.drilledItems.length - 1;
+                let x = this.treemap.drilledItems[count]['data'];
+                let y = new Object();
+                y[this.treemap.drilledItems[count]['data']['groupName']] = [x];
+                if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) && !this.treemap.enableBreadcrumb) {
+                    this.treemap.currentLevel = this.treemap.drilledItems[count]['data']['groupIndex'];
+                }
+                this.calculateLayoutItems(y || this.treemap.levelsOfData[0], totalRect);
+                this.renderLayoutItems(y || this.treemap.levelsOfData[0]);
+            }
+            else {
+                if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
+                    (isNullOrUndefined(this.treemap.drilledItems) ? isNullOrUndefined(this.treemap.drilledItems)
+                        : this.treemap.drilledItems.length === 0)) {
+                    this.treemap.currentLevel = this.treemap.initialDrillDown.groupIndex;
+                }
+                this.calculateLayoutItems(data || this.treemap.levelsOfData[0], totalRect);
+                this.renderLayoutItems(data || this.treemap.levelsOfData[0]);
+            }
         }
     }
     getDrilldownData(data, drillData) {
@@ -1626,6 +1699,35 @@ class LayoutPanel {
         }
         return result;
     }
+    onDemandProcess(childItems) {
+        let parentItem = new Object();
+        let totalRect;
+        parentItem = childItems[0]['parent'];
+        this.treemap.currentLevel = parentItem['isDrilled'] ? parentItem['groupIndex'] : null;
+        let parentItemGroupname = new Object();
+        if (isNullOrUndefined(parentItem['groupName'])) {
+            parentItemGroupname = parentItem;
+        }
+        else {
+            parentItemGroupname[parentItem['groupName']] = [parentItem];
+        }
+        totalRect = extend({}, this.treemap.areaRect, totalRect, false);
+        if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
+            totalRect = this.treemap.totalRect;
+        }
+        let count = this.treemap.levels.length;
+        for (let i = 0; i < count; i++) {
+            let levelCount = childItems[0]['groupIndex'];
+            if (count === levelCount) {
+                this.treemap.levels[count] = this.treemap.levels[i];
+            }
+            else {
+                this.treemap.levels.splice(count - 1, 1);
+            }
+        }
+        this.calculateLayoutItems(parentItemGroupname, totalRect);
+        this.renderLayoutItems(parentItemGroupname);
+    }
     /* tslint:disable-next-line:max-func-body-length */
     renderLayoutItems(renderData) {
         let position;
@@ -1670,28 +1772,64 @@ class LayoutPanel {
         let isLeafItem = false;
         let leaf = treeMap.leafItemSettings;
         let childItems;
+        let connectorText;
         for (let i = 0; i < this.renderItems.length; i++) {
             item = this.renderItems[i];
             index = item['groupIndex'];
+            if (this.treemap.drillDownView && isNullOrUndefined(this.treemap.currentLevel)
+                && index > 0 || this.treemap.drillDownView
+                && index > (this.treemap.currentLevel + 1)) {
+                continue;
+            }
             rect = item['rect'];
             isLeafItem = item['isLeafItem'];
             groupId = elementID + '_Level_Index_' + index + '_Item_Index_' + i;
             itemGroup = this.renderer.createGroup({ id: groupId + '_Group' });
             gap = (isLeafItem ? leaf.gap : levels[index].groupGap) / 2;
+            let treemapItemRect = this.treemap.totalRect ? convertToContainer(this.treemap.totalRect) : this.treemap.areaRect;
             if (treeMap.layoutType === 'Squarified') {
                 rect.width = Math.abs(rect.x - rect.width) - gap;
                 rect.height = Math.abs(rect.y - rect.height) - gap;
+            }
+            if (treeMap.renderDirection === 'TopRightBottomLeft') {
+                rect.x = (treemapItemRect.x + treemapItemRect.width) - rect.width - Math.abs(treemapItemRect.x - rect.x);
+            }
+            else if (treeMap.renderDirection === 'BottomLeftTopRight') {
+                rect.y = (treemapItemRect.y + treemapItemRect.height) - rect.height - Math.abs(treemapItemRect.y - rect.y);
+            }
+            else if (treeMap.renderDirection === 'BottomRightTopLeft') {
+                rect.x = (treemapItemRect.x + treemapItemRect.width) - rect.width - Math.abs(treemapItemRect.x - rect.x);
+                rect.y = (treemapItemRect.y + treemapItemRect.height) - rect.height - Math.abs(treemapItemRect.y - rect.y);
             }
             colorMapping = isLeafItem ? leaf.colorMapping : levels[index].colorMapping;
             getItemColor = this.getItemColor(isLeafItem, item);
             fill = getItemColor['fill'];
             opacity = getItemColor['opacity'];
             format = isLeafItem ? leaf.labelFormat : (levels[index]).headerFormat;
+            let levelName;
             txtVisible = isLeafItem ? leaf.showLabels : (levels[index]).showHeader;
-            renderText = textFormatter(format, item['data'], this.treemap) || item['name'];
+            if (index === this.treemap.currentLevel) {
+                if (this.treemap.enableBreadcrumb) {
+                    let re = /_/gi;
+                    connectorText = '_' + this.treemap.breadcrumbConnector + '_';
+                    levelName = item['levelOrderName'].replace(re, connectorText);
+                    levelName = index !== 0 ? '_' + levelName : levelName;
+                }
+                else {
+                    levelName = item['name'];
+                }
+            }
+            else {
+                if (this.treemap.enableBreadcrumb) {
+                    item['isDrilled'] = false;
+                }
+                levelName = item['name'];
+            }
+            renderText = textFormatter(format, item['data'], this.treemap) || levelName;
             childItems = findChildren(item)['values'];
             renderText = !isLeafItem && childItems && childItems.length > 0 && this.treemap.enableDrillDown ?
-                !item['isDrilled'] ? '[+] ' + renderText : '[-] ' + renderText : renderText;
+                !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :
+                    treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index].headerStyle);
             border = isLeafItem ? leaf.border : levels[index].border;
             position = !isLeafItem ? (levels[index].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index].headerAlignment) === 'Center' ?
@@ -1711,7 +1849,7 @@ class LayoutPanel {
                 let path = this.renderer.drawPath(pathOptions);
                 itemGroup.appendChild(path);
                 if (txtVisible) {
-                    this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position);
+                    this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
                 }
                 if (template) {
                     templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
@@ -1727,7 +1865,7 @@ class LayoutPanel {
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     }
-    renderItemText(text, parentElement, textStyle, rect, interSectAction, groupId, fill, position) {
+    renderItemText(text, parentElement, textStyle, rect, interSectAction, groupId, fill, position, connectorText) {
         let textOptions;
         let secondaryEle = document.getElementById(this.treemap.element.id + '_Secondary_Element');
         let leaf = this.treemap.leafItemSettings;
@@ -1742,6 +1880,16 @@ class LayoutPanel {
         textCollection = ((text.indexOf('<br>')) !== -1) ? text.split('<br>') : null;
         customText = this.labelInterSectAction(rect, text, textStyle, interSectAction);
         textSize = measureText(textCollection && textCollection[0] || customText[0], textStyle);
+        if (this.treemap.enableRtl) {
+            let labelSize = measureText(text, textStyle);
+            let drillSymbolCount = text.search('[+]') || text.search('[-]');
+            if (rect.width < labelSize.width && drillSymbolCount > 0) {
+                let label = text.substring(drillSymbolCount - 1, text.length);
+                let drillSymbol = '[+]';
+                let drillSymbolSize = measureText(drillSymbol, textStyle);
+                customText['0'] = textTrim(rect.width - drillSymbolSize.width - padding, customText[0], textStyle) + label;
+            }
+        }
         textLocation = findLabelLocation(rect, position, textSize, 'Text', this.treemap);
         if (!isNullOrUndefined(textCollection)) {
             let collection = [];
@@ -1780,13 +1928,18 @@ class LayoutPanel {
             textName = customText;
             tspanText.push(textName);
         }
-        textOptions = new TextOption(groupId + '_Text', textLocation.x, textLocation.y, 'start', tspanText);
+        textOptions = new TextOption(groupId + '_Text', textLocation.x, textLocation.y, 'start', tspanText, '', '', connectorText);
         renderTextElement(textOptions, textStyle, textStyle.color || this.getSaturatedColor(fill), parentElement);
     }
     getItemColor(isLeafItem, item) {
         let treemap = this.treemap;
         let itemFill = isLeafItem ? treemap.leafItemSettings.fill : treemap.levels[item['groupIndex']].fill;
         let itemOpacity = isLeafItem ? treemap.leafItemSettings.opacity : treemap.levels[item['groupIndex']].opacity;
+        if (!isNullOrUndefined(this.treemap.defaultLevelData)) {
+            if (this.treemap.defaultLevelData.length > 0) {
+                treemap.levelsOfData = this.treemap.defaultLevelData;
+            }
+        }
         let parentData = findChildren(treemap.levelsOfData[0])['values'];
         let colorMapping = isLeafItem ? treemap.leafItemSettings.colorMapping :
             treemap.levels[item['groupIndex']].colorMapping;
@@ -2013,6 +2166,17 @@ function getThemeStyle(theme) {
                 legendTextColor: '#FFFFFF'
             };
             break;
+        case 'Bootstrap4':
+            style = {
+                backgroundColor: '#F8F9FA',
+                titleFontColor: '#212529',
+                subTitleFontColor: '#212529',
+                tooltipFillColor: '#000000',
+                tooltipFontColor: '#FFFFFF',
+                legendTitleColor: '#212529',
+                legendTextColor: '#212529'
+            };
+            break;
         default:
             style = {
                 backgroundColor: '#FFFFFF',
@@ -2058,6 +2222,8 @@ let TreeMap = class TreeMap extends Component {
         /** @private */
         this.drilledItems = [];
         /** @private */
+        this.defaultLevelData = [];
+        /** @private */
         this.isHierarchicalData = false;
     }
     preRender() {
@@ -2074,6 +2240,9 @@ let TreeMap = class TreeMap extends Component {
         this.themeStyle = getThemeStyle(this.theme);
         this.renderBorder();
         this.renderTitle(this.titleSettings, 'title', null, null);
+        if (!isNullOrUndefined(this.levelsOfData)) {
+            this.defaultLevelData = this.levelsOfData;
+        }
         this.processDataManager();
     }
     /* tslint:disable:no-string-literal */
@@ -2307,7 +2476,13 @@ let TreeMap = class TreeMap extends Component {
                 childData[j]['name'] = childData[j][path];
                 childData[j]['levelOrderName'] = (levelIndex === 0 ? childData[j]['name'] :
                     data['levelOrderName'] + '_' + childData[j]['name']) + '';
-                childData[j]['groupIndex'] = isNullOrUndefined(levelIndex) ? this.levels.length : levelIndex;
+                let childItemLevel = childData[j]['levelOrderName'];
+                let childLevel;
+                if (childItemLevel.search('_') > 0) {
+                    childLevel = childItemLevel.split('_').length - 1;
+                }
+                childData[j]['groupIndex'] = isNullOrUndefined(levelIndex) ? childLevel === this.levels.length
+                    ? this.levels.length : childLevel : levelIndex;
                 if (levelIndex !== 0) {
                     childData[j]['parent'] = data;
                 }
@@ -2441,7 +2616,8 @@ let TreeMap = class TreeMap extends Component {
      */
     unWireEVents() {
         EventHandler.remove(this.element, 'click', this.clickOnTreeMap);
-        // EventHandler.remove(this.element, 'dblclick', this.doubleClick);
+        EventHandler.remove(this.element, 'dblclick', this.doubleClickOnTreeMap);
+        EventHandler.remove(this.element, 'contextmenu', this.rightClickOnTreeMap);
         EventHandler.remove(this.element, Browser.touchStartEvent, this.mouseDownOnTreeMap);
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMoveOnTreeMap);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEndOnTreeMap);
@@ -2453,7 +2629,8 @@ let TreeMap = class TreeMap extends Component {
      */
     wireEVents() {
         EventHandler.add(this.element, 'click', this.clickOnTreeMap, this);
-        //EventHandler.add(this.element, 'dblclick', this.doubleClick, this);
+        EventHandler.add(this.element, 'dblclick', this.doubleClickOnTreeMap, this);
+        EventHandler.add(this.element, 'contextmenu', this.rightClickOnTreeMap, this);
         EventHandler.add(this.element, Browser.touchStartEvent, this.mouseDownOnTreeMap, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMoveOnTreeMap, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEndOnTreeMap, this);
@@ -2509,9 +2686,29 @@ let TreeMap = class TreeMap extends Component {
         if (targetId.indexOf('_Item_Index') > -1) {
             e.preventDefault();
             itemIndex = parseFloat(targetId.split('_')[6]);
-            eventArgs = { cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e };
+            eventArgs = {
+                cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
+                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
+            };
             this.trigger(itemClick, eventArgs);
         }
+        let end = new Date().getMilliseconds();
+        let doubleTapTimer1;
+        if (!isNullOrUndefined(this.doubleClick)) {
+            if (!isNullOrUndefined(doubleTapTimer1) && end - doubleTapTimer1 < 500) {
+                this.doubleClickOnTreeMap(e);
+            }
+            doubleTapTimer1 = end;
+        }
+    }
+    doubleClickOnTreeMap(e) {
+        let doubleClickArgs = { cancel: false, name: doubleClick, treemap: this, mouseEvent: e };
+        this.trigger(doubleClick, doubleClickArgs);
+        //this.notify('dblclick', e);
+    }
+    rightClickOnTreeMap(e) {
+        let rightClickArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
+        this.trigger(rightClick, rightClickArgs);
     }
     /* tslint:disable-next-line:max-func-body-length */
     mouseDownOnTreeMap(e) {
@@ -2539,27 +2736,112 @@ let TreeMap = class TreeMap extends Component {
         }
         this.notify(Browser.touchMoveEvent, e);
     }
+    calculateSelectedTextLevels(labelText, item) {
+        //to find the levels by clicking the particular text both for drillDownView as true / false.
+        let drillLevel;
+        let k;
+        let text;
+        let levelLabels = item['levelOrderName'];
+        let levelText = levelLabels.split('_');
+        for (k of Object.keys(levelText)) {
+            if (levelText[k] === labelText) {
+                drillLevel = parseInt(k, 10);
+                text = labelText;
+            }
+        }
+        return { drillLevel: drillLevel, currentLevelLabel: text, levelText: levelText };
+    }
+    calculatePreviousLevelChildItems(labelText, drillLevelValues, item, directLevel) {
+        //By clicking any child items drilldown to the particular level.
+        //At the time store all the previous drilled level items in drilledItems
+        // This condition satisfies while drilldown View is set as false and the text contains '[+]'
+        let text;
+        let p = 0;
+        let levelItems;
+        let text1;
+        let drillTextLevel = this.layout.renderItems[0]['levelOrderName'].split('_').length;
+        for (let h = 0; h < drillTextLevel; h++) {
+            text1 = h === 0 ? drillLevelValues['levelText'][h] : text1 + '_' + drillLevelValues['levelText'][h];
+        }
+        p = drillTextLevel > 1 ? drillTextLevel : p;
+        for (levelItems of Object['values'](this.layout.renderItems)) {
+            let drillLevelText = levelItems['levelOrderName'].split('_');
+            if (drillLevelText[0] === drillLevelValues['levelText'][0]) {
+                text = p === 0 ? isNullOrUndefined(text1) ? text1 : drillLevelValues['levelText'][p] :
+                    directLevel ? text1 : text1 + '_' + drillLevelValues['levelText'][p];
+                if (text === levelItems['levelOrderName']) {
+                    this.drilledItems.push({ name: levelItems['levelOrderName'], data: levelItems });
+                    p++;
+                    directLevel = true;
+                    if (p <= item['groupIndex']) {
+                        text = text + '_' + drillLevelValues['levelText'][p];
+                        text1 = text;
+                    }
+                }
+            }
+        }
+        return directLevel;
+    }
+    compareSelectedLabelWithDrillDownItems(drillLevelValues, item, i) {
+        let drillLevelChild;
+        let newDrillItem = new Object();
+        let b = drillLevelValues['drillLevel'] + 1;
+        if (b === this.drilledItems[i]['data']['groupIndex']) {
+            drillLevelChild = this.drilledItems[i]['data']['parent'];
+            drillLevelChild['isDrilled'] = true;
+            newDrillItem[drillLevelChild[this.drilledItems[i]['data']['groupName']]]
+                = [drillLevelChild];
+            // to remove all the items after matched drilled items
+            this.drilledItems.splice(i, this.drilledItems.length);
+        }
+        else if (drillLevelValues['drillLevel'] === (this.drilledItems.length - 1)
+            || drillLevelValues['drillLevel'] === item['groupIndex']) {
+            newDrillItem[item['groupName']] = [item];
+        }
+        return newDrillItem;
+    }
+    /* tslint:disable-next-line:max-func-body-length */
     mouseEndOnTreeMap(e) {
         let targetEle = e.target;
-        let startEvent;
-        let endEvent;
         let targetId = targetEle.id;
         let totalRect;
+        let startEvent;
+        let endEvent;
+        let directLevel = false;
         let index;
         let newDrillItem = new Object();
         let item;
         let process = true;
         let layoutID = this.element.id + '_TreeMap_' + this.layoutType + '_Layout';
+        let drillLevel;
         let templateID = this.element.id + '_Label_Template_Group';
+        let drillLevelValues;
         if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown && !this.drillMouseMove) {
             e.preventDefault();
             index = parseFloat(targetId.split('_')[6]);
             item = this.layout.renderItems[index];
+            let labelText = targetEle.innerHTML;
+            if (this.enableBreadcrumb) {
+                drillLevelValues = this.calculateSelectedTextLevels(labelText, item);
+                drillLevel = drillLevelValues['drillLevel'];
+                if (!this.drillDownView && labelText.search('[+]') !== -1) {
+                    directLevel = this.calculatePreviousLevelChildItems(labelText, drillLevelValues, item, directLevel);
+                }
+            }
             if (this.levels.length !== 0 && !item['isLeafItem'] && findChildren(item)['values'] &&
                 findChildren(item)['values'].length > 0) {
                 if (this.drilledItems.length > 0) {
+                    item = directLevel ? this.drilledItems[this.drilledItems.length - 1]['data'] : item;
                     for (let i = 0; i < this.drilledItems.length; i++) {
-                        if (item['levelOrderName'] === this.drilledItems[i]['name']) {
+                        if (!isNullOrUndefined(drillLevel)) { //Compare the selected text level with drilled items
+                            let drillLength = this.drilledItems.length;
+                            newDrillItem = this.compareSelectedLabelWithDrillDownItems(drillLevelValues, item, i);
+                            if (drillLength !== this.drilledItems.length) {
+                                i -= 1;
+                                break;
+                            }
+                        } //when clicking the levels drill back to the previous level process takes place
+                        if (item['levelOrderName'] === this.drilledItems[i]['name'] && !directLevel && isNullOrUndefined(drillLevel)) {
                             if (item['groupIndex'] === 0 && item['parent'][item['groupName']] instanceof Array) {
                                 item['isDrilled'] = !(item['isDrilled']);
                                 if (!item['isDrilled']) {
@@ -2579,8 +2861,8 @@ let TreeMap = class TreeMap extends Component {
                             i -= 1;
                             break;
                         }
-                        else if (i === this.drilledItems.length - 1) {
-                            item['isDrilled'] = true;
+                        else if (i === this.drilledItems.length - 1 && isNullOrUndefined(drillLevel)) {
+                            item['isDrilled'] = true; // click the items move to next level.
                             newDrillItem[item['groupName']] = [item];
                         }
                     }
@@ -2589,8 +2871,17 @@ let TreeMap = class TreeMap extends Component {
                     item['isDrilled'] = true;
                     newDrillItem[item['groupName']] = [item];
                 }
-                startEvent = { cancel: false, name: drillStart, treemap: this, item: newDrillItem, element: targetEle };
+                startEvent = {
+                    cancel: false, name: drillStart, treemap: this, item: newDrillItem, element: targetEle,
+                    groupIndex: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
+                        this.drilledItems[this.drilledItems.length - 1]['data']['groupIndex'] : item['groupIndex'],
+                    groupName: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
+                        this.drilledItems[this.drilledItems.length - 1]['data']['name'] : item['name'],
+                    rightClick: e.which === 3 ? true : false, childItems: null
+                };
                 this.trigger(drillStart, startEvent);
+                this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
+                    (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
                 if (!startEvent.cancel) {
                     if (document.getElementById(layoutID)) {
                         document.getElementById(layoutID).remove();
@@ -2602,7 +2893,15 @@ let TreeMap = class TreeMap extends Component {
                             this.treeMapLegendModule.legendGroup = null;
                             this.treeMapLegendModule.widthIncrement = 0;
                             this.treeMapLegendModule.heightIncrement = 0;
-                            this.drilledLegendItems = { name: item['levelOrderName'], data: item };
+                            if (this.enableBreadcrumb && !isNullOrUndefined(drillLevel)) {
+                                this.drilledLegendItems = {
+                                    name: this.drilledItems[this.drilledItems.length - 1]['data']['levelOrderName'],
+                                    data: this.drilledItems[this.drilledItems.length - 1]['data']
+                                };
+                            }
+                            else {
+                                this.drilledLegendItems = { name: item['levelOrderName'], data: item };
+                            }
                             this.treeMapLegendModule.renderLegend();
                         }
                         totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
@@ -2610,13 +2909,20 @@ let TreeMap = class TreeMap extends Component {
                     if (document.getElementById(templateID)) {
                         document.getElementById(templateID).remove();
                     }
-                    this.layout.calculateLayoutItems(newDrillItem, totalRect);
-                    this.layout.renderLayoutItems(newDrillItem);
+                    if (!isNullOrUndefined(startEvent.childItems) && !startEvent.cancel) {
+                        this.layout.onDemandProcess(startEvent.childItems);
+                    }
+                    else {
+                        this.layout.calculateLayoutItems(newDrillItem, totalRect);
+                        this.layout.renderLayoutItems(newDrillItem);
+                    }
                 }
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
                 this.trigger(drillEnd, endEvent);
                 if (process) {
-                    this.drilledItems.push({ name: item['levelOrderName'], data: item });
+                    if (!directLevel && isNullOrUndefined(drillLevel)) {
+                        this.drilledItems.push({ name: item['levelOrderName'], data: item });
+                    }
                 }
             }
         }
@@ -2754,8 +3060,20 @@ __decorate([
     Property([])
 ], TreeMap.prototype, "palette", void 0);
 __decorate([
+    Property('TopLeftBottomRight')
+], TreeMap.prototype, "renderDirection", void 0);
+__decorate([
     Property(false)
 ], TreeMap.prototype, "enableDrillDown", void 0);
+__decorate([
+    Property(false)
+], TreeMap.prototype, "enableBreadcrumb", void 0);
+__decorate([
+    Property('.')
+], TreeMap.prototype, "breadcrumbConnector", void 0);
+__decorate([
+    Property(false)
+], TreeMap.prototype, "drillDownView", void 0);
 __decorate([
     Complex({}, InitialDrillSettings)
 ], TreeMap.prototype, "initialDrillDown", void 0);
@@ -2827,10 +3145,22 @@ __decorate([
 ], TreeMap.prototype, "click", void 0);
 __decorate([
     Event()
+], TreeMap.prototype, "doubleClick", void 0);
+__decorate([
+    Event()
+], TreeMap.prototype, "rightClick", void 0);
+__decorate([
+    Event()
 ], TreeMap.prototype, "mouseMove", void 0);
 __decorate([
     Event()
 ], TreeMap.prototype, "resize", void 0);
+__decorate([
+    Event()
+], TreeMap.prototype, "legendItemRendering", void 0);
+__decorate([
+    Event()
+], TreeMap.prototype, "legendRendering", void 0);
 TreeMap = __decorate([
     NotifyPropertyChanges
 ], TreeMap);
@@ -2864,6 +3194,15 @@ class TreeMapLegend {
         this.heightIncrement = 0;
         this.defsElement = this.treemap.renderer.createDefs();
         this.treemap.svgObject.appendChild(this.defsElement);
+        let eventArgs;
+        eventArgs = {
+            cancel: false, name: legendRendering, treemap: this.treemap, _changePosition: this.treemap.legendSettings.position,
+            position: this.treemap.legendSettings.position
+        };
+        this.treemap.trigger(legendRendering, eventArgs);
+        if (!eventArgs.cancel && eventArgs._changePosition !== this.treemap.legendSettings.position) {
+            this.treemap.legendSettings.position = eventArgs._changePosition;
+        }
         this.calculateLegendBounds();
         if (this.legendCollections.length > 0) {
             this.drawLegend();
@@ -2894,7 +3233,8 @@ class TreeMapLegend {
             let shapeWidth = legend.shapeWidth;
             let shapeLocation = [];
             let textLocation = [];
-            let orientation = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom')
+            let orientation = (legend.orientation === 'None') ? ((position === 'Top' || position === 'Bottom'
+                || (position === 'Auto' && treemap.availableSize.width <= treemap.availableSize.height))
                 ? 'Horizontal' : 'Vertical') : legend.orientation;
             let leftPadding = 10;
             let topPadding = 10;
@@ -3101,8 +3441,26 @@ class TreeMapLegend {
     }
     findPaletteLegendItems(data, type) {
         let child;
+        let legendFillColor;
+        if (!isNullOrUndefined(this.treemap.drilledItems)) {
+            if (this.treemap.drilledItems.length === 0 && !isNullOrUndefined(this.treemap.initialDrillDown.groupName)
+                && isNullOrUndefined(this.treemap.drilledLegendItems)) {
+                let items = findChildren(data)['values'];
+                for (let k = 0; k < items.length; k++) {
+                    if (items[k]['Name'] === this.treemap.initialDrillDown.groupName) {
+                        items[k]['isDrilled'] = !items[k]['isDrilled'];
+                        data = items[k];
+                        this.treemap.currentLevel = this.treemap.initialDrillDown.groupIndex;
+                        legendFillColor = this.treemap.palette.length > 0 ? this.treemap.palette[k % this.treemap.palette.length] :
+                            items[k]['data'][this.treemap.colorValuePath];
+                        break;
+                    }
+                }
+            }
+        }
         if (this.treemap.enableDrillDown && !isNullOrUndefined(this.treemap.drilledLegendItems)) {
             let childElement = this.treemap.drilledLegendItems;
+            legendFillColor = childElement['data']['options']['fill'];
             if (childElement['data']['isDrilled']) {
                 child = findChildren(childElement['data'])['values'];
             }
@@ -3127,7 +3485,8 @@ class TreeMapLegend {
                     if (!isDuplicate) {
                         this.legendCollections.push({
                             legendName: legendName,
-                            legendFill: this.treemap.palette.length > 0 ? this.treemap.palette[i % this.treemap.palette.length] :
+                            legendFill: this.treemap.palette.length > 0 ? !isNullOrUndefined(this.treemap.currentLevel)
+                                ? legendFillColor : this.treemap.palette[i % this.treemap.palette.length] :
                                 child[i]['data'][this.treemap.colorValuePath],
                             legendData: [],
                             itemArea: child[i]['weight']
@@ -3138,7 +3497,8 @@ class TreeMapLegend {
             this.legendCollections.sort(orderByArea);
             if (this.treemap.palette.length > 0) {
                 for (let j = 0; j < this.legendCollections.length; j++) {
-                    this.legendCollections[j]['legendFill'] = this.treemap.palette[j % this.treemap.palette.length];
+                    this.legendCollections[j]['legendFill'] = !isNullOrUndefined(this.treemap.currentLevel)
+                        ? legendFillColor : this.treemap.palette[j % this.treemap.palette.length];
                 }
             }
         }
@@ -3340,18 +3700,56 @@ class TreeMapLegend {
                 let bounds = new Rect(item['x'], item['y'], item['width'], item['height']);
                 let textLocation = new Location(item['textX'], item['textY']);
                 let rectOptions = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
+                if (this.treemap.enableRtl) {
+                    if (treemap.legendSettings.position === 'Left' || treemap.legendSettings.position === 'Right'
+                        || (treemap.legendSettings.position === 'Auto'
+                            && this.treemap.availableSize.width >= this.treemap.availableSize.height)) {
+                        rectOptions.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                            - (this.translate.y + rectOptions.height) - Math.abs(this.legendBorderRect.y - rectOptions.y);
+                        textLocation.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                            - (this.translate.y) + (item['textHeight'] / 2)
+                            - Math.abs(this.legendBorderRect.y - textLocation.y);
+                    }
+                    else {
+                        rectOptions.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+                            - (this.translate.x + rectOptions.width)
+                            - Math.abs(this.legendBorderRect.x - rectOptions.x);
+                        textLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+                            - this.translate.x - Math.abs(this.legendBorderRect.x - textLocation.x);
+                    }
+                }
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 renderTextElement(textOptions, textFont, textFont.color || this.treemap.themeStyle.legendTextColor, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
             }
         }
     }
+    defaultLegendRtlLocation(collection, spacing, treemap, legend) {
+        let shapeLocation = collection['Shape'];
+        let textLocation = collection['Text'];
+        let legendText = collection['DisplayText'];
+        let textSize = measureText(legendText, legend.textStyle);
+        shapeLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+            - (this.translate.x + spacing) - Math.abs(this.legendBorderRect.x - shapeLocation.x);
+        textLocation.x = (this.translate.x + this.legendBorderRect.x + this.legendBorderRect.width)
+            - (this.translate.x + textSize.width + spacing) - Math.abs(this.legendBorderRect.x - textLocation.x);
+        if (treemap.legendSettings.position === 'Left' || treemap.legendSettings.position === 'Right'
+            || (treemap.legendSettings.position === 'Auto'
+                && this.treemap.availableSize.width >= this.treemap.availableSize.height)) {
+            shapeLocation.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                - this.translate.y - Math.abs(Math.abs(this.legendBorderRect.y) - shapeLocation.y) - (legend.shapeHeight / 2);
+            textLocation.y = (this.translate.y + this.legendBorderRect.y + this.legendBorderRect.height)
+                - this.translate.y - Math.abs(Math.abs(this.legendBorderRect.y) - textLocation.y);
+        }
+        return { shapeLocation: shapeLocation, textLocation: textLocation };
+    }
     drawLegendItem(page) {
         let treemap = this.treemap;
-        let legend = treemap.legendSettings;
         let spacing = 10;
+        let legend = treemap.legendSettings;
         let shapeSize = new Size(legend.shapeWidth, legend.shapeHeight);
         let textOptions;
+        let legendRtlLocation;
         let render = treemap.renderer;
         let shapeBorder = legend.shapeBorder;
         let eventArgs;
@@ -3370,10 +3768,16 @@ class TreeMapLegend {
                 let textId = treemap.element.id + '_Legend_Text_Index_' + i;
                 let shapeLocation = collection['Shape'];
                 let textLocation = collection['Text'];
+                if (treemap.enableRtl) {
+                    legendRtlLocation = this.defaultLegendRtlLocation(collection, spacing, treemap, legend);
+                    shapeLocation = legendRtlLocation['shapeLocation'];
+                    textLocation = legendRtlLocation['textLocation'];
+                }
                 eventArgs = {
                     cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
+                this.treemap.trigger(legendItemRendering, eventArgs);
                 let renderOptions = new PathOption(shapeId, eventArgs.fill, strokeWidth, isLineShape ? collection['Fill'] : strokeColor, legend.opacity, '');
                 legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, eventArgs.imageUrl, renderOptions, legendText));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
@@ -3559,29 +3963,30 @@ class TreeMapLegend {
         let areaWidth = totalRect.width;
         let totalWidth = treemap.availableSize.width;
         let totalHeight = treemap.availableSize.height;
+        let position = legend.position === 'Auto' ? (totalWidth > totalHeight) ? 'Right' : 'Bottom' : legend.position;
         if (legend.position === 'Float') {
             this.translate = legend.location;
         }
         else {
-            switch (legend.position) {
+            switch (position) {
                 case 'Top':
                 case 'Bottom':
                     totalRect.height = (areaHeight - height);
                     x = (totalWidth / 2) - (width / 2);
-                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
-                    totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
+                    y = (position === 'Top') ? areaY : (areaY + totalRect.height) + spacing;
+                    totalRect.y = (position === 'Top') ? areaY + height + spacing : areaY;
                     break;
                 case 'Left':
                 case 'Right':
                     totalRect.width = (areaWidth - width);
-                    x = (legend.position === 'Left') ? areaX : areaX + totalRect.width;
+                    x = (position === 'Left') ? areaX : areaX + totalRect.width;
                     y = (totalHeight / 2) - (height / 2);
-                    totalRect.x = (legend.position === 'Left') ? areaX + width : areaX;
+                    totalRect.x = (position === 'Left') ? areaX + width : areaX;
                     break;
             }
             switch (legend.alignment) {
                 case 'Near':
-                    if (legend.position === 'Top' || legend.position === 'Bottom') {
+                    if (position === 'Top' || position === 'Bottom') {
                         x = totalRect.x;
                     }
                     else {
@@ -3589,7 +3994,7 @@ class TreeMapLegend {
                     }
                     break;
                 case 'Far':
-                    if (legend.position === 'Top' || legend.position === 'Bottom') {
+                    if (position === 'Top' || position === 'Bottom') {
                         x = totalWidth - width;
                     }
                     else {
@@ -4113,8 +4518,14 @@ class TreeMapTooltip {
                 value = item['weight'];
                 toolTipData = item['data'];
                 markerFill = item['options']['fill'];
-                tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
-                        this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+                if (this.treemap.enableRtl) {
+                    tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
+                            formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString()];
+                }
+                else {
+                    tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
+                            this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+                }
                 if (document.getElementById(this.tooltipId)) {
                     tooltipEle = document.getElementById(this.tooltipId);
                 }
@@ -4219,5 +4630,5 @@ class TreeMapTooltip {
  * exporting all modules from tree map index
  */
 
-export { TreeMap, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, mouseMove, legendItemRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
+export { TreeMap, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
 //# sourceMappingURL=ej2-treemap.es2015.js.map

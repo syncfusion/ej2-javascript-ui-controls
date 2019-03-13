@@ -23,6 +23,7 @@ import { Zoom } from '../../../src/chart/user-interaction/zooming';
 import { Axis } from '../../../src/chart/axis/axis';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import {IAnimationCompleteEventArgs,IPointRenderEventArgs} from '../../../src/common/model/interface';
 Chart.Inject(StepAreaSeries,Category,Legend,DateTime,Tooltip,Logarithmic,DataLabel,Legend,Crosshair);
 let data: any = tooltipData1;
@@ -34,6 +35,14 @@ export interface Arg {
     chart: Chart;
 }
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
      let elem: HTMLElement;
     describe('Chart Steparea series', () => {
         let chartObj: Chart;
@@ -733,6 +742,15 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 
        });
 export interface series1 {

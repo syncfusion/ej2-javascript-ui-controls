@@ -54,8 +54,10 @@ export class Agenda extends ViewBase implements IRenderer {
         let agendaDate: Date = util.resetTime(this.parent.selectedDate);
         this.agendaBase.renderEmptyContent(tBody, agendaDate);
         this.wireEvents();
-        if (this.parent.uiStateValues.isGroupAdaptive && !this.parent.element.querySelector('.' + cls.RESOURCE_TOOLBAR_CONTAINER)) {
+        if (this.parent.resourceBase) {
             this.parent.resourceBase.generateResourceLevels([(<TdData>{ renderDates: this.parent.activeView.renderDates })]);
+        }
+        if (this.parent.uiStateValues.isGroupAdaptive && !this.parent.element.querySelector('.' + cls.RESOURCE_TOOLBAR_CONTAINER)) {
             this.renderResourceMobileLayout();
         }
         this.parent.notify(event.contentReady, {});

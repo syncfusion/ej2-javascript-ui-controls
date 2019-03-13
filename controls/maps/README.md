@@ -10,7 +10,7 @@ The Maps component is used to visualize the geographical data and represent the 
 
 ## Setup
 
-To install Maps and its dependent packages, use the following commands
+To install Maps and its dependent packages, use the following command
 
 ```sh
 npm install @syncfusion/ej2-maps

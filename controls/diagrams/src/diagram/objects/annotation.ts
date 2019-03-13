@@ -230,6 +230,14 @@ export class ShapeAnnotation extends Annotation {
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
     }
+
+    /**
+     * @private
+     * Returns the module of class ShapeAnnotation
+     */
+    public getClassName(): string {
+        return 'ShapeAnnotation';
+    }
 }
 /**   
  * Defines the connector annotation 
@@ -269,5 +277,13 @@ export class PathAnnotation extends Annotation {
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
+    }
+
+    /**
+     * @private
+     * Returns the module of class PathAnnotation
+     */
+    public getClassName(): string {
+        return 'PathAnnotation';
     }
 }

@@ -5,9 +5,18 @@ import { createElement, addClass, removeClass, isUndefined } from '@syncfusion/e
 import { DropDownBase } from '../../src/drop-down-base/drop-down-base';
 import { incrementalSearch, Search } from '../../src/common/incremental-search';
 import '../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from './common.spec';
 
 
 describe('Incremental search', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 
     describe('Local data', () => {
         let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, charCode: 65 };
@@ -123,4 +132,13 @@ describe('Incremental search', () => {
             expect(test.innerHTML).toBe('Indonesia');
         });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

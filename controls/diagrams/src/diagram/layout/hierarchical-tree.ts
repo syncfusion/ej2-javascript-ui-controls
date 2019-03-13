@@ -1,6 +1,6 @@
 import { INode, IConnector, Bounds, TreeInfo } from './layout-base';
 import { Layout, ILayout, LevelBounds } from './layout-base';
-import { SubTreeAlignments, Direction } from '../enum/enum';
+import { SubTreeAlignments, Direction, DiagramAction } from '../enum/enum';
 import { Rect } from '../primitives/rect';
 import { PointModel } from '../primitives/point-model';
 import { OrthogonalSegmentModel } from '../objects/connector-model';
@@ -54,7 +54,7 @@ export class HierarchicalTree {
 
     /**   @private  */
     public updateLayout(
-        nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel, uniqueId: string): ILayout {
+        nodes: INode[], nameTable: Object, layoutProp: Layout, viewport: PointModel, uniqueId: string, action?: DiagramAction): ILayout {
         let layout: ILayout = {
             type: layoutProp.type,
             nameTable: nameTable, anchorX: 0, anchorY: 0,
@@ -65,11 +65,11 @@ export class HierarchicalTree {
             fixedNode: layoutProp.fixedNode, getLayoutInfo: getFunction(layoutProp.getLayoutInfo), margin: layoutProp.margin,
             bounds: layoutProp.bounds, objects: [], root: layoutProp.root
         };
-        this.doLayout(layout, nodes, viewport, uniqueId);
+        this.doLayout(layout, nodes, viewport, uniqueId, action);
         return layout;
     }
 
-    private doLayout(layout: ILayout, nodes: INode[], viewport: PointModel, uniqueId: string): void {
+    private doLayout(layout: ILayout, nodes: INode[], viewport: PointModel, uniqueId: string, action?: DiagramAction): void {
         let node: INode;
         let i: number;
         let layoutInfo: LayoutInfo = {};
@@ -98,7 +98,7 @@ export class HierarchicalTree {
         //Update relationship(parent and children)
         for (i = 0; i < layout.firstLevelNodes.length; i++) {
             node = layout.firstLevelNodes[i];
-            this.updateEdges(layout, node, 1);
+            this.updateEdges(layout, node, 1, action);
         }
         if (layout.firstLevelNodes.length > 0) {
             layout.rootNode = layout.firstLevelNodes[0];
@@ -1090,11 +1090,11 @@ export class HierarchicalTree {
         return layout.nameTable[layout.nameTable[node.inEdges[0]].sourceID];
     }
 
-    private updateEdges(layout: ILayout, node: INode, depth: number): void {
+    private updateEdges(layout: ILayout, node: INode, depth: number, action?: DiagramAction): void {
         let layoutInfo: LayoutInfo;
         layoutInfo = layout.graphNodes[node.id];
         let j: number;
-        if (node.outEdges && node.outEdges.length && (node.isExpanded || !this.isAnimation)) {
+        if (node.outEdges && node.outEdges.length && (node.isExpanded || (action === DiagramAction.Render))) {
             for (j = 0; j < node.outEdges.length; j++) {
                 let edge: INode;
                 edge = layout.nameTable[layout.nameTable[node.outEdges[j]].targetID];
@@ -1105,7 +1105,7 @@ export class HierarchicalTree {
                     if (edge.outEdges && edge.outEdges.length && edge.isExpanded) {
                         layoutInfo.tree.hasSubTree = true;
                     }
-                    this.updateEdges(layout, edge, depth + 1);
+                    this.updateEdges(layout, edge, depth + 1, action);
                 }
             }
         }
@@ -1384,7 +1384,7 @@ export class HierarchicalTree {
             startingPoint = (node.offsetX > target.offsetX) ? nodeBounds.middleLeft : nodeBounds.middleRight;
             endPoint = node.offsetY > target.offsetY ? targetBounds.bottomCenter : targetBounds.topCenter;
             horizontalSpacing = layout.horizontalSpacing / 4 * ((node.offsetX < target.offsetX) ? 1 : -1);
-            verticalSpacing = layout.verticalSpacing / 2 * ((node.offsetY > target.offsetY) ? 1 :  -1);
+            verticalSpacing = layout.verticalSpacing / 2 * ((node.offsetY > target.offsetY) ? 1 : -1);
             points.push(
                 startingPoint,
                 { x: startingPoint.x + horizontalSpacing, y: startingPoint.y },

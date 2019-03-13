@@ -8,13 +8,24 @@ import { AccumulationChart} from '../../../src/accumulation-chart/accumulation';
 import { AccumulationTooltip} from '../../../src/accumulation-chart/user-interaction/tooltip';
 import { AccumulationDataLabel} from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccPoints, AccumulationSeries} from '../../../src/accumulation-chart/model/acc-base';
-import { Rect, getElement, removeElement} from '../../../src/common/utils/helper';
+import { getElement, removeElement} from '../../../src/common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { IAccLoadedEventArgs} from '../../../src/accumulation-chart/model/pie-interface';
 import { data, datetimeData1} from '../../chart/base/data.spec';
 import { MouseEvents} from '../../chart/base/events.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 AccumulationChart.Inject(AccumulationTooltip, AccumulationDataLabel);
+describe('Accumulation Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('accumulation and Doughnut Control Checking', () => {
     let element: Element; let loaded: EmitType<IAccLoadedEventArgs>;
     let svgObject: Element;
@@ -124,7 +135,7 @@ describe('accumulation and Doughnut Control Checking', () => {
         accumulation.dataBind();
         text = getElement(id + '_subTitle');
         expect(text.textContent).toBe('accumulation SubTitle');
-        expect(text.getAttribute('y') === '45.5' || text.getAttribute('y') === '41.75').toEqual(true);
+        expect(text.getAttribute('y') === '46.25' || text.getAttribute('y') === '41.75').toEqual(true);
     });
 
     it('Checking with title', () => {
@@ -426,4 +437,14 @@ describe('Accumulation chart with remote dataSource', () => {
         pie.series[0].query = query;
         pie.refresh();
     });
+});
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
 });

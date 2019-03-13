@@ -135,6 +135,8 @@ $remove-icon-font-size-smaller: 11px !default;
 $clear-icon-focus-color: $neutral-light !default;
 $remove-icon-height: 26px !default;
 $remove-icon-width: 26px !default;
+$remove-bigger-icon-height: 26px !default;
+$remove-bigger-icon-width: 26px !default;
 $upload-border: 1px solid $neutral-light !default;
 $remove-icon-margin-top: -24px !default;
 $remove-icon-font-size: 12px !default;
@@ -159,6 +161,8 @@ $reload-icon-font-content: '\e218' !default;
 $pause-icon-font-content: '\e325' !default;
 $play-icon-font-content: '\e327' !default;
 $remove-icon-color: $neutral-light-font !default;
-$hover-icon-color: $neutral-light-font !default;
+$upload-hover-icon-color: $neutral-light-font !default;
 $disabled-state: $neutral-tertiary-alt !default;
+
+$uploader-icons-hover-radius: 50% !default;
 //enddefault

@@ -18,6 +18,7 @@ import { seriesData1, datetimeData, categoryData } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs } from '../../../src/common/model/interface';
 import { categoryData1 } from '../polar-radar/polar-radar-series.spec';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, Logarithmic, ColumnSeries, AreaSeries, BarSeries, DateTime, Category, Legend, MultiLevelLabel);
 let data: any = seriesData1;
 let datetime: any = datetimeData;
@@ -35,6 +36,15 @@ let chartData1: any[] = [
     { x: 8000, y: 15 }
 ];
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Chart Multiple labels - category axis', () => {
         let chartObj: Chart;
         let elem: HTMLElement;
@@ -1365,4 +1375,114 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Chart Multiple labels - Line break labels', () => {
+        let chart: Chart;
+        let elem: HTMLElement;
+        let svg: HTMLElement;
+        let text: HTMLElement;
+        let datalabel: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        multiLevelLabels:[{ categories: [
+                            {
+                                start: -0.5, end: 2.5,
+                                text: 'Half Yearly 1',
+                            },
+                            { start: 2.5, end: 5.5, text: 'Half Yearly 2'},
+                        ]}]
+                    },
+                    primaryYAxis: { },
+                    series: [{
+                        dataSource: [{ x: "aaaaaaaaaaaaaaa<br>11111111111<br>2222222222", y: 10 },
+                        { x: "bbbb", y: 20 },
+                        { x: "cccc", y: 30 },
+                        { x: "dddd", y: 40 },
+                        { x: "eeee", y: 50 },
+                        { x: "ffff", y: 60 }
+                    ], xName: 'x', yName: 'y', animation: { enable: false }, type: 'Line',
+                    }], legendSettings: { visible: false }
+                },'#container');
+        });
+        afterAll((): void => {
+            elem.remove();
+            chart.destroy();
+        });
+        it('default line break checking with multi level labels', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 6).toBe(true);
+                label = document.getElementById('container0_AxisLabel_0');
+                expect(label.childElementCount == 2).toBe(true);
+                expect(label.childNodes[0].textContent == 'aaaaaaaaaaaaaaa').toBe(true);
+                expect(label.childNodes[1].textContent == '11111111111').toBe(true);
+                expect(label.childNodes[2].textContent == '2222222222').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('multi level labels-line break labels with inversed axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 6).toBe(true);
+                label = document.getElementById('container0_AxisLabel_0');
+                expect(label.childElementCount == 2).toBe(true);
+                expect(label.childNodes[0].textContent == 'aaaaaaaaaaaaaaa').toBe(true);
+                expect(label.childNodes[1].textContent == '11111111111').toBe(true);
+                expect(label.childNodes[2].textContent == '2222222222').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = true;
+            chart.refresh();
+        });
+        it('Multi level labels-line break labels with opposed position true', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 6).toBe(true);
+                label= document.getElementById('container0_AxisLabel_0');
+                expect(label.childElementCount == 2).toBe(true);
+                expect(label.childNodes[0].textContent == '2222222222').toBe(true);
+                expect(label.childNodes[1].textContent == '11111111111').toBe(true);
+                expect(label.childNodes[2].textContent == 'aaaaaaaaaaaaaaa').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.refresh();
+        });
+        it('Multi level labels-line break labels with 90 deg rotation', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 6).toBe(true);
+                label= document.getElementById('container0_AxisLabel_0');
+                expect(label.childElementCount == 2).toBe(true);
+                expect(label.childNodes[0].textContent == 'aaaaaaaaaaaaaaa').toBe(true);
+                expect(label.childNodes[1].textContent == '11111111111').toBe(true);
+                expect(label.childNodes[2].textContent == '2222222222').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.opposedPosition = false;
+            chart.primaryXAxis.labelRotation = 90;
+            chart.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

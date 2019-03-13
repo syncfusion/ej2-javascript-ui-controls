@@ -141,14 +141,14 @@ describe('Diagram Control', () => {
         executeClickEvent('DrawObject');
         browser.compareScreen(element(By.id('diagram')), 'PreDefinedProcess-ContinuousDraw');
     });
-    it('Path-ContinuousDraw', () => {
-        browser.load('/demos/drawingTools/drawingTools.html');
-        changeConnectorType('applyshapes', 3);
-        executeSelectionOption('Default');
-        executeSelectionOption('ContinuousDraw');
-        executeClickEvent('DrawObject');
-        browser.compareScreen(element(By.id('diagram')), 'Path-ContinuousDraw');
-    });
+    // it('Path-ContinuousDraw', () => {
+    //     browser.load('/demos/drawingTools/drawingTools.html');
+    //     changeConnectorType('applyshapes', 3);
+    //     executeSelectionOption('Default');
+    //     executeSelectionOption('ContinuousDraw');
+    //     executeClickEvent('DrawObject');
+    //     browser.compareScreen(element(By.id('diagram')), 'Path-ContinuousDraw');
+    // });
     it('image-ContinuousDraw', () => {
         changeConnectorType('applyshapes', 4);
         executeSelectionOption('ContinuousDraw');
@@ -163,13 +163,13 @@ describe('Diagram Control', () => {
         executeClickEvent('DrawObject');
         browser.compareScreen(element(By.id('diagram')), 'svg-ContinuousDraw');
     });
-    it('text-ContinuousDraw', () => {
-        changeConnectorType('applyshapes', 6);
-        executeSelectionOption('ContinuousDraw');
-        executeSelectionOption('ContinuousDraw');
-        executeClickEvent('EditText');
-        browser.compareScreen(element(By.id('diagram')), 'text-ContinuousDraw');
-    });
+    // it('text-ContinuousDraw', () => {
+    //     changeConnectorType('applyshapes', 6);
+    //     executeSelectionOption('ContinuousDraw');
+    //     executeSelectionOption('ContinuousDraw');
+    //     executeClickEvent('EditText');
+    //     browser.compareScreen(element(By.id('diagram')), 'text-ContinuousDraw11');
+    // });
     it('SingleSelect-Node', () => {
         browser.load('/demos/drawingTools/drawingTools.html');
         executeSelectionOption('Default');

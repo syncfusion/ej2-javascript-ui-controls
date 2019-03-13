@@ -7,6 +7,9 @@
 
       .e-path-circle {
         stroke: fade-out($btn-color, $progress-btn-circle-opacity);
+        @if $skin-name == 'bootstrap4' {
+          stroke-width: 1px;
+        }
       }
 
       .e-path-arc {

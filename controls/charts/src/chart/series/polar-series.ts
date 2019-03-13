@@ -1,7 +1,8 @@
 import {
-    withInRange, PathOption, logBase,
+    withInRange, logBase,
     markerAnimate, PolarArc, valueToCoefficient, firstToLowerCase
 } from '../../common/utils/helper';
+import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { PolarRadarPanel } from '../axis/polar-radar-panel';

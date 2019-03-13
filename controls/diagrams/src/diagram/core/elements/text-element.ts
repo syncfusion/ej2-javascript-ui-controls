@@ -25,6 +25,9 @@ export class TextElement extends DiagramElement {
 
     /** @private */
     public canMeasure: boolean = true;
+
+    /** @private */
+    public canConsiderBounds: boolean = true;
     /**
      * sets the constraints for the text element
      */

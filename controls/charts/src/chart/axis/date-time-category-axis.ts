@@ -1,6 +1,7 @@
 import { Axis } from '../axis/axis';
 import { Category } from '../axis/category-axis';
-import { Size, triggerLabelRender } from '../../common/utils/helper';
+import { triggerLabelRender } from '../../common/utils/helper';
+import { Size } from '@syncfusion/ej2-svg-base';
 import { withIn, firstToLowerCase } from '../../common/utils/helper';
 import { IntervalType } from '../utils/enum';
 import { Chart } from '../chart';

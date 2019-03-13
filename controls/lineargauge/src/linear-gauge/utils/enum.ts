@@ -10,7 +10,7 @@ export type Position =
     /**  Outside of Axis. */
     'Outside';
 
-/** 
+/**
  * Defines type of pointer. They are
  * * Marker
  * * Bar
@@ -23,7 +23,7 @@ export type Point =
     /**  Bar pointer. */
     'Bar';
 
-/** 
+/**
  * Defines Theme of the gauge. They are
  * * Material
  * * Fabric
@@ -47,7 +47,9 @@ export type LinearGaugeTheme =
     /**  Render a gauge with Highcontrast Dark theme. */
     'HighContrast'|
     /**  Render a gauge with Bootstrap Dark theme. */
-    'BootstrapDark' ;
+    'BootstrapDark'|
+    /** Render a gauge with Bootstrap4 theme. */
+    'Bootstrap4';
 
 /**
  * Defines the type of marker. They are
@@ -129,7 +131,7 @@ export type Placement =
  */
 export type Orientation =
     /**
-     * Horizontal 
+     * Horizontal
      */
     'Horizontal' |
     /**

@@ -110,7 +110,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     public iconCss: string;
     /**
      * This property used for nested navigation of list-items.
-     * Refer the documentation [here](../../listview/nested-list)
+     * Refer the documentation [here](./listview/nested-list)
      *  to know more about this property with demo.
      */
     @Property('child')
@@ -123,7 +123,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](../../listview/grouping)
+     * Refer the documentation [here](./listview/grouping)
      *  to know more about this property with demo.
      */
     @Property('groupBy')
@@ -143,7 +143,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     /**
      * It is used to fetch a specified named table data while using serviceUrl of DataManager
      *  in dataSource property.
-     * Refer the documentation [here](../../data/getting-started/)
+     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/data/getting-started?lang=typescript)
      *  to know more about this property with demo.
      */
     @Property('tableName')
@@ -263,7 +263,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * It is used to fetch the specific data from dataSource by using where, select key words.
-     * Refer the documentation [here](../../listview/data-binding#bind-to-remote-data)
+     * Refer the documentation [here]
+     * (./data-binding#bind-to-remote-data)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
@@ -357,7 +358,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](../../listview/customizing-templates)
+     * Refer the documentation [here](./listview/customizing-templates)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
@@ -369,7 +370,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The ListView has an option to custom design the ListView header title with the help of headerTemplate property.
      * Refer the documentation [here]
-     * (../../listview/customizing-templates#header-template)
+     * (./listview/customizing-templates#header-template)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
@@ -381,7 +382,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The ListView has an option to custom design the group header title with the help of groupTemplate property.
      * Refer the documentation [here]
-     * (../../listview/customizing-templates#group-template)
+     * (./listview/customizing-templates#group-template)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
@@ -1000,9 +1001,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
-        if (e.keyCode !== 9) {
-            e.preventDefault();
-        }
         switch (e.keyCode) {
             case 36:
                 this.homeKeyHandler(e);
@@ -1354,6 +1352,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             (this.dataSource as DataManager).executeQuery(this.getQuery()).then((e: Object) => {
                 if (this.isDestroyed) { return; }
                 this.localData = (e as ResultData).result;
+                this.removeElement(this.contentContainer);
                 this.renderList();
                 this.trigger('actionComplete', e);
             }).catch((e: Object) => {
@@ -1608,7 +1607,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to get the currently [here](./selectedItem/)
+     * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
      */
     public getSelectedItems(): SelectedItem | SelectedCollection | UISelectedItem | NestedListData {

@@ -398,6 +398,7 @@ export class SvgRenderer implements IRenderer {
             } else {
                 canvas.appendChild(htmlElement);
             }
+
         }
         let point: PointModel = cornersPointsBeforeRotation(element).topLeft;
         htmlElement.setAttribute(

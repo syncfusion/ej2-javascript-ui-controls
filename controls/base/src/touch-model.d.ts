@@ -3,6 +3,7 @@ import {TapEventArgs,SwipeEventArgs,ScrollEventArgs} from "./touch";
 
 /**
  * Interface for a class SwipeSettings
+ * @private
  */
 export interface SwipeSettingsModel {
 

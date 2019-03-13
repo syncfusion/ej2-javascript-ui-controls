@@ -1091,31 +1091,6 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Same as the whole table': 'Same as the whole table',
             'Borders': 'Borders',
             'None': 'None',
-            'Single': 'Single',
-            'Dot': 'Dot',
-            'DashSmallGap': 'DashSmallGap',
-            'DashLargeGap': 'DashLargeGap',
-            'DashDot': 'DashDot',
-            'DashDotDot': 'DashDotDot',
-            'Double': 'Double',
-            'Triple': 'Triple',
-            'ThinThickSmallGap': 'ThinThickSmallGap',
-            'ThickThinSmallGap': 'ThickThinSmallGap',
-            'ThinThickThinSmallGap': 'ThinThickThinSmallGap',
-            'ThinThickMediumGap': 'ThinThickMediumGap',
-            'ThickThinMediumGap': 'ThickThinMediumGap',
-            'ThinThickThinMediumGap': 'ThinThickThinMediumGap',
-            'ThinThickLargeGap': 'ThinThickLargeGap',
-            'ThickThinLargeGap': 'ThickThinLargeGap',
-            'ThinThickThinLargeGap': 'ThinThickThinLargeGap',
-            'SingleWavy': 'SingleWavy',
-            'DoubleWavy': 'DoubleWavy',
-            'DashDotStroked': 'DashDotStroked',
-            'Emboss3D': 'Emboss3D',
-            'Engrave3D': 'Engrave3D',
-            'Outset': 'Outset',
-            'Inset': 'Inset',
-            'Thick': 'Thick',
             'Style': 'Style',
             'Width': 'Width',
             'Height': 'Height',
@@ -1537,6 +1512,20 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
         }
     }
     /**
+     * Set the default character format for document editor
+     * @param characterFormat
+     */
+    setDefaultCharacterFormat(characterFormat) {
+        this.characterFormat = characterFormat;
+    }
+    /**
+     * Set the default paragraph format for document editor
+     * @param paragraphFormat
+     */
+    setDefaultParagraphFormat(paragraphFormat) {
+        this.paragraphFormat = paragraphFormat;
+    }
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -1600,6 +1589,20 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                 this.trigger('viewChange', eventArgs);
             }
         }
+    }
+    /**
+     * @private
+     */
+    fireCustomContextMenuSelect(item) {
+        let eventArgs = { id: item };
+        this.trigger('customContextMenuSelect', eventArgs);
+    }
+    /**
+     * @private
+     */
+    fireCustomContextMenuBeforeOpen(item) {
+        let eventArgs = { ids: item };
+        this.trigger('customContextMenuBeforeOpen', eventArgs);
     }
     /**
      * Shows the Paragraph dialog
@@ -2039,6 +2042,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
         let hfs = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
+            this.viewer.setDefaultDocumentFormat();
             this.viewer.headersFooters.push(hfs);
             this.viewer.onDocumentChanged(sections);
             if (this.editorModule) {
@@ -2350,6 +2354,12 @@ __decorate([
 __decorate([
     Event()
 ], DocumentEditor.prototype, "destroyed", void 0);
+__decorate([
+    Event()
+], DocumentEditor.prototype, "customContextMenuSelect", void 0);
+__decorate([
+    Event()
+], DocumentEditor.prototype, "customContextMenuBeforeOpen", void 0);
 DocumentEditor = DocumentEditor_1 = __decorate([
     NotifyPropertyChanges
 ], DocumentEditor);
@@ -10394,6 +10404,18 @@ class ContextMenu$1 {
          */
         this.contextMenuInstance = undefined;
         /**
+         * @private
+         */
+        this.menuItems = [];
+        /**
+         * @private
+         */
+        this.customMenuItems = [];
+        /**
+         * @private
+         */
+        this.ids = [];
+        /**
          * Handles on context menu key pressed.
          * @param  {PointerEvent} event
          * @private
@@ -10405,9 +10427,9 @@ class ContextMenu$1 {
             }
         };
         this.viewer = viewer;
-        let locale = new L10n('documenteditor', this.viewer.owner.defaultLocale);
-        locale.setLocale(this.viewer.owner.locale);
-        this.initContextMenu(locale, this.viewer.owner.enableRtl);
+        this.locale = new L10n('documenteditor', this.viewer.owner.defaultLocale);
+        this.locale.setLocale(this.viewer.owner.locale);
+        this.initContextMenu(this.locale, this.viewer.owner.enableRtl);
     }
     /**
      * Gets module name.
@@ -10435,7 +10457,7 @@ class ContextMenu$1 {
         ul.style.maxHeight = 'auto';
         ul.oncontextmenu = this.disableBrowserContextmenu;
         this.contextMenu.appendChild(ul);
-        let menuItems = [
+        this.menuItems = [
             {
                 text: localValue.getConstant('Cut'),
                 iconCss: 'e-icons e-de-cut',
@@ -10603,7 +10625,7 @@ class ContextMenu$1 {
         let menuOptions = {
             target: '#' + this.viewer.owner.containerId + 'e-de-contextmenu',
             enableRtl: isRtl,
-            items: menuItems,
+            items: this.addMenuItems(this.menuItems),
             select: (args) => {
                 let item = args.element.id;
                 this.handleContextMenuItem(item);
@@ -10611,6 +10633,25 @@ class ContextMenu$1 {
         };
         this.contextMenuInstance = new ContextMenu(menuOptions, '#' + this.viewer.owner.containerId + 'e-de-contextmenu-list');
         this.contextMenuInstance.beforeOpen = () => {
+            for (let index = 0; index < this.customMenuItems.length; index++) {
+                if (typeof this.customMenuItems[index].id !== 'undefined') {
+                    this.ids[index] = this.customMenuItems[index].id;
+                }
+                else {
+                    this.ids[index] = this.customMenuItems[index + 1].id;
+                }
+            }
+            this.viewer.owner.fireCustomContextMenuBeforeOpen(this.ids);
+            if (this.enableCustomContextMenu) {
+                for (let index = 0; index < this.menuItems.length; index++) {
+                    if (typeof this.menuItems[index].id !== 'undefined') {
+                        document.getElementById(this.menuItems[index].id).style.display = 'none';
+                    }
+                    else {
+                        document.getElementById(this.menuItems[index - 1].id).nextSibling.style.display = 'none';
+                    }
+                }
+            }
             if (this.viewer && this.viewer.selection) {
                 classList(this.viewer.selection.caret, [], ['e-de-cursor-animation']);
                 this.viewer.selection.showCaret();
@@ -10725,6 +10766,40 @@ class ContextMenu$1 {
             case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
                 this.viewer.owner.editor.autoFitTable('FixedColumnWidth');
                 break;
+            default:
+                // fires customContextMenuSelect while selecting the added custom menu item
+                this.viewer.owner.fireCustomContextMenuSelect(item);
+                break;
+        }
+    }
+    /**
+     * To add and customize custom context menu
+     * @param {MenuItemModel[]} items -To add custom menu item
+     * @param {boolean} isEnable? -To hide existing menu item and show custom menu item alone
+     * @param {boolean} isBottom? -To show the custom menu item in bottom of the existing item
+     */
+    addCustomMenu(items, isEnable, isBottom) {
+        let menuItems = JSON.parse(JSON.stringify(items));
+        this.destroy();
+        for (let index = 0; index < menuItems.length; index++) {
+            this.customMenuItems.push(menuItems[index]);
+            this.customMenuItems[index].id = this.viewer.owner.element.id + this.customMenuItems[index].id;
+        }
+        this.enableCustomContextMenu = isEnable;
+        this.enableCustomContextMenuBottom = isBottom;
+        this.initContextMenu(this.locale);
+    }
+    /**
+     * Context Menu Items.
+     * @param {MenuItemModel[]} menuItems -To add MenuItem to context menu
+     * @private
+     */
+    addMenuItems(menuItems) {
+        if (this.enableCustomContextMenuBottom) {
+            return menuItems.concat(this.customMenuItems);
+        }
+        else {
+            return this.customMenuItems.concat(menuItems);
         }
     }
     showHideElements(selection) {
@@ -10874,6 +10949,9 @@ class ContextMenu$1 {
         }
         this.contextMenu = undefined;
         this.contextMenuInstance = undefined;
+        this.menuItems = [];
+        this.customMenuItems = [];
+        this.ids = [];
     }
 }
 
@@ -16465,7 +16543,7 @@ class Renderer {
         let format = elementBox.listLevel.characterFormat;
         let breakCharacterFormat = elementBox.line.paragraph.characterFormat;
         let color = format.fontColor === '#000000' ? breakCharacterFormat.fontColor : format.fontColor;
-        this.pageContext.textBaseline = 'top';
+        this.pageContext.textBaseline = 'alphabetic';
         let bold = '';
         let italic = '';
         let fontFamily = format.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily : format.fontFamily;
@@ -16492,6 +16570,8 @@ class Renderer {
         if (baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
+        let baselineOffset = elementBox.baselineOffset;
+        topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         let text = elementBox.text;
         let followCharacter = text === '\t' || text === ' ';
         if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
@@ -16540,7 +16620,7 @@ class Renderer {
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
         let color = format.fontColor;
-        this.pageContext.textBaseline = 'top';
+        this.pageContext.textBaseline = 'alphabetic';
         let bold = '';
         let italic = '';
         let fontSize = 11;
@@ -16551,6 +16631,8 @@ class Renderer {
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
+        let baselineOffset = elementBox.baselineOffset;
+        topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         this.pageContext.fillStyle = this.getColor(color);
         let scaledWidth = this.getScaledValue(elementBox.width);
         let text = elementBox.text;
@@ -18344,7 +18426,40 @@ class LayoutViewer {
         this.styles.clear();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
+        this.setDefaultCharacterValue(this.characterFormat);
+        this.setDefaultParagraphValue(this.paragraphFormat);
         this.defaultTabWidth = 36;
+    }
+    /**
+     * @private
+     */
+    setDefaultDocumentFormat() {
+        this.owner.parser.parseCharacterFormat(this.owner.characterFormat, this.characterFormat);
+        this.owner.parser.parseParagraphFormat(this.owner.paragraphFormat, this.paragraphFormat);
+    }
+    setDefaultCharacterValue(characterFormat) {
+        characterFormat.bold = false;
+        characterFormat.italic = false;
+        characterFormat.fontFamily = 'Calibri';
+        characterFormat.fontSize = 11;
+        characterFormat.underline = 'None';
+        characterFormat.strikethrough = 'None';
+        characterFormat.fontSizeBidi = 11;
+        characterFormat.fontFamilyBidi = 'Calibri';
+        characterFormat.baselineAlignment = 'Normal';
+        characterFormat.highlightColor = 'NoColor';
+        characterFormat.fontColor = '#000000';
+    }
+    setDefaultParagraphValue(paragraphFormat) {
+        paragraphFormat.leftIndent = 0;
+        paragraphFormat.rightIndent = 0;
+        paragraphFormat.firstLineIndent = 0;
+        paragraphFormat.textAlignment = 'Left';
+        paragraphFormat.beforeSpacing = 0;
+        paragraphFormat.afterSpacing = 0;
+        paragraphFormat.lineSpacing = 1;
+        paragraphFormat.lineSpacingType = 'Multiple';
+        paragraphFormat.bidi = false;
     }
     /**
      * @private
@@ -20086,8 +20201,12 @@ class SfdtReader {
     convertJsonToDocument(json) {
         let sections = [];
         let jsonObject = JSON.parse(json);
-        this.parseCharacterFormat(jsonObject.characterFormat, this.viewer.characterFormat);
-        this.parseParagraphFormat(jsonObject.paragraphFormat, this.viewer.paragraphFormat);
+        let characterFormat = isNullOrUndefined(jsonObject.characterFormat) ?
+            this.viewer.owner.characterFormat : jsonObject.characterFormat;
+        this.parseCharacterFormat(characterFormat, this.viewer.characterFormat);
+        let paragraphFormat = isNullOrUndefined(jsonObject.paragraphFormat) ?
+            this.viewer.owner.paragraphFormat : jsonObject.paragraphFormat;
+        this.parseParagraphFormat(paragraphFormat, this.viewer.paragraphFormat);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.viewer.defaultTabWidth = jsonObject.defaultTabWidth;
         }
@@ -20701,6 +20820,9 @@ class SfdtReader {
             }
         }
     }
+    /**
+     * @private
+     */
     parseCharacterFormat(sourceFormat, characterFormat, writeInlineFormat) {
         if (!isNullOrUndefined(sourceFormat)) {
             if (writeInlineFormat && sourceFormat.hasOwnProperty('inlineFormat')) {
@@ -20758,6 +20880,9 @@ class SfdtReader {
         let convertColor = color;
         return convertColor || '#ffffff';
     }
+    /**
+     * @private
+     */
     parseParagraphFormat(sourceFormat, paragraphFormat) {
         if (!isNullOrUndefined(sourceFormat)) {
             if (!isNullOrUndefined(sourceFormat.bidi)) {
@@ -50451,15 +50576,6 @@ class WordExport {
             throw new Error('Paragraph should not be undefined');
         }
         let sec = this.blockOwner;
-        //Need to write the Section Properties if the Paragraph is last item in the section
-        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
-            && sec.blocks.indexOf(paragraph) === sec.blocks.length - 1) {
-            writer.writeStartElement('w', 'p', this.wNamespace);
-            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-            this.serializeSectionProperties(writer, sec);
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
         // if (paragraph.ParagraphFormat.PageBreakAfter && !IsPageBreakNeedToBeSkipped(paragraph as Entity))
         //     paragraph.InsertBreak(BreakType.PageBreak);
         // if (paragraph.ParagraphFormat.ColumnBreakAfter && !IsPageBreakNeedToBeSkipped(paragraph as Entity))
@@ -50474,6 +50590,15 @@ class WordExport {
         // EnsureWatermark(paragraph);
         this.serializeParagraphItems(writer, paragraph.inlines);
         writer.writeEndElement(); //end of paragraph tag.
+        //Need to write the Section Properties if the Paragraph is last item in the section
+        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
+            && sec.blocks.indexOf(paragraph) === sec.blocks.length - 1) {
+            writer.writeStartElement('w', 'p', this.wNamespace);
+            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
+            this.serializeSectionProperties(writer, sec);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
     }
     // Serialize the paragraph items
     serializeParagraphItems(writer, paraItems) {
@@ -60150,22 +60275,22 @@ class BordersAndShadingDialog {
         let dropDownList = createElement('select', {
             id: this.target.id + '_border_style_dropDown'
         });
-        dropDownList.innerHTML = '<option>' + localeValue.getConstant('None') + '</option><option>'
-            + localeValue.getConstant('Single') + '</option><option>' + localeValue.getConstant('Dot') + '</option><option>'
-            + localeValue.getConstant('DashSmallGap') + '</option><option>' + localeValue.getConstant('DashLargeGap') + '</option><option>'
-            + localeValue.getConstant('DashDot') + '</option><option>' + localeValue.getConstant('DashDotDot') + '</option><option>'
-            + localeValue.getConstant('Double') + '</option><option>' + localeValue.getConstant('Triple') + '</option><option>'
-            + localeValue.getConstant('ThinThickSmallGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinSmallGap') + '</option><option>' + localeValue.getConstant('ThinThickThinSmallGap')
-            + '</option><option>' + localeValue.getConstant('ThinThickMediumGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinMediumGap') + '</option><option>' + localeValue.getConstant('ThinThickThinMediumGap')
-            + '</option><option>' + localeValue.getConstant('ThinThickLargeGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinLargeGap') + '</option><option>' + localeValue.getConstant('ThinThickThinLargeGap')
-            + '</option><option>' + localeValue.getConstant('SingleWavy') + '</option><option>'
-            + localeValue.getConstant('DoubleWavy') + '</option><option>' + localeValue.getConstant('DashDotStroked')
-            + '</option><option>' + localeValue.getConstant('Emboss3D') + '</option><option>' + localeValue.getConstant('Engrave3D')
-            + '</option><option>' + localeValue.getConstant('Outset') + '</option><option>'
-            + localeValue.getConstant('Inset') + '</option><option>' + localeValue.getConstant('Thick') + '</option>';
+        dropDownList.innerHTML = '<option>' + 'None' + '</option><option>'
+            + 'Single' + '</option><option>' + 'Dot' + '</option><option>'
+            + 'DashSmallGap' + '</option><option>' + 'DashLargeGap' + '</option><option>'
+            + 'DashDot' + '</option><option>' + 'DashDotDot' + '</option><option>'
+            + 'Double' + '</option><option>' + 'Triple' + '</option><option>'
+            + 'ThinThickSmallGap' + '</option><option>'
+            + 'ThickThinSmallGap' + '</option><option>' + 'ThinThickThinSmallGap'
+            + '</option><option>' + 'ThinThickMediumGap' + '</option><option>'
+            + 'ThickThinMediumGap' + '</option><option>' + 'ThinThickThinMediumGap'
+            + '</option><option>' + 'ThinThickLargeGap' + '</option><option>'
+            + 'ThickThinLargeGap' + '</option><option>' + 'ThinThickThinLargeGap'
+            + '</option><option>' + 'SingleWavy' + '</option><option>'
+            + 'DoubleWavy' + '</option><option>' + 'DashDotStroked'
+            + '</option><option>' + 'Emboss3D' + '</option><option>' + 'Engrave3D'
+            + '</option><option>' + 'Outset' + '</option><option>'
+            + 'Inset' + '</option><option>' + 'Thick' + '</option>';
         let widthText = createElement('div', {
             innerHTML: localeValue.getConstant('Width'), styles: 'width:100%;padding-top: 20px;padding-bottom: 10px;',
             className: 'e-de-table-element-subheading'
@@ -61988,7 +62113,7 @@ class Toolbar$1 {
                 },
                 {
                     tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
-                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton'
+                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton e-de-image-focus'
                 },
                 {
                     prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
@@ -62108,7 +62233,7 @@ class Toolbar$1 {
                 this.toggleEditing(args.item.id);
                 break;
         }
-        if (args.item.id !== id + FIND_ID) {
+        if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
             this.container.documentEditor.focusIn();
         }
     }
@@ -62149,6 +62274,7 @@ class Toolbar$1 {
         else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
         }
+        setTimeout(() => { this.documentEditor.focusIn(); }, 30);
     }
     onFileChange() {
         let file = this.filePicker.files[0];
@@ -64160,18 +64286,21 @@ class TocProperties {
         };
         this.tocHeaderDiv = (container) => {
             let closeButtonFloat;
+            let headerDivMargin;
             let closeButtonMargin;
             if (!this.isRtl) {
                 closeButtonFloat = 'float:right;';
+                headerDivMargin = 'margin-left:5.5px;';
                 closeButtonMargin = 'margin-right:7px;';
             }
             else {
                 closeButtonFloat = 'float:left;';
+                headerDivMargin = 'margin-right:5.5px;';
                 closeButtonMargin = 'margin-left:7px;';
             }
             let headerDiv = createElement('div', {
                 id: this.elementId + 'toc_id',
-                styles: 'display: block;'
+                styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
             });
             container.appendChild(headerDiv);
             this.element.appendChild(container);

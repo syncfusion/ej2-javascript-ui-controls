@@ -213,8 +213,8 @@ export function getComponent<T>(elem: HTMLElement | string, comp: string | any |
     let instance: T;
     let i: number;
     let ele: HTMLElement = typeof elem === 'string' ? document.getElementById(elem) : elem;
-    for (i = 0; i < (<DomElements>(elem as HTMLElement)).ej2_instances.length; i++) {
-        instance = <T>(elem as DomElements).ej2_instances[i];
+    for (i = 0; i < (<DomElements>(ele as HTMLElement)).ej2_instances.length; i++) {
+        instance = <T>(ele as DomElements).ej2_instances[i];
         if (typeof comp === 'string') {
             let compName: string = (instance as { getModuleName: () => string } & T).getModuleName();
             if (comp === compName) {

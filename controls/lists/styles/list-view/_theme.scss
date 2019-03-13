@@ -60,10 +60,15 @@
         color: $listview-groupheader-text-color;
         font-size: $listview-groupheader-font-size;
       }
+
+      @if ($skin-name == 'bootstrap4') {
+        & .e-list-item.e-focused .e-icon-wrapper .e-icon-collapsible {
+          color: $listview-focused-collapsible-color;
+        }
+      }
     }
 
     &.e-list-template {
-
       .e-list-wrapper {
         height: inherit;
         position: relative;
@@ -144,7 +149,6 @@
         }
 
         &.e-list-badge {
-
           .e-badge {
             font-size: $listview-template-badge-font-size;
             height: $listview-template-badge-height;
@@ -201,7 +205,6 @@
 
     &.e-rtl {
       &.e-list-template .e-list-wrapper {
-
         &.e-list-avatar {
           .e-avatar {
             left: inherit;
@@ -225,7 +228,6 @@
         }
 
         &.e-list-badge {
-
           .e-badge {
             left: $listview-template-badge-right;
             right: inherit;

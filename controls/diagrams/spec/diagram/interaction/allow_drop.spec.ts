@@ -7,6 +7,7 @@ import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-mo
 import { MouseEvents } from './mouseevents.spec';
 import { NodeConstraints, ConnectorConstraints, hasSelection, SelectorModel, PointModel } from '../../../src/diagram/index';
 import { IDraggingEventArgs, IPropertyChangeEventArgs, IDropEventArgs, IElement } from '../../../src/diagram/objects/interface/IElement';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 
 
@@ -17,6 +18,12 @@ describe('Testing AllowDrop', () => {
     let mouseEvents: MouseEvents = new MouseEvents();
 
     beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
         ele = createElement('div', { id: 'allowDrop' });
         document.body.appendChild(ele);
         let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -125,6 +132,12 @@ describe('Testing Object Sorting - 1', () => {
     let mouseEvents: MouseEvents = new MouseEvents();
 
     beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
         ele = createElement('div', { id: 'allowDrop_1' });
         document.body.appendChild(ele);
         let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -167,7 +180,7 @@ describe('Testing Object Sorting - 1', () => {
         let node = diagram.nodes[0];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Select', false);
         expect(objects.length !== 0 && objects[0] === node).toBe(true);
@@ -177,8 +190,8 @@ describe('Testing Object Sorting - 1', () => {
     it('Checking inserting two elements with reverse zIndex to the collection', (done: Function) => {
         let node = diagram.nodes[0];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragEvent(diagramCanvas, 300, 100 , 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        mouseEvents.dragEvent(diagramCanvas, 300, 100, 100, 100);
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Drag', true);
         expect(objects.length !== 0 && objects[1] === node).toBe(true);
@@ -189,8 +202,8 @@ describe('Testing Object Sorting - 1', () => {
     it('Checking inserting of the three elements with reverse zIndex to the collection', (done: Function) => {
         let node = diagram.nodes[0];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragEvent(diagramCanvas, 500, 100 , 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        mouseEvents.dragEvent(diagramCanvas, 500, 100, 100, 100);
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Drag', true);
         expect(objects.length !== 0 && objects[2] === node).toBe(true);
@@ -201,14 +214,15 @@ describe('Testing Object Sorting - 1', () => {
     it('Checking inserting of the four elements with reverse zIndex to the collection', (done: Function) => {
         let node = diagram.nodes[0];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragEvent(diagramCanvas, 500, 300 , 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        mouseEvents.dragEvent(diagramCanvas, 500, 300, 100, 100);
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Drag', true);
         expect(objects.length !== 0 && objects[3] === node).toBe(true)
         mouseEvents.mouseUpEvent(diagramCanvas, 100, 100);
         done();
     });
+
 });
 
 describe('Testing Object Sorting - 2', () => {
@@ -218,6 +232,12 @@ describe('Testing Object Sorting - 2', () => {
     let mouseEvents: MouseEvents = new MouseEvents();
 
     beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
         ele = createElement('div', { id: 'allowDrop_2' });
         document.body.appendChild(ele);
         let selArray: (NodeModel | ConnectorModel)[] = [];
@@ -252,8 +272,8 @@ describe('Testing Object Sorting - 2', () => {
     it('Checking inserting two elements with Normal zIndex to the collection', (done: Function) => {
         let node = diagram.nodes[1];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragEvent(diagramCanvas, 300, 100 , 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        mouseEvents.dragEvent(diagramCanvas, 300, 100, 100, 100);
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Drag', true);
         expect(objects.length !== 0 && objects[1] === node).toBe(true);
@@ -264,8 +284,8 @@ describe('Testing Object Sorting - 2', () => {
     it('Checking inserting of the three elements with Normal zIndex to the collection', (done: Function) => {
         let node = diagram.nodes[2];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragEvent(diagramCanvas, 500, 100 , 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        mouseEvents.dragEvent(diagramCanvas, 500, 100, 100, 100);
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Drag', true);
         expect(objects.length !== 0 && objects[2] === node).toBe(true);
@@ -276,14 +296,15 @@ describe('Testing Object Sorting - 2', () => {
     it('Checking inserting of the four elements with Normal zIndex to the collection', (done: Function) => {
         let node = diagram.nodes[3];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragEvent(diagramCanvas, 500, 300 , 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        mouseEvents.dragEvent(diagramCanvas, 500, 300, 100, 100);
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Drag', true);
         expect(objects.length !== 0 && objects[3] === node).toBe(true)
         mouseEvents.mouseUpEvent(diagramCanvas, 100, 100);
         done();
     });
+
 });
 
 describe('Testing Object Sorting - 3', () => {
@@ -293,10 +314,16 @@ describe('Testing Object Sorting - 3', () => {
     let mouseEvents: MouseEvents = new MouseEvents();
 
     beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
         ele = createElement('div', { id: 'allowDrop_3' });
         document.body.appendChild(ele);
         let selArray: (NodeModel | ConnectorModel)[] = [];
-        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, zIndex: 3};
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, zIndex: 3 };
 
         let node2: NodeModel = {
             id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100, zIndex: 1,
@@ -304,7 +331,7 @@ describe('Testing Object Sorting - 3', () => {
         };
 
         let node3: NodeModel = {
-            id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 100,zIndex: 2,
+            id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 100, zIndex: 2,
         };
         diagram = new Diagram({
             width: 700, height: 600, nodes: [node1, node2, node3],
@@ -321,12 +348,21 @@ describe('Testing Object Sorting - 3', () => {
         let node = diagram.nodes[2];
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.dragAndDropEvent(diagramCanvas, 300, 100, 100, 100);
-        mouseEvents.dragEvent(diagramCanvas, 500, 100 , 100, 100);
-        let currentPosition: PointModel = {x: 100, y: 100};
+        mouseEvents.dragEvent(diagramCanvas, 500, 100, 100, 100);
+        let currentPosition: PointModel = { x: 100, y: 100 };
         let objects: IElement[] = diagram.findObjectsUnderMouse(currentPosition);
         let object: IElement = diagram.findObjectUnderMouse(objects, 'Drag', true);
         expect(objects.length !== 0 && objects[1] === node).toBe(true);
         mouseEvents.mouseUpEvent(diagramCanvas, 100, 100);
         done();
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

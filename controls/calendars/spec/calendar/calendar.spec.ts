@@ -11,6 +11,8 @@ import { createElement, removeClass, remove, addClass, setStyleAttribute } from 
 import { isNullOrUndefined, merge, getEnumValue, getValue, getUniqueID } from '@syncfusion/ej2-base';
 import { Animation, AnimationOptions, Effect } from '@syncfusion/ej2-base';
 import { calculatePosition } from '@syncfusion/ej2-popups';
+import { getFieldValues } from '@syncfusion/ej2-lists';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 function getWeek(date: Date): number {
     let date1: number = new Date("" + date).valueOf();
     let date2: number = new Date(date.getFullYear(), 0, 1).valueOf();
@@ -47,7 +49,15 @@ function loadCultureFiles(name: string, base?: boolean): void {
         loadCldr(JSON.parse(<string>val));
     }
 }
-
+describe('Calendar',() => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('Calendar', () => {
     let clickEvent: MouseEvent = document.createEvent('MouseEvents');
     clickEvent.initEvent('mousedown', true, true);
@@ -614,7 +624,7 @@ describe('Calendar', () => {
             expect(element.getAttribute('tabindex') === '1' ).toBe(true);
             calendar = null;
         });
-        /**
+         /**
          * min and max test case
          */
         it('min and max  with undefined type test case', () => {
@@ -2131,7 +2141,6 @@ describe('Calendar', () => {
                 expect(calendar.currentView()).toBe("Decade");
                 expect(document.querySelector('.e-title').textContent).toBe('2010 - 2019');
             });
-            // Test case was changed since decade view has been modified.
             it(' home and end button testing on year and decade view ', () => {
                 calendar = new Calendar({ value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');
@@ -2587,6 +2596,7 @@ describe('Calendar', () => {
             // });
         });
     });
+
     describe('Class name', () => {
         let calendar: any;
         let keyEventArgs: any = {
@@ -2879,6 +2889,16 @@ describe('Calendar', () => {
             expect(+calendarObj.values[1]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[2]));
             expect(+calendarObj.values[2]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[3]));
             expect(+calendarObj.values[3]).toBe(getIdValue(calendarObj.element.querySelectorAll('.e-selected')[0]));
+        });
+        it('Check focus date class is present in last value of multiselection', () => {
+            calendarObj = new Calendar({
+                isMultiSelection: true,
+                values: [new Date('5/3/2018'), new Date('5/6/2018'), new Date('5/9/2018')]
+            });
+            calendarObj.appendTo('#calendar');
+            let length: number = calendarObj.values.length - 1;
+            expect(calendarObj.element.querySelectorAll(".e-selected")[length].classList.contains(".e-focused-date")).toBe(false);
+
         });
         it('setmodel values Property', () => {
             calendarObj = new Calendar({
@@ -3574,7 +3594,7 @@ describe(' Islamic Calendar', () => {
             expect((<HTMLElement>document.getElementsByClassName('e-day e-title')[0]).innerHTML).toBe('Safar1440');
 
         });
-         // issue need to fix (icon disble issue)
+        // issue need to fix (icon disble issue)
         it('islamic calndar min value with today button', () => {
             Calendar.Inject(Islamic)
             let currentDate = new Date();
@@ -3729,25 +3749,25 @@ describe(' Islamic Calendar', () => {
             expect(document.querySelectorAll('.e-content tr td').length).toBe(48);
         });
 
-        // it(' islamic calendar- week weekNumber test case', () => {
-        //     Calendar.Inject(Islamic)
-        //     calendar = new Calendar({
-        //         value: new Date('3/3/2017'), calendarMode: 'Islamic'
-        //     });
-        //     calendar.appendTo('#calendar');
-        //     calendar.weekNumber = true;
-        //     calendar.dataBind();
-        //     expect(calendar.tableBodyElement.querySelectorAll('tr td').length).toBe(48);
-        //     expect(calendar.tableHeadElement.querySelectorAll('th').length).toBe(8);
-        //     expect(calendar.tableBodyElement.querySelector('tr td.e-week-number').textContent).toBe('9');
-        //     calendar.appendTo('#calendar');
-        //     calendar.weekNumber = false;
-        //     calendar.dataBind();
-        //     expect(calendar.tableBodyElement.querySelectorAll('tr td').length).toBe(42);
-        //     expect(calendar.tableHeadElement.querySelectorAll('th').length).toBe(7);
-        //     expect(calendar.tableHeadElement.querySelectorAll('th.e-week-number').length).toBe(0);
-        //     expect(!calendar.tableHeadElement.querySelectorAll('th.e-week-number')).toBe(false);
-        // });
+        it(' islamic calendar- week weekNumber test case', () => {
+            Calendar.Inject(Islamic)
+            calendar = new Calendar({
+                value: new Date('3/3/2017'), calendarMode: 'Islamic'
+            });
+            calendar.appendTo('#calendar');
+            calendar.weekNumber = true;
+            calendar.dataBind();
+            expect(calendar.tableBodyElement.querySelectorAll('tr td').length).toBe(48);
+            expect(calendar.tableHeadElement.querySelectorAll('th').length).toBe(8);
+            expect(calendar.tableBodyElement.querySelector('tr td.e-week-number').textContent).toBe('9');
+            calendar.appendTo('#calendar');
+            calendar.weekNumber = false;
+            calendar.dataBind();
+            expect(calendar.tableBodyElement.querySelectorAll('tr td').length).toBe(42);
+            expect(calendar.tableHeadElement.querySelectorAll('th').length).toBe(7);
+            expect(calendar.tableHeadElement.querySelectorAll('th.e-week-number').length).toBe(0);
+            expect(!calendar.tableHeadElement.querySelectorAll('th.e-week-number')).toBe(false);
+        });
 
         it('islamic calendar -  weekNumber test case', () => {
             Calendar.Inject(Islamic)
@@ -4009,7 +4029,6 @@ describe(' Islamic Calendar', () => {
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
             expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('Jum. I');
         });
-        // Test case has been changed since decade view has been modified.
         it('selected date with previous and next navigation test case in Decade view', () => {
             Calendar.Inject(Islamic)
             calendar = new Calendar({ value: new Date('1/1/2022'), start: "Decade", calendarMode: 'Islamic' });
@@ -4026,7 +4045,6 @@ describe(' Islamic Calendar', () => {
             expect((calendar.tableBodyElement.querySelectorAll('tr td.e-selected')).length).toBe(1);
             expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).innerText).toBe('1443');
         });
-        // Test case has been changed since decade view has been modified.
         it('selected date with drillup and drilldown navigation test case', () => {
             Calendar.Inject(Islamic)
             calendar = new Calendar({ value: new Date('1/1/2022'), calendarMode: 'Islamic' });
@@ -4084,4 +4102,14 @@ describe(' Islamic Calendar', () => {
             expect((calendar.tableBodyElement.querySelector('tr td.e-selected')).nextElementSibling.classList.contains('e-disabled')).toBe(true);
         });
     });
+});
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

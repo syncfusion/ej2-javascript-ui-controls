@@ -16,10 +16,19 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IPointRenderEventArgs, IAnimationCompleteEventArgs, ISeriesRenderEventArgs } from '../../../src/common/model/interface';
 Chart.Inject(LineSeries, Tooltip, ColumnSeries, BarSeries, DataLabel);
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let ele: HTMLElement;
     let svg: HTMLElement;
     let loaded: EmitType<ILoadedEventArgs>;
@@ -755,4 +764,13 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 }); 

@@ -12,6 +12,8 @@ export class Row<T> {
 
     public data: Object;
 
+    public tIndex: number;
+
     public changes: Object;
 
     public isDirty: boolean;

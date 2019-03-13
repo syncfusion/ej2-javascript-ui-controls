@@ -1,4 +1,5 @@
 /*! component's theme wise override definitions and variables */
+$pivotgrid-skin: 'material-dark' !default;
 $pivotgrid-active-color: $accent !default;
 $pivotgrid-default-font-color: $content-font-color !default;
 $pivotgrid-prompt-default-font-color: $pivotgrid-default-font-color !default;
@@ -41,11 +42,6 @@ $pivotgrid-rtl-expand-icon: '\e854' !default;
 $pivotgrid-rtl-expand-icon-font-size: 10px !default;
 $pivotgrid-collapse-icon: '\e83d' !default;
 $pivotgrid-collapse-icon-fonsize: 12px !default;
-$pivotgrid-filter-icon: '\e909' !default;
-$pivotgrid-sorting-icon: '\e840' !default;
-$pivotgrid-drop-down-icon: '\e36a' !default;
-$pivotgrid-remove-icon: '\e208' !default;
-$pivotgrid-filtered-icon: '\e920' !default;
 $pivotgrid-hover-color: $grey-400 !default;
 $pivotgrid-focus-color: $grey-500 !default;
 $pivotgrid-button-icon-color: rgba($grey-black, .54) !default;
@@ -81,6 +77,10 @@ $pivotgrid-editor-label-fill: $grey-100 !default;
 $pivotgrid-editor-label-excel-width: 280px !default;
 $pivotgrid-editor-label-excel-padding-size: 16px 10px 9px 20px !default;
 $pivotgrid-drillthrough-header-font-weight: 600 !default;
+$pivotgrid-header-selection-bg-color: $grey-300 !default;
+$pivotgrid-header-selection-color: $grey-light-font !default;
+$pivotgrid-menubar-height: 40px !default;
+$pivotgrid-bigger-menubar-height: 52px !default;
 
 /*! component's common definitions and variables */
 $pivotgrid-editor-search-padding-size: 20px !default;

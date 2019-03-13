@@ -1,5 +1,5 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, isNullOrUndefined, merge, remove, setStyleAttribute } from '@syncfusion/ej2-base';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove, setStyleAttribute } from '@syncfusion/ej2-base';
+import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 /**
  * Specifies Circular-Gauge Helper methods
@@ -612,10 +612,10 @@ __decorate$1([
     Property(false)
 ], TooltipSettings.prototype, "enable", void 0);
 __decorate$1([
-    Property('#000000')
+    Property(null)
 ], TooltipSettings.prototype, "fill", void 0);
 __decorate$1([
-    Complex({ color: '#ffffff', size: '13px' }, Font)
+    Complex({ size: '13px' }, Font)
 ], TooltipSettings.prototype, "textStyle", void 0);
 __decorate$1([
     Property(null)
@@ -646,12 +646,6 @@ var Theme;
         fontStyle: 'Normal',
         fontFamily: 'Segoe UI'
     };
-    /** @private */
-    Theme.axisLineColor = null;
-    /** @private */
-    Theme.tickLineColor = null;
-    /** @private */
-    Theme.pointerColor = null;
 })(Theme || (Theme = {}));
 /** @private */
 function getRangePalette(theme) {
@@ -665,6 +659,65 @@ function getRangePalette(theme) {
     //         break;
     // }
     return palette;
+}
+/** @private */
+function getThemeStyle(theme) {
+    let style;
+    switch (theme) {
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+        case 'Highcontrast':
+        case 'HighContrast':
+            style = {
+                backgroundColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                tooltipFillColor: '#ffffff',
+                tooltipFontColor: '#000000',
+                labelColor: '#FFFFFF',
+                lineColor: '#FFFFFF',
+                majorTickColor: '#FFFFFF',
+                minorTickColor: '#FFFFFF',
+                pointerColor: '#FFFFFF',
+                capColor: '#FFFFFF',
+                needleColor: '#FFFFFF',
+                needleTailColor: '#FFFFFF'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                backgroundColor: '#F8F9FA',
+                titleFontColor: '#212529',
+                tooltipFillColor: '#000000',
+                tooltipFontColor: '#FFFFFF',
+                labelColor: '#212529',
+                lineColor: '#DEE2E6',
+                majorTickColor: '#ADB5BD',
+                minorTickColor: '#CED4DA',
+                pointerColor: '#6C757D',
+                capColor: '#6C757D',
+                needleColor: '#6C757D',
+                needleTailColor: '#6C757D'
+            };
+            break;
+        default:
+            style = {
+                backgroundColor: '#FFFFFF',
+                titleFontColor: '#424242',
+                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                labelColor: '#212121',
+                lineColor: '#757575',
+                majorTickColor: '#757575',
+                minorTickColor: '#757575',
+                pointerColor: '#757575',
+                capColor: '#757575',
+                needleColor: '#757575',
+                needleTailColor: '#757575'
+            };
+            break;
+    }
+    return style;
 }
 
 var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -685,7 +738,7 @@ __decorate$2([
     Property('')
 ], Line.prototype, "dashArray", void 0);
 __decorate$2([
-    Property(Theme.axisLineColor)
+    Property(null)
 ], Line.prototype, "color", void 0);
 /**
  * Configures the axis label.
@@ -760,7 +813,7 @@ __decorate$2([
     Property(0)
 ], Tick.prototype, "offset", void 0);
 __decorate$2([
-    Property(Theme.tickLineColor)
+    Property(null)
 ], Tick.prototype, "color", void 0);
 __decorate$2([
     Property('Inside')
@@ -774,10 +827,10 @@ __decorate$2([
 class Cap extends ChildProperty {
 }
 __decorate$2([
-    Property('#ffffff')
+    Property(null)
 ], Cap.prototype, "color", void 0);
 __decorate$2([
-    Complex({ color: Theme.pointerColor, width: 8 }, Border)
+    Complex({ color: null, width: 8 }, Border)
 ], Cap.prototype, "border", void 0);
 __decorate$2([
     Property(8)
@@ -788,10 +841,10 @@ __decorate$2([
 class NeedleTail extends ChildProperty {
 }
 __decorate$2([
-    Property(Theme.pointerColor)
+    Property(null)
 ], NeedleTail.prototype, "color", void 0);
 __decorate$2([
-    Complex({ color: Theme.pointerColor, width: 0 }, Border)
+    Complex({ color: null, width: 0 }, Border)
 ], NeedleTail.prototype, "border", void 0);
 __decorate$2([
     Property('0%')
@@ -863,7 +916,7 @@ __decorate$2([
     Complex({}, NeedleTail)
 ], Pointer.prototype, "needleTail", void 0);
 __decorate$2([
-    Property(Theme.pointerColor)
+    Property(null)
 ], Pointer.prototype, "color", void 0);
 __decorate$2([
     Complex({ color: '#DDDDDD', width: 0 }, Border)
@@ -1183,9 +1236,7 @@ class GaugeTooltip {
                 this.tooltipRect = rect;
             }
             if (!tooltipArgs.cancel && !samePointerEle) {
-                let themes = this.gauge.theme.toLowerCase();
-                let tooltipColor = (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#00000' : '#FFFFFF';
-                tooltipArgs['tooltip']['properties']['textStyle']['color'] = tooltipColor;
+                tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     data: { value: tooltipArgs.content },
@@ -1195,7 +1246,7 @@ class GaugeTooltip {
                     location: tooltipArgs.location,
                     inverted: this.arrowInverted,
                     areaBounds: this.tooltipRect,
-                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : tooltipArgs.tooltip.fill,
+                    fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
                     textStyle: tooltipArgs.tooltip.textStyle,
                     border: tooltipArgs.tooltip.border
                 });
@@ -1349,7 +1400,7 @@ class AxisRenderer {
         let endAngle = axis.endAngle;
         if (axis.lineStyle.width > 0) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
-            appendPath(new PathOption(gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width, axis.lineStyle.color, null, axis.lineStyle.dashArray, getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius), '', 'pointer-events:none;'), element, gauge);
+            appendPath(new PathOption(gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width, axis.lineStyle.color || this.gauge.themeStyle.lineColor, null, axis.lineStyle.dashArray, getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius), '', 'pointer-events:none;'), element, gauge);
         }
     }
     /**
@@ -1388,7 +1439,7 @@ class AxisRenderer {
             angle = Math.round(getAngleFromValue(label.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
             location = getLocationFromAngle(angle, radius, gauge.midPoint);
             anchor = this.findAnchor(location, style, angle, label);
-            textElement(new TextOption(gauge.element.id + '_Axis_' + index + '_Label_' + i, location.x, location.y, anchor, label.text, style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'), style.font, style.useRangeColor ? getRangeColor(label.value, axis.ranges, style.font.color) : style.font.color, labelElement, 'pointer-events:none;');
+            textElement(new TextOption(gauge.element.id + '_Axis_' + index + '_Label_' + i, location.x, location.y, anchor, label.text, style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'), style.font, style.useRangeColor ? getRangeColor(label.value, axis.ranges, style.font.color || this.gauge.themeStyle.labelColor) : style.font.color || this.gauge.themeStyle.labelColor, labelElement, 'pointer-events:none;');
         }
         element.appendChild(labelElement);
     }
@@ -1426,7 +1477,8 @@ class AxisRenderer {
         if (minorLineStyle.width && minorLineStyle.height && minorInterval) {
             for (let i = axis.visibleRange.min, max = axis.visibleRange.max; i <= max; i += minorInterval) {
                 if (this.majorValues.indexOf(+i.toFixed(3)) < 0) {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, minorLineStyle.color) : minorLineStyle.color, null, '0', this.calculateTicks(i, minorLineStyle, axis), '', 'pointer-events:none;'), minorTickElements, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, minorLineStyle.color ||
+                        this.gauge.themeStyle.minorTickColor) : minorLineStyle.color || this.gauge.themeStyle.minorTickColor, null, '0', this.calculateTicks(i, minorLineStyle, axis), '', 'pointer-events:none;'), minorTickElements, gauge);
                 }
             }
             element.appendChild(minorTickElements);
@@ -1447,7 +1499,8 @@ class AxisRenderer {
         if (majorLineStyle.width && majorLineStyle.height && axis.visibleRange.interval) {
             for (let i = axis.visibleRange.min, max = axis.visibleRange.max, interval = axis.visibleRange.interval; i <= max; i += interval) {
                 this.majorValues.push(+i.toFixed(3));
-                appendPath(new PathOption(gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, majorLineStyle.color) : majorLineStyle.color, null, '0', this.calculateTicks(i, majorLineStyle, axis), '', 'pointer-events:none;'), majorTickElements, gauge);
+                appendPath(new PathOption(gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, majorLineStyle.color ||
+                    this.gauge.themeStyle.majorTickColor) : majorLineStyle.color || this.gauge.themeStyle.majorTickColor, null, '0', this.calculateTicks(i, majorLineStyle, axis), '', 'pointer-events:none;'), majorTickElements, gauge);
             }
             element.appendChild(majorTickElements);
         }
@@ -1623,7 +1676,7 @@ class PointerRenderer {
         location = getLocationFromAngle(0, pointer.currentRadius, mid);
         direction = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + mid.y +
             ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
-        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, pointer.color, pointer.border.width, pointer.border.color, null, '0', direction), parentElement, gauge));
+        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, pointer.color || this.gauge.themeStyle.needleColor, pointer.border.width, pointer.border.color, null, '0', direction), parentElement, gauge));
         pointerRadius = stringToNumber(pointer.needleTail.length, pointer.currentRadius);
         // To render the rect element for touch
         rectDirection = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + (mid.y - width) +
@@ -1635,12 +1688,12 @@ class PointerRenderer {
                 ' L ' + (location.x) + ' ' + (mid.y - width) +
                 ' L ' + (location.x) + ' ' + (mid.y + width) +
                 ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
-            pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index, pointer.needleTail.color, pointer.needleTail.border.width, pointer.needleTail.border.color, null, '0', direction), parentElement, gauge));
+            pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index, pointer.needleTail.color || this.gauge.themeStyle.needleTailColor, pointer.needleTail.border.width, pointer.needleTail.border.color, null, '0', direction), parentElement, gauge));
             rectDirection += ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + location.x + ' ' + (mid.y - width);
         }
         // To render the cap
         if (pointer.cap.radius) {
-            pointer.pathElement.push(appendPath(calculateShapes(mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2), '', new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index, pointer.cap.color, pointer.cap.border.width, pointer.cap.border.color, null, '0', '', '')), parentElement, gauge, 'Ellipse'));
+            pointer.pathElement.push(appendPath(calculateShapes(mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2), '', new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index, pointer.cap.color || this.gauge.themeStyle.capColor, pointer.cap.border.width, pointer.cap.border.color, null, '0', '', '')), parentElement, gauge, 'Ellipse'));
         }
         pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleRect_' + index, 'transparent', 0, 'transpanret', null, '0', rectDirection + ' Z'), parentElement, gauge));
     }
@@ -1705,7 +1758,7 @@ class PointerRenderer {
     drawMarkerPointer(axis, axisIndex, index, parentElement, gauge) {
         let pointer = axis.pointers[index];
         let location = getLocationFromAngle(0, pointer.currentRadius, gauge.midPoint);
-        pointer.pathElement.push(appendPath(calculateShapes(location, pointer.markerShape, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, pointer.color, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
+        pointer.pathElement.push(appendPath(calculateShapes(location, pointer.markerShape, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
     }
     /**
      * Method to render the range bar pointer of the ciruclar gauge.
@@ -1713,7 +1766,7 @@ class PointerRenderer {
      */
     drawRangeBarPointer(axis, axisIndex, index, parentElement, gauge) {
         let pointer = axis.pointers[index];
-        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, pointer.color, pointer.border.width, pointer.border.color, 1, '0', ''), parentElement, gauge));
+        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, 1, '0', ''), parentElement, gauge));
     }
     /**
      * Method to perform the animation of the pointer in circular gauge.
@@ -1772,8 +1825,25 @@ class PointerRenderer {
         let startAngle = getAngleFromValue(start, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let minAngle = getAngleFromValue(axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
         let pointAngle = getAngleFromValue(end, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
+        let roundRadius = pointer.roundedCornerRadius;
         let sweepAngle;
-        let endAngle = startAngle > pointAngle ? (pointAngle + 360) : pointAngle;
+        let endAngle;
+        let oldStart;
+        let minRadius = (radius * 0.25);
+        if (end <= minRadius) {
+            radius = end === 1 || 2 ? 8 : radius;
+            radius /= 2;
+            minRadius = radius * 0.25;
+        }
+        if (roundRadius) {
+            minAngle = ((((pointer.currentRadius) * ((minAngle * Math.PI) / 180) +
+                roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
+            pointAngle = ((((pointer.currentRadius) * ((pointAngle * Math.PI) / 180) -
+                roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
+            oldStart = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
+                (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+        }
+        endAngle = startAngle > pointAngle ? (pointAngle + 360) : pointAngle;
         new Animation({}).animate(element, {
             duration: pointer.animation.duration,
             progress: (arg) => {
@@ -1782,10 +1852,21 @@ class PointerRenderer {
                     isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
                     isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
                 if (isClockWise) {
-                    element.setAttribute('d', getCompleteArc(this.gauge.midPoint, minAngle, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration) + 0.0001, radius, innerRadius));
+                    if (!roundRadius) {
+                        element.setAttribute('d', getCompleteArc(this.gauge.midPoint, minAngle, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration) + 0.0001, radius, innerRadius));
+                    }
+                    else {
+                        element.setAttribute('d', getRoundedPathArc(this.gauge.midPoint, Math.floor(minAngle), linear(arg.timeStamp, Math.floor(minAngle), sweepAngle, arg.duration) + 0.0001, oldStart, linear(arg.timeStamp, Math.floor(minAngle + (roundRadius / 2)), sweepAngle, arg.duration) + 0.0001, radius, pointer.pointerWidth, pointer.pointerWidth));
+                    }
                 }
                 else {
-                    element.setAttribute('d', getCompleteArc(this.gauge.midPoint, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration), minAngle + 0.0001, radius, innerRadius));
+                    if (!roundRadius) {
+                        element.setAttribute('d', getCompleteArc(this.gauge.midPoint, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration), minAngle + 0.0001, radius, innerRadius));
+                    }
+                    else {
+                        sweepAngle += roundRadius;
+                        element.setAttribute('d', getRoundedPathArc(this.gauge.midPoint, linear(arg.timeStamp, Math.floor(oldStart), sweepAngle, arg.duration), Math.floor(oldStart) + 0.0001, linear(arg.timeStamp, Math.floor(minAngle - roundRadius - (roundRadius / 2)), sweepAngle, arg.duration), Math.floor(oldStart + (roundRadius / 2)) + 0.0001, radius, pointer.pointerWidth, pointer.pointerWidth));
+                    }
                 }
             },
             end: (model) => {
@@ -2017,10 +2098,8 @@ class AxisLayoutPanel {
         let argsData;
         axis.visibleLabels = [];
         let roundValue;
-        let roundingPlaces = ((axis.visibleRange.interval + '').indexOf('.') > -1) ?
-            ((axis.visibleRange.interval + '').split('.')[1]).length : 0;
         for (let i = axis.visibleRange.min, interval = axis.visibleRange.interval, max = axis.visibleRange.max; (i <= max && interval); i += interval) {
-            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : parseFloat(i.toFixed(roundingPlaces));
+            roundValue = axis.roundingPlaces ? parseFloat(i.toFixed(axis.roundingPlaces)) : i;
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
                 text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(roundValue)) :
@@ -2191,58 +2270,21 @@ let CircularGauge = class CircularGauge extends Component {
     preRender() {
         this.unWireEvents();
         this.trigger(load, { gauge: this });
-        this.themeEffect();
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
         this.wireEvents();
     }
-    themeEffect() {
-        let themes = this.theme.toLowerCase();
-        if (themes === 'highcontrast') {
-            this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
-            this.setThemeColors('#FFFFFF', '#FFFFFF');
-        }
-        else if (themes.indexOf('dark') > -1) {
-            for (let axis of this.axes) {
-                axis.labelStyle.font.color = axis.labelStyle.font.color || '#DADADA ';
-                axis.majorTicks.color = axis.majorTicks.color || '#C8C8C8';
-                axis.minorTicks.color = axis.minorTicks.color || '#9A9A9A';
-                for (let pointer of axis.pointers) {
-                    pointer.color = pointer.color || '#DADADA';
-                    pointer.needleTail.color = pointer.needleTail.color || '#9A9A9A';
-                    pointer.needleTail.border.color = pointer.needleTail.border.color || '#9A9A9A';
-                    pointer.cap.color = pointer.cap.color || '#9A9A9A';
-                    pointer.cap.border.color = pointer.cap.border.color || '#9A9A9A';
-                }
-            }
-        }
-        else {
-            this.titleStyle.color = this.titleStyle.color || '#424242';
-            this.setThemeColors('#212121', '#757575');
-        }
-    }
-    setThemeColors(labelcolor, others) {
-        for (let axis of this.axes) {
-            axis.lineStyle.color = axis.lineStyle.color || others;
-            axis.labelStyle.font.color = axis.labelStyle.font.color || labelcolor;
-            axis.majorTicks.color = axis.majorTicks.color || others;
-            axis.minorTicks.color = axis.minorTicks.color || others;
-            for (let pointer of axis.pointers) {
-                pointer.color = pointer.color || others;
-                pointer.needleTail.color = pointer.needleTail.color || others;
-                pointer.needleTail.border.color = pointer.needleTail.border.color || others;
-                pointer.cap.color = pointer.cap.color || others;
-                pointer.cap.border.color = pointer.cap.border.color || others;
-            }
-        }
-    }
     /**
      * To render the circular gauge elements
      */
     render() {
+        this.setTheme();
         this.calculateBounds();
         this.renderElements();
+    }
+    setTheme() {
+        this.themeStyle = getThemeStyle(this.theme);
     }
     /**
      * Method to unbind events for circular gauge
@@ -2332,7 +2374,6 @@ let CircularGauge = class CircularGauge extends Component {
         let value = getValueFromAngle(getAngleFromLocation(this.midPoint, location), range.max, range.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
         if (value >= range.min && value <= range.max) {
             this.activePointer.currentValue = value;
-            this.activePointer.value = value;
             this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, this.activePointer, value);
         }
     }
@@ -2380,6 +2421,7 @@ let CircularGauge = class CircularGauge extends Component {
                 pointer: this.activePointer,
                 currentValue: this.activePointer.currentValue
             });
+            this.activePointer.value = this.activePointer.currentValue;
             this.activeAxis = null;
             this.activePointer = null;
         }
@@ -2547,7 +2589,7 @@ let CircularGauge = class CircularGauge extends Component {
         if (this.title) {
             let size = measureText(this.title, this.titleStyle);
             let options = new TextOption(this.element.id + '_CircularGaugeTitle', this.availableSize.width / 2, this.margin.top + 3 * (size.height / 4), 'middle', this.title);
-            let element = textElement(options, this.titleStyle, this.titleStyle.color, this.svgObject, '');
+            let element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject, '');
             element.setAttribute('aria-label', this.description || this.title);
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
@@ -2557,8 +2599,8 @@ let CircularGauge = class CircularGauge extends Component {
      */
     renderBorder() {
         let borderWidth = this.border.width;
-        if (borderWidth > 0 || (this.background !== null && this.background !== 'transparent')) {
-            this.svgObject.appendChild(this.renderer.drawRectangle(new RectOption(this.element.id + '_CircularGaugeBorder', this.background, this.border, null, new Rect(borderWidth / 2, borderWidth / 2, this.availableSize.width - borderWidth, this.availableSize.height - borderWidth))));
+        if (borderWidth > 0 || (this.background || this.themeStyle.backgroundColor)) {
+            this.svgObject.appendChild(this.renderer.drawRectangle(new RectOption(this.element.id + '_CircularGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, null, new Rect(borderWidth / 2, borderWidth / 2, this.availableSize.width - borderWidth, this.availableSize.height - borderWidth))));
         }
     }
     /**
@@ -2602,8 +2644,10 @@ let CircularGauge = class CircularGauge extends Component {
                 }
             }
         });
+        this.isProtectedOnChange = true;
         pointer.currentValue = value;
         pointer.value = value;
+        this.isProtectedOnChange = false;
     }
     /**
      * Method to set the annotation content dynamically for circular gauge.
@@ -2714,6 +2758,31 @@ let CircularGauge = class CircularGauge extends Component {
         let renderer = false;
         let refreshBounds = false;
         let refreshWithoutAnimation = false;
+        let axisIndex = null;
+        let pointerIndex = null;
+        let pointerValue = null;
+        let changedProperties = JSON.stringify(newProp);
+        let splitProperties = changedProperties.split('},');
+        if (splitProperties) {
+            for (let j = 0; j < splitProperties.length; j++) {
+                if (splitProperties[j].indexOf('pointers') > -1) {
+                    let properties = splitProperties[j].split('{');
+                    for (let k = 0; k < properties.length; k++) {
+                        let value = properties[k].replace(/([^a-z0-9]+)/gi, '');
+                        axisIndex = axisIndex === null && (value === 'axes') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') : axisIndex;
+                        pointerIndex = pointerIndex === null && (value === 'pointers') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') :
+                            pointerIndex;
+                        pointerValue = (value.indexOf('value') > -1) ? properties[k].replace(/[value&\/\\#,+()$~%'":*?<>{}]/g, '') :
+                            pointerValue;
+                    }
+                }
+            }
+        }
+        let samePointerValue = false;
+        if (axisIndex && pointerIndex && pointerValue) {
+            samePointerValue = this.axes[parseFloat(axisIndex)].pointers[parseFloat(pointerIndex)].currentValue
+                === parseFloat(pointerValue);
+        }
         let isPointerValueSame = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
             !isNullOrUndefined(this.activePointer));
         for (let prop of Object.keys(newProp)) {
@@ -2784,7 +2853,7 @@ __decorate([
     Complex({ color: 'transparent', width: 0 }, Border)
 ], CircularGauge.prototype, "border", void 0);
 __decorate([
-    Property('transparent')
+    Property(null)
 ], CircularGauge.prototype, "background", void 0);
 __decorate([
     Property('')

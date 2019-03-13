@@ -16,6 +16,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { Zoom } from '../../../src/chart/user-interaction/zooming';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(Zoom, Legend, EmaIndicator, LineSeries, CandleSeries, Category, Tooltip, Crosshair);
 
 
@@ -48,6 +49,14 @@ let financialData: object[] = [
 ];
 
 describe('Chart', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let element: HTMLElement;
 
     describe('EMA Technical Indicators', () => {
@@ -64,7 +73,8 @@ describe('Chart', () => {
                     series: [{
                         name: 'gold',
                         type: 'Candle',
-                        animation: { enable: false }
+                        animation: { enable: false },
+                        improveChartPerformance: false
                     }],
                     indicators: [{
                         type: 'Ema',
@@ -625,4 +635,13 @@ describe('Chart', () => {
         });
 
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

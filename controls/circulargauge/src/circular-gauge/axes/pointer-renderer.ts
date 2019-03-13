@@ -79,7 +79,7 @@ export class PointerRenderer {
             ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
         pointer.pathElement.push(appendPath(
             new PathOption(
-                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, pointer.color,
+                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, pointer.color || this.gauge.themeStyle.needleColor,
                 pointer.border.width, pointer.border.color, null, '0', direction
             ),
             parentElement, gauge)
@@ -103,12 +103,12 @@ export class PointerRenderer {
 
             pointer.pathElement.push(appendPath(
                 new PathOption(
-                    gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index, pointer.needleTail.color,
+                    gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleTail_' + index,
+                    pointer.needleTail.color || this.gauge.themeStyle.needleTailColor,
                     pointer.needleTail.border.width, pointer.needleTail.border.color, null, '0', direction
                 ),
                 parentElement, gauge)
             );
-
             rectDirection += ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + location.x + ' ' + (mid.y - width);
         }
         // To render the cap
@@ -118,7 +118,8 @@ export class PointerRenderer {
                     mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2),
                     '', new PathOption(
                         gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index,
-                        pointer.cap.color, pointer.cap.border.width, pointer.cap.border.color, null, '0', '', ''
+                        pointer.cap.color || this.gauge.themeStyle.capColor, pointer.cap.border.width,
+                        pointer.cap.border.color, null, '0', '', ''
                     )
                 ),
                 parentElement, gauge, 'Ellipse')
@@ -154,7 +155,7 @@ export class PointerRenderer {
         if (isClockWise) {
             endAngle = startAngle === endAngle ? endAngle + 1 : endAngle;
         } else {
-            endAngle  = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
+            endAngle = startAngle === endAngle ? [startAngle, startAngle = endAngle - 1][0] : [startAngle, startAngle = endAngle][0];
         }
         let roundStartAngle: number;
         let roundEndAngle: number;
@@ -218,7 +219,7 @@ export class PointerRenderer {
                 location, pointer.markerShape, new Size(pointer.markerWidth, pointer.markerHeight),
                 pointer.imageUrl, new PathOption(
                     gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index,
-                    pointer.color, pointer.border.width, pointer.border.color, null, '0', '', ''
+                    pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', ''
                 )
             ),
             parentElement, gauge,
@@ -234,7 +235,7 @@ export class PointerRenderer {
         let pointer: Pointer = <Pointer>axis.pointers[index];
         pointer.pathElement.push(appendPath(
             new PathOption(
-                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, pointer.color,
+                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_RangeBar_' + index, pointer.color || this.gauge.themeStyle.pointerColor,
                 pointer.border.width, pointer.border.color,
                 1, '0', ''
             ),
@@ -327,8 +328,25 @@ export class PointerRenderer {
             end, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, isClockWise
         );
+        let roundRadius: number = pointer.roundedCornerRadius;
         let sweepAngle: number;
-        let endAngle: number = startAngle > pointAngle ? (pointAngle + 360) : pointAngle;
+        let endAngle: number;
+        let oldStart: number;
+        let minRadius: number = (radius * 0.25);
+        if (end <= minRadius) {
+            radius = end === 1 || 2 ? 8 : radius;
+            radius /= 2;
+            minRadius = radius * 0.25;
+        }
+        if (roundRadius) {
+            minAngle = ((((pointer.currentRadius) * ((minAngle * Math.PI) / 180) +
+                roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
+            pointAngle = ((((pointer.currentRadius) * ((pointAngle * Math.PI) / 180) -
+                roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
+            oldStart = ((((pointer.currentRadius - (pointer.pointerWidth / 2)) * ((startAngle * Math.PI) / 180) -
+                (radius / minRadius)) / (pointer.currentRadius - (pointer.pointerWidth / 2))) * 180) / Math.PI;
+        }
+        endAngle = startAngle > pointAngle ? (pointAngle + 360) : pointAngle;
         new Animation({}).animate(element, {
             duration: pointer.animation.duration,
             progress: (arg: AnimationOptions): void => {
@@ -337,15 +355,35 @@ export class PointerRenderer {
                     isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
                     isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
                 if (isClockWise) {
+                    if (!roundRadius) {
                     element.setAttribute('d', getCompleteArc(
                         this.gauge.midPoint, minAngle,
                         linear(arg.timeStamp, startAngle, sweepAngle, arg.duration) + 0.0001, radius, innerRadius)
                     );
                 } else {
+                        element.setAttribute('d', getRoundedPathArc(
+                            this.gauge.midPoint, Math.floor(minAngle),
+                            linear(arg.timeStamp, Math.floor(minAngle), sweepAngle, arg.duration) + 0.0001, oldStart,
+                            linear(arg.timeStamp, Math.floor(minAngle + (roundRadius / 2)), sweepAngle, arg.duration) + 0.0001,
+                            radius, pointer.pointerWidth, pointer.pointerWidth
+                        ));
+                    }
+                } else {
+                    if (!roundRadius) {
                     element.setAttribute('d', getCompleteArc(
                         this.gauge.midPoint, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration),
                         minAngle + 0.0001, radius, innerRadius)
                     );
+                    } else {
+                        sweepAngle += roundRadius;
+                        element.setAttribute('d', getRoundedPathArc(
+                            this.gauge.midPoint,
+                            linear(arg.timeStamp, Math.floor(oldStart), sweepAngle, arg.duration),
+                            Math.floor(oldStart) + 0.0001,
+                            linear(arg.timeStamp, Math.floor(minAngle - roundRadius - (roundRadius / 2)), sweepAngle, arg.duration),
+                            Math.floor(oldStart + (roundRadius / 2)) + 0.0001, radius, pointer.pointerWidth, pointer.pointerWidth
+                        ));
+                    }
                 }
             },
             end: (model: AnimationOptions) => {

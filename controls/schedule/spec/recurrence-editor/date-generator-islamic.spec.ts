@@ -1,5 +1,6 @@
 import { generate } from '../../src/recurrence-editor/date-generator';
 import { HijriParser } from '@syncfusion/ej2-base';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 /**
  * test case for islamic reccurence.
  */
@@ -12,6 +13,17 @@ export function getHijriDates(dates: number[]): { [key: string]: Object }[] {
     return hijriDates;
 }
 describe('Islamic mode', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Schedule - recurrence Freq- Daily', () => {
         let startDate: Date = new Date('Tue, 06 May 2014');
         it('Default - Interval', () => {
@@ -1118,5 +1130,16 @@ describe('Islamic mode', () => {
                 '{"year":1443,"month":1,"date":7},{"year":1445,"month":1,"date":5}]');
         });
     });
-});
 
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
+    });
+});

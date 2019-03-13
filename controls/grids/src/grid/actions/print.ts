@@ -107,6 +107,7 @@ export class Print {
             (printGrid as Grid).setInjectedModules(injectedModues);
         }
         gObj.notify(events.printGridInit, { element: element, printgrid: printGrid });
+        this.parent.log('exporting_begin', this.getModuleName());
         printGrid.appendTo(element as HTMLElement);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
         printGrid.trigger = gObj.trigger;
@@ -178,6 +179,7 @@ export class Print {
             element: gObj.element
         };
         gObj.trigger(events.printComplete, args);
+        this.parent.log('exporting_complete', this.getModuleName());
     }
 
     private printGridElement(gObj: IGrid): void {

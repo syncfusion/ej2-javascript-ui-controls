@@ -58,4 +58,5 @@ export interface IMulitSelect extends Component<HTMLElement> {
     keyAction?: boolean;
     removeFocus?(): void;
     getLocaleName?(): string;
+    filterParent: HTMLElement;
 }

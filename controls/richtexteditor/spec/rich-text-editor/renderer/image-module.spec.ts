@@ -522,10 +522,12 @@ client side. Customer easy to edit the contents and get the HTML content for
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+            (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
             dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
             setTimeout(() => {
                 expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
                 (rteObj.element.querySelector('.testNode') as HTMLElement).click();
+                (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
                 dispatchEvent((rteObj.element.querySelector('.testNode') as HTMLElement), 'mouseup');
                 setTimeout(() => {
                     expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
@@ -795,7 +797,11 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).element.querySelector('.e-rte-image').width).toBe(180);
             expect((<any>rteObj).element.querySelector('.e-rte-image').height).toBe(180);
             let eventsArgs: any = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
-            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
+            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));   
+            // set and pass the click action point for check the condtion in mouseup event handler
+            (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
+            eventsArgs.clientY = 100;
+            eventsArgs.clientX = 50;
             (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
@@ -806,11 +812,19 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).imageModule.captionEle.querySelector('img').classList.contains('e-rte-image')).toBe(true);
             eventsArgs = { target: rteObj.element as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
+            // set and pass the click action point for check the condtion in mouseup event handler
+            (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
+            eventsArgs.clientY = 100;
+            eventsArgs.clientX = 50;
             (<any>rteObj).mouseUp(eventsArgs);
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
             evnArg.selectNode = [rteObj.element];
             eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
+            // set and pass the click action point for check the condtion in mouseup event handler
+            (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
+            eventsArgs.clientY = 100;
+            eventsArgs.clientX = 50;
             (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
@@ -819,6 +833,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)];
             eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
+            // set and pass the click action point for check the condtion in mouseup event handler
+            (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
+            eventsArgs.clientY = 100;
+            eventsArgs.clientX = 50;
             (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
@@ -835,11 +853,19 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-image'));
+            // set and pass the click action point for check the condtion in mouseup event handler
+            (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
+            eventsArgs.clientY = 100;
+            eventsArgs.clientX = 50;
             (<any>rteObj).mouseUp(eventsArgs);
             linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             (<HTMLElement>linkTBItems.item(7)).click();
+            // set and pass the click action point for check the condtion in mouseup event handler
+            (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
+            eventsArgs.clientY = 100;
+            eventsArgs.clientX = 50;
             (<any>rteObj).mouseUp(eventsArgs);
             (<HTMLElement>linkTBItems.item(5)).click();
             (<any>rteObj).mouseUp(eventsArgs);
@@ -932,8 +958,12 @@ client side. Customer easy to edit the contents and get the HTML content for
             evnArg.args.item = { command: 'Images', subCommand: 'Inline' };
             (<any>rteObj).imageModule.inline(evnArg);
             expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imginline')).toBe(true);
-            let eventsArgs = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
-            (<any>rteObj).mouseUp(eventsArgs);
+            let eventsArgs:any = { target: rteObj.element.querySelector('.e-rte-image') as HTMLElement, preventDefault: function () { } };
+             // set and pass the click action point for check the condtion in mouseup event handler
+             (<any>rteObj).clickPoints = { clientY: 100, clientX: 50 };
+             eventsArgs.clientY = 100;
+             eventsArgs.clientX = 50;
+             (<any>rteObj).mouseUp(eventsArgs);
             let linkPop = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             let linkTBItems = linkPop.querySelectorAll('.e-toolbar-item');
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
@@ -1212,6 +1242,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
             (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+            (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
             dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
             setTimeout(() => {
                 let nodObj: NodeSelection = new NodeSelection();
@@ -1224,6 +1255,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).formatter.editorManager.imgObj.createImage(args);
                 expect(((rteObj.element.querySelector('.e-rte-image') as HTMLImageElement).src === 'https://gitlab.syncfusion.com/uploads/-/system/appearance/header_logo/1/Syncfusion_logo_plain.jpg')).toBe(true);
                 (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+                (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
                 dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
                 setTimeout(() => {
                     (<any>QTBarModule).renderQuickToolbars();
@@ -1256,6 +1288,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     expect(img.classList.contains('e-imgbreak')).toBe(true);
                     QTBarModule.imageQTBar.hidePopup();
                     (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+                    (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
                     dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
                     setTimeout(() => {
                         (<any>rteObj).imageModule.onKeyDown({ args: keyboardEventArgs });
@@ -1586,5 +1619,113 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+    describe(' EJ2-20297: RTE Image insert link  - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(" Test - don't set the target as _blank while insert link with disable the new window option ", (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_InsertLink");
+                imageBtn.parentElement.click();
+                let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                let urlInput: HTMLInputElement = dialog.querySelector(".e-input.e-img-link");
+                urlInput.value = "http://www.google.com";
+                let checkboxEle: HTMLInputElement = dialog.querySelector('.e-checkbox-wrapper label');
+                checkboxEle.click();
+                let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
+                insertButton.click();
+                let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
+                expect(updateImage.parentElement.hasAttribute("target")).toBe(false);
+                done();
+            }, 100);
+        });
+        it(" Test - don't set the target as _blank while updating the image link with disable the new window option ", (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_InsertLink");
+                imageBtn.parentElement.click();
+                let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                let urlInput: HTMLInputElement = dialog.querySelector(".e-input.e-img-link");
+                urlInput.value = "http://www.google.com";
+                let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
+                insertButton.click();
+                let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
+                expect(updateImage.parentElement.hasAttribute("target")).toBe(true);
+                setCursorPoint(image, 0);
+                dispatchEvent(image, 'mousedown');
+                image.click();
+                dispatchEvent(image, 'mouseup');
+                setTimeout(() => {
+                    let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_EditImageLink");
+                    imageBtn.parentElement.click();
+                    let dialog: HTMLElement = document.getElementById(controlId + "_image");
 
+                    let checkboxEle: HTMLInputElement = dialog.querySelector('.e-checkbox-wrapper label');
+                    checkboxEle.click();
+                    let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
+                    insertButton.click();
+                    let updateImage: HTMLImageElement = rteObj.element.querySelector("#image");
+                    expect(updateImage.parentElement.hasAttribute("target")).toBe(false);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe(' EJ2-23213: Getting error while insert the image after applied the  lower case or  upper case commands in Html Editor  - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p id='insert-img'>RichTextEditor</p>`,
+                toolbarSettings: {
+                    items: [
+                        'LowerCase', 'UpperCase', '|',
+                        'Image']
+                },
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(" Apply uppercase and then insert an image  ", (done) => {
+            let pTag: HTMLElement = rteObj.element.querySelector('#insert-img') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pTag.childNodes[0], pTag.childNodes[0], 4, 6);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_UpperCase');
+            item.click();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pTag.childNodes[0], pTag.childNodes[2], 1, 2);
+            item = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+            item.click();
+            setTimeout(() => {
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
+                expect(!isNullOrUndefined(trg)).toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });

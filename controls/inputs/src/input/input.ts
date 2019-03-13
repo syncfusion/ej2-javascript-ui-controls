@@ -61,13 +61,14 @@ export namespace Input {
            parent.classList.remove('e-input-focus');
           }
         });
-        if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) && args.properties.showClearButton) {
+        if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
+            args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
             if (inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT)) {
                 addClass([inputObject.container], CLASSNAMES.INPUTGROUP);
             }
         }
-        if (!isNullOrUndefined(args.buttons)) {
+        if (!isNullOrUndefined(args.buttons) && args.element.tagName !== 'TEXTAREA') {
             for (let i: number = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
             }
@@ -85,13 +86,14 @@ export namespace Input {
 
     function _blurFn (): void {
       let parent: HTMLElement = getParentNode(this);
-      if (parent.getElementsByTagName('input')[0].value === '') {
+      if ((parent.getElementsByTagName('input')[0]) ? parent.getElementsByTagName('input')[0].value === '' :
+        parent.getElementsByTagName('textarea')[0].value === '') {
         let label: HTMLElement = <HTMLElement> parent.getElementsByClassName('e-float-text')[0];
         if (label.classList.contains(CLASSNAMES.LABELTOP)) { removeClass([label], CLASSNAMES.LABELTOP); }
         addClass([label], CLASSNAMES.LABELBOTTOM); }
     }
 
-    function wireFloatingEvents(element: HTMLInputElement): void {
+    function wireFloatingEvents(element: HTMLInputElement | HTMLTextAreaElement): void {
       element.addEventListener('focus', _focusFn);
       element.addEventListener('blur', _blurFn);
     }
@@ -205,7 +207,7 @@ export namespace Input {
    /**
     * To create clear button.
     */
-    function createClearButton(element: HTMLInputElement, inputObject?: InputObject ,
+    function createClearButton(element: HTMLInputElement | HTMLTextAreaElement, inputObject?: InputObject ,
                                initial ?: boolean, internalCreateElement ?: createElementParams ): HTMLElement {
         let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         let button: HTMLElement = <HTMLElement>makeElement('span', { className: CLASSNAMES.CLEARICON });
@@ -227,7 +229,7 @@ export namespace Input {
         return button;
     }
 
-    function wireClearBtnEvents(element: HTMLInputElement, button: HTMLElement, container: HTMLElement): void {
+    function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
       button.addEventListener('click', (event: MouseEvent) => {
         if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
           event.preventDefault();
@@ -247,7 +249,7 @@ export namespace Input {
       });
     }
 
-    function validateLabel(element: HTMLInputElement, floatLabelType: string) : void {
+    function validateLabel(element: HTMLInputElement | HTMLTextAreaElement, floatLabelType: string) : void {
         let parent: HTMLElement = getParentNode(element);
         if (parent.classList.contains(CLASSNAMES.FLOATINPUT) && floatLabelType === 'Auto') {
             let label: HTMLElement = <HTMLElement> getParentNode(element).getElementsByClassName('e-float-text')[0];
@@ -292,8 +294,8 @@ export namespace Input {
     * @param floatLabelType - Specify the float label type of the input element.
     * @param clearButton - Boolean value to specify whether the clear icon is enabled / disabled on the input.
     */
-
-    export function setValue(value: string, element: HTMLInputElement, floatLabelType ?: string, clearButton?: boolean): void {
+    export function setValue(value: string, element: HTMLInputElement | HTMLTextAreaElement,
+                             floatLabelType ?: string, clearButton?: boolean): void {
         element.value = value;
         if ((!isNullOrUndefined(floatLabelType)) && floatLabelType === 'Auto') {
             validateLabel(element, floatLabelType);
@@ -334,7 +336,7 @@ export namespace Input {
     * @param placeholder - Placeholder value which is need to add.
     * @param element - The element on which the placeholder is need to add.
     */
-    export function setPlaceholder(placeholder: string, element: HTMLInputElement): void {
+    export function setPlaceholder(placeholder: string, element: HTMLInputElement | HTMLTextAreaElement): void {
         let parentElement: HTMLElement;
         placeholder = encodePlaceHolder(placeholder);
         parentElement = getParentNode(element);
@@ -365,7 +367,7 @@ export namespace Input {
     * @param element
     * - The element which is need to enable read only.
     */
-    export function setReadonly(isReadonly: boolean, element: HTMLInputElement, floatLabelType ?: string): void {
+    export function setReadonly(isReadonly: boolean, element: HTMLInputElement | HTMLTextAreaElement, floatLabelType ?: string): void {
         if (isReadonly) {
             attributes(element, { readonly: '' });
         } else {
@@ -402,7 +404,7 @@ export namespace Input {
     * @param element
     * - Element to be enabled or disabled.
     */
-    export function setEnabled(isEnable: boolean, element: HTMLInputElement, floatLabelType ?: string ,
+    export function setEnabled(isEnable: boolean, element: HTMLInputElement | HTMLTextAreaElement, floatLabelType ?: string ,
                                inputContainer?: HTMLElement ): void {
         let disabledAttrs: { [key: string]: string } = { 'disabled': 'disabled', 'aria-disabled': 'true' };
         let considerWrapper: boolean = isNullOrUndefined(inputContainer) ? false : true;
@@ -424,7 +426,7 @@ export namespace Input {
         }
     }
 
-    export function setClearButton (isClear: boolean, element: HTMLInputElement,
+    export function setClearButton (isClear: boolean, element: HTMLInputElement | HTMLTextAreaElement,
                                     inputObject: InputObject, initial ?: boolean, internalCreateElement ?: createElementParams ): void {
         let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         if (isClear) {
@@ -491,7 +493,8 @@ export namespace Input {
     export function removeFloating(input: InputObject): void {
       let container: HTMLElement = input.container;
       if (!isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
-        let inputEle: HTMLElement = container.querySelector('input') as HTMLElement;
+        let inputEle: HTMLElement = container.querySelector('input') ? <HTMLElement>container.querySelector('input') :
+        <HTMLElement>container.querySelector('textarea');
         let placeholder: string = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
         let clearButton: boolean = container.querySelector('.e-clear-icon') !== null;
         detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));
@@ -500,11 +503,10 @@ export namespace Input {
         unwireFloatingEvents(inputEle);
         attributes(inputEle, { 'placeholder': placeholder });
         inputEle.classList.add(CLASSNAMES.INPUT);
-        if (!clearButton) { inputEle.removeAttribute('required'); }
-     }
+        if (!clearButton && inputEle.tagName === 'INPUT') { inputEle.removeAttribute('required'); }
+      }
     }
-
-    export function addFloating(input: HTMLInputElement, type: FloatLabelType | string, placeholder: string,
+    export function addFloating(input: HTMLInputElement | HTMLTextAreaElement, type: FloatLabelType | string, placeholder: string,
                                 internalCreateElement ?: createElementParams): void {
       let makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
       let container: HTMLElement = <HTMLElement>closest(input, '.' + CLASSNAMES.INPUTGROUP);
@@ -638,7 +640,7 @@ export interface InputArgs {
     * E.g : Input.createInput({ element: element });
     * ```
     */
-    element: HTMLInputElement;
+    element: HTMLInputElement | HTMLTextAreaElement;
    /**
     * ```
     * E.g : Input.createInput({ element: element, buttons: ['e-icon-up', 'e-icon-down'] });

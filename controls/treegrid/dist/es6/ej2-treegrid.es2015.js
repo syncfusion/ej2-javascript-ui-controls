@@ -1,5 +1,6 @@
 import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isNullOrUndefined, merge, removeClass, setValue } from '@syncfusion/ej2-base';
-import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, Edit, ExcelExport, Filter, Grid, Page, PdfExport, Predicate, Print, Reorder, Resize, Sort, TextWrapSettings, Toolbar, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, iterateExtend } from '@syncfusion/ej2-grids';
+import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, Edit, ExcelExport, Filter, Grid, Page, PdfExport, Predicate, Print, Reorder, Resize, Sort, TextWrapSettings, Toolbar, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
+import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
@@ -101,33 +102,6 @@ __decorate$1([
 ], FilterSettings.prototype, "hierarchyMode", void 0);
 
 /**
- * TreeGrid ColumnMenu module
- * @hidden
- */
-class ColumnMenu$1 {
-    /**
-     * Constructor for render module
-     */
-    constructor(parent) {
-        Grid.Inject(ColumnMenu);
-        this.parent = parent;
-    }
-    getColumnMenu() {
-        return this.parent.grid.columnMenuModule.getColumnMenu();
-    }
-    destroy() {
-        //this.parent.grid.columnMenuModule.destroy();
-    }
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    getModuleName() {
-        return 'columnMenu';
-    }
-}
-
-/**
  *  @hidden
  */
 const load = 'load';
@@ -144,7 +118,11 @@ const actionBegin = 'actionBegin';
 /** @hidden */
 const actionComplete = 'actionComplete';
 /** @hidden */
+const rowSelecting = 'rowSelecting';
+/** @hidden */
 const rowSelected = 'rowSelected';
+/** @hidden */
+const checkboxChange = 'checkboxChange';
 /** @hidden */
 const rowDeselected = 'rowDeselected';
 /** @hidden */
@@ -209,6 +187,527 @@ const keyPressed = 'key-pressed';
 const updateData = 'update-data';
 /** @hidden */
 const doubleTap = 'double-tap';
+
+function isRemoteData(parent) {
+    if (parent.dataSource instanceof DataManager) {
+        let adaptor = parent.dataSource.adaptor;
+        return (adaptor instanceof ODataAdaptor ||
+            (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
+            (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
+    }
+    return false;
+}
+/**
+ * @hidden
+ */
+function findParentRecords(records) {
+    let datas;
+    datas = [];
+    let recordsLength = Object.keys(records).length;
+    for (let i = 0, len = recordsLength; i < len; i++) {
+        let hasChild = getObject('hasChildRecords', records[i]);
+        if (hasChild) {
+            datas.push(records[i]);
+        }
+    }
+    return datas;
+}
+/**
+ * @hidden
+ */
+function getExpandStatus(parent, record, parents) {
+    let parentRecord = isNullOrUndefined(record.parentItem) ? null :
+        getParentData(parent, record.parentItem.uniqueID);
+    let childParent;
+    if (parentRecord != null) {
+        if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
+            && !parentRecord[parent.expandStateMapping]) {
+            parentRecord.expanded = false;
+            return false;
+        }
+        else if (parentRecord.expanded === false) {
+            return false;
+        }
+        else if (parentRecord.parentItem) {
+            childParent = getParentData(parent, parentRecord.parentItem.uniqueID);
+            if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
+                && !childParent[parent.expandStateMapping]) {
+                childParent.expanded = false;
+                return false;
+            }
+            if (childParent && childParent.expanded === false) {
+                return false;
+            }
+            else if (childParent) {
+                return getExpandStatus(parent, childParent, parents);
+            }
+            return true;
+        }
+        else {
+            return true;
+        }
+    }
+    else {
+        return true;
+    }
+}
+/**
+ * @hidden
+ */
+function findChildrenRecords(records) {
+    let datas = [];
+    if (isNullOrUndefined(records) || !records.hasChildRecords) {
+        return [];
+    }
+    let childRecords = records.childRecords;
+    for (let i = 0, len = Object.keys(childRecords).length; i < len; i++) {
+        datas.push(childRecords[i]);
+        if (childRecords[i].hasChildRecords) {
+            datas = [...datas, ...findChildrenRecords(childRecords[i])];
+        }
+    }
+    return datas;
+}
+function isOffline(parent) {
+    if (isRemoteData(parent)) {
+        let dm = parent.dataSource;
+        return !isNullOrUndefined(dm.ready);
+    }
+    return true;
+}
+function extendArray(array) {
+    let objArr = [];
+    let obj;
+    let keys;
+    for (let i = 0; i < array.length; i++) {
+        keys = Object.keys(array[i]);
+        obj = {};
+        for (let j = 0; j < keys.length; j++) {
+            obj[keys[j]] = array[i][keys[j]];
+        }
+        objArr.push(obj);
+    }
+    return objArr;
+}
+function getPlainData(value) {
+    delete value.hasChildRecords;
+    delete value.childRecords;
+    delete value.index;
+    delete value.parentItem;
+    delete value.level;
+    return value;
+}
+function getParentData(parent, value, requireFilter) {
+    if (requireFilter) {
+        let idFilter = 'uniqueIDFilterCollection';
+        return parent[idFilter][value];
+    }
+    else {
+        let id = 'uniqueIDCollection';
+        return parent[id][value];
+    }
+}
+
+/**
+ * TreeGrid Selection module
+ * @hidden
+ */
+class Selection {
+    /**
+     * Constructor for Selection module
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.selectedItems = [];
+        this.selectedIndexes = [];
+        this.addEventListener();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'selection';
+    }
+    addEventListener() {
+        this.parent.on('headerCheckbox', this.headerCheckbox, this);
+        this.parent.on('columnCheckbox', this.columnCheckbox, this);
+        this.parent.on('updateGridActions', this.updateGridActions, this);
+        this.parent.on('checkboxSelection', this.checkboxSelection, this);
+    }
+    removeEventListener() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('renderHeaderCheckbox', this.headerCheckbox);
+        this.parent.off('renderCheckbox', this.columnCheckbox);
+        this.parent.off('checkboxSelection', this.checkboxSelection);
+        this.parent.off('updateCheckboxes', this.updateGridActions);
+    }
+    /**
+     * To destroy the Selection
+     * @return {void}
+     * @hidden
+     */
+    destroy() {
+        this.removeEventListener();
+    }
+    checkboxSelection(args) {
+        let target = getObject('target', args);
+        let checkWrap = parentsUntil(target, 'e-checkbox-wrapper');
+        let checkBox;
+        if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
+            checkBox = checkWrap.querySelector('input[type="checkbox"]');
+            let rowIndex;
+            rowIndex = [];
+            rowIndex.push(target.closest('tr').rowIndex);
+            let checkBoxargs = this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
+            if (!checkBoxargs.cancel) {
+                this.selectCheckboxes(rowIndex);
+            }
+        }
+        else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
+            let checkBoxvalue = !checkWrap.querySelector('.e-frame').classList.contains('e-check')
+                && !checkWrap.querySelector('.e-frame').classList.contains('e-stop');
+            this.headerSelection(checkBoxvalue);
+        }
+    }
+    triggerChkChangeEvent(checkBox, checkState, rowElement) {
+        let data = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
+        let args = { checked: checkState, target: checkBox, cancel: false, rowElement: rowElement,
+            rowData: data };
+        this.parent.trigger(checkboxChange, args);
+        return args;
+    }
+    getCheckboxcolumnIndex() {
+        let mappingUid;
+        let columnIndex;
+        let columns = (this.parent.columns);
+        for (let col = 0; col < columns.length; col++) {
+            if (columns[col].showCheckbox) {
+                mappingUid = this.parent.columns[col].uid;
+            }
+        }
+        let headerCelllength = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv').length;
+        for (let j = 0; j < headerCelllength; j++) {
+            let headercell = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv')[j];
+            if (headercell.getAttribute('e-mappinguid') === mappingUid) {
+                columnIndex = j;
+            }
+        }
+        return columnIndex;
+    }
+    headerCheckbox() {
+        this.columnIndex = this.getCheckboxcolumnIndex();
+        if (this.columnIndex > -1 && this.parent.getHeaderTable().querySelectorAll('.e-treeselectall').length === 0) {
+            let headerElement = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv')[this.columnIndex];
+            let checkWrap;
+            let value = false;
+            let rowChkBox = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox' } });
+            checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
+            checkWrap.classList.add('e-hierarchycheckbox');
+            checkWrap.querySelector('.e-frame').style.width = '18px';
+            checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
+            if (!isNullOrUndefined(headerElement)) {
+                headerElement.insertBefore(checkWrap, headerElement.firstChild);
+            }
+            this.headerSelection();
+        }
+    }
+    renderColumnCheckbox(args) {
+        let checkWrap;
+        let rowChkBox = this.parent.createElement('input', { className: 'e-treecheckselect', attrs: { 'type': 'checkbox' } });
+        let data = args.data;
+        args.cell.classList.add('e-treegridcheckbox');
+        args.cell.setAttribute('aria-label', 'checkbox');
+        let value = (isNullOrUndefined(data.checkboxState) || data.checkboxState === 'uncheck') ? false : true;
+        checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
+        checkWrap.classList.add('e-hierarchycheckbox');
+        checkWrap.querySelector('.e-frame').style.width = '18px';
+        if (data.checkboxState === 'indeterminate') {
+            let checkbox = checkWrap.querySelectorAll('.e-frame')[0];
+            removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
+            checkWrap.querySelector('.e-frame').classList.add('e-stop');
+        }
+        checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
+        return checkWrap;
+    }
+    columnCheckbox(container) {
+        let checkWrap = this.renderColumnCheckbox(container);
+        let containerELe = container.cell.querySelector('.e-treecolumn-container');
+        if (!isNullOrUndefined(containerELe)) {
+            containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
+        }
+        else {
+            let spanEle = checkWrap.querySelector('.e-label');
+            let data = container.cell.innerHTML;
+            container.cell.innerHTML = '';
+            spanEle.innerHTML = data;
+            container.cell.appendChild(checkWrap);
+        }
+    }
+    selectCheckboxes(rowIndexes) {
+        for (let i = 0; i < rowIndexes.length; i++) {
+            let record = this.parent.getCurrentViewRecords()[rowIndexes[i]];
+            let checkboxState = (record.checkboxState === 'uncheck') ? 'check' : 'uncheck';
+            record.checkboxState = checkboxState;
+            let keys = Object.keys(record);
+            let data = getParentData(this.parent, record.uniqueID);
+            for (let j = 0; j < keys.length; j++) {
+                if (data.hasOwnProperty(keys[j])) {
+                    data[keys[j]] = record[keys[j]];
+                }
+            }
+            this.traverSelection(record, checkboxState, false);
+            if (this.parent.autoCheckHierarchy) {
+                this.headerSelection();
+            }
+        }
+    }
+    traverSelection(record, checkboxState, ischildItem) {
+        let length = 0;
+        this.updateSelectedItems(record, checkboxState);
+        if (!ischildItem && record.parentItem && this.parent.autoCheckHierarchy) {
+            this.updateParentSelection(record.parentItem);
+        }
+        if (record.childRecords && this.parent.autoCheckHierarchy) {
+            let childRecords = record.childRecords;
+            if (!isNullOrUndefined(this.parent.filterModule) &&
+                this.parent.filterModule.filteredResult.length > 0 && this.parent.autoCheckHierarchy) {
+                childRecords = this.getFilteredChildRecords(childRecords);
+            }
+            length = childRecords.length;
+            for (let count = 0; count < length; count++) {
+                if (childRecords[count].hasChildRecords) {
+                    this.traverSelection(childRecords[count], checkboxState, true);
+                }
+                else {
+                    this.updateSelectedItems(childRecords[count], checkboxState);
+                }
+            }
+        }
+    }
+    getFilteredChildRecords(childRecords) {
+        let filteredChildRecords = childRecords.filter((e) => {
+            return this.parent.filterModule.filteredResult.indexOf(e) > -1;
+        });
+        return filteredChildRecords;
+    }
+    updateParentSelection(parentRecord) {
+        let length = 0;
+        let childRecords = [];
+        let record = getParentData(this.parent, parentRecord.uniqueID);
+        if (record && record.childRecords) {
+            childRecords = record.childRecords;
+        }
+        if (!isNullOrUndefined(this.parent.filterModule) &&
+            this.parent.filterModule.filteredResult.length > 0 && this.parent.autoCheckHierarchy) {
+            childRecords = this.getFilteredChildRecords(childRecords);
+        }
+        length = childRecords && childRecords.length;
+        let indeter = 0;
+        let checkChildRecords = 0;
+        if (!isNullOrUndefined(record)) {
+            for (let i = 0; i < childRecords.length; i++) {
+                if (childRecords[i].checkboxState === 'indeterminate') {
+                    indeter++;
+                }
+                else if (childRecords[i].checkboxState === 'check') {
+                    checkChildRecords++;
+                }
+            }
+            if (indeter > 0 || (checkChildRecords > 0 && checkChildRecords !== length)) {
+                record.checkboxState = 'indeterminate';
+            }
+            else if (checkChildRecords === 0 && indeter === 0) {
+                record.checkboxState = 'uncheck';
+            }
+            else {
+                record.checkboxState = 'check';
+            }
+            this.updateSelectedItems(record, record.checkboxState);
+            if (record.parentItem) {
+                this.updateParentSelection(record.parentItem);
+            }
+        }
+    }
+    headerSelection(checkAll) {
+        let index = -1;
+        let length = 0;
+        let data = (!isNullOrUndefined(this.parent.filterModule) &&
+            this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
+            this.parent.flatData;
+        if (!isNullOrUndefined(checkAll)) {
+            for (let i = 0; i < data.length; i++) {
+                if (checkAll) {
+                    if (data[i].checkboxState === 'check') {
+                        continue;
+                    }
+                    data[i].checkboxState = 'check';
+                    this.updateSelectedItems(data[i], data[i].checkboxState);
+                }
+                else {
+                    index = this.selectedItems.indexOf(data[i]);
+                    if (index > -1) {
+                        data[i].checkboxState = 'uncheck';
+                        this.updateSelectedItems(data[i], data[i].checkboxState);
+                        if (this.parent.autoCheckHierarchy) {
+                            this.updateParentSelection(data[i]);
+                        }
+                    }
+                }
+            }
+        }
+        length = this.selectedItems.length;
+        let checkbox = this.parent.getHeaderTable().querySelectorAll('.e-frame')[0];
+        if (length > 0 && data.length > 0) {
+            if (length !== data.length) {
+                removeClass([checkbox], ['e-check']);
+                checkbox.classList.add('e-stop');
+            }
+            else {
+                removeClass([checkbox], ['e-stop']);
+                checkbox.classList.add('e-check');
+            }
+        }
+        else {
+            removeClass([checkbox], ['e-check', 'e-stop']);
+        }
+    }
+    updateSelectedItems(currentRecord, checkState, filter) {
+        let record = this.parent.getCurrentViewRecords().filter((e) => {
+            return e.uniqueID === currentRecord.uniqueID;
+        });
+        let recordIndex = this.parent.getCurrentViewRecords().indexOf(record[0]);
+        let checkbox;
+        if (recordIndex > -1) {
+            let tr = this.parent.getRows()[recordIndex];
+            checkbox = tr.querySelectorAll('.e-frame')[0];
+            if (!isNullOrUndefined(checkbox)) {
+                removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
+            }
+        }
+        currentRecord.checkboxState = checkState;
+        if (checkState === 'check' && isNullOrUndefined(currentRecord.isSummaryRow)) {
+            if (recordIndex !== -1 && this.selectedIndexes.indexOf(recordIndex) === -1) {
+                this.selectedIndexes.push(recordIndex);
+            }
+            if (this.selectedItems.indexOf(currentRecord) === -1 && (recordIndex !== -1 &&
+                (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
+                this.selectedItems.push(currentRecord);
+            }
+            if (this.selectedItems.indexOf(currentRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
+                this.parent.filterModule.filteredResult.length === 0)) {
+                this.selectedItems.push(currentRecord);
+            }
+            if (this.selectedItems.indexOf(currentRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
+                this.selectedItems.push(currentRecord);
+            }
+        }
+        else if ((checkState === 'uncheck' || checkState === 'indeterminate') && isNullOrUndefined(currentRecord.isSummaryRow)) {
+            let index = this.selectedItems.indexOf(currentRecord);
+            if (index !== -1) {
+                this.selectedItems.splice(index, 1);
+            }
+            if (this.selectedIndexes.indexOf(recordIndex) !== -1) {
+                let checkedIndex = this.selectedIndexes.indexOf(recordIndex);
+                this.selectedIndexes.splice(checkedIndex, 1);
+            }
+        }
+        let checkBoxclass = checkState === 'indeterminate' ? 'e-stop' : 'e-' + checkState;
+        if (recordIndex > -1) {
+            if (!isNullOrUndefined(checkbox)) {
+                checkbox.classList.add(checkBoxclass);
+            }
+        }
+    }
+    updateGridActions(args) {
+        let requestType = args.requestType;
+        let childData;
+        let childLength;
+        if (this.parent.autoCheckHierarchy) {
+            if ((requestType === 'sorting' || requestType === 'paging')) {
+                childData = this.parent.getCurrentViewRecords();
+                childLength = childData.length;
+                this.selectedIndexes = [];
+                for (let i = 0; i < childLength; i++) {
+                    this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+                }
+            }
+            else if (requestType === 'delete' || args.action === 'add') {
+                let updatedData = [];
+                if (requestType === 'delete') {
+                    updatedData = args.data;
+                }
+                else {
+                    updatedData.push(args.data);
+                }
+                for (let i = 0; i < updatedData.length; i++) {
+                    if (requestType === 'delete') {
+                        let index = this.parent.flatData.indexOf(updatedData[i]);
+                        let checkedIndex = this.selectedIndexes.indexOf(index);
+                        this.selectedIndexes.splice(checkedIndex, 1);
+                        this.updateSelectedItems(updatedData[i], 'uncheck');
+                    }
+                    if (!isNullOrUndefined(updatedData[i].parentItem)) {
+                        this.updateParentSelection(updatedData[i].parentItem);
+                    }
+                }
+            }
+            else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
+                args.data.checkboxState = 'uncheck';
+            }
+            else if (requestType === 'filtering' || requestType === 'searching') {
+                this.selectedItems = [];
+                this.selectedIndexes = [];
+                childData = (this.parent.filterModule.filteredResult.length > 0) ? this.parent.getCurrentViewRecords() :
+                    this.parent.flatData;
+                childData.forEach((record) => {
+                    if (record.hasChildRecords) {
+                        this.updateParentSelection(record);
+                    }
+                    else {
+                        this.updateSelectedItems(record, record.checkboxState);
+                    }
+                });
+                this.headerSelection();
+            }
+        }
+    }
+    getCheckedrecords() {
+        return this.selectedItems;
+    }
+    getCheckedRowIndexes() {
+        return this.selectedIndexes;
+    }
+}
+
+/**
+ * TreeGrid ColumnMenu module
+ * @hidden
+ */
+class ColumnMenu$1 {
+    /**
+     * Constructor for render module
+     */
+    constructor(parent) {
+        Grid.Inject(ColumnMenu);
+        this.parent = parent;
+    }
+    getColumnMenu() {
+        return this.parent.grid.columnMenuModule.getColumnMenu();
+    }
+    destroy() {
+        //this.parent.grid.columnMenuModule.destroy();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'columnMenu';
+    }
+}
 
 /**
  * TreeGrid Print module
@@ -310,116 +809,12 @@ __decorate$3([
 __decorate$3([
     Property(false)
 ], SelectionSettings.prototype, "persistSelection", void 0);
-
-function isRemoteData(parent) {
-    if (parent.dataSource instanceof DataManager) {
-        let adaptor = parent.dataSource.adaptor;
-        return (adaptor instanceof ODataAdaptor ||
-            (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
-            (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
-    }
-    return false;
-}
-/**
- * @hidden
- */
-function findParentRecords(records) {
-    let datas;
-    datas = [];
-    let recordsLength = Object.keys(records).length;
-    for (let i = 0, len = recordsLength; i < len; i++) {
-        let hasChild = getObject('hasChildRecords', records[i]);
-        if (hasChild) {
-            datas.push(records[i]);
-        }
-    }
-    return datas;
-}
-/**
- * @hidden
- */
-function getExpandStatus(parent, record, parents) {
-    let parentRecord = isNullOrUndefined(record.parentItem) ? null :
-        parents.filter((e) => { return e.uniqueID === record.parentItem.uniqueID; })[0];
-    let childParent;
-    if (parentRecord != null) {
-        if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
-            && !parentRecord[parent.expandStateMapping]) {
-            parentRecord.expanded = false;
-            return false;
-        }
-        else if (parentRecord.expanded === false) {
-            return false;
-        }
-        else if (parentRecord.parentItem) {
-            childParent = parents.filter((e) => { return e.uniqueID === parentRecord.parentItem.uniqueID; })[0];
-            if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
-                && !childParent[parent.expandStateMapping]) {
-                childParent.expanded = false;
-                return false;
-            }
-            if (childParent && childParent.expanded === false) {
-                return false;
-            }
-            else if (childParent) {
-                return getExpandStatus(parent, childParent, parents);
-            }
-            return true;
-        }
-        else {
-            return true;
-        }
-    }
-    else {
-        return true;
-    }
-}
-/**
- * @hidden
- */
-function findChildrenRecords(records) {
-    let datas = [];
-    if (isNullOrUndefined(records) || !records.hasChildRecords) {
-        return [];
-    }
-    let childRecords = records.childRecords;
-    for (let i = 0, len = Object.keys(childRecords).length; i < len; i++) {
-        datas.push(childRecords[i]);
-        if (childRecords[i].hasChildRecords) {
-            datas = [...datas, ...findChildrenRecords(childRecords[i])];
-        }
-    }
-    return datas;
-}
-function isOffline(parent) {
-    if (isRemoteData(parent)) {
-        let dm = parent.dataSource;
-        return !isNullOrUndefined(dm.ready);
-    }
-    return true;
-}
-function extendArray(array) {
-    let objArr = [];
-    let obj;
-    let keys;
-    for (let i = 0; i < array.length; i++) {
-        keys = Object.keys(array[i]);
-        obj = {};
-        for (let j = 0; j < keys.length; j++) {
-            obj[keys[j]] = array[i][keys[j]];
-        }
-        objArr.push(obj);
-    }
-    return objArr;
-}
-function getPlainData(value) {
-    delete value.hasChildRecords;
-    delete value.childRecords;
-    delete value.index;
-    delete value.parentItem;
-    delete value.level;
-    return value;
-}
+__decorate$3([
+    Property('Default')
+], SelectionSettings.prototype, "checkboxMode", void 0);
+__decorate$3([
+    Property(false)
+], SelectionSettings.prototype, "checkboxOnly", void 0);
 
 /**
  * TreeGrid render module
@@ -485,6 +880,9 @@ class Render {
         let ispadfilter = isNullOrUndefined(data.filterLevel);
         let pad = ispadfilter ? data.level : data.filterLevel;
         let totalIconsWidth = 0;
+        let cellElement;
+        let column = this.parent.getColumnByField(args.column.field);
+        let summaryRow = data.isSummaryRow;
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
             let container = createElement('div', {
                 className: 'e-treecolumn-container'
@@ -536,7 +934,7 @@ class Render {
             // if (data.hasChildRecords) {
             //     addClass([expandIcon], data.expanded ? 'e-treegridexpand' : 'e-treegridcollapse');
             // }
-            let cellElement = createElement('span', {
+            cellElement = createElement('span', {
                 className: 'e-treecell'
             });
             if (this.parent.allowTextWrap) {
@@ -549,7 +947,15 @@ class Render {
             args.cell.innerHTML = '';
             args.cell.appendChild(container);
         }
-        let summaryRow = getObject('isSummaryRow', args.data);
+        if (!isNullOrUndefined(column) && column.showCheckbox) {
+            this.parent.notify('columnCheckbox', args);
+            if (this.parent.allowTextWrap) {
+                let checkboxElement = args.cell.querySelectorAll('.e-frame')[0];
+                let width = parseInt(checkboxElement.style.width, 16);
+                totalIconsWidth += width;
+                cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
+            }
+        }
         if (summaryRow) {
             addClass([args.cell], 'e-summarycell');
             let summaryData = getObject(args.column.field, args.data);
@@ -587,7 +993,6 @@ class Sort$1 {
     addEventListener() {
         this.parent.on('updateModel', this.updateModel, this);
         this.parent.on('createSort', this.createdSortedRecords, this);
-        this.parent.on('createSortRecords', this.createSorting, this);
     }
     /**
      * @hidden
@@ -598,71 +1003,30 @@ class Sort$1 {
         }
         this.parent.off('updateModel', this.updateModel);
         this.parent.off('createSort', this.createdSortedRecords);
-        this.parent.off('createSortRecords', this.createSorting);
     }
-    createSorting(data) {
+    createdSortedRecords(sortParams) {
+        let data = sortParams.modifiedData;
+        let srtQry = sortParams.srtQry;
+        this.iterateSort(data, srtQry);
+        this.storedIndex = -1;
+        this.parent.notify('updateAction', { result: this.flatSortedData });
         this.flatSortedData = [];
-        this.createSortRecords(data);
     }
-    createSortRecords(data) {
-        let sortData = getObject('modifiedData', data);
-        let parentRecords = getObject('parentRecords', data);
-        let parentIndex = getObject('parentIndex', data);
-        let filteredResult = getObject('filteredResult', data);
-        let dataLength = Object.keys(sortData).length;
-        for (let i = 0, len = dataLength; i < len; i++) {
-            let currentSortData = sortData[i];
-            this.storedIndex++;
-            let level = 0;
-            currentSortData.index = this.storedIndex;
-            if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
-                currentSortData.childRecords =
-                    currentSortData[this.parent.childMapping];
-                currentSortData.hasChildRecords = true;
-                currentSortData.expanded = true;
-            }
-            if (isNullOrUndefined(currentSortData.uniqueID)) {
-                currentSortData.uniqueID = getUid(this.parent.element.id + '_data_');
-            }
-            if (!isNullOrUndefined(parentRecords)) {
-                let parentData = extend({}, parentRecords);
-                delete parentData.childRecords;
-                delete parentData[this.parent.childMapping];
-                currentSortData.parentItem = parentData;
-                currentSortData.parentUniqueID = parentData.uniqueID;
-                level = parentRecords.level + 1;
-            }
-            currentSortData.level = level;
-            if (isNullOrUndefined(currentSortData[this.parent.parentIdMapping]) ||
-                currentSortData.parentItem) {
-                this.flatSortedData.push(currentSortData);
-            }
-            if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
-                this.createSortRecords({ modifiedData: currentSortData[this.parent.childMapping], parentRecords: currentSortData,
-                    filteredResult: filteredResult });
-            }
-        }
-        this.parent.notify('Sorting', { sortedData: this.flatSortedData, filteredData: filteredResult });
-    }
-    createdSortedRecords(sortingElements) {
-        let data = getObject('modifiedData', sortingElements);
-        let sortQuery = getObject('srtQry', sortingElements);
-        let parent = getObject('parent', sortingElements);
-        for (let i = 0, len = Object.keys(data).length; i < len; i++) {
-            if (!isNullOrUndefined(data[i].childRecords) || !isNullOrUndefined(data[i][parent.childMapping])) {
-                let sortedData;
-                let sortchildData;
-                if (isNullOrUndefined(data[i].childRecords)) {
-                    sortedData = new DataManager(data[i][parent.childMapping]).executeLocal(sortQuery);
+    iterateSort(data, srtQry) {
+        for (let d = 0; d < data.length; d++) {
+            if (this.parent.grid.filterSettings.columns.length > 0) {
+                if (!isNullOrUndefined(getParentData(this.parent, data[d].uniqueID, true))) {
+                    this.storedIndex++;
+                    this.flatSortedData[this.storedIndex] = data[d];
                 }
-                else {
-                    sortedData = new DataManager(data[i].childRecords).executeLocal(sortQuery);
-                }
-                sortchildData = sortedData;
-                if (sortchildData.length > 0) {
-                    data[i][parent.childMapping] = sortchildData;
-                }
-                this.createdSortedRecords({ modifiedData: sortchildData, parent: parent, srtQry: sortQuery });
+            }
+            else {
+                this.storedIndex++;
+                this.flatSortedData[this.storedIndex] = data[d];
+            }
+            if (data[d].hasChildRecords) {
+                let childSort = (new DataManager(data[d].childRecords).executeLocal(srtQry));
+                this.iterateSort(childSort, srtQry);
             }
         }
     }
@@ -726,7 +1090,6 @@ class DataManipulation {
      * @hidden
      */
     addEventListener() {
-        this.parent.on('Sorting', this.sortedRecords, this);
         this.parent.on('updateRemoteLevel', this.updateParentRemoteData, this);
         this.parent.grid.on('sorting-begin', this.beginSorting, this);
         this.parent.on('updateAction', this.updateData, this);
@@ -744,7 +1107,6 @@ class DataManipulation {
         this.parent.off('updateRemoteLevel', this.updateParentRemoteData);
         this.parent.off('updateAction', this.updateData);
         this.parent.off('dataProcessor', this.dataProcessor);
-        this.parent.off('Sorting', this.sortedRecords);
         this.parent.grid.off('sorting-begin', this.beginSorting);
     }
     /**
@@ -788,7 +1150,7 @@ class DataManipulation {
                             return e.httpRequest.statusText !== 'OK';
                         }).length;
                         if (req === 0) {
-                            setValue('grid.contentModule.isLoaded', true, this).parent;
+                            setValue('grid.contentModule.isLoaded', true, this.parent);
                             if (!isNullOrUndefined(this.zerothLevelData)) {
                                 setValue('cancel', false, this.zerothLevelData);
                                 getValue('grid.renderModule', this.parent).dataManagerSuccess(this.zerothLevelData);
@@ -810,30 +1172,24 @@ class DataManipulation {
                     this.taskIds.push(tempData[this.parent.idMapping]);
                 }
             }
-            let mappingData = new DataManager(data).executeLocal(new Query()
-                .where(this.parent.parentIdMapping, 'notequal', null)
-                .group(this.parent.parentIdMapping));
-            //let selfData: Object[] = [];
-            for (let i = 0; i < mappingData.length; i++) {
-                let groupData = mappingData[i];
-                let index = this.taskIds.indexOf(groupData.key);
-                if (index > -1) {
+            if (this.isSelfReference) {
+                let selfData = [];
+                let mappingData = new DataManager(this.hierarchyData).executeLocal(new Query()
+                    .where(this.parent.parentIdMapping, 'notequal', null)
+                    .group(this.parent.parentIdMapping));
+                for (let i = 0; i < mappingData.length; i++) {
+                    let groupData = mappingData[i];
+                    let index = this.taskIds.indexOf(groupData.key);
                     if (!isNullOrUndefined(groupData.key)) {
-                        let childData = iterateExtend(groupData.items);
-                        if (this.isSelfReference) {
-                            if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData, index)) {
-                                this.hierarchyData[index][this.parent.childMapping] = childData;
-                                if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping])) {
-                                    this.hierarchyData.splice(index, 1);
-                                    this.taskIds.splice(index, 1);
-                                }
-                            }
-                        }
-                        else {
+                        if (index > -1) {
+                            let childData = (groupData.items);
                             this.hierarchyData[index][this.parent.childMapping] = childData;
+                            continue;
                         }
                     }
+                    selfData.push.apply(selfData, groupData.items);
                 }
+                this.hierarchyData = this.selfReferenceUpdate(selfData);
             }
             if (!Object.keys(this.hierarchyData).length) {
                 this.parent.flatData = [];
@@ -858,27 +1214,19 @@ class DataManipulation {
     //              }
     //   }
     // }
-    updateChildHierarchy(data, currentData, childData, index) {
-        let parentID = currentData[this.parent.parentIdMapping];
-        let returns = false;
-        let id = currentData[this.parent.idMapping];
-        for (let i = 0; i < data.length; i++) {
-            if (data[i][this.parent.idMapping] === parentID) {
-                let childs = data[i][this.parent.childMapping];
-                for (let j = 0; j < childs.length; j++) {
-                    if (childs[j][this.parent.idMapping] === id) {
-                        childs[j][this.parent.childMapping] = childData;
-                        this.hierarchyData.splice(index, 1);
-                        this.taskIds.splice(index, 1);
-                        return true;
-                    }
-                }
+    selfReferenceUpdate(selfData) {
+        let result = [];
+        while (this.hierarchyData.length > 0 && selfData.length > 0) {
+            let index = selfData.indexOf(this.hierarchyData[0]);
+            if (index === -1) {
+                this.hierarchyData.shift();
             }
-            else if (!isNullOrUndefined(data[i][this.parent.childMapping])) {
-                returns = this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData, index);
+            else {
+                result.push(this.hierarchyData.shift());
+                selfData.splice(index, 1);
             }
         }
-        return returns;
+        return result;
     }
     /**
      * Function to update the zeroth level parent records in remote binding
@@ -965,10 +1313,11 @@ class DataManipulation {
                     ? currentData[this.parent.expandStateMapping] : true;
             }
             currentData.index = currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
-            if (isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
+            if (this.isSelfReference && isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
                 this.parent.parentData.push(currentData);
             }
             currentData.uniqueID = getUid(this.parent.element.id + '_data_');
+            setValue('uniqueIDCollection.' + currentData.uniqueID, currentData, this.parent);
             if (!isNullOrUndefined(parentRecords)) {
                 let parentData = extend({}, parentRecords);
                 delete parentData.childRecords;
@@ -978,33 +1327,15 @@ class DataManipulation {
                 level = parentRecords.level + 1;
             }
             currentData.level = level;
+            currentData.checkboxState = 'uncheck';
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
                 this.parent.flatData.push(currentData);
             }
+            if (!this.isSelfReference && currentData.level === 0) {
+                this.parent.parentData.push(currentData);
+            }
             if (!isNullOrUndefined(currentData[this.parent.childMapping] && currentData[this.parent.childMapping].length)) {
                 this.createRecords(currentData[this.parent.childMapping], currentData);
-            }
-        }
-    }
-    sortedRecords(data) {
-        let sortedData = getObject('sortedData', data);
-        this.sortedData = [];
-        if (this.parent.grid.filterSettings.columns.length > 0) {
-            let sortedData = getObject('sortedData', data);
-            let filteredData = getObject('filteredData', data);
-            for (let i = 0, len = Object.keys(sortedData).length; i < len; i++) {
-                for (let j = 0, sortlen = Object.keys(filteredData).length; j < sortlen; j++) {
-                    let sortData = getObject('uniqueID', sortedData[i]);
-                    let filterData = getObject('uniqueID', filteredData[j]);
-                    if (sortData === filterData) {
-                        this.sortedData.push(sortedData[i]);
-                    }
-                }
-            }
-        }
-        else {
-            for (let i = 0, len = Object.keys(sortedData).length; i < len; i++) {
-                this.sortedData.push(sortedData[i]);
             }
         }
     }
@@ -1054,32 +1385,22 @@ class DataManipulation {
         if (this.parent.grid.sortSettings.columns.length > 0 || this.isSortAction) {
             this.isSortAction = false;
             let parentData;
-            let action = 'action';
-            if (args[action] !== 'collapse' && args[action] !== 'expand') {
-                if (!this.isSelfReference && this.parent.childMapping.length > 0) {
-                    parentData = iterateExtend(this.parent.dataSource);
-                }
-                else {
-                    parentData = iterateExtend(this.parent.parentData);
-                }
-                let query = getObject('query', args);
-                this.parent.sortModule = new Sort$1(this.parent);
-                let srtQry = new Query();
-                for (let srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-                    let col = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
-                    let compFun = col.sortComparer && !this.isRemote() ?
-                        col.sortComparer.bind(col) :
-                        this.parent.grid.sortSettings.columns[srt].direction;
-                    srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
-                }
-                let modifiedData = new DataManager(parentData).executeLocal(srtQry);
-                this.parent.notify('createSort', { modifiedData: modifiedData, parent: this.parent, srtQry: srtQry });
-                this.parent.notify('createSortRecords', {
-                    modifiedData: modifiedData,
-                    parentRecords: null, filteredResult: results
-                });
+            parentData = this.parent.parentData;
+            let query = getObject('query', args);
+            this.parent.sortModule = new Sort$1(this.parent);
+            let srtQry = new Query();
+            for (let srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
+                let col = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+                let compFun = col.sortComparer && !this.isRemote() ?
+                    col.sortComparer.bind(col) :
+                    this.parent.grid.sortSettings.columns[srt].direction;
+                srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
             }
-            results = this.sortedData;
+            let modifiedData = new DataManager(parentData).executeLocal(srtQry);
+            this.parent.notify('createSort', { modifiedData: modifiedData, filteredData: results, srtQry: srtQry });
+            results = this.dataResults.result;
+            this.dataResults.result = null;
+            this.sortedData = results;
             this.parent.notify('updateModel', {});
             if (this.parent.grid.aggregates.length > 0) {
                 let isSort = false;
@@ -1094,13 +1415,6 @@ class DataManipulation {
             results = this.dataResults.result;
             count = this.dataResults.count;
         }
-        /*if (isNullOrUndefined(this.dataResults.result)) {
-          args.result = <ITreeData[]>results;
-          args.count = count;
-        } else {
-          args.result = <ITreeData[]>this.dataResults.result;
-          args.count = this.dataResults.count;
-        }*/
         args.result = results;
         args.count = count;
         this.parent.notify('updateResults', args);
@@ -1131,6 +1445,8 @@ var ToolbarItem;
     ToolbarItem[ToolbarItem["PdfExport"] = 9] = "PdfExport";
     ToolbarItem[ToolbarItem["CsvExport"] = 10] = "CsvExport";
     ToolbarItem[ToolbarItem["Print"] = 11] = "Print";
+    ToolbarItem[ToolbarItem["RowIndent"] = 12] = "RowIndent";
+    ToolbarItem[ToolbarItem["RowOutdent"] = 13] = "RowOutdent";
 })(ToolbarItem || (ToolbarItem = {}));
 /**
  * Defines predefined contextmenu items.
@@ -1355,6 +1671,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var TreeGrid_1;
 /**
  * Represents the TreeGrid component.
  * ```html
@@ -1365,10 +1682,13 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
  * </script>
  * ```
  */
-let TreeGrid = class TreeGrid extends Component {
+let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     constructor(options, element) {
         super(options, element);
         this.dataResults = {};
+        this.uniqueIDCollection = {};
+        this.uniqueIDFilterCollection = {};
+        TreeGrid_1.Inject(Selection);
         this.grid = new Grid();
     }
     /**
@@ -1431,7 +1751,7 @@ let TreeGrid = class TreeGrid extends Component {
             Below: 'Below',
             AddRow: 'Add Row',
             ExpandAll: 'Expand All',
-            CollapseAll: 'Collapse All'
+            CollapseAll: 'Collapse All',
         };
         if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
             this.childMapping = 'Children';
@@ -1709,6 +2029,12 @@ let TreeGrid = class TreeGrid extends Component {
                 args: [this]
             });
         }
+        if (this.allowSelection) {
+            modules.push({
+                member: 'selection',
+                args: [this]
+            });
+        }
         return modules;
     }
     isCommandColumn(columns) {
@@ -1736,6 +2062,9 @@ let TreeGrid = class TreeGrid extends Component {
         this.dataModule = new DataManipulation(this);
         this.printModule = new Print$1(this);
         this.columnMenuModule = new ColumnMenu$1(this);
+        /**
+         * @hidden
+         */
         this.trigger(load);
         this.autoGenerateColumns();
         this.convertTreeData(this.dataSource);
@@ -1757,6 +2086,11 @@ let TreeGrid = class TreeGrid extends Component {
     convertTreeData(data) {
         if (data instanceof Array && data.length > 0 && data[0].hasOwnProperty('level')) {
             this.flatData = data;
+            this.flatData.filter((e) => {
+                if (e.level === 0) {
+                    this.parentData.push(e);
+                }
+            });
         }
         else {
             this.dataModule.convertToFlatData(data);
@@ -1774,7 +2108,7 @@ let TreeGrid = class TreeGrid extends Component {
     bindGridProperties() {
         this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
         this.grid.enableRtl = this.enableRtl;
-        this.grid.columns = this.getGridColumns();
+        this.grid.columns = this.getGridColumns(this.columns);
         this.grid.allowExcelExport = this.allowExcelExport;
         this.grid.allowPdfExport = this.allowPdfExport;
         this.grid.query = this.query;
@@ -1805,6 +2139,7 @@ let TreeGrid = class TreeGrid extends Component {
         this.grid.textWrapSettings = getActualProperties(this.textWrapSettings);
         this.grid.printMode = getActualProperties(this.printMode);
         this.grid.locale = getActualProperties(this.locale);
+        this.grid.selectedRowIndex = this.selectedRowIndex;
         this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
         this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
@@ -1842,6 +2177,9 @@ let TreeGrid = class TreeGrid extends Component {
             this.notify('pdfCellInfo', args);
             args = this.dataResults;
         };
+        this.grid.checkBoxChange = (args) => {
+            this.trigger(checkboxChange, args);
+        };
         this.grid.pdfExportComplete = this.triggerEvents.bind(this);
         this.grid.excelExportComplete = this.triggerEvents.bind(this);
         this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
@@ -1869,6 +2207,7 @@ let TreeGrid = class TreeGrid extends Component {
         this.grid.actionFailure = this.triggerEvents.bind(this);
         this.grid.dataBound = (args) => {
             this.updateColumnModel();
+            this.notify('headerCheckbox', {});
             this.trigger(dataBound, args);
             if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
                 let req = getObject('dataSource.requests', this).filter((e) => {
@@ -1973,6 +2312,7 @@ let TreeGrid = class TreeGrid extends Component {
                 if (args.requestType === 'batchsave') {
                     this.notify(batchSave, args);
                 }
+                this.notify('updateGridActions', args);
             }
             this.trigger(actionComplete, args);
         };
@@ -2128,8 +2468,8 @@ let TreeGrid = class TreeGrid extends Component {
      * Convert TreeGrid ColumnModel to Grid Column
      * @hidden
      */
-    getGridColumns() {
-        let column = this.columns;
+    getGridColumns(columns) {
+        let column = columns;
         this.columnModel = [];
         let treeGridColumn;
         let gridColumn;
@@ -2145,7 +2485,12 @@ let TreeGrid = class TreeGrid extends Component {
                     gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                 }
             }
-            this.columnModel.push(new Column(treeGridColumn));
+            if (column[i].columns) {
+                this.getGridColumns(columns[i].columns);
+            }
+            else {
+                this.columnModel.push(new Column(treeGridColumn));
+            }
             gridColumnCollection.push(gridColumn);
         }
         return gridColumnCollection;
@@ -2162,7 +2507,7 @@ let TreeGrid = class TreeGrid extends Component {
         for (let prop of properties) {
             switch (prop) {
                 case 'columns':
-                    this.grid.columns = this.getGridColumns();
+                    this.grid.columns = this.getGridColumns(this.columns);
                     break;
                 case 'treeColumnIndex':
                     this.grid.refreshColumns();
@@ -2309,7 +2654,8 @@ let TreeGrid = class TreeGrid extends Component {
         this.dataModule.destroy();
         let modules = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule',
             'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
-            'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule'];
+            'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule',
+            'selectionModule'];
         for (let i = 0; i < modules.length; i++) {
             if (this[modules[i]]) {
                 this[modules[i]] = null;
@@ -2378,6 +2724,7 @@ let TreeGrid = class TreeGrid extends Component {
             target.classList.contains('e-treegridcollapse')) {
             this.expandCollapseRequest(target);
         }
+        this.notify('checkboxSelection', { target: target });
     }
     /**
      * Returns TreeGrid rows
@@ -2713,10 +3060,31 @@ let TreeGrid = class TreeGrid extends Component {
         this.grid.refresh();
     }
     /**
+     * Get the records of checked rows.
+     * @return {Object[]}
+     * @hidden
+     */
+    getCheckedRecords() {
+        return this.selectionModule.getCheckedrecords();
+    }
+    /**
+     * Get the indexes of checked rows.
+     * @return {number[]}
+     */
+    getCheckedRowIndexes() {
+        return this.selectionModule.getCheckedRowIndexes();
+    }
+    /**
+     * Checked the checkboxes using rowIndexes.
+     */
+    selectCheckboxes(indexes) {
+        this.selectionModule.selectCheckboxes(indexes);
+    }
+    /**
      * Refreshes the TreeGrid column changes.
      */
     refreshColumns() {
-        this.grid.columns = this.getGridColumns();
+        this.grid.columns = this.getGridColumns(this.columns);
         this.grid.refreshColumns();
     }
     /**
@@ -2924,7 +3292,7 @@ let TreeGrid = class TreeGrid extends Component {
             }
             else {
                 let childRecords = this.getCurrentViewRecords().filter((e) => {
-                    return (e.parentUniqueID === record.uniqueID);
+                    return (e.parentUniqueID === record.uniqueID) || e.isSummaryRow;
                 });
                 let index = childRecords[0].parentItem.index;
                 let rows = gridRows.filter((r) => r.classList.contains('e-gridrowindex' + record.index + 'level' + (record.level + 1)));
@@ -3124,6 +3492,9 @@ __decorate([
     Property(false)
 ], TreeGrid.prototype, "allowResizing", void 0);
 __decorate([
+    Property(false)
+], TreeGrid.prototype, "autoCheckHierarchy", void 0);
+__decorate([
     Complex({}, PageSettings)
 ], TreeGrid.prototype, "pageSettings", void 0);
 __decorate([
@@ -3299,6 +3670,9 @@ __decorate([
 ], TreeGrid.prototype, "columnDrop", void 0);
 __decorate([
     Event()
+], TreeGrid.prototype, "checkboxChange", void 0);
+__decorate([
+    Event()
 ], TreeGrid.prototype, "printComplete", void 0);
 __decorate([
     Event()
@@ -3351,7 +3725,7 @@ __decorate([
 __decorate([
     Event()
 ], TreeGrid.prototype, "pdfExportComplete", void 0);
-TreeGrid = __decorate([
+TreeGrid = TreeGrid_1 = __decorate([
     NotifyPropertyChanges
 ], TreeGrid);
 
@@ -3520,6 +3894,7 @@ class Filter$1 {
      *  @hidden
      */
     updatedFilteredRecord(dataDetails) {
+        setValue('uniqueIDFilterCollection', {}, this.parent);
         this.flatFilteredData = dataDetails.data;
         this.filteredParentRecs = [];
         this.filteredResult = [];
@@ -3538,9 +3913,9 @@ class Filter$1 {
             }
             let parent = getObject('parentItem', rec);
             if (!isNullOrUndefined(parent)) {
-                let parRecord = this.flatFilteredData.filter((e) => {
-                    return e.uniqueID === rec.parentItem.uniqueID;
-                })[0];
+                let parRecord = getParentData(this.parent, rec.parentItem.uniqueID, true);
+                //let parRecord: Object = this.flatFilteredData.filter((e: ITreeData) => {
+                //          return e.uniqueID === rec.parentItem.uniqueID; })[0];
                 setValue('hasFilteredChildRecords', true, parRecord);
             }
         }
@@ -3550,12 +3925,14 @@ class Filter$1 {
         this.parent.notify('updateAction', { result: this.filteredResult });
     }
     addParentRecord(record) {
-        let parent = this.parent.flatData.filter((e) => { return e.uniqueID === record.parentUniqueID; })[0];
+        let parent = getParentData(this.parent, record.parentUniqueID);
+        //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
         if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
             if (isNullOrUndefined(parent)) {
                 if (this.flatFilteredData.indexOf(record) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
                         this.filteredResult.push(record);
+                        setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
                         record.hasFilteredChildRecords = true;
                     }
                     return;
@@ -3566,11 +3943,13 @@ class Filter$1 {
                 if (this.flatFilteredData.indexOf(parent) !== -1 || this.filteredResult.indexOf(parent) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
                         this.filteredResult.push(record);
+                        setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
                     }
                 }
                 else {
                     if (this.filteredResult.indexOf(record) === -1 && this.flatFilteredData.indexOf(record) !== -1) {
                         this.filteredResult.push(record);
+                        setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
                     }
                 }
             }
@@ -3589,6 +3968,7 @@ class Filter$1 {
             }
             if (this.filteredResult.indexOf(record) === -1) {
                 this.filteredResult.push(record);
+                setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
             }
         }
     }
@@ -3596,10 +3976,11 @@ class Filter$1 {
         let childRec = getObject('childRecords', records);
         let isExist = false;
         for (let count = 0; count < childRec.length; count++) {
-            let ischild = getObject('childRecords', childRec[count]);
+            let ischild = childRec[count].childRecords;
             if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
                 (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both')) {
                 this.filteredResult.push(childRec[count]);
+                setValue('uniqueIDFilterCollection.' + childRec[count].uniqueID, childRec[count], this.parent);
                 isExist = true;
             }
             if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
@@ -3618,14 +3999,14 @@ class Filter$1 {
         let record = this.filteredResult;
         let len = this.filteredResult.length;
         for (let c = 0; c < len; c++) {
-            let parent = this.parent.flatData.filter((e) => { return e.uniqueID === record[c].parentUniqueID; })[0];
+            let parent = getParentData(this.parent, record[c].parentUniqueID);
             let isPrst = record.indexOf(parent) !== -1;
             if (isPrst) {
-                let parent = this.filteredResult.filter((e) => { return e.uniqueID === record[c].parentUniqueID; })[0];
-                setValue('filterLevel', parent.filterLevel + 1, record[c]);
+                let parent = getParentData(this.parent, record[c].parentUniqueID, true);
+                record[c].filterLevel = parent.filterLevel + 1;
             }
             else {
-                setValue('filterLevel', 0, record[c]);
+                record[c].filterLevel = 0;
                 this.filteredParentRecs.push(record[c]);
             }
         }
@@ -3637,13 +4018,13 @@ class Filter$1 {
         let currentRecord;
         for (count; count < len; count++) {
             currentRecord = flatData[count];
-            let fLevel = getObject('filterLevel', currentRecord);
-            if (fLevel || fLevel === 0 || !isNullOrUndefined(getObject('hasFilteredChildRecords', currentRecord))) {
-                let ischild = getObject('childRecords', currentRecord);
-                setValue('hasFilteredChildRecords', null, currentRecord);
-                setValue('filterLevel', null, currentRecord);
+            let fLevel = currentRecord.filterLevel;
+            if (fLevel || fLevel === 0 || !isNullOrUndefined(currentRecord.hasFilteredChildRecords)) {
+                currentRecord.hasFilteredChildRecords = null;
+                currentRecord.filterLevel = null;
             }
         }
+        this.filteredResult = [];
         this.parent.notify('updateResults', { result: flatData, count: flatData.length });
     }
 }
@@ -4072,7 +4453,7 @@ class Toolbar$1 {
         if (args.item.id === this.parent.grid.element.id + '_expandall') {
             this.parent.expandAll();
         }
-        else if (args.item.id === this.parent.grid.element.id + '_collapseall') {
+        if (args.item.id === this.parent.grid.element.id + '_collapseall') {
             this.parent.collapseAll();
         }
     }
@@ -4372,6 +4753,224 @@ class ContextMenu$1 {
     }
 }
 
+function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName) {
+    let value = details.value;
+    let action = details.action;
+    if (action === 'save') {
+        action = 'edit';
+    }
+    let i;
+    let j;
+    let key = control.grid.getPrimaryKeyFieldNames()[0];
+    let treeData = control.dataSource instanceof DataManager ?
+        control.dataSource.dataSource.json : control.dataSource;
+    let modifiedData = [];
+    let originalData = value;
+    let isSkip = false;
+    let currentViewRecords = control.grid.getCurrentViewRecords();
+    if (action === 'add') {
+        let addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex);
+        value = addAct.value;
+        isSkip = addAct.isSkip;
+    }
+    if (value instanceof Array) {
+        modifiedData = extendArray(value);
+    }
+    else {
+        modifiedData.push(extend({}, value));
+    }
+    if (!isSkip && (action !== 'add' ||
+        (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
+        for (let k = 0; k < modifiedData.length; k++) {
+            let keys = Object.keys(modifiedData[k]);
+            i = treeData.length;
+            while (i-- && i >= 0) {
+                if (treeData[i][key] === modifiedData[k][key]) {
+                    if (action === 'delete') {
+                        let currentData = treeData[i];
+                        treeData.splice(i, 1);
+                        if (isSelfReference) {
+                            if (!isNullOrUndefined(currentData[control.parentIdMapping])) {
+                                let parentData = control.flatData.filter((e) => e[control.idMapping] === currentData[control.parentIdMapping])[0];
+                                let childRecords = parentData ? parentData[control.childMapping] : [];
+                                for (let p = childRecords.length - 1; p >= 0; p--) {
+                                    if (childRecords[p][control.idMapping] === currentData[control.idMapping]) {
+                                        childRecords.splice(p, 1);
+                                        if (!childRecords.length) {
+                                            parentData.hasChildRecords = false;
+                                            updateParentRow(key, parentData, action, control, isSelfReference);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    else {
+                        if (action === 'edit') {
+                            for (j = 0; j < keys.length; j++) {
+                                if (treeData[i].hasOwnProperty(keys[j]) && (control.editSettings.mode !== 'Cell'
+                                    || keys[j] === columnName)) {
+                                    treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                }
+                            }
+                        }
+                        else if (action === 'add') {
+                            let index;
+                            if (control.editSettings.newRowPosition === 'Child') {
+                                if (isSelfReference) {
+                                    originalData[control.parentIdMapping] = treeData[i][control.idMapping];
+                                    treeData.splice(i + 1, 0, originalData);
+                                }
+                                else {
+                                    if (!treeData[i].hasOwnProperty(control.childMapping)) {
+                                        treeData[i][control.childMapping] = [];
+                                    }
+                                    treeData[i][control.childMapping].push(originalData);
+                                    updateParentRow(key, treeData[i], action, control, isSelfReference);
+                                }
+                            }
+                            else if (control.editSettings.newRowPosition === 'Below') {
+                                treeData.splice(i + 1, 0, originalData);
+                            }
+                            else if (!addRowIndex) {
+                                index = 0;
+                                treeData.splice(index, 0, originalData);
+                            }
+                            else if (control.editSettings.newRowPosition === 'Above') {
+                                treeData.splice(i, 0, originalData);
+                            }
+                        }
+                        break;
+                    }
+                }
+                else if (!isNullOrUndefined(treeData[i][control.childMapping])) {
+                    if (removeChildRecords(treeData[i][control.childMapping], modifiedData[k], action, key, control, isSelfReference, originalData, columnName)) {
+                        updateParentRow(key, treeData[i], action, control, isSelfReference);
+                    }
+                }
+            }
+        }
+    }
+}
+function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex) {
+    let value;
+    let isSkip = false;
+    let currentViewRecords = control.grid.getCurrentViewRecords();
+    value = extend({}, details.value);
+    value = getPlainData(value);
+    switch (control.editSettings.newRowPosition) {
+        case 'Top':
+            treeData.unshift(value);
+            isSkip = true;
+            break;
+        case 'Bottom':
+            treeData.push(value);
+            isSkip = true;
+            break;
+        case 'Above':
+            value = currentViewRecords[addRowIndex + 1];
+            break;
+        case 'Below':
+        case 'Child':
+            value = currentViewRecords[addRowIndex];
+            if (selectedIndex === -1) {
+                treeData.unshift(value);
+                isSkip = true;
+            }
+    }
+    return { value: value, isSkip: isSkip };
+}
+function removeChildRecords(childRecords, modifiedData, action, key, control, isSelfReference, originalData, columnName) {
+    let isChildAll = false;
+    let j = childRecords.length;
+    while (j-- && j >= 0) {
+        if (childRecords[j][key] === modifiedData[key] ||
+            (isSelfReference && childRecords[j][control.parentIdMapping] === modifiedData[control.idMapping])) {
+            if (action === 'edit') {
+                let keys = Object.keys(modifiedData);
+                for (let i = 0; i < keys.length; i++) {
+                    if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
+                        childRecords[j][keys[i]] = modifiedData[keys[i]];
+                    }
+                }
+                break;
+            }
+            else if (action === 'add') {
+                if (control.editSettings.newRowPosition === 'Child') {
+                    if (isSelfReference) {
+                        originalData[control.parentIdMapping] = childRecords[j][control.idMapping];
+                        childRecords.splice(j + 1, 0, originalData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference);
+                    }
+                    else {
+                        if (!childRecords[j].hasOwnProperty(control.childMapping)) {
+                            childRecords[j][control.childMapping] = [];
+                        }
+                        childRecords[j][control.childMapping].push(originalData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference);
+                    }
+                }
+                else if (control.editSettings.newRowPosition === 'Above') {
+                    childRecords.splice(j, 0, originalData);
+                }
+                else if (control.editSettings.newRowPosition === 'Below') {
+                    childRecords.splice(j + 1, 0, originalData);
+                }
+            }
+            else {
+                let parentItem = childRecords[j].parentItem;
+                childRecords.splice(j, 1);
+                if (!childRecords.length) {
+                    isChildAll = true;
+                }
+            }
+        }
+        else if (!isNullOrUndefined(childRecords[j][control.childMapping])) {
+            if (removeChildRecords(childRecords[j][control.childMapping], modifiedData, action, key, control, isSelfReference, originalData, columnName)) {
+                updateParentRow(key, childRecords[j], action, control, isSelfReference);
+            }
+        }
+    }
+    return isChildAll;
+}
+function updateParentRow(key, record, action, control, isSelfReference, child) {
+    let currentRecords = control.grid.getCurrentViewRecords();
+    let index;
+    currentRecords.map((e, i) => { if (e[key] === record[key]) {
+        index = i;
+        return;
+    } });
+    record = currentRecords[index];
+    record.hasChildRecords = false;
+    if (action === 'add') {
+        record.expanded = true;
+        record.hasChildRecords = true;
+        let childRecords = child ? child : currentRecords[index + 1];
+        if (!record.hasOwnProperty('childRecords')) {
+            record.childRecords = [];
+        }
+        if (record.childRecords.indexOf(childRecords) === -1) {
+            record.childRecords.unshift(childRecords);
+        }
+        if (isSelfReference) {
+            if (!record.hasOwnProperty(control.childMapping)) {
+                record[control.childMapping] = [];
+            }
+            if (record.childRecords.indexOf(childRecords) === -1) {
+                record[control.childMapping].unshift(childRecords);
+            }
+        }
+    }
+    control.grid.setRowData(key, record);
+    let row = control.getRowByIndex(index);
+    control.renderModule.cellRender({
+        data: record, cell: row.cells[control.treeColumnIndex],
+        column: control.grid.getColumns()[control.treeColumnIndex]
+    });
+}
+
 /**
  * TreeGrid Edit Module
  * The `Edit` module is used to handle editing actions.
@@ -4401,7 +5000,7 @@ class Edit$1 {
      * @hidden
      */
     addEventListener() {
-        this.parent.on(crudAction, this.editAction, this);
+        this.parent.on(crudAction, this.crudAction, this);
         this.parent.on(beginEdit, this.beginEdit, this);
         this.parent.on(beginAdd, this.beginAdd, this);
         this.parent.on(recordDoubleClick, this.recordDoubleClick, this);
@@ -4426,7 +5025,7 @@ class Edit$1 {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(crudAction, this.editAction);
+        this.parent.off(crudAction, this.crudAction);
         this.parent.off(beginEdit, this.beginEdit);
         this.parent.off(beginAdd, this.beginAdd);
         this.parent.off(recordDoubleClick, this.recordDoubleClick);
@@ -4473,6 +5072,12 @@ class Edit$1 {
         if (this.isOnBatch) {
             this.keyPress = args.action;
         }
+    }
+    deleteUniqueID(value) {
+        let idFilter = 'uniqueIDFilterCollection';
+        delete this.parent[idFilter][value];
+        let id = 'uniqueIDCollection';
+        delete this.parent[id][value];
     }
     cellEdit(args) {
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
@@ -4564,12 +5169,19 @@ class Edit$1 {
             this.enableToolbarItems('save');
             removeClass([row], ['e-editedrow', 'e-batchrow']);
             removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-            this.editAction({ value: args.rowData, action: 'edit' }, args.columnName);
+            editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
             let saveArgs = {
                 type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
                 previousData: args.previousValue, row: row, target: args.cell
             };
             this.parent.trigger(actionComplete, saveArgs);
+        }
+    }
+    crudAction(details, columnName) {
+        editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
+        if (details.action === 'add' && this.previousNewRowPosition != null) {
+            this.parent.setProperties({ editSettings: { newRowPosition: this.previousNewRowPosition } }, true);
+            this.previousNewRowPosition = null;
         }
     }
     beginAdd(args) {
@@ -4578,7 +5190,8 @@ class Edit$1 {
         let records = this.parent.grid.getCurrentViewRecords();
         let rows = this.parent.grid.getDataRows();
         if (this.parent.editSettings.mode !== 'Dialog') {
-            if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded)) {
+            if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded) &&
+                records[index].hasChildRecords) {
                 this.parent.expandRow(rows[index + 1], records[index]);
             }
             if (this.parent.editSettings.newRowPosition === 'Above') {
@@ -4636,7 +5249,7 @@ class Edit$1 {
             return;
         }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
-            this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
+            this.doubleClickTarget.classList.contains('e-treegridcollapse') || this.doubleClickTarget.classList.contains('e-frame'))) {
             args.cancel = true;
             this.doubleClickTarget = null;
             return;
@@ -4644,7 +5257,12 @@ class Edit$1 {
         if (args.requestType === 'delete') {
             let data = args.data;
             for (let i = 0; i < data.length; i++) {
-                args.data = [...data, ...findChildrenRecords(data[i])];
+                this.deleteUniqueID(data[i].uniqueID);
+                let childs = findChildrenRecords(data[i]);
+                for (let c = 0; c < childs.length; c++) {
+                    this.deleteUniqueID(childs[c].uniqueID);
+                }
+                args.data = [...data, ...childs];
             }
         }
         if (args.requestType === 'add') {
@@ -4676,6 +5294,7 @@ class Edit$1 {
             let currentData = this.parent.grid.getCurrentViewRecords();
             let index = this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
+            setValue('uniqueIDCollection.' + value.uniqueID, value, this.parent);
             let level;
             let dataIndex;
             let idMapping;
@@ -4713,7 +5332,7 @@ class Edit$1 {
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = idMapping;
                         if (!isNullOrUndefined(value.parentItem)) {
-                            this.updateParentRow(key, value.parentItem, 'add', value);
+                            updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                         }
                     }
                 }
@@ -4728,7 +5347,7 @@ class Edit$1 {
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = parentIdMapping;
                         if (!isNullOrUndefined(value.parentItem)) {
-                            this.updateParentRow(key, value.parentItem, 'add', value);
+                            updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                         }
                     }
                 }
@@ -4747,224 +5366,6 @@ class Edit$1 {
             value.index = 0;
         }
         return args;
-    }
-    addAction(details, treeData) {
-        let value;
-        let isSkip = false;
-        let currentViewRecords = this.parent.grid.getCurrentViewRecords();
-        value = extend({}, details.value);
-        value = getPlainData(value);
-        switch (this.parent.editSettings.newRowPosition) {
-            case 'Top':
-                treeData.unshift(value);
-                isSkip = true;
-                break;
-            case 'Bottom':
-                treeData.push(value);
-                isSkip = true;
-                break;
-            case 'Above':
-                value = currentViewRecords[this.addRowIndex + 1];
-                break;
-            case 'Below':
-            case 'Child':
-                value = currentViewRecords[this.addRowIndex];
-                if (this.selectedIndex === -1) {
-                    treeData.unshift(value);
-                    isSkip = true;
-                }
-        }
-        return { value: value, isSkip: isSkip };
-    }
-    editAction(details, columnName) {
-        let value = details.value;
-        let action = details.action;
-        if (action === 'save') {
-            action = 'edit';
-        }
-        let i;
-        let j;
-        let key = this.parent.grid.getPrimaryKeyFieldNames()[0];
-        let treeData = this.parent.dataSource instanceof DataManager ?
-            this.parent.dataSource.dataSource.json : this.parent.dataSource;
-        let modifiedData = [];
-        let originalData = value;
-        let isSkip = false;
-        let currentViewRecords = this.parent.grid.getCurrentViewRecords();
-        if (action === 'add') {
-            let addAct = this.addAction(details, treeData);
-            value = addAct.value;
-            isSkip = addAct.isSkip;
-        }
-        if (value instanceof Array) {
-            modifiedData = extendArray(value);
-        }
-        else {
-            modifiedData.push(extend({}, value));
-        }
-        if (!isSkip && (action !== 'add' ||
-            (this.parent.editSettings.newRowPosition !== 'Top' && this.parent.editSettings.newRowPosition !== 'Bottom'))) {
-            for (let k = 0; k < modifiedData.length; k++) {
-                let keys = Object.keys(modifiedData[k]);
-                i = treeData.length;
-                while (i-- && i >= 0) {
-                    if (treeData[i][key] === modifiedData[k][key]) {
-                        if (action === 'delete') {
-                            let currentData = treeData[i];
-                            treeData.splice(i, 1);
-                            if (this.isSelfReference) {
-                                if (!isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
-                                    let parentData = this.parent.flatData.filter((e) => e[this.parent.idMapping] === currentData[this.parent.parentIdMapping])[0];
-                                    let childRecords = parentData ? parentData[this.parent.childMapping] : [];
-                                    for (let p = childRecords.length - 1; p >= 0; p--) {
-                                        if (childRecords[p][this.parent.idMapping] === currentData[this.parent.idMapping]) {
-                                            childRecords.splice(p, 1);
-                                            if (!childRecords.length) {
-                                                parentData.hasChildRecords = false;
-                                                this.updateParentRow(key, parentData, action);
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                        else {
-                            if (action === 'edit') {
-                                for (j = 0; j < keys.length; j++) {
-                                    if (treeData[i].hasOwnProperty(keys[j]) && (this.parent.editSettings.mode !== 'Cell' || keys[j] === columnName)) {
-                                        treeData[i][keys[j]] = modifiedData[k][keys[j]];
-                                    }
-                                }
-                            }
-                            else if (action === 'add') {
-                                let index;
-                                if (this.parent.editSettings.newRowPosition === 'Child') {
-                                    if (this.isSelfReference) {
-                                        originalData[this.parent.parentIdMapping] = treeData[i][this.parent.idMapping];
-                                        treeData.splice(i + 1, 0, originalData);
-                                    }
-                                    else {
-                                        if (!treeData[i].hasOwnProperty(this.parent.childMapping)) {
-                                            treeData[i][this.parent.childMapping] = [];
-                                        }
-                                        treeData[i][this.parent.childMapping].push(originalData);
-                                        this.updateParentRow(key, treeData[i], action);
-                                    }
-                                }
-                                else if (this.parent.editSettings.newRowPosition === 'Below') {
-                                    treeData.splice(i + 1, 0, originalData);
-                                }
-                                else if (!this.addRowIndex) {
-                                    index = 0;
-                                    treeData.splice(index, 0, originalData);
-                                }
-                                else if (this.parent.editSettings.newRowPosition === 'Above') {
-                                    treeData.splice(i, 0, originalData);
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    else if (!isNullOrUndefined(treeData[i][this.parent.childMapping])) {
-                        if (this.removeChildRecords(treeData[i][this.parent.childMapping], modifiedData[k], action, key, originalData, columnName)) {
-                            this.updateParentRow(key, treeData[i], action);
-                        }
-                    }
-                }
-            }
-        }
-        if (action === 'add' && this.previousNewRowPosition != null) {
-            this.parent.setProperties({ editSettings: { newRowPosition: this.previousNewRowPosition } }, true);
-            this.previousNewRowPosition = null;
-        }
-    }
-    removeChildRecords(childRecords, modifiedData, action, key, originalData, columnName) {
-        let isChildAll = false;
-        let j = childRecords.length;
-        while (j-- && j >= 0) {
-            if (childRecords[j][key] === modifiedData[key] ||
-                (this.isSelfReference && childRecords[j][this.parent.parentIdMapping] === modifiedData[this.parent.idMapping])) {
-                if (action === 'edit') {
-                    let keys = Object.keys(modifiedData);
-                    for (let i = 0; i < keys.length; i++) {
-                        if (childRecords[j].hasOwnProperty(keys[i]) && (this.parent.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
-                            childRecords[j][keys[i]] = modifiedData[keys[i]];
-                        }
-                    }
-                    break;
-                }
-                else if (action === 'add') {
-                    if (this.parent.editSettings.newRowPosition === 'Child') {
-                        if (this.isSelfReference) {
-                            originalData[this.parent.parentIdMapping] = childRecords[j][this.parent.idMapping];
-                            childRecords.splice(j + 1, 0, originalData);
-                            this.updateParentRow(key, childRecords[j], action);
-                        }
-                        else {
-                            if (!childRecords[j].hasOwnProperty(this.parent.childMapping)) {
-                                childRecords[j][this.parent.childMapping] = [];
-                            }
-                            childRecords[j][this.parent.childMapping].push(originalData);
-                            this.updateParentRow(key, childRecords[j], action);
-                        }
-                    }
-                    else if (this.parent.editSettings.newRowPosition === 'Above') {
-                        childRecords.splice(j, 0, originalData);
-                    }
-                    else if (this.parent.editSettings.newRowPosition === 'Below') {
-                        childRecords.splice(j + 1, 0, originalData);
-                    }
-                }
-                else {
-                    let parentItem = childRecords[j].parentItem;
-                    childRecords.splice(j, 1);
-                    if (!childRecords.length) {
-                        isChildAll = true;
-                    }
-                }
-            }
-            else if (!isNullOrUndefined(childRecords[j][this.parent.childMapping])) {
-                if (this.removeChildRecords(childRecords[j][this.parent.childMapping], modifiedData, action, key, originalData, columnName)) {
-                    this.updateParentRow(key, childRecords[j], action);
-                }
-            }
-        }
-        return isChildAll;
-    }
-    updateParentRow(key, record, action, child) {
-        let currentRecords = this.parent.grid.getCurrentViewRecords();
-        let index;
-        currentRecords.map((e, i) => { if (e[key] === record[key]) {
-            index = i;
-            return;
-        } });
-        record = currentRecords[index];
-        record.hasChildRecords = false;
-        if (action === 'add') {
-            record.expanded = true;
-            record.hasChildRecords = true;
-            let childRecords = child ? child : currentRecords[index + 1];
-            if (!record.hasOwnProperty('childRecords')) {
-                record.childRecords = [];
-            }
-            if (record.childRecords.indexOf(childRecords) === -1) {
-                record.childRecords.unshift(childRecords);
-            }
-            if (this.isSelfReference) {
-                if (!record.hasOwnProperty(this.parent.childMapping)) {
-                    record[this.parent.childMapping] = [];
-                }
-                if (record.childRecords.indexOf(childRecords) === -1) {
-                    record[this.parent.childMapping].unshift(childRecords);
-                }
-            }
-        }
-        this.parent.grid.setRowData(key, record);
-        let row = this.parent.getRowByIndex(index);
-        this.parent.renderModule.cellRender({ data: record, cell: row.cells[this.parent.treeColumnIndex],
-            column: this.parent.grid.getColumns()[this.parent.treeColumnIndex] });
     }
     /**
      * Checks the status of validation at the time of editing. If validation is passed, it returns true.
@@ -5019,5 +5420,5 @@ class CommandColumn$1 {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelected, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
 //# sourceMappingURL=ej2-treegrid.es2015.js.map

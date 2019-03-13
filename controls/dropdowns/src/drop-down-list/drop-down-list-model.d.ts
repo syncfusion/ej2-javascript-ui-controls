@@ -81,7 +81,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * For more details about the available template options refer to 
      * [`Template`](../../drop-down-list/templates) documentation.
      * 
-     * We have built-in `template engine` 
+     * We have built-in `template engine`
      * which provides options to compile template string into a executable function.
      * For EX: We have expression evolution as like ES6 expression string literals.
      * @default null

@@ -7,7 +7,8 @@ import { AccPoints, AccumulationSeries, getSeriesFromIndex } from '../model/acc-
 import { AccumulationChart } from '../accumulation';
 import { TooltipSettingsModel } from '../../common/model/base-model';
 import { Index } from '../../common/model/base';
-import { getElement, AccPointData, withInBounds, Rect, indexFinder } from '../../common/utils/helper';
+import { getElement, AccPointData, withInBounds, indexFinder } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { BaseTooltip} from '../../common/user-interaction/tooltip';
 
 /**

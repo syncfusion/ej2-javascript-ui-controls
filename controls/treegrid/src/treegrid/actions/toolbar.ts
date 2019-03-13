@@ -45,11 +45,11 @@ export class Toolbar {
         }
         if (args.item.id === this.parent.grid.element.id + '_expandall') {
             this.parent.expandAll();
-        } else if (args.item.id === this.parent.grid.element.id + '_collapseall') {
+        }
+        if (args.item.id === this.parent.grid.element.id + '_collapseall') {
             this.parent.collapseAll();
         }
     }
-
     /**
      * Gets the toolbar of the TreeGrid.
      * @return {Element}

@@ -1,6 +1,7 @@
 import { Chart } from '../chart';
-import { SvgRenderer, EventHandler, Browser, createElement } from '@syncfusion/ej2-base';
-import { getRectLocation, minMax, getElement, ChartLocation, Rect, RectOption, measureText } from '../../common/utils/helper';
+import { EventHandler, Browser, createElement } from '@syncfusion/ej2-base';
+import { getRectLocation, minMax, getElement, ChartLocation, RectOption } from '../../common/utils/helper';
+import { Rect, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../axis/axis';
 import { Toolkit } from './zooming-toolkit';
 import { AxisModel } from '../axis/axis-model';

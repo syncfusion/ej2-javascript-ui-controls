@@ -1,12 +1,13 @@
 /**
  * Specifies Circular-Gauge Helper methods
  */
-import { SvgRenderer, compile as templateComplier } from '@syncfusion/ej2-base';
+import { compile as templateComplier } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../circular-gauge';
 import { FontModel, BorderModel } from '../model/base-model';
 import { Range } from '../axes/axis';
 import { IVisiblePointer } from '../model/interface';
 import { merge } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { createElement, remove, setStyleAttribute } from '@syncfusion/ej2-base';
 
 /**

@@ -3,6 +3,7 @@
  */
 import { Maps, Marker, MapsTooltip, IMarkerRenderingEventArgs, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { topPopulation } from './MapData/MarkerLocation';
+import { world_Map } from './MapData/worldMap';
 Maps.Inject(Marker, MapsTooltip);
 
     let maps: Maps = new Maps({
@@ -22,7 +23,7 @@ Maps.Inject(Marker, MapsTooltip);
         },
         layers: [
             {
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json'),
+                shapeData: world_Map,
                 dataSource: topPopulation,
                 shapeSettings: {
                     fill: '#C3E6ED'

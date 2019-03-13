@@ -350,12 +350,17 @@ export class CanvasRenderer implements IRenderer {
     }
 
     /**   @private  */
-    public drawText(canvas: HTMLCanvasElement, options: TextAttributes): void {
+    public drawText(
+        canvas: HTMLCanvasElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object,
+        diagramId?: string, scaleValue?: number):
+        void {
         if (options.content && options.visible === true) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
             ctx.save();
             this.setStyle(canvas, options as StyleAttributes);
-
+            if (scaleValue) {
+                options.fontSize *= scaleValue;
+            }
             let pivotX: number = options.x + options.width * options.pivotX;
             let pivotY: number = options.y + options.height * options.pivotY;
             this.rotateContext(canvas, options.angle, pivotX, pivotY);
@@ -371,8 +376,8 @@ export class CanvasRenderer implements IRenderer {
                 let position: PointModel = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
                     let child: SubTextElement = childNodes[i];
-                    let offsetX: number = position.x + child.x - wrapBounds.x;
-                    let offsetY: number = position.y + child.dy * i + ((options.fontSize) * 0.8);
+                    let offsetX: number = position.x + (scaleValue ? child.x * scaleValue : child.x) - wrapBounds.x;
+                    let offsetY: number = position.y + (scaleValue ? child.dy * scaleValue : child.dy) * i + ((options.fontSize) * 0.8);
                     if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
                         child.text = overFlow(child.text, options);
                     }
@@ -535,6 +540,7 @@ export class CanvasRenderer implements IRenderer {
             }
             ctx.scale(scaleX, scaleY);
             ctx.drawImage(image, x, y, width, height);
+
         } else {
             ctx.drawImage(image, x, y, width, height);
         }

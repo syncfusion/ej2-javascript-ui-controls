@@ -1,7 +1,8 @@
-import { SvgRenderer, Animation, AnimationOptions, compile as templateComplier, Browser, BaseAttibutes } from '@syncfusion/ej2-base';
-import { merge, Effect, extend, isNullOrUndefined, SVGCanvasAttributes } from '@syncfusion/ej2-base';
-import { createElement, remove, PathAttributes, RectAttributes, CircleAttributes } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, compile as templateComplier, Browser } from '@syncfusion/ej2-base';
+import { merge, Effect, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, remove } from '@syncfusion/ej2-base';
 import { Index } from '../../common/model/base';
+import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, MarginModel } from '../model/base-model';
 import { VisibleRangeModel, VisibleLabels } from '../../chart/axis/axis';
 import { Series, Points } from '../../chart/series/chart-series';
@@ -13,44 +14,9 @@ import { AccumulationSeries, AccPoints } from '../../accumulation-chart/model/ac
 import { IShapes, IAxisLabelRenderEventArgs } from '../model/interface';
 import { axisLabelRender } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
+import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 
 
-/**
- * Methods for calculating the text size.
- */
-
-
-
-/**
- * Function to measure the height and width of the text.
- * @param  {string} text
- * @param  {FontModel} font
- * @param  {string} id
- * @returns no
- * @private
- */
-export function measureText(text: string, font: FontModel): Size {
-    let htmlObject: HTMLElement = document.getElementById('chartmeasuretext');
-
-    if (htmlObject === null) {
-        htmlObject = createElement('text', { id: 'chartmeasuretext' });
-        document.body.appendChild(htmlObject);
-    }
-
-    htmlObject.innerHTML = text;
-    htmlObject.style.position = 'absolute';
-    htmlObject.style.fontSize = font.size;
-    htmlObject.style.fontWeight = font.fontWeight;
-    htmlObject.style.fontStyle = font.fontStyle;
-    htmlObject.style.fontFamily = font.fontFamily;
-    htmlObject.style.visibility = 'hidden';
-    htmlObject.style.top = '-100';
-    htmlObject.style.left = '0';
-    htmlObject.style.whiteSpace = 'nowrap';
-    // For bootstrap line height issue
-    htmlObject.style.lineHeight = 'normal';
-    return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
-}
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
  * @param  {Object} data
@@ -592,10 +558,14 @@ export function animateRectElement(
  * @param previousDirection previous direction of the path
  */
 export function pathAnimation(
-    element: Element, direction: string, redraw: boolean, previousDirection?: string
+    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateduration ?: number
 ): void {
     if (!redraw || (!previousDirection && !element)) {
         return null;
+    }
+    let duration: number = 300;
+    if (animateduration) {
+        duration = animateduration;
     }
     let startDirections: string = previousDirection || element.getAttribute('d');
     let splitDirections: string[] = startDirections.split(/(?=[LMCZAQ])/);
@@ -607,7 +577,7 @@ export function pathAnimation(
     let end: number;
     element.setAttribute('d', startDirections);
     new Animation({}).animate(createElement('div'), {
-        duration: 300,
+        duration: duration,
         progress: (args: AnimationOptions): void => {
             currentDireciton = '';
             splitDirections.map((directions: string, index: number) => {
@@ -681,7 +651,10 @@ export function triggerLabelRender(
     };
     chart.trigger(axisLabelRender, argsData);
     if (!argsData.cancel) {
-        let text : string = (axis.enableTrim) ? textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle) : argsData.text;
+        let isLineBreakLabels: boolean = argsData.text.indexOf('<br>') !== -1;
+        let text: string | string[] = (axis.enableTrim) ? (isLineBreakLabels ?
+            lineBreakLabelTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle) :
+            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle)) : argsData.text;
         axis.visibleLabels.push(new VisibleLabels(text, argsData.value, argsData.labelStyle, argsData.text));
     }
 }
@@ -737,50 +710,49 @@ export function templateAnimate(
 
 /** @private */
 export function drawSymbol(location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string): Element {
-    let functionName: string = 'Path';
-    let renderer: SvgRenderer = new SvgRenderer('');
-    let temp: IShapes = calculateShapes(location, size, shape, options, url);
-    let htmlObject: Element = renderer['draw' + temp.functionName](temp.renderOption);
-    htmlObject.setAttribute('aria-label', label);
-    return htmlObject;
+    let chartRenderer: SvgRenderer = new SvgRenderer('');
+    let shapeOption: IShapes = calculateShapes(location, size, shape, options, url);
+    let drawElement: Element = chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption);
+    drawElement.setAttribute('aria-label', label);
+    return drawElement;
 }
 /** @private */
 export function calculateShapes(location: ChartLocation, size: Size, shape: string, options: PathOption, url: string): IShapes {
-    let path: string;
+    let dir: string;
     let functionName: string = 'Path';
     let width: number = size.width;
     let height: number = size.height;
-    let locX: number = location.x;
-    let locY: number = location.y;
-    let x: number = location.x + (-width / 2);
+    let lx: number = location.x;
+    let ly: number = location.y;
     let y: number = location.y + (-height / 2);
+    let x: number = location.x + (-width / 2);
     switch (shape) {
-        case 'Circle':
         case 'Bubble':
+        case 'Circle':
             functionName = 'Ellipse';
-            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
+            merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': lx, 'cy': ly });
             break;
         case 'Cross':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' +
-                (locY + (-height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
+                'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' +
+                (ly + (-height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'HorizontalLine':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + locY;
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + ly + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + ly;
+            merge(options, { 'd': dir });
             break;
         case 'VerticalLine':
-            path = 'M' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + locX + ' ' + (locY + (-height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + lx + ' ' + (ly + (-height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'Diamond':
-            path = 'M' + ' ' + x + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + locY + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + locY + ' z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + ly + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + ly + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + ly + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Rectangle':
         case 'Hilo':
@@ -789,44 +761,46 @@ export function calculateShapes(location: ChartLocation, size: Size, shape: stri
         case 'Waterfall':
         case 'BoxAndWhisker':
         case 'StepArea':
-            path = 'M' + ' ' + x + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (-height / 2)) + ' z';
-            merge(options, { 'd': path });
+        case 'Square':
+        case 'Flag':
+            dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (-height / 2)) + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Pyramid':
         case 'Triangle':
-            path = 'M' + ' ' + x + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (-height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + x + ' ' + (locY + (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (-height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + x + ' ' + (ly + (height / 2)) + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Funnel':
         case 'InvertedTriangle':
-            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + locX + ' ' + (locY + (height / 2)) + ' ' +
-                'L' + ' ' + (locX - (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + lx + ' ' + (ly + (height / 2)) + ' ' +
+                'L' + ' ' + (lx - (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' z';
+            merge(options, { 'd': dir });
             break;
         case 'Pentagon':
             let eq: number = 72;
-            let xValue: number;
-            let yValue: number;
+            let xVal: number;
+            let yVal: number;
             for (let i: number = 0; i <= 5; i++) {
-                xValue = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
-                yValue = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+                xVal = (width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+                yVal = (height / 2) * Math.sin((Math.PI / 180) * (i * eq));
                 if (i === 0) {
-                    path = 'M' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ';
+                    dir = 'M' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ';
                 } else {
-                    path = path.concat('L' + ' ' + (locX + xValue) + ' ' + (locY + yValue) + ' ');
+                    dir = dir.concat('L' + ' ' + (lx + xVal) + ' ' + (ly + yVal) + ' ');
                 }
             }
-            path = path.concat('Z');
-            merge(options, { 'd': path });
+            dir = dir.concat('Z');
+            merge(options, { 'd': dir });
             break;
         case 'Image':
             functionName = 'Image';
@@ -961,20 +935,21 @@ export function appendChildElement(
     parent: Element | HTMLElement, childElement: Element | HTMLElement,
     redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
     start?: ChartLocation, direction?: string, forceAnimate: boolean = false,
-    isRect: boolean = false, previousRect: Rect = null
+    isRect: boolean = false, previousRect: Rect = null , animateduration ?: number
 ): void {
     let existChild: HTMLElement = parent.querySelector('#' + childElement.id);
     let element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
     let child: HTMLElement = <HTMLElement>childElement;
+    let duration: number = animateduration ? animateduration : 300;
     if (redraw && isAnimate && element) {
         start = start || (element.tagName === 'DIV' ?
             new ChartLocation(+(element.style[x].split('px')[0]), +(element.style[y].split('px')[0])) :
             new ChartLocation(+element.getAttribute(x), +element.getAttribute(y)));
         if (direction && direction !== 'undefined') {
-            pathAnimation(childElement, childElement.getAttribute('d'), redraw, direction);
+            pathAnimation(childElement, childElement.getAttribute('d'), redraw, direction, duration);
         } else if (isRect && previousRect) {
             animateRectElement(
-                child, 0, 300, new Rect(
+                child, 0, duration, new Rect(
                     +element.getAttribute('x'), +element.getAttribute('y'),
                     +element.getAttribute('width'), +element.getAttribute('height')
                 ),
@@ -984,7 +959,7 @@ export function appendChildElement(
             let end: ChartLocation = child.tagName === 'DIV' ?
                 new ChartLocation(+(child.style[x].split('px')[0]), +(child.style[y].split('px')[0])) :
                 new ChartLocation(+child.getAttribute(x), +child.getAttribute(y));
-            animateRedrawElement(child, 300, start, end, x, y);
+            animateRedrawElement(child, duration, start, end, x, y);
         }
     } else if (redraw && isAnimate && !element && forceAnimate) {
         templateAnimate(child, 0, 600, 'FadeIn');
@@ -1144,48 +1119,50 @@ export function getMedian(values: number[]): number {
 // tslint:disable-next-line:max-func-body-length
 export function calculateLegendShapes(location: ChartLocation, size: Size, shape: string, options: PathOption): IShapes {
     let padding: number = 10;
-    let path: string = '';
+    let dir: string = '';
     let height: number = size.height;
     let width: number = size.width;
-    let locX: number = location.x;
-    let locY: number = location.y;
+    let lx: number = location.x;
+    let ly: number = location.y;
     switch (shape) {
         case 'MultiColoredLine':
         case 'Line':
-            path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY);
-            merge(options, { 'd': path });
+        case 'StackingLine':
+        case 'StackingLine100':
+            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly);
+            merge(options, { 'd': dir });
             break;
         case 'StepLine':
             options.fill = 'transparent';
-            path = 'M' + ' ' + (locX + (-width / 2) - (padding / 4)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX +
-                (-width / 2) + (width / 10)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX + (-width / 2) + (width / 10))
-                + ' ' + (locY) + ' ' + 'L' + ' ' + (locX + (-width / 10)) + ' ' + (locY) + ' ' + 'L' + ' ' + (locX + (-width / 10))
-                + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 5)) + ' ' + (locY + (height / 2)) + ' ' + 'L' +
-                ' ' + (locX + (width / 5)) + ' ' + (locY + (-height / 2)) + ' ' + 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY +
-                    (-height / 2)) + 'L' + ' ' + (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + '' + (locX + (width / 2)
-                        + (padding / 4)) + ' ' + (locY + (height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (-width / 2) - (padding / 4)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx +
+                (-width / 2) + (width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (-width / 2) + (width / 10))
+                + ' ' + (ly) + ' ' + 'L' + ' ' + (lx + (-width / 10)) + ' ' + (ly) + ' ' + 'L' + ' ' + (lx + (-width / 10))
+                + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'L' +
+                ' ' + (lx + (width / 5)) + ' ' + (ly + (-height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly +
+                    (-height / 2)) + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + '' + (lx + (width / 2)
+                        + (padding / 4)) + ' ' + (ly + (height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'RightArrow':
             let space: number = 2;
-            path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
-                (locX + (-width / 2)) + ' ' + (locY + (height / 2)) + ' L' + ' ' + (locX + (-width / 2)) + ' ' +
-                (locY + (height / 2) - space) + ' ' + 'L' + ' ' + (locX + (width / 2) - (2 * space)) + ' ' + (locY) +
-                ' L' + (locX + (-width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (-width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
+                (lx + (-width / 2)) + ' ' + (ly + (height / 2)) + ' L' + ' ' + (lx + (-width / 2)) + ' ' +
+                (ly + (height / 2) - space) + ' ' + 'L' + ' ' + (lx + (width / 2) - (2 * space)) + ' ' + (ly) +
+                ' L' + (lx + (-width / 2)) + ' ' + (ly - (height / 2) + space) + ' Z';
+            merge(options, { 'd': dir });
             break;
         case 'LeftArrow':
             options.fill = options.stroke;
             options.stroke = 'transparent';
             space = 2;
-            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
-                'L' + ' ' + (locX + (-width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
-                (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' +
-                (locX + (width / 2)) + ' ' + (locY + (height / 2) - space) + ' L' + ' ' + (locX + (-width / 2) + (2 * space))
-                + ' ' + (locY) + ' L' + (locX + (width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (width / 2)) + ' ' + (ly - (height / 2)) + ' ' +
+                'L' + ' ' + (lx + (-width / 2)) + ' ' + (ly) + ' ' + 'L' + ' ' +
+                (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' +
+                (lx + (width / 2)) + ' ' + (ly + (height / 2) - space) + ' L' + ' ' + (lx + (-width / 2) + (2 * space))
+                + ' ' + (ly) + ' L' + (lx + (width / 2)) + ' ' + (ly - (height / 2) + space) + ' Z';
+            merge(options, { 'd': dir });
             break;
         case 'Column':
         case 'Pareto':
@@ -1193,74 +1170,74 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
         case 'StackingColumn100':
         case 'RangeColumn':
         case 'Histogram':
-            path = 'M' + ' ' + (locX - 3 * (width / 5)) + ' ' + (locY - (height / 5)) + ' ' + 'L' + ' ' +
-                (locX + 3 * (-width / 10)) + ' ' + (locY - (height / 5)) + ' ' + 'L' + ' ' +
-                (locX + 3 * (-width / 10)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' + (locX - 3 *
-                    (width / 5)) + ' ' + (locY + (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' +
-                (locX + (-width / 10) - (width / 20)) + ' ' + (locY - (height / 4) - (padding / 2))
-                + ' ' + 'L' + ' ' + (locX + (width / 10) + (width / 20)) + ' ' + (locY - (height / 4) -
-                    (padding / 2)) + ' ' + 'L' + ' ' + (locX + (width / 10) + (width / 20)) + ' ' + (locY
-                        + (height / 2)) + ' ' + 'L' + ' ' + (locX + (-width / 10) - (width / 20)) + ' ' + (locY +
-                            (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' + (locX + 3 * (width / 10)) + ' ' + (locY) + ' ' +
-                'L' + ' ' + (locX + 3 * (width / 5)) + ' ' + (locY) + ' ' + 'L' + ' '
-                + (locX + 3 * (width / 5)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' '
-                + (locX + 3 * (width / 10)) + ' ' + (locY + (height / 2)) + ' ' + 'Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - 3 * (width / 5)) + ' ' + (ly - (height / 5)) + ' ' + 'L' + ' ' +
+                (lx + 3 * (-width / 10)) + ' ' + (ly - (height / 5)) + ' ' + 'L' + ' ' +
+                (lx + 3 * (-width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx - 3 *
+                    (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' +
+                (lx + (-width / 10) - (width / 20)) + ' ' + (ly - (height / 4) - (padding / 2))
+                + ' ' + 'L' + ' ' + (lx + (width / 10) + (width / 20)) + ' ' + (ly - (height / 4) -
+                    (padding / 2)) + ' ' + 'L' + ' ' + (lx + (width / 10) + (width / 20)) + ' ' + (ly
+                        + (height / 2)) + ' ' + 'L' + ' ' + (lx + (-width / 10) - (width / 20)) + ' ' + (ly +
+                            (height / 2)) + ' ' + 'Z' + ' ' + 'M' + ' ' + (lx + 3 * (width / 10)) + ' ' + (ly) + ' ' +
+                'L' + ' ' + (lx + 3 * (width / 5)) + ' ' + (ly) + ' ' + 'L' + ' '
+                + (lx + 3 * (width / 5)) + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' '
+                + (lx + 3 * (width / 10)) + ' ' + (ly + (height / 2)) + ' ' + 'Z';
+            merge(options, { 'd': dir });
             break;
         case 'Bar':
         case 'StackingBar':
         case 'StackingBar100':
-            path = 'M' + ' ' + (locX + (-width / 2) + (-padding / 4)) + ' ' + (locY - 3 * (height / 5)) + ' '
-                + 'L' + ' ' + (locX + 3 * (width / 10)) + ' ' + (locY - 3 * (height / 5)) + ' ' + 'L' + ' ' +
-                (locX + 3 * (width / 10)) + ' ' + (locY - 3 * (height / 10)) + ' ' + 'L' + ' ' +
-                (locX - (width / 2) + (-padding / 4)) + ' ' + (locY - 3 * (height / 10)) + ' ' + 'Z' + ' '
-                + 'M' + ' ' + (locX + (-width / 2) + (-padding / 4)) + ' ' + (locY - (height / 5)
-                    + (padding / 20)) + ' ' + 'L' + ' ' + (locX + (width / 2) + (padding / 4)) + ' ' + (locY
-                        - (height / 5) + (padding / 20)) + ' ' + 'L' + ' ' + (locX + (width / 2) + (padding / 4))
-                + ' ' + (locY + (height / 10) + (padding / 20)) + ' ' + 'L' + ' ' + (locX - (width / 2)
-                    + (-padding / 4)) + ' ' + (locY + (height / 10) + (padding / 20)) + ' ' + 'Z' + ' ' + 'M'
-                + ' ' + (locX - (width / 2) + (-padding / 4)) + ' ' + (locY + (height / 5)
-                    + (padding / 10)) + ' ' + 'L' + ' ' + (locX + (-width / 4)) + ' ' + (locY + (height / 5)
-                        + (padding / 10)) + ' ' + 'L' + ' ' + (locX + (-width / 4)) + ' ' + (locY + (height / 2)
-                            + (padding / 10)) + ' ' + 'L' + ' ' + (locX - (width / 2) + (-padding / 4))
-                + ' ' + (locY + (height / 2) + (padding / 10)) + ' ' + 'Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx + (-width / 2) + (-padding / 4)) + ' ' + (ly - 3 * (height / 5)) + ' '
+                + 'L' + ' ' + (lx + 3 * (width / 10)) + ' ' + (ly - 3 * (height / 5)) + ' ' + 'L' + ' ' +
+                (lx + 3 * (width / 10)) + ' ' + (ly - 3 * (height / 10)) + ' ' + 'L' + ' ' +
+                (lx - (width / 2) + (-padding / 4)) + ' ' + (ly - 3 * (height / 10)) + ' ' + 'Z' + ' '
+                + 'M' + ' ' + (lx + (-width / 2) + (-padding / 4)) + ' ' + (ly - (height / 5)
+                    + (padding / 20)) + ' ' + 'L' + ' ' + (lx + (width / 2) + (padding / 4)) + ' ' + (ly
+                        - (height / 5) + (padding / 20)) + ' ' + 'L' + ' ' + (lx + (width / 2) + (padding / 4))
+                + ' ' + (ly + (height / 10) + (padding / 20)) + ' ' + 'L' + ' ' + (lx - (width / 2)
+                    + (-padding / 4)) + ' ' + (ly + (height / 10) + (padding / 20)) + ' ' + 'Z' + ' ' + 'M'
+                + ' ' + (lx - (width / 2) + (-padding / 4)) + ' ' + (ly + (height / 5)
+                    + (padding / 10)) + ' ' + 'L' + ' ' + (lx + (-width / 4)) + ' ' + (ly + (height / 5)
+                        + (padding / 10)) + ' ' + 'L' + ' ' + (lx + (-width / 4)) + ' ' + (ly + (height / 2)
+                            + (padding / 10)) + ' ' + 'L' + ' ' + (lx - (width / 2) + (-padding / 4))
+                + ' ' + (ly + (height / 2) + (padding / 10)) + ' ' + 'Z';
+            merge(options, { 'd': dir });
             break;
         case 'Spline':
             options.fill = 'transparent';
-            path = 'M' + ' ' + (locX - (width / 2)) + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' '
-                + locX + ' ' + (locY - height) + ' ' + locX + ' ' + (locY + (height / 5))
-                + ' ' + 'M' + ' ' + locX + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' ' + (locX
-                    + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + (locX + (width / 2)) + ' '
-                + (locY - (height / 2));
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' '
+                + lx + ' ' + (ly - height) + ' ' + lx + ' ' + (ly + (height / 5))
+                + ' ' + 'M' + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + (lx
+                    + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' + (lx + (width / 2)) + ' '
+                + (ly - (height / 2));
+            merge(options, { 'd': dir });
             break;
         case 'Area':
         case 'MultiColoredArea':
         case 'RangeArea':
         case 'StackingArea':
         case 'StackingArea100':
-            path = 'M' + ' ' + (locX - (width / 2) - (padding / 4)) + ' ' + (locY + (height / 2))
-                + ' ' + 'L' + ' ' + (locX + (-width / 4) + (-padding / 8)) + ' ' + (locY - (height / 2))
-                + ' ' + 'L' + ' ' + (locX) + ' ' + (locY + (height / 4)) + ' ' + 'L' + ' ' + (locX
-                    + (width / 4) + (padding / 8)) + ' ' + (locY + (-height / 2) + (height / 4)) + ' '
-                + 'L' + ' ' + (locX + (height / 2) + (padding / 4)) + ' ' + (locY + (height / 2)) + ' ' + 'Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - (width / 2) - (padding / 4)) + ' ' + (ly + (height / 2))
+                + ' ' + 'L' + ' ' + (lx + (-width / 4) + (-padding / 8)) + ' ' + (ly - (height / 2))
+                + ' ' + 'L' + ' ' + (lx) + ' ' + (ly + (height / 4)) + ' ' + 'L' + ' ' + (lx
+                    + (width / 4) + (padding / 8)) + ' ' + (ly + (-height / 2) + (height / 4)) + ' '
+                + 'L' + ' ' + (lx + (height / 2) + (padding / 4)) + ' ' + (ly + (height / 2)) + ' ' + 'Z';
+            merge(options, { 'd': dir });
             break;
         case 'SplineArea':
-            path = 'M' + ' ' + (locX - (width / 2)) + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' ' + locX
-                + ' ' + (locY - height) + ' ' + locX + ' ' + (locY + (height / 5)) + ' ' + 'Z' + ' ' + 'M'
-                + ' ' + locX + ' ' + (locY + (height / 5)) + ' ' + 'Q' + ' ' + (locX + (width / 2)) + ' '
-                + (locY + (height / 2)) + ' ' + (locX + (width / 2)) + ' '
-                + (locY - (height / 2)) + ' ' + ' Z';
-            merge(options, { 'd': path });
+            dir = 'M' + ' ' + (lx - (width / 2)) + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + lx
+                + ' ' + (ly - height) + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Z' + ' ' + 'M'
+                + ' ' + lx + ' ' + (ly + (height / 5)) + ' ' + 'Q' + ' ' + (lx + (width / 2)) + ' '
+                + (ly + (height / 2)) + ' ' + (lx + (width / 2)) + ' '
+                + (ly - (height / 2)) + ' ' + ' Z';
+            merge(options, { 'd': dir });
             break;
         case 'Pie':
         case 'Doughnut':
             options.stroke = 'transparent';
             let r: number = Math.min(height, width) / 2;
-            path = getAccumulationLegend(locX, locY, r, height, width, shape);
-            merge(options, { 'd': path });
+            dir = getAccumulationLegend(lx, ly, r, height, width, shape);
+            merge(options, { 'd': dir });
             break;
     }
     return { renderOption: options };
@@ -1281,92 +1258,40 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
     }
     return label;
 }
+/**
+ * To trim the line break label
+ * @param maxWidth 
+ * @param text 
+ * @param font 
+ */
+export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontModel): string[] {
+    let labelCollection: string[] = [];
+    let breakLabels: string[] = text.split('<br>');
+    for (let i: number = 0; i < breakLabels.length; i++) {
+        text = breakLabels[i];
+        let size: number = measureText(text, font).width;
+        if (size > maxWidth) {
+            let textLength: number = text.length;
+            for (let i: number = textLength - 1; i >= 0; --i) {
+                text = text.substring(0, i) + '...';
+                size = measureText(text, font).width;
+                if (size <= maxWidth) {
+                    labelCollection.push(text);
+                    break;
+                }
+            }
+        } else {
+            labelCollection.push(text);
+        }
+    }
+    return labelCollection;
+}
 /** @private */
 export function stringToNumber(value: string, containerSize: number): number {
     if (value !== null && value !== undefined) {
         return value.indexOf('%') !== -1 ? (containerSize / 100) * parseInt(value, 10) : parseInt(value, 10);
     }
     return null;
-}
-/** @private */
-export function findDirection(
-    rX: number, rY: number, rect: Rect, arrowLocation: ChartLocation, arrowPadding: number,
-    top: boolean, bottom: boolean, left: boolean, tipX: number, tipY: number, tipRadius?: number
-): string {
-    let direction: string = '';
-
-    let startX: number = rect.x;
-    let startY: number = rect.y;
-    let width: number = rect.x + rect.width;
-    let height: number = rect.y + rect.height;
-    tipRadius = tipRadius ? tipRadius : 0;
-
-    if (top) {
-        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + startY + ' ' + (startX + rX) + ' ' + startY + ' ' +
-            ' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + width + ' '
-            + startY + ' ' + (width) + ' ' + (startY + rY));
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' '
-            + (height) + ' ' + (width - rX) + ' ' + (height));
-        if (arrowPadding !== 0) {
-            direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (height));
-            direction = direction.concat(' L' + ' ' + (tipX + tipRadius) + ' ' + (height + arrowPadding - tipRadius));
-            direction += ' Q' + ' ' + (tipX) + ' ' + (height + arrowPadding) + ' ' + (tipX - tipRadius) +
-                ' ' + (height + arrowPadding - tipRadius);
-        }
-        if ((arrowLocation.x - arrowPadding / 2) > startX) {
-            direction = direction.concat(' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + height +
-                ' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
-                + height + ' ' + (startX) + ' ' + (height - rY) + ' z');
-        } else {
-            if (arrowPadding === 0) {
-                direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + height + ' Q ' + startX + ' '
-                    + height + ' ' + (startX) + ' ' + (height - rY) + ' z');
-            } else {
-                direction = direction.concat(' L' + ' ' + (startX) + ' ' + (height + rY) + ' z');
-            }
-        }
-
-    } else if (bottom) {
-        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + (startY) + ' ' + (startX + rX) + ' ' + (startY) + ' L' + ' ' + (arrowLocation.x - arrowPadding / 2) + ' ' + (startY));
-        direction = direction.concat(' L' + ' ' + (tipX - tipRadius) + ' ' + (arrowLocation.y + tipRadius));
-        direction += ' Q' + ' ' + (tipX) + ' ' + (arrowLocation.y) + ' ' + (tipX + tipRadius) + ' ' + (arrowLocation.y + tipRadius);
-        direction = direction.concat(' L' + ' ' + (arrowLocation.x + arrowPadding / 2) + ' ' + (startY) + ' L' + ' '
-            + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' ' + (startY) + ' ' + (width) + ' ' + (startY + rY));
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + (width) + ' '
-            + (height) + ' ' + (width - rX) + ' ' + (height) +
-            ' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + (startX) + ' '
-            + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
-    } else if (left) {
-        direction = direction.concat('M' + ' ' + (startX) + ' ' + (startY + rY) + ' Q ' + startX + ' '
-            + (startY) + ' ' + (startX + rX) + ' ' + (startY));
-        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (startY) + ' Q ' + (width) + ' '
-            + (startY) + ' ' + (width) + ' ' + (startY + rY) + ' L' + ' ' + (width) + ' ' + (arrowLocation.y - arrowPadding / 2));
-        direction = direction.concat(' L' + ' ' + (width + arrowPadding - tipRadius) + ' ' + (tipY - tipRadius));
-        direction += ' Q ' + (width + arrowPadding) + ' ' + (tipY) + ' ' + (width + arrowPadding - tipRadius) + ' ' + (tipY + tipRadius);
-        direction = direction.concat(' L' + ' ' + (width) + ' ' + (arrowLocation.y + arrowPadding / 2) +
-            ' L' + ' ' + (width) + ' ' + (height - rY) + ' Q ' + width + ' ' + (height) + ' ' + (width - rX) + ' ' + (height));
-        direction = direction.concat(' L' + ' ' + (startX + rX) + ' ' + (height) + ' Q ' + startX + ' '
-            + (height) + ' ' + (startX) + ' ' + (height - rY) + ' z');
-    } else {
-        direction = direction.concat('M' + ' ' + (startX + rX) + ' ' + (startY) + ' Q ' + (startX) + ' '
-            + (startY) + ' ' + (startX) + ' ' + (startY + rY) + ' L' + ' ' + (startX) + ' ' + (arrowLocation.y - arrowPadding / 2));
-
-        direction = direction.concat(' L' + ' ' + (startX - arrowPadding + tipRadius) + ' ' + (tipY - tipRadius));
-        direction += ' Q ' + (startX - arrowPadding) + ' ' + (tipY) + ' ' + (startX - arrowPadding + tipRadius) + ' ' + (tipY + tipRadius);
-
-        direction = direction.concat(' L' + ' ' + (startX) + ' ' + (arrowLocation.y + arrowPadding / 2) +
-            ' L' + ' ' + (startX) + ' ' + (height - rY) + ' Q ' + startX + ' '
-            + (height) + ' ' + (startX + rX) + ' ' + (height));
-
-        direction = direction.concat(' L' + ' ' + (width - rX) + ' ' + (height) + ' Q ' + width + ' '
-            + (height) + ' ' + (width) + ' ' + (height - rY) +
-            ' L' + ' ' + (width) + ' ' + (startY + rY) + ' Q ' + width + ' '
-            + (startY) + ' ' + (width - rX) + ' ' + (startY) + ' z');
-    }
-
-    return direction;
 }
 /** @private */
 export function redrawElement(
@@ -1416,9 +1341,9 @@ export function animateRedrawElement(
 }
 /** @private */
 export function textElement(
-    options: TextOption, font: FontModel, color: string,
+    option: TextOption, font: FontModel, color: string,
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
-    forceAnimate: boolean = false
+    forceAnimate: boolean = false, animateduration ?: number
 ): Element {
     let renderOptions: Object = {};
     let htmlObject: Element;
@@ -1427,35 +1352,35 @@ export function textElement(
     let text: string;
     let height: number;
     renderOptions = {
-        'id': options.id,
-        'x': options.x,
-        'y': options.y,
+        'id': option.id,
+        'x': option.x,
+        'y': option.y,
         'fill': color,
         'font-size': font.size,
         'font-style': font.fontStyle,
         'font-family': font.fontFamily,
         'font-weight': font.fontWeight,
-        'text-anchor': options.anchor,
-        'transform': options.transform,
+        'text-anchor': option.anchor,
+        'transform': option.transform,
         'opacity': font.opacity,
-        'dominant-baseline': options.baseLine
+        'dominant-baseline': option.baseLine
     };
-    text = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
+    text = typeof option.text === 'string' ? option.text : isMinus ? option.text[option.text.length - 1] : option.text[0];
     htmlObject = renderer.createText(renderOptions, text);
-    if (typeof options.text !== 'string' && options.text.length > 1) {
-        for (let i: number = 1, len: number = options.text.length; i < len; i++) {
-            height = (measureText(options.text[i], font).height);
+    if (typeof option.text !== 'string' && option.text.length > 1) {
+        for (let i: number = 1, len: number = option.text.length; i < len; i++) {
+            height = (measureText(option.text[i], font).height);
             tspanElement = renderer.createTSpan(
                 {
-                    'x': options.x, 'id': options.id,
-                    'y': (options.y) + ((isMinus) ? -(i * height) : (i * height))
+                    'x': option.x, 'id': option.id,
+                    'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
                 },
-                isMinus ? options.text[options.text.length - (i + 1)] : options.text[i]
+                isMinus ? option.text[option.text.length - (i + 1)] : option.text[i]
             );
             htmlObject.appendChild(tspanElement);
         }
     }
-    appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate);
+    appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateduration);
     return htmlObject;
 }
 
@@ -1588,45 +1513,6 @@ export class StackValues {
     }
 }
 /** @private */
-export class TextOption extends CustomizeOption {
-
-    public anchor: string;
-    public text: string | string[];
-    public transform: string = '';
-    public x: number;
-    public y: number;
-    public baseLine: string = 'auto';
-
-    constructor(id?: string, x?: number, y?: number, anchor?: string, text?: string | string[], transform: string = '', baseLine?: string) {
-        super(id);
-        this.x = x;
-        this.y = y;
-        this.anchor = anchor;
-        this.text = text;
-        this.transform = transform;
-        this.baseLine = baseLine;
-    }
-}
-/** @private */
-export class PathOption extends CustomizeOption {
-    public opacity: number;
-    public fill: string;
-    public stroke: string;
-    public ['stroke-width']: number;
-    public ['stroke-dasharray']: string;
-    public d: string;
-
-    constructor(id: string, fill: string, width: number, color: string, opacity?: number, dashArray?: string, d?: string) {
-        super(id);
-        this.opacity = opacity;
-        this.fill = fill;
-        this.stroke = color;
-        this['stroke-width'] = width;
-        this['stroke-dasharray'] = dashArray;
-        this.d = d;
-    }
-}
-/** @private */
 export class RectOption extends PathOption {
 
     public x: number;
@@ -1674,32 +1560,6 @@ export class PolygonOption {
         this.id = id;
         this.points = points;
         this.fill = fill;
-    }
-}
-/** @private */
-export class Size {
-
-    public height: number;
-    public width: number;
-
-    constructor(width: number, height: number) {
-        this.width = width;
-        this.height = height;
-    }
-}
-/** @private */
-export class Rect {
-
-    public x: number;
-    public y: number;
-    public height: number;
-    public width: number;
-
-    constructor(x: number, y: number, width: number, height: number) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
     }
 }
 /** @private */

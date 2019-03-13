@@ -988,7 +988,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private scrollResizeHandler(): void {
-        if (this.mode === 'Popup' && this.tipObj) {
+        if (this.mode === 'Popup' && this.tipObj && !(Browser.isDevice)) {
             this.removeEditor();
         }
     }
@@ -1036,6 +1036,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if ((errEle && !isNOU(this.validationRules)) || (errEle && calendarComp)) {
             return;
         }
+
         if (!this.isTemplate) {
             this.setValue();
         }

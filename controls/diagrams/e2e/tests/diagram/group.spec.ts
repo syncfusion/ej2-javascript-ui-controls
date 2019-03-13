@@ -1,3 +1,7 @@
+/**
+ * spec
+ */
+/* tslint:disable */
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { browser, element, By, by, ElementFinder } from '@syncfusion/ej2-base/e2e/index';
@@ -21,10 +25,11 @@ let strokeDashArray: ElementFinder = element(by.id('strokeDashArray'));
 let opacity: ElementFinder = element(by.id('opacity'));
 let selectBox: ElementFinder = element(by.id('selectBox'));
 
+
 describe('Diagram Control', () => {
 
 
-    describe('Group - Node with label', () => {
+    describe('Group - Group with label', () => {
         describe('Interaction and properties', () => {
             it('Rendering', () => {
                 browser.load('/demos/group/group.html');
@@ -95,7 +100,7 @@ describe('Diagram Control', () => {
 
         });
     });
-    describe('Group - Node with port', () => {
+    describe('Group - Group with port', () => {
         it('Rendering', () => {
             browser.load('/demos/group/group.html');
             selection.all(by.tagName('option'))
@@ -152,7 +157,7 @@ describe('Diagram Control', () => {
                 .then((options: any) => {
                     options[3].click();
                 });
-            browser.compareScreen(element(By.id('diagram')), 'Group-Connector-interaction');
+            browser.compareScreen(element(By.id('diagram')), 'Group-Connector-interaction1');
         });
 
     });
@@ -212,7 +217,7 @@ describe('Diagram Control', () => {
                 .then((options: any) => {
                     options[3].click();
                 });
-            browser.compareScreen(element(By.id('diagram')), 'Group-Connector-interaction');
+            browser.compareScreen(element(By.id('diagram')), 'Group-Connector-interaction2');
         });
 
 
@@ -277,41 +282,41 @@ describe('Diagram Control', () => {
         });
     });
     describe('Constraints', () => {
-        it('Node DragDisableConstraints', () => {
-            browser.load('/demos/group/group.html');
-            executeSelectionEvent('selectNodes', 8);
-            executeSelectionOption('Drag');
-            browser.compareScreen(element(By.id('diagram')), 'group-DragDisable');
-        });
-        it('Node DragEnableConstraints', () => {
-            executeSelectionOption('Drag');
-            browser.compareScreen(element(By.id('diagram')), 'group-DragEnable');
-        });
-        it('Node RotateDisableConstraints', () => {
-            executeSelectionOption('Rotate');
-            browser.compareScreen(element(By.id('diagram')), 'node-RotateDisable');
-        });
-        it('Node RotateEnableConstraints', () => {
-            executeSelectionOption('Rotate');
-            browser.compareScreen(element(By.id('diagram')), 'node-RotateEnable');
-        });
+        // it('Group DragDisableConstraints', () => {
+        //     browser.load('/demos/group/group.html');
+        //     executeSelectionEvent('selectNodes', 8);
+        //     executeSelectionOption('Drag');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-DragDisable');
+        // });
+        // it('Group DragEnableConstraints', () => {
+        //     executeSelectionOption('Drag');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-DragEnable');
+        // });
+        // it('Group RotateDisableConstraints', () => {
+        //     executeSelectionOption('Rotate');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-node-RotateDisable');
+        // });
+        // it('Group RotateEnableConstraints', () => {
+        //     executeSelectionOption('Rotate');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-node-RotateEnable');
+        // });
 
-        it('Node ResizeDisableConstraints', () => {
-            executeSelectionOption('Resize');
-            browser.compareScreen(element(By.id('diagram')), 'node-ResizeDisable');
-        });
-        it('Node ResizeEnableConstraints', () => {
-            executeSelectionOption('Resize');
-            browser.compareScreen(element(By.id('diagram')), 'node-ResizeEnable');
-        });
-        it('Node DeleteDisableConstraints', () => {
-            executeSelectionOption('Delete');
-            browser.compareScreen(element(By.id('diagram')), 'node-DeleteEnable');
-        });
-        it('Node DeleteEnableConstraints', () => {
-            executeSelectionOption('Delete');
-            browser.compareScreen(element(By.id('diagram')), 'node-DeleteDisable');
-        });
+        // it('Group ResizeDisableConstraints', () => {
+        //     executeSelectionOption('Resize');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-node-ResizeDisable2');
+        // });
+        // it('Group ResizeEnableConstraints1', () => {
+        //     executeSelectionOption('Resize');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-node-ResizeEnable12');
+        // });
+        // it('Group DeleteDisableConstraints', () => {
+        //     executeSelectionOption('Delete');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-node-DeleteEnable');
+        // });
+        // it('Group DeleteEnableConstraints', () => {
+        //     executeSelectionOption('Delete');
+        //     browser.compareScreen(element(By.id('diagram')), 'group-node-DeleteDisable222');
+        // });
     });
     describe('PerFormance style issue', () => {
         it('Rendering', () => {
@@ -349,3 +354,5 @@ describe('Diagram Control', () => {
         selectObject.click();
     }
 });
+
+/* tslint:enable */

@@ -1,6 +1,5 @@
 import { Switch } from './../src/switch/switch';
-import { createElement } from '@syncfusion/ej2-base';
-import { EventHandler } from '@syncfusion/ej2-base';
+import { createElement, attributes } from '@syncfusion/ej2-base';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
 /* tslint:disable */
@@ -149,6 +148,16 @@ describe('Switch', () => {
             let events: MouseEvent = document.createEvent('MouseEvent');
             events.initEvent('mousedown', true, true);
             document.dispatchEvent(events);
+        });
+
+        it('Hidden input', () => {
+            attributes(element, { 'ejs-for': 'true', 'name': 'check' });
+            specSwitch = new Switch({}, '#specSwitch');
+            expect(element.parentElement.children[1].tagName).toEqual('INPUT');
+            expect(element.parentElement.children[1].getAttribute('name')).toEqual('check');
+            expect(element.parentElement.children[1].getAttribute('type')).toEqual('hidden');
+            expect(element.parentElement.children[1].getAttribute('value')).toEqual('false');
+            element.removeAttribute('ejs-for');
         });
     });
 

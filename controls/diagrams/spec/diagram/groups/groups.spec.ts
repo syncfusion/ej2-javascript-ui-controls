@@ -10,6 +10,7 @@ import { DiagramContextMenu } from '../../../src/diagram/objects/context-menu';
 import { Node, SnapSettingsModel, DiagramElement, ShapeAnnotationModel, PointPortModel, Connector } from '../../../src/diagram/index';
 import { SnapConstraints, PortVisibility, PortConstraints, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo, DiagramContextMenu, Snapping);
 /**
  * Groups Spec
@@ -23,6 +24,12 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -160,7 +167,6 @@ describe('Group', () => {
             expect(Object.keys(diagram.nameTable).length).toBe(13);
             done();
         });
-
     });
     describe('Group With context Menu', () => {
         let diagram: Diagram;
@@ -174,6 +180,12 @@ describe('Group', () => {
         };
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
@@ -341,11 +353,9 @@ describe('Group', () => {
             diagram.select([internalGroup]);
             diagram.unGroup();
             expect(diagram.nodes.length).toBe(7);
-            expect((diagram.nameTable['group1'] as Node).children.length).toBe(2);
+            expect((diagram.nameTable['group1'] as Node).children.length).toBe(1);
             done();
         });
-
-        //ungroup internal group
     });
     describe('Diagram with element pass as parameter', () => {
         let diagram: Diagram;
@@ -359,6 +369,12 @@ describe('Group', () => {
         };
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
@@ -418,6 +434,12 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -493,6 +515,12 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -553,7 +581,6 @@ describe('Group', () => {
             expect(element.attributes[2].value === 'rotate(0,550.5,500.5)translate(544.5,494.5)').toBe(true);
             done()
         });
-
     });
     describe('Group - width and height', () => {
         let diagram: Diagram;
@@ -562,6 +589,12 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram_group_width_height' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -606,7 +639,7 @@ describe('Group', () => {
         });
         it('group property issue and save and load isse', (done: Function) => {
             let element: HTMLElement = document.getElementById("group_groupElement");
-            let group:HTMLElement = element.childNodes[0] as HTMLElement;
+            let group: HTMLElement = element.childNodes[0] as HTMLElement;
             expect(group.attributes[14].value === "gray" && group.attributes[11].value === "black").toBe(true);
             let savedata = diagram.saveDiagram();
             var group1 = diagram.nodes[2];
@@ -646,6 +679,12 @@ describe('Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram_group_group_width_height' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -668,7 +707,7 @@ describe('Group', () => {
 
             diagram = new Diagram({
                 width: '800px', height: '600px', nodes: nodes,
-                scrollSettings:{verticalOffset:20},
+                scrollSettings: { verticalOffset: 20 },
                 snapSettings: { constraints: 0 }, contextMenuSettings: { show: true }
             });
             diagram.appendTo('#diagram_group_group_width_height');
@@ -690,20 +729,19 @@ describe('Group', () => {
             done();
         });
         it('Checking group have width and height in rendering', (done: Function) => {
-            let data 
+            let data
             let selArray = [];
             selArray.push(diagram.nodes[3]);
             diagram.select(selArray);
             let selectorElement = document.getElementById('diagram_group_group_width_height_SelectorElement');
-            var children =selectorElement.children[3] as HTMLElement
-            expect(children.getAttribute('cx') ==='699.9966666666667').toBe(true)
+            var children = selectorElement.children[3] as HTMLElement
+            expect(children.getAttribute('cx') === '699.9966666666667').toBe(true)
             data = diagram.selectedItems.nodes;
             diagram.paste(data);
-            
-            expect(diagram.nodes.length===8).toBe(true);
+
+            expect(diagram.nodes.length === 8).toBe(true);
             done();
         });
-
     });
     describe('Performance Fix break issue', () => {
         let diagram: Diagram;
@@ -821,17 +859,148 @@ describe('Group', () => {
         });
         it('copy and paste group issue', (done: Function) => {
             let offsetX = diagram.nodes[2].offsetX;
-            let offsetY = diagram.nodes[2].offsetY;
-            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-            var mouseEvents = new MouseEvents();
-            mouseEvents.clickEvent(diagramCanvas, offsetX, offsetY);
-            diagram.copy();
-            diagram.paste();
-            var node = diagram.nodes[5];
-            var element = document.getElementById((node as Node).id + '_content_groupElement')
-            expect(element.children[0].getAttribute('fill') === 'white' && element.children[0].getAttribute('stroke') === 'black').toBe(true);
+        let offsetY = diagram.nodes[2].offsetY;
+        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        var mouseEvents = new MouseEvents();
+        mouseEvents.clickEvent(diagramCanvas, offsetX, offsetY);
+        diagram.copy();
+        diagram.paste();
+        var node =diagram.nodes[5];
+        var element = document.getElementById((node as Node).id+'_content_groupElement')
+        expect(element.children[0].getAttribute('fill')==='white'&&element.children[0].getAttribute('stroke')==='black').toBe(true);
             done();
-        });
+         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
     });
+    describe('group undo redo', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group_group_width_height' });
+            document.body.appendChild(ele);
+            var newnode = {
+                offsetX: 250,
+                offsetY: 250,
+                width: 100,
+                height: 100,
+                shape: {
+                    type: "Basic",
+                    shape: "Triangle"
+                },
+                style: {
+                    fill: '#6BA5D7',
+                    strokeColor: 'white'
+                },
+                annotations: [
+                    { content: "ssss",
+                    constraints: AnnotationConstraints.Interaction,
+                        style: { fill: "transparent" } }
+                ]
+            };
+            var nodes = [
+                {
+                    id: 'node1', width: 50, height: 50, offsetX: 600,
+                    offsetY: 300,
+                }, {
+                    id: 'node2', width: 50, height: 50, offsetX: 600,
+                    offsetY: 400
+                },
+            ];
+
+            diagram = new Diagram({
+                width: '800px', height: '500px',nodes: nodes,
+            });
+            diagram.appendTo('#diagram_group_group_width_height');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('group the node and undo testing', (done: Function) => {
+           let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+           diagram.selectAll();
+           expect((diagram.selectedItems.nodes.length === 2)).toBe(true);
+           diagram.group();
+           diagram.undo();
+           diagram.clearSelection();
+           diagram.select([diagram.nameTable['node1']]);
+           expect((diagram.selectedItems.nodes.length === 1)).toBe(true);
+           done();
+           diagram.select([diagram.nameTable['node2']]);
+           expect((diagram.selectedItems.nodes.length === 1)).toBe(true);
+           done();
+        });
+    });
+    describe('Group - with selection issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram_group_group_width_height' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node6', width: 50, height: 50, offsetX: 750,
+                    offsetY: 100
+                },
+                {
+                    id: 'node7', width: 50, height: 50, offsetX: 750,
+                    offsetY: 170
+                },
+                {
+                    id: 'node8', width: 50, height: 50, offsetX: 850,
+                    offsetY: 100
+                },
+
+                { id: 'group4', children: ['node6', 'node7'], },
+            ];
+
+            diagram = new Diagram({
+                width: '800px', height: '600px', nodes: nodes,
+                scrollSettings: { verticalOffset: 20 },
+                snapSettings: { constraints: 0 }, contextMenuSettings: { show: true }
+            });
+            diagram.appendTo('#diagram_group_group_width_height');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking group selection issue', (done: Function) => {
+            diagram.nodes[3].rotateAngle = 45;
+            diagram.dataBind();
+            expect((Math.round(diagram.nodes[3].wrapper.bounds.left) == 690) &&
+                (Math.round(diagram.nodes[3].wrapper.bounds.right) == 810)).toBe(true);
+            done();
+        });
+    });
+
 });

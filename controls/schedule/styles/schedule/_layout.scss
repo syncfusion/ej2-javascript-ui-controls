@@ -31,7 +31,9 @@
       }
 
       .e-tbar-btn {
-        background: $schedule-tbar-default-bg;
+        @if $schedule-skin != 'bootstrap4' {
+          background: $schedule-tbar-default-bg;
+        }
 
         @if $schedule-skin == 'highcontrast' {
           border-color:  $schedule-tbar-default-bg;
@@ -44,10 +46,19 @@
           @if $schedule-skin == 'highcontrast' {
             border-color:  $schedule-tbar-border-hover-color;
           }
+
+          @if $schedule-skin == 'bootstrap4' {
+            border-color:  $schedule-tbar-border-hover-color;
+          }
         }
 
         &:active {
           background: $schedule-select-bg-color;
+
+          @if $schedule-skin == 'bootstrap4' {
+            background: $schedule-tbar-hover-bg;
+            border-color:  $schedule-tbar-border-hover-color;
+          }
         }
       }
 
@@ -147,7 +158,10 @@
       }
 
       .e-hor-nav  {
-        background: $schedule-tbar-default-bg;
+        @if $schedule-skin != 'bootstrap4' {
+          background: $schedule-tbar-default-bg;
+        }
+
         border-left: $border-size $schedule-tbar-border-nav-type $schedule-tbar-border-nav;
 
         &::after {
@@ -317,7 +331,7 @@
       border-radius: 2px;
       box-shadow: 0 10px 10px 0 $schedule-more-indicator-shadow-color;
       opacity: 1;
-      padding: 8px 0;
+      padding: $schedule-more-popup-padding;
       width: 225px;
 
       .e-more-appointment-wrapper {
@@ -342,6 +356,10 @@
         padding-left: 10px;
         padding-right: 10px;
 
+        @if ($schedule-skin == 'bootstrap4') {
+          padding: 10px 10px 0;
+        }
+
         .e-appointment-border {
           border: 0;
           box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
@@ -361,7 +379,7 @@
         color: $schedule-primary-content-font-color;
         font-size: $schedule-date-header-wrap-nrml-font-size;
         line-height: 1;
-        padding-bottom: 2px;
+        padding-bottom: $schedule-more-appointment-margin-bottom;
       }
 
       .e-header-date {
@@ -414,7 +432,7 @@
         display: flex;
         height: $schedule-month-appointment-height;
         line-height: $schedule-appointment-text-line-height;
-        margin-bottom: 2px;
+        margin-bottom: $schedule-more-appointment-margin-bottom;
         padding: 2px 0;
         width: 100%;
 
@@ -471,6 +489,17 @@
 
     &.e-rtl {
       .e-more-popup-wrapper {
+
+        @if ($schedule-skin == 'bootstrap4') {
+          .e-header-date {
+            padding-right: 10px;
+          }
+
+          .e-header-day {
+            padding-right: 10px;
+          }
+        }
+
         .e-more-event-close {
           left: 6px;
           right: auto;
@@ -829,17 +858,24 @@
       .e-header-cells {
         font-size: 12px;
         height: $schedule-header-cells-height;
-        padding: 5px;
+        padding: $schedule-header-cells-padding;
 
         .e-header-day {
           display: table;
           font-size: $schedule-header-day-nrml-font-size;
+          @if ($schedule-skin == 'bootstrap4') {
+            line-height: 17px;
+            padding-bottom: 4px;
+          }
         }
 
         .e-header-date {
           cursor: pointer;
           display: table;
           font-size: $schedule-header-date-nrml-font-size;
+          @if ($schedule-skin == 'bootstrap4') {
+            line-height: 21px;
+          }
 
           &:hover {
             text-decoration: underline;
@@ -1047,7 +1083,7 @@
 
         .e-appointment-details {
           flex: auto;
-          padding: 0 4px;
+          padding: $schedule-appointment-details-padding;
           text-align: left;
         }
 
@@ -1174,6 +1210,11 @@
         &.e-timescale-disable .e-appointment-details {
           text-align: right;
         }
+        @if ($schedule-skin == 'bootstrap4') {
+          .e-header-cells {
+            padding: 8px 8px 0 0;
+          }
+        }
 
         .e-day-wrapper .e-appointment {
           .e-appointment-details {
@@ -1296,8 +1337,8 @@
         cursor: pointer;
         display: table;
         height: 20px;
-        line-height: 20px;
-        margin: 3px 3px 2px;
+        line-height: $schedule-date-header-line-height;
+        margin: $schedule-date-header-margin;
         text-align: center;
 
         &:hover {
@@ -1383,6 +1424,12 @@
 
     &.e-rtl {
       .e-month-view {
+        @if ($schedule-skin == 'bootstrap4') {
+          .e-date-header {
+            margin: 8px 8px 0 0;
+          }
+        }
+
         .e-left-indent {
           border-left: $border-size $border-type $schedule-content-border-color;
           border-right-width: 0;
@@ -1486,6 +1533,10 @@
 
       .e-resource-column-table {
         height: 100%;
+      }
+
+      .e-auto-height {
+        height: auto;
       }
 
       .e-resource-tree-icon {
@@ -1948,7 +1999,7 @@
       .e-day-date-header {
         color: $schedule-header-font-color;
         cursor: default;
-        padding: 10px 32px 0 16px;
+        padding: $schedule-agenda-date-header-padding;
 
         .e-m-date {
           font-size: $schedule-header-date-nrml-font-size;
@@ -1986,6 +2037,9 @@
 
       .e-subject-wrap {
         display: flex;
+        @if ($schedule-skin == 'bootstrap4') {
+          margin-bottom: 6px;
+        }
       }
 
       .e-active-appointment-agenda {
@@ -2053,7 +2107,7 @@
       }
 
       .e-agenda-item {
-        padding: 10px 0;
+        padding: $schedule-agenda-item-padding;
       }
 
       .e-agenda-parent {
@@ -2065,7 +2119,7 @@
         border-left: 3px solid $schedule-appointment-bg-color;
         border-right: 0;
         cursor: default;
-        padding: 0 8px;
+        padding: $schedule-agenda-appointment-padding;
 
         &:hover {
           background: $schedule-hover-bg-color;
@@ -2258,9 +2312,30 @@
       }
     }
 
+    @if ($schedule-skin == 'bootstrap4') {
+      &.e-rtl {
+        .e-month-view,
+        .e-month-agenda-view {
+          .e-date-header {
+            margin: 8px 8px 0 0;
+          }
+        }
+      }
+    }
+
     .e-month-view,
     .e-month-agenda-view {
+      .e-date-header {
+        @if ($schedule-skin == 'bootstrap4') {
+          line-height: 24px;
+          margin: 8px 0 0 8px;
+          }
+      }
+
       .e-header-cells {
+        @if ($schedule-skin == 'bootstrap4') {
+          line-height: 24px;
+        }
         height: $schedule-month-header-cells-bgr-height;
       }
 
@@ -2793,6 +2868,9 @@
     @if ($schedule-skin != 'material') {
       border: 1px solid $schedule-popup-border-color;
     }
+    @if ($schedule-skin != 'material') {
+      box-shadow: none;
+    }
 
     .e-hidden {
       display: none;
@@ -2803,6 +2881,9 @@
         position: absolute;
         right: 6px;
         top: 4px;
+        @if ($schedule-skin == 'bootstrap4') {
+          padding: 2px 4px 0 0;
+        }
 
         .e-edit,
         .e-delete,
@@ -2822,11 +2903,7 @@
       }
 
       .e-popup-content {
-        padding: 38px 18px 12px;
-
-        @if ($schedule-skin == 'material') {
-          padding: 28px 18px 8px;
-        }
+        padding: $schedule-popup-content-padding;
 
         .e-popup-table {
           width: 100%;
@@ -2836,6 +2913,10 @@
 
             @if ($schedule-skin == 'material') {
               margin-bottom: 8px;
+            }
+
+            @if ($schedule-skin == 'bootstrap4') {
+              margin-top: 14px;
             }
           }
 
@@ -2857,7 +2938,7 @@
         }
 
         .e-header-icon-wrapper {
-          padding: 5px 5px 2px;
+          padding: $schedule-event-popup-header-icon-padding;
 
           .e-edit,
           .e-delete {
@@ -2907,11 +2988,7 @@
         }
 
         .e-subject-wrap {
-          padding: 0 18px 8px;
-
-          @if ($schedule-skin == 'material') {
-            padding: 0 24px 16px;
-          }
+          padding: $schedule-event-popup-subject-padding;
 
           .e-subject {
             cursor: default;
@@ -2929,16 +3006,17 @@
               border-left: 6px solid $schedule-appointment-bg-color;
               padding: 8px 0 8px 10px;
             }
+
+            @if ($schedule-skin == 'bootstrap4') {
+              border-radius: 4px;
+              padding: 8px;
+              }
           }
         }
       }
 
       .e-popup-content {
-        padding: 0 18px 16px 26px;
-
-        @if ($schedule-skin == 'material') {
-          padding: 8px 18px 26px 26px;
-        }
+        padding: $schedule-event-popup-content-padding;
       }
     }
 
@@ -2963,11 +3041,7 @@
       .e-resource {
         color: $schedule-primary-content-font-color;
         display: flex;
-        padding-top: 12px;
-
-        @if ($schedule-skin == 'material') {
-          padding-top: 16px;
-        }
+        padding-top: $schedule-event-popup-fields-padding;
       }
 
       .e-date-time-icon,
@@ -2979,7 +3053,7 @@
         font-size: 18px;
         padding-right: 13px;
 
-        @if ($schedule-skin == 'highcontrast' or $schedule-skin == 'fabric') {
+        @if ($schedule-skin == 'highcontrast' or $schedule-skin == 'fabric' or $schedule-skin == 'bootstrap4') {
           padding-top: 4px;
         }
       }
@@ -3001,7 +3075,7 @@
 
     .e-popup-footer {
       display: block;
-      padding: 8px 18px 8px 22px;
+      padding: $schedule-popup-footer-padding;
       text-align: right;
 
       @if ($schedule-skin == 'material') {
@@ -3059,6 +3133,29 @@
         .e-description-details,
         .e-resource-details {
           margin-right: 10px;
+        }
+      }
+      @if ($schedule-skin == 'bootstrap4') {
+        .e-popup-footer {
+          padding: 8px 8px 8px 18px;
+        }
+
+        .e-date-time-icon {
+          padding: 0 0 0 13px;
+        }
+
+        .e-event-popup {
+          .e-date-time-icon {
+            padding: 0 13px;
+          }
+        }
+
+        .e-event-details {
+          margin-left: 8px;
+        }
+
+        .e-event-edit {
+          margin-left: 8px;
         }
       }
     }
@@ -3174,6 +3271,35 @@
       font-size: 24px;
     }
 
+    @if ($schedule-skin == 'bootstrap4') {
+      .e-cell-popup .e-popup-content {
+        padding: 38px 16px 30px;
+      }
+
+      .e-popup-footer {
+        padding: 0 16px 16px 0;
+      }
+
+      .e-cell-popup .e-date-time-icon,
+      .e-event-popup .e-date-time-icon {
+        padding-right: 10px;
+      }
+
+      .e-event-popup .e-popup-header .e-subject-wrap {
+        padding: 16px 16px 8px;
+      }
+
+      &.e-rtl {
+        .e-cell-popup .e-date-time-icon {
+          padding-right: 0;
+        }
+
+        .e-event-popup .e-date-time-icon {
+          padding-right: 13px;
+        }
+      }
+    }
+
     .e-edit.e-btn.e-small.e-round,
     .e-delete.e-btn.e-small.e-round,
     .e-close.e-btn.e-small.e-round {
@@ -3207,6 +3333,58 @@
             padding: 5px 5px 0 8px;
           }
         }
+      }
+    }
+  }
+
+  @if ($schedule-skin == 'bootstrap4') {
+    .e-bigger .e-more-popup-wrapper {
+      padding: 12px 2px 16px;
+    }
+  }
+
+  .e-bigger .e-agenda-view {
+    @if ($schedule-skin == 'bootstrap4') {
+      .e-subject {
+        font-size: 16px;
+      }
+
+      .e-date-time {
+        font-size: 14px;
+      }
+
+      .e-day-date-header {
+        .e-m-date {
+          font-size: 20px;
+        }
+
+        .e-m-day {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-timeline-view {
+
+    @if ($schedule-skin == 'bootstrap4') {
+      .e-resource-cells {
+        padding: 14px 0 14px 12px;
+      }
+
+      .e-resource-text {
+        font-size: 14px;
+        padding-left: 12px;
+      }
+
+      .e-navigate {
+        font-size: $schedule-date-header-wrap-bgr-font-size;
+        padding: 8px 0 8px 8px;
+      }
+
+      .e-date-header-wrap table tbody td > span {
+        font-size: $schedule-date-header-wrap-bgr-font-size;
+        padding: 8px 0 8px 8px;
       }
     }
   }

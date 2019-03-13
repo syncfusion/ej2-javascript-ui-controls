@@ -304,6 +304,35 @@ export interface IGrid extends Component<HTMLElement> {
 
     /**
      * @hidden
+     * `vGroupOffsets`provides options to store the whole data objects block heights.
+     * @default false
+     */
+    isVirtualAdaptive?: boolean;
+
+
+    /**
+     * @hidden
+     * `vGroupOffsets`provides options to store the whole data objects block heights.
+     * @default {}
+     */
+    vGroupOffsets?: { [x: number]: number };
+
+    /**
+     * @hidden
+     * `vRows`provides options to store the whole row objects from the datasource.
+     * @default []
+     */
+    vRows?: Row<Column>[];
+
+    /**
+     * @hidden
+     * `vcRows`provides options to store the whole row objects from the datasource.
+     * @default []
+     */
+    vcRows?: Row<Column>[];
+
+    /**
+     * @hidden
      * Specifies the toolbar for Grid.
      * @default null
      */
@@ -353,6 +382,12 @@ export interface IGrid extends Component<HTMLElement> {
      * @default 0
      */
     frozenColumns?: number;
+
+    /**
+     * Specifies whether the Searching for columns is enable or not.
+     * @default true
+     */
+    allowSearching?: boolean;
 
     isEdit?: boolean;
 
@@ -499,6 +534,7 @@ export interface IGrid extends Component<HTMLElement> {
     //tslint:disable-next-line:no-any
     destroyTemplate?(templateName: string[], index?: any): void;
     getQuery?(): Query;
+    log?(type: string | string[], args?: Object): void;
 }
 
 /** @hidden */
@@ -624,7 +660,7 @@ export interface ICellRenderer<T> {
     format?(column: T, value: Object, data: Object): string;
     evaluate?(node: Element, column: Cell<T>, data: Object, attributes?: Object): boolean;
     setStyleAndAttributes?(node: Element, attributes: { [key: string]: Object }): void;
-    render(cell: Cell<T>, data: Object, attributes?: { [x: string]: string }): Element;
+    render(cell: Cell<T>, data: Object, attributes?: { [x: string]: string }, isExpand?: boolean): Element;
     appendHtml?(node: Element, innerHtml: string | Element): Element;
     refresh?(cell: Cell<T>, node: Element): Element;
 }
@@ -684,8 +720,10 @@ export interface NotifyArgs {
     rows?: Row<Column>[];
     isFrozen?: boolean;
     args?: NotifyArgs;
+    scrollTop?: Object;
     oldProperties?: string[];
     focusElement?: HTMLElement;
+    rowObject?: Row<Column>;
 }
 
 /**
@@ -725,9 +763,12 @@ export interface ICell<T> {
  */
 export interface IRow<T> {
     uid?: string;
-
+    parentGid?: number;
+    childGid?: number;
     data?: Object;
-
+    gSummary?: number;
+    tIndex?: number;
+    collapseRows?: Object[];
     isSelected?: boolean;
 
     isReadOnly?: boolean;
@@ -1221,6 +1262,10 @@ export interface RowDragEventArgs {
     fromIndex?: number;
     /** Defines the target element from index. */
     dropIndex?: number;
+    /** Define the mouse event */
+    originalEvent?: object;
+    cancel?: boolean;
+
 }
 
 /**

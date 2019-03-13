@@ -1,5 +1,6 @@
 import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged} from '@syncfusion/ej2-base';
-import {  SvgRenderer, extend,  compile as templateComplier, Component} from '@syncfusion/ej2-base';
+import {  extend,  compile as templateComplier, Component} from '@syncfusion/ej2-base';
+import { SvgRenderer } from '../svg-render/index';
 import {  ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation} from '@syncfusion/ej2-base';
 import { TextStyleModel, TooltipBorderModel, TooltipModel, ToolLocationModel, AreaBoundsModel } from './tooltip-model';
 import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs} from './interface';

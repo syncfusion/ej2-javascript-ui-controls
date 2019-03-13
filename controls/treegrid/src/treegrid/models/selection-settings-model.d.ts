@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { SelectionMode, CellSelectionMode, SelectionType } from '@syncfusion/ej2-grids';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { SelectionMode, CellSelectionMode, SelectionType, CheckboxSelectionType } from '@syncfusion/ej2-grids';
 
 /**
  * Interface for a class SelectionSettings
@@ -43,5 +43,22 @@ export interface SelectionSettingsModel {
      * @default false
      */
     persistSelection?: boolean;
+
+    /**
+     * Defines options for checkbox selection Mode. They are 
+     * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
+     * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
+     *  rows can be selected by using CTRL or SHIFT key.
+     * @default Default 
+     */
+    checkboxMode?: CheckboxSelectionType;
+
+    /**
+     * If 'checkboxOnly' set to true, then the TreeGrid selection is allowed only through checkbox.
+     * 
+     * > To enable checkboxOnly selection, should specify the column type as `checkbox`.
+     * @default false 
+     */
+    checkboxOnly?: boolean;
 
 }

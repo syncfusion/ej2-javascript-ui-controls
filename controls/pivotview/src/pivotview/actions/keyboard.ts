@@ -1,4 +1,4 @@
-import { KeyboardEvents, KeyboardEventArgs, closest, addClass } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, closest, addClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
 import * as cls from '../../common/base/css-constant';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
@@ -12,6 +12,15 @@ export class KeyboardInteraction {
     private keyConfigs: { [key: string]: string } = {
         tab: 'tab',
         enter: 'enter',
+        shiftUp: 'shift+upArrow',
+        shiftDown: 'shift+downArrow',
+        shiftLeft: 'shift+leftArrow',
+        shiftRight: 'shift+rightArrow',
+        upArrow: 'upArrow',
+        downArrow: 'downArrow',
+        leftArrow: 'leftArrow',
+        rightArrow: 'rightArrow',
+        escape: 'escape'
     };
     private pivotViewKeyboardModule: KeyboardEvents;
     /**
@@ -33,6 +42,19 @@ export class KeyboardInteraction {
                 break;
             case 'enter':
                 this.processEnter(e);
+                break;
+            case 'shiftUp':
+            case 'shiftDown':
+            case 'shiftLeft':
+            case 'shiftRight':
+            case 'upArrow':
+            case 'downArrow':
+            case 'leftArrow':
+            case 'rightArrow':
+                this.processSelection(e);
+                break;
+            case 'escape':
+                this.clearSelection();
                 break;
         }
     }
@@ -105,6 +127,73 @@ export class KeyboardInteraction {
             e.preventDefault();
             return;
         }
+    }
+    private clearSelection(): void {
+        let control: PivotView = this.parent as PivotView;
+        /* tslint:disable */
+        [].slice.call(control.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR)).forEach(function
+            (ele: HTMLElement) {
+            ele.classList.remove(cls.SELECTED_BGCOLOR);
+            ele.classList.remove(cls.CELL_SELECTED_BGCOLOR);
+            ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
+        });
+        this.parent.renderModule.selected();
+        /* tslint:enable */
+    }
+    private processSelection(e: KeyboardEventArgs): void {
+        if (this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row') {
+            let target: HTMLElement = e.target as HTMLElement;
+            let control: PivotView = this.parent as PivotView;
+            let colIndex: number = Number((e.target as HTMLElement).getAttribute('aria-colIndex'));
+            let rowIndex: number = Number((e.target as HTMLElement).getAttribute('index'));
+            let ele: HTMLElement;
+            /* tslint:disable */
+            if (target.nodeName === 'TH' || target.nodeName === 'TD') {
+                if (e.action === 'shiftUp' || e.action === 'upArrow') {
+                    ele = (rowIndex === 0 || colIndex === 0 || (target.nodeName !== 'TH' &&
+                        control.renderModule.rowStartPos !== rowIndex)) ? null : this.getParentElement(control, ele, colIndex, rowIndex - 1);
+                } else if (e.action === 'shiftDown' || e.action === 'downArrow') {
+                    ele = control.element.querySelector('th[aria-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
+                }
+                else if (e.action === 'shiftLeft' || e.action === 'leftArrow') {
+                    ele = (e.target as HTMLElement).previousSibling as HTMLElement;
+                }
+                else {
+                    ele = (e.target as HTMLElement).nextSibling as HTMLElement;
+                }
+            }
+            if (!isNullOrUndefined(ele)) {
+                if (control.gridSettings.selectionSettings.mode === 'Both' ? !ele.classList.contains(cls.ROW_CELL_CLASS) : true) {
+                    colIndex = Number(ele.getAttribute('aria-colindex'));
+                    rowIndex = Number(ele.getAttribute('index'));
+                    let colSpan: number = Number(ele.getAttribute('aria-colspan'));
+                    control.clearSelection(ele, e, colIndex, rowIndex);
+                    control.applyColumnSelection(e, ele, colIndex, colIndex + (colSpan > 0 ? (colSpan - 1) : 0), rowIndex);
+                } else {
+                    control.clearSelection(ele, e, colIndex, rowIndex);
+                }
+            } else {
+                if (e.action === 'upArrow') {
+                    ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + (rowIndex - 1) + '"]');
+                    rowIndex--;
+                }
+                else if (e.action === 'downArrow') {
+                    ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + (rowIndex + 1) + '"]');
+                    rowIndex++;
+                }
+                if (!isNullOrUndefined(ele)) {
+                    control.clearSelection(ele, e, colIndex, rowIndex);
+                }
+            }
+        }
+        /* tslint:enable */
+    }
+    private getParentElement(control: PivotView, ele: HTMLElement, colIndex: number, rowIndex: number): HTMLElement {
+        while (!ele) {
+            ele = control.element.querySelector('[aria-colindex="' + colIndex + '"][index="' + rowIndex + '"]');
+            colIndex--;
+        }
+        return ele;
     }
     /**
      * To destroy the keyboard module. 

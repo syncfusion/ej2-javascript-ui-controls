@@ -210,6 +210,28 @@ describe('Context Menu Testing - 3 ', () => {
             }
         }
     });
+    it('add custom context menu', () => {
+        let menuItems: MenuItemModel[] = [
+            {
+                text: 'search',
+                id: '_search'
+            }
+        ];
+        menu.enableCustomContextMenu = true;
+        editor.contextMenu.addCustomMenu(menuItems,true, true);
+        let event: MouseEvent = document.createEvent('MouseEvent');
+        event.initEvent('contextmenu', true, true);
+        editor.viewer.viewerContainer.dispatchEvent(event);
+        for (let i: number = 0; i < (menu.contextMenuInstance.items as MenuItemModel[]).length; i++) {
+            let text: string = (menu.contextMenuInstance.items as MenuItemModel[])[i].text;
+            if (text === 'search') {
+                let element = document.getElementById((menu.contextMenuInstance.items as MenuItemModel[])[i].id);
+                expect(element.style.display).not.toBe('none');
+                element.click();
+            }
+        }
+        menu.handleContextMenuItem('container_search');
+    });
 });
 describe('handle Context menu item validation-1 for editing', () => {
     let editor: DocumentEditor;

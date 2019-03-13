@@ -1,5 +1,6 @@
 import { BorderModel, FontModel, ColorMappingModel, LeafItemSettingsModel } from '../model/base-model';
-import { createElement, SvgRenderer, compile, merge, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, compile, merge, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Alignment, LabelPosition } from '../utils/enum';
 import { TreeMap } from '../treemap';
 import { IShapes } from '../model/interface';
@@ -139,7 +140,11 @@ export class TextOption {
     public y: number;
     public text: string | string[];
     public baseLine: string = 'auto';
-    constructor(id?: string, x?: number, y?: number, anchor?: string, text?: string | string[], transform: string = '', baseLine?: string) {
+    public connectorText: string;
+    constructor(
+        id?: string, x?: number, y?: number, anchor?: string, text?: string | string[], transform: string = '',
+        baseLine?: string, connectorText?: string
+    ) {
         this.id = id;
         this.text = text;
         this.transform = transform;
@@ -147,6 +152,7 @@ export class TextOption {
         this.x = x;
         this.y = y;
         this.baseLine = baseLine;
+        this.connectorText = connectorText;
     }
 }
 
@@ -216,10 +222,26 @@ export function findPosition(location: Rect, alignment: Alignment, textSize: Siz
     return new Location(x, y);
 }
 
+export function createTextStyle(
+    renderer: SvgRenderer, renderOptions: Object, text: string
+): HTMLElement {
+    let htmlObject: HTMLElement;
+    htmlObject = <HTMLElement>renderer.createText(renderOptions, text);
+    htmlObject.style['user-select'] = 'none';
+    htmlObject.style['-moz-user-select'] = 'none';
+    htmlObject.style['-webkit-touch-callout'] = 'none';
+    htmlObject.style['-webkit-user-select'] = 'none';
+    htmlObject.style['-khtml-user-select'] = 'none';
+    htmlObject.style['-ms-user-select'] = 'none';
+    htmlObject.style['-o-user-select'] = 'none';
+    return htmlObject;
+}
+
 /**
  * Internal rendering of text
  * @private
  */
+/* tslint:disable:no-string-literal */
 export function renderTextElement(
     options: TextOption, font: FontModel, color: string, parent: HTMLElement | Element, isMinus: boolean = false
 ): Element {
@@ -240,15 +262,26 @@ export function renderTextElement(
     let text: string = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
     let tspanElement: Element;
     let renderer: SvgRenderer = new SvgRenderer('');
-    let height: number;
-    let htmlObject: HTMLElement = <HTMLElement>renderer.createText(renderOptions, text);
-    htmlObject.style['user-select'] = 'none';
-    htmlObject.style['-moz-user-select'] = 'none';
-    htmlObject.style['-webkit-touch-callout'] = 'none';
-    htmlObject.style['-webkit-user-select'] = 'none';
-    htmlObject.style['-khtml-user-select'] = 'none';
-    htmlObject.style['-ms-user-select'] = 'none';
-    htmlObject.style['-o-user-select'] = 'none';
+    let height: number; let htmlObject: HTMLElement;
+    let breadCrumbText: boolean = !isNullOrUndefined(text) && !isNullOrUndefined(options.connectorText) ?
+        (text.search(options.connectorText[1]) >= 0) : false;
+    if (breadCrumbText) {
+        let drilledLabel: string = text;
+        let drillLevelText: string[]; let spacing: number = 5;
+        drillLevelText = drilledLabel.split('_');
+        for (let z: number = 0; z < drillLevelText.length; z++) {
+            let drillText: string = (drillLevelText[z].search(options.connectorText) !== -1 && !isNullOrUndefined(options.connectorText)) ?
+                options.connectorText : drillLevelText[z];
+            renderOptions['id'] = options.id + '_' + z;
+            htmlObject = createTextStyle(renderer, renderOptions, drillText);
+            let size: Size = measureText(drillText, font);
+            renderOptions['x'] = z !== 0 ? renderOptions['x'] + size.width : renderOptions['x'] + size.width + spacing;
+            parent.appendChild(htmlObject);
+        }
+    } else {
+        htmlObject = createTextStyle(renderer, renderOptions, text);
+        parent.appendChild(htmlObject);
+    }
     if (typeof options.text !== 'string' && options.text.length > 1) {
         for (let i: number = 1, len: number = options.text.length; i < len; i++) {
             height = (measureText(options.text[i], font).height);
@@ -260,8 +293,8 @@ export function renderTextElement(
                 options.text[i]);
             htmlObject.appendChild(tspanElement);
         }
+        parent.appendChild(htmlObject);
     }
-    parent.appendChild(htmlObject);
     return htmlObject;
 }
 
@@ -386,9 +419,15 @@ export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize
     let y: number = (type === 'Template') ? treemap.areaRect.y : 0;
     location.x = (Math.abs(x - ((position.indexOf('Left') > -1) ? rect.x + padding : !(position.indexOf('Right') > -1) ?
         rect.x + ((rect.width / 2) - (labelSize.width / 2)) : (rect.x + rect.width) - labelSize.width))) - paddings;
-    location.y = Math.abs(y - ((position.indexOf('Top') > -1) ? (type === 'Template' ? rect.y : rect.y + labelSize.height) :
-        !(position.indexOf('Bottom') > -1) ? type === 'Template' ? (rect.y + ((rect.height / 2) - (labelSize.height / 2))) :
-            (rect.y + (rect.height / 2) + labelSize.height / 4) : (rect.y + rect.height) - labelSize.height));
+    if (treemap.enableDrillDown && (treemap.renderDirection === 'BottomLeftTopRight'
+        || treemap.renderDirection === 'BottomRightTopLeft')) {
+        location.y = Math.abs((rect.y + rect.height) - labelSize.height + padding);
+    } else {
+        location.y = Math.abs(y - ((position.indexOf('Top') > -1) ? (type === 'Template' ? rect.y : rect.y + labelSize.height) :
+            !(position.indexOf('Bottom') > -1) ? type === 'Template' ? (rect.y + ((rect.height / 2) - (labelSize.height / 2))) :
+                (rect.y + (rect.height / 2) + labelSize.height / 4) : (rect.y + rect.height) - labelSize.height));
+    }
+
     return location;
 }
 

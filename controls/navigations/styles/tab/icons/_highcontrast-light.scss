@@ -1,0 +1,132 @@
+@include export-module('tab-highcontrast-light-icons') {
+  /*! tab icons */
+  #{&}.e-tab {
+
+    .e-tab-header {
+
+      .e-toolbar-items.e-hscroll.e-rtl {
+
+        .e-nav-left-arrow::before {
+          content: '\e219';
+        }
+
+        .e-nav-right-arrow::before {
+          content: '\e98f';
+        }
+      }
+
+      .e-scroll-nav {
+
+        .e-nav-left-arrow::before {
+          content: '\e98f';
+        }
+
+        .e-nav-right-arrow::before {
+          content: '\e219';
+        }
+      }
+
+      .e-close-icon::before {
+        content: '\e7fc';
+        position: relative;
+      }
+
+      .e-popup-up-icon::before {
+        content: '\e85e';
+
+        @media screen and (max-width: 480px) {
+          content: '\e976';
+        }
+      }
+
+      .e-popup-down-icon::before {
+        content: '\e84f';
+
+        @media screen and (max-width: 480px) {
+          content: '\e976';
+        }
+      }
+    }
+
+    &.e-vertical-icon .e-tab-header {
+
+      @media screen and (max-width: 480px) {
+
+        .e-popup-up-icon::before {
+          content: '\e85e';
+        }
+
+        .e-popup-down-icon::before {
+          content: '\e84f';
+        }
+      }
+    }
+
+    &.e-vertical-tab {
+
+      .e-tab-header {
+
+        .e-scroll-nav {
+
+          .e-nav-up-arrow::before {
+            content: '\ebbb';
+          }
+
+          .e-nav-down-arrow::before {
+            content: '\ebbd';
+          }
+        }
+
+        .e-popup-up-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\ebb8';
+          }
+        }
+
+        .e-popup-down-icon {
+
+          &::before {
+            content: 'More';
+          }
+
+          &::after {
+            content: '\ebb8';
+          }
+        }
+      }
+
+      &.e-icon-tab {
+
+        .e-tab-header {
+
+          .e-popup-up-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\ebb7';
+            }
+          }
+
+          .e-popup-down-icon {
+
+            &::before {
+              content: '';
+            }
+
+            &::after {
+              content: '\ebb7';
+            }
+          }
+        }
+      }
+    }
+  }
+}

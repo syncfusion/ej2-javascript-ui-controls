@@ -68,8 +68,14 @@
     stroke-width: $diagram-border-stroke-width;
   }
 
+  .e-diagram-border.e-thick-border.e-diagram-lane {
+    stroke: $diagram-lane-border-strokes;
+    stroke-width: $diagram-lane-border-stroke-width;
+  }
+
   .e-diagram-highlighter {
     stroke: $diagram-highlighter-stroke;
+    stroke-width: $diagram-highlighter-border-stroke-width;
   }
 
   .e-diagram-selected-region {

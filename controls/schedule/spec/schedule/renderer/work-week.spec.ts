@@ -6,14 +6,25 @@ import { Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, Actio
 import { Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
 import { triggerMouseEvent, triggerScrollEvent } from '../util.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
-import { EJ2Instance } from '../../../src/schedule/base/interface';
 import { blockData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule work week view', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Initial load', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -835,7 +846,10 @@ describe('Schedule work week view', () => {
     describe('Default schedule block events', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = { width: '500px', height: '500px', currentView: 'WorkWeek', selectedDate: new Date(2017, 9, 30) };
+            let schOptions: ScheduleModel = {
+                width: '500px', height: '500px', currentView: 'WorkWeek',
+                selectedDate: new Date(2017, 9, 30)
+            };
             schObj = util.createSchedule(schOptions, blockData.slice(0, 14), done);
         });
         afterAll(() => {
@@ -874,7 +888,7 @@ describe('Schedule work week view', () => {
                 .toEqual('Events cannot be scheduled within the blocked time range.');
             let okButton: HTMLElement = alertDialog.querySelector('.e-quick-alertok') as HTMLElement;
             okButton.click();
-            expect(schObj.quickPopup.quickDialog.visible).toBe(false);            
+            expect(schObj.quickPopup.quickDialog.visible).toBe(false);
             let startRevisedObj: DateTimePicker = util.getInstance(cls.EVENT_WINDOW_START_CLASS) as DateTimePicker;
             startRevisedObj.value = new Date(2017, 9, 30, 1, 0);
             startRevisedObj.dataBind();
@@ -1051,5 +1065,17 @@ describe('Schedule work week view', () => {
             };
             schObj.dataBind();
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

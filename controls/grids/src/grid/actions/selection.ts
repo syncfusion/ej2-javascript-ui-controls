@@ -4,7 +4,7 @@ import { remove, closest, classList } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { IGrid, IAction, IIndex, ISelectedCell, IPosition, IRenderer, EJ2Intance, NotifyArgs, CellFocusArgs } from '../base/interface';
 import { SelectionSettings } from '../base/grid';
-import { setCssInGridPopUp, getPosition, parentsUntil, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
+import { setCssInGridPopUp, getPosition, isGroupAdaptive, parentsUntil, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
 import * as events from '../base/constant';
 import { RenderType, CheckState } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -50,6 +50,7 @@ export class Selection implements IAction {
     private prevRowIndex: number;
     private prevCIdxs: IIndex;
     private prevECIdxs: IIndex;
+    private selectedRowIndex: number;
     private isMultiShiftRequest: boolean = false;
     private isMultiCtrlRequest: boolean = false;
     private enableSelectMultiTouch: boolean = false;
@@ -118,6 +119,7 @@ export class Selection implements IAction {
     }
 
     private initializeSelection(): void {
+        this.parent.log('selection_key_missing');
         EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
     }
 
@@ -221,9 +223,11 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         let selectedRow: Element = gObj.getRowByIndex(index);
         let selectedMovableRow: Element = this.getSelectedMovableRow(index);
-        let selectData: Object = this.getCurrentBatchRecordChanges()[index];
+        let selectData: Object;
         if (gObj.enableVirtualization && selectedRow) {
             selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
+        } else {
+            selectData = this.getCurrentBatchRecordChanges()[index];
         }
         if (!this.isRowType() || !selectedRow || this.isEditing()) {
             // if (this.isEditing()) {
@@ -414,7 +418,7 @@ export class Selection implements IAction {
 
     private getCollectionFromIndexes(startIndex: number, endIndex: number): number[] {
         let indexes: number[] = [];
-        let { i, max }: { i: number, max: number } = (startIndex < endIndex) ?
+        let { i, max }: { i: number, max: number } = (startIndex <= endIndex) ?
             { i: startIndex, max: endIndex } : { i: endIndex, max: startIndex };
         for (; i <= max; i++) {
             indexes.push(i);
@@ -471,14 +475,14 @@ export class Selection implements IAction {
             this.persistSelectedData.splice(index, 1);
         }
     }
-    private updateCheckBoxes(row: Element, chkState?: boolean): void {
+    private updateCheckBoxes(row: Element, chkState?: boolean, rowIndex?: number ): void {
         if (!isNullOrUndefined(row)) {
             let chkBox: HTMLInputElement = row.querySelector('.e-checkselect') as HTMLInputElement;
             if (!isNullOrUndefined(chkBox)) {
                 removeAddCboxClasses(chkBox.nextElementSibling as HTMLElement, chkState);
                 if (isNullOrUndefined(this.checkedTarget) || (!isNullOrUndefined(this.checkedTarget)
                     && !this.checkedTarget.classList.contains('e-checkselectall'))) {
-                    this.setCheckAllState(parseInt(row.getAttribute('aria-rowindex'), 10));
+                    this.setCheckAllState(rowIndex);
                 }
             }
         }
@@ -605,7 +609,7 @@ export class Selection implements IAction {
         };
         this.parent.trigger(type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj);
         this.isCancelDeSelect = rowDeselectObj[cancl];
-        this.updateCheckBoxes(row[0]);
+        this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
     }
 
     private getRowObj(row: Element | number = this.currentIndex): Row<Column> {
@@ -1902,8 +1906,15 @@ export class Selection implements IAction {
     private checkSelect(checkBox: HTMLInputElement): void {
         let target: HTMLElement = closest(this.checkedTarget, '.e-rowcell') as HTMLElement;
         let checkObj: EJ2Intance = ((checkBox as HTMLElement) as EJ2Intance);
+        let gObj: IGrid = this.parent;
         this.isMultiCtrlRequest = true;
-        let rIndex: number = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+        let rIndex: number = 0;
+        if (isGroupAdaptive(gObj)) {
+            let uid: string = target.parentElement.getAttribute('data-uid');
+            rIndex = gObj.getRows().map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
+        } else {
+            rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+        }
         if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
             ++rIndex;
         }
@@ -2024,7 +2035,13 @@ export class Selection implements IAction {
                     this.checkSelect(checkBox);
                 }
             } else {
-                let rIndex: number = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+                let gObj: IGrid = this.parent; let rIndex: number = 0;
+                if (isGroupAdaptive(gObj)) {
+                    let uid: string = target.parentElement.getAttribute('data-uid');
+                    rIndex = gObj.getRows().map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
+                } else {
+                    rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+                }
                 if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
                     ++rIndex;
                 }
@@ -2077,6 +2094,7 @@ export class Selection implements IAction {
     }
 
     private rowCellSelectionHandler(rowIndex: number, cellIndex: number): void {
+        let gObj: IGrid = this.parent;
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
                 this.selectRow(rowIndex, this.selectionSettings.enableToggle);
@@ -2191,6 +2209,11 @@ export class Selection implements IAction {
                 break;
             case 'space':
                 this.applySpaceSelection(e.element as HTMLElement);
+                break;
+            case 'tab':
+                if (this.parent.editSettings.allowNextRowEdit) {
+                    this.selectRow(rowIndex);
+                }
                 break;
         }
         this.preventFocus = false;
@@ -2404,8 +2427,10 @@ export class Selection implements IAction {
             this.refreshPersistSelection();
         }
     }
+
     private selectRowIndex(index: number): void {
         this.parent.isSelectedRowIndexUpdating = true;
         this.parent.selectedRowIndex = index;
     }
+
 }

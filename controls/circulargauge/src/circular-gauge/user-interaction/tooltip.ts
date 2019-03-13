@@ -126,9 +126,7 @@ export class GaugeTooltip {
                 this.tooltipRect = rect;
             }
             if (!tooltipArgs.cancel && !samePointerEle) {
-                let themes: string = this.gauge.theme.toLowerCase();
-                let tooltipColor: string = (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#00000' : '#FFFFFF';
-                tooltipArgs['tooltip']['properties']['textStyle']['color'] = tooltipColor;
+                tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     data: { value: tooltipArgs.content },
@@ -138,7 +136,7 @@ export class GaugeTooltip {
                     location: tooltipArgs.location,
                     inverted: this.arrowInverted,
                     areaBounds: this.tooltipRect,
-                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : tooltipArgs.tooltip.fill,
+                    fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
                     textStyle: tooltipArgs.tooltip.textStyle,
                     border: tooltipArgs.tooltip.border
                 });

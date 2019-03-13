@@ -57,7 +57,7 @@ export class AxisRenderer {
             appendPath(
                 new PathOption(
                     gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width,
-                    axis.lineStyle.color,
+                    axis.lineStyle.color || this.gauge.themeStyle.lineColor,
                     null, axis.lineStyle.dashArray,
                     getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius),
                     '', 'pointer-events:none;'),
@@ -106,10 +106,12 @@ export class AxisRenderer {
                 new TextOption(
                     gauge.element.id + '_Axis_' + index + '_Label_' + i,
                     location.x, location.y, anchor, label.text,
-                    style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '',
-                    'auto'),
-                style.font, style.useRangeColor ? getRangeColor(label.value, <Range[]>axis.ranges, style.font.color) : style.font.color,
-                labelElement, 'pointer-events:none;');
+                    style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'),
+                style.font, style.useRangeColor ? getRangeColor(
+                    label.value, <Range[]>axis.ranges,
+                    style.font.color || this.gauge.themeStyle.labelColor) : style.font.color || this.gauge.themeStyle.labelColor,
+                labelElement, 'pointer-events:none;'
+            );
         }
         element.appendChild(labelElement);
     }
@@ -153,7 +155,8 @@ export class AxisRenderer {
                     appendPath(
                         new PathOption(
                             gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width,
-                            isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, minorLineStyle.color) : minorLineStyle.color,
+                            isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, minorLineStyle.color ||
+                            this.gauge.themeStyle.minorTickColor) : minorLineStyle.color || this.gauge.themeStyle.minorTickColor,
                             null, '0', this.calculateTicks(i, <Tick>minorLineStyle, axis), '', 'pointer-events:none;'
                         ),
                         minorTickElements, gauge
@@ -183,7 +186,8 @@ export class AxisRenderer {
                 appendPath(
                     new PathOption(
                         gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width,
-                        isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, majorLineStyle.color) : majorLineStyle.color,
+                        isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, majorLineStyle.color ||
+                        this.gauge.themeStyle.majorTickColor) : majorLineStyle.color || this.gauge.themeStyle.majorTickColor,
                         null, '0', this.calculateTicks(i, <Tick>majorLineStyle, axis), '', 'pointer-events:none;'
                     ),
                     majorTickElements, gauge

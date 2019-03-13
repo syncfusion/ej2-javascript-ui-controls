@@ -2,7 +2,7 @@
  * Highlighted region map sample
  */
 import { Maps, Marker, Zoom, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
-
+import { oklahoma } from './MapData/Oklahoma';
 Maps.Inject(Marker, Zoom, MapsTooltip);
 //tslint:disable:max-func-body-length
     let maps: Maps = new Maps({
@@ -17,7 +17,7 @@ Maps.Inject(Marker, Zoom, MapsTooltip);
         },
         layers: [
             {
-                shapeData: new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/Oklahoma.json'),
+                shapeData: oklahoma,
                 shapeSettings: {
                     fill: '#F5F5F5',
                     border: { color: '#EEDA97', width: 1 }

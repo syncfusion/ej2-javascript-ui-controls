@@ -1,8 +1,9 @@
 import { Chart } from '../chart';
 import { Axis, Row, Column, VisibleRangeModel } from '../axis/axis';
-import { valueToCoefficient, TextOption, inside } from '../../common/utils/helper';
-import { measureText, appendChildElement } from '../../common/utils/helper';
-import { Size, Rect, PathOption, CircleOption } from '../../common/utils/helper';
+import { valueToCoefficient, inside } from '../../common/utils/helper';
+import { appendChildElement } from '../../common/utils/helper';
+import { CircleOption } from '../../common/utils/helper';
+import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { LineBase } from '../series/line-base';
 import { textElement, ChartLocation, valueToPolarCoefficient, CoefficientToVector, getElement } from '../../common/utils/helper';
 import { BorderModel } from '../../index';

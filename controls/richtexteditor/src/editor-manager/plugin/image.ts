@@ -96,7 +96,7 @@ export class ImageCommand {
             if (!isNullOrUndefined(e.item.selection)) {
                 e.item.selection.restore();
             }
-            InsertHtml.Insert(this.parent.currentDocument, imgElement);
+            InsertHtml.Insert(this.parent.currentDocument, imgElement, this.parent.editableElement);
         }
         if (e.callBack) {
             e.callBack({
@@ -111,12 +111,14 @@ export class ImageCommand {
     private insertImageLink(e: IHtmlItem): void {
         let anchor: HTMLElement = createElement('a', {
             attrs: {
-                href: e.item.url,
-                target: e.item.target
+                href: e.item.url
             }
         });
         anchor.appendChild(e.item.selectNode[0]);
-        InsertHtml.Insert(this.parent.currentDocument, anchor);
+        if (!isNullOrUndefined(e.item.target)) {
+            anchor.setAttribute('target', e.item.target);
+        }
+        InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
         this.callBack(e);
     }
     private openImageLink(e: IHtmlItem): void {
@@ -125,12 +127,16 @@ export class ImageCommand {
     }
     private removeImageLink(e: IHtmlItem): void {
         detach(closest(e.item.selectParent[0], 'a'));
-        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement);
+        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);
         this.callBack(e);
     }
     private editImageLink(e: IHtmlItem): void {
         (e.item.selectNode[0].parentElement as HTMLAnchorElement).href = e.item.url;
-        (e.item.selectNode[0].parentElement as HTMLAnchorElement).target = e.item.target;
+        if (isNullOrUndefined(e.item.target)) {
+            (e.item.selectNode[0].parentElement as HTMLAnchorElement).removeAttribute('target');
+        } else {
+            (e.item.selectNode[0].parentElement as HTMLAnchorElement).target = e.item.target;
+        }
         this.callBack(e);
     }
     private removeImage(e: IHtmlItem): void {
@@ -156,7 +162,7 @@ export class ImageCommand {
         this.callBack(e);
     }
     private imageCaption(e: IHtmlItem): void {
-        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement);
+        InsertHtml.Insert(this.parent.currentDocument, e.item.insertElement, this.parent.editableElement);
         this.callBack(e);
     }
     private imageJustifyLeft(e: IHtmlItem): void {

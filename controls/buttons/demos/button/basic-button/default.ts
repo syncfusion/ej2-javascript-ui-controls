@@ -178,33 +178,40 @@ btnObj.appendTo('#bootstrapdark');
 // btnObj.appendTo('#highcontrastlight');
 
 document.getElementById('material').onclick = (e : Event) => {
+    enableRipple(true);
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material.css');
 };
 document.getElementById('fabric').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric.css');
 };
 document.getElementById('bootstrap').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap.css');
 };
 document.getElementById('highcontrast').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
 };
 
 document.getElementById('materialdark').onclick = (e : Event) => {
+    enableRipple(true);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
 };
 
 document.getElementById('fabricdark').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
 };
 
 document.getElementById('bootstrapdark').onclick = (e : Event) => {
+    enableRipple(false);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
 };

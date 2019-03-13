@@ -46,8 +46,8 @@ export class NumericEditCell implements IEditCell {
                 floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
             },
             col.edit.params));
-        this.obj.appendTo(args.element as HTMLElement);
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
+        this.obj.appendTo(args.element as HTMLElement);
     }
 
     public destroy(): void {

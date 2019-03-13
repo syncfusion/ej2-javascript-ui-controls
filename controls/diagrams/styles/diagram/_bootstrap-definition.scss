@@ -17,12 +17,12 @@ $diagram-rotate-handle-color: #000;
 $diagram-bezier-handle-color: $brand-primary;
 $diagram-bezier-line-color: $brand-primary-darken-10;
 
-$diagram-highlighter-stroke: $brand-primary-darken-10;
+$diagram-highlighter-stroke: $brand-primary;
 $diagram-selected-region-stroke: $brand-primary;
 $diagram-pivot-line-stroke: $brand-primary-font;
 
 $diagram-text-edit-selection-color: $brand-primary-font;
-$diagram-text-edit-selection-background: $brand-primary-font;
+$diagram-text-edit-selection-background: $brand-primary !default;
 
 $diagram-symbolpalette-hover: $grey-e6;
 $diagram-symbolpalette-selected: $grey-ad;
@@ -41,7 +41,10 @@ $diagram-background-color: transparent;
 $diagram-editbox-background: #fff;
 $diagram-editbox-fontcolor: #000;
 $diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
 $diagram-border-strokes: $brand-primary-darken-10;
+$diagram-lane-border-strokes: #0078ff;
 
 .e-icons {
   font-family: 'e-icons';
@@ -55,32 +58,33 @@ $diagram-border-strokes: $brand-primary-darken-10;
 
 @include export-module('diagram-bootstrap-icons') {
   .e-diagram-menu {
-    .e-bringforward::before { content: '\e574'; }
-    .e-bringfront::before { content: '\e575'; }
-    .e-sendback::before { content: '\e576'; }
-    .e-sendbackward::before { content: '\e577'; }
-    .e-delete::before { content: '\e578'; }
-    .e-ungroup::before { content: '\e579'; }
-    .e-group::before { content: '\e57a'; }
-    .e-undo::before { content: '\e57c'; }
-    .e-cut::before { content: '\e57d'; }
-    .e-save::before { content: '\e57e'; }
-    .e-paste::before { content: '\e57f'; }
-    .e-copy::before { content: '\e580'; }
-    .e-redo::before { content: '\e581'; }
-    .e-zoomin::before { content: '\e582'; }
-    .e-italic::before { content: '\e583'; }
-    .e-close::before { content: '\e584'; }
-    .e-pan::before { content: '\e585'; }
-    .e-bold::before { content: '\e586'; }
-    .e-underline::before { content: '\e587'; }
-    .e-zoomout::before { content: '\e588'; }
-    .e-export::before { content: '\e589'; }
-    .e-print::before { content: '\e58a'; }
-    .e-order::before { content: '\e58b'; }
-  }
+    .e-bringforward::before { content: '\e5a1'; }
+    .e-bringfront::before { content: '\e5a2'; }
+    .e-sendback::before { content: '\e5a3'; }
+    .e-sendbackward::before { content: '\e5a4'; }
+    .e-delete::before { content: '\e94a'; }
+    .e-ungroup::before { content: '\e5a6'; }
+    .e-group::before { content: '\e5a7'; }
+    .e-undo::before { content: '\e341'; }
+    .e-redo::before { content: '\e354'; }
+    .e-copy::before { content: '\e33d'; }
+    .e-cut::before { content: '\e33b'; }
+    .e-save::before { content: '\ebc2'; }
+    .e-paste::before { content: '\e355'; }
+    .e-zoomin::before { content: '\e349'; }
+    .e-italic::before { content: '\e35a'; }
+    .e-close::before { content: '\ea7b'; }
+    .e-pan::before { content: '\ebcb'; }
+    .e-bold::before { content: '\e339'; }
+    .e-underline::before { content: '\e343'; }
+    .e-zoomout::before { content: '\e351'; }
+    .e-export::before { content: '\e702'; }
+    .e-print::before { content: '\e34b'; }
+    .e-order::before { content: '\e4a4'; }
+}
 
   .e-symbolpalette {
-    .e-clear-searchtext::before { content: '\e58c'; }
+    .e-clear-searchtext::before { content: '\e60e'; }
   }
 }
+  

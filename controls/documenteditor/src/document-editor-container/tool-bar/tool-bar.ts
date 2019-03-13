@@ -214,7 +214,7 @@ export class Toolbar {
                 },
                 {
                     tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
-                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton'
+                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton e-de-image-focus'
                 },
                 {
                     prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
@@ -335,7 +335,7 @@ export class Toolbar {
                 this.toggleEditing(args.item.id);
                 break;
         }
-        if (args.item.id !== id + FIND_ID) {
+        if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
             this.container.documentEditor.focusIn();
         }
     }
@@ -372,6 +372,7 @@ export class Toolbar {
         } else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
         }
+        setTimeout((): void => { this.documentEditor.focusIn(); }, 30);
     }
     private onFileChange(): void {
         let file: File = this.filePicker.files[0];

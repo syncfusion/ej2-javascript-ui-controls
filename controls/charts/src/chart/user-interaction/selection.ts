@@ -1,13 +1,14 @@
 /**
  * Selection src file
  */
-import { SvgRenderer, Browser} from '@syncfusion/ej2-base';
+import { Browser} from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import {
-    ChartLocation, Rect, RectOption, CircleOption, withInBounds, getDraggedRectLocation,
+    ChartLocation, RectOption, CircleOption, withInBounds, getDraggedRectLocation,
     removeElement, getElement
 } from '../../common/utils/helper';
+import { Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { SelectionMode } from '../utils/enum';
 import { Chart } from '../chart';
 import { Series, Points } from '../series/chart-series';

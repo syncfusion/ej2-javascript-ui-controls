@@ -3,6 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, TextModel, PathModel, FlowShapeModel, BasicShapeModel, ImageModel } from '../../../src/diagram/objects/node-model';
 import { TextStyle } from '../../../src/diagram/core/appearance';
 import { TextElement, TextStyleModel, PathElement, NodeConstraints, Html } from '../../../src/diagram/index';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 
 /**
@@ -15,6 +16,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -297,13 +304,18 @@ describe('Diagram Control', () => {
             expect(node.wrapper.children[0].visible).toBe(false);
             done();
         });
-
-    });
+       });
     describe('Native and HTML Node - Add content', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagramNativeHTML' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -347,13 +359,18 @@ describe('Diagram Control', () => {
             expect(document.getElementById('html').textContent == diagram.nodes[2].id).toBe(true);
             done();
         });
-
-    });
+       });
     describe('gradient - change runtime', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagramGradientCheck' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -396,12 +413,17 @@ describe('Diagram Control', () => {
             expect(document.getElementById('node1_content_linear') === null).toBe(true);
             done();
         });
-
-    });describe('shadow - change runtime', () => {
+     });describe('shadow - change runtime', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagramShadowCheck' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -433,6 +455,15 @@ describe('Diagram Control', () => {
             expect(document.getElementById('node1_content_groupElement_shadow').getAttribute('fill') === 'blue').toBe(true);
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
     });
 });

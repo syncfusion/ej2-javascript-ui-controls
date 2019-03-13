@@ -18,7 +18,7 @@ export class DetailExpandCellRenderer extends CellRenderer implements ICellRende
     /**
      * Function to render the detail expand cell           
      */
-    public render(cell: Cell<Column>, data: Object, attributes: Object): Element {
+    public render(cell: Cell<Column>, data: Object, attributes?: Object): Element {
         let node: Element = this.element.cloneNode() as Element;
         if (attributes && !isNullOrUndefined(attributes['class'])) {
             node.className = '';

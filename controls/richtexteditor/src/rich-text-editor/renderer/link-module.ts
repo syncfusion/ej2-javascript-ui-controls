@@ -120,6 +120,7 @@ export class Link {
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target: HTMLElement = args.target as HTMLElement;
+            target = this.getAnchorNode(target);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             let isPopupOpen: boolean = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && !target.contains(target.querySelector('img'))) {
@@ -226,7 +227,7 @@ export class Link {
             cssClass: CLS_RTE_ELEMENTS,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px', height: 'initial',
+            showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px', height: 'inherit',
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertlink.bind(selectObj),
@@ -252,7 +253,7 @@ export class Link {
         });
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(linkDialogEle);
-        linkDialogEle.style.maxHeight = 'initial';
+        linkDialogEle.style.maxHeight = 'inherit';
         if (!isNullOrUndefined(inputDetails)) {
             linkUrl.value = inputDetails.url;
             linkText.value = inputDetails.text;
@@ -345,22 +346,27 @@ export class Link {
         this.hideLinkQuickToolbar();
     }
     private openLink(e: NotifyArgs): void {
-        if ((e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor') || (e.selectParent[0] as HTMLElement).tagName === 'A') {
+        let selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
+        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             this.parent.formatter.process(
                 this.parent, e.args, e.args,
                 {
-                    url: (e.selectParent[0] as HTMLAnchorElement).href,
-                    target: (e.selectParent[0] as HTMLAnchorElement).target === '' ? '_self' : '_blank', selectNode: e.selectNode,
+                    url: (selectParentEle as HTMLAnchorElement).href,
+                    target: (selectParentEle as HTMLAnchorElement).target === '' ? '_self' : '_blank', selectNode: e.selectNode,
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });
         }
     }
+    private getAnchorNode(element: HTMLElement): HTMLElement {
+        let selectParent: HTMLElement = closest(element, 'a') as HTMLElement;
+        return <HTMLElement>(selectParent ? selectParent : element);
+    }
     private editLink(e: NotifyArgs): void {
-        if ((e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor') || (e.selectParent[0] as HTMLElement).tagName === 'A') {
-            let selectParentEle: HTMLElement = e.selectParent[0] as HTMLElement;
+        let selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
+        if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             let linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             let inputDetails: { [key: string]: string } = {
-                url: (selectParentEle as HTMLAnchorElement).href, text: selectParentEle.innerHTML,
+                url: (selectParentEle as HTMLAnchorElement).href, text: selectParentEle.innerText,
                 title: selectParentEle.title, target: (selectParentEle as HTMLAnchorElement).target,
                 header: this.i10n.getConstant('editLink'), btnText: linkUpdate
             };

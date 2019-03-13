@@ -10,11 +10,20 @@ import { ILoadedEventArgs } from '../../../src/common/model/interface';
 import { ScrollBar } from '../../../src/common/scrollbar/scrollbar';
 import { load } from '../../../src';
 import { MouseEvents } from '../base/events.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Chart.Inject(LineSeries, ScrollBar, MultiLevelLabel);
 
 let trigger: MouseEvents = new MouseEvents();
 describe('Scrollbar Chart', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let ele: HTMLElement;
     describe('Multiple Scrollbar', () => {
         let chartObj: Chart;
@@ -325,6 +334,14 @@ describe('Scrollbar Chart', () => {
             chartObj.refresh();
         });
     });
-
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 
 });

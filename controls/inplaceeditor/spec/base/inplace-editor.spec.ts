@@ -2032,6 +2032,29 @@ describe('InPlace-Editor Control', () => {
                 done();
             }, 500);
         });
+        it('Mobile testing popup mode with page scrolling', (done: Function) => {
+            Browser.userAgent = safariMobileUA;
+            document.body.style.minHeight = '900px';
+            destroy(editorObj);            
+            editorObj = renderEditor({
+                mode: 'Popup',
+                popupSettings: { title: 'Test' }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            window.scrollTo(0, 10);
+            setTimeout(() => {
+                expect(select('.' + classes.ROOT + ' .' + classes.VALUE_WRAPPER, document.body).classList.contains(classes.OPEN)).toEqual(true);
+                expect(selectAll('.' + classes.ROOT_TIP, document.body).length === 1).toEqual(true);
+                document.body.style.minHeight = '';
+                done();
+            }, 500);
+            Browser.userAgent = currentUA;
+        });
         it('Resize with testing', (done: Function) => {
             destroy(editorObj);
             editorObj = renderEditor({

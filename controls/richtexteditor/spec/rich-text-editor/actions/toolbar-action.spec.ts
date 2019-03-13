@@ -4,6 +4,7 @@
 import { detach } from '@syncfusion/ej2-base';
 import { RichTextEditor, Toolbar, NodeSelection } from './../../../src/index';
 import { QuickToolbar, Link, Image, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
+import { renderRTE, destroy } from "./../render.spec";
 
 RichTextEditor.Inject(MarkdownEditor);
 RichTextEditor.Inject(HtmlEditor);
@@ -12,7 +13,7 @@ RichTextEditor.Inject(Image);
 RichTextEditor.Inject(Toolbar);
 RichTextEditor.Inject(QuickToolbar);
 
-import { renderRTE, destroy } from "./../render.spec";
+
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -729,6 +730,7 @@ Tabs and shift-tabs work too`;
             selectNode = editNode.querySelector('.third-p-node');
             nodeSelection.setSelectionText(curDocument, selectNode.childNodes[0], selectNode.childNodes[0], 0, 6);
             document.getElementById(controlId + "_toolbar_Paste").click();
+            expect(actionBegin).toBe(true);
             setTimeout(() => {
                 expect(actionComplete).toBe(true);
                 actionBegin = false;
@@ -788,6 +790,9 @@ Tabs and shift-tabs work too`;
             actionComplete = false;
         });
         it(" Click the paste action", (done) => {
+            if (rteObj.getInjectedModules()[0].toString().indexOf('PasteCleanup')) {
+                rteObj.getInjectedModules().shift();
+            }
             rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
             rteObj.formatter.editorManager.markdownSelection.restore(editNode);
             document.getElementById(controlId + "_toolbar_Paste").click();
@@ -798,7 +803,6 @@ Tabs and shift-tabs work too`;
                 actionComplete = false;
                 done();
             });
-
         });
 
         afterAll(() => {

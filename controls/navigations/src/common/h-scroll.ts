@@ -164,7 +164,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Specifies the value to disable/enable the HScroll component.
-     * When set to `true`, the component will be disabled.
+     * When set to `true` , the component will be disabled.
      * @param  {boolean} value - Based on this Boolean value, HScroll will be enabled (false) or disabled (true).
      * @returns void.
      */

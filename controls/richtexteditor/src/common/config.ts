@@ -40,6 +40,7 @@ export const htmlKeyConfig: { [key: string]: string } = {
     'escape': '27',
     'insert-link': 'ctrl+k',
     'insert-image': 'ctrl+shift+i',
+    'insert-table': 'ctrl+shift+e',
     'undo': 'ctrl+z',
     'redo': 'ctrl+y',
     'copy': 'ctrl+c',
@@ -78,6 +79,7 @@ export const markdownKeyConfig: { [key: string]: string } = {
     'escape': '27',
     'insert-link': 'ctrl+k',
     'insert-image': 'ctrl+shift+i',
+    'insert-table': 'ctrl+shift+e',
     'undo': 'ctrl+z',
     'redo': 'ctrl+y',
     'copy': 'ctrl+c',
@@ -93,4 +95,24 @@ export const markdownKeyConfig: { [key: string]: string } = {
     'full-screen': 'ctrl+shift+f',
     'ordered-list': 'ctrl+shift+o',
     'unordered-list': 'ctrl+alt+o'
+};
+/**
+ * PasteCleanup Grouping of similar functionality tags
+ */
+export const pasteCleanupGroupingTags: { [key: string]: string[] } = {
+    'b': ['strong'],
+    'strong': ['b'],
+    'i': ['emp', 'cite'],
+    'emp': ['i', 'cite'],
+    'cite': ['i', 'emp']
+};
+
+/**
+ * PasteCleanup Grouping of similar functionality tags
+ */
+export const listConversionFilters: { [key: string]: string } = {
+    'first': 'MsoListParagraphCxSpFirst',
+    'middle': 'MsoListParagraphCxSpMiddle',
+    'last': 'MsoListParagraphCxSpLast'
+
 };

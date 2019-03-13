@@ -364,6 +364,23 @@ describe('Sparkline ', () => {
             expect(options['text-anchor']).toBe('middle');
             expect(options['dominant-baseline']).toBe('middle');
         });
+        it('Sparkline datalabel color for theme bootstrap4 checking', () => {
+            sparkline.theme = 'Bootstrap4';
+            sparkline.dataLabelSettings.textStyle.color = null;
+            sparkline.dataBind();
+            ele = getIdElement(id + '_sparkline_label_text_5');
+            options = getLabelOptions(ele);
+            expect(options.text).toBe('June : 785');
+            expect(options.x).toBe(426);
+            expect(options.y === 56 || options.y === 57).toBe(true);
+            expect(options.fill).toBe('#424242');
+            expect(options['font-size']).toBe(10);
+            expect(options['font-family']).toBe('fantasy');
+            expect(options['font-style']).toBe('Bold');
+            expect(options['font-weight']).toBe('100');
+            expect(options['text-anchor']).toBe('middle');
+            expect(options['dominant-baseline']).toBe('middle');
+        });
     });
     describe('Sparkline ', () => {
         beforeAll(() => {

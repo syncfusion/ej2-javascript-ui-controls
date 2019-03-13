@@ -1,5 +1,5 @@
 import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, append } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
-import {Orientation,CreatedEventArgs,ResizeEventArgs,ResizingEventArgs} from "./splitter";
+import {Orientation,CreatedEventArgs,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -12,6 +12,18 @@ export interface PanePropertiesModel {
      * @default ''
      */
     size?: string;
+
+    /**
+     * Specifies whether a pane is collapsible or not collapsible.
+     * @default false
+     */
+    collapsible?: boolean;
+
+    /**
+     * Specifies whether a pane is collapsed or not collapsed at the initial rendering of splitter.
+     * @default false
+     */
+    collapsed?: boolean;
 
     /**
      * Specifies the value whether a pane is resizable. By default, the Splitter is resizable in all panes.
@@ -36,7 +48,7 @@ export interface PanePropertiesModel {
      * Specifies the content of split pane as plain text, HTML markup, or any other JavaScript controls.
      * @default ''
      */
-    content?: string;
+    content?: string | HTMLElement;
 
 }
 
@@ -68,7 +80,7 @@ export interface SplitterModel extends ComponentModel{
      * Specifies a value that indicates whether to align the split panes horizontally or vertically.
      *  * Set the orientation property as "Horizontal" to create a horizontal splitter that aligns the panes left-to-right.
      *  * Set the orientation property as "Vertical" to create a vertical splitter that aligns the panes top-to-bottom.
-     * @default Horizontal 
+     * @default Horizontal
      */
     orientation?: Orientation;
 
@@ -104,26 +116,50 @@ export interface SplitterModel extends ComponentModel{
 
     /**
      * Triggers after creating the splitter component with its panes.
-     * @event 
+     * @event
      */
     created?: EmitType<CreatedEventArgs>;
 
     /**
      * Triggers when the split pane is started to resize.
-     * @event 
+     * @event
      */
     resizeStart?: EmitType<ResizeEventArgs>;
 
     /**
      * Triggers when a split pane is being resized.
-     * @event 
+     * @event
      */
     resizing?: EmitType<ResizingEventArgs>;
 
     /**
      * Triggers when the resizing of split pane is stopped.
-     * @event 
+     * @event
      */
     resizeStop?: EmitType<ResizingEventArgs>;
+
+    /**
+     * Triggers when before panes get collapsed.
+     * @event 
+     */
+    beforeCollapse?: EmitType<BeforeExpandEventArgs>;
+
+    /**
+     * Triggers when before panes get expanded.
+     * @event 
+     */
+    beforeExpand?: EmitType<BeforeExpandEventArgs>;
+
+    /**
+     * Triggers when after panes get collapsed.
+     * @event 
+     */
+    collapsed?: EmitType<ExpandedEventArgs>;
+
+    /**
+     * Triggers when after panes get expanded.
+     * @event 
+     */
+    expanded?: EmitType<ExpandedEventArgs>;
 
 }

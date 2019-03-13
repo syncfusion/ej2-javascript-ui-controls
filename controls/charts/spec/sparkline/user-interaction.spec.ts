@@ -150,7 +150,11 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                     visible: true,
                     trackLineSettings: {
                         visible: true,
-                    }
+                    },
+                    textStyle : {
+                        color: 'white'
+                    },
+                    fill: 'transparent'
                 }
             });
         });

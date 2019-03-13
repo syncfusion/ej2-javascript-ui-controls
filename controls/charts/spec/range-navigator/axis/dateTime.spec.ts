@@ -1,6 +1,7 @@
 import { RangeNavigator, AreaSeries, ILabelRenderEventsArgs } from '../../../src/range-navigator/index';
 import { Logarithmic, DateTime, LineSeries } from '../../../src/chart/index';
 import { createElement, remove, EventHandler } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 RangeNavigator.Inject(Logarithmic, DateTime, LineSeries, AreaSeries);
 /**
  * Spec for range navigator axis
@@ -23,6 +24,14 @@ dateTime = [{ x: new Date(2000, 3), y: 34 }, { x: new Date(2000, 6), y: 32 },
 { x: new Date(2002, 11), y: 65 }, { x: new Date(2003, 3), y: 98 },
 { x: new Date(2003, 6), y: 10 }, { x: new Date(2003, 11), y: 34 }];
 describe('Range navigator', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('with default case', () => {
         let element: Element;
         let range: RangeNavigator;
@@ -703,4 +712,13 @@ describe('Range navigator', () => {
             range.refresh();
         })
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

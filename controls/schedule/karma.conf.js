@@ -29,6 +29,9 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-popups/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-excel-export/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-file-utils/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-compression/**/*.js", included: false },
       { pattern: 'node_modules/es6-promise/dist/es6-promise.js', included: false },
       { pattern: 'spec/**/*.json', included: false }
       

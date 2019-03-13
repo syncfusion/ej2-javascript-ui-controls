@@ -21,7 +21,7 @@
 #### Bug Fixes
 
 - Formatting not applied to calendar component issue fixed.
-- Key returned instead of value while using fieldSettings with `dropDown` components issue has been fixed.
+- Key returned instead of value while using `fieldSettings` with `dropDown` components issue has been fixed.
 
 ## 16.4.44 (2018-12-24)
 

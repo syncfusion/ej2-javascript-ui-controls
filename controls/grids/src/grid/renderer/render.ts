@@ -12,7 +12,7 @@ import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { AggregateRowModel, AggregateColumnModel } from '../models/models';
 import * as events from '../base/constant';
-import { prepareColumns, setFormatter, getDatePredicate, getObject } from '../base/util';
+import { prepareColumns, setFormatter, isGroupAdaptive, getDatePredicate, getObject } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -274,6 +274,8 @@ export class Render {
     /** @hidden */
     public dataManagerSuccess(e: ReturnType, args?: NotifyArgs): void {
         let gObj: IGrid = this.parent;
+        this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
+        this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         gObj.trigger(events.beforeDataBound, e);
         if ((<{ cancel?: boolean }>e).cancel) {
             return;
@@ -294,7 +296,7 @@ export class Render {
             gObj.dataBind();
             return;
         }
-        if (!gObj.getColumns().length && len || !this.isLayoutRendered) {
+        if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj) ) {
             this.updatesOnInitialRender(e);
         }
         if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
@@ -310,6 +312,10 @@ export class Render {
             this.headerRenderer.refreshUI();
         }
         if (len) {
+            if (isGroupAdaptive(gObj)) {
+                let content: string = 'content';
+                args.scrollTop = { top: this.contentRenderer[content].scrollTop };
+            }
             this.contentRenderer.refreshContentRows(args);
         } else {
             if (!gObj.getColumns().length) {
@@ -340,6 +346,7 @@ export class Render {
         }
         this.parent.currentViewData = [];
         this.renderEmptyRow();
+        this.parent.log('actionfailure', { error: e });
     }
 
     private updatesOnInitialRender(e: { result: Object, count: number }): void {

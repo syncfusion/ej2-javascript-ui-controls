@@ -597,6 +597,7 @@ function maskInputKeyPressHandler(event: KeyboardEvent): void {
 }
 
 function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
+    let prevOnChange : boolean = this.isProtectedOnChange;
     if (!isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
         let eventArgs: Object = {};
         this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false, isInteracted: false };
@@ -608,6 +609,9 @@ function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
             this.changeEventArgs.isInteraction = true;
             this.changeEventArgs.event = event;
         }
+        this.isProtectedOnChange = true;
+        this.value = this.changeEventArgs.value;
+        this.isProtectedOnChange = prevOnChange;
         merge(eventArgs, this.changeEventArgs);
         this.trigger('change', eventArgs);
     }

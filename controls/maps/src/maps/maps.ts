@@ -3,8 +3,9 @@
  */
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax } from '@syncfusion/ej2-base';
 import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
-import { SvgRenderer, Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
+import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, getElement, removeClass } from './utils/helper';
 import { ZoomSettings, LegendSettings } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation } from './model/base';
@@ -22,19 +23,19 @@ import { load, click, rightClick, loaded, doubleClick, resize, shapeSelected, sh
 import { itemHighlight } from './model/constants';
 import { ProjectionType, MapsTheme, PanDirection } from './utils/enum';
 import { MapsModel } from './maps-model';
-import { Theme, BootstrapTheme, FabricTheme, HighContrastTheme, DarkTheme } from './model/theme';
+import { getThemeStyle } from './model/theme';
+import { BingMap } from './layers/bing-map';
 import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
 import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
-import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs } from './model/interface';
+import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
 import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax } from '../maps/utils/helper';
 import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint } from '../maps/utils/helper';
 import { Annotations } from '../maps/user-interaction/annotation';
 import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } from './index';
 import { NavigationLineSettingsModel, changeBorderWidth } from './index';
-import { IFontMapping, BingMap } from '../index';
 import { NavigationLine } from './layers/navigation-selected-line';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { ExportUtils } from '../maps/utils/export';
@@ -445,6 +446,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Render the data label.
      * @hidden
      */
+    /**
+     * @private
+     */
+    public themeStyle: IThemeStyle;
     public dataLabel: DataLabel;
     /** @private */
     public isTouch: boolean;
@@ -503,8 +508,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.trigger(load, { maps: this });
 
-        this.themeEffect();
-
         this.unWireEVents();
 
         this.createSVG();
@@ -513,83 +516,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.setCulture();
 
-    }
-    private setTextStyle(theme: IFontMapping, font: FontModel): void {
-        font.color = font.color || theme.color;
-        font.size = font.size || theme.size;
-        font.fontFamily = font.fontFamily || theme.fontFamily;
-        font.fontStyle = font.fontStyle || theme.fontStyle;
-        font.fontWeight = font.fontWeight || theme.fontWeight;
-    }
-    private bingMap: BingMap;
-    /**
-     * To change font styles of map based on themes
-     */
-    private themeEffect(): void {
-        this.setBackgroundValue(this.theme);
-        let theme: string = this.theme.toLowerCase();
-        switch (theme) {
-            case 'highcontrastlight':
-            case 'material':
-                this.setTextStyle(Theme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(Theme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(Theme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(Theme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, Theme.dataLabelFont);
-                break;
-            case 'bootstrap':
-                this.setTextStyle(BootstrapTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(BootstrapTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(BootstrapTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(BootstrapTheme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, BootstrapTheme.dataLabelFont);
-                break;
-            case 'fabric':
-                this.setTextStyle(FabricTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(FabricTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(FabricTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(FabricTheme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, FabricTheme.dataLabelFont);
-                break;
-            case 'highcontrast':
-                this.setTextStyle(HighContrastTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(HighContrastTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(HighContrastTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(HighContrastTheme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, HighContrastTheme.dataLabelFont);
-                break;
-            case 'materialdark':
-            case 'bootstrapdark':
-            case 'fabricdark':
-                this.setTextStyle(DarkTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(DarkTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(DarkTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(DarkTheme.legendTitleFont, this.legendSettings.textStyle);
-                break;
-        }
-    }
-    /**
-     * Maps background and area background colors change as per theme.
-     * @param theme based on theme background colors will change.
-     */
-    private setBackgroundValue(theme: MapsTheme): void {
-        let color: string = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
-            '#000000' : '#FFFFFF';
-        this.background = this.background ? this.background : color;
-        this.mapsArea.background = this.mapsArea.background ? this.mapsArea.background : color;
-        color = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
-            '#FFFFFF' : '#737373';
-        this.zoomSettings.color = (this.zoomSettings.color) ? this.zoomSettings.color : color;
-    }
-    /**
-     * To change datalabel font
-     * @param layers
-     * @param style
-     */
-    private setLabelFont(layers: LayerSettingsModel[], style: FontModel): void {
-        for (let layer of layers) {
-            this.setTextStyle(style, layer.dataLabelSettings.textStyle);
-        }
     }
 
     /**
@@ -602,6 +528,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.createSecondaryElement();
 
         this.addTabIndex();
+
+        this.themeStyle = getThemeStyle(this.theme);
 
         this.renderBorder();
 
@@ -627,10 +555,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 dataManager.then((e: object) => {
                     this.processResponseJsonData('DataManager', e, layer, 'ShapeData');
                 });
-            } else if (layer.shapeData instanceof MapAjax) {
-                this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
+            } else if (layer.shapeData instanceof MapAjax || layer.shapeData) {
+                if (!isNullOrUndefined(layer.shapeData['dataOptions'])) {
+                    this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
+                }
             }
-            if (layer.dataSource instanceof MapAjax) {
+            if (layer.dataSource instanceof MapAjax || !isNullOrUndefined(layer.dataSource['dataOptions'])) {
                 this.processAjaxRequest(layer, layer.dataSource, 'DataSource');
             }
             if (this.serverProcess['request'] === this.serverProcess['response'] && length === layerIndex) {
@@ -638,8 +568,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             }
         });
     }
-
-    private processAjaxRequest(layer: LayerSettings, localAjax: MapAjax, type: string): void {
+    // tslint:disable:no-any
+    private processAjaxRequest(layer: LayerSettings, localAjax: MapAjax | any, type: string): void {
         let ajaxModule: Ajax;
         this.serverProcess['request']++;
         ajaxModule = new Ajax(localAjax.dataOptions, localAjax.type, localAjax.async, localAjax.contentType);
@@ -731,9 +661,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Render the map area border
      */
     private renderArea(): void {
-        let rect: RectOption = new RectOption(
-            this.element.id + '_MapAreaBorder', this.mapsArea.background, this.mapsArea.border, 1, this.mapAreaRect);
-        this.svgObject.appendChild(this.renderer.drawRectangle(rect) as SVGRectElement);
+        let width: number = this.mapsArea.border.width;
+        let background: string = this.mapsArea.background;
+        if (width > 0 || (background || this.themeStyle.areaBackgroundColor)) {
+            let rect: RectOption = new RectOption(
+                this.element.id + '_MapAreaBorder', background || this.themeStyle.areaBackgroundColor,
+                this.mapsArea.border, 1, this.mapAreaRect
+            );
+            this.svgObject.appendChild(this.renderer.drawRectangle(rect) as SVGRectElement);
+        }
     }
     /**
      * To add tab index for map element
@@ -904,13 +840,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private renderBorder(): void {
         let width: number = this.border.width;
         let borderElement: Element = this.svgObject.querySelector('#' + this.element.id + '_MapBorder');
-        if ((width > 0 || this.background) && isNullOrUndefined(borderElement)) {
+        if ((width > 0 || (this.background || this.themeStyle.backgroundColor)) && isNullOrUndefined(borderElement)) {
             let borderRect: RectOption = new RectOption(
-                this.element.id + '_MapBorder', this.background, this.border, 1,
+                this.element.id + '_MapBorder', this.background || this.themeStyle.backgroundColor, this.border, 1,
                 new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
         } else {
-            borderElement.setAttribute('fill', this.background);
+            borderElement.setAttribute('fill', this.background || this.themeStyle.backgroundColor);
         }
     }
 
@@ -935,7 +871,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 this.element.id + '_Map_' + type, location.x, location.y, 'start', trimmedTitle
             );
             let titleBounds: Rect = new Rect(location.x, location.y, elementSize.width, elementSize.height);
-            let element: Element = renderTextElement(options, style, style.color, groupEle);
+            let element: Element = renderTextElement(
+                options, style, style.color || (type === 'title' ? this.themeStyle.titleFontColor : this.themeStyle.subTitleFontColor),
+                groupEle
+            );
             element.setAttribute('aria-label', this.description || title.text);
             element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {

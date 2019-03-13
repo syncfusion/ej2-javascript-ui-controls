@@ -69,12 +69,16 @@
   .e-input-group .e-input[disabled],
   .e-input-group.e-control-wrapper .e-input[disabled],
   .e-input-group.e-disabled input.e-input,
-  .e-input-group.e-control-wrapper.e-disabled input.e-input,
+  .e-input-group.e-control-wrapper.e-disabled input.e-input {
+    background: none;
+    color: inherit;
+  }
+
   .e-input-group .e-input[readonly],
   .e-input-group.e-control-wrapper .e-input[readonly],
   .e-float-input input[readonly],
   .e-float-input.e-control-wrapper input[readonly] {
-    background: none;
+    background: $input-readonly-bg-color;
     color: inherit;
   }
 
@@ -101,8 +105,11 @@
 
   .e-input-group:not(.e-disabled) .e-input-group-icon:hover,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:hover {
-    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
       background: $input-hover-bg-color;
+    }
+    @if $skin-name == 'bootstrap4' {
+      border-color: $input-group-border-color-hover;
     }
     @if $skin-name == 'highcontrast' {
       border-color: $input-group-border-color-hover;
@@ -311,11 +318,16 @@
 
   // sass-lint:disable no-vendor-prefixes 
   .e-input-group:not(.e-disabled) .e-input-group-icon:active,
-  .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:active, {
+  .e-input-group.e-control-wrapper:not(.e-disabled) .e-input-group-icon:active {
     background: $input-group-pressed-bg;
     color: $input-group-pressed-color;
     @if $skin-name == 'bootstrap' {
       -webkit-box-shadow: $input-icon-shadow;
+      box-shadow: $input-icon-shadow;
+    }
+    @if $skin-name == 'bootstrap4' {
+      -webkit-box-shadow: $input-icon-shadow;
+      border-color: $pressed-border-color;
       box-shadow: $input-icon-shadow;
     }
     @if $skin-name == 'highcontrast' {
@@ -758,7 +770,7 @@
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) input:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-group) textarea:focus {
     border-color: $input-active-border-color;
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-border-shadow;
       box-shadow: $input-border-shadow;
     }
@@ -770,7 +782,7 @@
   .e-float-input:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group) input:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-warning).e-error:not(.e-input-group) textarea:focus  {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-error-border-shadow;
       box-shadow: $input-error-border-shadow;
     }
@@ -782,7 +794,7 @@
   .e-float-input:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus,
   .e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group) input:focus,
   .e-float-input.e-control-wrapper:not(.e-error):not(.e-warning).e-success:not(.e-input-group) textarea:focus  {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-success-border-shadow;
       box-shadow: $input-success-border-shadow;
     }
@@ -794,7 +806,7 @@
   .e-float-input:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group) input:focus,
   .e-float-input.e-control-wrapper:not(.e-success):not(.e-error).e-warning:not(.e-input-group) textarea:focus  {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-warning-border-shadow;
       box-shadow: $input-warning-border-shadow;
     }
@@ -804,7 +816,7 @@
   .e-input-group.e-float-icon-left:not(.e-float-input) .e-input-in-wrap .e-input:focus:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper:not(.e-float-input):not(.e-float-icon-left) .e-input:focus:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper.e-float-icon-left:not(.e-float-input) .e-input-in-wrap .e-input:focus:not(.e-success):not(.e-warning):not(.e-error) {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       box-shadow: none;
     }
   }
@@ -827,7 +839,7 @@
     @if $skin-name != 'material' {
       border-color: $input-group-border-color-focus;
     }
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-border-shadow;
       box-shadow: $input-border-shadow;
     }
@@ -836,7 +848,7 @@
   // sass-lint:disable no-vendor-prefixes 
   .e-input-group.e-input-focus:not(.e-success):not(.e-warning).e-error,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning).e-error {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-error-border-shadow;
       box-shadow: $input-error-border-shadow;
     }
@@ -845,7 +857,7 @@
   // sass-lint:disable no-vendor-prefixes 
   .e-input-group.e-input-focus:not(.e-error):not(.e-warning).e-success,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-error):not(.e-warning).e-success {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-success-border-shadow;
       box-shadow: $input-success-border-shadow;
     }
@@ -854,7 +866,7 @@
   // sass-lint:disable no-vendor-prefixes 
   .e-input-group.e-input-focus:not(.e-success):not(.e-error).e-warning,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-error).e-warning {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-warning-border-shadow;
       box-shadow: $input-warning-border-shadow;
     }
@@ -869,7 +881,7 @@
   .e-input-group.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) span:last-child.e-input-group-icon,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) .e-input:first-child:focus,
   .e-input-group.e-control-wrapper.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) span:last-child.e-input-group-icon {
-    @if $skin-name != 'bootstrap' {
+    @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap4' ) {
       border-color: $input-group-border-right-focus;
     }
   }
@@ -884,7 +896,7 @@
   .e-input-focus.e-control-wrapper.e-rtl:not(.e-success):not(.e-warning):not(.e-error) .e-input:first-child:focus,
   .e-input-focus.e-control-wrapper:not(.e-success):not(.e-warning):not(.e-error) .e-input:last-child:focus,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) span.e-input-group-icon {
-    @if $skin-name != 'bootstrap' {
+    @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap4' ) {
       border-color:  $input-group-border-left-focus;
     }
    }
@@ -895,7 +907,7 @@
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) span:first-child.e-input-group-icon,
   .e-input-group.e-control-wrapper.e-input-focus.e-rtl:not(.e-success):not(.e-warning):not(.e-error) .e-input:last-child:focus,
   .e-input-group.e-control-wrapper.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) span:first-child.e-input-group-icon {
-    @if $skin-name != 'bootstrap' {
+    @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap4' ) {
       border-color: transparent;
     }
    }
@@ -921,10 +933,10 @@
   // sass-lint:disable no-vendor-prefixes 
   .e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error) {
-    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
       border-color: $input-active-border-color;
     }
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-border-shadow;
       box-shadow: $input-border-shadow;
     }
@@ -932,7 +944,7 @@
 
   .e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning).e-error,
   .e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-warning).e-error {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-error-border-shadow;
       box-shadow: $input-error-border-shadow;
     }
@@ -940,7 +952,7 @@
 
   .e-input-group:not(.e-disabled):active:not(.e-error):not(.e-warning).e-success,
   .e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-error):not(.e-warning).e-success {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-success-border-shadow;
       box-shadow: $input-success-border-shadow;
     }
@@ -948,7 +960,7 @@
 
   .e-input-group:not(.e-disabled):active:not(.e-success):not(.e-error).e-warning,
   .e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-error).e-warning {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-warning-border-shadow;
       box-shadow: $input-warning-border-shadow;
     }
@@ -956,7 +968,7 @@
 
   .e-input-group.e-disabled:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper.e-disabled:not(.e-success):not(.e-warning):not(.e-error) {
-    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
       border-color: $input-disable-border-color;
     }
   }
@@ -1056,7 +1068,7 @@
   .e-float-input.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover,
   .e-input-group:not(.e-disabled) .e-clear-icon:hover,
   .e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover {
-    @if $skin-name == 'bootstrap' {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
       color: $input-clear-icon-hover-color;
     }
   }
@@ -1345,7 +1357,7 @@
   .e-float-input.e-control-wrapper:hover:not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled),
   .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled) input:not([disabled]),
   .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled) textarea:not([disabled]) {
-    @if $skin-name != 'material' and $skin-name != 'bootstrap' and $skin-name != 'highcontrast' {
+    @if $skin-name != 'material' and $skin-name != 'bootstrap' and $skin-name != 'bootstrap4' and $skin-name != 'highcontrast' {
       border-color: $input-group-border-color-hover;
     }
   }
@@ -1397,7 +1409,7 @@
   .e-float-input.e-control-wrapper:active:hover:not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled),
   .e-float-input:active:hover:not(.e-input-group):not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled) input:not([disabled]),
   .e-float-input.e-control-wrapper:active:hover:not(.e-input-group):not(.e-success):not(.e-warning):not(.e-error):not(.e-disabled) input:not([disabled]) {
-    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+    @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
       border-color: $input-active-border-color;
     }
   }

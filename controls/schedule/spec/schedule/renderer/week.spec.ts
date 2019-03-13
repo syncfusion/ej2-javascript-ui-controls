@@ -2,19 +2,29 @@
  * Schedule Week view spec 
  */
 import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs }
-    from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs } from '../../../src/schedule/index';
 import { Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
 import { triggerMouseEvent, triggerScrollEvent } from '../util.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
-import { EJ2Instance } from '../../../src/schedule/base/interface';
 import { blockData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule Week view', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Initial load', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -979,5 +989,17 @@ describe('Schedule Week view', () => {
             };
             schObj.dataBind();
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

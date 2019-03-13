@@ -1,7 +1,8 @@
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
-import { PathOption, appendChildElement, redrawElement, pathAnimation, valueToCoefficient } from '../../common/utils/helper';
-import { getAnimationFunction, getPoint, Rect, ChartLocation, getMinPointsDelta } from '../../common/utils/helper';
+import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient } from '../../common/utils/helper';
+import { getAnimationFunction, getPoint, ChartLocation, getMinPointsDelta } from '../../common/utils/helper';
+import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Column, Row } from '../axis/axis';
 import { Series, Points } from './chart-series';
@@ -215,7 +216,7 @@ export class ColumnBase {
                 break;
         }
         appendChildElement(series.seriesElement, element, chart.redraw);
-        pathAnimation(element, direction, chart.redraw, previousDirection);
+        pathAnimation(element, direction, chart.redraw, previousDirection, chart.duration);
     }
     /**
      * To animate the series.
@@ -240,6 +241,7 @@ export class ColumnBase {
      */
     private animateRect(element: HTMLElement, series: Series, point: Points): void {
         let option: AnimationModel = series.animation;
+        let duration: number = series.chart.animated ? series.chart.duration : option.duration;
         let effect: Function = getAnimationFunction('Linear');
         let isPlot: boolean = point.yValue < 0;
         let x: number;
@@ -277,7 +279,7 @@ export class ColumnBase {
         let value: number;
         element.style.visibility = 'hidden';
         new Animation({}).animate(element, {
-            duration: option.duration,
+            duration: duration,
             delay: option.delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {

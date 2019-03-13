@@ -16,11 +16,20 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { bar, barData, datetimeData, categoryData, categoryData1, negativeDataPoint } from '../base/data.spec';
 import { ILoadedEventArgs, IAnnotationRenderEventArgs } from '../../../src/common/model/interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, BarSeries, ColumnSeries, Category, DateTime, Logarithmic, ChartAnnotation);
 
 
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Annotation for Chart', () => {
         let chartObj: Chart;
         let element: Element;
@@ -770,5 +779,14 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 });
 

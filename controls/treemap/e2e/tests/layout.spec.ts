@@ -26,8 +26,8 @@ describe('TreeMap component test spec', () => {
         browser.get(browser.basePath + '/demo/layouttype4.html');
         browser.compareScreen(element(By.id('container')), 'layout_type4');
     });
-    it('Hierarchical layout type SliceAndDiceAuto', () => {
-        browser.get(browser.basePath + '/demo/layouttype4.html');
-        browser.compareScreen(element(By.id('container')), 'layout_type4');
-    });
+    //it('Hierarchical layout type SliceAndDiceAuto', () => {
+      //  browser.get(browser.basePath + '/demo/layouttype4.html');
+       // browser.compareScreen(element(By.id('container')), 'layout_type4');
+    //});
 });

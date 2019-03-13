@@ -8,14 +8,14 @@ export interface ChartAnnotationSettingsModel {
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     x?: string | Date | number;
 
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     y?: string | number;
 

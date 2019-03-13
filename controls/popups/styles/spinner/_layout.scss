@@ -84,6 +84,18 @@
         }
       }
 
+      .e-spin-bootstrap4 {
+        @include boot4-spinner-rotate;
+        display: block;
+        margin: 0 auto;
+
+        .e-path-circle {
+          fill: none;
+          stroke-linecap: square;
+          stroke-width: $spin-boot4-stroke-width;
+        }
+      }
+
       .e-spin-fabric {
         @include fb-spinner-rotate;
         display: block;

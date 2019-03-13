@@ -135,3 +135,34 @@ export type PeriodSelectorPosition =
     'Top' |
     /** Bottom position */
     'Bottom';
+
+/**
+ * Flag type for stock events
+ */
+export type FlagType =
+    /** Circle  */
+    'Circle' |
+    /** Square */
+    'Square' |
+    /** Flag */
+    'Flag' |
+    /** Pin type flags */
+    'Pin' |
+    /** Triangle Up */
+    'Triangle' |
+    /** Triangle Down */
+    'InvertedTriangle' |
+    /** Triangle Right */
+    'TriangleRight' |
+    /** Triangle Left */
+    'TriangleLeft' |
+    /** Arrow Up */
+    'ArrowUp' |
+    /** Arrow down */
+    'ArrowDown' |
+    /** Arrow Left */
+    'ArrowLeft' |
+    /** Arrow right */
+    'ArrowRight' |
+    /** Text type */
+    'Text';

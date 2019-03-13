@@ -4,6 +4,8 @@ $spin-overlay-background: $bg-base-75 !default;
 $spin-overlay-stroke-color: $bg-base-75 !default;
 $spin-overlay-font-color: $header-font !default;
 $spin-material-stroke-color: $bg-base-75 !default;
+$spin-boot4-stroke-color: $bg-base-75 !default;
+$spin-boot4-stroke-width: 4 !default;
 $spin-fabric-stroke-color: none !default;
 $spin-fabric-stroke-width: 1.5 !default;
 $spin-fabric-arc-color: $selection-border !default;
@@ -20,6 +22,10 @@ $spin-padding: 10px !default;
 
 @mixin fb-spinner-rotate {
   animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.53, .21, .29, .67);
+}
+
+@mixin boot4-spinner-rotate {
+  animation: material-spinner-rotate .75s linear infinite;
 }
 
 // sass-lint:disable no-vendor-prefixes

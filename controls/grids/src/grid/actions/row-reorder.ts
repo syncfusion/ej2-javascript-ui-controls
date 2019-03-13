@@ -1,7 +1,7 @@
 import { MouseEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { removeClass } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList } from '@syncfusion/ej2-base';
-import { IGrid, NotifyArgs, EJ2Intance, IPosition } from '../base/interface';
+import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses } from '../base/util';
 import * as events from '../base/constant';
 import { Column } from '../models/column';
@@ -131,12 +131,13 @@ export class RowDD {
         if (!e.target) { return; }
 
         this.processArgs(target);
-        gObj.trigger(events.rowDrag, {
-            rows: this.rows,
-            target: target, draggableType: 'rows', data: this.rowData,
-            originalEvent: e
-        });
+        let args: RowDragEventArgs = {
+            rows: this.rows, target: target, draggableType: 'rows',
+            data: this.rowData as Object[], originalEvent: e, cancel: false
+        };
+        gObj.trigger(events.rowDrag, args );
         this.stopTimer();
+        if (args.cancel) { return; }
         gObj.element.classList.add('e-rowdrag');
         this.dragTarget = trElement && parentsUntil(target, 'e-grid').id === cloneElement.parentElement.id ?
             trElement.rowIndex : parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);

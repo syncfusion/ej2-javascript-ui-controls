@@ -1,4 +1,5 @@
-import { PathOption, withInRange, Rect } from '../../common/utils/helper';
+import { withInRange } from '../../common/utils/helper';
+import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { subArraySum, getElement, appendChildElement, redrawElement } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';

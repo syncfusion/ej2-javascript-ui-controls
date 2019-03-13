@@ -1,10 +1,11 @@
 import { LineBase } from '../series/line-base';
 import { Series, Points } from '../series/chart-series';
-import { RectOption, Rect, appendClipElement } from '../../common/utils/helper';
+import { RectOption, appendClipElement } from '../../common/utils/helper';
 import { findClipRect } from '../../common/utils/helper';
 import { TechnicalIndicator } from './technical-indicator';
 import { Chart } from '../chart';
-import { BaseAttibutes } from '@syncfusion/ej2-base';
+import { BaseAttibutes } from '@syncfusion/ej2-svg-base';
+import { Rect } from '@syncfusion/ej2-svg-base';
 /**
  * Technical Analysis module helps to predict the market trend
  */

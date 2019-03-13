@@ -127,22 +127,22 @@ export class BordersAndShadingDialog {
         let dropDownList: HTMLSelectElement = <HTMLSelectElement>createElement('select', {
             id: this.target.id + '_border_style_dropDown'
         });
-        dropDownList.innerHTML = '<option>' + localeValue.getConstant('None') + '</option><option>'
-            + localeValue.getConstant('Single') + '</option><option>' + localeValue.getConstant('Dot') + '</option><option>'
-            + localeValue.getConstant('DashSmallGap') + '</option><option>' + localeValue.getConstant('DashLargeGap') + '</option><option>'
-            + localeValue.getConstant('DashDot') + '</option><option>' + localeValue.getConstant('DashDotDot') + '</option><option>'
-            + localeValue.getConstant('Double') + '</option><option>' + localeValue.getConstant('Triple') + '</option><option>'
-            + localeValue.getConstant('ThinThickSmallGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinSmallGap') + '</option><option>' + localeValue.getConstant('ThinThickThinSmallGap')
-            + '</option><option>' + localeValue.getConstant('ThinThickMediumGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinMediumGap') + '</option><option>' + localeValue.getConstant('ThinThickThinMediumGap')
-            + '</option><option>' + localeValue.getConstant('ThinThickLargeGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinLargeGap') + '</option><option>' + localeValue.getConstant('ThinThickThinLargeGap')
-            + '</option><option>' + localeValue.getConstant('SingleWavy') + '</option><option>'
-            + localeValue.getConstant('DoubleWavy') + '</option><option>' + localeValue.getConstant('DashDotStroked')
-            + '</option><option>' + localeValue.getConstant('Emboss3D') + '</option><option>' + localeValue.getConstant('Engrave3D')
-            + '</option><option>' + localeValue.getConstant('Outset') + '</option><option>'
-            + localeValue.getConstant('Inset') + '</option><option>' + localeValue.getConstant('Thick') + '</option>';
+        dropDownList.innerHTML = '<option>' + 'None' + '</option><option>'
+            + 'Single' + '</option><option>' + 'Dot' + '</option><option>'
+            + 'DashSmallGap' + '</option><option>' + 'DashLargeGap' + '</option><option>'
+            + 'DashDot' + '</option><option>' + 'DashDotDot' + '</option><option>'
+            + 'Double' + '</option><option>' + 'Triple' + '</option><option>'
+            + 'ThinThickSmallGap' + '</option><option>'
+            + 'ThickThinSmallGap' + '</option><option>' + 'ThinThickThinSmallGap'
+            + '</option><option>' + 'ThinThickMediumGap' + '</option><option>'
+            + 'ThickThinMediumGap' + '</option><option>' + 'ThinThickThinMediumGap'
+            + '</option><option>' + 'ThinThickLargeGap' + '</option><option>'
+            + 'ThickThinLargeGap' + '</option><option>' + 'ThinThickThinLargeGap'
+            + '</option><option>' + 'SingleWavy' + '</option><option>'
+            + 'DoubleWavy' + '</option><option>' + 'DashDotStroked'
+            + '</option><option>' + 'Emboss3D' + '</option><option>' + 'Engrave3D'
+            + '</option><option>' + 'Outset' + '</option><option>'
+            + 'Inset' + '</option><option>' + 'Thick' + '</option>';
         let widthText: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Width'), styles: 'width:100%;padding-top: 20px;padding-bottom: 10px;',
             className: 'e-de-table-element-subheading'

@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1 } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7 } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
@@ -58,7 +58,7 @@ function setMouseCordinates(eventarg: any, x: number, y: number): Object {
 
 describe('TreeView control', () => {
     describe('DOM element testing', () => {
-		beforeAll(() => {
+        beforeAll(() => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
                 console.log("Unsupported environment, window.performance.memory is unavailable");
@@ -2791,7 +2791,7 @@ describe('TreeView control', () => {
                 treeObj.dataBind();
                treeObj.checkAll(['01']);
                 setTimeout(function() {
-                     expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                     expect(treeObj.checkedNodes.length === 2 ).toBe(true);
                     done();
                 }, 450);
             });
@@ -2822,9 +2822,9 @@ describe('TreeView control', () => {
                 treeObj.dataBind();
                 treeObj.checkAll(['01']);
                 setTimeout(function() {
-                     expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                     expect(treeObj.checkedNodes.length === 2 ).toBe(true);
                      treeObj.uncheckAll([]);
-                     expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                     expect(treeObj.checkedNodes.length === 2 ).toBe(true);
                     done();
                 }, 100);
             });
@@ -2834,7 +2834,7 @@ describe('TreeView control', () => {
                 treeObj.dataBind();
                 treeObj.checkAll(['01']);
                 setTimeout(function() {
-                    expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                    expect(treeObj.checkedNodes.length === 2 ).toBe(true);
                     treeObj.uncheckAll(['01']);
                     expect(treeObj.checkedNodes.length === 0 ).toBe(true);
                     done();
@@ -2846,9 +2846,9 @@ describe('TreeView control', () => {
                 treeObj.dataBind();
                 treeObj.checkAll(['01']);
                 setTimeout(function() {
-                     expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                     expect(treeObj.checkedNodes.length === 2 ).toBe(true);
                       treeObj.uncheckAll(['25']);
-                      expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                      expect(treeObj.checkedNodes.length === 2 ).toBe(true);
                     done();
                 }, 450);
             });
@@ -4318,7 +4318,7 @@ describe('TreeView control', () => {
                     mouseEventArgs.target = li[2].querySelector('.e-ripple-container');
                     treeObj.touchClickObj.tap(tapEvent);
                     setTimeout(function() {
-                        expect(treeObj.checkedNodes.length === 7 ).toBe(true);
+                        expect(treeObj.checkedNodes.length === 8 ).toBe(true);
                         done();
                     },100);
                 }, 100);
@@ -4340,7 +4340,7 @@ describe('TreeView control', () => {
                 }, 100);
             });
 			it(' checkedNodes setModel property testing ', (done) => {
-                var j = 0;
+                 var j = 0;
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData1 , id: "nodeId", text: "nodeText", child: "nodeChild", isChecked:"nodeChecked" },
                     showCheckBox: true,
@@ -4355,7 +4355,7 @@ describe('TreeView control', () => {
 				jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 				setTimeout(function() {
                     expect(j).toEqual(1);
-                    expect(treeObj.checkedNodes.length).toBe(2);
+                    expect(treeObj.checkedNodes.length).toBe(8);
                     done();
                 }, 100);
             });
@@ -10580,6 +10580,399 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             });
         });
+        describe('Selected Node on loadondemand enabled', () => {
+            let treeObj: any;
+            let mouseEventArgs: any;
+            let tapEvent: any;
+            beforeEach((): void => {
+                mouseEventArgs = {
+                    preventDefault: (): void => {},
+                    stopImmediatePropagation: (): void => {},
+                    target: null,
+                    type: null,
+                    shiftKey: false,
+                    ctrlKey: false,
+                    originalEvent:{target:null}
+                };
+                tapEvent = {
+                    originalEvent: mouseEventArgs,
+                    tapCount: 1
+                };
+                treeObj = undefined;
+                let ele: HTMLElement = createElement('div', { id: 'tree1' });
+                document.body.appendChild(ele);
+            });
+            afterEach((): void => {
+                if (treeObj)
+                treeObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it('Local data testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData },
+                    allowMultiSelection: true,
+                    selectedNodes: ['1','2']
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-active')).toBe(true);
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 2;
+                treeObj.touchExpandObj.tap(tapEvent);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function() {
+                        expect(li[0].querySelector('[data-uid="2"]').classList.contains('e-active')).toBe(true);
+                        done();
+                    }, 450);
+            });
+            it('Hierarchial data testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData },
+                    allowMultiSelection: true,
+                    selectedNodes: ['1', '2']
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-active')).toBe(true);
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                tapEvent.tapCount = 2;
+                treeObj.touchExpandObj.tap(tapEvent);
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function() {
+                        expect(li[0].querySelector('[data-uid="2"]').classList.contains('e-active')).toBe(true);
+                        done();
+                    }, 450);
+            });
+    });
+    describe('Selected Node on loadondemand enabled', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => {},
+            stopImmediatePropagation: (): void => {},
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        let tapEvent: any = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        let treeObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        let dataManager1: DataManager;
+        beforeAll((done: Function) => {
+            jasmine.Ajax.install();
+            dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true })
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify({d: remoteData3_1, __count: 4})
+            });
+            let dataBound: EmitType<Object> = () => { done(); };
+            document.body.appendChild(ele);
+            treeObj = new TreeView({ 
+                fields: { dataSource: dataManager1, id: 'nodeId', text: 'nodeText', iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip',child: 'nodeChild'
+                },
+                fullRowSelect: false,
+                allowMultiSelection: true,
+                selectedNodes: ['01', '02-01'],
+                dataBound: dataBound,
+            });
+            treeObj.appendTo('#tree1');
+        });
+        afterAll(() => {
+            if (ele)
+                ele.remove();
+            document.body.innerHTML = '';
+            jasmine.Ajax.uninstall();
+        });
+        it('Remote data testing', (done: Function) => {        
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-active')).toBe(true);
+            tapEvent.tapCount = 2;
+            mouseEventArgs.target = li[1].querySelector('.e-list-text');
+            treeObj.touchExpandObj.tap(tapEvent);
+            expect(li[1].querySelector('[data-uid="02-01"]').classList.contains('e-active')).toBe(true);
+            done();
+            });
+        });
+     describe('Checked Node on loadondemand enabled', () => {
+        let treeObj: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        beforeEach((): void => {
+            mouseEventArgs = {
+                preventDefault: (): void => {},
+                stopImmediatePropagation: (): void => {},
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent:{target:null}
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            treeObj = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'tree1' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (treeObj)
+            treeObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Local data testing', ()=> {
+            treeObj = new TreeView({ 
+                fields: { dataSource: localData },showCheckBox: true, checkedNodes: ['1', '30'] 
+            },'#tree1');
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(treeObj.checkedNodes.length === 16 ).toBe(true);
+            treeObj.checkedNodes = ['10'];
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+            treeObj.checkedNodes = ['25'];
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+            expect(li[2].querySelector('.e-stop')).not.toBe(null);
+            treeObj.checkAll();
+            treeObj.checkedNodes = ['24'];
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 4 ).toBe(true);
+            expect(li[2].querySelector('.e-stop')).not.toBe(null);
+            treeObj.checkedNodes = ['8'];
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 4 ).toBe(true);
+            expect(li[0].querySelector('.e-stop')).not.toBe(null);
+            treeObj.expandAll(['1']);
+            treeObj.dataBind();
+            expect(li[0].querySelectorAll('li')[1].querySelector('.e-check')).not.toBe(null);
+            treeObj.uncheckAll(['8']);
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 0).toBe(true);
+            treeObj.checkedNodes = ['17', '18', '19', '20', '21', '22']
+            expect(treeObj.checkedNodes.length === 6).toBe(true);
+            treeObj.autoCheck = false;
+            treeObj.dataBind();
+            treeObj.checkedNodes = ['21'];
+            treeObj.dataBind();
+             expect(treeObj.checkedNodes.length === 1).toBe(true);
+        });
+         it('Local data testing with autocheck false', ()=> {
+            treeObj = new TreeView({ 
+                fields: { dataSource: localData },showCheckBox: true, autoCheck : false, checkedNodes: ['1', '10'] 
+            },'#tree1');
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(treeObj.checkedNodes.length === 2 ).toBe(true);
+            treeObj.checkedNodes = ['25'];
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+            expect(li[0].querySelector('.e-stop')).toBe(null);
+            treeObj.checkedNodes = ['24'];
+            expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+            treeObj.checkAll();
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 30 ).toBe(true);
+            treeObj.uncheckAll();
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 0 ).toBe(true);
+        });
+          it('local data binding with indeterminate state', () => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData7,  id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild',selected: 'isSelected', isChecked: 'isChecked' },
+                    showCheckBox: true,
+                    checkedNodes: ['16', '8','9', '10', '4', '27'],
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkEle.length).toBeGreaterThan(1);
+                expect(treeObj.checkedNodes.length === 18 ).toBe(true);
+                treeObj.checkedNodes = ['26'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                treeObj.checkedNodes = (['8', '9', '10']);
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 4 ).toBe(true);
+                treeObj.checkedNodes = ['19'];
+                treeObj.dataBind();
+                treeObj.expandAll(['16']);
+                expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                treeObj.checkAll(['24']);
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 4 ).toBe(true);
+                treeObj.uncheckAll();
+                treeObj.checkAll(['1']);
+                expect(treeObj.checkedNodes.length === 5 ).toBe(true);
+        });
+         it('local data binding with expanded state', () => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData7,  id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild',selected: 'isSelected', isChecked: 'isChecked' },
+                  expandedNodes: ['24', '21']
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(treeObj.expandedNodes.length === 2 ).toBe(true);
+                treeObj.expandAll(['7']);
+                treeObj.dataBind();
+        });
+         it('local data binding with expanded state', () => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData7,  id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild',selected: 'isSelected', isChecked: 'isChecked' },
+                  expandedNodes: ['24']
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                treeObj.expandAll(['21']);
+        });
+       it('hierarchical data binding', () => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData1 , id: "nodeId", text: "nodeText", child: "nodeChild", isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    checkedNodes: ['01', '03', '03-03']                    
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkEle.length).toBeGreaterThan(1);
+                expect(treeObj.checkedNodes.length === 11 ).toBe(true);
+                treeObj.checkedNodes = ['05-03'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                treeObj.checkAll(['04-04']);
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 2 ).toBe(true);
+                treeObj.checkedNodes = ['04-01'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 4 ).toBe(true);
+                expect(li[3].querySelector('.e-stop')).not.toBe(null);
+                treeObj.expandAll(['04']);
+                expect(li[3].querySelectorAll('li')[0].querySelector('.e-check')).not.toBe(null);
+                treeObj.checkedNodes = ['03-01', '03-02', '03-03', '03-04', '03-05'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 6).toBe(true);
+                expect(li[2].querySelector('.e-check')).not.toBe(null);
+        });
+        it('hierarchical data binding with autocheck disabled', () => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData6 , id: "nodeId", text: "nodeText", child: "nodeChild", isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    autoCheck: false,
+                    checkedNodes: ['01', '03', '04-01-02']                    
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(treeObj.checkedNodes.length === 4 ).toBe(true);
+                treeObj.checkedNodes = ['05-03'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                treeObj.checkAll(['04-04']);
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 2 ).toBe(true);
+                treeObj.checkedNodes = ['04-01'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                expect(li[3].querySelector('.e-stop')).toBe(null);
+                treeObj.expandAll(['04']);
+                expect(li[3].querySelectorAll('li')[0].querySelector('.e-check')).not.toBe(null);
+                treeObj.autoCheck = true;
+                treeObj.checkedNodes = ['03'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 6 ).toBe(true);
+                treeObj.uncheckAll();
+                treeObj.dataBind();
+                treeObj.checkAll(['01']);
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 2).toBe(true);
+        });
+        it('hierarchical data binding with indeterminate state', () => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData6 , id: "nodeId", text: "nodeText", child: "nodeChild", isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    checkedNodes: ['01', '03', '04-01-02', '02-01']                    
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
+                expect(checkEle.length).toBeGreaterThan(1);
+                expect(treeObj.checkedNodes.length === 12 ).toBe(true);
+                treeObj.expandAll(['02']);
+                treeObj.dataBind();
+                treeObj.checkedNodes = ['05-03'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                treeObj.checkedNodes = ['04-01-01'];
+                treeObj.dataBind();
+                treeObj.expandAll(['04']);
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 1 ).toBe(true);
+                treeObj.checkAll(['04-04']);
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 2 ).toBe(true);
+                treeObj.checkedNodes = ['04-01'];
+                treeObj.dataBind();
+                expect(treeObj.checkedNodes.length === 4 ).toBe(true);
+                expect(li[3].querySelector('.e-stop')).not.toBe(null);
+                treeObj.expandAll(['04']);
+                expect(li[3].querySelectorAll('li')[0].querySelector('.e-check')).not.toBe(null);
+               
+        });
+         it('hierarchical data binding with indeterminate state', () => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData6 , id: "nodeId", text: "nodeText", child: "nodeChild", isChecked:"nodeChecked" },
+                    expandedNodes: ['04-01', '04', '02']                   
+                },'#tree1');
+                treeObj.expandAll(['04']);
+                treeObj.dataBind();
+        });
+       
+ });
+    describe('Checked Node on loadondemand enabled', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => {},
+            stopImmediatePropagation: (): void => {},
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        let tapEvent: any = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        let treeObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        let dataManager1: DataManager;
+        beforeAll((done: Function) => {
+            jasmine.Ajax.install();
+            dataManager1 = new DataManager({ url: '/TreeView/remoteData', offline: true })
+             this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify({d: remoteData3_1, __count: 4})
+            });
+            let dataBound: EmitType<Object> = () => { done(); };
+            document.body.appendChild(ele);
+            treeObj = new TreeView({ 
+                fields: { dataSource: dataManager1, id: 'nodeId', text: 'nodeText', iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip',child: 'nodeChild'
+            },
+                showCheckBox: true,
+                checkedNodes: ['01', '02-01'],
+                fullRowSelect: false,
+                dataBound: dataBound,
+            });
+            treeObj.appendTo('#tree1');
+           
+        });
+        afterAll(() => {
+            if (ele)
+                ele.remove();
+            document.body.innerHTML = '';
+            jasmine.Ajax.uninstall();
+        });
+        it('Remote data testing', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(treeObj.checkedNodes.length === 3).toBe(true);
+            treeObj.checkAll(['02-02']);
+            treeObj.dataBind();
+            expect(treeObj.checkedNodes.length === 5).toBe(true);
+        });
+    });
+
         describe('Load on demand for TreeView', () => {
             let treeObj: any;
             beforeEach(():void => {
@@ -11237,7 +11630,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
             done();
         });
     });
-	it('memory leak testing', () => {
+    it('memory leak testing', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

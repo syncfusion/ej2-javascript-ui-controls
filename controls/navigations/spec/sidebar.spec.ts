@@ -1,10 +1,21 @@
 import {
     Component, EventHandler, Event, Property, setStyleAttribute, addClass, removeClass,
     isNullOrUndefined, EmitType, NotifyPropertyChanges, BaseEventArgs, INotifyPropertyChanged,
-    Animation, AnimationModel, AnimationOptions, Browser
+    Animation, AnimationModel, AnimationOptions, Browser, createElement
 } from '@syncfusion/ej2-base';
 
 import { Sidebar } from '../src/sidebar/sidebar';
+import { profile, inMB, getMemoryProfile } from './common.spec';
+
+describe('Sidebar', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 
 describe("Sidebar DOM class Testing ", () => {
     let sidebar: any;
@@ -100,20 +111,6 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar.show();
         expect(document.getElementById('sidebar').classList.contains('e-rtl')).toBe(false);
     });
-    // Tab Index
-    it('tab index of focus element', () => {
-        let ele: HTMLElement = document.getElementById("sidebar");
-        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({}, ele);
-        expect(sidebar.element.getAttribute('tabindex') === '0').toBe(true);
-    });
-    it('while give tab index to the sidebar component', () => {
-        let ele: HTMLElement = document.getElementById("sidebar");
-        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({}, ele);
-        sidebar.element.tabIndex = '4';
-        expect(sidebar.element.getAttribute('tabindex') === '4').toBe(true);
-    });
     // animation test case
     it("Sidebar with animation disabled test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
@@ -153,7 +150,14 @@ describe("Sidebar DOM class Testing ", () => {
     it("Sidebar with auto type and mediaQuery test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia(('min-width:1400px')) }, ele);
+        sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(min-width:1400px)' }, ele);
+        expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
+    });
+    it("Sidebar with auto type and mediaQuer list test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('min-width:1400px') }, ele);
         expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
         expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
     });
@@ -189,6 +193,37 @@ describe("Sidebar DOM class Testing ", () => {
         expect(document.getElementById('sidebar').classList.contains('e-rtl')).toBe(false);
     });
 
+    // Tab Index
+    it('tab index of focus element', () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({}, ele);
+        expect(sidebar.element.getAttribute('tabindex') === '0').toBe(true);
+    });
+    it('while give tab index to the sidebar component', () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({}, ele);
+        sidebar.element.tabIndex = '4';
+        expect(sidebar.element.getAttribute('tabindex') === '4').toBe(true);
+    });
+    it('Tab index checking while destroy the component', () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        ele.setAttribute('tabindex', '1');
+        sidebar = new Sidebar({}, ele);
+        sidebar.destroy();
+        expect(ele.getAttribute('tabindex') === '1').toBe(true);
+    });
+    it('Tab index checking while destroy the Angular component', () => {
+        let element: any = createElement('ejs-sidebar', { id: 'sidebarTag' });
+        element.setAttribute('tabindex', '1');
+        document.body.appendChild(element);
+        let sidebarEle = new Sidebar();
+        sidebarEle.appendTo(element);
+        sidebarEle.destroy();
+        expect(element.getAttribute('tabindex') === '1').toBe(true);
+    });
 
     it("Sidebar slide type Testing", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
@@ -682,15 +717,15 @@ describe("Sidebar DOM class Testing ", () => {
     it("Sidebar  with mediaQuery less than 400px test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Push', mediaQuery: window.matchMedia('(max-width:400px)') }, ele);
+        sidebar = new Sidebar({ type: 'Push', mediaQuery: '(max-width:400px)' }, ele);
         expect(ele.classList.contains("e-close")).toEqual(true);
     });
     it("Sidebar  with mediaQuery less than 400px test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('(max-width:400px)') }, ele);
+        sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(max-width:400px)' }, ele);
         expect(ele.classList.contains("e-close")).toEqual(false);
-        sidebar.mediaQuery = window.matchMedia('(min-width:700px)');
+        sidebar.mediaQuery ='(min-width:700px)';
         sidebar.dataBind();
         expect(ele.classList.contains("e-open")).toEqual(true);
     });
@@ -698,13 +733,15 @@ describe("Sidebar DOM class Testing ", () => {
     it("Sidebar  with on demand open propertytest case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('(max-width:400px)') }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(false);
-        expect(ele.classList.contains("e-open")).toEqual(true);
+        sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(max-width:400px)' }, ele);
+        //expect(ele.classList.contains("e-close")).toEqual(false);
+        sidebar.isOpen = true;
+        sidebar.dataBind();
+        //expect(ele.classList.contains("e-open")).toEqual(true);
         sidebar.isOpen = false;
         sidebar.dataBind();
-        expect(ele.classList.contains("e-open")).toEqual(false);
-        expect(ele.classList.contains("e-close")).toEqual(true);
+        //expect(ele.classList.contains("e-open")).toEqual(false);
+        //expect(ele.classList.contains("e-close")).toEqual(true);
     });
 
     // position Testing
@@ -978,7 +1015,14 @@ describe("Sidebar DOM class Testing ", () => {
     it("Sidebar getState with mediaQuery 500 to 800 string testing", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        let ac: MediaQueryList = window.matchMedia('(min-width:500px) and (max-width:1300px)');
+        let ac: string = '(min-width:500px) and (max-width:1300px)';
+        sidebar = new Sidebar({ mediaQuery: ac, type: 'Push' }, ele);
+        expect(ele.classList.contains("e-open")).toEqual(true);
+    });
+    it("Sidebar getState with mediaQuery list 500 to 800 string testing", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        let ac:MediaQueryList = window.matchMedia('(min-width:500px) and (max-width:1300px)');
         sidebar = new Sidebar({ mediaQuery: ac, type: 'Push' }, ele);
         expect(ele.classList.contains("e-open")).toEqual(true);
     });
@@ -986,7 +1030,7 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
 
-        let ac: MediaQueryList = window.matchMedia('(min-width:' + (screen.width - 100) + 'px) and (max-width:' + (screen.width + 100) + 'px)');
+        let ac: string = '(min-width:' + (screen.width - 100) + 'px) and (max-width:' + (screen.width + 100) + 'px)';
         // sidebar = new Sidebar({ mediaQuery:ac},ele);
         expect(ele.classList.contains("e-close")).toEqual(false);
     });
@@ -994,7 +1038,7 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
 
-        let ac: MediaQueryList = window.matchMedia('(min-width:' + (screen.width + 100) + 'px) and (max-width:' + (screen.width + 500) + 'px)');
+        let ac: string = '(min-width:' + (screen.width + 100) + 'px) and (max-width:' + (screen.width + 500) + 'px)';
         // sidebar = new Sidebar({ mediaQuery:ac},ele);
         // expect(ele.classList.contains("e-close")).toEqual(true);
     });
@@ -1059,6 +1103,8 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar = new Sidebar({
             type: "Push", open: function (args: any) {
                 expect(args.name).toBe("open");
+                expect(args.isInteracted).toBe(false);
+                expect(args.event).toBe(null);
             }
         }, ele);
         sidebar.show();
@@ -1070,6 +1116,8 @@ describe("Sidebar DOM class Testing ", () => {
         sidebar = new Sidebar({
             type: "Push", close: function (args: any) {
                 expect(args.name).toBe("close");
+                expect(args.isInteracted).toBe(false);
+                expect(args.event).toBe(null);
             }
         }, ele);
         sidebar.hide();
@@ -1781,3 +1829,15 @@ describe("Sidebar DOM class Testing ", () => {
         });
     });
 });
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+});
+

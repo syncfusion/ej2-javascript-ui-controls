@@ -12,12 +12,14 @@ export class GridPanel extends Container {
 
     private childTable: GridCellItem[] = [];
 
-    // public get rowDefinitions(): RowDefinition[] {
-    //     return this.rowDefns;
-    // }
+    /** @private */
+    public rowDefinitions(): RowDefinition[] {
+        return this.rowDefns;
+    }
 
     private rowDefns: RowDefinition[];
 
+    /** @private */
     public columnDefinitions(): ColumnDefinition[] {
         return this.colDefns;
     }
@@ -148,16 +150,25 @@ export class GridPanel extends Container {
                 if (j === row.cells.length - 1) {
                     if (this.width && this.width !== calculateWidth) {
                         row.cells[j].desiredCellWidth += (this.width - calculateWidth);
+                        row.cells[j].minWidth = row.cells[j].desiredCellWidth;
                         if (row.cells[j].children && row.cells[j].children.length) {
-                            row.cells[j].children[0].minWidth = row.cells[j].desiredCellWidth;
+                            row.cells[j].children[0].width = row.cells[j].desiredCellWidth;
                         }
+                        this.colDefns[j].width = row.cells[j].desiredCellWidth;
                     }
                     calculateHeight += row.cells[j].desiredCellHeight;
                     if (i === rows.length - 1) {
                         if (this.height && this.height !== calculateHeight) {
-                            row.cells[j].desiredCellHeight += (this.height - calculateHeight);
-                            if (row.cells[j].children && row.cells[j].children.length) {
-                                row.cells[j].children[0].minHeight = row.cells[j].desiredCellHeight;
+                            let height: number = (this.height - calculateHeight);
+                            if (height > 0) {
+                                for (let k: number = 0; k < row.cells.length; k++) {
+                                    row.cells[k].desiredCellHeight += height;
+                                    row.cells[k].minHeight = row.cells[k].desiredCellHeight = row.cells[k].desiredCellHeight;
+                                    if (row.cells[k].children && row.cells[k].children.length) {
+                                        row.cells[k].children[0].height = row.cells[k].desiredCellHeight;
+                                    }
+                                }
+                                this.rowDefns[i].height += height;
                             }
                         }
                     }
@@ -167,91 +178,200 @@ export class GridPanel extends Container {
     }
 
     /** @private */
-    public updateRowHeight(rowId: number, height: number): void {
+    public updateRowHeight(rowId: number, height: number, isConsiderChild: boolean, padding?: number): void {
         let row: GridRow = this.rows[rowId];
+        this.rowDefns[rowId].height = height;
         if (this.height !== undefined) {
             this.height += height - row.cells[0].desiredCellHeight;
         }
         for (let i: number = 0; i < row.cells.length; i++) {
             row.cells[i].desiredCellHeight = row.cells[i].minHeight = height;
             if (row.cells[i].children && row.cells[i].children.length) {
-                row.cells[i].children[0].minHeight = height;
+                row.cells[i].children[0].height = height;
             }
         }
         this.desiredRowHeight[rowId] = height;
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
+        if (isConsiderChild) {
+            let minHeight: number = (padding !== undefined) ? this.calculateCellHeightBasedOnChildren(rowId, padding) :
+                this.calculateCellHeight(rowId);
+            if (minHeight > height) {
+                this.updateRowHeight(rowId, minHeight, false);
+            }
+        }
+
     }
 
     /** @private */
-    public updateColumnWidth(colId: number, width: number): void {
+    public updateColumnWidth(colId: number, width: number, isConsiderChild: boolean, padding?: number): void {
+        this.colDefns[colId].width = width;
         if (this.width !== undefined) {
-            this.width += width - this.rows[0].cells[colId].desiredCellWidth;
+            this.width += width - this.rows[this.rows.length - 1].cells[colId].desiredCellWidth;
         }
         for (let i: number = 0; i < this.rows.length; i++) {
             this.rows[i].cells[colId].desiredCellWidth = this.rows[i].cells[colId].minWidth = width;
             if (this.rows[i].cells[colId].children && this.rows[i].cells[colId].children.length) {
-                this.rows[i].cells[colId].children[0].minWidth = width;
+                this.rows[i].cells[colId].children[0].width = width;
             }
         }
         this.desiredCellWidth[colId] = width;
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
-    }
-
-    /** @private */
-    public addRow(rowId: number, rows: RowDefinition[]): void {
-        for (let i: number = 0; i < rows.length; i++) {
-            let rowDefn: RowDefinition = rows[i];
-            this.rowDefns.push(rowDefn);
-            let row: GridRow = new GridRow();
-            row.cells = [];
-            let defaultCell: ColumnDefinition = new ColumnDefinition();
-            defaultCell.width = this.width;
-            let columns: ColumnDefinition[] = this.colDefns;
-            this.addCellInRow(columns, rowDefn, row);
-            if (rowId > this.rows.length - 1) {
-                this.rows.push(row);
-            } else {
-                this.rows.splice(rowId, 0, row);
+        if (isConsiderChild) {
+            let minWidth: number = (padding !== undefined) ? this.calculateCellWidthBasedOnChildren(colId, padding) :
+                this.calculateCellWidth(colId);
+            if (minWidth > width) {
+                this.updateColumnWidth(colId, minWidth, false);
             }
         }
-        this.measure(new Size(this.width, this.height));
-        this.arrange(this.desiredSize);
     }
 
-    /** @private */
-    public addColumn(columnId: number, columns: ColumnDefinition[]): void {
-        let rows: GridRow[] = this.rows;
-        for (let i: number = 0; i < rows.length; i++) {
-            let row: GridRow = rows[i];
-            let rowDefn: RowDefinition = this.rowDefns[i];
-            for (let j: number = 0; j < columns.length; j++) {
-                let colDefn: ColumnDefinition = columns[j];
-                let cell: GridCell = new GridCell();
-                cell.style = this.cellStyle;
-                cell.desiredCellWidth = colDefn.width;
-                cell.desiredCellHeight = rowDefn.height;
-                if (columnId > row.cells.length - 1) {
-                    row.cells.push(cell);
+    private calculateCellWidth(colIndex: number): number {
+        let maxWidth: number; let width: number; let cell: GridCell;
+        for (let i: number = 0; i < this.rows.length; i++) {
+            cell = this.rows[i].cells[colIndex];
+            if (cell.columnSpan === 1) {
+                width = (cell.outerBounds.width > cell.bounds.width &&
+                    (cell.children.length === 0 || cell.children[0].maxWidth === undefined)) ? cell.outerBounds.width : cell.bounds.width;
+                if (maxWidth) {
+                    maxWidth = (maxWidth < width) ? width : maxWidth;
                 } else {
-                    row.cells.splice(columnId, 0, cell);
+                    maxWidth = width;
                 }
-                this.children.push(cell);
             }
         }
-        this.measure(new Size(this.width, this.height));
-        this.arrange(this.desiredSize);
+        return maxWidth;
+    }
+
+    private calculateCellHeight(rowIndex: number): number {
+        let maxHeight: number; let height: number; let cell: GridCell;
+        let row: GridRow = this.rows[rowIndex];
+        for (let i: number = 0; i < row.cells.length; i++) {
+            cell = row.cells[i];
+            height = (cell.outerBounds.height > cell.bounds.height) ? cell.outerBounds.height : cell.bounds.height;
+            if (maxHeight) {
+                maxHeight = (maxHeight < height) ? height : maxHeight;
+            } else {
+                maxHeight = height;
+            }
+        }
+        return maxHeight;
+    }
+
+    private calculateCellSizeBasedOnChildren(cell: GridCell, option: string, padding: number, maxSize: number): number {
+        let maxBounds: number; let canvas: Canvas;
+        canvas = (cell && cell.children.length > 0) ? cell.children[0] as Canvas : undefined;
+        if (canvas && cell.columnSpan === 1) {
+            maxBounds = (option === 'Width') ? canvas.bounds.right : canvas.bounds.bottom;
+            if (!maxSize) {
+                maxSize = (option === 'Width') ? canvas.bounds.width : canvas.bounds.height;
+            }
+            for (let j: number = 0; j < canvas.children.length; j++) {
+                let children: Canvas = canvas.children[j] as Canvas;
+                if (children instanceof Canvas) {
+                    if (children.id.indexOf('header') === -1) {
+                        let bounds: number = ((option === 'Width') ? children.bounds.right : children.bounds.bottom) + padding;
+                        if (bounds > maxBounds) {
+                            let size: number = (bounds - maxBounds) + ((option === 'Width') ? canvas.bounds.width : canvas.bounds.height);
+                            if (maxSize) {
+                                maxSize = (maxSize < size) ? size : maxSize;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return maxSize;
+    }
+
+    private calculateCellWidthBasedOnChildren(colIndex: number, padding?: number): number {
+        let maxWidth: number; let width: number; let cell: GridCell; let maxBounds: number; let canvas: Canvas;
+        for (let i: number = 0; i < this.rows.length; i++) {
+            cell = this.rows[i].cells[colIndex];
+            maxWidth = this.calculateCellSizeBasedOnChildren(cell, 'Width', padding, maxWidth);
+        }
+        return maxWidth;
+    }
+
+    private calculateCellHeightBasedOnChildren(rowIndex: number, padding?: number): number {
+        let maxHeight: number; let height: number; let cell: GridCell; let maxBounds: number; let canvas: Canvas;
+        let row: GridRow = this.rows[rowIndex];
+        for (let i: number = 0; i < row.cells.length; i++) {
+            cell = row.cells[i];
+            maxHeight = this.calculateCellSizeBasedOnChildren(cell, 'Height', padding, maxHeight);
+        }
+        return maxHeight;
+    }
+
+    /** @private */
+    public addRow(rowId: number, rowDefn: RowDefinition, isMeasure: boolean): void {
+        if (this.rowDefns.length > 0) {
+            this.rowDefns.splice(rowId, 0, rowDefn);
+        } else {
+            this.rowDefns.push(rowDefn);
+        }
+        let row: GridRow = new GridRow();
+        row.cells = [];
+        let defaultCell: ColumnDefinition = new ColumnDefinition();
+        defaultCell.width = this.width;
+        let columns: ColumnDefinition[] = this.colDefns;
+        this.addCellInRow(columns, rowDefn, row);
+        if (rowId > this.rows.length - 1) {
+            this.rows.push(row);
+        } else {
+            this.rows.splice(rowId, 0, row);
+        }
+        if (isMeasure) {
+            this.measure(new Size(this.width, this.height));
+            this.arrange(this.desiredSize);
+        }
+    }
+
+    /** @private */
+    public addColumn(columnId: number, column: ColumnDefinition, isMeasure?: boolean): void {
+        let row: GridRow; let rowDefn: RowDefinition; let colDefn: ColumnDefinition; let cell: GridCell;
+        let rows: GridRow[] = this.rows;
+        if (this.colDefns.length > 0) {
+            this.colDefns.splice(columnId, 0, column);
+        } else {
+            this.colDefns.push(column);
+        }
+        if (this.width !== undefined) {
+            this.width += column.width;
+        }
+        for (let i: number = 0; i < rows.length; i++) {
+            row = rows[i]; rowDefn = this.rowDefns[i];
+            colDefn = column; cell = new GridCell();
+            cell.style = this.cellStyle;
+            cell.desiredCellWidth = cell.minWidth = colDefn.width;
+            cell.desiredCellHeight = cell.minHeight = rowDefn.height;
+            cell.children = [];
+            if (columnId > row.cells.length - 1) {
+                row.cells.push(cell);
+            } else {
+                row.cells.splice(columnId, 0, cell);
+            }
+            this.children.push(cell);
+        }
+        if (isMeasure) {
+            this.measure(new Size(this.width, this.height));
+            this.arrange(this.desiredSize);
+        }
     }
     /** @private */
     public removeRow(rowId: number): void {
+        let cell: GridCell; let element: HTMLElement;
         let rows: GridRow[] = this.rows;
         let removeRow: GridRow = rows[rowId];
+        this.height -= this.rowDefns[rowId].height;
         for (let i: number = 0; i < removeRow.cells.length; i++) {
-            let cell: GridCell = removeRow.cells[i];
+            cell = removeRow.cells[i];
             this.children.splice(this.children.indexOf(cell), 1);
-            let element: HTMLElement = document.getElementById(cell.id + '_groupElement');
-            element.parentElement.removeChild(element);
+            element = document.getElementById(cell.id + '_groupElement');
+            if (element && element.parentElement) {
+                element.parentElement.removeChild(element);
+            }
         }
         this.rows.splice(rowId, 1);
         this.rowDefns.splice(rowId, 1);
@@ -261,14 +381,19 @@ export class GridPanel extends Container {
 
     /** @private */
     public removeColumn(columnId: number): void {
+        let cell: GridCell; let element: HTMLElement;
         let rows: GridRow[] = this.rows;
+        this.width -= this.colDefns[columnId].width;
         for (let i: number = 0; i < rows.length; i++) {
-            let cell: GridCell = rows[i].cells[columnId];
+            cell = rows[i].cells[columnId];
             this.children.splice(this.children.indexOf(cell), 1);
-            let element: HTMLElement = document.getElementById(cell.id + '_groupElement');
-            element.parentElement.removeChild(element);
+            element = document.getElementById(cell.id + '_groupElement');
+            if (element && element.parentElement) {
+                element.parentElement.removeChild(element);
+            }
             rows[i].cells.splice(columnId, 1);
         }
+        this.colDefns.splice(columnId, 1);
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
     }
@@ -279,9 +404,32 @@ export class GridPanel extends Container {
         let temp: GridRow = this.rows[currentIndex];
         this.rows.splice(currentIndex, 1);
         this.rows.splice(newIndex, 0, temp);
+        let tempRow: RowDefinition = this.rowDefns[currentIndex];
+        this.rowDefns.splice(currentIndex, 1);
+        this.rowDefns.splice(newIndex, 0, tempRow);
         this.measure(new Size(this.width, this.height));
         this.arrange(this.desiredSize);
     }
+
+    /** @private */
+    public updateColumnIndex(startRowIndex: number, currentIndex: number, newIndex: number): void {
+        let temp: GridRow; let cell: GridCell; let tempSize: number;
+        for (let i: number = startRowIndex; i < this.rows.length; i++) {
+            temp = this.rows[i];
+            cell = this.rows[i].cells[currentIndex];
+            temp.cells.splice(currentIndex, 1);
+            temp.cells.splice(newIndex, 0, cell);
+        }
+        let tempCol: ColumnDefinition = this.colDefns[currentIndex];
+        this.colDefns.splice(currentIndex, 1);
+        this.colDefns.splice(newIndex, 0, tempCol);
+        tempSize = this.desiredCellWidth[currentIndex];
+        this.desiredCellWidth.splice(currentIndex, 1);
+        this.desiredCellWidth.splice(newIndex, 0, tempSize);
+        this.measure(new Size(this.width, this.height));
+        this.arrange(this.desiredSize);
+    }
+
     /** @private */
     public measure(availableSize: Size): Size {
         let desired: Size = undefined;
@@ -367,12 +515,11 @@ export class GridPanel extends Container {
 
     /** @private */
     public arrange(desiredSize: Size, isChange?: boolean): Size {
+        let j: number = 0; let i: number = 0;
         if (this.rows !== undefined && this.rows.length > 0) {
             let x: number = this.offsetX - desiredSize.width * this.pivot.x;
             let y: number = this.offsetY - desiredSize.height * this.pivot.y;
             let cellX: number = x;
-            let j: number = 0;
-            let i: number = 0;
             for (let row of this.rows) {
                 cellX = x;
                 j = 0;
@@ -391,20 +538,21 @@ export class GridPanel extends Container {
             if (isChange) {
                 // Need to remove the unwanted the child elements in the grid
                 // Used for row span and column span.
-                for (let i: number = 0; i < this.rows.length; i++) {
-                    let row: GridRow = this.rows[i];
-                    for (let j: number = 0; j < row.cells.length; j++) {
-                        let cell: GridCell = row.cells[j];
+                let cell: GridCell; let row: GridRow;
+                let k: number; let z: number; let removeCell: GridCell;
+                for (i = 0; i < this.rows.length; i++) {
+                    row = this.rows[i];
+                    for (j = 0; j < row.cells.length; j++) {
+                        cell = row.cells[j];
                         if (cell.columnSpan > 1) {
                             // remove a child element when a column span is greater than 1
                             this.children.splice((this.children.indexOf(cell)) + 1, cell.columnSpan - 1);
                         }
                         if (cell.rowSpan > 1) {
-                            let k: number; let z: number;
                             for (k = i, z = 0; ((k + cell.rowSpan - 1) < this.rows.length && z < cell.rowSpan - 1); k++ , z++) {
-                                let removeCelll: GridCell = this.rows[k + 1].cells[j];
+                                removeCell = this.rows[k + 1].cells[j];
                                 // remove a child element when a row span is greater than 1
-                                this.children.splice(this.children.indexOf(removeCelll), 1);
+                                this.children.splice(this.children.indexOf(removeCell), 1);
                             }
                         }
                     }

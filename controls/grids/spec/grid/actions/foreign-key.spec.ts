@@ -22,6 +22,7 @@ import { CustomSummaryType } from '../../../src/grid/base/type';
 import { IRow } from '../../../src/grid/base/interface';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 /**
  * Foreign key column feature test cases
@@ -30,6 +31,11 @@ Grid.Inject(Page, Edit, Filter, ForeignKey, ExcelExport, Aggregate, Group, Sort,
 describe('Foreign Key =>', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
         let options: Object = {
             dataSource: fdata,
             allowSorting: true,
@@ -391,6 +397,15 @@ describe('Foreign Key =>', () => {
             gridObj.dataSource = data.slice(0,5);
         });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });   
 
     afterAll(() => {
         destroy(gridObj);

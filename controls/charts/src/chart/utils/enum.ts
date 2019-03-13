@@ -110,10 +110,12 @@ export type sizeType =
  * * bar - Renders the stacking column series
  * * histogram - Renders the histogram series
  * * stackingColumn - Renders the stacking column series.
- * * stackingArea - Renders the stacking area series
+ * * stackingArea - Renders the stacking area series.
+ * * stackingLine - Renders the stacking line series.
  * * stackingBar - Renders the stacking bar series.
  * * StackingColumn100 - Renders the stacking column series.
  * * StackingArea100 - Renders the stacking area 100 percent series
+ * * stackingLine100 - Renders the stacking line 100 percent series.
  * * StackingBar100 - Renders the stacking bar 100 percent series.
  * * stepLine -  Renders the step line series.
  * * stepArea -  Renders the step area series.
@@ -141,6 +143,8 @@ export type ChartSeriesType =
     'StackingColumn' |
     /**  Define the StackingArea series. */
     'StackingArea' |
+    /**  Define the StackingLine series. */
+    'StackingLine' |
     /**  Define the StackingBar series. */
     'StackingBar' |
     /**  Define the Stepline series. */
@@ -157,6 +161,8 @@ export type ChartSeriesType =
     'StackingColumn100' |
     /** Define the StackingBar100 series */
     'StackingBar100' |
+    /** Define the StackingLine100 series */
+    'StackingLine100' |
     /** Define the StackingArea100 series */
     'StackingArea100' |
     /** Define the RangeColumn Series */
@@ -216,7 +222,9 @@ export type ChartDrawType =
     /** Define the Spline Area series */
     'SplineArea' |
     /** Define the spline series */
-    'StackingArea';
+    'StackingArea' |
+    /** Define the Stacking line series */
+    'StackingLine';
 
 /**
  * Defines the Edge Label Placement for an axis. They are
@@ -594,7 +602,10 @@ export type ChartTheme =
     /**  Render a chart with Highcontrast theme. */
     'Highcontrast'|
     /**  Render a chart with BootstrapDark theme. */
-    'BootstrapDark';
+    'BootstrapDark' |
+    /**  Render a chart with Bootstrap4 theme. */
+    'Bootstrap4';
+
 /**
  *  Specifies the order of the strip line. `Over` | `Behind`.
  * * Over - Places the strip line over the series elements.

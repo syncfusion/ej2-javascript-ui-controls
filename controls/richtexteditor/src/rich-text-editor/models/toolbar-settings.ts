@@ -58,11 +58,11 @@ export const backgroundColor: { [key: string]: string[] } = {
 };
 
 /**
- * Configures the toolbar settings of the RTE.
+ * Configures the toolbar settings of the RichTextEditor.
  */
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
-     * Specifies whether to render toolbar in RTE.
+     * Specifies whether to render toolbar in RichTextEditor.
      * @default true
      */
     @Property(true)
@@ -79,7 +79,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      * Specifies the Toolbar display types.
      * The possible types are:
      * - Expand: Toolbar items placed within the available space and rest of the items are placed to the extended menu section.
-     * - MultiRow: Toolbar which placed at top of RTE editing area.
+     * - MultiRow: Toolbar which placed at top of RichTextEditor editing area.
      * @default Expand
      */
     @Property(ToolbarType.Expand)
@@ -101,7 +101,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 }
 
 /**
- * Configures the image settings of the RTE.
+ * Configures the image settings of the RichTextEditor.
  */
 
 export class ImageSettings extends ChildProperty<ImageSettings> {
@@ -213,11 +213,11 @@ export class TableSettings extends ChildProperty<TableSettings> {
     public maxWidth: string | number;
 }
 /**
- * Configures the quick toolbar settings of the RTE.
+ * Configures the quick toolbar settings of the RichTextEditor.
  */
 export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     /**
-     * Specifies whether to enable quick toolbar in RTE.
+     * Specifies whether to enable quick toolbar in RichTextEditor.
      * @default true
      */
     @Property(true)
@@ -262,7 +262,54 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
 }
 
 /**
- * Configures the font family settings of the RTE.
+ * Configures the Paste Cleanup settings of the RichTextEditor.
+ */
+export class PasteCleanupSettings extends ChildProperty<PasteCleanupSettings> {
+    /**
+     * Specifies whether to enable the prompt for paste in RichTextEditor.
+     * @default false
+     */
+    @Property(false)
+    public prompt: boolean;
+
+    /**
+     * Specifies the attributes to restrict when pasting in RichTextEditor.
+     * @default null
+     */
+    @Property(null)
+    public deniedAttrs: string[];
+
+    /**
+     * Specifies the allowed style properties when pasting in RichTextEditor.
+     * @default null
+     */
+    @Property(null)
+    public allowedStyleProps: string[];
+
+    /**
+     * Specifies the tags to restrict when pasting in RichTextEditor.
+     * @default null
+     */
+    @Property(null)
+    public deniedTags: string[];
+
+    /**
+     * Specifies whether to keep or remove the format when pasting in RichTextEditor.
+     * @default true
+     */
+    @Property(true)
+    public keepFormat: boolean;
+
+    /**
+     * Specifies whether to paste as plain text or not in RichTextEditor.
+     * @default false
+     */
+    @Property(false)
+    public plainText: boolean;
+}
+
+/**
+ * Configures the font family settings of the RichTextEditor.
  */
 
 export class FontFamily extends ChildProperty<FontFamily> {
@@ -287,7 +334,7 @@ export class FontFamily extends ChildProperty<FontFamily> {
 }
 
 /**
- * Configures the font size settings of the RTE.
+ * Configures the font size settings of the RichTextEditor.
  */
 
 export class FontSize extends ChildProperty<FontSize> {
@@ -312,7 +359,7 @@ export class FontSize extends ChildProperty<FontSize> {
 }
 
 /**
- * Configures the format settings of the RTE.
+ * Configures the format settings of the RichTextEditor.
  */
 
 export class Format extends ChildProperty<Format> {
@@ -337,7 +384,7 @@ export class Format extends ChildProperty<Format> {
 }
 
 /**
- * Configures the font Color settings of the RTE.
+ * Configures the font Color settings of the RichTextEditor.
  */
 
 export class FontColor extends ChildProperty<FontColor> {
@@ -374,7 +421,7 @@ export class FontColor extends ChildProperty<FontColor> {
 }
 
 /**
- * Configures the background Color settings of the RTE.
+ * Configures the background Color settings of the RichTextEditor.
  */
 
 export class BackgroundColor extends ChildProperty<BackgroundColor> {

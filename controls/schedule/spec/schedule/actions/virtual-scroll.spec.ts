@@ -1,6 +1,7 @@
 import { Schedule, TimelineViews, TimelineMonth, ScheduleModel } from '../../../src/schedule/index';
 import { timelineResourceData } from '../base/datasource.spec';
 import { createSchedule, destroy, triggerScrollEvent, triggerMouseEvent } from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 /**
  * Schedule virtual scroll module
@@ -9,6 +10,16 @@ import { createSchedule, destroy, triggerScrollEvent, triggerMouseEvent } from '
 Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Virtual scroll', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Timeline view', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
@@ -292,5 +303,63 @@ describe('Virtual scroll', () => {
             let indicator: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
             expect(indicator.style.transform).toEqual('translateY(300px)');
         });
+        it('checking elements with enableAdaptiveRows property', (done: Function) => {
+            let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-month');
+            viewElement.click();
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(5);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(2);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.selectedDate = new Date(2018, 4, 1);
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
+        it('scroll checking with enableAdaptiveRows property', () => {
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            triggerScrollEvent(contentArea, 400);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(13);
+            expect(schObj.resourceBase.renderedResources[0].groupIndex).toEqual(2);
+            expect(schObj.resourceBase.renderedResources[0].resourceData.RoomText).toEqual('ROOM 1');
+            expect(schObj.resourceBase.renderedResources[12].groupIndex).toEqual(22);
+            expect(schObj.resourceBase.renderedResources[12].resourceData.HallText).toEqual('Hall 3');
+            triggerScrollEvent(contentArea, 1000);
+            let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            expect(moreIndicatorList.length).toEqual(0);
+            triggerScrollEvent(contentArea, 0);
+            expect(schObj.resourceBase.renderedResources[0].groupIndex).toEqual(0);
+            expect(moreIndicatorList.length).toEqual(0);
+        });
+        it('checking more indicator enableAdaptiveRows false', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(3);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(2);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(2);
+                done();
+            };
+            schObj.enableAdaptiveRows = false;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

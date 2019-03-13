@@ -96,6 +96,22 @@ export function getThemeColor(theme: HeatMapTheme): IThemeStyle {
                 { 'color': '#4CA1AF' }]
             };
             break;
+            case 'bootstrap4':
+            style = {
+                heatMapTitle: '#212529',
+                axisTitle: '#212529',
+                axisLabel: '#212529',
+                cellBorder: '#E9ECEF',
+                background: '#FFFFFF',
+                cellTextColor: '#212529',
+                toggledColor: '#ffffff',
+                emptyCellColor: '#E9ECEF',
+                legendLabel: '#212529',
+                palette: [{ 'color': '#BEE7EE' },
+                    { 'color': '#85c4cf' },
+                    { 'color': '#4CA1AF' }]
+            };
+            break;
         default:
             style = {
                 heatMapTitle: '#424242',

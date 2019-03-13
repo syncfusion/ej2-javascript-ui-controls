@@ -1,5 +1,6 @@
 import { Axis } from '../axis/axis';
-import { Size, getActualDesiredIntervalsCount, triggerLabelRender } from '../../common/utils/helper';
+import { getActualDesiredIntervalsCount, triggerLabelRender } from '../../common/utils/helper';
+import { Size } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { withIn } from '../../common/utils/helper';
 import { Chart } from '../chart';

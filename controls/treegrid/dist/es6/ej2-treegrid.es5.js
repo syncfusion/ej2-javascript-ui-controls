@@ -1,5 +1,6 @@
 import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isNullOrUndefined, merge, removeClass, setValue } from '@syncfusion/ej2-base';
-import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, Edit, ExcelExport, Filter, Grid, Page, PdfExport, Predicate, Print, Reorder, Resize, Sort, TextWrapSettings, Toolbar, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, iterateExtend } from '@syncfusion/ej2-grids';
+import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, Edit, ExcelExport, Filter, Grid, Page, PdfExport, Predicate, Print, Reorder, Resize, Sort, TextWrapSettings, Toolbar, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
+import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
@@ -120,34 +121,6 @@ var FilterSettings = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 
 /**
- * TreeGrid ColumnMenu module
- * @hidden
- */
-var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for render module
-     */
-    function ColumnMenu$$1(parent) {
-        Grid.Inject(ColumnMenu);
-        this.parent = parent;
-    }
-    ColumnMenu$$1.prototype.getColumnMenu = function () {
-        return this.parent.grid.columnMenuModule.getColumnMenu();
-    };
-    ColumnMenu$$1.prototype.destroy = function () {
-        //this.parent.grid.columnMenuModule.destroy();
-    };
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    ColumnMenu$$1.prototype.getModuleName = function () {
-        return 'columnMenu';
-    };
-    return ColumnMenu$$1;
-}());
-
-/**
  *  @hidden
  */
 var load = 'load';
@@ -164,7 +137,11 @@ var actionBegin = 'actionBegin';
 /** @hidden */
 var actionComplete = 'actionComplete';
 /** @hidden */
+var rowSelecting = 'rowSelecting';
+/** @hidden */
 var rowSelected = 'rowSelected';
+/** @hidden */
+var checkboxChange = 'checkboxChange';
 /** @hidden */
 var rowDeselected = 'rowDeselected';
 /** @hidden */
@@ -229,6 +206,531 @@ var keyPressed = 'key-pressed';
 var updateData = 'update-data';
 /** @hidden */
 var doubleTap = 'double-tap';
+
+function isRemoteData(parent) {
+    if (parent.dataSource instanceof DataManager) {
+        var adaptor = parent.dataSource.adaptor;
+        return (adaptor instanceof ODataAdaptor ||
+            (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
+            (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
+    }
+    return false;
+}
+/**
+ * @hidden
+ */
+function findParentRecords(records) {
+    var datas;
+    datas = [];
+    var recordsLength = Object.keys(records).length;
+    for (var i = 0, len = recordsLength; i < len; i++) {
+        var hasChild = getObject('hasChildRecords', records[i]);
+        if (hasChild) {
+            datas.push(records[i]);
+        }
+    }
+    return datas;
+}
+/**
+ * @hidden
+ */
+function getExpandStatus(parent, record, parents) {
+    var parentRecord = isNullOrUndefined(record.parentItem) ? null :
+        getParentData(parent, record.parentItem.uniqueID);
+    var childParent;
+    if (parentRecord != null) {
+        if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
+            && !parentRecord[parent.expandStateMapping]) {
+            parentRecord.expanded = false;
+            return false;
+        }
+        else if (parentRecord.expanded === false) {
+            return false;
+        }
+        else if (parentRecord.parentItem) {
+            childParent = getParentData(parent, parentRecord.parentItem.uniqueID);
+            if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
+                && !childParent[parent.expandStateMapping]) {
+                childParent.expanded = false;
+                return false;
+            }
+            if (childParent && childParent.expanded === false) {
+                return false;
+            }
+            else if (childParent) {
+                return getExpandStatus(parent, childParent, parents);
+            }
+            return true;
+        }
+        else {
+            return true;
+        }
+    }
+    else {
+        return true;
+    }
+}
+/**
+ * @hidden
+ */
+function findChildrenRecords(records) {
+    var datas = [];
+    if (isNullOrUndefined(records) || !records.hasChildRecords) {
+        return [];
+    }
+    var childRecords = records.childRecords;
+    for (var i = 0, len = Object.keys(childRecords).length; i < len; i++) {
+        datas.push(childRecords[i]);
+        if (childRecords[i].hasChildRecords) {
+            datas = datas.concat(findChildrenRecords(childRecords[i]));
+        }
+    }
+    return datas;
+}
+function isOffline(parent) {
+    if (isRemoteData(parent)) {
+        var dm = parent.dataSource;
+        return !isNullOrUndefined(dm.ready);
+    }
+    return true;
+}
+function extendArray(array) {
+    var objArr = [];
+    var obj;
+    var keys;
+    for (var i = 0; i < array.length; i++) {
+        keys = Object.keys(array[i]);
+        obj = {};
+        for (var j = 0; j < keys.length; j++) {
+            obj[keys[j]] = array[i][keys[j]];
+        }
+        objArr.push(obj);
+    }
+    return objArr;
+}
+function getPlainData(value) {
+    delete value.hasChildRecords;
+    delete value.childRecords;
+    delete value.index;
+    delete value.parentItem;
+    delete value.level;
+    return value;
+}
+function getParentData(parent, value, requireFilter) {
+    if (requireFilter) {
+        var idFilter = 'uniqueIDFilterCollection';
+        return parent[idFilter][value];
+    }
+    else {
+        var id = 'uniqueIDCollection';
+        return parent[id][value];
+    }
+}
+
+/**
+ * TreeGrid Selection module
+ * @hidden
+ */
+var Selection = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Selection module
+     */
+    function Selection(parent) {
+        this.parent = parent;
+        this.selectedItems = [];
+        this.selectedIndexes = [];
+        this.addEventListener();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    Selection.prototype.getModuleName = function () {
+        return 'selection';
+    };
+    Selection.prototype.addEventListener = function () {
+        this.parent.on('headerCheckbox', this.headerCheckbox, this);
+        this.parent.on('columnCheckbox', this.columnCheckbox, this);
+        this.parent.on('updateGridActions', this.updateGridActions, this);
+        this.parent.on('checkboxSelection', this.checkboxSelection, this);
+    };
+    Selection.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('renderHeaderCheckbox', this.headerCheckbox);
+        this.parent.off('renderCheckbox', this.columnCheckbox);
+        this.parent.off('checkboxSelection', this.checkboxSelection);
+        this.parent.off('updateCheckboxes', this.updateGridActions);
+    };
+    /**
+     * To destroy the Selection
+     * @return {void}
+     * @hidden
+     */
+    Selection.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    Selection.prototype.checkboxSelection = function (args) {
+        var target = getObject('target', args);
+        var checkWrap = parentsUntil(target, 'e-checkbox-wrapper');
+        var checkBox;
+        if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
+            checkBox = checkWrap.querySelector('input[type="checkbox"]');
+            var rowIndex = void 0;
+            rowIndex = [];
+            rowIndex.push(target.closest('tr').rowIndex);
+            var checkBoxargs = this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
+            if (!checkBoxargs.cancel) {
+                this.selectCheckboxes(rowIndex);
+            }
+        }
+        else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
+            var checkBoxvalue = !checkWrap.querySelector('.e-frame').classList.contains('e-check')
+                && !checkWrap.querySelector('.e-frame').classList.contains('e-stop');
+            this.headerSelection(checkBoxvalue);
+        }
+    };
+    Selection.prototype.triggerChkChangeEvent = function (checkBox, checkState, rowElement) {
+        var data = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
+        var args = { checked: checkState, target: checkBox, cancel: false, rowElement: rowElement,
+            rowData: data };
+        this.parent.trigger(checkboxChange, args);
+        return args;
+    };
+    Selection.prototype.getCheckboxcolumnIndex = function () {
+        var mappingUid;
+        var columnIndex;
+        var columns = (this.parent.columns);
+        for (var col = 0; col < columns.length; col++) {
+            if (columns[col].showCheckbox) {
+                mappingUid = this.parent.columns[col].uid;
+            }
+        }
+        var headerCelllength = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv').length;
+        for (var j = 0; j < headerCelllength; j++) {
+            var headercell = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv')[j];
+            if (headercell.getAttribute('e-mappinguid') === mappingUid) {
+                columnIndex = j;
+            }
+        }
+        return columnIndex;
+    };
+    Selection.prototype.headerCheckbox = function () {
+        this.columnIndex = this.getCheckboxcolumnIndex();
+        if (this.columnIndex > -1 && this.parent.getHeaderTable().querySelectorAll('.e-treeselectall').length === 0) {
+            var headerElement = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv')[this.columnIndex];
+            var checkWrap = void 0;
+            var value = false;
+            var rowChkBox = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox' } });
+            checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
+            checkWrap.classList.add('e-hierarchycheckbox');
+            checkWrap.querySelector('.e-frame').style.width = '18px';
+            checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
+            if (!isNullOrUndefined(headerElement)) {
+                headerElement.insertBefore(checkWrap, headerElement.firstChild);
+            }
+            this.headerSelection();
+        }
+    };
+    Selection.prototype.renderColumnCheckbox = function (args) {
+        var checkWrap;
+        var rowChkBox = this.parent.createElement('input', { className: 'e-treecheckselect', attrs: { 'type': 'checkbox' } });
+        var data = args.data;
+        args.cell.classList.add('e-treegridcheckbox');
+        args.cell.setAttribute('aria-label', 'checkbox');
+        var value = (isNullOrUndefined(data.checkboxState) || data.checkboxState === 'uncheck') ? false : true;
+        checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
+        checkWrap.classList.add('e-hierarchycheckbox');
+        checkWrap.querySelector('.e-frame').style.width = '18px';
+        if (data.checkboxState === 'indeterminate') {
+            var checkbox = checkWrap.querySelectorAll('.e-frame')[0];
+            removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
+            checkWrap.querySelector('.e-frame').classList.add('e-stop');
+        }
+        checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
+        return checkWrap;
+    };
+    Selection.prototype.columnCheckbox = function (container) {
+        var checkWrap = this.renderColumnCheckbox(container);
+        var containerELe = container.cell.querySelector('.e-treecolumn-container');
+        if (!isNullOrUndefined(containerELe)) {
+            containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
+        }
+        else {
+            var spanEle = checkWrap.querySelector('.e-label');
+            var data = container.cell.innerHTML;
+            container.cell.innerHTML = '';
+            spanEle.innerHTML = data;
+            container.cell.appendChild(checkWrap);
+        }
+    };
+    Selection.prototype.selectCheckboxes = function (rowIndexes) {
+        for (var i = 0; i < rowIndexes.length; i++) {
+            var record = this.parent.getCurrentViewRecords()[rowIndexes[i]];
+            var checkboxState = (record.checkboxState === 'uncheck') ? 'check' : 'uncheck';
+            record.checkboxState = checkboxState;
+            var keys = Object.keys(record);
+            var data = getParentData(this.parent, record.uniqueID);
+            for (var j = 0; j < keys.length; j++) {
+                if (data.hasOwnProperty(keys[j])) {
+                    data[keys[j]] = record[keys[j]];
+                }
+            }
+            this.traverSelection(record, checkboxState, false);
+            if (this.parent.autoCheckHierarchy) {
+                this.headerSelection();
+            }
+        }
+    };
+    Selection.prototype.traverSelection = function (record, checkboxState, ischildItem) {
+        var length = 0;
+        this.updateSelectedItems(record, checkboxState);
+        if (!ischildItem && record.parentItem && this.parent.autoCheckHierarchy) {
+            this.updateParentSelection(record.parentItem);
+        }
+        if (record.childRecords && this.parent.autoCheckHierarchy) {
+            var childRecords = record.childRecords;
+            if (!isNullOrUndefined(this.parent.filterModule) &&
+                this.parent.filterModule.filteredResult.length > 0 && this.parent.autoCheckHierarchy) {
+                childRecords = this.getFilteredChildRecords(childRecords);
+            }
+            length = childRecords.length;
+            for (var count = 0; count < length; count++) {
+                if (childRecords[count].hasChildRecords) {
+                    this.traverSelection(childRecords[count], checkboxState, true);
+                }
+                else {
+                    this.updateSelectedItems(childRecords[count], checkboxState);
+                }
+            }
+        }
+    };
+    Selection.prototype.getFilteredChildRecords = function (childRecords) {
+        var _this = this;
+        var filteredChildRecords = childRecords.filter(function (e) {
+            return _this.parent.filterModule.filteredResult.indexOf(e) > -1;
+        });
+        return filteredChildRecords;
+    };
+    Selection.prototype.updateParentSelection = function (parentRecord) {
+        var length = 0;
+        var childRecords = [];
+        var record = getParentData(this.parent, parentRecord.uniqueID);
+        if (record && record.childRecords) {
+            childRecords = record.childRecords;
+        }
+        if (!isNullOrUndefined(this.parent.filterModule) &&
+            this.parent.filterModule.filteredResult.length > 0 && this.parent.autoCheckHierarchy) {
+            childRecords = this.getFilteredChildRecords(childRecords);
+        }
+        length = childRecords && childRecords.length;
+        var indeter = 0;
+        var checkChildRecords = 0;
+        if (!isNullOrUndefined(record)) {
+            for (var i = 0; i < childRecords.length; i++) {
+                if (childRecords[i].checkboxState === 'indeterminate') {
+                    indeter++;
+                }
+                else if (childRecords[i].checkboxState === 'check') {
+                    checkChildRecords++;
+                }
+            }
+            if (indeter > 0 || (checkChildRecords > 0 && checkChildRecords !== length)) {
+                record.checkboxState = 'indeterminate';
+            }
+            else if (checkChildRecords === 0 && indeter === 0) {
+                record.checkboxState = 'uncheck';
+            }
+            else {
+                record.checkboxState = 'check';
+            }
+            this.updateSelectedItems(record, record.checkboxState);
+            if (record.parentItem) {
+                this.updateParentSelection(record.parentItem);
+            }
+        }
+    };
+    Selection.prototype.headerSelection = function (checkAll) {
+        var index = -1;
+        var length = 0;
+        var data = (!isNullOrUndefined(this.parent.filterModule) &&
+            this.parent.filterModule.filteredResult.length > 0) ? this.parent.filterModule.filteredResult :
+            this.parent.flatData;
+        if (!isNullOrUndefined(checkAll)) {
+            for (var i = 0; i < data.length; i++) {
+                if (checkAll) {
+                    if (data[i].checkboxState === 'check') {
+                        continue;
+                    }
+                    data[i].checkboxState = 'check';
+                    this.updateSelectedItems(data[i], data[i].checkboxState);
+                }
+                else {
+                    index = this.selectedItems.indexOf(data[i]);
+                    if (index > -1) {
+                        data[i].checkboxState = 'uncheck';
+                        this.updateSelectedItems(data[i], data[i].checkboxState);
+                        if (this.parent.autoCheckHierarchy) {
+                            this.updateParentSelection(data[i]);
+                        }
+                    }
+                }
+            }
+        }
+        length = this.selectedItems.length;
+        var checkbox = this.parent.getHeaderTable().querySelectorAll('.e-frame')[0];
+        if (length > 0 && data.length > 0) {
+            if (length !== data.length) {
+                removeClass([checkbox], ['e-check']);
+                checkbox.classList.add('e-stop');
+            }
+            else {
+                removeClass([checkbox], ['e-stop']);
+                checkbox.classList.add('e-check');
+            }
+        }
+        else {
+            removeClass([checkbox], ['e-check', 'e-stop']);
+        }
+    };
+    Selection.prototype.updateSelectedItems = function (currentRecord, checkState, filter) {
+        var record = this.parent.getCurrentViewRecords().filter(function (e) {
+            return e.uniqueID === currentRecord.uniqueID;
+        });
+        var recordIndex = this.parent.getCurrentViewRecords().indexOf(record[0]);
+        var checkbox;
+        if (recordIndex > -1) {
+            var tr = this.parent.getRows()[recordIndex];
+            checkbox = tr.querySelectorAll('.e-frame')[0];
+            if (!isNullOrUndefined(checkbox)) {
+                removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
+            }
+        }
+        currentRecord.checkboxState = checkState;
+        if (checkState === 'check' && isNullOrUndefined(currentRecord.isSummaryRow)) {
+            if (recordIndex !== -1 && this.selectedIndexes.indexOf(recordIndex) === -1) {
+                this.selectedIndexes.push(recordIndex);
+            }
+            if (this.selectedItems.indexOf(currentRecord) === -1 && (recordIndex !== -1 &&
+                (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
+                this.selectedItems.push(currentRecord);
+            }
+            if (this.selectedItems.indexOf(currentRecord) === -1 && (!isNullOrUndefined(this.parent.filterModule) &&
+                this.parent.filterModule.filteredResult.length === 0)) {
+                this.selectedItems.push(currentRecord);
+            }
+            if (this.selectedItems.indexOf(currentRecord) === -1 && isNullOrUndefined(this.parent.filterModule)) {
+                this.selectedItems.push(currentRecord);
+            }
+        }
+        else if ((checkState === 'uncheck' || checkState === 'indeterminate') && isNullOrUndefined(currentRecord.isSummaryRow)) {
+            var index = this.selectedItems.indexOf(currentRecord);
+            if (index !== -1) {
+                this.selectedItems.splice(index, 1);
+            }
+            if (this.selectedIndexes.indexOf(recordIndex) !== -1) {
+                var checkedIndex = this.selectedIndexes.indexOf(recordIndex);
+                this.selectedIndexes.splice(checkedIndex, 1);
+            }
+        }
+        var checkBoxclass = checkState === 'indeterminate' ? 'e-stop' : 'e-' + checkState;
+        if (recordIndex > -1) {
+            if (!isNullOrUndefined(checkbox)) {
+                checkbox.classList.add(checkBoxclass);
+            }
+        }
+    };
+    Selection.prototype.updateGridActions = function (args) {
+        var _this = this;
+        var requestType = args.requestType;
+        var childData;
+        var childLength;
+        if (this.parent.autoCheckHierarchy) {
+            if ((requestType === 'sorting' || requestType === 'paging')) {
+                childData = this.parent.getCurrentViewRecords();
+                childLength = childData.length;
+                this.selectedIndexes = [];
+                for (var i = 0; i < childLength; i++) {
+                    this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+                }
+            }
+            else if (requestType === 'delete' || args.action === 'add') {
+                var updatedData = [];
+                if (requestType === 'delete') {
+                    updatedData = args.data;
+                }
+                else {
+                    updatedData.push(args.data);
+                }
+                for (var i = 0; i < updatedData.length; i++) {
+                    if (requestType === 'delete') {
+                        var index = this.parent.flatData.indexOf(updatedData[i]);
+                        var checkedIndex = this.selectedIndexes.indexOf(index);
+                        this.selectedIndexes.splice(checkedIndex, 1);
+                        this.updateSelectedItems(updatedData[i], 'uncheck');
+                    }
+                    if (!isNullOrUndefined(updatedData[i].parentItem)) {
+                        this.updateParentSelection(updatedData[i].parentItem);
+                    }
+                }
+            }
+            else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
+                args.data.checkboxState = 'uncheck';
+            }
+            else if (requestType === 'filtering' || requestType === 'searching') {
+                this.selectedItems = [];
+                this.selectedIndexes = [];
+                childData = (this.parent.filterModule.filteredResult.length > 0) ? this.parent.getCurrentViewRecords() :
+                    this.parent.flatData;
+                childData.forEach(function (record) {
+                    if (record.hasChildRecords) {
+                        _this.updateParentSelection(record);
+                    }
+                    else {
+                        _this.updateSelectedItems(record, record.checkboxState);
+                    }
+                });
+                this.headerSelection();
+            }
+        }
+    };
+    Selection.prototype.getCheckedrecords = function () {
+        return this.selectedItems;
+    };
+    Selection.prototype.getCheckedRowIndexes = function () {
+        return this.selectedIndexes;
+    };
+    return Selection;
+}());
+
+/**
+ * TreeGrid ColumnMenu module
+ * @hidden
+ */
+var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for render module
+     */
+    function ColumnMenu$$1(parent) {
+        Grid.Inject(ColumnMenu);
+        this.parent = parent;
+    }
+    ColumnMenu$$1.prototype.getColumnMenu = function () {
+        return this.parent.grid.columnMenuModule.getColumnMenu();
+    };
+    ColumnMenu$$1.prototype.destroy = function () {
+        //this.parent.grid.columnMenuModule.destroy();
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    ColumnMenu$$1.prototype.getModuleName = function () {
+        return 'columnMenu';
+    };
+    return ColumnMenu$$1;
+}());
 
 /**
  * TreeGrid Print module
@@ -365,118 +867,14 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$3([
         Property(false)
     ], SelectionSettings.prototype, "persistSelection", void 0);
+    __decorate$3([
+        Property('Default')
+    ], SelectionSettings.prototype, "checkboxMode", void 0);
+    __decorate$3([
+        Property(false)
+    ], SelectionSettings.prototype, "checkboxOnly", void 0);
     return SelectionSettings;
 }(ChildProperty));
-
-function isRemoteData(parent) {
-    if (parent.dataSource instanceof DataManager) {
-        var adaptor = parent.dataSource.adaptor;
-        return (adaptor instanceof ODataAdaptor ||
-            (adaptor instanceof WebApiAdaptor) || (adaptor instanceof WebMethodAdaptor) ||
-            (adaptor instanceof CacheAdaptor) || adaptor instanceof UrlAdaptor);
-    }
-    return false;
-}
-/**
- * @hidden
- */
-function findParentRecords(records) {
-    var datas;
-    datas = [];
-    var recordsLength = Object.keys(records).length;
-    for (var i = 0, len = recordsLength; i < len; i++) {
-        var hasChild = getObject('hasChildRecords', records[i]);
-        if (hasChild) {
-            datas.push(records[i]);
-        }
-    }
-    return datas;
-}
-/**
- * @hidden
- */
-function getExpandStatus(parent, record, parents) {
-    var parentRecord = isNullOrUndefined(record.parentItem) ? null :
-        parents.filter(function (e) { return e.uniqueID === record.parentItem.uniqueID; })[0];
-    var childParent;
-    if (parentRecord != null) {
-        if (parent.initialRender && !isNullOrUndefined(parentRecord[parent.expandStateMapping])
-            && !parentRecord[parent.expandStateMapping]) {
-            parentRecord.expanded = false;
-            return false;
-        }
-        else if (parentRecord.expanded === false) {
-            return false;
-        }
-        else if (parentRecord.parentItem) {
-            childParent = parents.filter(function (e) { return e.uniqueID === parentRecord.parentItem.uniqueID; })[0];
-            if (childParent && parent.initialRender && !isNullOrUndefined(childParent[parent.expandStateMapping])
-                && !childParent[parent.expandStateMapping]) {
-                childParent.expanded = false;
-                return false;
-            }
-            if (childParent && childParent.expanded === false) {
-                return false;
-            }
-            else if (childParent) {
-                return getExpandStatus(parent, childParent, parents);
-            }
-            return true;
-        }
-        else {
-            return true;
-        }
-    }
-    else {
-        return true;
-    }
-}
-/**
- * @hidden
- */
-function findChildrenRecords(records) {
-    var datas = [];
-    if (isNullOrUndefined(records) || !records.hasChildRecords) {
-        return [];
-    }
-    var childRecords = records.childRecords;
-    for (var i = 0, len = Object.keys(childRecords).length; i < len; i++) {
-        datas.push(childRecords[i]);
-        if (childRecords[i].hasChildRecords) {
-            datas = datas.concat(findChildrenRecords(childRecords[i]));
-        }
-    }
-    return datas;
-}
-function isOffline(parent) {
-    if (isRemoteData(parent)) {
-        var dm = parent.dataSource;
-        return !isNullOrUndefined(dm.ready);
-    }
-    return true;
-}
-function extendArray(array) {
-    var objArr = [];
-    var obj;
-    var keys;
-    for (var i = 0; i < array.length; i++) {
-        keys = Object.keys(array[i]);
-        obj = {};
-        for (var j = 0; j < keys.length; j++) {
-            obj[keys[j]] = array[i][keys[j]];
-        }
-        objArr.push(obj);
-    }
-    return objArr;
-}
-function getPlainData(value) {
-    delete value.hasChildRecords;
-    delete value.childRecords;
-    delete value.index;
-    delete value.parentItem;
-    delete value.level;
-    return value;
-}
 
 /**
  * TreeGrid render module
@@ -542,6 +940,9 @@ var Render = /** @__PURE__ @class */ (function () {
         var ispadfilter = isNullOrUndefined(data.filterLevel);
         var pad = ispadfilter ? data.level : data.filterLevel;
         var totalIconsWidth = 0;
+        var cellElement;
+        var column = this.parent.getColumnByField(args.column.field);
+        var summaryRow = data.isSummaryRow;
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
             var container = createElement('div', {
                 className: 'e-treecolumn-container'
@@ -593,7 +994,7 @@ var Render = /** @__PURE__ @class */ (function () {
             // if (data.hasChildRecords) {
             //     addClass([expandIcon], data.expanded ? 'e-treegridexpand' : 'e-treegridcollapse');
             // }
-            var cellElement = createElement('span', {
+            cellElement = createElement('span', {
                 className: 'e-treecell'
             });
             if (this.parent.allowTextWrap) {
@@ -606,7 +1007,15 @@ var Render = /** @__PURE__ @class */ (function () {
             args.cell.innerHTML = '';
             args.cell.appendChild(container);
         }
-        var summaryRow = getObject('isSummaryRow', args.data);
+        if (!isNullOrUndefined(column) && column.showCheckbox) {
+            this.parent.notify('columnCheckbox', args);
+            if (this.parent.allowTextWrap) {
+                var checkboxElement = args.cell.querySelectorAll('.e-frame')[0];
+                var width = parseInt(checkboxElement.style.width, 16);
+                totalIconsWidth += width;
+                cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
+            }
+        }
         if (summaryRow) {
             addClass([args.cell], 'e-summarycell');
             var summaryData = getObject(args.column.field, args.data);
@@ -645,7 +1054,6 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
     Sort$$1.prototype.addEventListener = function () {
         this.parent.on('updateModel', this.updateModel, this);
         this.parent.on('createSort', this.createdSortedRecords, this);
-        this.parent.on('createSortRecords', this.createSorting, this);
     };
     /**
      * @hidden
@@ -656,71 +1064,30 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
         }
         this.parent.off('updateModel', this.updateModel);
         this.parent.off('createSort', this.createdSortedRecords);
-        this.parent.off('createSortRecords', this.createSorting);
     };
-    Sort$$1.prototype.createSorting = function (data) {
+    Sort$$1.prototype.createdSortedRecords = function (sortParams) {
+        var data = sortParams.modifiedData;
+        var srtQry = sortParams.srtQry;
+        this.iterateSort(data, srtQry);
+        this.storedIndex = -1;
+        this.parent.notify('updateAction', { result: this.flatSortedData });
         this.flatSortedData = [];
-        this.createSortRecords(data);
     };
-    Sort$$1.prototype.createSortRecords = function (data) {
-        var sortData = getObject('modifiedData', data);
-        var parentRecords = getObject('parentRecords', data);
-        var parentIndex = getObject('parentIndex', data);
-        var filteredResult = getObject('filteredResult', data);
-        var dataLength = Object.keys(sortData).length;
-        for (var i = 0, len = dataLength; i < len; i++) {
-            var currentSortData = sortData[i];
-            this.storedIndex++;
-            var level = 0;
-            currentSortData.index = this.storedIndex;
-            if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
-                currentSortData.childRecords =
-                    currentSortData[this.parent.childMapping];
-                currentSortData.hasChildRecords = true;
-                currentSortData.expanded = true;
-            }
-            if (isNullOrUndefined(currentSortData.uniqueID)) {
-                currentSortData.uniqueID = getUid(this.parent.element.id + '_data_');
-            }
-            if (!isNullOrUndefined(parentRecords)) {
-                var parentData = extend({}, parentRecords);
-                delete parentData.childRecords;
-                delete parentData[this.parent.childMapping];
-                currentSortData.parentItem = parentData;
-                currentSortData.parentUniqueID = parentData.uniqueID;
-                level = parentRecords.level + 1;
-            }
-            currentSortData.level = level;
-            if (isNullOrUndefined(currentSortData[this.parent.parentIdMapping]) ||
-                currentSortData.parentItem) {
-                this.flatSortedData.push(currentSortData);
-            }
-            if (!isNullOrUndefined(currentSortData[this.parent.childMapping])) {
-                this.createSortRecords({ modifiedData: currentSortData[this.parent.childMapping], parentRecords: currentSortData,
-                    filteredResult: filteredResult });
-            }
-        }
-        this.parent.notify('Sorting', { sortedData: this.flatSortedData, filteredData: filteredResult });
-    };
-    Sort$$1.prototype.createdSortedRecords = function (sortingElements) {
-        var data = getObject('modifiedData', sortingElements);
-        var sortQuery = getObject('srtQry', sortingElements);
-        var parent = getObject('parent', sortingElements);
-        for (var i = 0, len = Object.keys(data).length; i < len; i++) {
-            if (!isNullOrUndefined(data[i].childRecords) || !isNullOrUndefined(data[i][parent.childMapping])) {
-                var sortedData = void 0;
-                var sortchildData = void 0;
-                if (isNullOrUndefined(data[i].childRecords)) {
-                    sortedData = new DataManager(data[i][parent.childMapping]).executeLocal(sortQuery);
+    Sort$$1.prototype.iterateSort = function (data, srtQry) {
+        for (var d = 0; d < data.length; d++) {
+            if (this.parent.grid.filterSettings.columns.length > 0) {
+                if (!isNullOrUndefined(getParentData(this.parent, data[d].uniqueID, true))) {
+                    this.storedIndex++;
+                    this.flatSortedData[this.storedIndex] = data[d];
                 }
-                else {
-                    sortedData = new DataManager(data[i].childRecords).executeLocal(sortQuery);
-                }
-                sortchildData = sortedData;
-                if (sortchildData.length > 0) {
-                    data[i][parent.childMapping] = sortchildData;
-                }
-                this.createdSortedRecords({ modifiedData: sortchildData, parent: parent, srtQry: sortQuery });
+            }
+            else {
+                this.storedIndex++;
+                this.flatSortedData[this.storedIndex] = data[d];
+            }
+            if (data[d].hasChildRecords) {
+                var childSort = (new DataManager(data[d].childRecords).executeLocal(srtQry));
+                this.iterateSort(childSort, srtQry);
             }
         }
     };
@@ -785,7 +1152,6 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     DataManipulation.prototype.addEventListener = function () {
-        this.parent.on('Sorting', this.sortedRecords, this);
         this.parent.on('updateRemoteLevel', this.updateParentRemoteData, this);
         this.parent.grid.on('sorting-begin', this.beginSorting, this);
         this.parent.on('updateAction', this.updateData, this);
@@ -803,7 +1169,6 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         this.parent.off('updateRemoteLevel', this.updateParentRemoteData);
         this.parent.off('updateAction', this.updateData);
         this.parent.off('dataProcessor', this.dataProcessor);
-        this.parent.off('Sorting', this.sortedRecords);
         this.parent.grid.off('sorting-begin', this.beginSorting);
     };
     /**
@@ -848,7 +1213,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                             return e.httpRequest.statusText !== 'OK';
                         }).length;
                         if (req === 0) {
-                            setValue('grid.contentModule.isLoaded', true, _this).parent;
+                            setValue('grid.contentModule.isLoaded', true, _this.parent);
                             if (!isNullOrUndefined(_this.zerothLevelData)) {
                                 setValue('cancel', false, _this.zerothLevelData);
                                 getValue('grid.renderModule', _this.parent).dataManagerSuccess(_this.zerothLevelData);
@@ -870,30 +1235,24 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     this.taskIds.push(tempData[this.parent.idMapping]);
                 }
             }
-            var mappingData = new DataManager(data).executeLocal(new Query()
-                .where(this.parent.parentIdMapping, 'notequal', null)
-                .group(this.parent.parentIdMapping));
-            //let selfData: Object[] = [];
-            for (var i = 0; i < mappingData.length; i++) {
-                var groupData = mappingData[i];
-                var index = this.taskIds.indexOf(groupData.key);
-                if (index > -1) {
+            if (this.isSelfReference) {
+                var selfData = [];
+                var mappingData = new DataManager(this.hierarchyData).executeLocal(new Query()
+                    .where(this.parent.parentIdMapping, 'notequal', null)
+                    .group(this.parent.parentIdMapping));
+                for (var i = 0; i < mappingData.length; i++) {
+                    var groupData = mappingData[i];
+                    var index = this.taskIds.indexOf(groupData.key);
                     if (!isNullOrUndefined(groupData.key)) {
-                        var childData = iterateExtend(groupData.items);
-                        if (this.isSelfReference) {
-                            if (!this.updateChildHierarchy(this.hierarchyData, this.hierarchyData[index], childData, index)) {
-                                this.hierarchyData[index][this.parent.childMapping] = childData;
-                                if (!isNullOrUndefined(this.hierarchyData[index][this.parent.parentIdMapping])) {
-                                    this.hierarchyData.splice(index, 1);
-                                    this.taskIds.splice(index, 1);
-                                }
-                            }
-                        }
-                        else {
+                        if (index > -1) {
+                            var childData = (groupData.items);
                             this.hierarchyData[index][this.parent.childMapping] = childData;
+                            continue;
                         }
                     }
+                    selfData.push.apply(selfData, groupData.items);
                 }
+                this.hierarchyData = this.selfReferenceUpdate(selfData);
             }
             if (!Object.keys(this.hierarchyData).length) {
                 this.parent.flatData = [];
@@ -918,27 +1277,19 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     //              }
     //   }
     // }
-    DataManipulation.prototype.updateChildHierarchy = function (data, currentData, childData, index) {
-        var parentID = currentData[this.parent.parentIdMapping];
-        var returns = false;
-        var id = currentData[this.parent.idMapping];
-        for (var i = 0; i < data.length; i++) {
-            if (data[i][this.parent.idMapping] === parentID) {
-                var childs = data[i][this.parent.childMapping];
-                for (var j = 0; j < childs.length; j++) {
-                    if (childs[j][this.parent.idMapping] === id) {
-                        childs[j][this.parent.childMapping] = childData;
-                        this.hierarchyData.splice(index, 1);
-                        this.taskIds.splice(index, 1);
-                        return true;
-                    }
-                }
+    DataManipulation.prototype.selfReferenceUpdate = function (selfData) {
+        var result = [];
+        while (this.hierarchyData.length > 0 && selfData.length > 0) {
+            var index = selfData.indexOf(this.hierarchyData[0]);
+            if (index === -1) {
+                this.hierarchyData.shift();
             }
-            else if (!isNullOrUndefined(data[i][this.parent.childMapping])) {
-                returns = this.updateChildHierarchy(data[i][this.parent.childMapping], currentData, childData, index);
+            else {
+                result.push(this.hierarchyData.shift());
+                selfData.splice(index, 1);
             }
         }
-        return returns;
+        return result;
     };
     /**
      * Function to update the zeroth level parent records in remote binding
@@ -1026,10 +1377,11 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     ? currentData[this.parent.expandStateMapping] : true;
             }
             currentData.index = currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
-            if (isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
+            if (this.isSelfReference && isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
                 this.parent.parentData.push(currentData);
             }
             currentData.uniqueID = getUid(this.parent.element.id + '_data_');
+            setValue('uniqueIDCollection.' + currentData.uniqueID, currentData, this.parent);
             if (!isNullOrUndefined(parentRecords)) {
                 var parentData = extend({}, parentRecords);
                 delete parentData.childRecords;
@@ -1039,33 +1391,15 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 level = parentRecords.level + 1;
             }
             currentData.level = level;
+            currentData.checkboxState = 'uncheck';
             if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
                 this.parent.flatData.push(currentData);
             }
+            if (!this.isSelfReference && currentData.level === 0) {
+                this.parent.parentData.push(currentData);
+            }
             if (!isNullOrUndefined(currentData[this.parent.childMapping] && currentData[this.parent.childMapping].length)) {
                 this.createRecords(currentData[this.parent.childMapping], currentData);
-            }
-        }
-    };
-    DataManipulation.prototype.sortedRecords = function (data) {
-        var sortedData = getObject('sortedData', data);
-        this.sortedData = [];
-        if (this.parent.grid.filterSettings.columns.length > 0) {
-            var sortedData_1 = getObject('sortedData', data);
-            var filteredData = getObject('filteredData', data);
-            for (var i = 0, len = Object.keys(sortedData_1).length; i < len; i++) {
-                for (var j = 0, sortlen = Object.keys(filteredData).length; j < sortlen; j++) {
-                    var sortData = getObject('uniqueID', sortedData_1[i]);
-                    var filterData = getObject('uniqueID', filteredData[j]);
-                    if (sortData === filterData) {
-                        this.sortedData.push(sortedData_1[i]);
-                    }
-                }
-            }
-        }
-        else {
-            for (var i = 0, len = Object.keys(sortedData).length; i < len; i++) {
-                this.sortedData.push(sortedData[i]);
             }
         }
     };
@@ -1115,37 +1449,27 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         if (this.parent.grid.sortSettings.columns.length > 0 || this.isSortAction) {
             this.isSortAction = false;
             var parentData = void 0;
-            var action = 'action';
-            if (args[action] !== 'collapse' && args[action] !== 'expand') {
-                if (!this.isSelfReference && this.parent.childMapping.length > 0) {
-                    parentData = iterateExtend(this.parent.dataSource);
-                }
-                else {
-                    parentData = iterateExtend(this.parent.parentData);
-                }
-                var query = getObject('query', args);
-                this.parent.sortModule = new Sort$1(this.parent);
-                var srtQry = new Query();
-                for (var srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
-                    var col = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
-                    var compFun = col.sortComparer && !this.isRemote() ?
-                        col.sortComparer.bind(col) :
-                        this.parent.grid.sortSettings.columns[srt].direction;
-                    srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
-                }
-                var modifiedData = new DataManager(parentData).executeLocal(srtQry);
-                this.parent.notify('createSort', { modifiedData: modifiedData, parent: this.parent, srtQry: srtQry });
-                this.parent.notify('createSortRecords', {
-                    modifiedData: modifiedData,
-                    parentRecords: null, filteredResult: results
-                });
+            parentData = this.parent.parentData;
+            var query = getObject('query', args);
+            this.parent.sortModule = new Sort$1(this.parent);
+            var srtQry = new Query();
+            for (var srt = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
+                var col = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
+                var compFun = col.sortComparer && !this.isRemote() ?
+                    col.sortComparer.bind(col) :
+                    this.parent.grid.sortSettings.columns[srt].direction;
+                srtQry.sortBy(this.parent.grid.sortSettings.columns[srt].field, compFun);
             }
-            results = this.sortedData;
+            var modifiedData = new DataManager(parentData).executeLocal(srtQry);
+            this.parent.notify('createSort', { modifiedData: modifiedData, filteredData: results, srtQry: srtQry });
+            results = this.dataResults.result;
+            this.dataResults.result = null;
+            this.sortedData = results;
             this.parent.notify('updateModel', {});
             if (this.parent.grid.aggregates.length > 0) {
                 var isSort = false;
-                var query = getObject('query', args);
-                var summaryQuery = query.queries.filter(function (q) { return q.fn === 'onAggregates'; });
+                var query_1 = getObject('query', args);
+                var summaryQuery = query_1.queries.filter(function (q) { return q.fn === 'onAggregates'; });
                 results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData, isSort);
             }
         }
@@ -1155,13 +1479,6 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             results = this.dataResults.result;
             count = this.dataResults.count;
         }
-        /*if (isNullOrUndefined(this.dataResults.result)) {
-          args.result = <ITreeData[]>results;
-          args.count = count;
-        } else {
-          args.result = <ITreeData[]>this.dataResults.result;
-          args.count = this.dataResults.count;
-        }*/
         args.result = results;
         args.count = count;
         this.parent.notify('updateResults', args);
@@ -1193,6 +1510,8 @@ var ToolbarItem;
     ToolbarItem[ToolbarItem["PdfExport"] = 9] = "PdfExport";
     ToolbarItem[ToolbarItem["CsvExport"] = 10] = "CsvExport";
     ToolbarItem[ToolbarItem["Print"] = 11] = "Print";
+    ToolbarItem[ToolbarItem["RowIndent"] = 12] = "RowIndent";
+    ToolbarItem[ToolbarItem["RowOutdent"] = 13] = "RowOutdent";
 })(ToolbarItem || (ToolbarItem = {}));
 /**
  * Defines predefined contextmenu items.
@@ -1526,9 +1845,13 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     function TreeGrid(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.dataResults = {};
+        _this.uniqueIDCollection = {};
+        _this.uniqueIDFilterCollection = {};
+        TreeGrid_1.Inject(Selection);
         _this.grid = new Grid();
         return _this;
     }
+    TreeGrid_1 = TreeGrid;
     /**
      * Export TreeGrid data to Excel file(.xlsx).
      * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the TreeGrid.
@@ -1589,7 +1912,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             Below: 'Below',
             AddRow: 'Add Row',
             ExpandAll: 'Expand All',
-            CollapseAll: 'Collapse All'
+            CollapseAll: 'Collapse All',
         };
         if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
             this.childMapping = 'Children';
@@ -1867,6 +2190,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 args: [this]
             });
         }
+        if (this.allowSelection) {
+            modules.push({
+                member: 'selection',
+                args: [this]
+            });
+        }
         return modules;
     };
     TreeGrid.prototype.isCommandColumn = function (columns) {
@@ -1895,6 +2224,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.dataModule = new DataManipulation(this);
         this.printModule = new Print$1(this);
         this.columnMenuModule = new ColumnMenu$1(this);
+        /**
+         * @hidden
+         */
         this.trigger(load);
         this.autoGenerateColumns();
         this.convertTreeData(this.dataSource);
@@ -1914,8 +2246,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.wireEvents();
     };
     TreeGrid.prototype.convertTreeData = function (data) {
+        var _this = this;
         if (data instanceof Array && data.length > 0 && data[0].hasOwnProperty('level')) {
             this.flatData = data;
+            this.flatData.filter(function (e) {
+                if (e.level === 0) {
+                    _this.parentData.push(e);
+                }
+            });
         }
         else {
             this.dataModule.convertToFlatData(data);
@@ -1933,7 +2271,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.bindGridProperties = function () {
         this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
         this.grid.enableRtl = this.enableRtl;
-        this.grid.columns = this.getGridColumns();
+        this.grid.columns = this.getGridColumns(this.columns);
         this.grid.allowExcelExport = this.allowExcelExport;
         this.grid.allowPdfExport = this.allowPdfExport;
         this.grid.query = this.query;
@@ -1964,6 +2302,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.textWrapSettings = getActualProperties(this.textWrapSettings);
         this.grid.printMode = getActualProperties(this.printMode);
         this.grid.locale = getActualProperties(this.locale);
+        this.grid.selectedRowIndex = this.selectedRowIndex;
         this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
         this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
@@ -2002,6 +2341,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.notify('pdfCellInfo', args);
             args = _this.dataResults;
         };
+        this.grid.checkBoxChange = function (args) {
+            _this.trigger(checkboxChange, args);
+        };
         this.grid.pdfExportComplete = this.triggerEvents.bind(this);
         this.grid.excelExportComplete = this.triggerEvents.bind(this);
         this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
@@ -2029,6 +2371,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.actionFailure = this.triggerEvents.bind(this);
         this.grid.dataBound = function (args) {
             _this.updateColumnModel();
+            _this.notify('headerCheckbox', {});
             _this.trigger(dataBound, args);
             if (isRemoteData(_this) && !isOffline(_this) && !_this.hasChildMapping) {
                 var req = getObject('dataSource.requests', _this).filter(function (e) {
@@ -2135,6 +2478,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 if (args.requestType === 'batchsave') {
                     _this.notify(batchSave, args);
                 }
+                _this.notify('updateGridActions', args);
             }
             _this.trigger(actionComplete, args);
         };
@@ -2290,8 +2634,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * Convert TreeGrid ColumnModel to Grid Column
      * @hidden
      */
-    TreeGrid.prototype.getGridColumns = function () {
-        var column = this.columns;
+    TreeGrid.prototype.getGridColumns = function (columns) {
+        var column = columns;
         this.columnModel = [];
         var treeGridColumn;
         var gridColumn;
@@ -2308,7 +2652,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     gridColumn[prop] = treeGridColumn[prop] = column[i][prop];
                 }
             }
-            this.columnModel.push(new Column(treeGridColumn));
+            if (column[i].columns) {
+                this.getGridColumns(columns[i].columns);
+            }
+            else {
+                this.columnModel.push(new Column(treeGridColumn));
+            }
             gridColumnCollection.push(gridColumn);
         }
         return gridColumnCollection;
@@ -2326,7 +2675,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             var prop = properties_1[_i];
             switch (prop) {
                 case 'columns':
-                    this.grid.columns = this.getGridColumns();
+                    this.grid.columns = this.getGridColumns(this.columns);
                     break;
                 case 'treeColumnIndex':
                     this.grid.refreshColumns();
@@ -2473,7 +2822,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.dataModule.destroy();
         var modules = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule',
             'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
-            'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule'];
+            'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule',
+            'selectionModule'];
         for (var i = 0; i < modules.length; i++) {
             if (this[modules[i]]) {
                 this[modules[i]] = null;
@@ -2545,6 +2895,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             target.classList.contains('e-treegridcollapse')) {
             this.expandCollapseRequest(target);
         }
+        this.notify('checkboxSelection', { target: target });
     };
     /**
      * Returns TreeGrid rows
@@ -2882,10 +3233,31 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.refresh();
     };
     /**
+     * Get the records of checked rows.
+     * @return {Object[]}
+     * @hidden
+     */
+    TreeGrid.prototype.getCheckedRecords = function () {
+        return this.selectionModule.getCheckedrecords();
+    };
+    /**
+     * Get the indexes of checked rows.
+     * @return {number[]}
+     */
+    TreeGrid.prototype.getCheckedRowIndexes = function () {
+        return this.selectionModule.getCheckedRowIndexes();
+    };
+    /**
+     * Checked the checkboxes using rowIndexes.
+     */
+    TreeGrid.prototype.selectCheckboxes = function (indexes) {
+        this.selectionModule.selectCheckboxes(indexes);
+    };
+    /**
      * Refreshes the TreeGrid column changes.
      */
     TreeGrid.prototype.refreshColumns = function () {
-        this.grid.columns = this.getGridColumns();
+        this.grid.columns = this.getGridColumns(this.columns);
         this.grid.refreshColumns();
     };
     /**
@@ -3095,7 +3467,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 var childRecords = this.getCurrentViewRecords().filter(function (e) {
-                    return (e.parentUniqueID === record.uniqueID);
+                    return (e.parentUniqueID === record.uniqueID) || e.isSummaryRow;
                 });
                 var index = childRecords[0].parentItem.index;
                 var rows = gridRows.filter(function (r) {
@@ -3250,6 +3622,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.getDataModule = function () {
         return { baseModule: this.grid.getDataModule(), treeModule: this.dataModule };
     };
+    var TreeGrid_1;
     __decorate([
         Property([])
     ], TreeGrid.prototype, "columns", void 0);
@@ -3301,6 +3674,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], TreeGrid.prototype, "allowResizing", void 0);
+    __decorate([
+        Property(false)
+    ], TreeGrid.prototype, "autoCheckHierarchy", void 0);
     __decorate([
         Complex({}, PageSettings)
     ], TreeGrid.prototype, "pageSettings", void 0);
@@ -3477,6 +3853,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     ], TreeGrid.prototype, "columnDrop", void 0);
     __decorate([
         Event()
+    ], TreeGrid.prototype, "checkboxChange", void 0);
+    __decorate([
+        Event()
     ], TreeGrid.prototype, "printComplete", void 0);
     __decorate([
         Event()
@@ -3529,7 +3908,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], TreeGrid.prototype, "pdfExportComplete", void 0);
-    TreeGrid = __decorate([
+    TreeGrid = TreeGrid_1 = __decorate([
         NotifyPropertyChanges
     ], TreeGrid);
     return TreeGrid;
@@ -3702,33 +4081,30 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
      *  @hidden
      */
     Filter$$1.prototype.updatedFilteredRecord = function (dataDetails) {
+        setValue('uniqueIDFilterCollection', {}, this.parent);
         this.flatFilteredData = dataDetails.data;
         this.filteredParentRecs = [];
         this.filteredResult = [];
         this.isHierarchyFilter = false;
-        var _loop_1 = function (f) {
-            var rec = this_1.flatFilteredData[f];
-            this_1.addParentRecord(rec);
-            if (this_1.parent.filterSettings.hierarchyMode === 'Child' ||
-                this_1.parent.filterSettings.hierarchyMode === 'None' || this_1.parent.searchSettings.hierarchyMode === 'Child' ||
-                this_1.parent.searchSettings.hierarchyMode === 'None') {
-                this_1.isHierarchyFilter = true;
+        for (var f = 0; f < this.flatFilteredData.length; f++) {
+            var rec = this.flatFilteredData[f];
+            this.addParentRecord(rec);
+            if (this.parent.filterSettings.hierarchyMode === 'Child' ||
+                this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'Child' ||
+                this.parent.searchSettings.hierarchyMode === 'None') {
+                this.isHierarchyFilter = true;
             }
             var ischild = getObject('childRecords', rec);
             if (!isNullOrUndefined(ischild) && ischild.length) {
-                setValue('hasFilteredChildRecords', this_1.checkChildExsist(rec), rec);
+                setValue('hasFilteredChildRecords', this.checkChildExsist(rec), rec);
             }
             var parent_1 = getObject('parentItem', rec);
             if (!isNullOrUndefined(parent_1)) {
-                var parRecord = this_1.flatFilteredData.filter(function (e) {
-                    return e.uniqueID === rec.parentItem.uniqueID;
-                })[0];
+                var parRecord = getParentData(this.parent, rec.parentItem.uniqueID, true);
+                //let parRecord: Object = this.flatFilteredData.filter((e: ITreeData) => {
+                //          return e.uniqueID === rec.parentItem.uniqueID; })[0];
                 setValue('hasFilteredChildRecords', true, parRecord);
             }
-        };
-        var this_1 = this;
-        for (var f = 0; f < this.flatFilteredData.length; f++) {
-            _loop_1(f);
         }
         if (this.flatFilteredData.length > 0 && this.isHierarchyFilter) {
             this.updateFilterLevel();
@@ -3736,12 +4112,14 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         this.parent.notify('updateAction', { result: this.filteredResult });
     };
     Filter$$1.prototype.addParentRecord = function (record) {
-        var parent = this.parent.flatData.filter(function (e) { return e.uniqueID === record.parentUniqueID; })[0];
+        var parent = getParentData(this.parent, record.parentUniqueID);
+        //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
         if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
             if (isNullOrUndefined(parent)) {
                 if (this.flatFilteredData.indexOf(record) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
                         this.filteredResult.push(record);
+                        setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
                         record.hasFilteredChildRecords = true;
                     }
                     return;
@@ -3752,11 +4130,13 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
                 if (this.flatFilteredData.indexOf(parent) !== -1 || this.filteredResult.indexOf(parent) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
                         this.filteredResult.push(record);
+                        setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
                     }
                 }
                 else {
                     if (this.filteredResult.indexOf(record) === -1 && this.flatFilteredData.indexOf(record) !== -1) {
                         this.filteredResult.push(record);
+                        setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
                     }
                 }
             }
@@ -3775,6 +4155,7 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
             }
             if (this.filteredResult.indexOf(record) === -1) {
                 this.filteredResult.push(record);
+                setValue('uniqueIDFilterCollection.' + record.uniqueID, record, this.parent);
             }
         }
     };
@@ -3782,10 +4163,11 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         var childRec = getObject('childRecords', records);
         var isExist = false;
         for (var count = 0; count < childRec.length; count++) {
-            var ischild = getObject('childRecords', childRec[count]);
+            var ischild = childRec[count].childRecords;
             if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
                 (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both')) {
                 this.filteredResult.push(childRec[count]);
+                setValue('uniqueIDFilterCollection.' + childRec[count].uniqueID, childRec[count], this.parent);
                 isExist = true;
             }
             if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
@@ -3803,21 +4185,17 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
     Filter$$1.prototype.updateFilterLevel = function () {
         var record = this.filteredResult;
         var len = this.filteredResult.length;
-        var _loop_2 = function (c) {
-            var parent_2 = this_2.parent.flatData.filter(function (e) { return e.uniqueID === record[c].parentUniqueID; })[0];
+        for (var c = 0; c < len; c++) {
+            var parent_2 = getParentData(this.parent, record[c].parentUniqueID);
             var isPrst = record.indexOf(parent_2) !== -1;
             if (isPrst) {
-                var parent_3 = this_2.filteredResult.filter(function (e) { return e.uniqueID === record[c].parentUniqueID; })[0];
-                setValue('filterLevel', parent_3.filterLevel + 1, record[c]);
+                var parent_3 = getParentData(this.parent, record[c].parentUniqueID, true);
+                record[c].filterLevel = parent_3.filterLevel + 1;
             }
             else {
-                setValue('filterLevel', 0, record[c]);
-                this_2.filteredParentRecs.push(record[c]);
+                record[c].filterLevel = 0;
+                this.filteredParentRecs.push(record[c]);
             }
-        };
-        var this_2 = this;
-        for (var c = 0; c < len; c++) {
-            _loop_2(c);
         }
     };
     Filter$$1.prototype.clearFilterLevel = function (data) {
@@ -3827,13 +4205,13 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         var currentRecord;
         for (count; count < len; count++) {
             currentRecord = flatData[count];
-            var fLevel = getObject('filterLevel', currentRecord);
-            if (fLevel || fLevel === 0 || !isNullOrUndefined(getObject('hasFilteredChildRecords', currentRecord))) {
-                var ischild = getObject('childRecords', currentRecord);
-                setValue('hasFilteredChildRecords', null, currentRecord);
-                setValue('filterLevel', null, currentRecord);
+            var fLevel = currentRecord.filterLevel;
+            if (fLevel || fLevel === 0 || !isNullOrUndefined(currentRecord.hasFilteredChildRecords)) {
+                currentRecord.hasFilteredChildRecords = null;
+                currentRecord.filterLevel = null;
             }
         }
+        this.filteredResult = [];
         this.parent.notify('updateResults', { result: flatData, count: flatData.length });
     };
     return Filter$$1;
@@ -4273,7 +4651,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         if (args.item.id === this.parent.grid.element.id + '_expandall') {
             this.parent.expandAll();
         }
-        else if (args.item.id === this.parent.grid.element.id + '_collapseall') {
+        if (args.item.id === this.parent.grid.element.id + '_collapseall') {
             this.parent.collapseAll();
         }
     };
@@ -4582,6 +4960,231 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     return ContextMenu$$1;
 }());
 
+function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName) {
+    var value = details.value;
+    var action = details.action;
+    if (action === 'save') {
+        action = 'edit';
+    }
+    var i;
+    var j;
+    var key = control.grid.getPrimaryKeyFieldNames()[0];
+    var treeData = control.dataSource instanceof DataManager ?
+        control.dataSource.dataSource.json : control.dataSource;
+    var modifiedData = [];
+    var originalData = value;
+    var isSkip = false;
+    var currentViewRecords = control.grid.getCurrentViewRecords();
+    if (action === 'add') {
+        var addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex);
+        value = addAct.value;
+        isSkip = addAct.isSkip;
+    }
+    if (value instanceof Array) {
+        modifiedData = extendArray(value);
+    }
+    else {
+        modifiedData.push(extend({}, value));
+    }
+    if (!isSkip && (action !== 'add' ||
+        (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
+        for (var k = 0; k < modifiedData.length; k++) {
+            var keys = Object.keys(modifiedData[k]);
+            i = treeData.length;
+            var _loop_1 = function () {
+                if (treeData[i][key] === modifiedData[k][key]) {
+                    if (action === 'delete') {
+                        var currentData_1 = treeData[i];
+                        treeData.splice(i, 1);
+                        if (isSelfReference) {
+                            if (!isNullOrUndefined(currentData_1[control.parentIdMapping])) {
+                                var parentData = control.flatData.filter(function (e) {
+                                    return e[control.idMapping] === currentData_1[control.parentIdMapping];
+                                })[0];
+                                var childRecords = parentData ? parentData[control.childMapping] : [];
+                                for (var p = childRecords.length - 1; p >= 0; p--) {
+                                    if (childRecords[p][control.idMapping] === currentData_1[control.idMapping]) {
+                                        childRecords.splice(p, 1);
+                                        if (!childRecords.length) {
+                                            parentData.hasChildRecords = false;
+                                            updateParentRow(key, parentData, action, control, isSelfReference);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            return "break";
+                        }
+                    }
+                    else {
+                        if (action === 'edit') {
+                            for (j = 0; j < keys.length; j++) {
+                                if (treeData[i].hasOwnProperty(keys[j]) && (control.editSettings.mode !== 'Cell'
+                                    || keys[j] === columnName)) {
+                                    treeData[i][keys[j]] = modifiedData[k][keys[j]];
+                                }
+                            }
+                        }
+                        else if (action === 'add') {
+                            var index = void 0;
+                            if (control.editSettings.newRowPosition === 'Child') {
+                                if (isSelfReference) {
+                                    originalData[control.parentIdMapping] = treeData[i][control.idMapping];
+                                    treeData.splice(i + 1, 0, originalData);
+                                }
+                                else {
+                                    if (!treeData[i].hasOwnProperty(control.childMapping)) {
+                                        treeData[i][control.childMapping] = [];
+                                    }
+                                    treeData[i][control.childMapping].push(originalData);
+                                    updateParentRow(key, treeData[i], action, control, isSelfReference);
+                                }
+                            }
+                            else if (control.editSettings.newRowPosition === 'Below') {
+                                treeData.splice(i + 1, 0, originalData);
+                            }
+                            else if (!addRowIndex) {
+                                index = 0;
+                                treeData.splice(index, 0, originalData);
+                            }
+                            else if (control.editSettings.newRowPosition === 'Above') {
+                                treeData.splice(i, 0, originalData);
+                            }
+                        }
+                        return "break";
+                    }
+                }
+                else if (!isNullOrUndefined(treeData[i][control.childMapping])) {
+                    if (removeChildRecords(treeData[i][control.childMapping], modifiedData[k], action, key, control, isSelfReference, originalData, columnName)) {
+                        updateParentRow(key, treeData[i], action, control, isSelfReference);
+                    }
+                }
+            };
+            while (i-- && i >= 0) {
+                var state_1 = _loop_1();
+                if (state_1 === "break")
+                    break;
+            }
+        }
+    }
+}
+function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex) {
+    var value;
+    var isSkip = false;
+    var currentViewRecords = control.grid.getCurrentViewRecords();
+    value = extend({}, details.value);
+    value = getPlainData(value);
+    switch (control.editSettings.newRowPosition) {
+        case 'Top':
+            treeData.unshift(value);
+            isSkip = true;
+            break;
+        case 'Bottom':
+            treeData.push(value);
+            isSkip = true;
+            break;
+        case 'Above':
+            value = currentViewRecords[addRowIndex + 1];
+            break;
+        case 'Below':
+        case 'Child':
+            value = currentViewRecords[addRowIndex];
+            if (selectedIndex === -1) {
+                treeData.unshift(value);
+                isSkip = true;
+            }
+    }
+    return { value: value, isSkip: isSkip };
+}
+function removeChildRecords(childRecords, modifiedData, action, key, control, isSelfReference, originalData, columnName) {
+    var isChildAll = false;
+    var j = childRecords.length;
+    while (j-- && j >= 0) {
+        if (childRecords[j][key] === modifiedData[key] ||
+            (isSelfReference && childRecords[j][control.parentIdMapping] === modifiedData[control.idMapping])) {
+            if (action === 'edit') {
+                var keys = Object.keys(modifiedData);
+                for (var i = 0; i < keys.length; i++) {
+                    if (childRecords[j].hasOwnProperty(keys[i]) && (control.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
+                        childRecords[j][keys[i]] = modifiedData[keys[i]];
+                    }
+                }
+                break;
+            }
+            else if (action === 'add') {
+                if (control.editSettings.newRowPosition === 'Child') {
+                    if (isSelfReference) {
+                        originalData[control.parentIdMapping] = childRecords[j][control.idMapping];
+                        childRecords.splice(j + 1, 0, originalData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference);
+                    }
+                    else {
+                        if (!childRecords[j].hasOwnProperty(control.childMapping)) {
+                            childRecords[j][control.childMapping] = [];
+                        }
+                        childRecords[j][control.childMapping].push(originalData);
+                        updateParentRow(key, childRecords[j], action, control, isSelfReference);
+                    }
+                }
+                else if (control.editSettings.newRowPosition === 'Above') {
+                    childRecords.splice(j, 0, originalData);
+                }
+                else if (control.editSettings.newRowPosition === 'Below') {
+                    childRecords.splice(j + 1, 0, originalData);
+                }
+            }
+            else {
+                var parentItem = childRecords[j].parentItem;
+                childRecords.splice(j, 1);
+                if (!childRecords.length) {
+                    isChildAll = true;
+                }
+            }
+        }
+        else if (!isNullOrUndefined(childRecords[j][control.childMapping])) {
+            if (removeChildRecords(childRecords[j][control.childMapping], modifiedData, action, key, control, isSelfReference, originalData, columnName)) {
+                updateParentRow(key, childRecords[j], action, control, isSelfReference);
+            }
+        }
+    }
+    return isChildAll;
+}
+function updateParentRow(key, record, action, control, isSelfReference, child) {
+    var currentRecords = control.grid.getCurrentViewRecords();
+    var index;
+    currentRecords.map(function (e, i) { if (e[key] === record[key]) {
+        index = i;
+        return;
+    } });
+    record = currentRecords[index];
+    record.hasChildRecords = false;
+    if (action === 'add') {
+        record.expanded = true;
+        record.hasChildRecords = true;
+        var childRecords = child ? child : currentRecords[index + 1];
+        if (!record.hasOwnProperty('childRecords')) {
+            record.childRecords = [];
+        }
+        if (record.childRecords.indexOf(childRecords) === -1) {
+            record.childRecords.unshift(childRecords);
+        }
+        if (isSelfReference) {
+            if (!record.hasOwnProperty(control.childMapping)) {
+                record[control.childMapping] = [];
+            }
+            if (record.childRecords.indexOf(childRecords) === -1) {
+                record[control.childMapping].unshift(childRecords);
+            }
+        }
+    }
+    control.grid.setRowData(key, record);
+    var row = control.getRowByIndex(index);
+    control.renderModule.cellRender({
+        data: record, cell: row.cells[control.treeColumnIndex],
+        column: control.grid.getColumns()[control.treeColumnIndex]
+    });
+}
+
 /**
  * TreeGrid Edit Module
  * The `Edit` module is used to handle editing actions.
@@ -4611,7 +5214,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Edit$$1.prototype.addEventListener = function () {
-        this.parent.on(crudAction, this.editAction, this);
+        this.parent.on(crudAction, this.crudAction, this);
         this.parent.on(beginEdit, this.beginEdit, this);
         this.parent.on(beginAdd, this.beginAdd, this);
         this.parent.on(recordDoubleClick, this.recordDoubleClick, this);
@@ -4636,7 +5239,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(crudAction, this.editAction);
+        this.parent.off(crudAction, this.crudAction);
         this.parent.off(beginEdit, this.beginEdit);
         this.parent.off(beginAdd, this.beginAdd);
         this.parent.off(recordDoubleClick, this.recordDoubleClick);
@@ -4683,6 +5286,12 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         if (this.isOnBatch) {
             this.keyPress = args.action;
         }
+    };
+    Edit$$1.prototype.deleteUniqueID = function (value) {
+        var idFilter = 'uniqueIDFilterCollection';
+        delete this.parent[idFilter][value];
+        var id = 'uniqueIDCollection';
+        delete this.parent[id][value];
     };
     Edit$$1.prototype.cellEdit = function (args) {
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
@@ -4774,12 +5383,19 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             this.enableToolbarItems('save');
             removeClass([row], ['e-editedrow', 'e-batchrow']);
             removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-            this.editAction({ value: args.rowData, action: 'edit' }, args.columnName);
+            editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
             var saveArgs = {
                 type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
                 previousData: args.previousValue, row: row, target: args.cell
             };
             this.parent.trigger(actionComplete, saveArgs);
+        }
+    };
+    Edit$$1.prototype.crudAction = function (details, columnName) {
+        editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
+        if (details.action === 'add' && this.previousNewRowPosition != null) {
+            this.parent.setProperties({ editSettings: { newRowPosition: this.previousNewRowPosition } }, true);
+            this.previousNewRowPosition = null;
         }
     };
     Edit$$1.prototype.beginAdd = function (args) {
@@ -4788,7 +5404,8 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         var records = this.parent.grid.getCurrentViewRecords();
         var rows = this.parent.grid.getDataRows();
         if (this.parent.editSettings.mode !== 'Dialog') {
-            if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded)) {
+            if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded) &&
+                records[index].hasChildRecords) {
                 this.parent.expandRow(rows[index + 1], records[index]);
             }
             if (this.parent.editSettings.newRowPosition === 'Above') {
@@ -4846,7 +5463,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             return;
         }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
-            this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
+            this.doubleClickTarget.classList.contains('e-treegridcollapse') || this.doubleClickTarget.classList.contains('e-frame'))) {
             args.cancel = true;
             this.doubleClickTarget = null;
             return;
@@ -4854,7 +5471,12 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         if (args.requestType === 'delete') {
             var data = args.data;
             for (var i = 0; i < data.length; i++) {
-                args.data = data.concat(findChildrenRecords(data[i]));
+                this.deleteUniqueID(data[i].uniqueID);
+                var childs = findChildrenRecords(data[i]);
+                for (var c = 0; c < childs.length; c++) {
+                    this.deleteUniqueID(childs[c].uniqueID);
+                }
+                args.data = data.concat(childs);
             }
         }
         if (args.requestType === 'add') {
@@ -4886,6 +5508,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             var currentData = this.parent.grid.getCurrentViewRecords();
             var index = this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
+            setValue('uniqueIDCollection.' + value.uniqueID, value, this.parent);
             var level = void 0;
             var dataIndex = void 0;
             var idMapping = void 0;
@@ -4923,7 +5546,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = idMapping;
                         if (!isNullOrUndefined(value.parentItem)) {
-                            this.updateParentRow(key, value.parentItem, 'add', value);
+                            updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                         }
                     }
                 }
@@ -4938,7 +5561,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = parentIdMapping;
                         if (!isNullOrUndefined(value.parentItem)) {
-                            this.updateParentRow(key, value.parentItem, 'add', value);
+                            updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                         }
                     }
                 }
@@ -4957,233 +5580,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             value.index = 0;
         }
         return args;
-    };
-    Edit$$1.prototype.addAction = function (details, treeData) {
-        var value;
-        var isSkip = false;
-        var currentViewRecords = this.parent.grid.getCurrentViewRecords();
-        value = extend({}, details.value);
-        value = getPlainData(value);
-        switch (this.parent.editSettings.newRowPosition) {
-            case 'Top':
-                treeData.unshift(value);
-                isSkip = true;
-                break;
-            case 'Bottom':
-                treeData.push(value);
-                isSkip = true;
-                break;
-            case 'Above':
-                value = currentViewRecords[this.addRowIndex + 1];
-                break;
-            case 'Below':
-            case 'Child':
-                value = currentViewRecords[this.addRowIndex];
-                if (this.selectedIndex === -1) {
-                    treeData.unshift(value);
-                    isSkip = true;
-                }
-        }
-        return { value: value, isSkip: isSkip };
-    };
-    Edit$$1.prototype.editAction = function (details, columnName) {
-        var _this = this;
-        var value = details.value;
-        var action = details.action;
-        if (action === 'save') {
-            action = 'edit';
-        }
-        var i;
-        var j;
-        var key = this.parent.grid.getPrimaryKeyFieldNames()[0];
-        var treeData = this.parent.dataSource instanceof DataManager ?
-            this.parent.dataSource.dataSource.json : this.parent.dataSource;
-        var modifiedData = [];
-        var originalData = value;
-        var isSkip = false;
-        var currentViewRecords = this.parent.grid.getCurrentViewRecords();
-        if (action === 'add') {
-            var addAct = this.addAction(details, treeData);
-            value = addAct.value;
-            isSkip = addAct.isSkip;
-        }
-        if (value instanceof Array) {
-            modifiedData = extendArray(value);
-        }
-        else {
-            modifiedData.push(extend({}, value));
-        }
-        if (!isSkip && (action !== 'add' ||
-            (this.parent.editSettings.newRowPosition !== 'Top' && this.parent.editSettings.newRowPosition !== 'Bottom'))) {
-            for (var k = 0; k < modifiedData.length; k++) {
-                var keys = Object.keys(modifiedData[k]);
-                i = treeData.length;
-                var _loop_1 = function () {
-                    if (treeData[i][key] === modifiedData[k][key]) {
-                        if (action === 'delete') {
-                            var currentData_1 = treeData[i];
-                            treeData.splice(i, 1);
-                            if (this_1.isSelfReference) {
-                                if (!isNullOrUndefined(currentData_1[this_1.parent.parentIdMapping])) {
-                                    var parentData = this_1.parent.flatData.filter(function (e) {
-                                        return e[_this.parent.idMapping] === currentData_1[_this.parent.parentIdMapping];
-                                    })[0];
-                                    var childRecords = parentData ? parentData[this_1.parent.childMapping] : [];
-                                    for (var p = childRecords.length - 1; p >= 0; p--) {
-                                        if (childRecords[p][this_1.parent.idMapping] === currentData_1[this_1.parent.idMapping]) {
-                                            childRecords.splice(p, 1);
-                                            if (!childRecords.length) {
-                                                parentData.hasChildRecords = false;
-                                                this_1.updateParentRow(key, parentData, action);
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                                return "break";
-                            }
-                        }
-                        else {
-                            if (action === 'edit') {
-                                for (j = 0; j < keys.length; j++) {
-                                    if (treeData[i].hasOwnProperty(keys[j]) && (this_1.parent.editSettings.mode !== 'Cell' || keys[j] === columnName)) {
-                                        treeData[i][keys[j]] = modifiedData[k][keys[j]];
-                                    }
-                                }
-                            }
-                            else if (action === 'add') {
-                                var index = void 0;
-                                if (this_1.parent.editSettings.newRowPosition === 'Child') {
-                                    if (this_1.isSelfReference) {
-                                        originalData[this_1.parent.parentIdMapping] = treeData[i][this_1.parent.idMapping];
-                                        treeData.splice(i + 1, 0, originalData);
-                                    }
-                                    else {
-                                        if (!treeData[i].hasOwnProperty(this_1.parent.childMapping)) {
-                                            treeData[i][this_1.parent.childMapping] = [];
-                                        }
-                                        treeData[i][this_1.parent.childMapping].push(originalData);
-                                        this_1.updateParentRow(key, treeData[i], action);
-                                    }
-                                }
-                                else if (this_1.parent.editSettings.newRowPosition === 'Below') {
-                                    treeData.splice(i + 1, 0, originalData);
-                                }
-                                else if (!this_1.addRowIndex) {
-                                    index = 0;
-                                    treeData.splice(index, 0, originalData);
-                                }
-                                else if (this_1.parent.editSettings.newRowPosition === 'Above') {
-                                    treeData.splice(i, 0, originalData);
-                                }
-                            }
-                            return "break";
-                        }
-                    }
-                    else if (!isNullOrUndefined(treeData[i][this_1.parent.childMapping])) {
-                        if (this_1.removeChildRecords(treeData[i][this_1.parent.childMapping], modifiedData[k], action, key, originalData, columnName)) {
-                            this_1.updateParentRow(key, treeData[i], action);
-                        }
-                    }
-                };
-                var this_1 = this;
-                while (i-- && i >= 0) {
-                    var state_1 = _loop_1();
-                    if (state_1 === "break")
-                        break;
-                }
-            }
-        }
-        if (action === 'add' && this.previousNewRowPosition != null) {
-            this.parent.setProperties({ editSettings: { newRowPosition: this.previousNewRowPosition } }, true);
-            this.previousNewRowPosition = null;
-        }
-    };
-    Edit$$1.prototype.removeChildRecords = function (childRecords, modifiedData, action, key, originalData, columnName) {
-        var isChildAll = false;
-        var j = childRecords.length;
-        while (j-- && j >= 0) {
-            if (childRecords[j][key] === modifiedData[key] ||
-                (this.isSelfReference && childRecords[j][this.parent.parentIdMapping] === modifiedData[this.parent.idMapping])) {
-                if (action === 'edit') {
-                    var keys = Object.keys(modifiedData);
-                    for (var i = 0; i < keys.length; i++) {
-                        if (childRecords[j].hasOwnProperty(keys[i]) && (this.parent.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
-                            childRecords[j][keys[i]] = modifiedData[keys[i]];
-                        }
-                    }
-                    break;
-                }
-                else if (action === 'add') {
-                    if (this.parent.editSettings.newRowPosition === 'Child') {
-                        if (this.isSelfReference) {
-                            originalData[this.parent.parentIdMapping] = childRecords[j][this.parent.idMapping];
-                            childRecords.splice(j + 1, 0, originalData);
-                            this.updateParentRow(key, childRecords[j], action);
-                        }
-                        else {
-                            if (!childRecords[j].hasOwnProperty(this.parent.childMapping)) {
-                                childRecords[j][this.parent.childMapping] = [];
-                            }
-                            childRecords[j][this.parent.childMapping].push(originalData);
-                            this.updateParentRow(key, childRecords[j], action);
-                        }
-                    }
-                    else if (this.parent.editSettings.newRowPosition === 'Above') {
-                        childRecords.splice(j, 0, originalData);
-                    }
-                    else if (this.parent.editSettings.newRowPosition === 'Below') {
-                        childRecords.splice(j + 1, 0, originalData);
-                    }
-                }
-                else {
-                    var parentItem = childRecords[j].parentItem;
-                    childRecords.splice(j, 1);
-                    if (!childRecords.length) {
-                        isChildAll = true;
-                    }
-                }
-            }
-            else if (!isNullOrUndefined(childRecords[j][this.parent.childMapping])) {
-                if (this.removeChildRecords(childRecords[j][this.parent.childMapping], modifiedData, action, key, originalData, columnName)) {
-                    this.updateParentRow(key, childRecords[j], action);
-                }
-            }
-        }
-        return isChildAll;
-    };
-    Edit$$1.prototype.updateParentRow = function (key, record, action, child) {
-        var currentRecords = this.parent.grid.getCurrentViewRecords();
-        var index;
-        currentRecords.map(function (e, i) { if (e[key] === record[key]) {
-            index = i;
-            return;
-        } });
-        record = currentRecords[index];
-        record.hasChildRecords = false;
-        if (action === 'add') {
-            record.expanded = true;
-            record.hasChildRecords = true;
-            var childRecords = child ? child : currentRecords[index + 1];
-            if (!record.hasOwnProperty('childRecords')) {
-                record.childRecords = [];
-            }
-            if (record.childRecords.indexOf(childRecords) === -1) {
-                record.childRecords.unshift(childRecords);
-            }
-            if (this.isSelfReference) {
-                if (!record.hasOwnProperty(this.parent.childMapping)) {
-                    record[this.parent.childMapping] = [];
-                }
-                if (record.childRecords.indexOf(childRecords) === -1) {
-                    record[this.parent.childMapping].unshift(childRecords);
-                }
-            }
-        }
-        this.parent.grid.setRowData(key, record);
-        var row = this.parent.getRowByIndex(index);
-        this.parent.renderModule.cellRender({ data: record, cell: row.cells[this.parent.treeColumnIndex],
-            column: this.parent.grid.getColumns()[this.parent.treeColumnIndex] });
     };
     /**
      * Checks the status of validation at the time of editing. If validation is passed, it returns true.
@@ -5240,5 +5636,5 @@ var CommandColumn$1 = /** @__PURE__ @class */ (function () {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelected, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
 //# sourceMappingURL=ej2-treegrid.es5.js.map

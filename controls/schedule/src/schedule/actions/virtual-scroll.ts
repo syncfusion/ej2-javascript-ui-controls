@@ -14,6 +14,7 @@ export class VirtualScroll {
     private itemSize: number = 60;
     private bufferCount: number = 3;
     private renderedLength: number = 0;
+    private averageRowHeight: number = 0;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -39,6 +40,23 @@ export class VirtualScroll {
         let wrap: HTMLElement = createElement('div', { className: cls.VIRTUAL_TRACK_CLASS }) as HTMLElement;
         wrap.style.height = (this.parent.resourceBase.expandedResources.length * this.itemSize) + 'px';
         contentWrap.appendChild(wrap);
+    }
+
+    public updateVirtualScrollHeight(): void {
+        let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
+        let lastResourceIndex: number =
+            this.parent.resourceBase.expandedResources[this.parent.resourceBase.expandedResources.length - 1].groupIndex;
+        let lastRenderIndex: number =
+            this.parent.resourceBase.renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
+        if (lastRenderIndex !== lastResourceIndex) {
+            let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
+            this.renderedLength = conTable.querySelector('tbody').children.length;
+            virtual.style.height = (conTable.offsetHeight + (this.parent.resourceBase.expandedResources.length - (this.renderedLength)) *
+                conTable.offsetHeight / this.renderedLength) + 'px';
+        } else {
+            virtual.style.height = '';
+        }
+        this.averageRowHeight = virtual.offsetHeight / this.parent.resourceBase.expandedResources.length;
     }
 
     public updateVirtualTrackHeight(wrap: HTMLElement): void {
@@ -72,40 +90,47 @@ export class VirtualScroll {
         let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
         let timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
+        let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
         this.renderedLength = resWrap.querySelector('tbody').children.length;
+        let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
+        let scrollHeight: number = (this.parent.enableAdaptiveRows) ?
+            (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection: TdData[] = [];
         if ((conWrap.scrollTop) - this.translateY < 0) {
-            resCollection = this.upScroll(resWrap, conWrap);
-        } else if ((conWrap.scrollTop - this.translateY > this.bufferCount * this.itemSize)) {
-            resCollection = this.downScroll(conWrap);
+            resCollection = this.upScroll(conWrap, firstTDIndex);
+        } else if (conWrap.scrollTop - this.translateY > scrollHeight) {
+            resCollection = this.downScroll(conWrap, firstTDIndex);
         }
         if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {
             this.updateContent(resWrap, conWrap, eventWrap, resCollection);
+            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
             this.parent.notify(events.dataReady, {});
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
-            this.setTranslate(resWrap, conWrap, eventWrap, timeIndicator);
         }
     }
 
-    private upScroll(resWrap: HTMLElement, conWrap: HTMLElement): TdData[] {
+    private upScroll(conWrap: HTMLElement, firstTDIndex: number): TdData[] {
         let index: number = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
+        if (this.parent.enableAdaptiveRows) {
+            index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
+        }
         index = (index > 0) ? index : 0;
         let prevSetCollection: TdData[] = this.getBufferCollection(index, index + this.renderedLength);
         this.parent.resourceBase.renderedResources = prevSetCollection;
-        let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
         if (firstTDIndex === 0) {
             this.translateY = conWrap.scrollTop;
         } else {
-            this.translateY = (conWrap.scrollTop - (this.bufferCount * this.itemSize) > 0) ?
-                conWrap.scrollTop - (this.bufferCount * this.itemSize) : 0;
+            let height: number = (this.parent.enableAdaptiveRows) ? this.averageRowHeight : this.itemSize;
+            this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
+                conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
         return prevSetCollection;
     }
 
-    private downScroll(conWrap: HTMLElement): TdData[] {
+    private downScroll(conWrap: HTMLElement, firstTDIndex: number): TdData[] {
         let lastResource: number = this.parent.resourceBase.
             renderedResources[this.parent.resourceBase.renderedResources.length - 1].groupIndex;
         let lastResourceIndex: number =
@@ -114,6 +139,10 @@ export class VirtualScroll {
             return null;
         }
         let nextSetResIndex: number = ~~(conWrap.scrollTop / this.itemSize);
+        if (this.parent.enableAdaptiveRows) {
+            nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
+            nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
+        }
         let lastIndex: number = nextSetResIndex + this.renderedLength;
         lastIndex = (lastIndex > this.parent.resourceBase.expandedResources.length) ?
             nextSetResIndex + (this.parent.resourceBase.expandedResources.length - nextSetResIndex) : lastIndex;

@@ -134,6 +134,11 @@
     width: $de-toc-list-view-width;
   }
 
+  .e-de-toc-list-view.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-toc-list-view-margin-left;
+  }
+
   .e-de-toc-dlg-sub-heading {
     color: $de-dlg-heading-main-header;
     display: block;
@@ -347,6 +352,10 @@
     margin-bottom: $de-op-header-bottm-margin;
   }
 
+  .e-de-op-header.e-de-rtl {
+    direction: rtl;
+  }
+
   .e-de-op-tab {
     border: 0;
     height: $de-op-tab-height;
@@ -461,6 +470,11 @@
     width: $de-table-align-width;
   }
 
+  .e-de-table-dia-align-div.e-de-rtl {
+    margin-left: $de-table-align-margin-right;
+    margin-right: 0;
+  }
+
   .e-de-table-dia-align-label {
     display: inline-block;
     font-size: $de-table-alignment-label-font-size;
@@ -471,6 +485,7 @@
 
   .e-de-table-dialog-separator-line {
     background-color: $de-table-separator-line-color;
+    bottom: $de-table-separtor-line-top;
     height: $de-table-separator-line-height;
     left: $de-table-separator-line-left;
     margin-top: $de-table-dlg-seperator-line-top;
@@ -514,9 +529,19 @@
     margin-top: $de-hght-type-top;
   }
 
+  .e-de-row-ht-top.e-de-rtl {
+    margin-left: 0;
+    margin-right: 20px;
+  }
+
   .e-de-cell-width-top {
     margin-left: $de-cell-width-top-margin-left;
     margin-top: $de-cell-width-top-margin-top;
+  }
+
+  .e-de-cell-width-top.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-cell-width-top-margin-left;
   }
 
   .e-de-tbl-dlg-border-btn {
@@ -889,9 +914,19 @@
     width: $de-font-label-width;
   }
 
+  .e-de-font-content-label.e-rtl {
+    margin-left: $de-font-dlg-margin-right;
+    margin-right: $de-font-dlg-effect-margin-left;
+  }
+
   .e-de-font-color-margin {
     margin-right: $de-font-dlg-color-margin-right;
     margin-top: $de-font-dlg-color-margin-top;
+  }
+
+  .e-de-font-color-margin.e-de-rtl {
+    margin-left: $de-font-dlg-color-margin-right;
+    margin-right: 0;
   }
 
   .e-de-font-content-checkbox-label {
@@ -925,6 +960,11 @@
     margin-right: $de-font-checkbox-ltr;
   }
 
+  .e-de-font-checkbox.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-font-checkbox-left;
+  }
+
   .e-de-font-dlg-padding {
     margin-top: $de-font-dlg-margin-top;
   }
@@ -941,6 +981,12 @@
     float: right;
     margin-right: $de-table-subheader-div-margin-right;
     margin-top: $de-table-subheader-div-margin-top;
+  }
+
+  .e-de-table-subheader-div.e-de-rtl {
+    float: left;
+    margin-left: $de-table-subheader-div-margin-right;
+    margin-right: 0;
   }
 
   .e-de-table-cell-header-div {
@@ -1213,6 +1259,10 @@
     float: left;
   }
 
+  .e-font-rtl {
+    float: right;
+  }
+
   .e-de-table-border-toptop-alignment,
   .e-de-table-border-topcenter-alignment,
   .e-de-table-border-topbottom-alignment,
@@ -1467,6 +1517,12 @@
     margin-top: $de-table-ppty-dlg-row-height-label-margin-top;
   }
 
+  .e-de-table-ppty-dlg-row-height-label.e-de-rtl {
+    float: left;
+    margin-left: $de-table-ppty-dlg-row-height-label-margin-right;
+    margin-right: 0;
+  }
+
   .e-de-table-ppty-dlg-preferred-width-div {
     float: right;
     margin-left: $de-table-ppty-dlg-preferred-width-margin-left;
@@ -1485,6 +1541,11 @@
   .e-de-table-cell-subheader-div {
     margin-right: $de-table-cell-subheader-div-margin-right;
     margin-top: $de-table-cell-subheader-div-margin-top;
+  }
+
+  .e-de-table-cell-subheader-div.e-de-rtl {
+    margin-left: $de-table-cell-subheader-div-margin-right;
+    margin-right: 0;
   }
 
   .e-de-table-ppty-dlg-cell-tab-measure-label {
@@ -1542,10 +1603,19 @@
     margin-right: 0;
   }
 
+  .e-de-toc-dlg-right-sub-container.e-de-rtl {
+    margin-right: $de-toc-dlg-right-sub-container-margin-right;
+  }
+
   .e-de-toc-dlg-styles {
     margin-bottom: $de-toc-dlg-styles-margin-bottom;
     margin-left: $de-toc-dlg-styles-margin-left;
     margin-top: $de-toc-dlg-styles-margin-top;
+  }
+
+  .e-de-toc-dlg-styles.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-toc-dlg-styles-margin-left;
   }
 
   .e-de-toc-dlg-build-table {
@@ -1572,6 +1642,11 @@
   .e-de-toc-dlg-show-level-div {
     margin-left: $de-toc-dlg-show-level-div-margin-left;
     margin-top: $e-de-toc-dlg-show-level-div-margin-top;
+  }
+
+  .e-de-toc-dlg-show-level-div.e-de-rtl {
+    margin-left: 0;
+    margin-right: $de-toc-dlg-show-level-div-margin-left;
   }
 
   .e-de-toc-table-div {

@@ -576,71 +576,72 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
-})
-describe('EJ2-22524 - Default value should be set while restting form - ', () => {
 
-    let innerHtmlRule: string = `<form id="form-element" class="form-vertical">
-<div class="form-group">
-    <textarea id="defaultRTE" name="defaultRTE"> 
-    </textarea>
-</div>
-<div style="text-align: center">
-    <button id="validateSubmit" class="samplebtn e-control e-btn" type="submit" data-ripple="true">Submit</button>
-    <button id="resetbtn" class="samplebtn e-control e-btn" type="reset" data-ripple="true">Reset</button>
-</div>
-</form>`;
-    describe(' reset  - ', () => {
-        let rteObj: RichTextEditor;
-        let form: FormValidator;
-        let editNode: HTMLElement;
-        let containerEle: HTMLElement;
-        let formEle: HTMLElement;
-        let onChange: jasmine.Spy;
-        beforeEach((done: Function) => {
-            containerEle = document.createElement('div');
-            containerEle.innerHTML = innerHtmlRule;
-            onChange = jasmine.createSpy('change');
-            document.body.appendChild(containerEle);
-            rteObj = new RichTextEditor({
-                showCharCount: true,
-                maxLength: 100,
-                value:'<p>RichTextEditor</p>',
-                change: onChange,
-                placeholder: 'Type something'
-            });
-            rteObj.appendTo("#defaultRTE");
-            editNode = (rteObj as any).inputElement;
-            form = new FormValidator('#form-element', {
-                rules: {
-                    defaultRTE: {
-                        required: true,
-                        maxLength: "100",
-                        minLength: "20"
+    describe('EJ2-22524 - Default value should be set while restting form - ', () => {
+
+        let innerHtmlRule: string = `<form id="form-element" class="form-vertical">
+    <div class="form-group">
+        <textarea id="defaultRTE" name="defaultRTE"> 
+        </textarea>
+    </div>
+    <div style="text-align: center">
+        <button id="validateSubmit" class="samplebtn e-control e-btn" type="submit" data-ripple="true">Submit</button>
+        <button id="resetbtn" class="samplebtn e-control e-btn" type="reset" data-ripple="true">Reset</button>
+    </div>
+    </form>`;
+        describe(' reset  - ', () => {
+            let rteObj: RichTextEditor;
+            let form: FormValidator;
+            let editNode: HTMLElement;
+            let containerEle: HTMLElement;
+            let formEle: HTMLElement;
+            let onChange: jasmine.Spy;
+            beforeEach((done: Function) => {
+                containerEle = document.createElement('div');
+                containerEle.innerHTML = innerHtmlRule;
+                onChange = jasmine.createSpy('change');
+                document.body.appendChild(containerEle);
+                rteObj = new RichTextEditor({
+                    showCharCount: true,
+                    maxLength: 100,
+                    value: '<p>RichTextEditor</p>',
+                    change: onChange,
+                    placeholder: 'Type something'
+                });
+                rteObj.appendTo("#defaultRTE");
+                editNode = (rteObj as any).inputElement;
+                form = new FormValidator('#form-element', {
+                    rules: {
+                        defaultRTE: {
+                            required: true,
+                            maxLength: "100",
+                            minLength: "20"
+                        }
                     }
-                }
+                });
+                formEle = document.getElementById("form-element");
+                done();
+            })
+            afterEach((done: Function) => {
+                rteObj.destroy();
+                detach(containerEle);
+                done();
             });
-            formEle = document.getElementById("form-element");
-            done();
-        })
-        afterEach((done: Function) => {
-            rteObj.destroy();
-            detach(containerEle);
-            done();
-        });
 
-        it(' test the reset the form ', () => {
-            editNode.focus();
-            dispatchEvent(editNode, 'focusin');
-            editNode.innerHTML = '<p>EJ2 RichTextEditor Component</p>';
-            editNode.blur();
-            dispatchEvent(editNode, 'focusout');
-            let element: HTMLElement = rteObj.element.querySelector('#defaultRTE-info');
-            expect(rteObj.value === '<p>EJ2 RichTextEditor Component</p>').toBe(true);
-            expect(isNullOrUndefined(element)).toBe(true);
-            expect(onChange).toHaveBeenCalled();
-            form.reset();
-            expect(rteObj.value === '<p>RichTextEditor</p>').toBe(true);
-            expect(onChange).toHaveBeenCalledTimes(1);
+            it(' test the reset the form ', () => {
+                editNode.focus();
+                dispatchEvent(editNode, 'focusin');
+                editNode.innerHTML = '<p>EJ2 RichTextEditor Component</p>';
+                editNode.blur();
+                dispatchEvent(editNode, 'focusout');
+                let element: HTMLElement = rteObj.element.querySelector('#defaultRTE-info');
+                expect(rteObj.value === '<p>EJ2 RichTextEditor Component</p>').toBe(true);
+                expect(isNullOrUndefined(element)).toBe(true);
+                expect(onChange).toHaveBeenCalled();
+                form.reset();
+                expect(rteObj.value === '<p>RichTextEditor</p>').toBe(true);
+                expect(onChange).toHaveBeenCalledTimes(1);
+            });
         });
     });
     describe('EJ2-22972 - Editor content rendered twice in DOM when using RichTextEditorFor', () => {
@@ -668,7 +669,6 @@ describe('EJ2-22524 - Default value should be set while restting form - ', () =>
             done();
         });
     });
-
     describe('EJ2-22988 - e-lib class not added into control root element, when render RTE using textarea element', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLTextAreaElement;
@@ -698,7 +698,6 @@ describe('EJ2-22524 - Default value should be set while restting form - ', () =>
             done();
         });
     });
-
     L10n.load({
         'de-DE': {
             'richtexteditor': {
@@ -724,14 +723,14 @@ describe('EJ2-22524 - Default value should be set while restting form - ', () =>
             }
         }
     });
-    
+
     describe('EJ2-23134 - Localization not applied to dropdown buttons and its item collections', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
         let controlId: string;
         beforeEach((done: Function) => {
             rteObj = renderRTE({
-              locale:'de-DE'
+                locale: 'de-DE'
             });
             rteEle = rteObj.element;
             controlId = rteEle.id;
@@ -743,11 +742,11 @@ describe('EJ2-22524 - Default value should be set while restting form - ', () =>
             dispatchEve(item, 'mouseup');
             item.click();
             setTimeout(() => {
-                let items:any = document.querySelectorAll('#'+controlId+'_toolbar_Alignments-popup .e-item');
-                expect(items[0].textContent==='Linksbündig').toBe(true);
-                expect(items[1].textContent==='Im Zentrum anordnen').toBe(true);
-                expect(items[2].textContent==='Rechts ausrichten').toBe(true);
-                expect(items[3].textContent==='Justize ausrichten').toBe(true);
+                let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Alignments-popup .e-item');
+                expect(items[0].textContent === 'Linksbündig').toBe(true);
+                expect(items[1].textContent === 'Im Zentrum anordnen').toBe(true);
+                expect(items[2].textContent === 'Rechts ausrichten').toBe(true);
+                expect(items[3].textContent === 'Justize ausrichten').toBe(true);
                 done();
             }, 200)
         });
@@ -755,5 +754,44 @@ describe('EJ2-22524 - Default value should be set while restting form - ', () =>
             destroy(rteObj);
         });
     });
-    
-});
+
+    describe('EJ2-23588 - RichTextEditor inline mode error when color property is displayed in mobile view.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultUserAgent= navigator.userAgent;
+        beforeEach((done: Function) => {
+            Browser.userAgent="Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36"
+            "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36";
+            rteObj = renderRTE({
+                value: '<span id="rte">RTE</span>',
+                inlineMode: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Check the fontColor and backgroundColor ', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent(pEle, 'mouseup');
+            setTimeout(() => {
+                let item: HTMLElement = document.querySelector('#' + controlId + '_quick_FontColor');
+                item.click();
+                let popup: HTMLElement = document.getElementById(controlId + '_quick_FontColor-popup');
+                expect(!isNullOrUndefined(popup)).toBe(true);                
+                done();
+            }, 200);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+            Browser.userAgent =defaultUserAgent;
+        });
+    });
+
+})

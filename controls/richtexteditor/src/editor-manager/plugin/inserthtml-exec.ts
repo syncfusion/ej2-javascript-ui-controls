@@ -23,7 +23,7 @@ export class InsertHtmlExec {
     private applyHtml(e: IHtmlSubCommands): void {
         InsertHtml.Insert(
             this.parent.currentDocument,
-            e.value as Node );
+            e.value as Node, this.parent.editableElement );
         if (e.callBack) {
             e.callBack({
                 requestType: e.subCommand,

@@ -4,7 +4,8 @@
  */
 
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
-import { Size, stringToNumber, ChartLocation, Rect } from '../../common/utils/helper';
+import { Rect, Size } from '@syncfusion/ej2-svg-base';
+import { stringToNumber, ChartLocation } from '../../common/utils/helper';
 import { AccumulationChart } from '../accumulation';
 import { AccumulationLabelPosition } from '../model/enum';
 import { AccumulationBase } from './accumulation-base';

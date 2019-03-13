@@ -1,15 +1,16 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { projectData } from '../base/datasource.spec';
+import { projectData, sampleData } from '../base/datasource.spec';
 import { ToolbarItem } from '../../src/treegrid/enum';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { Edit } from '../../src/treegrid/actions/edit';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 
 /**
  * Grid Toolbar spec 
  */
-TreeGrid.Inject(Toolbar);
+TreeGrid.Inject(Toolbar,Edit);
 describe('TreeGrid Toolbar module', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -47,6 +48,61 @@ describe('TreeGrid Toolbar module', () => {
       destroy(gridObj);
     });
   });
+
+  describe('Script error throws in inline editing', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: 400, 
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    {
+                        field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+                        validationRules: { required: true, number: true}, width: 90
+                    },
+                    { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: {required: true}, showCheckbox: true },
+                    { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+                        format: 'yMd', validationRules: { date: true} },
+                    {
+                        field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100, editType: 'numericedit',
+                        validationRules: { number: true, min: 0}, edit: { params: {  format: 'n'}}
+                    }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Script Error', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.action === 'add') {
+              expect(args.data.taskName).toBe('fourth');
+              done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '124';
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'fourth';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   describe('Toolbar enum', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
@@ -142,4 +198,3 @@ describe('TreeGrid Toolbar module', () => {
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 });
 });
-

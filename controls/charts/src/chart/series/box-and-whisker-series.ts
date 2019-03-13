@@ -1,5 +1,6 @@
-import { Rect, withInRange, PathOption, sum } from '../../common/utils/helper';
-import { Size, getSaturationColor, ChartLocation, getPoint } from '../../common/utils/helper';
+import { withInRange, sum } from '../../common/utils/helper';
+import { getSaturationColor, ChartLocation, getPoint } from '../../common/utils/helper';
+import { Size, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';

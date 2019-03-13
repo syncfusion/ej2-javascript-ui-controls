@@ -1,4 +1,5 @@
-import { sum, ChartLocation, PathOption, getPoint, templateAnimate } from '../../common/utils/helper';
+import { sum, ChartLocation, getPoint, templateAnimate } from '../../common/utils/helper';
+import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series } from './chart-series';
 import { ColumnSeries } from './column-series';

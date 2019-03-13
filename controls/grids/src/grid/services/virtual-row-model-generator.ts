@@ -2,6 +2,7 @@ import { Browser } from '@syncfusion/ej2-base';
 import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
+import { isGroupAdaptive } from '../base/util';
 import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
@@ -35,7 +36,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let indexes: number[] = this.getBlockIndexes(page); let loadedBlocks: number[] = [];
 
         this.checkAndResetCache(notifyArgs.requestType);
-
+        if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
+            return result = this.parent.vcRows;
+        }
         if (this.parent.enableColumnVirtualization) {
             info.blockIndexes.forEach((value: number) => {
                 if (this.isBlockAvailable(value)) {
@@ -49,6 +52,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: this.getStartIndex(value, data)
                 });
+                if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
+                    this.parent.vRows = rows;
+                    this.parent.vcRows = rows;
+                }
                 let median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
                 if (!this.isBlockAvailable(indexes[0])) {
                     this.cache[indexes[0]] = rows.slice(0, median);
@@ -119,8 +126,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     }
 
     public checkAndResetCache(action: string): boolean {
-        let clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
-            .some((value: string) => action === value);
+        let clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
+                            'save', 'delete'].some((value: string) => action === value);
         if (clear) {
             this.cache = {}; this.data = {}; this.groups = {};
         }

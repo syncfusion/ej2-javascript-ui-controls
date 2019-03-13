@@ -18,26 +18,50 @@
         }
 
         & .e-menu-item  {
-          @include icon-color;
+          & .e-menu-icon {
+            color: $menu-icon-color;
+          }
+
+          &.e-menu-header {
+            border-bottom-color: $cmenu-li-border-color;
+          }
 
           & .e-menu-url {
             color: $menu-color;
           }
 
+          & .e-caret {
+            color: $menu-caret-color;
+          }
+
           &.e-focused {
-            @include focused-icon-color;
-            background-color: $menu-li-bgcolor;
-            color: $menu-li-selection-font-color;
+            background-color: $menu-ul-bgcolor;
+            color: $menu-icon-hover-color;
             outline: $menu-li-hover-outline;
             outline-offset: $menu-li-hover-outline-offset;
+
+            & .e-caret {
+              color: $menu-caret-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-hover-color;
+            }
           }
 
           &.e-selected {
-            @include selected-icon-color;
-            background-color: $menu-li-selection-bgcolor;
+            background-color: $menu-ul-bgcolor;
             color: $menu-selected-color;
             outline: $menu-li-selected-outline;
             outline-offset: $menu-li-selected-outline-offset;
+
+            & .e-caret {
+              color: $menu-caret-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-hover-color;
+            }
           }
 
           &.e-separator {
@@ -53,6 +77,26 @@
         color: $submenu-color;
 
         & .e-menu-item {
+          &.e-focused {
+            & .e-caret {
+              color: $menu-caret-color;
+           }
+
+            & .e-menu-icon {
+              color: $menu-icon-hover-color;
+            }
+          }
+
+          &.e-selected {
+            & .e-caret {
+              color: $menu-icon-focussed-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-focussed-color;
+            }
+          }
+
           & .e-menu-url {
             color: $submenu-color;
           }

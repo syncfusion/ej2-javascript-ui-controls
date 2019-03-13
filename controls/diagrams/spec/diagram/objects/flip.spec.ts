@@ -384,8 +384,6 @@ describe('Diagram Control', () => {
             done();
         });
 
-
-
     });
 
     describe('Flip Operation for Group', () => {

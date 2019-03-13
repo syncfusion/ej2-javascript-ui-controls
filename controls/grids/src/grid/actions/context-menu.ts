@@ -382,11 +382,13 @@ export class ContextMenu implements IAction {
         switch (item) {
             case 'AutoFitAll':
             case 'AutoFit':
-                status = !(this.parent.ensureModuleInjected(Resize) && !this.parent.isEdit);
+                status = !(this.parent.ensureModuleInjected(Resize) && !this.parent.isEdit)
+                || (this.targetColumn && !this.targetColumn.field && item === 'AutoFit');
                 break;
             case 'Group':
                 if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0)) {
+                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0) ||
+                    (this.targetColumn && !this.targetColumn.field)) {
                     status = true;
                 }
                 break;
@@ -430,8 +432,9 @@ export class ContextMenu implements IAction {
                 break;
             case 'SortAscending':
             case 'SortDescending':
-                if ((!this.parent.allowSorting) || !this.parent.ensureModuleInjected(Sort)) {
-                    status = true;
+                if ((!this.parent.allowSorting) || !this.parent.ensureModuleInjected(Sort) ||
+                    (this.targetColumn && !this.targetColumn.field)) {
+                        status = true;
                 } else if (this.parent.ensureModuleInjected(Sort) && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
                     this.parent.sortSettings.columns.forEach((element: SortDescriptorModel) => {
                         if (element.field === this.targetColumn.field
@@ -596,7 +599,7 @@ export class ContextMenu implements IAction {
     private getColumn(e: Event): Column {
         let cell: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, 'th.e-headercell');
         if (cell) {
-            let uid: string = cell.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+            let uid: string = cell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
             return this.parent.getColumnByUid(uid);
         }
         return null;

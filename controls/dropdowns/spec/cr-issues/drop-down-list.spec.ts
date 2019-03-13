@@ -294,10 +294,14 @@ describe('DropDownList', () => {
         });
         let query = new Query().from('Customers').select('ContactName').take(0);
         let query1 = new Query().from('Customers').select('ContactName').take(3);
+        let originalTimeout: number;
         beforeEach(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
             document.body.appendChild(element);
         });
         afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             if (element) {
                 element.remove();
                 document.body.innerHTML = '';
@@ -322,7 +326,7 @@ describe('DropDownList', () => {
                 expect(listObj.list.classList.contains('e-nodata')).toBe(true);
                 expect(listObj.isDataFetched).toBe(true);
                 done();
-            }, 2000);
+            }, 3000);
         });
         it('dynamic change datascource ', (done) => {
             listObj.hidePopup();
@@ -335,7 +339,7 @@ describe('DropDownList', () => {
                 expect(listObj.isDataFetched).not.toBe(true);
                 expect(listObj.listData.length === 3).toBe(true);
                 done();
-            }, 1000);
+            }, 3000);
         });
         it('set empty datasource ', (done) => {
             listObj.hidePopup();
@@ -351,7 +355,7 @@ describe('DropDownList', () => {
                 expect(listObj.list.classList.contains('e-nodata')).toBe(true);
                 expect(listObj.isDataFetched).toBe(true);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('set null datasource ', () => {
             listObj.hidePopup();
@@ -649,34 +653,6 @@ describe('DropDownList', () => {
                     expect(listObj.list.classList.contains('e-nodata')).toBe(true);
                     done();
                 }, 400);
-            }, 2000);
-        });
-    });
-    describe('EJ2-23180 - preselect value not selected when select the value not in the list', () => {
-        let listObj: any;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-        beforeEach((done) => {
-            document.body.appendChild(element);
-            listObj = new DropDownList({
-                dataSource: new DataManager({ url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
-                query: new Query().from('Customers').select('ContactName').take(2),
-                fields: { text: 'ContactName' },
-                value: "Hanna Moos"
-            });
-            listObj.appendTo(element);
-            done();
-        });
-        afterEach(() => {
-            if (element) {
-                element.remove();
-                document.body.innerHTML = '';
-            }
-        });
-        it('get selected value ', (done) => {
-            setTimeout(() => {
-                expect(listObj.element.value === listObj.value).toBe(true);
-                expect(listObj.liCollections.length === 3).toBe(true);
-                done();
             }, 2000);
         });
     });

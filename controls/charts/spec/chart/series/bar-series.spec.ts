@@ -19,6 +19,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
 import { bar, barData, datetimeData, categoryData, categoryData1, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
 
 Chart.Inject(LineSeries, BarSeries, ColumnSeries, Tooltip, Crosshair, Category, DateTime, DataLabel);
@@ -26,6 +27,14 @@ Chart.Inject(LineSeries, BarSeries, ColumnSeries, Tooltip, Crosshair, Category, 
 
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Chart Bar series', () => {
         let chartObj: Chart;
         let elem: HTMLElement;
@@ -1201,6 +1210,89 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Bar Series - line break labels', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+        element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart({
+                primaryXAxis: {
+                    title: 'Country',
+                    valueType: 'Category',
+                    majorGridLines: { width: 0 },
+                    enableTrim: true,
+                },
+        
+                //Initializing Primary Y Axis
+                primaryYAxis:
+                {
+                    minimum: 0,
+                    maximum: 800,
+                    edgeLabelPlacement: 'Shift',
+                    majorGridLines: { width: 0 },
+                    majorTickLines: { width: 0 },
+                    lineStyle: { width: 0 },
+                    labelStyle: {
+                        color: 'transparent'
+                    }
+                },
+                chartArea: {
+                    border: {
+                        width: 0
+                    }
+                },
+                //Initializing Chart Series
+                series: [
+                    {
+                        type: 'Bar',
+                        dataSource: [
+                            { x: 'Germany', y: 72, country: 'GER: 72'},
+                            { x: 'Russia', y: 103.1, country: 'RUS: 103.1'},
+                            { x: 'Brazil', y: 139.1, country: 'BRZ: 139.1'},
+                            { x: 'India', y: 462.1, country: 'IND: 462.1'},
+                            { x: 'China', y: 721.4, country: 'CHN: 721.4'},
+                            { x: 'United States<br>Of America', y: 286.9, country: 'USA: 286.9'},
+                            { x: 'Great Britain', y: 115.1, country: 'GBR: 115.1'},
+                            { x: 'Nigeria', y: 97.2, country: 'NGR: 97.2'},
+        
+                        ],
+                        xName: 'x', width: 2,
+                        yName: 'y',
+                    }
+                ],
+        
+              
+            },'#container');
+            });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('checking break labels', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('container0_AxisLabel_5');
+                expect(label.childElementCount == 1).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        })
+    });
+
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });
 
 export interface series1 {

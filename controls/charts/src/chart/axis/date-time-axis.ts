@@ -1,6 +1,7 @@
 import { DateFormatOptions } from '@syncfusion/ej2-base';
 import { Axis, VisibleLabels } from '../axis/axis';
-import { Size, setRange, triggerLabelRender } from '../../common/utils/helper';
+import { setRange, triggerLabelRender } from '../../common/utils/helper';
+import { Size } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../../common/utils/enum';
 import { DoubleRange } from '../utils/double-range';
 import { IntervalType, ChartRangePadding } from '../utils/enum';

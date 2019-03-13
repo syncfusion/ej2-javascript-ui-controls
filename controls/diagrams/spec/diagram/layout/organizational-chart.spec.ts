@@ -7,6 +7,7 @@ import {
     ConnectorModel, Node, TextModel, Connector,
     DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo
 } from '../../../src/diagram/index';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree);
 Diagram.Inject(LayoutAnimation);
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
@@ -1074,6 +1075,7 @@ describe('Tree Layout', () => {
         expect(gElement == null).toBe(true);
         done();
     });
+
 });
 
 describe('Organization chart', () => {
@@ -1126,7 +1128,7 @@ describe('Organization chart', () => {
     });
 
     it('Checking organizational chart- orientation (Bottom to Top), type (Left) and the offset value is negative', (done: Function) => {
-        
+
         expect(diagram.connectors[3].sourcePoint.x == (diagram.connectors[3] as Connector).sourceWrapper.bounds.topCenter.x &&
             diagram.connectors[3].sourcePoint.y == (diagram.connectors[3] as Connector).sourceWrapper.bounds.topCenter.y &&
             diagram.connectors[3].targetPoint.x == (diagram.connectors[3] as Connector).targetWrapper.bounds.middleRight.x &&
@@ -1237,6 +1239,7 @@ describe('Organization chart', () => {
             diagram.connectors[3].targetPoint.y == (diagram.connectors[3] as Connector).targetWrapper.bounds.bottomCenter.y).toBe(true);
         done();
     });
+
 });
 
 describe('Tree Layout', () => {
@@ -1349,6 +1352,7 @@ describe('Tree Layout', () => {
             && Math.ceil(nodes3.wrapper.children[2].offsetY) === 295).toBe(true);
         done();
     })
+
 });
 
 describe('Tree Layout', () => {
@@ -1447,6 +1451,7 @@ describe('Tree Layout', () => {
         expect((Math.round(nodes.offsetX) == 625 || Math.round(nodes.offsetX) == 624) && Math.round(nodes.offsetY) == 116).toBe(true);
         done();
     });
+
 });
 
 
@@ -1564,6 +1569,7 @@ describe('Tree Layout', () => {
         done();
     });
 
+
 });
 
 describe('Tree Layout', () => {
@@ -1664,7 +1670,163 @@ describe('Tree Layout', () => {
             done();
         }, 200);
     });
+
 });
+
+describe('Layout collapse  ', () => {
+    let diagram3: Diagram;
+    let ele: HTMLElement;
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramanimationExpand' });
+        document.body.appendChild(ele);
+        let data2 = [
+            {
+                'Id': 'parent1', 'Name': 'Maria ', 'Designation': 'Managing Director',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': 'parent', 'Name': ' sam', 'Designation': 'Managing Director', 'ReportingPerson': 'parent1',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': 'parent3', 'Name': ' sam geo', 'Designation': 'Managing Director', 'ReportingPerson': 'parent1',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': '80', 'Name': ' david', 'Designation': 'Managing Director', 'ReportingPerson': 'parent3',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': '81', 'Name': ' andres', 'Designation': 'Managing Director', 'ReportingPerson': 'parent3',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': '82', 'Name': ' pirlo', 'Designation': 'Managing Director', 'ReportingPerson': '81',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': '83', 'Name': ' antonio', 'Designation': 'Managing Director', 'ReportingPerson': '81',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': '84', 'Name': ' antonio', 'Designation': 'Managing Director', 'ReportingPerson': '84',
+                'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+            },
+            {
+                'Id': 1, 'Name': 'Ana Trujillo', 'Designation': 'Project Manager',
+                'ImageUrl': '../content/images/orgchart/Thomas.PNG', 'IsExpand': 'true',
+                'RatingColor': '#68C2DE', 'ReportingPerson': 'parent'
+            },
+            {
+                'Id': 1111, 'Name': 'Ana Trujillo', 'Designation': 'Project Manager',
+                'ImageUrl': '../content/images/orgchart/Thomas.PNG', 'IsExpand': 'true',
+                'RatingColor': '#68C2DE', 'ReportingPerson': 'parent'
+            },
+            {
+                'Id': 2, 'Name': 'Anto damien', 'Designation': 'Project Lead',
+                'ImageUrl': '../content/images/orgchart/image53.png', 'IsExpand': 'false',
+                'RatingColor': '#93B85A', 'ReportingPerson': '1111'
+            },
+            {
+                'Id': 39, 'Name': 'sathik', 'Designation': 'Project Lead',
+                'ImageUrl': '../content/images/orgchart/image53.png', 'IsExpand': 'false',
+                'RatingColor': '#93B85A', 'ReportingPerson': '2'
+            },
+            {
+                'Id': 69, 'Name': 'Anto savilla', 'Designation': 'Project Lead',
+                'ImageUrl': '../content/images/orgchart/image53.png', 'IsExpand': 'false',
+                'RatingColor': '#93B85A', 'ReportingPerson': '39    '
+            },
+        ];
+        let items1 = new DataManager(data2, new Query().take(7));
+        diagram3 = new Diagram({
+            width: '1250px', height: '590px',
+            snapSettings: { constraints: 0 },
+            layout: {
+                enableAnimation: false,
+                type: 'OrganizationalChart', margin: { top: 20 },
+                getLayoutInfo: (node: Node, tree: TreeInfo) => {
+                    if (!tree.hasSubTree) {
+                        tree.orientation = 'Vertical';
+                        tree.type = 'Alternate';
+                    }
+                }
+            },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'ReportingPerson', dataManager: items1
+            },
+
+            getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                obj.expandIcon = { horizontalAlignment: 'Center', verticalAlignment: 'Center', height: 20, width: 20, shape: "ArrowDown", fill: 'red', offset: { x: .7, y: .8 } };
+                obj.collapseIcon.offset = { x: .7, y: .8 };
+                obj.collapseIcon.height = 20;
+                obj.collapseIcon.width = 20;
+                obj.collapseIcon.shape = "ArrowUp";
+                obj.collapseIcon.fill = 'red';
+                obj.collapseIcon.horizontalAlignment = 'Center';
+                obj.collapseIcon.verticalAlignment = 'Center';
+                obj.width = 150;
+                obj.height = 50;
+                obj.style = { fill: obj.data['color'] };
+                obj.annotations = [{ content: obj.data['Role'], style: { color: 'white' } }];
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.targetDecorator.shape = 'None';
+                connector.type = 'Orthogonal';
+                return connector;
+            },
+
+            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+                let content: StackPanel = new StackPanel();
+                content.id = obj.id + '_outerstack';
+                content.style.strokeColor = 'darkgreen';
+                content.orientation = 'Horizontal';
+                content.padding = { left: 5, right: 10, top: 5, bottom: 5 };
+                let innerStack: StackPanel = new StackPanel();
+                innerStack.style.strokeColor = 'none';
+                innerStack.margin = { left: 5, right: 0, top: 0, bottom: 0 };
+                innerStack.id = obj.id + '_innerstack';
+
+                let text: TextElement = new TextElement();
+                text.content = obj.data['Name'];
+
+                text.style.color = 'blue';
+                text.style.strokeColor = 'none';
+                text.style.fill = 'none';
+                text.id = obj.id + '_text1';
+
+                let desigText: TextElement = new TextElement();
+                desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+                desigText.content = obj.data['Designation'];
+                desigText.style.color = 'blue';
+                desigText.style.strokeColor = 'none';
+                desigText.style.fill = 'none';
+                desigText.style.textWrapping = 'Wrap';
+                desigText.id = obj.id + '_desig';
+                innerStack.children = [text, desigText];
+
+                content.children = [innerStack];
+
+                return content;
+            }
+        });
+        diagram3.appendTo('#diagramanimationExpand');
+    });
+
+    afterAll(() => {
+        diagram3.destroy();
+        ele.remove();
+    });
+
+    it('Checking organizational chart collapse and layout', (done: Function) => {
+        var mouseEvents = new MouseEvents();
+        var diagramCanvas = document.getElementById(diagram3.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 748, 129);
+        expect(Math.round(diagram3.nodes[3].offsetX) === 645 && Math.round(diagram3.nodes[3].offsetY) === 190).toBe(true);
+        done();
+    });
+});
+
 describe('Connector Update in Layout Issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -1709,4 +1871,13 @@ describe('Connector Update in Layout Issue', () => {
         expect(x == '433.5' && y == '74.9').toBe(true);
         done();
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

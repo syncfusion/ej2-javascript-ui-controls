@@ -1,10 +1,11 @@
 
 import { TreeMap } from '../../../src/treemap/treemap';
+import { findChildren } from '../../../src/treemap/utils/helper';
 import { TreeMapHighlight, TreeMapSelection } from '../../../src/treemap/user-interaction/highlight-selection';
 import { MouseEvents } from '../base/events.spec';
-import { ILoadedEventArgs } from '../../../src/treemap/model/interface';
+import { ILoadedEventArgs, IClickEventArgs, IDoubleClickEventArgs, IDrillStartEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { jobData, sportsData } from '../base/data.spec';
+import { jobData, sportsData , jobDataRTL} from '../base/data.spec';
 import { electionData } from '../base/election.spec';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 TreeMap.Inject(TreeMapHighlight, TreeMapSelection);
@@ -994,6 +995,334 @@ describe('TreeMap component Spec', () => {
             treemap.refresh();
         });
     });
+    describe('Checking drilldown with RTL', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'drill-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                dataSource: jobDataRTL,
+                enableDrillDown: true,
+                enableRtl:true,
+                enableBreadcrumb: true,
+                breadcrumbConnector:'->',
+                palette: ['green'],
+                weightValuePath: 'EmployeesCount',
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    mode: 'Default'
+                },
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    fill: '#6699cc',
+                   // labelPosition: 'BottomRight',
+                    border: { color: 'black', width: 2 }
+                },
+                levels: [
+                    { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                    { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('Checking drilldown with RTL for each levels ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {                
+                let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_1_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                
+                rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_0_Text_0');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+                
+            };
+            treemap.refresh();
+        });
+    });
+    describe('Checking drilldown view', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'drill-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                dataSource: jobData,
+                enableDrillDown: true,
+                //drillDownView:true,
+                enableBreadcrumb: true,
+                breadcrumbConnector:'->',
+                palette: ['green'],
+                weightValuePath: 'EmployeesCount',
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    mode: 'Default'
+                },
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    fill: '#6699cc',
+                   // labelPosition: 'BottomRight',
+                    border: { color: 'black', width: 2 }
+                },
+                levels: [
+                    { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                    { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Checking drilldown view as false with breadcrumb as true by clicking the drill levels', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_1_Text');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                
+                rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_0_Text_1');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);
+                
+            };
+            treemap.refresh();
+        });
+        it('Checking drilldown view by clicking the drill levels', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                
+                rectEle = document.getElementById('drill-container_Level_Index_0_Item_Index_0_Text');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                
+                rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_1_Text');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousedown',
+                    preventDefault: prevent,
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                   
+            };
+            treemap.drillDownView = true;
+            treemap.refresh();
+        });
+    });
+
+    describe('Double Click Event Spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'drill-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                dataSource: jobData,
+                enableDrillDown: true,
+                //drillDownView:true,
+                enableBreadcrumb: true,
+                breadcrumbConnector:'->',
+                palette: ['green'],
+                weightValuePath: 'EmployeesCount',
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    mode: 'Default'
+                },
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    fill: '#6699cc',
+                   // labelPosition: 'BottomRight',
+                    border: { color: 'black', width: 2 }
+                },
+                levels: [
+                    { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                    { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+                ],
+                doubleClick:(args: IDoubleClickEventArgs) =>{
+                    alert('doubleclick Event is triggered');
+                },
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        it('Checking double click event spec ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'doubleClick',
+                    preventDefault: prevent,
+                };                
+                //treemap.refresh();
+                treemap.clickOnTreeMap(<PointerEvent>eventObj);
+                treemap.doubleClickOnTreeMap(<PointerEvent>eventObj);
+                
+            };
+            treemap.refresh();
+        });
+        it('Checking right click event spec ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element = document.getElementById('drill-container_Level_Index_0_Item_Index_0_RectPath');
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'rightClick',
+                    preventDefault: prevent,
+                };                                
+                treemap.rightClickOnTreeMap(<PointerEvent>eventObj);                                
+            };
+            treemap.refresh();
+        });
+    });
+
+    describe('TreeMap onDemand Process drill down spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'drill-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: jobData,
+                weightValuePath: 'EmployeesCount',
+                enableDrillDown:true,
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    fill: '#6699cc',
+                    labelPosition: 'BottomRight',
+                    border: { color: 'black', width: 2 }
+                },
+                levels: [
+                    { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                   // { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+                ],
+                drillStart:(args: IDrillStartEventArgs) =>{
+                    var xx = findChildren(args.item)['values']; var yy;
+                        if (!xx[0]['isDrilled']) {
+                            yy = xx;
+                        }
+                    else {
+                        if (args.groupName == xx[0]['name']) {
+                            yy = findChildren(xx[0])['values'];
+                        }
+                    }
+                    args.childItems = yy;
+                },
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+
+        it('Checking with onDemand drilldown process ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                debugger
+                let rectEle: Element = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_0_RectPath');
+                let eventObj: Object = {
+                    target: rectEle,
+                    type: 'mouseup',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                                                             
+                let rectElem: Element = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_0_Text');                
+                let eventObjt: Object = {
+                    target: rectElem,
+                    type: 'mouseup',
+                    preventDefault: prevent,
+                    pageX: rectElem.getBoundingClientRect().left,
+                    pageY: (rectElem.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseEndOnTreeMap(<PointerEvent>eventObjt); 
+            };                       
+            treemap.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

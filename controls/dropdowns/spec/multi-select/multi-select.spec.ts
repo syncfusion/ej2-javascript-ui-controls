@@ -7,7 +7,7 @@ import { createElement, L10n } from '@syncfusion/ej2-base';
 import { dropDownBaseClasses, FilteringEventArgs, PopupEventArgs, FocusEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DataManager, ODataV4Adaptor, Query, ODataAdaptor } from '@syncfusion/ej2-data';
 import { MultiSelectModel, ISelectAllEventArgs } from '../../src/index';
-
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
 { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' }];
@@ -95,6 +95,14 @@ let keyboardEventArgs = {
     code: 22
 };
 describe('MultiSelect', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let css: string = ".e-spinner-pane::after { content: 'Material'; display: none;} .e-multi-select-wrapper .e-multi-hidden {border: 0;height: 0;visibility: hidden; width: 0;}";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -1800,7 +1808,7 @@ describe('MultiSelect', () => {
             expect(listObj.value.length).toBe(1);
             keyboardEventArgs.keyCode = 35;
             (<any>listObj).onKeyDown(keyboardEventArgs);
-            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
+            expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[elem.length - 1]);
             keyboardEventArgs.keyCode = 36;
             (<any>listObj).onKeyDown(keyboardEventArgs);
             expect((<any>listObj).list.querySelector('li.' + dropDownBaseClasses.focus)).toBe(elem[0]);
@@ -4634,7 +4642,7 @@ describe('MultiSelect', () => {
         let originalTimeout: number;
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
             document.body.appendChild(element);
         });
         afterAll(() => {
@@ -4828,6 +4836,108 @@ describe('MultiSelect', () => {
             expect((listObj).htmlAttributes['aria-disabled']).toEqual('false');
         });
     });
+    describe('EJ2-13165 - Multiselect readonly behavior changes', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Id: 1, item: 'Fruits and Vegetables' },
+            { Id: 2, item: 'Beverages' },
+            { Id: 3, item: 'Beauty and Hygiene' },
+            
+        ];
+        let focusCount: number = 0;
+        let blurCount: number = 0;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "item", value: "Id" },
+                readonly: true,
+                mode: 'CheckBox'
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Check focus event', (done) => {
+            listObj.focus = (args: FocusEventArgs): void => {
+                focusCount++;
+                expect(args.event.type).toBe('focus');
+                setTimeout((): void => {
+                    expect(focusCount).toBe(1);
+                    done();
+                }, 200);
+            }
+            (<any>listObj).inputElement.focus();
+        });
+        it('Check blur event', (done) => {
+            listObj.blur = (): void => {
+                blurCount++;
+                setTimeout((): void => {
+                    expect(blurCount).toBe(1);
+                    done();
+                }, 200);
+            }
+            (<any>listObj).inputElement.focus();
+            (<any>listObj).inputElement.blur();
+        });
+    });
+    describe('EJ2-13148 - Multiselect key navigation is not working with Home , Endkeys', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] =  [
+                { id: 'list1', text: 'JAVA' },
+                { id: 'list2', text: 'C#' },
+                { id: 'list3', text: 'C++' },
+                { id: 'list4', text: '.NET' },
+                { id: 'list5', text: 'Oracle' },
+                { id: 'list6', text: 'GO' },
+                { id: 'list7', text: 'Haskell' },
+                { id: 'list8', text: 'Racket' },
+                { id: 'list8', text: 'F#' }];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Check End key Navigation', (done) => {
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: 50,
+                change: (): void => {
+                    (<any>listObj).onKeyDown({ keyCode: 35, preventDefault: function () { }});
+                    let ele: HTMLElement = listObj.ulElement.querySelector('.e-item-focus');
+                    expect(ele.innerText).toBe('F#');
+                    (<any>listObj).onKeyDown({ keyCode: 36, preventDefault: function () { }});
+                    ele = listObj.ulElement.querySelector('.e-item-focus');
+                    expect(ele.innerText).toBe('JAVA');
+                    done();
+                },
+                open: (): void => {
+                    listObj.text = 'GO';
+                }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+            listObj.showPopup();
+        });
+    });
     describe('EJ2-19524 - UI breaking when use lengthy place holder', () => {
     let listObj: MultiSelect;
     let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
@@ -4895,6 +5005,39 @@ describe('MultiSelect', () => {
             listObj.dataBind();
         });
     });
+    describe('EJ2-22723 - Multiselect selected value not updated', () => {
+        let listObj: MultiSelect;
+        let element: HTMLSelectElement = <HTMLSelectElement>createElement('select', { id: 'license', attrs: {multiple: 'multiple'}});
+        element.innerHTML = `<option value="">Choose Option</option>
+        <option value="1">Some 1</option>
+        <option value="2">Some 2</option>
+        <option value="3">SSS</option>
+        <option value="4">SHS</option>
+        <option value="5">Yachtmaster Offshore</option>`;
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Value selection', (done) => {
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                mode: "Box",
+                created: (): void => {
+                    expect(listObj.value).toBe(null);
+                    expect(listObj.text).toBe(null);
+                    done();
+                }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+    });
     describe('EJ2-22960 - Exception throws while use datasource string inside string', () => {
         let listObj: MultiSelect;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
@@ -4935,5 +5078,29 @@ describe('MultiSelect', () => {
             }
             listObj.showPopup();
         });
+        it('remove Value selection', (done) => {
+            listObj.change = (): void => {
+                expect(listObj.value.length).toBe(0);
+                done();
+            }
+            listObj.focus = (): void => {
+                let closeELe: HTMLElement = document.querySelector('.e-chips .e-chips-close');
+                let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+                clickEvent.initEvent('mousedown', true, true);
+                closeELe.dispatchEvent(clickEvent);
+                (<any>listObj).onBlur();
+            }
+
+            (<any>listObj).focusIn();
+        });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

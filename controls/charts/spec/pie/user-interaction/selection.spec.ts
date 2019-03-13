@@ -15,11 +15,22 @@ import { MouseEvents } from '../../chart/base/events.spec';
 import { SliceOption } from '../base/util.spec';
 import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel, AccumulationSelection);
 
 document.body.appendChild(createElement('style', {
     innerHTML: ' .selection { stroke-width: 2; fill: lime; stroke: red; opacity: 1; } '
 }));
+
+describe('Accumulation Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('Selection', () => {
     let ele: HTMLElement;
     let slice: HTMLElement;
@@ -350,4 +361,14 @@ describe('Selection', () => {
         accumulation.legendSettings.visible = true ;
         accumulation.refresh();
     });
+});
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
 });

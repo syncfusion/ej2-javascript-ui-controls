@@ -5,13 +5,25 @@ import { createElement, EmitType } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import {
     AccumulationChart, removeElement, IAccLoadedEventArgs, AccumulationLegend, AccumulationDataLabel,
-    AccumulationSelection, AccumulationTooltip, AccumulationAnnotation, Rect, getElement
+    AccumulationSelection, AccumulationTooltip, AccumulationAnnotation, getElement
 } from '../../../src/index';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { piedata} from '../../chart/base/data.spec';
 import { MouseEvents} from '../../chart/base/events.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 AccumulationChart.Inject(AccumulationLegend, AccumulationSelection, AccumulationTooltip, AccumulationAnnotation,
                          AccumulationDataLabel);
+
+describe('Accumulation Chart Control', () => {
+            beforeAll(() => {
+                  const isDef = (o: any) => o !== undefined && o !== null;
+                  if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                     return;
+                     }
+            });                         
 describe('accumulation on-property-change checking on', () => {
     let element: Element;
     let loaded: EmitType<IAccLoadedEventArgs>;
@@ -265,6 +277,15 @@ describe('accumulation on-property-change checking on', () => {
         };
         accumulation.refresh();
     });
-
+});
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
 
 });

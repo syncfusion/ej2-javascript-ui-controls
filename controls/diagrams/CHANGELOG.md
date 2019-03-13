@@ -2,7 +2,20 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
+
+### Diagram
+
+#### Bug Fixes
+
+- Drop event is now fixed when drag and drop other component is now working fine.
+- Diagram does not zoom based on the center point is now working fine.
+- Background color of the label and nodes will be black by default while updating dynamically is now working fine.
+- Background color issue found while on text editing is not fixed.
+- Connections have created from port after removing the constraints is now working fine.
+- Performance issue on diagram layout has been fixed.
+
+## 16.4.54 (2019-02-19)
 
 ### Diagram
 

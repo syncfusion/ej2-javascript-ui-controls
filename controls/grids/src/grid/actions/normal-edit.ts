@@ -1,7 +1,7 @@
 import { extend } from '@syncfusion/ej2-base';
 import { remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs } from '../base/interface';
-import { parentsUntil, refreshForeignData, getObject } from '../base/util';
+import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -87,7 +87,12 @@ export class NormalEdit {
         let primaryKeys: string[] = gObj.getPrimaryKeyFieldNames();
         let primaryKeyValues: string[] = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
-        this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
+        if (isGroupAdaptive(gObj)) {
+            let rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+            this.previousData = rObj.data;
+        } else {
+            this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
+        }
         for (let i: number = 0; i < primaryKeys.length; i++) {
             primaryKeyValues.push(this.previousData[primaryKeys[i]]);
         }
@@ -253,6 +258,7 @@ export class NormalEdit {
     private editFailure(e: ReturnType): void {
         this.parent.trigger(events.actionFailure, e);
         this.parent.hideSpinner();
+        this.parent.log('actionfailure', { error: e });
     }
 
     private refreshRow(data: Object): void {

@@ -951,7 +951,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     InPlaceEditor.prototype.scrollResizeHandler = function () {
-        if (this.mode === 'Popup' && this.tipObj) {
+        if (this.mode === 'Popup' && this.tipObj && !(Browser.isDevice)) {
             this.removeEditor();
         }
     };
@@ -1479,7 +1479,9 @@ var Rte = /** @__PURE__ @class */ (function () {
     };
     Rte.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'RTE') {
-            this.parent.setProperties({ value: this.compObj.value }, true);
+            var rteValue = this.compObj.contentModule.getEditPanel().innerHTML === '<p><br></p>' ?
+                '' : this.compObj.contentModule.getEditPanel().innerHTML;
+            this.parent.setProperties({ value: rteValue }, true);
         }
     };
     Rte.prototype.refresh = function () {

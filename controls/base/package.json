@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-base",
-	"version": "16.4.47",
+	"version": "17.1.1",
 	"description": "A common package of Essential JS 2 base libraries, methods and class definitions",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -38,7 +38,9 @@
 	"module": "./index.js",
 	"es2015": "./dist/es6/ej2-base.es2015.js",
 	"readme": "ReadMe.md",
-	"dependencies": {},
+	"dependencies": {
+		"@syncfusion/ej2-icons": "*"
+	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "^2.2.29",

@@ -228,6 +228,7 @@ export class BatchEdit {
                     } else {
                         refreshForeignData(rows[i], this.parent.getForeignKeyColumns(), rows[i].data);
                         delete rows[i].changes;
+                        delete rows[i].edit;
                         rows[i].isDirty = false;
                         let ftr: HTMLElement = mTr ? mTr : tr;
                         classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
@@ -553,7 +554,7 @@ export class BatchEdit {
         }
         if (gObj.getFrozenColumns()) {
             mTr = this.renderMovable(tr);
-            if (gObj.frozenRows) {
+            if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
                 mTbody = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
             } else {
                 mTbody = gObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
@@ -564,8 +565,10 @@ export class BatchEdit {
                 this.parent.notify(events.frozenHeight, {});
             }
         }
-        if (gObj.frozenRows) {
+        if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
             tbody = gObj.getHeaderContent().querySelector('tbody');
+        } else {
+            tbody = gObj.getContent().querySelector('tbody');
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
         addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
@@ -883,14 +886,26 @@ export class BatchEdit {
     }
 
     private keyDownHandler(e: KeyboardEventArgs): void {
-        if (e.action === 'tab' && this.parent.isEdit) {
+        if ((e.action === 'tab' || e.action === 'shiftTab') && this.parent.isEdit) {
+            let gObj: IGrid = this.parent;
             let rowcell: Element = parentsUntil(e.target as Element, 'e-rowcell');
             if (rowcell) {
                 let cell: Element = rowcell.querySelector('.e-field');
                 if (cell) {
                     let visibleColumns: Column[] = this.parent.getVisibleColumns();
-                    if (visibleColumns[visibleColumns.length - 1].field === cell.getAttribute('name')) {
-                        this.saveCell();
+                    let columnIndex: number = e.action === 'tab' ? visibleColumns.length - 1 : 0;
+                    if (visibleColumns[columnIndex].field === cell.getAttribute('id').slice(this.parent.element.id.length)) {
+                        if (this.cellDetails.rowIndex !== gObj.getRows().length - 1) {
+                            this.saveCell();
+                        } else {
+                            if (gObj.editSettings.newRowPosition === 'Top') {
+                                gObj.editSettings.newRowPosition = 'Bottom';
+                                this.addRecord();
+                                gObj.editSettings.newRowPosition = 'Top';
+                            } else {
+                                this.addRecord();
+                            }
+                        }
                     }
                 }
             }

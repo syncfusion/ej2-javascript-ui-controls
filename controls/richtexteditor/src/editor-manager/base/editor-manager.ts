@@ -16,7 +16,10 @@ import { SelectionBasedExec } from './../plugin/selection-exec';
 import { InsertHtmlExec } from './../plugin/inserthtml-exec';
 import { ClearFormatExec } from './../plugin/clearformat-exec';
 import { UndoRedoManager } from './../plugin/undo';
+import { MsWordPaste } from '../plugin/ms-word-clean-up';
+import { NotifyArgs } from './../../rich-text-editor/base/interface';
 import * as EVENTS from './../../common/constant';
+import { InsertTextExec } from '../plugin/insert-text';
 
 /**
  * EditorManager internal component
@@ -36,8 +39,10 @@ export class EditorManager {
     public tableObj: TableCommand;
     public selectionObj: SelectionBasedExec;
     public inserthtmlObj: InsertHtmlExec;
+    public insertTextObj: InsertTextExec;
     public clearObj: ClearFormatExec;
     public undoRedoManager: UndoRedoManager;
+    public msWordPaste: MsWordPaste;
 
     public editableElement: Element;
     /**
@@ -58,9 +63,11 @@ export class EditorManager {
         this.imgObj = new ImageCommand(this);
         this.selectionObj = new SelectionBasedExec(this);
         this.inserthtmlObj = new InsertHtmlExec(this);
+        this.insertTextObj = new InsertTextExec(this);
         this.clearObj = new ClearFormatExec(this);
         this.tableObj = new TableCommand(this);
         this.undoRedoManager = new UndoRedoManager(this, options.options);
+        this.msWordPaste = new MsWordPaste(this);
         this.wireEvents();
 
     }
@@ -69,6 +76,10 @@ export class EditorManager {
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
         this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
+        this.observer.on(EVENTS.MS_WORD_CLEANUP, this.onWordPaste, this);
+    }
+    private onWordPaste(e: NotifyArgs): void {
+        this.observer.notify(EVENTS.MS_WORD_CLEANUP_PLUGIN, e);
     }
     private onPropertyChanged(props: { [key: string]: Object }): void {
         this.observer.notify(EVENTS.MODEL_CHANGED_PLUGIN, props);
@@ -97,7 +108,7 @@ export class EditorManager {
                 this.observer.notify(CONSTANT.LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
                 break;
             case 'images':
-                this.observer.notify(CONSTANT.IMAGE, {command: command, value: value, item: exeValue, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.IMAGE, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
                 break;
             case 'table':
                 switch (value.toString().toLocaleLowerCase()) {
@@ -141,7 +152,10 @@ export class EditorManager {
                     { subCommand: value, event: event, callBack: callBack, value: text });
                 break;
             case 'inserthtml':
-                this.observer.notify(CONSTANT.INSERTHTML_TYPE, { callBack: callBack, value: text });
+                this.observer.notify(CONSTANT.INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text });
+                break;
+            case 'inserttext':
+                this.observer.notify(CONSTANT.INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });
                 break;
             case 'clear':
                 this.observer.notify(CONSTANT.CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack });

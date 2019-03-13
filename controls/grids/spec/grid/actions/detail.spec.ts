@@ -15,7 +15,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
-
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit);
 
@@ -54,6 +54,11 @@ describe('Detail template module', () => {
         let actionComplete: Function;
 
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: filterData,
@@ -596,11 +601,57 @@ describe('Detail template module', () => {
             gridObj.keyboardModule.keyAction(<any>{ action: 'enter', target: target, preventDefault: () => { } });
             expect(target.classList.contains('e-detailrowexpand')).toBeTruthy();
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
         afterAll(() => {
             elem.remove();
         });
     });
+    describe('Action Complete event for expandAll and collapseAll=> ', () => {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    detailTemplate: '#detailtemplate',
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 125 },
+                        { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('actionComplete event triggerred for expandAll action complete', () => {
+            actionComplete = (args?: any): void => {
+                expect(args.requestType).toBe('expandAllComplete');
+            }
+            gridObj.actionComplete = actionComplete;
+            gridObj.detailRowModule.expandAll();
+        });
+        it('actionComplete event triggerred for collapseAll action complete', () => {
+            actionComplete = (args?: any): void => {
+                expect(args.requestType).toBe('collapseAllComplete');
+            }
+            gridObj.actionComplete = actionComplete;
+            gridObj.detailRowModule.collapseAll();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });   
 
 
 });

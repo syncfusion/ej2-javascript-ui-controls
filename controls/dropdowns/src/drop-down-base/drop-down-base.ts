@@ -142,7 +142,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * When set to true, enables RTL mode of the component that 
      * displays the content in the right-to-left direction.
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enableRtl: boolean;
@@ -150,7 +150,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. value
-     * @default false.
+     * @default false
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -160,27 +160,27 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * 
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals. 
-     * @default null.
+     * @default null
      */
     @Property(null)
     public itemTemplate: string;
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
-     * @default null.
+     * @default null
      */
     @Property(null)
     public groupTemplate: string;
     /**
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
-     * @default 'No Records Found'.
+     * @default 'No Records Found'
      */
     @Property('No Records Found')
     public noRecordsTemplate: string;
     /**
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
-     * @default 'The Request Failed'.
+     * @default 'The Request Failed'
      */
     @Property('The Request Failed')
     public actionFailureTemplate: string;
@@ -189,13 +189,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * * `None` - The data source is not sorting.
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
-     * @default None.
+     * @default None
      */
     @Property<SortOrder>('None')
     public sortOrder: SortOrder;
     /**
      * Specifies a value that indicates whether the component is enabled or not.
-     * @default true.
+     * @default true
      */
     @Property(true)
     public enabled: boolean;
@@ -203,14 +203,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Accepts the list items either through local or remote service and binds it to the component.
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
-     * @default [].
+     * @default []
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     /**
      * Accepts the external `Query`
      * which will execute along with the data processing.
-     * @default null.
+     * @default null
      */
     @Property(null)
     public query: Query;
@@ -225,6 +225,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(false)
     public ignoreAccent: boolean;
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     */
+    @Property()
+    public locale: string;
     /**
      * Triggers before fetching data from the remote server.
      * @event
@@ -600,6 +606,17 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected updateListValues(): void {
         // Used this method in component side.
+    }
+    protected findListElement(list: HTMLElement, findNode: string, attribute: string, value: string | boolean | number ): HTMLElement {
+        let liElement: HTMLElement = null;
+        let listArr: HTMLElement[] = [].slice.call(list.querySelectorAll(findNode));
+        for (let index: number = 0; index < listArr.length; index++) {
+            if (listArr[index].getAttribute(attribute) === (value + '')) {
+                liElement = listArr[index];
+                break;
+            }
+        }
+        return liElement;
     }
     private raiseDataBound(
         listItems: { [key: string]: Object; }[] | string[] | boolean[] | number[],

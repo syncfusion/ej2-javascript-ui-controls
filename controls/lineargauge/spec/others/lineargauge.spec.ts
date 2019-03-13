@@ -16,7 +16,7 @@ describe('Linear gauge control', () => {
             console.log("Unsupported environment, window.performance.memory is unavailable");
             this.skip(); //Skips test (in Chai)
             return;
-        }
+        } 
     });
     describe('Checking other properties', () => {
         let gauge: LinearGauge;
@@ -194,10 +194,39 @@ describe('Linear gauge control', () => {
                 expect(svg.getAttribute('fill')).toEqual('#C8C8C8');                
                 done();
             }; 
-            gauge.title = 'linear gauge';            
+            gauge.theme = 'FabricDark';
+            gauge.title = 'linear gauge';              
             gauge.axes[0].line.width = 2;
             gauge.axes[0].majorTicks.width = 5;
             gauge.axes[0].minorTicks.width = 2;           
+            gauge.refresh();
+        });
+        it('gauge theme support - MaterialDark theme', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_LinearGaugeTitle');
+                expect(svg.textContent == 'linear gauge').toBe(true);
+                svg = document.getElementById('container_MinorTicksLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#9A9A9A');
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#C8C8C8');
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#C8C8C8');                
+                done();
+            }; 
+            gauge.theme = 'MaterialDark';         
+            gauge.refresh();
+        });
+        it('gauge theme support - bootstrap4 theme', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MinorTicksLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#CED4DA');
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#ADB5BD');
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toEqual('#ADB5BD');                
+                done();
+            }; 
+            gauge.theme = 'Bootstrap4';             
             gauge.refresh();
         });
     });

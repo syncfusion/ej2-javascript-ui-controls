@@ -54,10 +54,36 @@
 
       .e-btn-save,
       .e-btn-cancel {
+        background: $editor-btn-bg;
+        border: $editor-btn-border;
         box-shadow: $editor-btn-box-shadow;
 
         .e-btn-icon.e-icons {
           color: $editor-btn-icon-color;
+        }
+
+        &:hover {
+          background: $editor-btn-hover-bg;
+          border: $editor-btn-hover-border;
+        }
+
+        &:focus {
+          background: $editor-btn-focus-bg;
+          border: $editor-btn-focus-border;
+        }
+
+        &:active {
+          background: $editor-btn-active-bg;
+          border: $editor-btn-active-border;
+        }
+
+        &:hover,
+        &:focus,
+        &:active {
+
+          .e-btn-icon.e-icons {
+            color: $editor-btn-interaction-color;
+          }
         }
       }
     }

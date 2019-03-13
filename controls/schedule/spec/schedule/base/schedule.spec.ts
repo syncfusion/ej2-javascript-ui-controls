@@ -4,12 +4,25 @@
 import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda } from '../../../src/schedule/index';
-import { triggerScrollEvent, loadCultureFiles } from '../util.spec';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel } from '../../../src/schedule/index';
+import { triggerScrollEvent, loadCultureFiles, createSchedule } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
+
 describe('Schedule base module', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Default functionalities', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -833,8 +846,8 @@ describe('Schedule base module', () => {
     describe('CR Issue EJ2-16536 Schedule within hidden element', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        let hiddenEle: HTMLElement = createElement('div', { styles: 'display:none' })
-        hiddenEle.appendChild(elem)
+        let hiddenEle: HTMLElement = createElement('div', { styles: 'display:none' });
+        hiddenEle.appendChild(elem);
         beforeAll((done: Function) => {
             document.body.appendChild(hiddenEle);
             schObj = new Schedule({ dataBound: () => done() });
@@ -878,7 +891,6 @@ describe('Schedule base module', () => {
             remove(elem);
             Browser.userAgent = uA;
         });
-
         it('Checking elements', () => {
             expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(1) td') as HTMLElement).innerText).
                 toEqual('0');
@@ -893,5 +905,17 @@ describe('Schedule base module', () => {
             expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(47) td') as HTMLElement).innerText).
                 toEqual('23');
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

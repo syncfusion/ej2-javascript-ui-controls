@@ -8,6 +8,7 @@ import {
     DataBinding, PointModel, GraphLayoutManager, Layout, IConnector,
     HierarchicalTree, NodeModel, Rect, BasicShapeModel, SymmetricLayout
 } from '../../../src/diagram/index';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(SymmetricLayout);
 
 let nodes: NodeModel[] = [];
@@ -98,5 +99,14 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].offsetX == 647.4827144644246 && diagram.nodes[0].offsetY == 283.32750048873606).toBe(true);
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

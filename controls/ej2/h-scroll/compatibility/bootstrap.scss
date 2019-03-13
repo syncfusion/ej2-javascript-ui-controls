@@ -1,6 +1,6 @@
 $css: '.e-css' !default;
 $imported-modules: () !default;
-.e-lib  {
+.e-control {
     @at-root
     {
         @import "../bootstrap.scss";

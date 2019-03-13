@@ -3,12 +3,16 @@
     .e-treegrid {
       .e-treegridexpand,
       .e-treegridcollapse {
-        height: 18px;
-        width: 18px;
+        height: $treegrid-bigger-icon-size;
+        width: $treegrid-bigger-icon-size;
       }
 
       .e-rowcell.e-treerowcell {
         padding-left: $treegrid-bigger-treecell-padding;
+      }
+
+      .e-hierarchycheckbox {
+        padding-left: 2px;
       }
     }
   }
@@ -76,5 +80,12 @@
       display: inline-block;
     }
 
+    .e-treecheckselect,
+    .e-treeselectall {
+      margin: 0;
+      opacity: 0;
+      position: absolute;
+      width: 0;
+    }
   }
 }

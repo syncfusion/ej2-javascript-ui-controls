@@ -58,33 +58,29 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the size of the Sidebar in dock state.
      * > For more details about dockSize refer to 
-     * [`Dock`](../../sidebar/docking-sidebar/) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default 'auto'
      */
     @Property('auto')
     public dockSize: string | number;
     /**
-     * Specifies the media query whether the sidebar need to be opened when the resolution meets
+     * Specifies the media query string for resolution, which when met opens the Sidebar.
      * ```typescript
      *   let defaultSidebar: Sidebar = new Sidebar({
-     *       mediaQuery: window.matchMedia('(min-width: 600px)') 
+     *       mediaQuery:'(min-width: 600px)' 
      *   });
      * ```
      * > For more details about mediaQuery refer to 
-     * [`Auto Close`](../../sidebar/auto-close/) documentation.
+     * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
-     * @aspIgnore
+     * @aspType string
      */
     @Property(null)
-    public mediaQuery: MediaQueryList;
+    public mediaQuery: string | MediaQueryList;
     /**
      * Specifies the docking state of the component.
-     * 
-     * > From v16.4.49, When the Sidebar type is set to `Auto`,
-     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the `isOpen` property.
-     * 
      * > For more details about enableDock refer to 
-     * [`Dock`](../../sidebar/docking-sidebar/) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default false
      */
     @Property(false)
@@ -112,11 +108,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public enableGestures: boolean;
     /**
-     * Gets or sets the Sidebar component is open or close.
-     * 
-     * > From v16.4.49, When the Sidebar type is set to `Auto`,
-     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the `isOpen` property.
-     * 
+     * Gets or sets the Sidebar component is open or close. 
+     * > When the Sidebar type is set to `Auto`,
+     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the isOpen property.
      * @default false
      */
     @Property(false)
@@ -149,7 +143,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the position of the Sidebar (Left/Right) corresponding to the main content.
      * > For more details about SidebarPosition refer to 
-     * [`position`](../../sidebar/getting-started/) documentation.
+     * [`position`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#position) documentation.
      * @default 'Left'
      */
     @Property('Left')
@@ -157,7 +151,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Allows to place the sidebar inside the target element.
      * > For more details about target refer to 
-     * [`Custom Context`](../../sidebar/custom-context/) documentation.
+     * [`Custom Context`](https://ej2.syncfusion.com/documentation/sidebar/custom-context/) documentation.
      * @default null
      */
     @Property(null)
@@ -165,7 +159,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the whether to apply overlay options to main content when the Sidebar is in an open state.
      * > For more details about showBackdrop refer to 
-     * [`Backdrop`](../../sidebar/getting-started/#enable-backdrop) documentation.
+     * [`Backdrop`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#enable-backdrop) documentation.
      * @default false
      */
     @Property(false)
@@ -178,7 +172,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
      * > For more details about SidebarType refer to 
-     * [`SidebarType`](../../sidebar/variations/#types) documentation.
+     * [`SidebarType`](./variations.html#types) documentation.
      * @default 'Auto'
      */
     @Property('Auto')
@@ -321,7 +315,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.type === 'Auto' && !Browser.isDevice) {
             this.show();
         } else if (!this.isOpen) {
-            this.setProperties({ isOpen: false }, true);
             addClass([this.element], CLOSE);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
@@ -351,8 +344,14 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Hide the Sidebar component, if it is in an open state.
      * @returns void 
      */
-    public hide(): void {
-        let closeArguments: EventArgs = { model: this, element: this.element, cancel: false };
+    public hide(e?: Event): void {
+        let closeArguments: EventArgs = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('close', closeArguments);
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
@@ -375,7 +374,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                 this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
             }
             this.destroyBackDrop();
-            this.setCloseOnDocumentClick();
             this.setAnimation();
             if (this.type === 'Slide') {
                 document.body.classList.remove('e-sidebar-overflow');
@@ -387,8 +385,14 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Shows the Sidebar component, if it is in closed state.
      * @returns void 
      */
-    public show(): void {
-        let openArguments: EventArgs = { model: this, element: this.element, cancel: false };
+    public show(e?: Event): void {
+        let openArguments: EventArgs = {
+            model: this,
+            element: this.element,
+            cancel: false,
+            isInteracted: !isNullOrUndefined(e),
+            event: (e || null)
+        };
         this.trigger('open', openArguments);
         if (!openArguments.cancel) {
             removeClass([this.element], VISIBILITY);
@@ -407,7 +411,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             this.setType(this.type);
             this.createBackDrop();
 
-            this.setCloseOnDocumentClick();
             this.setAnimation();
             if (this.type === 'Slide') {
                 document.body.classList.add('e-sidebar-overflow');
@@ -472,10 +475,18 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         return this.element.classList.contains(OPEN) ? true : false;
     }
     private setMediaQuery(): void {
-        if (this.mediaQuery && this.mediaQuery.matches) {
-            this.show();
-        } else if (this.mediaQuery && this.getState()) {
-            this.hide();
+        if (this.mediaQuery) {
+            let media: boolean = false;
+            if (typeof (this.mediaQuery) === 'string') {
+                media = window.matchMedia(this.mediaQuery).matches;
+            } else {
+                media = (this.mediaQuery).matches;
+            }
+            if (media) {
+                this.show();
+            } else if (this.getState()) {
+                this.hide();
+            }
         }
     }
     protected resize(e: Event): void {
@@ -494,7 +505,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (closest((<HTMLElement>e.target), '.' + CONTROL + '' + '.' + ROOT)) {
             return;
         }
-        this.hide();
+        this.hide(e);
     }
 
     private enableGestureHandler(args: SwipeEventArgs): void {
@@ -727,4 +738,13 @@ export interface EventArgs {
      * Defines the element.
      */
     element: HTMLElement;
+    /** 
+     * Defines the boolean that returns true when the Sidebar is closed by user interaction, otherwise returns false.
+     */
+    isInteracted?: boolean;
+
+    /** 
+     * Defines the original event arguments. 
+     */
+    event?: MouseEvent | Event;
 }

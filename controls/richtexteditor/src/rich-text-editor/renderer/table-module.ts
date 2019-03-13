@@ -52,7 +52,7 @@ export class Table {
     protected addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(
-            events.createTable, (Browser.isDevice || this.parent.inlineMode.enable) ? this.insertTableDialog : this.renderDlgContent, this);
+            events.createTable, this.renderDlgContent, this);
         this.parent.on(events.initialEnd, this.afterRender, this);
         this.parent.on(events.docClick, this.docClick, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
@@ -63,8 +63,7 @@ export class Table {
 
     protected removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.createTable, (Browser.isDevice || this.parent.inlineMode.enable) ?
-            this.insertTableDialog : this.renderDlgContent);
+        this.parent.off(events.createTable, this.renderDlgContent);
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.docClick, this.docClick);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
@@ -125,8 +124,31 @@ export class Table {
 
 
     private keyDown(e: NotifyArgs): void {
-        let event: KeyboardEvent = e.args as KeyboardEventArgs;
+        let event: KeyboardEventArgs = e.args as KeyboardEventArgs;
         let proxy: this = this;
+        switch (event.action) {
+            case 'escape':
+                break;
+            case 'insert-table':
+                if (this.parent.editorMode === 'HTML') {
+                    let docElement: Document = this.parent.contentModule.getDocument();
+                    let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(docElement);
+                    let selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, docElement);
+                    let args: ClickEventArgs = <ClickEventArgs>{
+                        originalEvent: e.args,
+                        item: {
+                            command: 'Table',
+                            subCommand: 'CreateTable'
+                        }
+                    };
+                    this.insertTableDialog({
+                        self: this,
+                        args: args, selection: selection
+                    } as NotifyArgs);
+                }
+                event.preventDefault();
+                break;
+        }
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
             let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
@@ -725,6 +747,10 @@ export class Table {
     }
 
     private renderDlgContent(args?: ITableNotifyArgs): void {
+        if (Browser.isDevice || this.parent.inlineMode.enable) {
+            this.insertTableDialog(args as MouseEvent);
+            return;
+        }
         if (this.popupObj) {
             this.popupObj.hide();
             return;
@@ -838,7 +864,7 @@ export class Table {
         (this.editdlgObj.content as HTMLElement).querySelector('input').focus();
     }
 
-    private insertTableDialog(args: MouseEvent): void {
+    private insertTableDialog(args: MouseEvent | NotifyArgs): void {
         let proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
         if (proxy.popupObj) { proxy.popupObj.hide(); }
         proxy.createDialog(args);
@@ -935,7 +961,10 @@ export class Table {
     private customTable(args: ITableNotifyArgs, e: MouseEvent): void {
         let proxy: Table = ((this as ITableNotifyArgs).self) ? (this as ITableNotifyArgs).self : this;
         if (proxy.rowTextBox.value && proxy.columnTextBox.value) {
-            let argument: ITableNotifyArgs = ((Browser.isDevice || proxy.parent.inlineMode.enable) ? args : this as ITableNotifyArgs);
+            let argument: ITableNotifyArgs = ((Browser.isDevice || (!isNullOrUndefined(args.args as ClickEventArgs)
+                && !isNullOrUndefined((args.args as ClickEventArgs).originalEvent) &&
+                ((args.args as ClickEventArgs).originalEvent as KeyboardEventArgs).action === 'insert-table')
+                || proxy.parent.inlineMode.enable) ? args : this as ITableNotifyArgs);
             proxy.tableInsert(proxy.rowTextBox.value, proxy.columnTextBox.value, e, argument);
         }
     }

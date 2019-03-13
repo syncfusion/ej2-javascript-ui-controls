@@ -152,6 +152,20 @@
 
       .e-toolbar-item {
 
+        @if $skin-name == 'bootstrap4' {
+          .e-tbar-btn:hover,
+          .e-tbar-btn:active,
+          .e-tbar-btn:focus {
+            background: $primary;
+            color: $primary-font;
+
+            .e-icons,
+            .e-tbar-btn-text {
+              color: inherit;
+            }
+          }
+        }
+
         .e-tbar-btn-text {
           color: $tbar-default-font;
         }
@@ -181,6 +195,11 @@
 
         .e-icons {
           color: $tbar-active-font-color;
+          @if $skin-name == 'bootstrap4' {
+            &:active {
+              color: inherit;
+            }
+          }
         }
       }
     }
@@ -199,7 +218,10 @@
 
       &:focus {
         background: $tbar-focus-bg;
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap4' {
+          box-shadow: $tbar-focus-btn-box-shadow;
+        }
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           border: 1px solid $tbar-focus-border-color;
           margin: 0;
         }
@@ -217,12 +239,19 @@
 
       &:hover {
         background: $tbar-hover-bg;
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           border: 1px solid $tbar-hover-border-color;
         }
         border-color: $tbar-hover-border-color;
         border-radius: $tbar-btn-border-radius;
         color: $tbar-hover-font;
+
+        @if $skin-name == 'bootstrap4' {
+          .e-icons,
+          .e-tbar-btn-text {
+            color: inherit;
+          }
+        }
 
         @if $skin-name == 'highcontrast' {
           border: 2px $tbar-border-type $tbar-btn-hover-border-color;
@@ -273,6 +302,18 @@
           color: $tbar-default-font;
         }
 
+        @if $skin-name == 'bootstrap4' {
+          .e-tbar-btn {
+            &:hover,
+            &:focus {
+              .e-icons,
+              .e-tbar-btn-text {
+                color: inherit;
+              }
+            }
+          }
+        }
+
         &.e-separator {
           border: $tbar-separator-border-type $tbar-separator-border;
           border-width: $tba-horizontal-separator;
@@ -309,6 +350,12 @@
         box-shadow: $tbar-nav-pressed-box-shadow;
         color: $tbar-select-font;
 
+        @if $skin-name == 'bootstrap4' {
+          .e-icons {
+            color: inherit;
+          }
+        }
+
         &::after {
           @include tbar-btn-animation-after;
         }
@@ -318,6 +365,14 @@
         background: $tbar-hover-bg;
         border-left: $tbar-nav-hover-border;
         color: $tbar-hover-font;
+
+        @if $skin-name == 'bootstrap4' {
+          background: $tbar-popup-hover-bg;
+
+          .e-icons {
+            color: inherit;
+          }
+        }
 
         @if $skin-name == 'highcontrast' {
           &:not(.e-nav-active) {
@@ -337,6 +392,12 @@
         border-left: $tbar-nav-focus-border;
         color: $tbar-pressed-font;
 
+        @if $skin-name == 'bootstrap4' {
+          .e-icons {
+            color: inherit;
+          }
+        }
+
         @if $skin-name == 'highcontrast' {
           background: inherit;
           border: $tbar-dash-border;
@@ -355,6 +416,16 @@
         border-radius: $tbar-btn-border-radius;
         box-shadow: $tbar-btn-pressed-box-shadow;
         color: $tbar-press-font;
+
+        @if $skin-name == 'bootstrap4' {
+          background: $tbar-active-btn-bg;
+          border-color: 1px solid $tbar-active-border-color;
+
+          .e-icons,
+          .e-tbar-btn-text {
+            color: inherit;
+          }
+        }
         @if $skin-name == 'highcontrast' {
           color: $tbar-pressed-font;
 

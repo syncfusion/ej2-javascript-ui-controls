@@ -8,7 +8,24 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
+
+### HeatMap
+
+#### New Features
+
+- Now it is possible to select or deselect multiple cells in Heatmap by holding CTRL key and mouse click actions.
+
+## 17.1.1-beta (2019-01-29)
+
+### HeatMap
+
+#### New Features
+
+- Now it is possible to provide minimum and maximum values for bubble size in Bubble Heatmap.
+- Provided support for resized and loaded client-side events in Heatmap. The resized event will be triggered before Heatmap being rendered and the loaded event will be triggered after Heatmap is completely rendered on window resize action.
+
+## 16.4.53 (2019-02-13)
 
 ### HeatMap
 

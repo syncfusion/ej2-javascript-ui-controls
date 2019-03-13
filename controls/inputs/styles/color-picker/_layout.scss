@@ -33,9 +33,21 @@
         }
       }
 
+      & .e-btn.e-icon-btn {
+        @if $skin-name == 'bootstrap4' {
+          padding: $cpicker-split-btn-padding;
+        }
+      }
+
       &.e-rtl {
         & .e-split-colorpicker.e-split-btn {
           padding: $cpicker-split-btn-padding;
+        }
+
+        & .e-btn.e-icon-btn {
+          @if $skin-name == 'bootstrap4' {
+            padding: $cpicker-split-btn-padding;
+          }
         }
       }
     }

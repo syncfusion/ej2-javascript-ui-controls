@@ -126,14 +126,14 @@ export class MapsTooltip {
                     textStyle: option.textStyle,
                     template: option.template
                 },
+                fill: option.fill,
                 maps: this.maps,
                 element: target, eventArgs: e
             };
             this.maps.trigger(tooltipRender, tootipArgs);
-            let themes: string = this.maps.theme.toLowerCase();
-            let tooltipColor: string = themes.indexOf('dark') > -1 || themes === 'highcontrast' ? '#00000' : '#FFFFFF';
             if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = tooltipColor;
+                tootipArgs.options['textStyle']['color'] = tootipArgs.options['textStyle']['color'] ||
+                    this.maps.themeStyle.tooltipFontColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -145,7 +145,7 @@ export class MapsTooltip {
                     palette: [markerFill],
                     areaBounds: this.maps.mapAreaRect,
                     textStyle: tootipArgs.options['textStyle'],
-                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : '#00000'
+                    fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
                 });
                 this.svgTooltip.appendTo(tooltipEle);
             } else {

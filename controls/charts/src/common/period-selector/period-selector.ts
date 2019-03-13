@@ -1,7 +1,8 @@
 import { createElement, isNullOrUndefined, Browser, remove } from '@syncfusion/ej2-base';
 import { Toolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DateRangePicker, RangeEventArgs } from '@syncfusion/ej2-calendars';
-import { Rect, getElement } from '../../common/utils/helper';
+import { getElement } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../utils/enum';
 import { RangeNavigator, RangeSlider } from '../../range-navigator/index';
 import { PeriodsModel } from '../model/base-model';
@@ -93,6 +94,7 @@ export class PeriodSelector {
     /**
      * renderSelector elements
      */
+    // tslint:disable-next-line:max-func-body-length
     public renderSelector(): void {
         this.setControlValues(this.rootControl);
         let enableCustom: boolean = true;
@@ -115,14 +117,17 @@ export class PeriodSelector {
             };
         }
         if (this.rootControl.getModuleName() === 'stockChart') {
-            selector.push({ template: createElement('button', { id: 'resetClick', innerHTML: 'Reset', styles: buttonStyles }),
+            selector.push({ template: createElement('button', { id: 'resetClick', innerHTML: 'Reset',
+                                        styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
                             align: 'Right'});
             if ((<StockChart>this.rootControl).exportType.indexOf('Print') > -1) {
-                selector.push({ template: createElement('button', { id: 'print', innerHTML: 'Print', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: 'print', innerHTML: 'Print', styles: buttonStyles,
+                                 className: 'e-dropdown-btn e-btn' }),
                             align: 'Right'});
             }
             if ((<StockChart>this.rootControl).exportType.length) {
-                selector.push({ template: createElement('button', { id: 'export', innerHTML: 'Export', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: 'export', innerHTML: 'Export', styles: buttonStyles,
+                                    className: 'e-dropdown-btn e-btn' }),
                                 align: 'Right'});
             }
         }
@@ -160,7 +165,7 @@ export class PeriodSelector {
                     datePickerElement.style.display = 'none';
                     datePickerElement.insertAdjacentElement('afterend', createElement('div', {
                         id: 'customRange',
-                        innerHTML: selctorArgs.content, className: 'e-btn e-flat',
+                        innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
                         styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                     }));
                     getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
@@ -183,7 +188,11 @@ export class PeriodSelector {
                                                                       (args.endDate as Date).getTime());
                     }
                     this.nodes = this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                    if (!(this.rootControl as StockChart).resizeTo && this.control.rangeSlider.isDrag) {
+                    if (!(this.rootControl as StockChart).resizeTo && this.control.rangeSlider && this.control.rangeSlider.isDrag) {
+                        /**
+                         * Issue: While disabling range navigator console error throws
+                         * Fix:Check with rangeSlider present or not. Then checked with isDrag.
+                         */
                         for (let i: number = 0, length: number = this.nodes.childNodes.length; i < length; i++) {
                             (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');
                             (this.nodes.childNodes[i].childNodes[0] as Element).classList.remove('e-active');

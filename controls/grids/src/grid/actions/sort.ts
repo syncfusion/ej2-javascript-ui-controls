@@ -112,6 +112,7 @@ export class Sort implements IAction {
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
         let gObj: IGrid = this.parent;
         if (this.parent.getColumnByField(columnName).allowSorting === false || this.parent.isContextMenuOpen()) {
+            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), columnName: columnName});
             return;
         }
         if (!gObj.allowMultiSorting) {

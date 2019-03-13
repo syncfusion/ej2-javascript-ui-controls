@@ -5,8 +5,17 @@ import { createElement, isNullOrUndefined, Browser, EmitType } from '@syncfusion
 import { AutoComplete } from '../../src/auto-complete/index';
 import { FilteringEventArgs } from '../../src/drop-down-base';
 import { DataManager, Query, ODataV4Adaptor, Predicate } from '@syncfusion/ej2-data';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 describe('Filtering performance', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let autoEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
     let autoObj: AutoComplete;
     let originalTimeout: number;
@@ -19,7 +28,7 @@ describe('Filtering performance', () => {
         }
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
             document.body.appendChild(autoEle);
             autoObj = new AutoComplete({
                 dataSource: list,
@@ -78,7 +87,7 @@ describe('Filtering performance', () => {
         }
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
             document.body.appendChild(autoEle);
             autoObj = new AutoComplete({
                 dataSource: list,
@@ -279,4 +288,13 @@ describe('Filtering performance', () => {
             (<any>autoObj).onFilterUp(event);
         });
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

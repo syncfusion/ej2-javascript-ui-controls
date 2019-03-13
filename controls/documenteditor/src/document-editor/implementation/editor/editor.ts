@@ -10142,3 +10142,93 @@ export interface TableOfContentsSettings {
      */
     includeOutlineLevels?: boolean;
 }
+
+
+/**
+ * Defines the character format properties of document editor
+ */
+export interface CharacterFormatProperties {
+    /**
+     * Defines the bold formatting
+     */
+    bold?: boolean;
+    /**
+     * Defines the italic formatting
+     */
+    italic?: boolean;
+
+    /**
+     * Defines the font size
+     */
+    fontSize?: number;
+    /**
+     * Defines the font family
+     */
+    fontFamily?: string;
+    /**
+     * Defines the underline property
+     */
+    underline?: Underline;
+    /**
+     * Defines the strikethrough
+     */
+    strikethrough?: Strikethrough;
+    /**
+     * Defines the subscript or superscript property
+     */
+    baselineAlignment?: BaselineAlignment;
+    /**
+     * Defines the highlight color
+     */
+    highlightColor?: HighlightColor;
+    /**
+     * Defines the font color
+     */
+    fontColor?: string;
+    /**
+     * Defines the bidirectional property
+     */
+    bidi?: boolean;
+}
+
+/**
+ * Defines the paragraph format properties of document editor
+ */
+export interface ParagraphFormatProperties {
+    /**
+     * Defines the left indent
+     */
+    leftIndent?: number;
+    /**
+     * Defines the right indent
+     */
+    rightIndent?: number;
+    /**
+     * Defines the first line indent
+     */
+    firstLineIndent?: number;
+    /**
+     * Defines the text alignment property
+     */
+    textAlignment?: TextAlignment;
+    /**
+     * Defines the spacing value after the paragraph
+     */
+    afterSpacing?: number;
+    /**
+     * Defines the spacing value before the paragraph
+     */
+    beforeSpacing?: number;
+    /**
+     * Defines the spacing between the lines
+     */
+    lineSpacing?: number;
+    /**
+     * Defines the spacing type(Single,Double etc..) between the lines
+     */
+    lineSpacingType?: number;
+    /**
+     * Defines the bidirectional property of paragraph
+     */
+    bidi?: boolean;
+}

@@ -2,7 +2,7 @@
  * Line and Area Series Spec
  */
 import { createElement } from '@syncfusion/ej2-base';
-import { SvgRenderer } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../../../src/chart/chart';
 import { Series, Points } from '../../../src/chart/series/chart-series';
 import { Axis } from '../../../src/chart/axis/axis';
@@ -19,6 +19,7 @@ import { unbindResizeEvents, rotateData1, rotateData2 } from '../base/data.spec'
 import { tooltipData11, tooltipData12, datetimeData11, negativeDataPoint, seriesData1 } from '../base/data.spec';
 import { firstSeries, secondSeries, thirdSeries, fourthSeries } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs, ITextRenderEventArgs } from '../../../src/common/model/interface';
 
 Chart.Inject(LineSeries, ColumnSeries, AreaSeries, DateTime, Category, DataLabel, StepLineSeries);
@@ -38,6 +39,14 @@ let england: any = thirdSeries;
 let france: any = fourthSeries;
 
 describe('Chart Control Series', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     /**
      * Marker Spec started here
      */
@@ -1685,6 +1694,14 @@ describe('Chart Control Series', () => {
             chart.refresh();
         });
     });
-
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 
 });

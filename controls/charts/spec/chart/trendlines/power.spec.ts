@@ -16,6 +16,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { Trendlines } from '../../../src/chart/trend-lines/trend-line';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
 import { Category } from '../../../src/chart/axis/category-axis';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(Legend, Trendlines, LineSeries, SplineSeries, ScatterSeries, Category, Tooltip, Crosshair);
 
 
@@ -35,6 +36,14 @@ let series1: any[] = [
     { x: 5, y: 180 }, { x: 6, y: 220 }, { x: 7, y: 300 }, { x: 8, y: 370 }, { x: 9, y: 490 }, { x: 10, y: 500 }
 ];
 describe('Chart', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let element: HTMLElement;
 
     describe('Power Trendlines', () => {
@@ -313,4 +322,13 @@ describe('Chart', () => {
             chartObj.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

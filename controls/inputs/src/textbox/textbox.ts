@@ -52,15 +52,17 @@ export interface InputEventArgs extends FocusInEventArgs {
  */
 
 @NotifyPropertyChanges
-export class TextBox extends Component<HTMLInputElement> implements INotifyPropertyChanged {
+export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> implements INotifyPropertyChanged {
 
     private textboxWrapper: InputObject;
     private l10n: L10n;
     private previousValue: string = null;
     private cloneElement: HTMLInputElement;
     private globalize: Internationalization;
-    private preventChange: boolean;
     private isAngular: boolean = false;
+    private isHiddenInput: boolean = false;
+    private textarea: HTMLTextAreaElement;
+    private respectiveElement: HTMLInputElement | HTMLTextAreaElement;
     private isForm: boolean = false;
     private formElement: HTMLElement;
     private initialValue: string;
@@ -118,6 +120,14 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
      */
     @Property(false)
     public enableRtl: boolean;
+
+    /**
+     * Specifies a boolean value that enable or disable the multiline on the TextBox. 
+     * The TextBox changes from single line to multiline when enable this multiline mode.
+     * @default false
+     */
+    @Property(false)
+    public multiline: boolean;
 
     /**
      * Specifies a Boolean value that indicates whether the TextBox allow user to interact with it.
@@ -182,8 +192,8 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
     @Event()
     public input: EmitType<InputEventArgs>;
 
-    constructor(options?: TextBoxModel, element?: string | HTMLInputElement) {
-        super(options, <HTMLInputElement | string>element);
+    constructor(options?: TextBoxModel, element?: string | HTMLInputElement | HTMLTextAreaElement ) {
+        super(options, <string | HTMLInputElement | HTMLTextAreaElement> element);
     }
 
     /**
@@ -195,10 +205,10 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
             switch (prop) {
                 case 'floatLabelType':
                     Input.removeFloating(this.textboxWrapper);
-                    Input.addFloating(this.element, this.floatLabelType, this.placeholder);
+                    Input.addFloating(this.respectiveElement, this.floatLabelType, this.placeholder);
                     break;
                 case 'enabled':
-                    Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                    Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
                     break;
                 case 'value':
                     let prevOnChange: boolean = this.isProtectedOnChange;
@@ -207,25 +217,32 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
                         this.value = this.value.toString();
                     }
                     this.isProtectedOnChange = prevOnChange;
-                    Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
+                    Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+                    if (this.isHiddenInput) {
+                    this.element.value = this.respectiveElement.value;
+                    }
                     this.raiseChangeEvent();
                     break;
                 case 'readonly':
-                    Input.setReadonly(this.readonly, this.element);
+                    Input.setReadonly(this.readonly, this.respectiveElement);
                     break;
                 case 'type':
-                    this.element.setAttribute('type', this.type);
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                    this.respectiveElement.setAttribute('type', this.type);
                     this.raiseChangeEvent();
+                    }
                     break;
                 case 'showClearButton':
-                    Input.setClearButton(this.showClearButton, this.element, this.textboxWrapper);
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                    Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
                     this.bindClearEvent();
+                    }
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
                     break;
                 case 'placeholder':
-                    Input.setPlaceholder(this.placeholder, this.element);
+                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
                 case 'cssClass':
                     Input.setCssClass(this.cssClass, [this.textboxWrapper.container]);
@@ -234,7 +251,7 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
                     this.globalize = new Internationalization(this.locale);
                     this.l10n.setLocale(this.locale);
                     this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                    Input.setPlaceholder(this.placeholder, this.element);
+                    Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
             }
         }
@@ -261,7 +278,9 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         /* istanbul ignore next */
         if (this.element.tagName === 'EJS-TEXTBOX') {
             let ejInstance: Object = getValue('ej2_instances', this.element);
-            let inputElement: HTMLInputElement = <HTMLInputElement>this.createElement('input');
+            let inputElement: string | HTMLInputElement | HTMLTextAreaElement = this.multiline ?
+                              <HTMLTextAreaElement>this.createElement('textarea') :
+                              <HTMLInputElement>this.createElement('input');
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
                 inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
@@ -273,7 +292,9 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         }
         let attributes: NamedNodeMap = this.element.attributes;
         this.checkAttributes(attributes);
-        this.element.setAttribute('type', this.type);
+        if (this.element.tagName !== 'TEXTAREA') {
+            this.element.setAttribute('type', this.type);
+        }
         this.globalize = new Internationalization(this.locale);
         let localeText: { placeholder: string } = { placeholder: this.placeholder };
         this.l10n = new L10n('textbox', localeText, this.locale);
@@ -285,6 +306,14 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         }
         if (!this.element.hasAttribute('name')) {
             this.element.setAttribute('name', this.element.getAttribute('id'));
+        }
+        if (this.element.tagName === 'INPUT' && this.multiline) {
+            this.isHiddenInput = true;
+            this.textarea = <HTMLTextAreaElement>this.createElement('textarea');
+            this.element.parentNode.insertBefore(this.textarea, this.element);
+            this.element.setAttribute('type', 'hidden');
+            this.textarea.setAttribute('name', this.element.getAttribute('name'));
+            this.element.removeAttribute('name');
         }
     }
 
@@ -306,8 +335,9 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
      * @private
      */
     public render(): void {
+        this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
         this.textboxWrapper = Input.createInput({
-            element: this.element,
+            element: this.respectiveElement,
             floatLabelType: this.floatLabelType,
             properties: {
                 enabled: this.enabled,
@@ -319,11 +349,14 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
             }
         });
         this.wireEvents();
-        if (this.element.value !== '') {
-            this.value = this.element.value;
+        if (this.respectiveElement.value !== '') {
+            this.value = this.respectiveElement.value;
         }
         if (!isNullOrUndefined(this.value)) {
-            Input.setValue(this.value, this.element, this.floatLabelType, this.showClearButton);
+            Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+            this.element.value = this.respectiveElement.value;
+            }
         }
         if (!isNullOrUndefined(this.value)) {
             this.initialValue = this.value;
@@ -338,10 +371,10 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
     }
 
     private wireEvents(): void {
-        EventHandler.add(this.element, 'focus', this.focusHandler, this);
-        EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
-        EventHandler.add(this.element, 'input', this.inputHandler, this);
-        EventHandler.add(this.element, 'change', this.changeHandler, this);
+        EventHandler.add(this.respectiveElement, 'focus', this.focusHandler, this);
+        EventHandler.add(this.respectiveElement, 'blur', this.focusOutHandler, this);
+        EventHandler.add(this.respectiveElement, 'input', this.inputHandler, this);
+        EventHandler.add(this.respectiveElement, 'change', this.changeHandler, this);
         if (this.isForm) {
             EventHandler.add(this.formElement, 'reset', this.resetForm, this);
         }
@@ -371,6 +404,7 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
             label.classList.remove('e-label-bottom');
         }
     }
+
     private focusHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {
         let eventArgs: FocusInEventArgs = {
             container: this.textboxWrapper.container,
@@ -380,8 +414,8 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         this.trigger('focus', eventArgs);
     }
     private focusOutHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {
-        if (!(this.previousValue === null && this.value === null && this.element.value === '') &&
-        (this.previousValue !== this.element.value)) {
+        if (!(this.previousValue === null && this.value === null && this.respectiveElement.value === '') &&
+        (this.previousValue !== this.respectiveElement.value)) {
             this.raiseChangeEvent(args, true);
         }
         let eventArgs: FocusOutEventArgs = {
@@ -393,24 +427,18 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
     }
 
     private inputHandler(args: KeyboardEvent): void {
-        // tslint:disable-next-line
-        let textboxObj: any = this;
         let eventArgs: InputEventArgs = {
             event: args,
-            value: this.element.value,
+            value: this.respectiveElement.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
-        if (this.isAngular) {
-            textboxObj.localChange({ value: this.element.value });
-            this.preventChange = true;
-        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     }
 
     private changeHandler(args: Event): void {
-        this.setProperties({value: this.element.value}, true);
+        this.setProperties({value: this.respectiveElement.value}, true);
         this.raiseChangeEvent(args, true);
         args.stopPropagation();
     }
@@ -424,17 +452,12 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
-        if (this.isAngular && this.preventChange !== true) {
-            this.trigger('change', eventArgs);
-        } else if (isNullOrUndefined(this.isAngular) || !this.isAngular) {
-            this.trigger('change', eventArgs);
-        }
-        this.preventChange = false;
+        this.trigger('change', eventArgs);
         this.previousValue = this.value;
     }
 
     private bindClearEvent(): void {
-        if (this.showClearButton) {
+        if (this.showClearButton && this.respectiveElement.tagName !== 'TEXTAREA') {
             EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
         }
     }
@@ -443,11 +466,14 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         event.preventDefault();
         if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
             let previousValue: string = this.value;
-            Input.setValue('', this.element, this.floatLabelType, this.showClearButton);
+            Input.setValue('', this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+                this.element.value = this.respectiveElement.value;
+                }
             this.value = '';
             let eventArgs: InputEventArgs = {
                 event: event,
-                value: this.element.value,
+                value: this.respectiveElement.value,
                 previousValue: previousValue,
                 container: this.textboxWrapper.container
             };
@@ -456,10 +482,10 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
     }
 
     private unWireEvents(): void {
-        EventHandler.remove(this.element, 'focus', this.focusHandler);
-        EventHandler.remove(this.element, 'blur', this.focusOutHandler);
-        EventHandler.remove(this.element, 'input', this.inputHandler);
-        EventHandler.remove(this.element, 'change', this.changeHandler);
+        EventHandler.remove(this.respectiveElement, 'focus', this.focusHandler);
+        EventHandler.remove(this.respectiveElement, 'blur', this.focusOutHandler);
+        EventHandler.remove(this.respectiveElement, 'input', this.inputHandler);
+        EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
         if (this.isForm) {
             EventHandler.remove(this.formElement, 'reset', this.resetForm);
         }
@@ -474,9 +500,9 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
 
     public destroy(): void {
         this.unWireEvents();
-        this.element.classList.remove('e-input');
+        this.respectiveElement.classList.remove('e-input');
         this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.parentElement.appendChild(this.element);
+        this.textboxWrapper.container.parentElement.appendChild(this.respectiveElement);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
         super.destroy();
@@ -500,17 +526,19 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         for (let key of Object.keys(attributes)) {
             if (key === 'disabled') {
                 this.setProperties({ enabled: false }, true);
-                Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
             } else if (key === 'readonly') {
                 this.setProperties({ readonly: true }, true);
-                Input.setReadonly(this.readonly, this.element);
+                Input.setReadonly(this.readonly, this.respectiveElement);
             } else if (key === 'class') {
-                this.element.classList.add(attributes[key]);
+                this.respectiveElement.classList.add(attributes[key]);
             } else if (key === 'placeholder') {
                 this.setProperties({ placeholder: attributes[key] }, true);
-                Input.setPlaceholder(this.placeholder, this.element);
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
+            } else if (key === 'rows' && this.respectiveElement.tagName === 'TEXTAREA') {
+                this.respectiveElement.setAttribute(key, attributes[key]);
             } else {
-                this.element.setAttribute(key, attributes[key]);
+                this.respectiveElement.setAttribute(key, attributes[key]);
             }
         }
     }
@@ -523,15 +551,15 @@ export class TextBox extends Component<HTMLInputElement> implements INotifyPrope
         for (let key of attributes) {
             if (key === 'disabled') {
                 this.setProperties({ enabled: true }, true);
-                Input.setEnabled(this.enabled, this.element, this.floatLabelType, this.textboxWrapper.container);
+                Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
             } else if (key === 'readonly') {
                 this.setProperties({ readonly: false }, true);
-                Input.setReadonly(this.readonly, this.element);
+                Input.setReadonly(this.readonly, this.respectiveElement);
             } else if (key === 'placeholder') {
                 this.setProperties({ placeholder: null }, true);
-                Input.setPlaceholder(this.placeholder, this.element);
+                Input.setPlaceholder(this.placeholder, this.respectiveElement);
             } else {
-                this.element.removeAttribute(key);
+                this.respectiveElement.removeAttribute(key);
             }
         }
     }

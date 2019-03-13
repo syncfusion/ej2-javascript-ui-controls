@@ -38,6 +38,10 @@ export interface ITreeData {
      */
     filterLevel?: number;
     /**
+     * Specifies the parentID
+     */
+    //parentIdMapping?: number;
+    /**
      * Specifies the unique ID of a record
      */
     uniqueID?: string;
@@ -45,6 +49,14 @@ export interface ITreeData {
      * Specifies the parent Unique ID of a record
      */
     parentUniqueID?: string;
+    /**
+     * Specifies the checkbox state of a record
+     */
+    checkboxState?: string;
+    /**
+     * Specifies the summary of a record
+     */
+    isSummaryRow?: boolean;
 
 }
 

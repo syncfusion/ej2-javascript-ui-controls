@@ -49,35 +49,58 @@ btnObj.appendTo('#bootstrapdark');
 document.getElementById('material').onclick = (e : Event) => {
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material.css');
+    enableRipple(true);
+    refresh();
 };
 document.getElementById('fabric').onclick = (e : Event) => {
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric.css');
+    enableRipple(false);
+    refresh();
 };
 document.getElementById('bootstrap').onclick = (e : Event) => {
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap.css');
+    enableRipple(false);
+    refresh();
 };
 document.getElementById('highcontrast').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
+    enableRipple(false);
+    refresh();
 };
 document.getElementById('materialdark').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
+    enableRipple(true);
+    refresh();
 };
 
 document.getElementById('fabricdark').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
+    enableRipple(false);
+    refresh();
 };
 
 document.getElementById('bootstrapdark').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
+    enableRipple(false);
+    refresh();
 };
 
 // document.getElementById('highcontrastlight').onclick = (e : Event) => {
 //     document.body.classList.remove('darkBG');
 //     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast-light.css');
 // };
+
+function refresh(): void {
+    setTimeout(() => {
+        let ele: NodeListOf<HTMLInputElement> = document.getElementById('basic').getElementsByTagName('input');
+        for (let i: number = 0; i < ele.length; i++) {
+            (ele[i] as any).ej2_instances[0].refresh();
+        }
+    }, 1000);
+}

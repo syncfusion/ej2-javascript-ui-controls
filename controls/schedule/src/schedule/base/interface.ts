@@ -1,7 +1,6 @@
-
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
-import { PopupType } from './type';
+import { PopupType, ExcelFormat } from './type';
 import { ResourcesModel } from '../models/models';
 
 /**
@@ -253,7 +252,6 @@ export interface IRenderer {
     renderResourceMobileLayout(): void;
     setPanel(panel: HTMLElement): void;
     getPanel(): HTMLElement;
-    adjustEventWrapper(): void;
     generateColumnLevels(): TdData[][];
     getColumnLevels(): TdData[][];
     createTableLayout(className?: string): Element;
@@ -278,6 +276,7 @@ export interface NotifyEventArgs {
     module?: string;
     cssProperties?: ScrollCss;
     processedData?: Object[];
+    isPreventScrollUpdate?: boolean;
 }
 
 /** @hidden */
@@ -338,6 +337,7 @@ export interface UIStateArgs {
     left?: number;
     top?: number;
     isGroupAdaptive?: boolean;
+    isIgnoreOccurrence?: boolean;
     groupIndex?: number;
     action?: boolean;
     isBlock?: boolean;
@@ -398,4 +398,20 @@ export interface StateArgs {
     isDate: boolean;
     isLayout: boolean;
     isDataManager: boolean;
+}
+
+export interface ExportOptions {
+    /** The fileName denotes the name to be given for the exported file. */
+    fileName?: string;
+    /** The exportType allows you to set the format of an Excel file to be exported either as .xlsx or .csv. */
+    exportType?: ExcelFormat;
+    /** The custom or specific field collection of event dataSource to be exported can be provided through fields option. */
+    fields?: string[];
+    /** The custom data collection can be exported by passing them through the customData option. */
+    customData?: { [key: string]: Object }[];
+    /** There also exists option to export each individual instances of the recurring events to an Excel file, 
+     * by setting true or false to the `includeOccurrences` option, denoting either to include or exclude 
+     * the occurrences as separate instances on an exported Excel file. 
+     */
+    includeOccurrences?: boolean;
 }

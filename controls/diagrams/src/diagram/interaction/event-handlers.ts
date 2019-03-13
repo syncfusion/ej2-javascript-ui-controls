@@ -7,21 +7,20 @@ import { MarginModel } from '../core/appearance-model';
 import { Diagram } from '../diagram';
 import { Connector } from '../objects/connector';
 import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, PolygonDrawingTool, PolyLineDrawingTool } from './tool';
-import { Node } from '../objects/node';
+import { Node, SwimLane } from '../objects/node';
 import { ConnectorModel } from '../objects/connector-model';
 import { PointPortModel } from '../objects/port-model';
-import { NodeModel, BpmnShapeModel, BasicShapeModel } from '../objects/node-model';
+import { NodeModel, BpmnShapeModel, BasicShapeModel, SwimLaneModel, LaneModel, PhaseModel } from '../objects/node-model';
 import { ToolBase, SelectTool, MoveTool, ResizeTool, RotateTool, ConnectTool, ExpandTool, LabelTool, ZoomPanTool } from './tool';
 import { LabelDragTool, LabelResizeTool, LabelRotateTool } from './tool';
 import { ConnectorEditing } from './connector-editing';
 import { Selector } from './selector';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
-import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools } from '../enum/enum';
+import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset } from '../utility/diagram-util';
-import { getObjectType, getInOutConnectPorts } from '../utility/diagram-util';
-import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize } from './../utility/constraints-util';
-
+import { getObjectType, getInOutConnectPorts, removeChildNodes } from '../utility/diagram-util';
+import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
 import {
     canOutConnect, canInConnect, canPortInConnect, canPortOutConnect, canAllowDrop, canUserInteract, defaultTool
@@ -32,7 +31,7 @@ import { PortVisibility, NodeConstraints, ConnectorConstraints } from '../enum/e
 import { addTouchPointer, measureHtmlText, getAdornerLayerSvg } from '../utility/dom-util';
 import { TextElement } from '../core/elements/text-element';
 import { Size } from '../primitives/size';
-import { cloneObject as clone } from './../utility/base-util';
+import { cloneObject as clone, cloneObject } from './../utility/base-util';
 import { TransformFactor } from '../interaction/scroller';
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { Rect } from '../primitives/rect';
@@ -45,8 +44,10 @@ import { SelectorModel } from './selector-model';
 import { getFunction, cornersPointsBeforeRotation } from '../utility/base-util';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
-import { updateCanvasBounds, checkChildNodeInContainer, checkParentAsContainer } from './container-interaction';
-import { moveChildInStack, renderStackHighlighter } from './container-interaction';
+import { updateCanvasBounds, checkChildNodeInContainer, checkParentAsContainer, removeChildInContainer } from './container-interaction';
+import { moveChildInStack, renderStackHighlighter, } from './container-interaction';
+import { updateSwimLaneObject } from '../utility/swim-lane-util';
+import { getConnectors, updateHeaderMaxWidth, laneInterChanged, updateConnectorsProperties } from '../utility/swim-lane-util';
 import { HistoryEntry } from '../diagram/history';
 import { GridPanel } from '../core/containers/grid';
 import { Canvas } from '../core/containers/canvas';
@@ -586,10 +587,12 @@ export class DiagramEventHandler {
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
         }
+        this.diagram.previousSelectedObject = null;
+        this.diagram.diagramRenderer.rendererActions =
+            this.diagram.removeConstraints(this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder);
         touches = (<TouchEvent & PointerEvent>evt).touches;
         if (this.isScrolling) {
-            this.isScrolling = false; evt.preventDefault();
-            return;
+            this.isScrolling = false; evt.preventDefault(); return;
         }
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram))
             || (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
@@ -607,7 +610,7 @@ export class DiagramEventHandler {
                         let isMultipleSelect: boolean = true;
                         if ((!evt.ctrlKey && this.isMouseDown
                             && (this.diagram.selectedItems.nodes.length + this.diagram.selectedItems.connectors.length) > 1)
-                            && evt.which === 1) {
+                            && evt.which === 1 && !canPreventClearSelection(this.diagram.diagramActions)) {
                             isMultipleSelect = false; this.commandHandler.clearSelection();
                         }
                         if (!isSelected(this.diagram, obj) || (!isMultipleSelect)) {
@@ -615,9 +618,11 @@ export class DiagramEventHandler {
                         }
                     }
                 }
-                let hasStack: Boolean = this.updateContainerProperties();
+                let history: HistoryLog = this.updateContainerProperties();
+                let isGroupAction: boolean;
                 this.addUmlNode();
                 this.inAction = false; this.isMouseDown = false; this.currentPosition = this.getMousePosition(evt);
+                if (this.diagram.selectedObject.helperObject) { isGroupAction = this.updateContainerBounds(); }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
                     this.eventArgs.position = this.currentPosition;
                     this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
@@ -630,18 +635,25 @@ export class DiagramEventHandler {
                     if (this.diagram.diagramActions & DiagramAction.Interactions) {
                         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Interactions;
                     }
-                    this.eventArgs.clickCount = evt.detail; this.tool.mouseUp(this.eventArgs);
-                    if (hasStack) {
-                        this.diagram.endGroupAction();
-                    }
+                    this.eventArgs.clickCount = evt.detail;
+                    if (this.diagram.selectedObject.helperObject && (this.tool instanceof MoveTool || this.tool instanceof ResizeTool)) {
+                        if (this.diagram.selectedObject.actualObject &&
+                            (this.diagram.selectedObject.actualObject as Node).parentId !== '') {
+                            let parentNode: Node = this.diagram.getObject(
+                                (this.diagram.selectedObject.actualObject as Node).parentId) as Node;
+                            if (parentNode && parentNode.isLane) {
+                                this.commandHandler.isContainer = true;
+                            }
+                        }
+                        this.tool.mouseUp(this.eventArgs, history.isPreventHistory);
+                    } else { this.tool.mouseUp(this.eventArgs); }
+                    if (history.hasStack) { this.diagram.endGroupAction(); }
                 }
-                if (this.diagram.selectedObject.helperObject) {
-                    let boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
+                if (isGroupAction) { this.diagram.endGroupAction(); }
+                this.updateContainerBounds(true);
+                if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
-                    let obj: NodeModel = this.diagram.selectedObject.actualObject; this.diagram.updateDiagramObject(obj);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
-                    updateCanvasBounds(this.diagram, obj, this.eventArgs.position, boundsUpdate);
-                    this.diagram.updateSelector();
                 }
                 this.blocked = false;
                 if (this.hoverElement) {
@@ -656,8 +668,7 @@ export class DiagramEventHandler {
                 if (!(this.tool instanceof TextDrawingTool)) { this.tool = null; }
             }
             if (!touches) { evt.preventDefault(); }
-            this.diagram.currentDrawingObject = undefined;
-            let selector: SelectorModel = this.diagram.selectedItems;
+            this.diagram.currentDrawingObject = undefined; let selector: SelectorModel = this.diagram.selectedItems;
             if (!this.inAction && selector.wrapper && selector.userHandles.length > 0) {
                 this.diagram.renderSelector(true);
             }
@@ -670,14 +681,116 @@ export class DiagramEventHandler {
             }
             this.eventArgs = {};
         }
-        this.eventArgs = {};
-        this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
+        this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     }
+
+    public addSwimLaneObject(selectedNode: NodeModel): void {
+        let swimlaneNode: NodeModel; let targetNode: NodeModel; let shape: SwimLaneModel; let value: number; let canInsert: boolean;
+        let index: number = 0; let offset: number;
+        let actualShape: SwimLaneModel = (selectedNode.shape as SwimLaneModel);
+        let objects: IElement[] = this.objectFinder.findObjectsUnderMouse(
+            this.currentPosition, this.diagram, this.eventArgs, null, this.action);
+        if (!targetNode) {
+            targetNode = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+        }
+        this.diagram.clearSelectorLayer();
+        if (targetNode && !((targetNode as Node).isLane || (targetNode as Node).isPhase || (targetNode as Node).isHeader)) {
+            for (let i: number = 0; i < objects.length; i++) {
+                let laneNode: Node = this.diagram.nameTable[(objects[i] as NodeModel).id];
+                if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) { targetNode = laneNode; }
+            }
+        }
+        if (targetNode && (actualShape.isPhase || (actualShape.isLane && (targetNode as SwimLaneModel).isLane))) {
+            let id: string = (targetNode as Node).parentId;
+            swimlaneNode = this.diagram.nameTable[id];
+        }
+        if (swimlaneNode) {
+            shape = (swimlaneNode.shape as SwimLaneModel);
+            canInsert = (actualShape.isLane) ? actualShape.orientation === shape.orientation :
+                actualShape.orientation !== shape.orientation;
+        }
+        if (canInsert && (targetNode as Node)) {
+            if (shape.header && (shape as SwimLane).hasHeader && shape.orientation === 'Horizontal') { index = 1; }
+            if (shape.phases.length > 0) { index += 1; }
+            if (actualShape.isPhase) {
+                if (shape.orientation === 'Horizontal') {
+                    offset = this.currentPosition.x - swimlaneNode.wrapper.bounds.x;
+                } else {
+                    offset = this.currentPosition.y - (swimlaneNode.wrapper.bounds.y + shape.header.height);
+                }
+                let phases: PhaseModel = { id: randomId(), offset: offset, header: { annotation: { content: 'Phase' } } } as PhaseModel;
+                this.diagram.addPhases(swimlaneNode, [phases]);
+            } else {
+                let laneHeight: number = actualShape.lanes[0].header.height;
+                let lane: LaneModel = {
+                    id: randomId(), style: actualShape.lanes[0].style, header: {
+                        annotation: {
+                            content: actualShape.lanes[0].header.annotation.content,
+                            style: actualShape.lanes[0].header.annotation.style
+                        },
+                        style: actualShape.lanes[0].header.style
+                    },
+                } as LaneModel;
+                let orientation: boolean = (actualShape.orientation === 'Horizontal') ? true : false;
+                orientation ? lane.height = actualShape.lanes[0].height : lane.width = actualShape.lanes[0].width;
+                if (shape.orientation === 'Horizontal') {
+                    value = (targetNode as Node).rowIndex ? (targetNode as Node).rowIndex :
+                        this.diagram.nameTable[(targetNode as Node).parentId].rowIndex;
+                    if (targetNode.wrapper.offsetY < this.currentPosition.y) { value += 1; }
+                } else {
+                    value = (targetNode as Node).columnIndex ? (targetNode as Node).columnIndex :
+                        this.diagram.nameTable[(targetNode as Node).parentId].columnIndex;
+                    if (this.currentPosition.x < targetNode.wrapper.bounds.center.x) { value -= 1; }
+                }
+                if (shape.lanes.length > (value - index)) {
+                    lane.header.width = shape.lanes[value - index].header.width;
+                    lane.header.height = shape.lanes[value - index].header.height;
+                } else {
+                    lane.header.width = shape.lanes[value - index - 1].header.width;
+                    lane.header.height = shape.lanes[value - index - 1].header.height;
+                }
+                this.diagram.addLanes(swimlaneNode, [lane], value - index);
+            }
+            this.commandHandler.select(swimlaneNode);
+        } else if (actualShape.isLane) {
+            let swimLaneobj: NodeModel = {
+                id: randomId(), width: selectedNode.width, height: selectedNode.height,
+                shape: {
+                    type: 'SwimLane', header: {
+                        annotation: { content: 'Header' }, height: 50, style: actualShape.lanes[0].header.style
+                    },
+                    phases: [{ id: randomId(), header: { annotation: { content: 'Phase' } } }],
+                    lanes: [{
+                        id: randomId(), height: selectedNode.height, width: selectedNode.width, style: actualShape.lanes[0].style,
+                        header: {
+                            annotation: {
+                                content: actualShape.lanes[0].header.annotation.content,
+                                style: actualShape.lanes[0].header.annotation.style
+                            },
+                            style: actualShape.lanes[0].header.style
+                        },
+                    }], orientation: actualShape.orientation,
+                }
+            } as NodeModel;
+            if (actualShape.orientation === 'Vertical') { swimLaneobj.width += 20; }
+            swimLaneobj.offsetX = this.currentPosition.x + (swimLaneobj.width / 2);
+            swimLaneobj.offsetY = this.currentPosition.y + (swimLaneobj.height / 2);
+            this.diagram.add(swimLaneobj);
+        }
+    }
+
     /** @private */
     public mouseLeave(evt: PointerEvent): void {
         //Define what has to happen on mouse leave
         if (this.tool && this.inAction) {
             this.tool.mouseLeave(this.eventArgs);
+        }
+        if (this.diagram.selectedObject.helperObject) {
+            this.updateContainerProperties();
+            let isGroupAction: boolean = this.updateContainerBounds();
+            if (isGroupAction) {
+                this.diagram.endGroupAction();
+            }
         }
         if (this.eventArgs && this.eventArgs.source) {
             this.diagram.updatePortVisibility(this.eventArgs.source as Node, PortVisibility.Hover, true);
@@ -736,7 +849,10 @@ export class DiagramEventHandler {
         }
         if (this.diagram.textEditing) {
             this.diagram.isTriggerEvent = true;
-            this.diagram.startTextEdit();
+            if (this.diagram.activeLabel.parentId) {
+                let node: NodeModel | ConnectorModel = this.diagram.getObject(this.diagram.activeLabel.parentId);
+                this.diagram.startTextEdit(node, this.diagram.activeLabel.id);
+            }
             this.diagram.isTriggerEvent = false;
         }
     }
@@ -767,8 +883,38 @@ export class DiagramEventHandler {
                                 parameter: command.parameter
                             })) {
                                 evt.preventDefault();
-                                if (evt.key === 'Escape' && (this.checkEditBoxAsTarget(evt))) {
-                                    document.getElementById(this.diagram.diagramCanvas.id).focus();
+                                if (evt.key === 'Escape') {
+                                    if (this.checkEditBoxAsTarget(evt)) {
+                                        document.getElementById(this.diagram.diagramCanvas.id).focus();
+                                    } else if (this.diagram.currentSymbol) {
+                                        let selectedSymbols: string = 'selectedSymbols';
+                                        let source: string = 'sourceElement'; let intDestroy: string = 'intDestroy';
+                                        this.diagram.removeFromAQuad(this.diagram.currentSymbol);
+                                        this.diagram.removeObjectsFromLayer(this.diagram.nameTable[this.diagram.currentSymbol.id]);
+                                        this.diagram.removeElements(this.diagram.currentSymbol);
+                                        removeChildNodes(this.diagram.currentSymbol as Node, this.diagram);
+                                        delete this.diagram.nameTable[this.diagram.currentSymbol.id];
+                                        let sourceElement: HTMLElement = this.diagram.droppable[source];
+                                        sourceElement.draggable[intDestroy]();
+                                        let element: HTMLElement = this.diagram.droppable[selectedSymbols];
+                                        element.parentNode.removeChild(element);
+                                        let diagramActions: DiagramAction = this.diagram.diagramActions;
+                                        this.diagram.diagramActions =
+                                            this.diagram.addConstraints(diagramActions, DiagramAction.PreventClearSelection);
+                                        this.tool.mouseUp(this.eventArgs);
+                                        this.diagram.diagramRenderer.rendererActions = this.diagram.removeConstraints(
+                                            this.diagram.diagramRenderer.rendererActions, RendererAction.DrawSelectorBorder
+                                        );
+                                        if (this.diagram.previousSelectedObject) {
+                                            this.diagram.select(this.diagram.previousSelectedObject);
+                                        }
+                                        this.action = 'Select';
+                                        this.diagram.previousSelectedObject = null;
+                                        this.diagram.currentSymbol = null;
+                                        this.diagram.diagramActions =
+                                            this.diagram.removeConstraints(diagramActions, DiagramAction.PreventClearSelection);
+                                        this.isMouseDown = false;
+                                    }
                                 }
                                 if (command.execute) {
                                     // if (i === 'nudgeUp' || i === 'nudgeRight' || i === 'nudgeDown' || i === 'nudgeLeft') {
@@ -984,8 +1130,7 @@ export class DiagramEventHandler {
         let text: string = ((editTextBox as HTMLTextAreaElement).value);
         let line: string[] = text.split('\n');
         node = (this.diagram.selectedItems.nodes[0]) ? this.diagram.selectedItems.nodes[0] : this.diagram.selectedItems.connectors[0];
-        if (!node && this.tool instanceof TextDrawingTool) {
-
+        if ((!node && this.tool instanceof TextDrawingTool) || node.shape.type === 'SwimLane') {
             node = this.diagram.nameTable[this.diagram.activeLabel.parentId];
         }
         if (node && ((node.shape.type !== 'Text' && node.annotations.length > 0) || (node.shape.type === 'Text'))) {
@@ -1051,6 +1196,11 @@ export class DiagramEventHandler {
                 this.action === 'OrthoThumb' || this.action === 'BezierSourceThumb' || this.action === 'BezierTargetThumb' ||
                 this.action === 'ConnectorTargetEnd' || this.action.indexOf('Rotate') !== -1 || this.action.indexOf('Resize') !== -1) {
                 obj = this.diagram.selectedItems as IElement;
+                if (!this.diagram.currentSymbol && this.action === 'Drag' && obj && this.diagram.selectedItems.nodes.length > 0 &&
+                    this.diagram.selectedItems.nodes[0].shape.type === 'SwimLane') {
+                    objects = this.diagram.findObjectsUnderMouse(this.currentPosition);
+                    obj = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+                }
             } else {
                 objects = this.diagram.findObjectsUnderMouse(this.currentPosition);
                 obj = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
@@ -1204,104 +1354,215 @@ export class DiagramEventHandler {
             obj, wrapper, this.currentPosition, this.diagram, this.touchStartList, this.touchMoveList, target);
     }
 
-    private updateContainerProperties(): boolean {
-        let helperObject: NodeModel; let isChangeProperties: boolean = false;
-        let hasStack: boolean; let hasGroup: boolean;
+    private updateContainerBounds(isAfterMouseUp?: boolean): boolean {
+        let isGroupAction: boolean = false;
         if (this.diagram.selectedObject.helperObject) {
-            helperObject = this.diagram.selectedObject.helperObject as Node;
-            this.diagram.selectedItems.wrapper.children[0].offsetX = helperObject.wrapper.offsetX;
-            this.diagram.selectedItems.wrapper.children[0].offsetY = helperObject.wrapper.offsetY;
-            this.diagram.selectedItems.wrapper.children[0].actualSize.width = helperObject.wrapper.actualSize.width;
-            this.diagram.selectedItems.wrapper.children[0].actualSize.height = helperObject.wrapper.actualSize.height;
-            let obj: NodeModel | ConnectorModel = this.diagram.selectedObject.actualObject;
-            (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
-            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
-            }
-            (obj as Node).rotateAngle = helperObject.rotateAngle;
-            let objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
-            let target: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+
+            let boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
+            let obj: NodeModel = this.diagram.selectedObject.actualObject;
             let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
-            let undoElement: StackEntryObject;
-            if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
-                this.diagram.startGroupAction(); hasGroup = true;
-            }
-            if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
-                let index: number = parentNode.wrapper.children.indexOf(obj.wrapper);
-                undoElement = {
-                    targetIndex: undefined, target: undefined,
-                    sourceIndex: index, source: clone(obj)
-                };
-                if (index > -1) {
-                    let children: string[] = parentNode.children;
-                    children.splice(children.indexOf(obj.id), 1);
-                    this.diagram.nameTable[obj.id].parentId = '';
-                    hasStack = true; parentNode.wrapper.children.splice(index, 1);
+
+            if (isAfterMouseUp) {
+                removeChildInContainer(this.diagram, obj, this.currentPosition, boundsUpdate);
+            } else {
+                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                    this.diagram.updateDiagramObject(obj);
+                }
+                isGroupAction = updateCanvasBounds(this.diagram, obj, this.currentPosition, boundsUpdate);
+                this.diagram.updateSelector();
+                if ((obj as Node).isLane || (obj as Node).isPhase) {
+                    this.diagram.clearSelection();
+                    this.commandHandler.select(obj);
                 }
             }
-            moveChildInStack(obj as Node, target as Node, this.diagram, this.action);
-            parentNode = checkParentAsContainer(this.diagram, obj) ? this.diagram.nameTable[(obj as Node).parentId] :
-                (this.diagram.nameTable[(obj as Node).parentId] || obj);
+        }
+        return isGroupAction;
+    }
 
-            if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
-                parentNode.maxWidth = parentNode.wrapper.actualSize.width;
-                parentNode.wrapper.maxWidth = parentNode.wrapper.actualSize.width;
-                parentNode.maxHeight = parentNode.wrapper.actualSize.height;
-                parentNode.wrapper.maxHeight = parentNode.wrapper.actualSize.height;
-                isChangeProperties = true;
+
+    private updateContainerProperties(): HistoryLog {
+        let helperObject: NodeModel; let isChangeProperties: boolean = false;
+        let hasStack: boolean; let connectors: string[]; let hasGroup: boolean = false; let obj: NodeModel;
+        let history: HistoryLog = { hasStack: false, isPreventHistory: false };
+        if (this.diagram.selectedObject.helperObject) {
+            let objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
+            let target: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
+            helperObject = this.diagram.selectedObject.helperObject as Node; obj = this.diagram.selectedObject.actualObject;
+            if (obj.shape.type === 'SwimLane') {
+                connectors = getConnectors(this.diagram, (obj.wrapper.children[0] as GridPanel), 0, true);
             }
-            if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
-                checkChildNodeInContainer(this.diagram, obj as NodeModel);
+            if (obj.shape.type !== 'SwimLane' && (obj as Node).parentId &&
+                (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane') {
+                if (target instanceof Node && this.diagram.getObject((target as Node).parentId) &&
+                    (this.diagram.getObject((target as Node).parentId) as NodeModel).shape.type !== 'SwimLane') {
+                    target = this.diagram.getObject(target.parentId) as Node;
+                }
+            }
+            if (this.currentAction === 'Drag' && obj.container && obj.container.type === 'Canvas' && (obj as Node).parentId &&
+                (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane' && target && target !== obj &&
+                (target as Node).container && (target as Node).container.type === 'Canvas' && (target as Node).isLane &&
+                (obj as Node).isLane && (target as Node).parentId === (obj as Node).parentId) {
+                laneInterChanged(this.diagram, obj, (target as Node), this.currentPosition);
+                history.isPreventHistory = true;
             } else {
-                if (parentNode && parentNode.container && parentNode.container.type === 'Grid') {
-                    let container: GridPanel = ((parentNode.shape.type === 'SwimLane') ?
-                        parentNode.wrapper.children[0] : parentNode.wrapper) as GridPanel;
-                    let x: number = parentNode.wrapper.bounds.x;
-                    let y: number = parentNode.wrapper.bounds.y;
-                    if (obj.columnIndex !== undefined && (parentNode.container.orientation === 'Horizontal' && obj.rowIndex === 1) ||
-                        (parentNode.container.orientation === 'Vertical' && obj.rowIndex > 0 && obj.columnIndex > 0)) {
-                        container.updateColumnWidth(obj.columnIndex, helperObject.width);
-                    } else if (obj.rowIndex !== undefined) {
-                        container.updateRowHeight(obj.rowIndex, helperObject.height);
+                let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
+                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                    (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
+                    if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                        (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
                     }
+                    (obj as Node).rotateAngle = helperObject.rotateAngle;
+                }
+                let undoElement: StackEntryObject;
+                if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
+                    this.diagram.startGroupAction(); hasGroup = true;
+                }
+                if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
+                    let index: number = parentNode.wrapper.children.indexOf(obj.wrapper);
+                    undoElement = { targetIndex: undefined, target: undefined, sourceIndex: index, source: clone(obj) };
+                    if (index > -1) {
+                        let children: string[] = parentNode.children; children.splice(children.indexOf(obj.id), 1);
+                        this.diagram.nameTable[obj.id].parentId = ''; hasStack = true; parentNode.wrapper.children.splice(index, 1);
+                    }
+                }
+                moveChildInStack(obj as Node, target as Node, this.diagram, this.action);
+                parentNode = checkParentAsContainer(this.diagram, obj) ? this.diagram.nameTable[(obj as Node).parentId] :
+                    (this.diagram.nameTable[(obj as Node).parentId] || obj);
+                if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
+                    parentNode.wrapper.maxWidth = parentNode.maxWidth = parentNode.wrapper.actualSize.width;
+                    parentNode.wrapper.maxHeight = parentNode.maxHeight = parentNode.wrapper.actualSize.height;
+                    isChangeProperties = true;
+                }
+                if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
+                    checkChildNodeInContainer(this.diagram, obj as NodeModel);
+                } else {
+                    history = this.updateContainerPropertiesExtend(parentNode, obj, connectors, helperObject, history);
+                }
+                if ((obj.shape as SwimLaneModel).lanes) {
+                    this.updateLaneChildNode(obj);
+                }
+                if (isChangeProperties) {
+                    parentNode.maxWidth = parentNode.wrapper.maxWidth = undefined;
+                    parentNode.maxHeight = parentNode.wrapper.maxHeight = undefined;
+                }
+                if (hasStack) {
                     this.diagram.nodePropertyChange(parentNode, {} as Node, {
-                        offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
-                        width: parentNode.width, height: parentNode.height,
+                        offsetX: parentNode.offsetX, offsetY: parentNode.offsetY, width: parentNode.width, height: parentNode.height,
                         rotateAngle: parentNode.rotateAngle
                     } as Node);
-                    this.diagram.drag(parentNode, x - parentNode.wrapper.bounds.x, y - parentNode.wrapper.bounds.y);
-                } else {
+                    let entry: HistoryEntry = {
+                        type: 'StackChildPositionChanged', redoObject: { sourceIndex: undefined, source: undoElement.source } as NodeModel,
+                        undoObject: undoElement as NodeModel, category: 'Internal'
+                    };
+                    if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) { this.diagram.addHistoryEntry(entry); }
+                }
+                if (obj && obj.container && (obj.container.type === 'Stack' ||
+                    (obj.container.type === 'Canvas' && (obj as Node).parentId === ''))) {
                     if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
                         obj.wrapper.measureChildren = true;
                     }
                     this.diagram.nodePropertyChange(obj as Node, {} as Node, {
-                        offsetX: obj.offsetX, offsetY: obj.offsetY,
-                        width: obj.width, height: obj.height,
-                        rotateAngle: obj.rotateAngle
+                        offsetX: obj.offsetX, offsetY: obj.offsetY, width: obj.width, height: obj.height, rotateAngle: obj.rotateAngle
                     } as Node);
-                    obj.wrapper.measureChildren = false;
+                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                        obj.wrapper.measureChildren = false;
+                    }
                 }
             }
-            if (isChangeProperties) {
-                parentNode.maxWidth = undefined; parentNode.wrapper.maxWidth = undefined;
-                parentNode.maxHeight = undefined; parentNode.wrapper.maxHeight = undefined;
-            }
-            if (hasStack) {
-                this.diagram.nodePropertyChange(parentNode, {} as Node, {
-                    offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
-                    width: parentNode.width, height: parentNode.height,
-                    rotateAngle: parentNode.rotateAngle
-                } as Node);
-                let entry: HistoryEntry = {
-                    type: 'StackChildPositionChanged', redoObject: { sourceIndex: undefined, source: undoElement.source } as NodeModel,
-                    undoObject: undoElement as NodeModel, category: 'Internal'
-                };
-                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
-                    this.diagram.addHistoryEntry(entry);
+            updateConnectorsProperties(connectors, this.diagram);
+            history.hasStack = hasGroup;
+        }
+        return history;
+    }
+
+
+    private updateLaneChildNode(obj: NodeModel): void {
+        for (let i: number = 0; i < ((obj.shape as SwimLaneModel).lanes.length); i++) {
+            if ((obj.shape as SwimLaneModel).lanes[i].children && (obj.shape as SwimLaneModel).lanes[i].children.length > 0) {
+                for (let j: number = 0; j < (obj.shape as SwimLaneModel).lanes[i].children.length; j++) {
+                    let id: string = (obj.shape as SwimLaneModel).lanes[i].children[j].id;
+                    let childNode: NodeModel = this.diagram.nameTable[id];
+                    childNode.offsetX = childNode.wrapper.offsetX;
+                    childNode.offsetY = childNode.wrapper.offsetY;
                 }
             }
         }
-        return hasGroup;
+    }
+
+    private updateContainerPropertiesExtend(
+        parentNode: Node, obj: NodeModel, connectors: string[], helperObject: NodeModel, history: HistoryLog): HistoryLog {
+        if (this.currentAction === 'ResizeEast' || this.currentAction === 'ResizeSouth' || obj.shape.type === 'SwimLane') {
+            let undoObj: NodeModel = cloneObject(obj); let isUpdateRow: boolean = false;
+            if (parentNode && parentNode.container && parentNode.container.type === 'Grid') {
+                let shape: boolean = parentNode.shape.type === 'SwimLane' ? true : false;
+                let container: GridPanel = (shape ? parentNode.wrapper.children[0] : parentNode.wrapper) as GridPanel;
+                let padding: number = shape ? (parentNode.shape as SwimLane).padding : undefined;
+                let x: number = parentNode.wrapper.bounds.x; let y: number = parentNode.wrapper.bounds.y;
+                if (obj.columnIndex !== undefined && (parentNode.container.orientation === 'Horizontal' &&
+                    ((shape && (obj as Node).isPhase) || (!shape && obj.rowIndex === 1))) ||
+                    (parentNode.container.orientation === 'Vertical' &&
+                        ((!shape && obj.rowIndex > 0 && obj.columnIndex > 0) || (shape && (obj as Node).isLane)))) {
+                    if (parentNode.container.orientation === 'Horizontal' && (obj as Node).isPhase && obj.wrapper.width > obj.maxWidth) {
+                        obj.maxWidth = obj.wrapper.width;
+                        obj.wrapper.maxWidth = obj.wrapper.width;
+                    }
+                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
+                    container.updateColumnWidth(obj.columnIndex, helperObject.width, true, padding);
+                    if ((obj as Node).isPhase) {
+                        let id: string = (parentNode.shape as SwimLaneModel).phases[obj.columnIndex].header.id;
+                        let node: Node = this.diagram.nameTable[id];
+                        if (node.maxWidth < helperObject.width) {
+                            node.maxWidth = helperObject.width;
+                            node.wrapper.maxWidth = helperObject.width;
+                        }
+                    }
+                    if (parentNode.shape.type === 'SwimLane') {
+                        parentNode.width = (parentNode.width) ? container.width : parentNode.width;
+                        updateHeaderMaxWidth(this.diagram, parentNode);
+                        parentNode.wrapper.width = parentNode.width;
+                        connectors = getConnectors(this.diagram, container, obj.rowIndex, false);
+                    }
+                } else if (obj.rowIndex !== undefined) {
+                    isUpdateRow = true;
+                    updateSwimLaneObject(this.diagram, obj as Node, parentNode, helperObject);
+                    container.updateRowHeight(obj.rowIndex, helperObject.height, true, padding);
+                    if (parentNode.shape.type === 'SwimLane') {
+                        parentNode.height = (parentNode.height) ? container.height : parentNode.height;
+                        parentNode.wrapper.height = parentNode.height;
+                        connectors = getConnectors(this.diagram, container, obj.rowIndex, true);
+                    }
+                }
+                if (parentNode.shape.type === 'SwimLane') {
+                    history.isPreventHistory = true;
+                }
+                this.diagram.nodePropertyChange(parentNode, {} as Node, {
+                    offsetX: parentNode.offsetX, offsetY: parentNode.offsetY,
+                    rotateAngle: parentNode.rotateAngle
+                } as Node);
+                this.diagram.drag(parentNode, x - parentNode.wrapper.bounds.x, y - parentNode.wrapper.bounds.y);
+            } else {
+                if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                    obj.wrapper.measureChildren = true;
+                }
+                this.diagram.nodePropertyChange(obj as Node, {} as Node, {
+                    offsetX: obj.offsetX, offsetY: obj.offsetY, width: obj.width, height: obj.height, rotateAngle: obj.rotateAngle
+                } as Node);
+                obj.wrapper.measureChildren = false;
+            }
+            obj.wrapper.measure(new Size(obj.wrapper.width, obj.wrapper.height));
+            obj.wrapper.arrange(obj.wrapper.desiredSize);
+            if (this.currentAction === 'ResizeEast' || this.currentAction === 'ResizeSouth') {
+                let redoObject: NodeModel = cloneObject(obj);
+                let entry: HistoryEntry = {
+                    category: 'Internal',
+                    type: (isUpdateRow) ? 'RowHeightChanged' : 'ColumnWidthChanged',
+                    undoObject: undoObj, redoObject: redoObject
+                };
+                this.diagram.addHistoryEntry(entry);
+            }
+        }
+        updateConnectorsProperties(connectors, this.diagram);
+        return history;
     }
 
     private addUmlNode(): void {
@@ -1366,13 +1627,9 @@ class ObjectFinder {
                 }
             }
         }
-        let container: Container;
-        let bounds: Rect;
-        let child: DiagramElement;
-        let matrix: Matrix;
+        let container: Container; let bounds: Rect; let child: DiagramElement; let matrix: Matrix;
         let objArray: Object[] = diagram.spatialSearch.findObjects(new Rect(pt.x - 50, pt.y - 50, 100, 100));
-        let layerObjTable: {} = {};
-        let layerTarger: (NodeModel | ConnectorModel)[];
+        let layerObjTable: {} = {}; let layerTarger: (NodeModel | ConnectorModel)[];
         for (let obj of objArray) {
             let point: PointModel = pt;
             bounds = (obj as NodeModel).wrapper.outerBounds;
@@ -1388,12 +1645,9 @@ class ObjectFinder {
                         for (child of container.children) {
                             matrix = identityMatrix();
                             rotateMatrix(
-                                matrix, -(child.rotateAngle + child.parentTransform),
-                                child.offsetX, child.offsetY);
+                                matrix, -(child.rotateAngle + child.parentTransform), child.offsetX, child.offsetY);
                             point = transformPointByMatrix(matrix, pt);
-                            if (cornersPointsBeforeRotation(child).containsPoint(point)) {
-                                pointInBounds = true;
-                            }
+                            if (cornersPointsBeforeRotation(child).containsPoint(point)) { pointInBounds = true; }
                         }
                     }
                     if (!source || (isSelected(diagram, obj) === false)) {
@@ -1418,15 +1672,11 @@ class ObjectFinder {
                 if (obj.shape.type === 'Bpmn' && (obj as Node).processId && (!(diagram[eventHandler].tool instanceof MoveTool) ||
                     (diagram[eventHandler].tool instanceof MoveTool) && canAllowDrop(obj))) {
                     let index: number = actualTarget.indexOf(diagram.nameTable[(obj as Node).processId]);
-                    if (index > -1) {
-                        actualTarget.splice(index, 1);
-                    }
+                    if (index > -1) { actualTarget.splice(index, 1); }
                 }
                 if (obj.shape.type === 'UmlClassifier' && (obj as Node).container && (obj as Node).container.type === 'Stack') {
                     let index: number = actualTarget.indexOf(diagram.nameTable[diagram.nameTable[obj.id].wrapper.children[0].id]);
-                    if (index > -1) {
-                        actualTarget.splice(index, 1);
-                    }
+                    if (index > -1) { actualTarget.splice(index, 1); }
                 }
             }
         }
@@ -1449,6 +1699,17 @@ class ObjectFinder {
                     actualTarget.splice(index, 1);
                 } else { break; }
                 parentObj = diagram.nameTable[(parentObj as Node).parentId];
+            }
+        }
+        if (eventArgs && !eventArgs.source) {
+            for (let i: number = 0; i < actualTarget.length; i++) {
+                let parentNode: NodeModel = diagram.nameTable[(actualTarget[i] as Node).parentId];
+                if (parentNode && parentNode.shape.type === 'SwimLane') {
+                    for (let j: number = 0; j < actualTarget.length; j++) {
+                        let connector: ConnectorModel | NodeModel = actualTarget[j];
+                        if (connector instanceof Connector) { actualTarget.splice(i, 1); }
+                    }
+                }
             }
         }
         return actualTarget as IElement[];
@@ -1667,4 +1928,10 @@ export interface MouseEventArgs {
     moveTouches?: TouchList | ITouches[];
     clickCount?: number;
     actualObject?: IElement;
+}
+
+/** @private */
+export interface HistoryLog {
+    hasStack?: boolean;
+    isPreventHistory?: boolean;
 }

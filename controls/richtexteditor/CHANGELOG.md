@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- Image and Table quick toolbar open while scrolling the content in the iPhone device, that issue has been fixed.
+
+- Getting console error while rendering inline mode with `FontColor` and `BackgroundColor` in mobile view, that issue has been fixed.
+
+#### New Features
+
+- **Paste cleanup**
+    - This feature allows users to clean up HTML content when copying and pasting any other content from external sources.
+
 ## 16.4.55 (2019-02-27)
 
 ### RichTextEditor

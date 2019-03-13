@@ -4,14 +4,23 @@
 import { createElement, isVisible, isNullOrUndefined, Browser, EmitType } from '@syncfusion/ej2-base';
 import { ComboBox, CustomValueSpecifierEventArgs } from '../../src/combo-box/combo-box';
 import { ChangeEventArgs } from '../../src/drop-down-list/drop-down-list';
-import { FilteringEventArgs } from '../../src/drop-down-base';
+import { FilteringEventArgs, PopupEventArgs } from '../../src/drop-down-base';
 import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 let languageData: { [key: string]: Object }[] = [
     { id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
     { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'PYTHON' }, { id: 'list5', text: 'HTMLCSS' }];
 
 describe('ComboBox', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let css: string = ".e-spinner-pane::after { content: 'Material'; display: none;} ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -1926,4 +1935,58 @@ describe('ComboBox', () => {
             });
         });
     });
+    describe('EJ2-23514 - ComboBox item not selected when pre-selected item remove using clear button', () => {
+        let element: HTMLInputElement;
+        let empList: { [key: string]: Object }[] = [
+            { id: 'level1', country: 'American Football' }, { id: 'level2', country: 'Badminton' },
+            { id: 'level3', country: 'Basketball' }, { id: 'level4', country: 'Cricket' },
+            { id: 'level5', country: 'Football' }, { id: 'level6', country: 'Golf' },
+            { id: 'level7', country: 'Hockey' }, { id: 'level8', country: 'Rugby' },
+            { id: 'level9', country: 'Snooker' }, { id: 'level10', country: 'Tennis' },
+        ];
+        let ddl: ComboBox;
+        beforeAll((done) => {
+            element = <HTMLInputElement>createElement('input', { id: 'games' });
+            document.body.appendChild(element);
+            ddl = new ComboBox({
+                dataSource: empList,
+                fields: { text: 'country', value: 'id' },
+                placeholder: 'Select a game',
+                sortOrder: 'Ascending',
+                value: 'level4',
+                popupHeight: '230px',
+                allowFiltering: true
+            });
+            ddl.appendTo('#games');
+            ddl.showPopup();
+            setTimeout(() => {
+                ddl.hidePopup();
+                setTimeout(() => {
+                    done();
+                }, 200);
+            }, 200);
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('check blur event trigger', (done) => {
+            ddl.open = (args: PopupEventArgs) : void => {
+                expect(isNullOrUndefined(args.popup.element.querySelector('.e-active'))).toBe(true);
+                done();
+            }
+            ddl.focusIn();
+            let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+            (<any>ddl).resetHandler(mouseEventArgs);
+            ddl.showPopup();
+        });
+    });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

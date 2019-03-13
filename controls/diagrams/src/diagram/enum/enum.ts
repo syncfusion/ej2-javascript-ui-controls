@@ -1762,7 +1762,17 @@ export type EntryType =
     /** ChildCollectionChanged - Sets the entry type as ChildCollectionChanged used for add and remove a child collection in a container */
     'ChildCollectionChanged' |
     /** StackNodeChanged - Sets the entry type as StackNodePositionChanged */
-    'StackChildPositionChanged';
+    'StackChildPositionChanged' |
+    /** ColumnWidthChanged - Sets the entry type as ColumnWidthChanged */
+    'ColumnWidthChanged' |
+    /** RowHeightChanged - Sets the entry type as RowHeightChanged */
+    'RowHeightChanged' |
+    /** LanePositionChanged - Sets the entry type as LanePositionChanged */
+    'LanePositionChanged' |
+    /** PhaseCollectionChanged - Sets the entry type as PhaseCollectionChanged */
+    'PhaseCollectionChanged' |
+    /** LaneCollectionChanged - Sets the entry type as LaneCollectionChanged */
+    'LaneCollectionChanged';
 /**
  * Defines the entry category type
  * Internal - Sets the entry category type as Internal
@@ -2126,6 +2136,7 @@ export enum Keys {
  * * TextEdit - Indicates the text editing is in progress.
  * * Group - Indicates the group is in progress.
  * * Clear - Indicates diagram have clear all. 
+ * * PreventClearSelection - prevents diagram from clear selection
  */
 export enum DiagramAction {
     /** Indicates the diagram is in render state.r */
@@ -2145,9 +2156,12 @@ export enum DiagramAction {
     /** prevents diagram from clear selection. */
     PreventClearSelection = 1 << 8,
     /** Indicates whether drag or rotate tool has been activated */
-    Interactions = 1 << 9
+    Interactions = 1 << 9,
+    /** Use to prevent the history during some action in diagram */
+    PreventHistory = 1 << 10,
+    /** Use to prevent the icon while expand a node in diagram */
+    PreventIconsUpdate = 1 << 11
 }
-
 
 /**
  * Defines the Selector type to be drawn
@@ -2162,7 +2176,6 @@ export enum RendererAction {
     /** PreventRenderSelector - Avoid the render of selector during interaction */
     PreventRenderSelector = 1 << 3
 }
-
 
 export enum RealAction {
     None = 0,
@@ -2264,7 +2277,7 @@ export enum DiagramEvent {
     'collectionChange', 'rotateChange', 'positionChange', 'propertyChange', 'selectionChange', 'sizeChange', 'drop',
     'sourcePointChange', 'targetPointChange', 'connectionChange', 'animationComplete', 'click', 'doubleClick',
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
-    'mouseEnter', 'mouseLeave', 'mouseOver'
+    'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange'
 }
 
 /**
@@ -2306,7 +2319,9 @@ export enum PortConstraints {
     /** Enables to only connect the target end of connector */
     InConnect = 1 << 3,
     /** Enables to only connect the source end of connector */
-    OutConnect = 1 << 4
+    OutConnect = 1 << 4,
+    /** Enables all constraints */
+    Default = 1 << 3 | 1 << 4
 }
 
 /**

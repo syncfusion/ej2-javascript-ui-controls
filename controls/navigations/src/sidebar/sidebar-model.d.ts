@@ -10,33 +10,29 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the size of the Sidebar in dock state.
      * > For more details about dockSize refer to 
-     * [`Dock`](../../sidebar/docking-sidebar/) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default 'auto'
      */
     dockSize?: string | number;
 
     /**
-     * Specifies the media query whether the sidebar need to be opened when the resolution meets
+     * Specifies the media query string for resolution, which when met opens the Sidebar.
      * ```typescript
      *   let defaultSidebar: Sidebar = new Sidebar({
-     *       mediaQuery: window.matchMedia('(min-width: 600px)') 
+     *       mediaQuery:'(min-width: 600px)' 
      *   });
      * ```
      * > For more details about mediaQuery refer to 
-     * [`Auto Close`](../../sidebar/auto-close/) documentation.
+     * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
-     * @aspIgnore
+     * @aspType string
      */
-    mediaQuery?: MediaQueryList;
+    mediaQuery?: string | MediaQueryList;
 
     /**
      * Specifies the docking state of the component.
-     * 
-     * > From v16.4.49, When the Sidebar type is set to `Auto`,
-     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the `isOpen` property.
-     * 
      * > For more details about enableDock refer to 
-     * [`Dock`](../../sidebar/docking-sidebar/) documentation.
+     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
      * @default false
      */
     enableDock?: boolean;
@@ -64,11 +60,9 @@ export interface SidebarModel extends ComponentModel{
     enableGestures?: boolean;
 
     /**
-     * Gets or sets the Sidebar component is open or close.
-     * 
-     * > From v16.4.49, When the Sidebar type is set to `Auto`,
-     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the `isOpen` property.
-     * 
+     * Gets or sets the Sidebar component is open or close. 
+     * > When the Sidebar type is set to `Auto`,
+     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the isOpen property.
      * @default false
      */
     isOpen?: boolean;
@@ -101,7 +95,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the position of the Sidebar (Left/Right) corresponding to the main content.
      * > For more details about SidebarPosition refer to 
-     * [`position`](../../sidebar/getting-started/) documentation.
+     * [`position`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#position) documentation.
      * @default 'Left'
      */
     position?: SidebarPosition;
@@ -109,7 +103,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Allows to place the sidebar inside the target element.
      * > For more details about target refer to 
-     * [`Custom Context`](../../sidebar/custom-context/) documentation.
+     * [`Custom Context`](https://ej2.syncfusion.com/documentation/sidebar/custom-context/) documentation.
      * @default null
      */
     target?: HTMLElement | string;
@@ -117,7 +111,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the whether to apply overlay options to main content when the Sidebar is in an open state.
      * > For more details about showBackdrop refer to 
-     * [`Backdrop`](../../sidebar/getting-started/#enable-backdrop) documentation.
+     * [`Backdrop`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#enable-backdrop) documentation.
      * @default false
      */
     showBackdrop?: boolean;
@@ -130,7 +124,7 @@ export interface SidebarModel extends ComponentModel{
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
      * > For more details about SidebarType refer to 
-     * [`SidebarType`](../../sidebar/variations/#types) documentation.
+     * [`SidebarType`](./variations.html#types) documentation.
      * @default 'Auto'
      */
     type?: SidebarType;

@@ -3598,6 +3598,7 @@ export class Layout {
                     viewer.blockToShift = block;
                 }
                 break;
+
             }
             updateNextBlockList = true;
             if (viewer.owner.isShiftingEnabled && viewer.fieldStacks.length === 0) {

@@ -50,8 +50,13 @@ export class TreeMapTooltip {
                 value = item['weight'];
                 toolTipData = item['data'];
                 markerFill = item['options']['fill'];
-                tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
-                    this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+                if (this.treemap.enableRtl) {
+                    tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
+                        formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString()];
+                } else {
+                    tooltipContent = [textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) ||
+                        this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
+                }
                 if (document.getElementById(this.tooltipId)) {
                     tooltipEle = document.getElementById(this.tooltipId);
                 } else {

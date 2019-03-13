@@ -1,6 +1,6 @@
+//default 
 /*! component's theme wise override fabric-definitions and variables */
 $skin-name: 'bootstrap' !default;
-$acrd-expand-collapse-icon: '\e857' !default;
 $acrdn-header-font-weight: normal !default;
 $acrdn-icon-font-size: $font-size !default;
 $acrdn-content-line-height: 1.5 !default;
@@ -73,3 +73,4 @@ $acrdn-default-border: $grey-dd !default;
 $acrdn-header-focus-bg: transparent !default;
 
 $acrdn-item-select-bg: $grey-f5 !default;
+//enddefault

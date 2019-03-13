@@ -7,6 +7,7 @@ import { data } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { createGrid, destroy } from '../base/specutil.spec';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Freeze, Aggregate);
 
@@ -14,6 +15,11 @@ describe('Freeze render module', () => {
     describe('Freeze Row and Column', () => {
         let gridObj: any;
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: data,
@@ -260,6 +266,15 @@ describe('Freeze render module', () => {
             gridObj.copy(true);
             expect((<any>gridObj.clipboardModule).copyContent).toBe('CustomerID	OrderID	EmployeeID	ShipCountry	ShipCity\nHANAR	10250	4	Brazil	Rio de Janeiro');
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
         afterAll(() => {
             gridObj['freezeModule'].destroy();

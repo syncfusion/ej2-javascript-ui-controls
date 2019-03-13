@@ -1,4 +1,5 @@
 /*! component's theme wise override definitions and variables */
+$field-list-skin: 'bootstrap' !default;
 $field-list-active-color: $brand-primary !default;
 $field-list-default-font-color: $grey-light-font !default;
 $field-list-default-formula-font-color: $field-list-default-font-color !default;
@@ -39,11 +40,6 @@ $field-list-toggle-hover-color: $grey-99 !default;
 $pivot-formula-background: $grey-white !default;
 $pivot-formula-border: $grey-e6 !default;
 $pivot-text-area-background: $grey-light-font !default;
-$pivotgrid-filter-icon: '\ea77' !default;
-$pivotgrid-sorting-icon: '\ea79' !default;
-$pivotgrid-drop-down-icon: '\e95d' !default;
-$pivotgrid-remove-icon: '\ea7b' !default;
-$pivotgrid-filtered-icon: '\ea78' !default;
 $pivot-calculated-header-opacity: 1 !default;
 $pivot-dialog-font-weight: bold !default;
 $pivot-dialog-content-opacity: 1 !default;
@@ -60,8 +56,8 @@ $field-list-default-header-font-color: $grey-light-font !default;
 $field-list-default-header-icon-font-color: $grey !default;
 $field-list-button-hover-color: $grey-f9 !default;
 $field-list-button-focus-color: $grey-e6 !default;
-$pivotgrid-button-icon-color: $grey-light-font !default;
-$pivotgrid-icon-hover-color: $grey-light-font !default;
+$field-list-button-icon-color: $grey-light-font !default;
+$field-list-icon-hover-color: $grey-light-font !default;
 $field-list-treeview-font-weight: bold !default;
 $error-font-color: #a94442 !default;
 $field-list-excel-member-filter-height: 134px !default;

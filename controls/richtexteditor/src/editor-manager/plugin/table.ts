@@ -46,6 +46,7 @@ export class TableCommand {
         table.appendChild(tblBody);
         e.item.selection.restore();
         InsertHtml.Insert(this.parent.currentDocument, table, this.parent.editableElement);
+        this.removeEmptyNode();
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
@@ -59,6 +60,26 @@ export class TableCommand {
         }
         return table;
     }
+
+    private removeEmptyNode(): void {
+        let emptyUl: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
+        for (let i: number = 0; i < emptyUl.length; i++) {
+            detach(emptyUl[i]);
+        }
+        let emptyLiChild: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty');
+        for (let i: number = 0; i < emptyLiChild.length; i++) {
+            detach(emptyLiChild[i]);
+            if (emptyLiChild.length === i + 1) {
+                emptyLiChild = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty');
+                i = -1;
+            }
+        }
+        let emptyLi: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li:empty');
+        for (let i: number = 0; i < emptyLi.length; i++) {
+            detach(emptyLi[i]);
+        }
+    }
+
     private insertAfter(newNode: Element, referenceNode: Element): void {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
     }

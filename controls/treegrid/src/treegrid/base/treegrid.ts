@@ -10,6 +10,7 @@ import {Filter} from '../actions/filter';
 import {Aggregate} from '../actions/summary';
 import { Reorder } from '../actions/reorder';
 import { Resize } from '../actions/resize';
+import { Selection as TreeGridSelection } from '../actions/selection';
 import { ColumnMenu } from '../actions/column-menu';
 import { Print } from '../actions/print';
 import * as events from '../base/constant';
@@ -24,7 +25,7 @@ import { SelectionSettings } from '../models/selection-settings';
 import { SelectionSettingsModel } from '../models/selection-settings-model';
 import {getActualProperties, SortDirection, getObject, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { TextWrapSettings, TextWrapSettingsModel, PrintMode, Data, IGrid, ContextMenuItemModel } from '@syncfusion/ej2-grids';
-import { ColumnMenuItem, ColumnMenuItemModel } from '@syncfusion/ej2-grids';
+import { ColumnMenuItem, ColumnMenuItemModel, CheckBoxChangeEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { PdfExportCompleteArgs, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExportProperties, PdfExportProperties, CellSelectingEventArgs, PrintEventArgs } from '@syncfusion/ej2-grids';
@@ -74,6 +75,7 @@ import { SortSettingsModel } from '../models/sort-settings-model';
 export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyChanged {
   constructor(options?: TreeGridModel, element?: Element) {
     super(options, <HTMLButtonElement | string>element);
+    TreeGrid.Inject(TreeGridSelection);
     this.grid = new Grid();
   }
   // internal variables
@@ -82,6 +84,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   private l10n: L10n;
   public dataModule: DataManipulation;
   private registeredTemplate: Object;
+  private uniqueIDCollection: Object = {};
+  private uniqueIDFilterCollection: Object = {};
   /**
    * The `sortModule` is used to manipulate sorting in TreeGrid.
    */
@@ -136,6 +140,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   public filterModule: Filter;
   public excelExportModule: ExcelExport;
   public pdfExportModule: PdfExport;
+  public selectionModule: TreeGridSelection;
   /** @hidden */
 
     /** @hidden */
@@ -254,6 +259,12 @@ public allowReordering: boolean;
  */
 @Property(false)
 public allowResizing: boolean;
+/**    
+ * If `autoCheckHierarchy` is set to true, hierarchy checkbox selection has been enabled in TreeGrid.      
+ * @default false    
+ */
+@Property(false)
+public autoCheckHierarchy: boolean;
   /**     
    * Configures the pager in the TreeGrid.  
    * @default {currentPage: 1, pageSize: 12, pageCount: 8, enableQueryString: false, pageSizes: false, template: null}     
@@ -391,7 +402,6 @@ public pagerTemplate: string;
      */
     @Property()
     public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[];
-
     /**    
      * `columnMenuItems` defines both built-in and custom column menu items.
      * <br><br> 
@@ -405,6 +415,7 @@ public pagerTemplate: string;
      */
     @Property()
     public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
+
   /**
    * Defines the height of TreeGrid rows.
    * @default null
@@ -433,14 +444,14 @@ public pagerTemplate: string;
   public enableHover: boolean;
   /**    
    * Defines the scrollable height of the TreeGrid content.    
-   * @default auto    
+   * @default 'auto'    
    */
   @Property('auto')
   public height: string | number;
 
   /**    
    * Defines the TreeGrid width.    
-   * @default auto    
+   * @default 'auto'    
    */
   @Property('auto')
   public width: string | number;
@@ -609,24 +620,27 @@ public pagerTemplate: string;
      */
   @Event()
   public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
-    /**
-     * Triggers before any cell selection occurs.
-     * @event 
-     */
+
+      /**
+       * Triggers before any cell selection occurs.
+       * @event 
+       */
   @Event()
   public cellSelecting: EmitType<CellSelectingEventArgs>;
     /** 
      * Triggers before column menu opens.
      * @event
      */
-  @Event()
+    @Event()
   public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
     /** 
      * Triggers when click on column menu.
      * @event
      */
-  @Event()
+    @Event()
   public columnMenuClick: EmitType<MenuEventArgs>;
+
+
     /**
      * Triggers after a cell is selected.
      * @event 
@@ -689,6 +703,12 @@ public pagerTemplate: string;
   */
   @Event()
   public columnDrop: EmitType<ColumnDragEventArgs>;
+  /** 
+   * Triggers when the check box state change in checkbox column.
+   * @event
+   */
+  @Event()
+  public checkboxChange: EmitType<CheckBoxChangeEventArgs>;
 
  /** 
   * Triggers after print action is completed.  
@@ -727,6 +747,11 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
    */
   @Event()
   public contextMenuClick: EmitType<MenuEventArgs>;
+  /**
+   * Triggers when row elements are dragged (moved) continuously.
+   * @event
+   */
+
   /**
    * The `selectedRowIndex` allows you to select a row at initial rendering. 
    * You can also get the currently selected row index.
@@ -883,7 +908,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       Below: 'Below',
       AddRow: 'Add Row',
       ExpandAll: 'Expand All',
-      CollapseAll: 'Collapse All'
+      CollapseAll: 'Collapse All',
     };
     if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
       this.childMapping = 'Children';
@@ -1172,6 +1197,12 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
             args: [this]
         });
       }
+      if (this.allowSelection) {
+        modules.push({
+          member: 'selection',
+          args: [this]
+        });
+      }
       return modules;
     }
     private isCommandColumn(columns: Column[]): boolean {
@@ -1200,6 +1231,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.dataModule = new DataManipulation(this);
     this.printModule = new Print(this);
     this.columnMenuModule = new ColumnMenu(this);
+    /**
+     * @hidden
+     */
     this.trigger(events.load);
     this.autoGenerateColumns();
     this.convertTreeData(this.dataSource);
@@ -1221,6 +1255,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   private convertTreeData(data: Object): void {
     if (data instanceof Array && data.length > 0 && (<Object>data[0]).hasOwnProperty('level')) {
         this.flatData = data;
+        this.flatData.filter((e: ITreeData) => {
+          if (e.level === 0) {
+            this.parentData.push(e);
+          }
+        });
     } else {
         this.dataModule.convertToFlatData(data);
     }
@@ -1238,7 +1277,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let edit: GridEditModel = {};
     this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
     this.grid.enableRtl = this.enableRtl;
-    this.grid.columns = this.getGridColumns();
+    this.grid.columns = this.getGridColumns(this.columns as Column[]);
     this.grid.allowExcelExport = this.allowExcelExport;
     this.grid.allowPdfExport = this.allowPdfExport;
     this.grid.query = this.query;
@@ -1269,6 +1308,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.textWrapSettings = getActualProperties(this.textWrapSettings);
     this.grid.printMode = getActualProperties(this.printMode);
     this.grid.locale = getActualProperties(this.locale);
+    this.grid.selectedRowIndex = this.selectedRowIndex;
     this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
     this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
     this.grid.editSettings = this.getGridEditSettings();
@@ -1306,6 +1346,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.notify('pdfCellInfo', args);
       args = <PdfQueryCellInfoEventArgs>this.dataResults;
     };
+    this.grid.checkBoxChange = (args?: CheckBoxChangeEventArgs): void => {
+      this.trigger(events.checkboxChange, args);
+    };
     this.grid.pdfExportComplete = this.triggerEvents.bind(this);
     this.grid.excelExportComplete = this.triggerEvents.bind(this);
     this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
@@ -1333,6 +1376,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.actionFailure = this.triggerEvents.bind(this);
     this.grid.dataBound = (args: Object): void => {
       this.updateColumnModel();
+      this.notify('headerCheckbox', {});
       this.trigger(events.dataBound, args);
       if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
         let req: number = getObject('dataSource.requests', this).filter((e: Ajax) => {
@@ -1438,6 +1482,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         if (args.requestType === 'batchsave') {
           this.notify(events.batchSave, args);
         }
+        this.notify('updateGridActions', args);
       }
       this.trigger(events.actionComplete, args);
     };
@@ -1595,8 +1640,8 @@ private getGridEditSettings(): GridEditModel {
    * Convert TreeGrid ColumnModel to Grid Column
    * @hidden
    */
-  private getGridColumns(): GridColumnModel[] {
-    let column: Column[] | ColumnModel[] | string[] = this.columns;
+  private getGridColumns(columns: Column[]): GridColumnModel[] {
+    let column: Column[] | ColumnModel[] | string[] = columns;
     this.columnModel = [];
     let treeGridColumn: ColumnModel;
     let gridColumn: GridColumnModel;
@@ -1610,7 +1655,11 @@ private getGridEditSettings(): GridEditModel {
           gridColumn[prop] =  treeGridColumn[prop] = column[i][prop];
         }
       }
-      this.columnModel.push(new Column(treeGridColumn));
+      if (column[i].columns) {
+        this.getGridColumns(columns[i].columns as Column[]);
+      } else {
+        this.columnModel.push(new Column(treeGridColumn));
+      }
       gridColumnCollection.push(gridColumn);
     }
     return gridColumnCollection;
@@ -1629,7 +1678,7 @@ private getGridEditSettings(): GridEditModel {
     for (let prop of properties) {
       switch (prop) {
         case 'columns':
-          this.grid.columns = this.getGridColumns(); break;
+        this.grid.columns = this.getGridColumns(this.columns as Column[]); break;
         case 'treeColumnIndex':
           this.grid.refreshColumns(); break;
         case 'allowPaging':
@@ -1744,7 +1793,8 @@ private getGridEditSettings(): GridEditModel {
         this.dataModule.destroy();
         let modules: string[] = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule',
         'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
-         'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule'];
+         'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule',
+         'selectionModule'];
         for (let i: number = 0; i < modules.length; i++) {
             if (this[modules[i]]) {
                 this[modules[i]] = null;
@@ -1817,6 +1867,7 @@ private getGridEditSettings(): GridEditModel {
     ) {
       this.expandCollapseRequest(target);
     }
+    this.notify('checkboxSelection', {target: target});
   }
 
   /**
@@ -2189,11 +2240,38 @@ private getGridEditSettings(): GridEditModel {
       this.grid.refresh();
   }
 
+  /** 
+   * Get the records of checked rows.
+   * @return {Object[]}
+   * @hidden
+   */
+
+    public getCheckedRecords(): Object[] {
+      return this.selectionModule.getCheckedrecords();
+  }
+    /** 
+     * Get the indexes of checked rows.
+     * @return {number[]}
+     */
+
+    public getCheckedRowIndexes(): number[] {
+      return this.selectionModule.getCheckedRowIndexes();
+    }
+
+    /** 
+     * Checked the checkboxes using rowIndexes.
+     */
+
+    public selectCheckboxes(indexes: number[]): void {
+      this.selectionModule.selectCheckboxes(indexes);
+    }
+
+
   /**
    * Refreshes the TreeGrid column changes.
    */
   public refreshColumns(): void {
-    this.grid.columns = this.getGridColumns();
+    this.grid.columns = this.getGridColumns(this.columns as Column[]);
     this.grid.refreshColumns();
   }
 
@@ -2400,7 +2478,7 @@ private getGridEditSettings(): GridEditModel {
         }
       } else {
         let childRecords: ITreeData[] =  this.getCurrentViewRecords().filter((e: ITreeData) => {
-          return (e.parentUniqueID === record.uniqueID);
+          return (e.parentUniqueID === record.uniqueID) || e.isSummaryRow;
         });
         let index: number = (<ITreeData>childRecords[0].parentItem).index;
         let rows: HTMLTableRowElement[] = gridRows.filter(
@@ -2459,7 +2537,7 @@ private getGridEditSettings(): GridEditModel {
      * @param  {string} filterOperator - Defines the operator to filter records.
      * @param  {string | number | Date | boolean} filterValue - Defines the value used to filter records.
      * @param  {string} predicate - Defines the relationship between one filter query and another by using AND or OR predicate.   
-     * @param  {boolean} matchCase - If match case is set to true, TreeGrid filters the records with exact match. if false, it filters case 
+     * @param  {boolean} matchCase - If match case is set to true, TreeGrid filters the records with exact match. if false, it filters case 
      * insensitive records (uppercase and lowercase letters treated the same).  
      * @param  {boolean} ignoreAccent - If ignoreAccent set to true, 
      * then filter ignores the diacritic characters or accents while filtering.
@@ -2567,6 +2645,7 @@ private getGridEditSettings(): GridEditModel {
     public getDataModule(): {baseModule: Data, treeModule: DataManipulation} {
       return {baseModule: this.grid.getDataModule(), treeModule: this.dataModule};
   }
+
   /**
    * The `toolbarModule` is used to manipulate ToolBar items and its action in the TreeGrid.
    */
@@ -2580,3 +2659,4 @@ private getGridEditSettings(): GridEditModel {
    */
   public pagerModule: Page;
 }
+

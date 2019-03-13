@@ -1,7 +1,7 @@
 /**
  * Simple symbol palette
  */
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, Draggable, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { Diagram } from '../../src/diagram/diagram';
 import { Path, SwimLane } from '../../src/diagram/objects/node';
 
@@ -17,6 +17,7 @@ import {
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { PaletteModel, IElement, PointModel, PortVisibility, PortConstraints, IDragEnterEventArgs } from '../../src/index';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 Diagram.Inject(BpmnDiagrams);
 SymbolPalette.Inject(BpmnDiagrams);
 Diagram.Inject(UndoRedo);
@@ -498,6 +499,8 @@ describe('Symbol Palette - Group', () => {
             });
         });
     });
+
+
 });
 
 describe('SymbolPalette - swimLane', () => {
@@ -518,15 +521,15 @@ describe('SymbolPalette - swimLane', () => {
                             lanes: [
                                 {
                                     id: 'lane1',
-                                    style: { fill: '#f5f5f5'}, height: 60, width: 150,
-                                    header:{ width: 50, height: 50, style: {fill:'#C7D4DF', fontSize: 11} },
+                                    style: { fill: '#f5f5f5' }, height: 60, width: 150,
+                                    header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
                                 }
                             ],
                             orientation: 'Horizontal', isLane: true
                         },
                         height: 140,
                         width: 60,
-                        style: { fill: '#f5f5f5'},
+                        style: { fill: '#f5f5f5' },
                     }, {
                         id: 'stackCanvas2',
                         shape: {
@@ -534,15 +537,15 @@ describe('SymbolPalette - swimLane', () => {
                             lanes: [
                                 {
                                     id: 'lane1',
-                                    style: { fill: '#f5f5f5'}, height: 60, width: 150,
-                                    header:{ width: 50, height: 50, style: {fill:'#C7D4DF', fontSize: 11} },
+                                    style: { fill: '#f5f5f5' }, height: 60, width: 150,
+                                    header: { width: 50, height: 50, style: { fill: '#C7D4DF', fontSize: 11 } },
                                 }
                             ],
                             orientation: 'Vertical', isLane: true
                         },
                         height: 140,
                         width: 60,
-                        style: { fill: '#f5f5f5'},
+                        style: { fill: '#f5f5f5' },
                     }
                 ]
             }
@@ -608,7 +611,7 @@ describe('SymbolPalette - swimLane', () => {
             }
             let events: MouseEvents = new MouseEvents();
             expect(diagram.nodes.length === 0).toBe(true);
-            events.mouseDownEvent(palette.element, 54, 103  , false, false);
+            events.mouseDownEvent(palette.element, 54, 103, false, false);
             events.mouseMoveEvent(palette.element, 100, 100, false, false);
             events.mouseMoveEvent(palette.element, 200, 200, false, false);
             expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
@@ -633,8 +636,8 @@ describe('SymbolPalette - swimLane', () => {
                         id: 'verticalPhase',
                         shape: {
                             type: 'SwimLane',
-                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
-                            annotations: [{text: ''}],
+                            phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                            annotations: [{ text: '' }],
                             orientation: 'Vertical', isPhase: true
                         },
                         height: 60,
@@ -643,8 +646,8 @@ describe('SymbolPalette - swimLane', () => {
                         id: 'horizontalPhase',
                         shape: {
                             type: 'SwimLane',
-                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
-                            annotations: [{text: ''}],
+                            phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                            annotations: [{ text: '' }],
                             orientation: 'Horizontal', isPhase: true
                         },
                         height: 60,
@@ -653,16 +656,16 @@ describe('SymbolPalette - swimLane', () => {
                         id: 'verticalPhase1',
                         shape: {
                             type: 'SwimLane',
-                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
-                            annotations: [{text: ''}],
+                            phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                            annotations: [{ text: '' }],
                             orientation: 'Vertical', isPhase: true
                         }
                     }, {
                         id: 'horizontalPhase1',
                         shape: {
                             type: 'SwimLane',
-                            phases: [{style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9'},}],
-                            annotations: [{text: ''}],
+                            phases: [{ style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#A9A9A9' }, }],
+                            annotations: [{ text: '' }],
                             orientation: 'Horizontal', isPhase: true
                         }
                     }
@@ -705,41 +708,78 @@ describe('SymbolPalette - swimLane', () => {
             ).toBe(true);
             done();
         });
-        it('Checking default palette rendering with phase Symbol with html elements', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
-                let symbols: IElement = palette.symbolTable['verticalPhase'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
+    });
+});
+
+describe('Symbol Palette - Draggable Element', () => {
+
+    describe('Diagram with draggable elements', () => {
+        let diagram: Diagram;
+
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let isDropRaised: boolean = false;
+
+        let basicShapes: NodeModel[] = [
+            { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 } },
+            { id: 'Ellipse', shape: { type: 'Basic', shape: 'Ellipse' }, style: { strokeWidth: 2 } },
+            { id: 'group', children: ['Rectangle', 'Ellipse', 'id'] },
+        ];
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'draggable', styles: 'width:250px;height:550px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:500px;height:550px;float:right;' }));
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: '74%', height: '600px',
+                drop: function () {
+                    isDropRaised = true;
                 }
-                return clonedElement;
-            };
-            diagram.dragEnter = (arg) => {
-                expect(arg.source instanceof SymbolPalette).toBe(true);
-                done();
+            });
+            diagram.appendTo('#diagram');
+
+
+
+            let draggable: Draggable = new Draggable(document.getElementById('draggable'), {
+                clone: true,
+                cursorAt: { left: 100, top: 150 },
+                enableTailMode: true,
+                helper: function (e: any) {
+                    var clonedElement1 = e.sender.target.cloneNode(true);
+                    clonedElement1.setAttribute("id", "cloneElement123");
+                    document.body.appendChild(clonedElement1);
+                    return clonedElement1;
+                }
+            });
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+            let cloneElement123: any = document.getElementById('cloneElement123');
+            if (cloneElement123 && cloneElement123.parentNode) {
+                cloneElement123.parentNode.removeChild(cloneElement123);
             }
-            diagram.dragOver = (arg) => {
-                expect(arg.diagram !== undefined).toBe(true);
-                done();
-            }
-            diagram.drop = (arg) => {
-                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
-                done();
-            }
+        });
+
+        it('checking the drop event was firing whith droppable elements', (done: Function) => {
             let events: MouseEvents = new MouseEvents();
-            expect(diagram.nodes.length === 0).toBe(true);
-            events.mouseDownEvent(palette.element, 45, 85, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-            events.mouseUpEvent(diagram.element, 300, 300, false, false);
-            expect(diagram.nodes.length > 0).toBe(true);
-            diagram.clear();
+            let draggableElement: HTMLElement = document.getElementById('draggable');
+            events.mouseMoveEvent(diagram.element, 75, 100, false, false);
+            events.mouseDownEvent(draggableElement, 75, 100, false, false);
+            events.mouseMoveEvent(diagram.element, 350, 100, false, false);
+            events.mouseUpEvent(diagram.element, 350, 100, false, false);
+            expect(isDropRaised).toBe(true);
             done();
         });
     });

@@ -14,7 +14,8 @@ describe('RTE  with EJ2 FormValidator - ', () => {
 
     let innerHtmlRule: string = `<form id="form-element" class="form-vertical">
 <div class="form-group">
-    <textarea id="defaultRTE" name="defaultRTE"></textarea>
+    <textarea id="defaultRTE" name="defaultRTE"> 
+    </textarea>
 </div>
 <div style="text-align: center">
     <button id="validateSubmit" class="samplebtn e-control e-btn" type="submit" data-ripple="true">Submit</button>

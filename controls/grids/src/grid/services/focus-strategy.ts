@@ -468,9 +468,32 @@ export class ContentFocus implements IFocus {
         if (!current) { return; }
         if ((['tab', 'shiftTab'].indexOf(e.action) > -1 && this.matrix.current || []).toString() === current.toString()) {
             if (current.toString() === [this.matrix.rows, this.matrix.columns].toString() ||
-                current.toString() === [0, 0].toString()) { return false; }
+                current.toString() === [0, 0].toString() || (this.matrix.current[0] === this.matrix.rows &&
+                this.matrix.current.toString() === current.toString())) {
+                return false;
+            } else {
+            current = this.editNextRow(current[0], current[1], e.action);
+            }
         }
         this.matrix.select(current[0], current[1]);
+    }
+
+    private editNextRow(rowIndex: number, cellIndex: number, action: string): number[] {
+        let gObj: IGrid = this.parent;
+        let editNextRow: boolean = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
+        let visibleIndex: number = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
+        if (action === 'tab' && editNextRow) {
+            rowIndex ++;
+            let index: number = (this.getTable().rows[rowIndex].querySelectorAll('.e-indentcell').length +
+            this.getTable().rows[rowIndex].querySelectorAll('.e-detailrowcollapse').length);
+            cellIndex = visibleIndex + index;
+        }
+        if (action === 'shiftTab' && editNextRow) {
+            rowIndex --;
+            cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
+        }
+        return !this.getTable().rows[rowIndex].cells[cellIndex].classList.contains('e-rowcell') ?
+        this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     }
 
     public getCurrentFromAction(action: string, navigator: number[] = [0, 0], isPresent?: boolean, e?: KeyboardEventArgs): number[] {

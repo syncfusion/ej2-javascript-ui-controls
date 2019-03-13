@@ -1,4 +1,5 @@
-import { withInRange, getPoint, ChartLocation, PathOption, Rect } from '../../common/utils/helper';
+import { withInRange, getPoint, ChartLocation } from '../../common/utils/helper';
+import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';

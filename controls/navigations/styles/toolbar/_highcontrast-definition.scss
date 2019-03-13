@@ -21,7 +21,6 @@ $tbar-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
 $tbar-border-nav-type: solid !default;
 $tbar-btn-box-shadow: none !default;
 
-
 $tbar-default-bg: $bg-base-0 !default;
 $tbar-default-font: $content-font !default;
 $tbar-active-bg: transparent !default;
@@ -66,6 +65,7 @@ $tbar-item-nrml-minwidth: 34px !default;
 $tbar-bgr-item-size: 49px !default;
 $tbar-btn-font-size: 16px !default;
 $tbar-btn-txt-font-size: 14px !default;
+$tbar-btn-border: none !default;
 
 $tbar-item-bgr-padding: 0  1.5px !default;
 $tbar-item-nrml-padding: 0 1px !default;
@@ -98,8 +98,8 @@ $tbar-btn-nrml-mrgn: 0 !default;
 $tbar-v-btn-bgr-mrgn: 0 !default;
 $tbar-v-btn-nrml-mrgn: 0 !default;
 $tbar-popup-padding: 0 !default;
-$tbar-btn-nrml-minheight: 40px !default;
-$tbar-btn-bgr-minheight: 50px !default;
+$tbar-btn-nrml-minheight: 39px !default;
+$tbar-btn-bgr-minheight: 49px !default;
 $tbar-btn-nrml-minwidth: 40px !default;
 $tbar-btn-bgr-minwidth: 50px !default;
 $tbar-btn-bgr-height: inherit !default;

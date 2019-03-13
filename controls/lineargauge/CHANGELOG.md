@@ -14,7 +14,7 @@
 
 #### Bug Fixes
 
-- When hover on pointer, console error thrown fixed now.
+- When hovering over pointer, the console error will not be thrown.
 
 ## 16.3.32 (2018-11-13)
 
@@ -32,7 +32,7 @@
 
 - The linear gauge tooltip has been replaced with `EJ2 SVG Tooltip`, so now it is mandatory to include `ej2-svg-base.umd.min.js` in system.js configuration if you are using system.js module loader. Update the system.js configuration while using this version and above.
 
-## 16.1.24
+## 16.1.24 (2018-02-22)
 
 ### Common
 

@@ -6,7 +6,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { AccumulationChart } from '../../../src/accumulation-chart/accumulation';
 import { AccPoints, AccumulationSeries } from '../../../src/accumulation-chart/model/acc-base';
-import { Rect, getElement, removeElement } from '../../../src/common/utils/helper';
+import { getElement, removeElement } from '../../../src/common/utils/helper';
 import { IAnnotationRenderEventArgs } from '../../../src/common/model/interface';
 import { AccumulationLegend } from '../../../src/accumulation-chart/renderer/legend';
 import { data, datetimeData1 } from '../../chart/base/data.spec';
@@ -14,9 +14,18 @@ import { MouseEvents } from '../../chart/base/events.spec';
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccumulationAnnotation } from '../../../src/accumulation-chart/annotation/annotation';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 AccumulationChart.Inject(AccumulationAnnotation, AccumulationLegend, AccumulationDataLabel);
 
 describe('Accumumation Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Annotation for Accumulation', () => {
         let chartObj: AccumulationChart;
         let element: Element;
@@ -271,7 +280,7 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as point with exact data', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '282.718px' || (element as HTMLElement).style.left == '281.97px'|| (element as HTMLElement).style.left == '252.97px').toBe(true);
+                expect((element as HTMLElement).style.left == '252.718px' || (element as HTMLElement).style.left == '252.97px').toBe(true);
                 expect((element as HTMLElement).style.top == '248.034px' || (element as HTMLElement).style.top == '246.754px').toBe(true);
                 let legendEle: Element = getElement('container_chart_legend_text_0');
                 chartObj.loaded = null;
@@ -523,5 +532,14 @@ describe('Accumumation Control', () => {
             chartObj.annotations[1].content = 'y';           
             chartObj.refresh();
         });
+    })
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });

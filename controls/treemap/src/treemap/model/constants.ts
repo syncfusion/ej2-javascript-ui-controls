@@ -63,6 +63,16 @@ export const itemMove: string = 'itemMove';
  */
 export const click: string = 'click';
 /**
+ * Specifies maps double click event name.
+ * @private
+ */
+export const doubleClick: string = 'doubleClick';
+/**
+ * Specifies maps right click event name.
+ * @private
+ */
+export const rightClick: string = 'rightClick';
+/**
  * Specifies the mouse move event name.
  * @private
  */
@@ -72,6 +82,11 @@ export const mouseMove: string = 'mouseMove';
  * @private
  */
 export const legendItemRendering: string = 'legendItemRendering';
+/**
+ * Specifies legend rendering event name.
+ * @private
+ */
+export const legendRendering: string = 'legendRendering';
 /**
  * Specifies treemap resize event name.
  * @private

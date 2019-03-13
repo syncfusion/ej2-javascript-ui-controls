@@ -2,13 +2,17 @@
   /*! drop-down button layout */
   #{&}.e-dropdown-btn,
   #{&}.e-dropdown-btn.e-btn {
-    box-shadow: none;
+    @if $skin-name != 'bootstrap4' {
+      box-shadow: none;
+    }
     text-transform: none;
     white-space: normal;
 
     &:hover,
     &:focus {
-      box-shadow: none;
+      @if $skin-name != 'bootstrap4' {
+        box-shadow: none;
+      }
     }
 
     &:active {

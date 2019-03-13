@@ -1,6 +1,6 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
-import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { L10n } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';

@@ -79,23 +79,41 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
         case 'BootstrapDark':
         case 'Highcontrast':
         case 'HighContrast':
-        style = {
-            gridLineColor: darkGridlineColor,
-            axisLineColor: darkAxisColor,
-            labelFontColor: '#DADADA',
-            unselectedRectColor: range.series.length ? 'rgba(43, 43, 43, 0.6)' : '#514F4F',
-            thumpLineColor: '#969696',
-            thumbBackground: '#333232',
-            gripColor: '#DADADA',
-            background: '#000000',
-            thumbHoverColor: '#BFBFBF',
-            selectedRegionColor: range.series.length ? 'rgba(22, 22, 22, 0.6)' : '#FFD939',
-            tooltipBackground: '#F4F4F4',
-            tooltipFontColor: '#282727',
-            thumbWidth: thumbWidth,
-            thumbHeight: thumbHeight
-          };
-          break;
+            style = {
+                gridLineColor: darkGridlineColor,
+                axisLineColor: darkAxisColor,
+                labelFontColor: '#DADADA',
+                unselectedRectColor: range.series.length ? 'rgba(43, 43, 43, 0.6)' : '#514F4F',
+                thumpLineColor: '#969696',
+                thumbBackground: '#333232',
+                gripColor: '#DADADA',
+                background: '#000000',
+                thumbHoverColor: '#BFBFBF',
+                selectedRegionColor: range.series.length ? 'rgba(22, 22, 22, 0.6)' : '#FFD939',
+                tooltipBackground: '#F4F4F4',
+                tooltipFontColor: '#282727',
+                thumbWidth: thumbWidth,
+                thumbHeight: thumbHeight
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                gridLineColor: darkGridlineColor,
+                axisLineColor: '#CED4DA',
+                labelFontColor: '#212529',
+                unselectedRectColor: range.series.length ? 'rgba(255, 255, 255, 0.6)' : '#514F4F',
+                thumpLineColor: '#495057',
+                thumbBackground: '#FFFFFF',
+                gripColor: '#495057',
+                background: 'rgba(255, 255, 255, 0.6)',
+                thumbHoverColor: '#BFBFBF',
+                selectedRegionColor: range.series.length ? '#FFFFFF' : '#FFD939',
+                tooltipBackground: 'rgba(0, 0, 0, 0.9)',
+                tooltipFontColor: 'rgba(255, 255, 255)',
+                thumbWidth: thumbWidth,
+                thumbHeight: thumbHeight
+            };
+            break;
         default:
             style.selectedRegionColor = range.series.length ? 'transparent' : '#FF4081';
             break;

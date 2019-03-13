@@ -10,6 +10,7 @@ import { employeeData } from '../base/datasource.spec';
 import { BeforeCopyEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy,  getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Selection, Clipboard);
 
@@ -19,6 +20,11 @@ describe('Grid clipboard copy testing - row type selection => ', () => {
     let selectionModule: Selection;
     let rows: Element[];
     beforeAll((done: Function) => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
         gridObj = createGrid(
             {
                 dataSource: employeeData, 
@@ -183,6 +189,15 @@ describe('Grid clipboard copy testing - cells type selection => ', () => {
             expect((gridObj.element.querySelector('.e-clipboard') as HTMLInputElement).value
                 === 'Employee ID	Name	Region	Country\n1	Nancy		WA	USA').toBeTruthy();
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
         afterAll(() => {
             destroy(gridObj);

@@ -350,3 +350,13 @@ export interface StackEntryObject {
     sourceIndex?: number;
     source?: NodeModel;
 }
+/**
+ * IExpandStateChangeEventArgs notifies when the icon is changed
+ * @private
+ */
+export interface IExpandStateChangeEventArgs {
+    /** returns node that is being changed the icon */
+    element?: NodeModel;
+    /** returns whether or not to expanded */
+    state?: boolean;
+}

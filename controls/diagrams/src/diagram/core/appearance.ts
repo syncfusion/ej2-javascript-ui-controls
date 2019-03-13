@@ -172,6 +172,14 @@ export class Stop extends ChildProperty<Stop> {
      */
     @Property(1)
     public opacity: number;
+
+    /**
+     * @private
+     * Returns the name of class Stop
+     */
+    public getClassName(): string {
+        return 'Stop';
+    }
 }
 
 /**                                                                                                        

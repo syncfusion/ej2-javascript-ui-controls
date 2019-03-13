@@ -179,7 +179,8 @@ export class ThumbnailView {
     private renderThumbnailImage(data: any): void {
         if (this.thumbnailView) {
             for (let i: number = this.startIndex; i < this.thumbnailLimit; i++) {
-                let pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i }) as HTMLAnchorElement;
+                // tslint:disable-next-line:max-line-length
+                let pageLink: HTMLAnchorElement = createElement('a', { id: 'page_' + i , attrs: {'aria-label': 'Thumbnail of Page' + (i + 1) , 'tabindex': '-1', 'role': 'link' }}) as HTMLAnchorElement;
                 // tslint:disable-next-line:max-line-length
                 let thumbnail: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_' + i, className: 'e-pv-thumbnail e-pv-thumbnail-column' });
                 // tslint:disable-next-line:max-line-length
@@ -336,17 +337,21 @@ export class ThumbnailView {
         this.startIndex = 0;
         this.thumbnailLimit = 0;
         this.isThumbnailCompleted = false;
-        if (this.pdfViewerBase.navigationPane.sideBarContentContainer) {
-            this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
-            this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = 0;
-            this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'none';
+        if (this.pdfViewerBase.navigationPane) {
+            if (this.pdfViewerBase.navigationPane.sideBarContentContainer) {
+                this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
+                this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = 0;
+                this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'none';
+            }
         }
         if (this.thumbnailView) {
             while (this.thumbnailView.hasChildNodes()) {
                 this.thumbnailView.removeChild(this.thumbnailView.lastChild);
             }
         }
-        this.pdfViewerBase.navigationPane.resetThumbnailView();
+        if (this.pdfViewerBase.navigationPane) {
+            this.pdfViewerBase.navigationPane.resetThumbnailView();
+        }
         this.unwireUpEvents();
     }
 

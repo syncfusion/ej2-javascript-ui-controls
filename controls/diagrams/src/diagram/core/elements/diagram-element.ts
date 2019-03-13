@@ -41,6 +41,24 @@ export class DiagramElement {
     protected isDirt: boolean = true;
 
     /**
+     * set to true during print and eport
+     */
+    /** @private */
+    public isExport: boolean = false;
+
+    /**
+     * set scaling value for print and export
+     */
+    /** @private */
+    public exportScaleValue: PointModel = { x: 0, y: 0 };
+
+    /**
+     * set scaling value for print and export
+     */
+    /** @private */
+    public exportScaleOffset: PointModel = { x: 0, y: 0 };
+
+    /**
      * Check whether style need to be apply or not
      */
     /** @private */

@@ -61,7 +61,7 @@ export class DragAndDrop extends ActionBase {
             leftValue = e.left as string;
         }
         if (this.parent.activeView.isTimelineView()) {
-            leftValue = formatUnit(Math.floor(leftOffset / cellWidth) * cellWidth);
+            leftValue = formatUnit(Math.round(leftOffset / cellWidth) * cellWidth);
         }
         let topValue: string;
         if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable ||
@@ -584,8 +584,10 @@ export class DragAndDrop extends ActionBase {
         let trCollection: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-content-wrap .e-content-table tr:not(.e-hidden)');
         let translateY: number = util.getTranslateY(dragArea.querySelector('table'));
         translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
+        let rowHeight: number = (this.parent.enableAdaptiveRows) ?
+            ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
         let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
-            dragArea.getBoundingClientRect().top) / this.actionObj.cellHeight);
+            dragArea.getBoundingClientRect().top) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;
         let eventContainer: Element = this.parent.element.querySelectorAll('.e-appointment-container:not(.e-hidden)').item(rowIndex);
@@ -598,7 +600,16 @@ export class DragAndDrop extends ActionBase {
         let td: HTMLTableCellElement = closest((<HTMLTableCellElement>e.target), 'td') as HTMLTableCellElement;
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
-        this.actionObj.clone.style.top = formatUnit((<HTMLElement>trCollection.item(rowIndex)).offsetTop);
+        let top: number = (<HTMLElement>trCollection.item(rowIndex)).offsetTop;
+        if (this.parent.enableAdaptiveRows) {
+            let cursorElement: HTMLElement = this.getCursorElement(e);
+            if (cursorElement) {
+                top = cursorElement.classList.contains(cls.WORK_CELLS_CLASS) ? cursorElement.offsetTop :
+                    cursorElement.offsetParent.classList.contains(cls.APPOINTMENT_CLASS) ?
+                        (cursorElement.offsetParent as HTMLElement).offsetTop : top;
+            }
+        }
+        this.actionObj.clone.style.top = formatUnit(top);
     }
 
     private appendCloneElement(element: HTMLElement): void {

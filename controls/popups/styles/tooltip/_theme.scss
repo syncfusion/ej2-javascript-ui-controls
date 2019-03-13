@@ -62,7 +62,7 @@
         line-height: 1;
         text-transform: none;
       }
-  }
+    }
 
     /*! tooltip sticky mode close icon */
     .e-tooltip-close {
@@ -76,6 +76,9 @@
         height: 16px;
         width: 16px;
       }
+      @if $skin-name == 'bootstrap4' {
+        border: $tooltip-close-icon-border;
+      }
     }
 
     .e-tooltip-close:hover {
@@ -88,6 +91,9 @@
       color: $tooltip-content-font-color;
       font-family: $font-family;
       font-size: $tooltip-font-size;
+      @if $skin-name == 'bootstrap4' {
+        line-height: 1.5;
+      }
     }
   }
 

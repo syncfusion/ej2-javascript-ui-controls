@@ -1,9 +1,9 @@
 /**
  * AccumulationChart Selection src file
  */
-import { SvgRenderer} from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
-import { Rect, indexFinder } from '../../common/utils/helper';
+import { Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { indexFinder } from '../../common/utils/helper';
 import { AccumulationSelectionMode } from '../model/enum';
 import { AccumulationChart } from '../accumulation';
 import { AccumulationSeries, pointByIndex, AccPoints } from '../model/acc-base';

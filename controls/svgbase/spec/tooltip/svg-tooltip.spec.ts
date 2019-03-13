@@ -2,8 +2,9 @@
  * Tooltip Spec file
  */
 
-import { SvgRenderer, EmitType, remove,createElement }  from '@syncfusion/ej2-base';
+import { EmitType, remove,createElement }  from '@syncfusion/ej2-base';
 import { Tooltip} from '../../src/tooltip/tooltip';
+import { SvgRenderer} from '../../src/svg-render/index';
 import { ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs } from '../../src/tooltip/interface';
 import { removeElement, getElement } from '../../src/tooltip/helper';
 
@@ -447,5 +448,27 @@ describe('SVG Tooltip', () => {
         tooltip.loaded = null;
         tooltip.refresh();
         tooltip.fadeOut();
-    })
+    });
+
+    it('Bootstrap4 Theme', () => {
+        tooltip.loaded = (arsgs: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');        
+            expect(svgObject).not.toBe(null);
+            let path: Element = document.getElementById('tooltipcontainer_path');
+            expect(path.getAttribute('fill')).toBe('rgba(0, 0, 0, 0.9)');
+            let headerpath: Element = document.getElementById('tooltipcontainer_header_path');
+            expect(headerpath.getAttribute('stroke')).toBe('rgba(255, 255, 255, 0.2)');
+            let textElement: Element = document.getElementById('tooltipcontainer_text');
+            expect(textElement.children[0].getAttribute('fill')).toBe('rgba(255, 255, 255, 0.9)');
+        };
+       tooltip.tooltipRender = null;
+       tooltip.template = null;
+       tooltip.location = {x : 250, y: 250};       
+       tooltip.inverted = false;
+       tooltip.enableAnimation= false;
+       tooltip.shared = false;
+       tooltip.animationComplete = null;
+       tooltip.theme = 'Bootstrap4';
+       tooltip.refresh();
+    });
 });

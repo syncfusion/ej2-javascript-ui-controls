@@ -74,6 +74,19 @@ export class EventBase {
         return eventData;
     }
 
+    public getProcessedEvents(eventCollection: Object[] = this.parent.eventsData): Object[] {
+        let processed: Object[] = [];
+        for (let event of eventCollection as { [key: string]: Object }[]) {
+            if (!isNullOrUndefined(event[this.parent.eventFields.recurrenceRule]) &&
+                isNullOrUndefined(event[this.parent.eventFields.recurrenceID])) {
+                processed = processed.concat(this.parent.eventBase.generateOccurrence(event));
+            } else {
+                processed.push(event);
+            }
+        }
+        return processed;
+    }
+
     public timezonePropertyChange(oldTimezone: string): void {
         let processed: Object[] = this.processData(this.parent.eventsData as { [key: string]: Object }[], true, oldTimezone);
         this.parent.notify(event.dataReady, { processedData: processed });
@@ -152,6 +165,22 @@ export class EventBase {
             filter = this.filterEventsByResource(resourceTdData, filter);
         }
         return this.sortByTime(filter);
+    }
+
+    public filterEventsByRange(eventCollection: Object[], startDate?: Date, endDate?: Date): Object[] {
+        let filteredEvents: Object[] = [];
+        if (startDate && endDate) {
+            filteredEvents = this.filterEvents(startDate, endDate, eventCollection);
+        } else if (startDate && !endDate) {
+            let predicate: Predicate = new Predicate(this.parent.eventFields.startTime, 'greaterthanorequal', startDate);
+            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+        } else if (!startDate && endDate) {
+            let predicate: Predicate = new Predicate(this.parent.eventFields.endTime, 'lessthanorequal', endDate);
+            filteredEvents = new DataManager({ json: eventCollection }).executeLocal(new Query().where(predicate));
+        } else {
+            filteredEvents = eventCollection;
+        }
+        return this.sortByTime(filteredEvents);
     }
 
     public filterEventsByResource(resourceTdData: TdData, appointments: Object[] = this.parent.eventsProcessed): Object[] {

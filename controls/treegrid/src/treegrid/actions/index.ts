@@ -14,3 +14,4 @@ export * from './column-menu';
 export * from './context-menu';
 export * from './edit';
 export * from './command-column';
+export * from './selection';

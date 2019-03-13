@@ -17,6 +17,7 @@ import { BaseToolbar } from './base-toolbar';
 import { DropDownButtons } from './dropdown-buttons';
 import { ToolbarAction } from './toolbar-action';
 import { IToolbarStatus } from '../../common/interface';
+import { RichTextEditorModel } from '../base/rich-text-editor-model';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -65,9 +66,11 @@ export class Toolbar {
         this.editPanel = this.contentRenderer.getPanel();
     }
     private toolbarBindEvent(): void {
-        this.keyBoardModule = new KeyboardEvents(this.getToolbarElement() as HTMLElement, {
-            keyAction: this.toolBarKeyDown.bind(this), keyConfigs: this.parent.formatter.keyConfig, eventName: 'keydown'
-        });
+        if (!this.parent.inlineMode.enable) {
+            this.keyBoardModule = new KeyboardEvents(this.getToolbarElement() as HTMLElement, {
+                keyAction: this.toolBarKeyDown.bind(this), keyConfigs: this.parent.formatter.keyConfig, eventName: 'keydown'
+            });
+        }
     }
     private toolBarKeyDown(e: KeyboardEvent): void {
         switch ((e as KeyboardEventArgs).action) {
@@ -129,7 +132,7 @@ export class Toolbar {
         } as IDropDownRenderArgs);
         this.parent.notify(events.renderColorPicker, {
             container: this.tbElement,
-            containerType: 'toolbar',
+            containerType: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
             items: this.parent.toolbarSettings.items
         } as IColorPickerRenderArgs);
         return true;
@@ -282,17 +285,19 @@ export class Toolbar {
     }
 
     private updateToolbarStatus(args: IToolbarStatus): void {
-        let options: ISetToolbarStatusArgs = {
-            args: args,
-            dropDownModule: this.dropDownModule,
-            parent: this.parent,
-            tbElements: selectAll('.' + classes.CLS_TB_ITEM, this.tbElement),
-            tbItems: this.baseToolbar.toolbarObj.items
-        };
-        if (this.parent.inlineMode.enable) {
-            setToolbarStatus(options, true);
-        } else {
-            setToolbarStatus(options, false);
+        if (!this.parent.inlineMode.enable) {
+            let options: ISetToolbarStatusArgs = {
+                args: args,
+                dropDownModule: this.dropDownModule,
+                parent: this.parent,
+                tbElements: selectAll('.' + classes.CLS_TB_ITEM, this.tbElement),
+                tbItems: this.baseToolbar.toolbarObj.items
+            };
+            if (this.parent.inlineMode.enable) {
+                setToolbarStatus(options, true);
+            } else {
+                setToolbarStatus(options, false);
+            }
         }
     }
 
@@ -402,8 +407,10 @@ export class Toolbar {
     }
 
     private scrollHandler(e: NotifyArgs): void {
-        if (this.parent.toolbarSettings.enableFloating) {
-            this.toggleFloatClass(e.args as Event);
+        if (!this.parent.inlineMode.enable) {
+            if (this.parent.toolbarSettings.enableFloating) {
+                this.toggleFloatClass(e.args as Event);
+            }
         }
     }
 
@@ -455,11 +462,9 @@ export class Toolbar {
         this.dropDownModule = new DropDownButtons(this.parent, this.locator);
         this.toolbarActionModule = new ToolbarAction(this.parent);
         this.parent.on(events.initialEnd, this.renderToolbar, this);
-        if (!this.parent.inlineMode.enable) {
-            this.parent.on(events.scroll, this.scrollHandler, this);
-            this.parent.on(events.bindOnEnd, this.toolbarBindEvent, this);
-            this.parent.on(events.toolbarUpdated, this.updateToolbarStatus, this);
-        }
+        this.parent.on(events.scroll, this.scrollHandler, this);
+        this.parent.on(events.bindOnEnd, this.toolbarBindEvent, this);
+        this.parent.on(events.toolbarUpdated, this.updateToolbarStatus, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.refreshBegin, this.onRefresh, this);
         this.parent.on(events.destroy, this.destroy, this);
@@ -476,11 +481,9 @@ export class Toolbar {
     protected removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.initialEnd, this.renderToolbar);
-        if (!this.parent.inlineMode.enable) {
-            this.parent.off(events.scroll, this.scrollHandler);
-            this.parent.off(events.bindOnEnd, this.toolbarBindEvent);
-            this.parent.off(events.toolbarUpdated, this.updateToolbarStatus);
-        }
+        this.parent.off(events.scroll, this.scrollHandler);
+        this.parent.off(events.bindOnEnd, this.toolbarBindEvent);
+        this.parent.off(events.toolbarUpdated, this.updateToolbarStatus);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.enableFullScreen, this.parent.fullScreenModule.showFullScreen);
@@ -501,8 +504,21 @@ export class Toolbar {
      * Called internally if any of the property value changed.
      * @hidden
      */
-    protected onPropertyChanged(e: NotifyArgs): void {
+    protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
+        if (!isNullOrUndefined(e.newProp.inlineMode)) {
+            for (let prop of Object.keys(e.newProp.inlineMode)) {
+                switch (prop) {
+                    case 'enable':
+                        this.refreshToolbar();
+                        break;
+                }
+            }
+        }
         if (e.module !== this.getModuleName()) { return; }
+        this.refreshToolbar();
+    }
+
+    private refreshToolbar(): void {
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();
         }

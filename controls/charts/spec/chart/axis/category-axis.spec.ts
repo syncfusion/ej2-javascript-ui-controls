@@ -5,6 +5,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import { LineSeries } from '../../../src/chart/series/line-series';
+import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
@@ -14,9 +15,18 @@ import { unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/common/model/interface';
-Chart.Inject(LineSeries, Category, DataLabel, Crosshair);
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+Chart.Inject(LineSeries, Category, DataLabel, Crosshair, ColumnSeries);
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Category Axis', () => {
         let chart: Chart;
         let ele: HTMLElement;
@@ -360,4 +370,158 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+    describe('Category Axis labels with line break', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category' },
+                    primaryYAxis: { },
+                    series: [{
+                        dataSource: [
+                            { x: "India", y: 61.3 },
+                            { x: "United<br>States<br>of<br>America", y: 31 },
+                            { x: "South<br>Korea", y: 39.4 },
+                            { x: "United<br>Arab<br>Emirates", y: 65.1 },
+                            { x: "United<br>Kingdom", y: 75.9 }
+                        ],
+                        xName: 'x', yName: 'y', type: 'Column', animation: { enable: false }
+                    }],
+                    legendSettings: { visible: false }
+                }, '#container');
+
+        });
+
+        afterAll((): void => {
+            
+            chart.destroy();
+            ele.remove();
+        });
+        it('line break labels count checking', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                let x: number = parseInt(label.getAttribute("x"));
+                console.log('default x: ' + x);
+                //expect(x == 239 || x == 240).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking line break labels with inversed axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('container0_AxisLabel_1');
+                let x: number = parseInt(label.getAttribute("x"));
+                console.log('inversed axis x: ' + x);
+                //expect(x == 529 || x == 530).toBe(true);
+                expect(label.childElementCount == 3).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = true;
+            chart.refresh();
+        });
+        it('Checking line break labels with opposed position true', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                let x: number = parseInt(label.getAttribute("x"));
+                console.log('opposed position x: ' + x);
+                //expect(x == 239 || x == 240).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.refresh();
+        });
+        it('Checking line break labels with trim', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_2');
+                expect(label.childElementCount == 1).toBe(true);
+                console.log(label.childNodes[0].textContent);
+                console.log(label.childNodes[1].textContent);
+                expect(label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource[2] = {x: 'Southhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh<br>Koreaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', y: 39.4};
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.opposedPosition = false;
+            chart.refresh();
+        });
+        it('Checking line break labels with wrap', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_2');
+                expect(label.childElementCount == 2).toBe(true);
+                console.log(label.childNodes[0].textContent);
+                console.log(label.childNodes[1].textContent);
+                console.log(label.childNodes[2].textContent);
+                expect(label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource[2] = {x: 'Southhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh testhhhhhhhhhhhhhhhhhhhhhhh<br>Koreaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', y: 39.4};
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.labelIntersectAction = 'Wrap';
+            chart.primaryXAxis.opposedPosition = false;
+            chart.refresh();
+        });
+        it('Checking line break labels with Rotate45', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                expect(label.getAttribute("transform").indexOf("45") != -1).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource[2] = {x: 'South<br>Korea', y: 39.4};
+            chart.primaryXAxis.labelIntersectAction = 'Rotate45';
+            chart.primaryXAxis.labelRotation = 45;
+            chart.refresh();
+        });
+        it('Checking line break labels with Rotate90', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 5).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childElementCount == 3).toBe(true);
+                expect(label.getAttribute("transform").indexOf("90") != -1).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource[2] = {x: 'South<br>Korea', y: 39.4};
+            chart.primaryXAxis.labelIntersectAction = 'Rotate90';
+            chart.primaryXAxis.labelRotation = 90;
+            chart.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

@@ -68,6 +68,7 @@ export class TimelineEvent extends MonthEvent {
     }
 
     public renderResourceEvents(): void {
+        this.removeHeightProperty(cls.RESOURCE_COLUMN_TABLE_CLASS);
         let resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.renderedResources;
@@ -102,7 +103,8 @@ export class TimelineEvent extends MonthEvent {
             let appTop: number = (top + EVENT_GAP) + (overlapCount * (appHeight + EVENT_GAP));
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
-            if (this.cellHeight > ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
+            let height: number = ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
+            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 setStyleAttribute(appointmentElement, {
@@ -110,6 +112,10 @@ export class TimelineEvent extends MonthEvent {
                 });
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 this.renderEventElement(event, appointmentElement, cellTd);
+                if (this.parent.enableAdaptiveRows) {
+                    let firstChild: HTMLElement = this.getFirstChild(resIndex);
+                    this.updateCellHeight(firstChild, height);
+                }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
                     let moreIndicator: HTMLElement = cellTd.querySelector('.' + cls.MORE_INDICATOR_CLASS) as HTMLElement;
@@ -150,6 +156,45 @@ export class TimelineEvent extends MonthEvent {
                     }
                 }
             }
+        }
+    }
+
+    public updateCellHeight(cell: HTMLElement, height: number): void {
+        if ((height > cell.offsetHeight)) {
+            setStyleAttribute(cell, { 'height': height + 'px' });
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                let resourceCell: HTMLElement = this.parent.element.querySelector
+                    ('.' + cls.RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +
+                        cell.getAttribute('data-group-index') + '"]') as HTMLElement;
+                setStyleAttribute(resourceCell, { 'height': height + 'px' });
+            }
+        }
+    }
+
+    private getFirstChild(index: number): HTMLElement {
+        let query: string = '.' + cls.CONTENT_TABLE_CLASS + ' tbody td';
+        let groupIndex: string = '';
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            groupIndex = '[data-group-index="' + index.toString() + '"]';
+        }
+        let td: HTMLElement = this.parent.element.querySelector(query + groupIndex) as HTMLElement;
+        return td;
+    }
+
+    public updateBlockElements(): void {
+        let blockElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS));
+        for (let element of blockElement) {
+            let resIndex: number = parseInt(element.getAttribute('data-group-index'), 10);
+            let firstChild: HTMLElement = this.getFirstChild(resIndex);
+            element.style.height = firstChild.offsetHeight + 'px';
+            let width: number = Math.round(element.offsetWidth / firstChild.offsetWidth);
+            element.style.width = (firstChild.offsetWidth * width) + 'px';
+        }
+        let blockIndicator: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.BLOCK_INDICATOR_CLASS));
+        for (let element of blockIndicator) {
+            let resIndex: number = parseInt(element.getAttribute('data-group-index'), 10);
+            element.style.top = this.getRowTop(resIndex) +
+                this.getFirstChild(resIndex).offsetHeight - BLOCK_INDICATOR_HEIGHT + 'px';
         }
     }
 
@@ -315,6 +360,9 @@ export class TimelineEvent extends MonthEvent {
         position = (Math.floor(position / this.cellWidth) * this.cellWidth) + this.cellWidth - BLOCK_INDICATOR_WIDTH;
         if (!this.isAlreadyAvail(position, cellTd)) {
             let blockIndicator: HTMLElement = createElement('div', { className: 'e-icons ' + cls.BLOCK_INDICATOR_CLASS });
+            if (this.parent.activeViewOptions.group.resources.length > 0) {
+                blockIndicator.setAttribute('data-group-index', resIndex.toString());
+            }
             if (this.parent.enableRtl) {
                 blockIndicator.style.right = position + 'px';
             } else {

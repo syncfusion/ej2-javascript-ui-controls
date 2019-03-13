@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 16.4.54 (2019-02-19)
-
-### Dialog
-
-#### Bug Fixes
-
-- Dynamically enable/ disable the button in dialog, issue has been fixed.
-
 ## 16.4.47 (2019-01-16)
 
 ### Dialog

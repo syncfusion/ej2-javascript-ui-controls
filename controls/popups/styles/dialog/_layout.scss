@@ -97,7 +97,12 @@
       padding: $dialog-bigger-header-content-padding;
       }
 
+    & .e-dlg-header {
+      font-size: $dialog-bigger-header-content-font-size;
+    }
+
     & .e-dlg-content {
+      font-size: $dialog-bigger-content-font-size;
       padding: $dialog-bigger-content-padding;
     }
 
@@ -204,7 +209,7 @@
         &.e-south-west {
           bottom: $resize-hanlder-bottom-rtl;
           cursor: sw-resize;
-          left: 0;
+          left: 2px;
           transform: rotate(90deg);
         }
       }

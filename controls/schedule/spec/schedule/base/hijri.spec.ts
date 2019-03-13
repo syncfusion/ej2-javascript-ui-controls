@@ -2,15 +2,31 @@
  * Schedule hijri calendar spec 
  */
 import { createElement, remove, HijriParser } from '@syncfusion/ej2-base';
-import { Islamic, Calendar } from '@syncfusion/ej2-calendars';
+import { Islamic, Calendar, DateTimePicker } from '@syncfusion/ej2-calendars';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth,
-    MonthAgenda
+    Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, TimelineMonth, MonthAgenda, EJ2Instance
 } from '../../../src/schedule/index';
+import { disableScheduleAnimation, triggerMouseEvent } from '../util.spec';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
+import { RecurrenceEditor } from '../../../src/recurrence-editor/recurrence-editor';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth);
 Calendar.Inject(Islamic);
+
 describe('Schedule Islamic Calendar', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Islamic in Day view', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -33,7 +49,7 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelector('.e-day-view')).toBeTruthy();
         });
         it('current day checking', () => {
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 3, 1440');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Jumada I 3, 1440 AH');
         });
         it('hijri date checking', () => {
             let date: Date = new Date(parseInt(schObj.element.querySelector('.e-work-cells').getAttribute('data-date'), 10));
@@ -386,7 +402,7 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
         it('(Rajab1440) month element checking', () => {
-            schObj.selectedDate =new Date(2019, 2, 10);
+            schObj.selectedDate = new Date(2019, 2, 10);
             schObj.dataBind();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Rajab 1440');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(29);
@@ -433,5 +449,100 @@ describe('Schedule Islamic Calendar', () => {
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('June 2021');
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toBe(30);
         });
+    });
+    describe('Check locale objects in default culture', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            schObj = new Schedule({
+                currentView: 'Week',
+                selectedDate: new Date(2017, 10, 6),
+                calendarMode: 'Islamic'
+            });
+            schObj.appendTo('#Schedule');
+            disableScheduleAnimation(schObj);
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('checking day names', () => {
+            expect((schObj.element.querySelector('.e-date-header-container .e-header-cells .e-header-day') as HTMLElement).innerText)
+                .toEqual('Sun');
+        });
+        it('checking date format', () => {
+            expect(schObj.element.querySelector('.e-date-header-container .e-header-cells .e-header-date').innerHTML)
+                .toEqual('16');
+        });
+        it('checking time format', () => {
+            expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr td') as HTMLElement).innerText)
+                .toEqual('12:00 AM');
+        });
+        it('Checking locale object in recurrence editor window', () => {
+            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = schObj.eventWindow.dialogObject.element as HTMLElement;
+            let repeatElement: DropDownList =
+                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            repeatElement.index = 4; repeatElement.dataBind();
+            let startDate: DateTimePicker =
+                (dialogElement.querySelector('.e-start.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            expect(startDate.format).toEqual('M/d/y GGGGG h:mm a');
+            let endDate: DateTimePicker =
+                (dialogElement.querySelector('.e-end.e-datetimepicker') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            expect(endDate.format).toEqual('M/d/y GGGGG h:mm a');
+            let mDate: NumericTextBox =
+                (dialogElement.querySelector('.e-month-day') as EJ2Instance).ej2_instances[0] as NumericTextBox;
+            expect(mDate.value).toEqual(16);
+            let weekPos: DropDownList =
+                (dialogElement.querySelector('.e-month-pos') as EJ2Instance).ej2_instances[0] as DropDownList;
+            expect(weekPos.text).toEqual('Third');
+            let monthWeek: DropDownList =
+                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+            expect(monthWeek.text).toEqual('Sunday');
+            let month: DropDownList =
+                (dialogElement.querySelector('.e-year-expander-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            expect(month.text).toEqual('Safar');
+            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            cancelButton.click();
+        });
+    });
+    describe('checking rule', () => {
+        let schObj: RecurrenceEditor;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            schObj = new RecurrenceEditor({ startDate: new Date('Tue, 06 May 2014'), firstDayOfWeek: 1, calendarMode: 'Islamic' });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+        it('getRuleSummary', () => {
+            schObj.setRecurrenceRule('FREQ=YEARLY;BYDAY=MO;BYSETPOS=4;BYMONTH=4;INTERVAL=2;COUNT=10;');
+            expect(schObj.getRecurrenceRule()).toBe('FREQ=YEARLY;BYDAY=MO;BYSETPOS=4;BYMONTH=4;INTERVAL=2;COUNT=10;');
+            expect('every 2 year(s) on Rab. II Fourth Mon, 10 time(s)').toBe(schObj.getRuleSummary());
+            schObj.calendarMode = 'Gregorian';
+            expect('every 2 year(s) on Apr Fourth Mon, 10 time(s)').toBe(schObj.getRuleSummary());
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

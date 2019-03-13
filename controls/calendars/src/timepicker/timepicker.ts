@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';
+﻿import { EventHandler, Property, Internationalization, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
@@ -12,12 +12,12 @@ const WRAPPERCLASS: string = 'e-time-wrapper';
 const POPUP: string = 'e-popup';
 const ERROR: string = 'e-error';
 const POPUPDIMENSION: string = '240px';
-const LIBRARY: string = 'e-lib';
-const CONTROL: string = 'e-control';
 const DAY: number = new Date().getDate();
 const MONTH: number = new Date().getMonth();
 const YEAR: number = new Date().getFullYear();
 const ROOT: string = 'e-timepicker';
+const LIBRARY: string = 'e-lib';
+const CONTROL: string = 'e-control';
 const RTL: string = 'e-rtl';
 const CONTENT: string = 'e-content';
 const SELECTED: string = 'e-active';
@@ -168,13 +168,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private initValue: Date;
     private initMin: Date;
     private initMax: Date;
-    protected tabIndex: string;
-    private formElement: Element;
-    private invalidValueString: string = null;
     private inputEleValue: Date;
     private openPopupEventArgs: PopupEventArgs;
-    private modal: HTMLElement;
     private formatString: string;
+    protected tabIndex: string;
+    private formElement: Element;
+    private modal: HTMLElement;
+    private invalidValueString: string = null;
     protected keyConfigure: { [key: string]: string };
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
@@ -201,7 +201,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**
      * Specifies the format of value that is to be displayed in component. By default, the format is
      * based on the culture. 
-     *  > For more details refer to 
+     * > For more details refer to 
      * [`Format`](../../timepicker/getting-started#setting-the-time-format) documentation.
      * @default null
      * @aspType string
@@ -466,9 +466,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.checkTimeFormat();
         this.checkInvalidValue(this.value);
         // persist the value property.
-        this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true);
-        this.setProperties({ min: this.checkDateValue(new Date('' + this.min)) }, true);
-        this.setProperties({ max: this.checkDateValue(new Date('' + this.max)) }, true);
+        this.setProperties({ value: this.checkDateValue(new Date(this.checkInValue(this.value))) }, true);
+        this.setProperties({ min: this.checkDateValue(new Date(this.checkInValue(this.min))) }, true);
+        this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
         if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
         this.checkAttributes(); //check the input element attributes
         let localeText: { placeholder: string } = { placeholder: this.placeholder };
@@ -547,9 +547,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return cldrTime;
     }
     private checkInvalidValue(value: Date): void {
-        if (typeof value !== 'object' && !isNullOrUndefined(value) && !this.strictMode) {
+        let isInvalid: boolean = false;
+        if (typeof value !== 'object' && !isNullOrUndefined(value)) {
             let valueString: string = <string>value;
+            if (typeof valueString === 'string') { valueString = valueString.trim(); }
             let valueExpression: object = null;
+            let valueExp: Date = null;
             if (typeof value === 'number') {
                 valueString = (value as string).toString();
             } else if (typeof value === 'string') {
@@ -567,6 +570,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                 }
             }
+            valueExp = this.globalize.parseDate(valueString, {
+                format: this.getCldrDateTimeFormat(), type: 'datetime'
+            });
+            valueExpression = (!isNullOrUndefined(valueExp) && valueExp instanceof Date && !isNaN(+valueExp)) ? valueExp : null;
             if (isNullOrUndefined(valueExpression) && valueString.replace(/\s/g, '').length) {
                 let extISOString: RegExp = null;
                 let basicISOString: RegExp = null;
@@ -576,10 +583,15 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
                 if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
                     || ((/^[a-zA-Z0-9- ]*$/).test(value)) || isNaN(+new Date('' + valueString))) {
-                    this.invalidValueString = valueString;
-                    this.setProperties({ value: null }, true);
-                    this.initValue = null;
+                    isInvalid = true;
+                } else {
+                    valueExpression = new Date('' + valueString);
                 }
+            }
+            if (isInvalid) {
+                if (!this.strictMode) { this.invalidValueString = valueString; }
+                this.setProperties({ value: null }, true);
+                this.initValue = null;
             } else {
                 this.setProperties({ value: valueExpression }, true);
                 this.initValue = this.value;
@@ -610,7 +622,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.inputWrapper.container.parentElement.appendChild(this.inputElement);
             }
             (!isNullOrUndefined(this.cloneElement.getAttribute('tabindex'))) ?
-            this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
+                this.inputElement.setAttribute('tabindex', this.tabIndex) : this.inputElement.removeAttribute('tabindex');
             this.ensureInputAttribute();
             this.enableElement([this.inputElement]);
             this.inputElement.classList.remove('e-input');
@@ -1617,6 +1629,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.trigger('change', eventArgs);
         this.invalidValueString = null;
         this.checkErrorState(this.value);
+
     }
     protected updateInput(isUpdate: boolean, date: Date): void {
         if (isUpdate) {
@@ -1630,6 +1643,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.checkErrorState(this.invalidValueString);
             Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
         }
+
     }
     protected setActiveDescendant(): void {
         if (!isNullOrUndefined(this.selectedElement)) {
@@ -1795,10 +1809,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
 
     protected getProperty(date: TimePickerModel, val: string): void {
         if (val === 'min') {
-            this.initMin = this.checkDateValue(new Date('' + date.min));
+            this.initMin = this.checkDateValue(new Date(this.checkInValue(date.min)));
             this.setProperties({ min: this.initMin }, true);
         } else {
-            this.initMax = this.checkDateValue(new Date('' + date.max));
+            this.initMax = this.checkDateValue(new Date(this.checkInValue(date.max)));
             this.setProperties({ max: this.initMax }, true);
         }
         if (this.inputElement.value === '') {
@@ -1830,6 +1844,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (this.inputElement.value === '') {
             this.invalidValueString = null;
         }
+
     }
     /**
      * Focuses out the TimePicker textbox element.
@@ -1921,6 +1936,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.setActiveDescendant();
                 attributes(this.inputElement, { 'aria-expanded': 'true' });
                 addClass([this.inputWrapper.container], FOCUS);
+
                 EventHandler.add(document, 'mousedown', this.documentClickHandler, this);
             } else {
                 this.popupObj.destroy();
@@ -1955,8 +1971,22 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
         if (!Browser.isDevice) {
             switch (args.popup.position.X) {
+                case 'left':
+                    break;
                 case 'right':
                     args.popup.offsetX = this.containerStyle.width;
+                    break;
+                case 'center':
+                    args.popup.offsetX = -(this.containerStyle.width / 2);
+                    break;
+            }
+            switch (args.popup.position.Y) {
+                case 'top':
+                    break;
+                case 'bottom':
+                    break;
+                case 'center':
+                    args.popup.offsetY = -(this.containerStyle.height / 2);
                     break;
             }
             if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
@@ -1968,7 +1998,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
                 this.popupObj.relateTo = this.anchor = document.body;
                 this.popupObj.offsetY = 0;
-                this.popupObj.offsetX = 0;
                 this.popupObj.targetType = 'container';
                 this.popupObj.collision = { X: 'fit', Y: 'fit' };
             }
@@ -2049,8 +2078,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
                     break;
                 case 'format':
-                    this.checkTimeFormat();
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkTimeFormat();
                     this.setValue(this.value);
                     break;
                 case 'value':
@@ -2089,7 +2118,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.checkValueChange(null, false);
                     break;
                 case 'scrollTo':
-                    if (this.checkDateValue(new Date('' + newProp.scrollTo))) {
+                    if (this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo)))) {
                         if (this.popupWrapper) { this.setScrollTo(); }
                         this.setProperties({ scrollTo: newProp.scrollTo }, true);
                     } else {
@@ -2097,6 +2126,13 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     break;
             }
+        }
+    }
+    protected checkInValue(inValue: string | Date | number): string {
+        if (inValue instanceof Date) {
+            return (inValue.toUTCString());
+        } else {
+            return ('' + inValue);
         }
     }
 }

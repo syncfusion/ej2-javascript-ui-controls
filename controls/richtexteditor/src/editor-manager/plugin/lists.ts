@@ -57,7 +57,7 @@ export class Lists {
                     nodes.push(blockNodes[i].parentNode as Element);
                 } else if (blockNodes[i].tagName === 'LI' && (blockNodes[i].childNodes[0] as Element).tagName !== 'P' &&
                     ((blockNodes[i].childNodes[0] as Element).tagName !== 'OL' &&
-                    (blockNodes[i].childNodes[0] as Element).tagName !== 'UL')) {
+                        (blockNodes[i].childNodes[0] as Element).tagName !== 'UL')) {
                     nodes.push(blockNodes[i]);
                 }
             }
@@ -87,6 +87,11 @@ export class Lists {
                             event: e.event
                         });
                     }
+                }
+            } else {
+                if (!(e.event.action && e.event.action === 'indent')) {
+                    this.saveSelection = this.domNode.saveMarker(this.saveSelection, e.event.action);
+                    this.saveSelection.restore();
                 }
             }
         } else {
@@ -128,7 +133,7 @@ export class Lists {
         let firstNodeOL: Element;
         let siblingListOL: Element[] = <NodeListOf<Element> & Element[]>(elements as Element).querySelectorAll('ol, ul');
         let siblingListLI: NodeListOf<HTMLLIElement> = (elements as Element)
-        .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
+            .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
         let siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
         if (siblingListLI.length > 0 && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
             firstNode = siblingListLI[0];
@@ -174,7 +179,7 @@ export class Lists {
                 let firstNodeLI: Element;
                 let siblingListOL: Element[] = <NodeListOf<Element> & Element[]>(elements[i] as Element).querySelectorAll('ol, ul');
                 let siblingListLI: NodeListOf<HTMLLIElement> = (elements[i] as Element)
-                .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
+                    .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
                 let siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
                 if (siblingListLI.length > 0 && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
                     firstNodeLI = siblingListLI[0];
@@ -325,7 +330,7 @@ export class Lists {
             for (let z: number = 0; z < lastElementChild.length; z++) {
                 if (lastElementChild[z].tagName === 'OL' || lastElementChild[z].tagName === 'UL') {
                     let childLI: NodeListOf<HTMLLIElement> = (lastElementChild[z] as Element)
-                    .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
+                        .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
                     if (childLI.length > 0) {
                         for (let y: number = 0; y < childLI.length; y++) {
                             childElements.push(childLI[y]);
@@ -380,7 +385,7 @@ export class Lists {
                 let firstNode: Element = siblingList[0];
                 if (firstNode) {
                     let child: NodeListOf<HTMLLIElement> = firstNode
-                    .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
+                        .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
                     if (child) {
                         let nestedElement: Element = createElement(firstNode.tagName);
                         append([nestedElement], firstNode.parentNode as Element);

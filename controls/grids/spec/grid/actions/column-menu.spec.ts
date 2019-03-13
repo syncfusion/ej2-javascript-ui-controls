@@ -24,6 +24,7 @@ import { ContextMenuItemModel } from '../../../src/grid/base/interface';
 import { OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
 import { ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Page, Selection, Reorder, CommandColumn, ColumnMenu, Sort, Resize,
     Group, Edit, PdfExport, ExcelExport, Filter);
@@ -35,6 +36,11 @@ describe('column menu module', () => {
         let headers: any;
         let columns: Column[];
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
             let dataBound: EmitType<Object> = () => { done(); };
@@ -620,6 +626,15 @@ describe('column menu module', () => {
             gridObj.isDestroyed = false;
             expect(st).toBe(false);
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
         afterAll(() => {
            destroy(gridObj);
         });

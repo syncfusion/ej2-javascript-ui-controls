@@ -13,6 +13,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
+import { isGroupAdaptive } from '../base/util';
 /**
  * VirtualContentRenderer
  * @hidden
@@ -70,6 +71,18 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
         let info: SentinelType = scrollArgs.sentinel;
         let viewInfo: VirtualInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
+        if (isGroupAdaptive(this.parent)) {
+            if ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
+                && scrollArgs.direction === 'up' && viewInfo.blockIndexes[viewInfo.blockIndexes.length - 1] !== 2) {
+                return;
+            } else {
+                viewInfo.event = 'refresh-virtual-block';
+                this.parent.notify(
+                    viewInfo.event,
+                    { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
+                return;
+            }
+        }
         if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
             || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
             if (Browser.isIE) {
@@ -119,7 +132,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
 
         indexes.some((val: number, ind: number) => {
-            let result: boolean = val === this.getTotalBlocks();
+            let result: boolean = val === (isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks());
             if (result) { mIdx = ind; }
             return result;
         });
@@ -166,7 +179,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.getTable().appendChild(target);
 
         if (this.parent.groupSettings.columns.length) {
-            if (info.direction === 'up') {
+            if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
                 let blk: number = this.offsets[this.getTotalBlocks()] - this.prevHeight;
                 this.preventEvent = true; let sTop: number = this.content.scrollTop;
                 this.content.scrollTop = sTop + blk;
@@ -197,14 +210,17 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private setVirtualHeight(): void {
         let width: string = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
-        this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks()], width);
+        this.virtualEle.setVirtualHeight(
+            this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()],
+            width);
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.setVirtualHeight(1, width);
         }
     }
 
     private getPageFromTop(sTop: number, info: VirtualInfo): number {
-        let total: number = this.getTotalBlocks(); let page: number = 0; let extra: number = this.offsets[total] - this.prevHeight;
+        let total: number = (isGroupAdaptive(this.parent)) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
+        let page: number = 0; let extra: number = this.offsets[total] - this.prevHeight;
         this.offsetKeys.some((offset: string) => {
             let iOffset: number = Number(offset);
             let border: boolean = sTop < this.offsets[offset] || (iOffset === total && sTop > this.offsets[offset]);
@@ -229,10 +245,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             info = this.prevInfo;
         }
         let result: number = translate > sTop ?
-        this.getOffset(block - 1) : endTranslate < (sTop + cHeight) ? this.getOffset(block + 1) : translate;
-        let blockHeight: number =  this.offsets[info.blockIndexes[info.blockIndexes.length - 1]] -
-                 this.tmpOffsets[info.blockIndexes[0]];
-        if (result + blockHeight >  this.offsets[this.getTotalBlocks()]) {
+            this.getOffset(block - 1) : endTranslate < (sTop + cHeight) ? this.getOffset(block + 1) : translate;
+        let blockHeight: number = this.offsets[info.blockIndexes[info.blockIndexes.length - 1]] -
+            this.tmpOffsets[info.blockIndexes[0]];
+        if (result + blockHeight > this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()]) {
             result -= (result + blockHeight) - this.offsets[this.getTotalBlocks()];
         }
         return result;
@@ -282,6 +298,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         return index >= totalBlocks || index === totalBlocks - 1;
     }
 
+    public getGroupedTotalBlocks(): number {
+        let rows: Object[] = this.parent.vcRows;
+        return Math.floor((rows.length / this.getBlockSize()) < 1 ? 1 : rows.length / this.getBlockSize());
+    }
+
     public getTotalBlocks(): number {
         return Math.ceil(this.count / this.getBlockSize());
     }
@@ -311,6 +332,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     public getRowByIndex(index: number): Element {
+        if (isGroupAdaptive(this.parent)) {
+            return this.parent.getDataRows()[index];
+        }
         let prev: number[] = this.prevInfo.blockIndexes;
         let startIdx: number = (prev[0] - 1) * this.getBlockSize();
         return this.parent.getDataRows()[index - startIdx];
@@ -323,13 +347,16 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private refreshOffsets(): void {
-        let row: number = 0; let bSize: number = this.getBlockSize(); let total: number = this.getTotalBlocks();
+        let gObj: IGrid = this.parent;
+        let row: number = 0; let bSize: number = this.getBlockSize();
+        let total: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         this.prevHeight = this.offsets[total]; this.maxBlock = total % 2 === 0 ? total - 2 : total - 1; this.offsets = {};
         //Row offset update
         Array.apply(null, Array(total)).map(() => ++row)
             .forEach((block: number) => {
-                let tmp: number = (this.vgenerator.cache[block] || []).length; let rem: number = this.count % bSize;
-                let size: number = block in this.vgenerator.cache ?
+                let tmp: number = (this.vgenerator.cache[block] || []).length;
+                let rem: number = !isGroupAdaptive(this.parent) ? this.count % bSize : (gObj.vcRows.length % bSize);
+                let size: number = !isGroupAdaptive(this.parent) && block in this.vgenerator.cache ?
                     tmp * this.parent.getRowHeight() : rem && block === total ? rem * this.parent.getRowHeight() : this.getBlockHeight();
                 // let size: number = this.parent.groupSettings.columns.length && block in this.vgenerator.cache ?
                 // tmp * getRowHeight() : this.getBlockHeight();
@@ -337,7 +364,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.tmpOffsets[block] = this.offsets[block - 1] | 0;
             });
         this.offsetKeys = Object.keys(this.offsets);
-
+        if (isGroupAdaptive(this.parent)) {
+            this.parent.vGroupOffsets = this.offsets;
+        }
         //Column offset update
         if (this.parent.enableColumnVirtualization) {
             this.vgenerator.refreshColOffsets();

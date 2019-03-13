@@ -6,6 +6,7 @@ import { DiagramScroller } from '../../src/diagram/interaction/scroller';
 import { MouseEvents } from '../../spec/diagram/interaction/mouseevents.spec';
 import { Overview } from '../../src/overview/overview';
 import { OverviewModel } from '../../src/overview/overview-model';
+import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 /**
  * Overview Spec
@@ -483,8 +484,7 @@ describe('Overview', () => {
             expect(overview.contentWidth === 1000 && overview.contentHeight === 2000).toBe(true);
             done();
         });
-
-    });
+      });
 
     describe('Overview Tests with multiple overview', () => {
         let diagram: Diagram;
@@ -605,8 +605,7 @@ describe('Overview', () => {
                     Math.round(diagram.scroller.verticalOffset) <= -10)).toBe(true);
             done();
         });
-
-    });
+      });
 
     describe('Overview Tests with multiple overview', () => {
         let diagram: Diagram;
@@ -686,6 +685,15 @@ describe('Overview', () => {
             }, 450);
 
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
     });
 });

@@ -40,8 +40,7 @@ export type ToolbarItems =
     /** Export the TreeGrid to Csv */
     'CsvExport' |
     /** Print the TreeGrid */
-    'Print' ;
-
+    'Print';
 /**
  * Defines Predefined toolbar items.
  * @hidden
@@ -58,7 +57,9 @@ export enum ToolbarItem {
     ExcelExport,
     PdfExport,
     CsvExport,
-    Print
+    Print,
+    RowIndent,
+    RowOutdent
 }
 
 /**

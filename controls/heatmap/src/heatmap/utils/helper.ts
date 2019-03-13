@@ -1,4 +1,5 @@
-import { SvgRenderer, CanvasRenderer, remove, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { remove, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, PaletteCollectionModel } from '../model/base-model';
 import { HeatMap } from '../heatmap';
 import { RgbColor } from '../utils/colorMapping';
@@ -138,10 +139,12 @@ export class CurrentRect {
     public visible: boolean;
     public displayText: string;
     public textId: string;
+    public allowCollection: boolean;
 
     constructor(
         x: number, y: number, width: number, height: number, value: number | BubbleTooltipData[],
-        id: string, xIndex: number, yIndex: number, xValue: number, yValue: number, visible: boolean, displayText: string, textId: string) {
+        id: string, xIndex: number, yIndex: number, xValue: number, yValue: number, visible: boolean,
+        displayText: string, textId: string , allowCollection: boolean) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -155,6 +158,8 @@ export class CurrentRect {
         this.visible = visible;
         this.displayText = displayText;
         this.textId = textId;
+        /** @private */
+        this.allowCollection = allowCollection;
     }
 }
 
@@ -170,15 +175,35 @@ export class SelectedCellDetails {
     public xValue: string | number | Date;
     public yValue: string | number | Date;
     public cellElement: Element;
+    /** @private */
+    public xPosition: number;
+    /** @private */
+    public yPosition: number;
+    /** @private */
+    public width: number;
+    /** @private */
+    public height: number;
+    /** @private */
+    public x: number;
+    /** @private */
+    public y: number;
     constructor(
         value: number | BubbleTooltipData[], xLabel: string, yLabel: string, xValue: number,
-        yValue: number, cellElement: Element) {
+        yValue: number, cellElement: Element,
+        xPosition: number,
+        yPosition: number, width: number, height: number, x: number, y: number) {
         this.value = value;
         this.xLabel = xLabel;
         this.yLabel = yLabel;
         this.xValue = xValue;
         this.yValue = yValue;
         this.cellElement = cellElement;
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
     }
 }
 
@@ -368,7 +393,6 @@ export class PathAttributes extends PathOption {
         this.y = path.y;
     }
 }
-
 
 /**
  * Helper Class to define property to path.

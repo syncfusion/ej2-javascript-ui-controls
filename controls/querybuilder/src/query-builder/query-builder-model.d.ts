@@ -1,5 +1,5 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip } from '@syncfusion/ej2-popups';
-import {TemplateColumn,Validation,DisplayMode,SortDirection} from "./query-builder";
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip } from '@syncfusion/ej2-popups';
+import {TemplateColumn,Validation,ChangeEventArgs,DisplayMode,SortDirection} from "./query-builder";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -165,79 +165,19 @@ export interface QueryBuilderModel extends ComponentModel{
      * Triggers when the component is created.
      * @event 
      */
-    created?: EmitType<Object>;
+    created?: EmitType<Event>;
 
     /**
-     * Triggers before the condition (And/Or) is changed.
+     * Triggers before the condition (And/Or), field, operator, value is changed.
      * @event
      */
-    beforeConditionChange?: EmitType<Object>;
+    beforeChange?: EmitType<ChangeEventArgs>;
 
     /**
-     * Triggers before the field is changed.
+     * Triggers when changing the condition(AND/OR), field, value, operator is changed
      * @event
      */
-    beforeFieldChange?: EmitType<Object>;
-
-    /**
-     * Triggers before the operator is changed. (e.g., equal, less etc.).
-     * @event
-     */
-    beforeOperatorChange?: EmitType<Object>;
-
-    /**
-     * Triggers before the value is changed.
-     * @event
-     */
-    beforeValueChange?: EmitType<Object>;
-
-    /**
-     * Triggers when changing the condition(AND/OR) in button group.
-     * @event
-     */
-    conditionChanged?: EmitType<Object>;
-
-    /**
-     * Triggers when changing the fields using the drop-down list.
-     * @event
-     */
-    fieldChanged?: EmitType<Object>;
-
-    /**
-     * Triggers when changing the rule value.
-     * @event
-     */
-    valueChanged?: EmitType<Object>;
-
-    /**
-     * Triggers when changing the operator value.
-     * @event
-     */
-    operatorChanged?: EmitType<Object>;
-
-    /**
-     * Triggers when deleting a group.
-     * @event
-     */
-    groupDelete?: EmitType<Object>;
-
-    /**
-     * Triggers when deleting the rule.
-     * @event
-     */
-    ruleDelete?: EmitType<Object>;
-
-    /**
-     * Triggers when adding a Group.
-     * @event
-     */
-    groupInsert?: EmitType<Object>;
-
-    /**
-     * Triggers when adding the rule.
-     * @event
-     */
-    ruleInsert?: EmitType<Object>;
+    change?: EmitType<ChangeEventArgs>;
 
     /**
      * Specifies the showButtons settings of the query builder component.

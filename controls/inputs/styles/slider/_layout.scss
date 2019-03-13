@@ -3,7 +3,6 @@
   // sass-lint:disable no-important
 
   .e-control-wrapper.e-slider-container.e-material-slider .e-slider .e-handle {
-
     &.e-material-handle {
       cursor: default;
       transition: transform .4s cubic-bezier(.25, .8, .25, 1);
@@ -188,7 +187,6 @@
         }
       }
     }
-
     @else {
       @if $skin-name == 'highcontrast' {
         background-color: $slider-active-handle-bg-color;
@@ -220,7 +218,6 @@
         }
       }
     }
-
     @else {
       &.e-slider-tooltip.e-tooltip-wrap.e-popup {
         .e-tip-content {
@@ -238,7 +235,7 @@
     }
   }
 
-  .e-bigger .e-control-wrapper.e-slider-container ,
+  .e-bigger .e-control-wrapper.e-slider-container,
   .e-control-wrapper.e-slider-container.e-bigger {
     @if $skin-name != 'material' {
       .e-slider {
@@ -248,11 +245,86 @@
         }
       }
 
+      @if ($skin-name == 'bootstrap4') {
+        .e-slider-button {
+          height: 18px;
+          width: 18px;
+        }
+
+        &.e-vertical {
+          &.e-slider-btn {
+            padding: 34px 0;
+          }
+
+          .e-first-button {
+            margin-right: -9px;
+          }
+
+          .e-second-button {
+            margin-right: -9px;
+          }
+
+          .e-slider {
+            .e-slider-track {
+              left: calc(50% - 4px);
+              width: 8px;
+            }
+
+            .e-range {
+              left: calc(50% - 4px);
+              width: 8px;
+            }
+          }
+        }
+
+        &.e-horizontal .e-slider {
+          .e-limits {
+            height: 8px;
+            top: calc(50% - 4px);
+          }
+        }
+
+        &.e-vertical .e-slider {
+          .e-limits {
+            left: calc(50% - 4px);
+            width: 8px;
+          }
+        }
+      }
+
       &.e-horizontal {
+        @if ($skin-name == 'bootstrap4') {
+          &.e-slider-btn {
+            padding: 0 34px;
+          }
+
+          .e-slider-button {
+            height: $slider-handle-mobile-buttons-height;
+            margin-top: -9px;
+            width: $slider-handle-mobile-buttons-width;
+          }
+        }
+
         .e-slider {
+          @if ($skin-name == 'bootstrap4') {
+            .e-slider-track {
+              height: 8px;
+              top: calc(50% - 4px);
+            }
+
+            .e-range {
+              height: 8px;
+              top: calc(50% - 4px);
+            }
+          }
+
           .e-handle {
             margin-left: -9px;
             top: calc(50% - 9px);
+            @if($skin-name == 'bootstrap4') {
+              margin-left: $slider-handle-mobile-margin-left;
+              top: $slider-handle-mobile-handle-top;
+            }
           }
         }
 
@@ -326,7 +398,7 @@
         .e-slider {
           .e-handle {
             margin: $rtl-slider-h-handle-margin;
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
               top: calc(50% - 8px);
             }
             @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
@@ -350,7 +422,7 @@
                 left: 0;
               }
 
-              @if $skin-name == 'bootstrap' {
+              @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
                 background-position: right center;
                 left: 0;
               }
@@ -371,7 +443,7 @@
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
             margin-top: -8px;
           }
-          @if $skin-name == 'bootstrap' {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
             margin-top: -7px;
           }
         }
@@ -453,7 +525,23 @@
           &.e-handle-disable {
             display: $slider-disabled-handle-show;
           }
+        }
+      }
 
+      @if ($skin-name == 'bootstrap4') {
+        .e-slider {
+          .e-range {
+            background-color: $slider-disabled-range-color;
+          }
+
+          .e-handle {
+            background-color: $slider-disabled-handle-color;
+            border-color: $slider-disabled-handle-color;
+          }
+
+          .e-slider-track {
+            background-color: $slider-disabled-track-color;
+          }
         }
       }
     }
@@ -610,6 +698,11 @@
           border-radius: 4px;
           top: calc(50% - 5px);
         }
+        @if $skin-name == 'bootstrap4' {
+          background: $slider-handle-start-border-color;
+          border-radius: 6px;
+          top: calc(50% - 3px);
+        }
       }
 
       .e-handle {
@@ -617,7 +710,10 @@
           margin-left: -6px;
           top: calc(50% - 6px);
         }
-
+        @else if ($skin-name == 'bootstrap4') {
+          margin-left: -8px;
+          top: calc(50% - 8px);
+        }
         @else {
           margin-left: -8px;
           top: calc(50% - 8px);
@@ -651,8 +747,11 @@
         @if $skin-name == 'highcontrast' {
           top: calc(50% - 3px);
         }
-        @if $skin-name == 'bootstrap' {
+        @if ($skin-name == 'bootstrap') {
           top: calc(50% - 4px);
+        }
+        @if ($skin-name == 'bootstrap4') {
+          top: calc(50% - 3px);
         }
       }
 
@@ -668,6 +767,9 @@
       height: inherit;
       padding: 38px 0;
       width: 48px;
+      @if ($skin-name == 'bootstrap4') {
+        padding: 30px 0;
+      }
 
       .e-slider {
         height: 100%;
@@ -695,11 +797,16 @@
           left: calc(50% - 4px);
           width: 8px;
         }
-        @if $skin-name == 'bootstrap' {
+        @if ($skin-name == 'bootstrap') {
           border: 1px solid $slider-track-border-color;
           border-radius: 3px;
           left: calc(50% - 5px);
           width: 10px;
+        }
+        @if ($skin-name == 'bootstrap4') {
+          border-radius: 6px;
+          left: calc(50% - 3px);
+          width: 6px;
         }
         @if $skin-name == 'material' {
           left: calc(50% - 1px);
@@ -720,7 +827,6 @@
       }
 
       @if $skin-name == 'material' {
-
         .e-first-button {
           bottom: 0;
           margin-right: $slider-btn-center-align;
@@ -758,7 +864,6 @@
         }
       }
       @else if $skin-name != 'highcontrast' {
-
         .e-first-button {
           bottom: 0;
           margin-right: $slider-btn-center-align;
@@ -851,11 +956,13 @@
       }
 
       .e-slider {
-
         .e-handle {
           margin-bottom: $slider-v-handle-margin;
           @if $skin-name == 'material' {
             left: calc(50% - 6px);
+          }
+          @else if($skin-name == 'bootstrap4') {
+            left: calc(50% - 8px);
           }
           @else {
             left: calc(50% - 8px);
@@ -863,9 +970,13 @@
         }
 
         .e-range {
-          @if $skin-name == 'bootstrap' {
+          @if ($skin-name == 'bootstrap') {
             left: calc(50% - 4px);
             width: 8px;
+          }
+          @if ($skin-name == 'bootstrap4') {
+            left: calc(50% - 3px);
+            width: 6px;
           }
           @if $skin-name == 'fabric' {
             left: calc(50% - 2px);
@@ -893,7 +1004,8 @@
     .e-range {
       border-radius: $slider-range-border-radius;
       position: absolute;
-      transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, width 300ms ease-out, height 300ms ease-out;
+      transition: left 300ms ease-out, right 300ms ease-out, bottom 300ms ease-out, width 300ms ease-out,
+      height 300ms ease-out;
 
       &.e-drag-horizontal {
         cursor: ew-resize;
@@ -994,7 +1106,12 @@
           @if $skin-name == 'bootstrap' {
             background-color: $slider-tab-background;
             border-color: $slider-tab-border-color;
-            box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+          }
+          @if ($skin-name == 'bootstrap4') {
+            background-color: $slider-tab-background;
+            border-color: $slider-tab-border-color;
+            box-shadow: $slider-tab-active-box-shadow;
           }
           // sass-lint:enable-all
         }
@@ -1049,8 +1166,8 @@
               width: $largetick-before-height;
             }
           }
+        }
       }
-    }
     }
 
     .e-tick-after {
@@ -1102,7 +1219,7 @@
     &.e-scale-before {
       .e-scale {
         &.e-v-scale {
-          @if $skin-name == 'bootstrap' {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
             right: 9px;
           }
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
@@ -1115,7 +1232,7 @@
     &.e-scale-after {
       .e-scale {
         &.e-v-scale {
-          @if $skin-name == 'bootstrap' {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
             right: 9px;
           }
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
@@ -1129,9 +1246,13 @@
       &.e-scale {
         &.e-h-scale {
           .e-tick {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap') {
               height: calc(100% - 6px);
               top: -11px;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              height: 16px;
+              top: -8px;
             }
             @if $skin-name == 'fabric' {
               height: calc(100% - 3px);
@@ -1148,9 +1269,13 @@
           }
 
           .e-large {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap') {
               height: 100%;
               top: -8px;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              height: 22px;
+              top: -5px;
             }
             @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
               height: calc(100% + 3px);
@@ -1165,9 +1290,14 @@
 
         &.e-v-scale {
           .e-tick {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap') {
               background-position: center;
               width: 100%;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              background-position: center;
+              left: 6px;
+              width: calc(100% - 12px);
             }
             @if $skin-name == 'material' {
               background-position: center;
@@ -1180,12 +1310,16 @@
             @if $skin-name == 'highcontrast' {
               left: 2px;
               width: calc(100% - 6px);
+            }
           }
-        }
 
           .e-large {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap') {
               width: 100%;
+            }
+            @if ($skin-name == 'bootstrap4') {
+              left: 3px;
+              width: calc(100% - 6px);
             }
             @if $skin-name == 'material' {
               width: 100%;
@@ -1245,6 +1379,9 @@
           position: absolute;
           user-select: none;
           white-space: nowrap;
+          @if $skin-name == 'bootstrap4' {
+            line-height: 1.5;
+          }
         }
       }
 
@@ -1253,7 +1390,7 @@
         left: calc(50% - 14px);
         top: 0;
         width: 28px;
-        @if $skin-name == 'bootstrap' {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
           margin-top: -2px;
         }
 
@@ -1345,7 +1482,7 @@
           @if $skin-name == 'fabric' {
             top: 12px;
           }
-          @if $skin-name == 'bootstrap' {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
             top: 15px;
           }
         }
@@ -1439,7 +1576,7 @@
     &.e-vertical {
       &.e-scale-both {
         .e-scale.e-v-scale {
-          @if $skin-name == 'bootstrap' {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
             right: 10px;
           }
         }
@@ -1476,10 +1613,20 @@
             }
 
             &.e-tick-both {
-              right: 44px;
+              @if $skin-name == 'bootstrap4' {
+                right: 30px;
+              }
+              @else {
+                right: 44px;
+              }
 
               &:first-child {
-                left: 42px;
+                @if $skin-name == 'bootstrap4' {
+                  left: 30px;
+                }
+                @else {
+                  left: 42px;
+                }
               }
             }
           }
@@ -1499,7 +1646,6 @@
           visibility: visible;
         }
       }
-
     }
   }
 
@@ -1527,11 +1673,13 @@
 
   .e-control-wrapper.e-slider-container .e-slider {
     .e-handle.e-handle-active {
-      @if $skin-name == 'bootstrap' {
+      @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
         background-color: $slider-handle-active-bg-color;
         border-color: $slider-handle-active-border-color;
       }
+      @if ($skin-name == 'bootstrap4') {
+        box-shadow: $slider-handle-active-box-shadow;
+      }
     }
   }
-
 }

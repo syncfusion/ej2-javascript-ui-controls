@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### Schedule
+
+#### New Features
+
+- Provided support to auto-adjust the height of work cells based on the number of appointments present in the same time ranges.
+- Support for exporting the Scheduler events to an Excel file format is provided.
+- Support has been provided to export the Scheduler events to a calendar (`.ics`) file, as well as to import events from an `.ics` file into our Scheduler.
+
+## 16.4.55 (2019-02-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue with unable to scroll down the browser scroller, when the Scheduler is loaded with Month Agenda as current view has been fixed.
+
 ## 16.4.54 (2019-02-19)
 
 ### Schedule
@@ -12,7 +30,6 @@
 - An issue with recurring events while defining recurrence rule on it that includes both BYMONTH and BYDAY properties together has been fixed.
 - An issue with incorrect casing of `popupOpen` event's parameters that triggers on cell click action has been fixed.
 - An issue with 24 hours format not displaying in time cells of adaptive Scheduler mode has been fixed.
-- An issue with unable to scroll down the browser scroller, when the Scheduler is loaded with Month Agenda as current view has been fixed.
 
 ## 16.4.53 (2019-02-13)
 

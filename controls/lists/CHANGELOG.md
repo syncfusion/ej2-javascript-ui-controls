@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### ListView
+
+#### Bug Fixes
+
+- Issue with duplicate entries on updating the data source while binding data using data manager has been fixed.
+
+- Now it is possible to perform key interactions with input list items displayed using custom templates.
+
 ## 16.4.44 (2018-12-24)
 
 ### ListView

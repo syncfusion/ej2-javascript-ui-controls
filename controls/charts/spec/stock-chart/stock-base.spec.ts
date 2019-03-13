@@ -7,8 +7,18 @@ import { StockChart } from '../../src/stock-chart/index';
 import { chartData } from './indicatordata.spec';
 import { IStockChartEventArgs, IRangeChangeEventArgs } from '../../src/stock-chart/model/base';
 import { MouseEvents } from '../chart/base/events.spec';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 StockChart.Inject(CandleSeries, DateTime, Tooltip, RangeTooltip, Zoom);
 
+describe('Stock Chart', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('default stock chart', () => {
     let chart: StockChart;
     let chartElement: Element = createElement('div', { id: 'stock' });
@@ -418,4 +428,14 @@ describe('default stock chart', () => {
         };
         chart.refresh();
     });
+});
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
 });

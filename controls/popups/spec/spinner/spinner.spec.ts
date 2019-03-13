@@ -4,9 +4,19 @@
 
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, setSpinner } from '../../src/spinner/spinner';
+import  {profile , inMB, getMemoryProfile} from './common.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 describe('Spinner Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     let css: string = ".e-spinner-pane::after { content: 'Material'; display: none;} ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -123,6 +133,22 @@ describe('Spinner Control', () => {
             expect(materialObj.classList.contains('e-spin-material')).toEqual(true);
             expect((<HTMLElement>materialObj.childNodes[0]).classList.contains('e-path-circle')).toEqual(true);
         });
+        it('Ensure material theme element structure and class testing', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'),
+                    width:50,
+                    label:"Loading...",
+                    type: 'Bootstrap4'
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spinner-pane')).toEqual(true);
+            let innerObject = (<HTMLElement>(container.querySelector('.e-spinner-pane')as HTMLElement).childNodes[0]);
+            expect(innerObject.classList.contains('e-spinner-inner')).toEqual(true);
+            let materialObj = (<HTMLElement>innerObject.childNodes[0]);
+            expect(materialObj.classList.contains('e-spin-bootstrap4')).toEqual(true);
+            expect((<HTMLElement>materialObj.childNodes[0]).classList.contains('e-path-circle')).toEqual(true);
+        });
         it('Spinner width testing for material', () => {
             let spinObject = createSpinner({ 
                 target: document.getElementById('spinner-01'),
@@ -133,6 +159,18 @@ describe('Spinner Control', () => {
             showSpinner(container);
             expect((container.querySelector('.e-spin-material') as HTMLElement).style.width).toEqual("50px");
             expect((container.querySelector('.e-spin-material') as HTMLElement).style.height).toEqual("50px");
+        });
+        it('Spinner width testing for bootstrap4', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'),
+                    width:50,
+                    label:"Loading...",
+                    type: 'Bootstrap4'
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            expect((container.querySelector('.e-spin-bootstrap4') as HTMLElement).style.width).toEqual("50px");
+            expect((container.querySelector('.e-spin-bootstrap4') as HTMLElement).style.height).toEqual("50px");
         });
          it('Spinner width testing for fabric', () => {
             let spinObject = createSpinner({ 
@@ -181,7 +219,18 @@ describe('Spinner Control', () => {
             expect((container.querySelector('.e-spin-material') as HTMLElement).style.width).toEqual("50px");
             expect((container.querySelector('.e-spin-material') as HTMLElement).style.height).toEqual("50px");
         });
-
+        it('Spinner width in pixel value testing for bootstrap4', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'),
+                    width: '50px',
+                    label:"Loading...",
+                    type: 'Bootstrap4'
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            expect((container.querySelector('.e-spin-bootstrap4') as HTMLElement).style.width).toEqual("50px");
+            expect((container.querySelector('.e-spin-bootstrap4') as HTMLElement).style.height).toEqual("50px");
+        });
         it('Spinner width in pixel value testing for fabric', () => {
             let spinObject = createSpinner({ 
                 target: document.getElementById('spinner-01'),
@@ -219,6 +268,17 @@ describe('Spinner Control', () => {
             expect((container.querySelector('.e-spin-material') as HTMLElement).style.height).toEqual("30px");
         });
 
+        it('Spinner without width value testing for bootstrap4', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'),    
+                    label:"Loading...",
+                    type: 'Bootstrap4'
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            expect((container.querySelector('.e-spin-bootstrap4') as HTMLElement).style.width).toEqual("36px");
+            expect((container.querySelector('.e-spin-bootstrap4') as HTMLElement).style.height).toEqual("36px");
+        });
         it('Spinner width in pixel value testing for high contrast', () => {
             let spinObject = createSpinner({ 
                 target: document.getElementById('spinner-01'),
@@ -579,6 +639,33 @@ describe('Spinner Control', () => {
             expect((container1.querySelector('.e-spin-bootstrap') as HTMLElement)).not.toBeNull();
         });
 
+        
+        it('Ensure set spinner testing for material to bootstrap4', () => {
+            let spinObject = createSpinner({ 
+                target: document.getElementById('spinner-01'),
+                
+                    width: 50,
+                    label:"Loading..."
+            });
+            let container = document.getElementById('spinner-01');
+            showSpinner(container);
+            let spinObject_01 = createSpinner({ 
+                target: document.getElementById('spinner-02'),
+                
+                    width: 50,
+                    label:"Loading..."
+            });
+            let container1 = document.getElementById('spinner-02');
+            showSpinner(container1);
+            setSpinner({cssClass: 'e-spin-custom',type: 'Bootstrap4'});
+            expect((container.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(true);
+            expect((container1.querySelector('.e-spinner-pane') as HTMLElement).classList.contains('e-spin-custom')).toEqual(true);
+            expect((container.querySelector('.e-spin-material') as HTMLElement)).toBeNull();
+            expect((container.querySelector('.e-spin-bootstrap4') as HTMLElement)).not.toBeNull();
+            expect((container1.querySelector('.e-spin-material') as HTMLElement)).toBeNull();
+            expect((container1.querySelector('.e-spin-bootstrap4') as HTMLElement)).not.toBeNull();
+        });
+
         it('Ensure set spinner testing for material to bootstrap', () => {
             let spinObject = createSpinner({ 
                 target: document.getElementById('spinner-01'),
@@ -915,4 +1002,14 @@ describe('Spinner Control', () => {
             expect(isNullOrUndefined(materialObj)).toEqual(true);
         });
     });
+    
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

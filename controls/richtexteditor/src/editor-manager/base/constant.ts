@@ -64,6 +64,11 @@ export const SELECTION_TYPE: string = 'selection-type';
  */
 export const INSERTHTML_TYPE: string = 'inserthtml-type';
 
+/* Insert Text plugin events
+ * @hidden
+ */
+export const INSERT_TEXT_TYPE: string = 'insert-text-type';
+
 /* Clear Format HTML plugin events
  * @hidden
  */

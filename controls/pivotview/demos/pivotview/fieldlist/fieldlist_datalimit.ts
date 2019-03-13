@@ -9,6 +9,8 @@ import { PivotFieldList } from '../../../src/pivotfieldlist/base/field-list';
 import { CalculatedField } from '../../../src/common/calculatedfield/calculated-field';
 import { GroupingBar } from '../../../src/common/grouping-bar/grouping-bar';
 import { DrillThrough } from '../../../src/pivotview/actions';
+import { BeginDrillThroughEventArgs } from '../../../src/common/base/interface';
+import { Grid, Sort, Filter, Group, ContextMenu } from '@syncfusion/ej2-grids';
 
 PivotFieldList.Inject(CalculatedField, DrillThrough);
 PivotView.Inject(GroupingBar);
@@ -23,6 +25,18 @@ let pivotGridObj: PivotView = new PivotView({
     gridSettings: { columnWidth: 140 },
     showGroupingBar: true,
     allowDrillThrough: true,
+    beginDrillThrough: (args: BeginDrillThroughEventArgs) => {
+        if (args.gridObj) {
+            Grid.Inject(Sort, Filter, Group, ContextMenu);
+            let gridObj: Grid = args.gridObj;
+            gridObj.allowGrouping = true;
+            gridObj.allowSorting = true;
+            gridObj.allowFiltering = true;
+            gridObj.filterSettings = { type: 'CheckBox' };
+            gridObj.contextMenuItems = ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending',
+                'Copy', 'FirstPage', 'PrevPage', 'LastPage', 'NextPage'];
+        }
+    },
     maxNodeLimitInMemberEditor: 20
 });
 pivotGridObj.appendTo('#PivotView');

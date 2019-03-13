@@ -1,4 +1,5 @@
-import { getPoint, withInRange, ChartLocation, PathOption, TransformToVisible } from '../../common/utils/helper';
+import { getPoint, withInRange, ChartLocation, TransformToVisible } from '../../common/utils/helper';
+import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { AnimationModel } from '../../common/model/base-model';

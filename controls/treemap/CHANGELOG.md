@@ -8,6 +8,17 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### TreeMap
+
+#### New Features
+
+- The right-to-left (RTL) rendering support has been provided.
+- Load on-demand option has been provided to load and render the child items dynamically.
+- Responsive support has been provided to the TreeMap legend.
+- The 'doubleClick', 'rightClick', and 'legendRendering' events have been provided in TreeMap.
+
 ## 16.4.40-beta (2018-12-10)
 
 ### TreeMap

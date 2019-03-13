@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization } from '@syncfusion/ej2-base';import { SvgRenderer, Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';import { DataManager } from '@syncfusion/ej2-data';import { Chart } from '../chart/index';import { Size, RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series } from '../index';import { Axis } from '../chart/index';import { Periods } from '../common/model/base';import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs } from '../common/model/interface';import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../common/model/interface';import { PeriodsModel } from '../common/model/base-model';import { ChartTheme } from '../chart/index';import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';import { ZoomSettings, ZoomSettingsModel } from '../chart/index';import { calculateSize, getElement } from '../common/utils/helper';import { getRangeValueXByPoint } from '../range-navigator/index';import { PeriodSelector } from '../common/period-selector/period-selector';import { CartesianChart } from './renderer/cartesian-chart';import { RangeSelector } from './renderer/range-selector';import { ToolBarSelector } from './renderer/toolbar-selector';import { SelectionMode } from '../index';import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes } from './model/base';import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';import { StockChartAnnotationSettings } from './model/base';import { StockChartAnnotationSettingsModel} from './model/base-model';import { StockChartFont } from './model/base';import { StockSeriesModel, StockChartIndicatorModel, StockChartAxisModel, StockChartRowModel } from './model/base-model';import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel } from './model/base-model';import { StockChartBorderModel, StockMarginModel } from './model/base-model';import { ChartSeriesType, ExportType, TrendlineTypes, TechnicalIndicators } from '../index';import { textElement, titlePositionX, Rect, Alignment, TextOption, measureText } from '../index';import { getThemeColor } from '../common/model/theme';
+import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization } from '@syncfusion/ej2-base';import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';import { DataManager } from '@syncfusion/ej2-data';import { Chart } from '../chart/index';import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series } from '../index';import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';import { Axis } from '../chart/index';import { Periods } from '../common/model/base';import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs } from '../common/model/interface';import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../common/model/interface';import { PeriodsModel } from '../common/model/base-model';import { ChartTheme } from '../chart/index';import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';import { ZoomSettings, ZoomSettingsModel } from '../chart/index';import { calculateSize, getElement } from '../common/utils/helper';import { getRangeValueXByPoint } from '../range-navigator/index';import { PeriodSelector } from '../common/period-selector/period-selector';import { CartesianChart } from './renderer/cartesian-chart';import { RangeSelector } from './renderer/range-selector';import { ToolBarSelector } from './renderer/toolbar-selector';import { SelectionMode } from '../index';import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes, StockEventsSettings } from './model/base';import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';import { StockChartAnnotationSettings, IStockEventRenderArgs, } from './model/base';import { StockChartAnnotationSettingsModel } from './model/base-model';import { StockChartFont } from './model/base';import { StockSeriesModel, StockChartIndicatorModel, StockChartAxisModel, StockChartRowModel } from './model/base-model';import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel, StockEventsSettingsModel } from './model/base-model';import { StockChartBorderModel, StockMarginModel } from './model/base-model';import { ChartSeriesType, ExportType, TrendlineTypes, TechnicalIndicators } from '../index';import { textElement, titlePositionX, Alignment } from '../index';import { getThemeColor } from '../common/model/theme';import { StockEvents } from './renderer/stock-events';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -110,6 +110,12 @@ export interface StockChartModel extends ComponentModel{
      */
 
     series?: StockSeriesModel[];
+
+    /**
+     * The configuration for stock events in the stockChart.
+     */
+
+    stockEvents?: StockEventsSettingsModel[];
 
     /**
      * It specifies whether the stockChart should be render in transposed manner or not.
@@ -249,6 +255,12 @@ export interface StockChartModel extends ComponentModel{
      */
 
     seriesRender?: EmitType<ISeriesRenderEventArgs>;
+
+    /**
+     * Triggers before the series is rendered.
+     * @event
+     */
+    stockEventRender?: EmitType<IStockEventRenderArgs>;
 
     /**
      * Specifies the point indexes to be selected while loading a chart.

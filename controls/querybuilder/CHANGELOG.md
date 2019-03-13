@@ -2,15 +2,19 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
 
 ### QueryBuilder
 
+#### Breaking Changes
+
+- Modified the existing events as change, beforeChange.
+
 #### Bug Fixes
 
-- 'Add Group' option is not disabled while setting groupInsert as false is fixed.
+- Between Operator produces incorrect SQL is fixed.
 
-## 16.4.52 (2019-02-05)
+## 16.4.44 (2018-12-24)
 
 ### QueryBuilder
 

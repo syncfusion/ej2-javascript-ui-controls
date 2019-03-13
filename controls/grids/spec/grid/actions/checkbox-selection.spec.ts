@@ -21,6 +21,7 @@ import { Toolbar } from '../../../src/grid/actions/toolbar';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy } from '../base/specutil.spec';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar);
 
@@ -35,6 +36,11 @@ describe('Grid checkbox selection functionality', () => {
         let args: any;
         let chkAll: HTMLElement;
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: data,
@@ -593,6 +599,15 @@ describe('Grid checkbox selection functionality', () => {
             expect((document.querySelector('.e-clipboard') as HTMLInputElement).value
                 === "Employee ID	Name\n2	Andrew\n3	Janet").toBeTruthy();
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
         afterAll(() => {
             destroy(gridObj);

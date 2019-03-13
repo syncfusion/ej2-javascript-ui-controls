@@ -154,6 +154,10 @@
       margin-left: $de-tlbr-margin-right;
       margin-right: $de-tlbr-margin-first;
     }
+
+    .e-toolbar-item.e-de-image-focus :focus {
+      background-color: $de-toggle-bg-color;
+    }
   }
 
   @if $skin-name == 'bootstrap' {
@@ -1047,6 +1051,10 @@
       .e-toolbar-item.e-de-toolbar-btn-end {
         margin-left: $de-tlbr-margin-right-big;
         margin-right: $de-tlbr-margin-first-big;
+      }
+
+      .e-toolbar-item.e-de-image-focus :focus {
+        background-color: $de-toggle-bg-color;
       }
     }
 

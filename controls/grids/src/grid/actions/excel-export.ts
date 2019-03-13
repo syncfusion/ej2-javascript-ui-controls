@@ -116,6 +116,7 @@ export class ExcelExport {
                 return resolve();
             });
         }
+        this.parent.log('exporting_begin', this.getModuleName());
         this.data = new Data(gObj);
         this.isExporting = true;
         this.isBlob = args[isBlb];
@@ -127,6 +128,14 @@ export class ExcelExport {
 
         return this.processRecords(gObj, exportProperties, args[isMultiEx], args[workbk]);
     }
+
+    private exportingSuccess(resolve: Function): void {
+        this.isExporting = false;
+        this.parent.trigger(events.excelExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+        this.parent.log('exporting_complete', this.getModuleName());
+        resolve(this.book);
+    }
+
     /* tslint:disable-next-line:no-any */
     private processRecords(gObj: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: any): Promise<any> {
         if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) &&
@@ -136,7 +145,7 @@ export class ExcelExport {
                 dataManager.then((r: ReturnType) => {
                     this.init(gObj);
                     this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r).then(() => {
-                        resolve(this.book);
+                        this.exportingSuccess(resolve);
                     });
                 });
             });
@@ -148,9 +157,7 @@ export class ExcelExport {
                 Promise.all(allPromise).then((e: ReturnType[]) => {
                     this.init(gObj);
                     this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, e[0]).then(() => {
-                        this.isExporting = false;
-                        gObj.trigger(events.excelExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
-                        resolve(this.book);
+                        this.exportingSuccess(resolve);
                     });
                 }).catch((e: Error) => {
                     reject(this.book);

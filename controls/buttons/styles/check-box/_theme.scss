@@ -82,7 +82,13 @@
           }
 
           &.e-stop {
-            color: $cbox-indeterminate-hover-color;
+            @if $skin-name == 'bootstrap4' {
+              background-color: $cbox-checkmark-hover-bgcolor;
+              border-color: $cbox-checkmark-hover-border-color;
+            }
+            @else {
+              color: $cbox-indeterminate-hover-color;
+            }
           }
         }
 

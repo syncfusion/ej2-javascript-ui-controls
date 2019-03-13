@@ -1,5 +1,5 @@
 //default 
-$radio-btn-background-color: $grey-dark !default;
+$radio-btn-background-color: transparent !default;
 $radio-btn-border: 2px solid !default;
 $radio-btn-border-color: rgba($grey-white, .7) !default;
 $radio-btn-bigger-font-size: 14px !default;
@@ -16,10 +16,13 @@ $radio-btn-bigger-small-width: 20px !default;
 $radio-btn-bigger-width: 22px !default;
 $radio-btn-checked-border-color: $accent !default;
 $radio-btn-checked-color: $accent !default;
+$radio-btn-checked-background-color: $radio-btn-background-color !default;
 $radio-btn-checked-ripple-bgcolor: rgba($accent, .26) !default;
 $radio-btn-check-transition: transform ease 280ms, background-color ease 280ms !default;
 $radio-btn-disabled-border-color: rgba($grey-white, .3) !default;
 $radio-btn-disabled-checked-color: rgba($grey-white, .3) !default;
+$radio-btn-disabled-checked-border-color: $radio-btn-disabled-border-color !default;
+$radio-btn-disabled-background-color: transparent !default;
 $radio-btn-disabled-color: rgba($grey-white, .3) !default;
 $radio-btn-focus-ripple-bgcolor: rgba($grey-white, .12) !default;
 $radio-btn-focussed-box-shadow: none !default;

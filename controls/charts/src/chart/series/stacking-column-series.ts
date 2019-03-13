@@ -1,4 +1,5 @@
-import { Rect, StackValues, withInRange } from '../../common/utils/helper';
+import { StackValues, withInRange } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series } from './chart-series';

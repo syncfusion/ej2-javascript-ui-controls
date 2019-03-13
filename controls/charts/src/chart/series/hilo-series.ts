@@ -1,10 +1,11 @@
-import { Rect, withInRange } from '../../common/utils/helper';
+import { withInRange } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../common/model/interface';
 import { BorderModel } from '../../common/model/base-model';
+import { Rect } from '@syncfusion/ej2-svg-base';
 
 /**
  * `HiloSeries` module is used to render the hilo series.

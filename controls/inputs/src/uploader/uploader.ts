@@ -446,7 +446,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /**
      * Specifies the CSS class name that can be appended with root element of the uploader.
      * One or more custom CSS classes can be added to a uploader.
-     * @default
+     * @default ''
      */
     @Property('')
     public cssClass: string;
@@ -1073,7 +1073,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: {'type': 'button'}});
         this.browseButton.setAttribute('tabindex', this.tabIndex);
         if (typeof(this.buttons.browse) === 'string') {
-            this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
             this.localizedTexts('Browse') : this.buttons.browse;
             this.browseButton.setAttribute('title', this.browseButton.innerText);
         } else {
@@ -1118,9 +1118,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private renderButtonTemplates(): void {
         if (typeof (this.buttons.browse) === 'string') {
-            this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
             this.localizedTexts('Browse') : this.buttons.browse;
-            this.browseButton.setAttribute('title', this.browseButton.innerText);
+            this.browseButton.setAttribute('title', this.browseButton.textContent);
         } else {
             this.browseButton.innerHTML = '';
             this.browseButton.appendChild(this.buttons.browse);
@@ -1130,9 +1130,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             uploadText = isNullOrUndefined(this.buttons.upload) ? 'Upload' : this.buttons.upload;
             this.buttons.upload = uploadText;
             if (typeof (this.buttons.upload) === 'string') {
-                this.uploadButton.innerText = (this.buttons.upload === 'Upload') ?
+                this.uploadButton.textContent = (this.buttons.upload === 'Upload') ?
                 this.localizedTexts('Upload') : this.buttons.upload;
-                this.uploadButton.setAttribute('title', this.uploadButton.innerText);
+                this.uploadButton.setAttribute('title', this.uploadButton.textContent);
             } else {
                 this.uploadButton.innerHTML = '';
                 this.uploadButton.appendChild(this.buttons.upload);
@@ -1143,9 +1143,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             clearText = isNullOrUndefined(this.buttons.clear) ? 'Clear' : this.buttons.clear;
             this.buttons.clear = clearText;
             if (typeof (this.buttons.clear) === 'string') {
-                this.clearButton.innerText = (this.buttons.clear === 'Clear') ?
+                this.clearButton.textContent = (this.buttons.clear === 'Clear') ?
                 this.localizedTexts('Clear') : this.buttons.clear;
-                this.clearButton.setAttribute('title', this.clearButton.innerText);
+                this.clearButton.setAttribute('title', this.clearButton.textContent);
             } else {
                 this.clearButton.innerHTML = '';
                 this.clearButton.appendChild(this.buttons.clear);
@@ -1195,7 +1195,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.filesData.push(fileData);
         }
         this.createFileList(filesData);
-        if (!this.autoUpload && this.listParent && !this.actionButtons && !this.isForm && this.showFileList) {
+        if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
             this.renderActionButtons();
         }
         this.checkActionButtonStatus();
@@ -1734,13 +1734,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.checkExtension(eventArgs.modifiedFilesData);
                 this.updateSortedFileList(dataFiles);
                 this.filesData = dataFiles;
-                if (!this.isForm) {
+                if (!this.isForm || this.allowUpload()) {
                     this.checkAutoUpload(dataFiles);
                 }
             } else {
                 this.createFileList(fileData);
                 this.filesData = this.filesData.concat(fileData);
-                if (!this.isForm) {
+                if (!this.isForm || this.allowUpload()) {
                     this.checkAutoUpload(fileData);
                 }
             }
@@ -1756,6 +1756,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.raiseActionComplete();
     }
 
+    private allowUpload(): boolean {
+        let allowFormUpload: boolean = false;
+        if (this.isForm && (!isNullOrUndefined(this.asyncSettings.saveUrl) && this.asyncSettings.saveUrl !== '' )) {
+            allowFormUpload = true;
+        }
+        return allowFormUpload;
+    }
     private clearData(singleUpload?: boolean) : void {
         if (!isNullOrUndefined(this.listParent)) {
             detach(this.listParent);

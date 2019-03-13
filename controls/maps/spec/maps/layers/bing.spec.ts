@@ -34,7 +34,7 @@ describe('Map layer testing', () => {
                         layerType: 'Bing',
                         key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
                     }
-                ]                
+                ]
             }, '#' + id);
         });
         afterAll(() => {
@@ -42,7 +42,7 @@ describe('Map layer testing', () => {
             bingmap.destroy();
         });
         it('Bing Map basic testing spec', (done: Function) => {
-            bingmap.load = (args: ILoadEventArgs) =>{                
+            bingmap.load = (args: ILoadEventArgs) =>{
                 let bing: BingMap = new BingMap(bingmap);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -64,7 +64,7 @@ describe('Map layer testing', () => {
             bingmap.refresh();
 
         });
-        it('Bing Map AJAX spec', (done: Function) => {            
+        it('Bing Map AJAX spec', (done: Function) => {
             bingmap.layers[0].layerType = 'Bing';
             bingmap.refresh();
             done();
@@ -76,7 +76,7 @@ describe('Map layer testing', () => {
             done();
         });
         it('Bing Map AerialWithLabel type testing spec', (done: Function) => {
-            bingmap.load = (args: ILoadEventArgs) =>{                
+            bingmap.load = (args: ILoadEventArgs) =>{
                 let bing: BingMap = new BingMap(bingmap);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -99,7 +99,7 @@ describe('Map layer testing', () => {
                 expect(img.getAttribute('src').indexOf('virtualearth') > -1).toBe(true);
                 done();
             };
-            bingmap.load = (args: ILoadEventArgs) =>{                
+            bingmap.load = (args: ILoadEventArgs) =>{
                 let bing: BingMap = new BingMap(bingmap);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -115,7 +115,7 @@ describe('Map layer testing', () => {
                 expect(spec.childNodes.length).toBe(4);
                 done();
             };
-            bingmap.load = (args: ILoadEventArgs) =>{                
+            bingmap.load = (args: ILoadEventArgs) =>{
                 let bing: BingMap = new BingMap(bingmap);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -132,7 +132,7 @@ describe('Map layer testing', () => {
                 expect(spec.childNodes.length).toBe(4);
                 done();
             };
-            bingmap.load = (args: ILoadEventArgs) =>{                
+            bingmap.load = (args: ILoadEventArgs) =>{
                 let bing: BingMap = new BingMap(bingmap);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -148,7 +148,7 @@ describe('Map layer testing', () => {
                 expect(spec.childNodes.length).toBe(8);
                 done();
             };
-            bingmap.load = (args: ILoadEventArgs) =>{                
+            bingmap.load = (args: ILoadEventArgs) =>{
                 let bing: BingMap = new BingMap(bingmap);
                 bing.imageUrl = imageUrl;
                 bing.maxZoom = zoomMax;
@@ -214,7 +214,7 @@ describe('Map layer testing', () => {
             osm.zoomSettings.zoomFactor = 3;
             osm.refresh();
         });
-		it('OSM Map Zoom level 3 and testing title parent left padding', (done: Function) => {
+        it('OSM Map Zoom level 3 and testing title parent left padding', (done: Function) => {
             osm.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
                 expect((<HTMLDivElement>spec).style.left === "18px").toBe(true);

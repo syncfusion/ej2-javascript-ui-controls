@@ -1,8 +1,6 @@
 import { RangeNavigator } from '../range-navigator';
-import {
-    measureText, TextOption, Rect, valueToCoefficient, textElement, PathOption,
-    firstToLowerCase,
-} from '../../common/utils/helper';
+import { valueToCoefficient, textElement, firstToLowerCase } from '../../common/utils/helper';
+import { PathOption, Rect, measureText, TextOption } from '@syncfusion/ej2-svg-base';
 import { DateTime, FontModel, IntervalType } from '../../chart/index';
 import { RangeIntervalType } from '../../common/utils/enum';
 import { Axis, VisibleLabels, MajorGridLinesModel, VisibleLabelsModel, MajorTickLinesModel } from '../../chart/index';

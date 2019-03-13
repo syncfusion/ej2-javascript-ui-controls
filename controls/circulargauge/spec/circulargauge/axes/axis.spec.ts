@@ -1082,23 +1082,6 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].roundingPlaces = 1;
             gauge.refresh();
         });
-        it('Checking default roundingPlace value', (done: Function) => {
-            gauge.loaded = (args:ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_Axis_Group_0');
-                expect(svg.childElementCount == 6).toBe(true);
-                svg = document.getElementById('gauge_Axis_0_Label_0');
-                expect(svg.textContent == '0').toBe(true);
-                svg = document.getElementById('gauge_Axis_0_Label_3')
-                expect(svg.textContent == '0.3').toBe(true);
-                done();
-            };
-            gauge.axes[0].minimum = 0;
-            gauge.axes[0].maximum = 0.5;
-			gauge.axes[0].majorTicks.interval = null;
-			gauge.axes[0].startAngle = 270;
-            gauge.axes[0].endAngle = 90;
-            gauge.axes[0].roundingPlaces = null;
-            gauge.refresh();
-        });
+
     });
 });

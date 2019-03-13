@@ -104,8 +104,7 @@ export class SparklineTooltip {
     private renderTrackerLine(points: SparkValues): void {
         let spark: Sparkline = this.sparkline; let theme: string = spark.theme.toLowerCase();
         let tracker: TrackLineSettingsModel = spark.tooltipSettings.trackLineSettings;
-        let color: string = (theme.indexOf('dark') > -1 ? '#FFFFFF' : '#000000');
-        color = (tracker.color) ? tracker.color : color;
+        let color: string = tracker.color || spark.sparkTheme.trackerLineColor;
         if (!tracker.visible || spark.type === 'Pie') {
             return;
         }
@@ -158,6 +157,8 @@ export class SparklineTooltip {
             spark.tooltipSettings.format, spark, x, this.formatValue(points.yVal, spark).toString());
         let location: { x: number, y: number } = { x: points.location.x, y: points.location.y };
         location = spark.type === 'Pie' ? { x: points.location.x, y: points.location.y } : location;
+        let textColor: string = tooltip.textStyle.color || spark.sparkTheme.tooltipFontColor;
+        let backgroundColor: string = tooltip.fill === '' ? spark.sparkTheme.tooltipFill : tooltip.fill;
         let tooltipEvent: ITooltipRenderingEventArgs = {
             name: 'tooltipInitialize', cancel: false, text: text,
             textStyle: {
@@ -166,7 +167,7 @@ export class SparklineTooltip {
                 fontWeight: tooltip.textStyle.fontWeight,
                 fontStyle: tooltip.textStyle.fontStyle,
                 fontFamily: tooltip.textStyle.fontFamily,
-                color: tooltip.textStyle.color,
+                color: textColor
             }
         };
         spark.trigger(tooltipEvent.name, tooltipEvent);
@@ -178,7 +179,7 @@ export class SparklineTooltip {
             border: tooltip.border,
             template: tooltip.template,
             data: spark.dataSource[this.pointIndex],
-            fill: tooltip.fill,
+            fill: backgroundColor,
             textStyle: tooltipEvent.textStyle,
             enableAnimation: false,
             location: { x: location.x, y: location.y },

@@ -135,6 +135,8 @@ $remove-icon-font-size-smaller: 11px !default;
 $clear-icon-focus-color: $neutral-light !default;
 $remove-icon-height: 26px !default;
 $remove-icon-width: 26px !default;
+$remove-bigger-icon-height: 26px !default;
+$remove-bigger-icon-width: 26px !default;
 $upload-border: 1px solid $neutral-tertiary-alt !default;
 $remove-icon-margin-top: -24px !default;
 $remove-icon-font-size: 12px !default;
@@ -155,5 +157,7 @@ $progress-background-color: $neutral-light !default;
 $progress-text-color: $theme-light-font !default;
 
 $remove-icon-color: $neutral-light-font !default;
-$hover-icon-color: $neutral-light-font !default;
+$upload-hover-icon-color: $neutral-light-font !default;
 $disabled-state: rgba($theme-light-font, .38) !default;
+
+$uploader-icons-hover-radius: 50% !default;

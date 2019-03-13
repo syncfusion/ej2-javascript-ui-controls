@@ -71,7 +71,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * For more details about the available template options refer to 
      * [`Template`](../../multi-select/templates.html) documentation.
      * 
-     * We have built-in `template engine` 
+     * We have built-in `template engine`
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals.
      * @default null
@@ -114,13 +114,13 @@ export interface MultiSelectModel extends DropDownBaseModel{
      * 
      * {% codeBlock src="multiselect/allow-filtering-api/index.html" %}{% endcodeBlock %}
      * 
-     * @default false
+     * @default null
      */
     allowFiltering?: boolean;
 
     /**
      * Allows user to add a 
-     * [`custom value`](../../multi-select/custom-value), the value which is not present in the suggestion list. 
+     * [`custom value`](../../multi-select/custom-value), the value which is not present in the suggestion list.
      * @default false
      */
     allowCustomValue?: boolean;
@@ -192,12 +192,12 @@ export interface MultiSelectModel extends DropDownBaseModel{
 
     /**
      * Sets the delimiter character for 'default' and 'delimiter' visibility modes.
-     * @default ,
+     * @default ','
      */
     delimiterChar?: string;
 
     /**
-     * Sets [`case sensitive`](../../multi-select/filtering/#case-sensitive-filtering) 
+     * Sets [`case sensitive`](../../multi-select/filtering/#case-sensitive-filtering)
      * option for filter operation.
      * @default true
      */

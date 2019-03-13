@@ -2,6 +2,10 @@
   // sass-lint:disable no-vendor-prefixes
   .e-bigger #{&}.e-listview,
   #{&}.e-listview.e-bigger {
+    @if ($skin-name == 'bootstrap4') {
+      font-size: 16px;
+    }
+
     .e-list-item {
       border-bottom: $listview-border-bottom solid $listview-border-bottom-color;
       border-left: $listview-border-left solid $listview-border-left-color;
@@ -13,6 +17,9 @@
       height: $listview-touch-item-height;
       line-height: $listview-touch-item-line-height;
       position: relative;
+      @if ($skin-name == 'bootstrap4') {
+        padding: 12px 20px;
+      }
     }
 
     .e-text-content {
@@ -22,6 +29,10 @@
     .e-list-group-item {
       height: $listview-touch-groupheader-height;
       line-height: $listview-touch-groupheader-line-height;
+      @if ($skin-name == 'bootstrap4') {
+        font-size: 16px;
+        padding: 12px 20px;
+      }
     }
 
     .e-list-header {
@@ -29,6 +40,11 @@
       display: flex;
       font-weight: $listview-touch-header-font-weight;
       height: $listview-touch-header-height;
+      @if ($skin-name == 'bootstrap4') {
+        font-size: 20px;
+        line-height: 1.2;
+        padding: 0 0 0 20px;
+      }
     }
 
     .e-list-header .e-text.header {
@@ -42,11 +58,62 @@
     .e-list-header .e-text {
       font-size: $listview-touch-header-font-size;
     }
+
+    .e-but-back {
+      @if ($skin-name == 'bootstrap4') {
+        margin-top: -3px;
+        padding-right: 12px;
+      }
+    }
+
+    .e-list-icon {
+      @if ($skin-name == 'bootstrap4') {
+        margin-right: 12px;
+      }
+    }
+
+    .e-icon-collapsible {
+      @if ($skin-name == 'bootstrap4') {
+        font-size: 12px;
+      }
+    }
+
+    .e-listview-checkbox {
+      &.e-checkbox-left {
+        @if ($skin-name == 'bootstrap4') {
+          margin: 0 12px 0 0;
+        }
+      }
+
+      &.e-checkbox-right {
+        @if ($skin-name == 'bootstrap4') {
+          margin: 0 0 0 12px;
+        }
+      }
+    }
+
+    &.e-rtl {
+      .e-listview-checkbox {
+        &.e-checkbox-right {
+          @if ($skin-name == 'bootstrap4') {
+            margin: 0 12px 0 0;
+          }
+        }
+
+        &.e-checkbox-left {
+          @if ($skin-name == 'bootstrap4') {
+            margin: 0 0 0 12px;
+          }
+        }
+      }
+    }
   }
 
   #{&}.e-listview {
     -webkit-overflow-scrolling: touch;
     border: $listview-border-size solid;
+    border-color: $listview-root-border-color;
+    border-radius: $listview-root-border-radius;
     display: block;
     overflow: auto;
     position: relative;
@@ -115,7 +182,7 @@
 
       & .e-icon-collapsible {
         cursor: pointer;
-        font-size: 12px;
+        font-size: $listview-nested-icon-collapsible;
         position: absolute;
         right: 0%;
         top: 50%;

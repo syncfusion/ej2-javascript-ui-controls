@@ -300,7 +300,7 @@
       & .e-ripple-container {
         border-radius: 50%;
         height: $switch-bigger-small-ripple-height;
-        left: $switch-bigger-small-ripple-height;
+        left: $switch-bigger-small-ripple-left;
         pointer-events: none;
         position: absolute;
         top: $switch-bigger-small-ripple-top;
@@ -309,7 +309,7 @@
       }
 
       & .e-switch-handle.e-switch-active {
-        left: switch-bigger-small-handle-active-left;
+        left: $switch-bigger-small-handle-active-left;
         margin-left: $switch-bigger-small-handle-margin-left;
       }
 
@@ -328,7 +328,7 @@
 
       &.e-rtl {
         & .e-switch-handle {
-          left: switch-bigger-small-handle-active-left;
+          left: $switch-bigger-small-handle-active-left;
           margin-left: $switch-bigger-small-handle-margin-left;
           }
 

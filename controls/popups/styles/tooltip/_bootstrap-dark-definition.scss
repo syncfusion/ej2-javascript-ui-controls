@@ -20,3 +20,23 @@ $tooltip-mobile-vertical-padding: 10px !default;
 $tooltip-line-height: 17px !default;
 $tooltip-arrow-icon-font-size: 16px !default;
 $tooltip-icon-border-color: $grey-99 !default;
+
+$tooltip-tip-bottom-height: 8px !default;
+$tooltip-tip-bottom-left: 50% !default;
+$tooltip-tip-bottom-top: 100% !default;
+$tooltip-tip-bottom-width: 16px !default;
+
+$tooltip-tip-top-height: 8px !default;
+$tooltip-tip-top-left: 50% !default;
+$tooltip-tip-top-top: -9px !default;
+$tooltip-tip-top-width: 16px !default;
+
+$tooltip-tip-left-height: 16px !default;
+$tooltip-tip-left-left: -9px !default;
+$tooltip-tip-left-top: 48% !default;
+$tooltip-tip-left-width: 8px !default;
+
+$tooltip-tip-right-height: 16px !default;
+$tooltip-tip-right-left: 100% !default;
+$tooltip-tip-right-top: 50% !default;
+$tooltip-tip-right-width: 8px !default;

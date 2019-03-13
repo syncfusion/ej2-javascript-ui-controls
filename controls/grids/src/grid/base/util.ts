@@ -1,7 +1,7 @@
 import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
-import { isObject, IKeyValue} from '@syncfusion/ej2-base';
+import { isObject, IKeyValue } from '@syncfusion/ej2-base';
 import { IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { DataUtil, Query, DataManager, Predicate } from '@syncfusion/ej2-data';
@@ -53,6 +53,75 @@ export function getUpdateUsingRaf<T>(updateFunction: Function, callBack: Functio
         }
     });
 }
+/**
+ * @hidden
+ */
+export function updatecloneRow(grid: IGrid): void {
+    let nRows: Row<Column>[] = []; let actualRows: Row<Column>[] = grid.vRows;
+    for (let i: number = 0; i < actualRows.length; i++) {
+        if (actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+        } else if (!actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+            if (!actualRows[i].isExpand) {
+                i += getCollapsedRowsCount(actualRows[i], grid);
+            }
+        }
+    }
+    grid.vcRows = nRows;
+}
+
+
+/**
+ * @hidden
+ */
+let count: number = 0;
+export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
+    count = 0;
+    let field: string = 'field'; let gSummary: string = 'gSummary'; let total: string = 'count';
+    let gLen: number = grid.groupSettings.columns.length;
+    let records: string = 'records';
+    let rLevel: number = gLen - (grid.groupSettings.columns.indexOf(val.data[field]) + 1);
+    let items: string = 'items';
+    let value: number = val[gSummary];
+    if (value === val.data[total]) {
+        if (grid.groupSettings.columns.length !== 1) {
+            count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+        } else {
+            count += val[gSummary];
+        }
+        return count;
+    }
+    if (rLevel === 1) {
+        count += val.data[items].length + (!isNullOrUndefined(val.data[items][records]) ? val.data[items][records].length : 0);
+    } else {
+        for (let i: number = 0, len: number = val.data[items].length; i < len; i++) {
+            let gLevel: Object[] = val.data[items][i];
+            count += gLevel[items].length + ((gLen !== grid.columns.length) ? gLevel[items][records].length : 0);
+            recursive(rLevel - 1, gLevel);
+        }
+        count += val.data[items].length;
+    }
+    return count;
+}
+
+/**
+ * @hidden
+ */
+export function recursive(level: number, row: Object[]): void {
+    let items: string = 'items';
+    let rCount: string = 'count';
+    if (level > 1) {
+        for (let j: number = 0, length: number = row[items].length; j < length; j++) {
+            let nLevel: Object[] = row[items][j];
+            count += nLevel[rCount];
+            level += level <= row[items].childLevels ? row[items].childLevels - 1 : 0;
+            recursive(--level, nLevel);
+        }
+    }
+}
+
+
 /**
  * @hidden
  */
@@ -621,6 +690,14 @@ export function renderMovable(ele: Element, frzCols: number): Element {
 /**
  * @hidden
  */
+export function isGroupAdaptive(grid: IGrid): boolean {
+
+    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
+}
+
+/**
+ * @hidden
+ */
 export function getObject(field: string = '', object?: Object): any {
     if (field) {
         let value: Object = object;
@@ -730,7 +807,7 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
  */
 function getPrototypesOfObj(obj: Object): string[] {
     let keys: string[] = [];
-    while (Object.keys(Object.getPrototypeOf(obj)).length) {
+    while (Object.getPrototypeOf(obj) && Object.keys(Object.getPrototypeOf(obj)).length) {
         keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
         obj = Object.getPrototypeOf(obj);
     }

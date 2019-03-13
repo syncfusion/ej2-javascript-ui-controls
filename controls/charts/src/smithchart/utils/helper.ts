@@ -1,5 +1,6 @@
-import { createElement, SvgRenderer, compile as templateComplier, remove } from '@syncfusion/ej2-base';
+import { createElement,  compile as templateComplier, remove } from '@syncfusion/ej2-base';
 import { Smithchart } from '../../smithchart/smithchart';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import {SmithchartFontModel, SmithchartBorderModel} from '../../smithchart/utils/utils-model';
 import { Animation, AnimationOptions, Effect} from '@syncfusion/ej2-base';
 import { SmithchartSize, SmithchartRect } from '../../smithchart/utils/utils';
@@ -60,7 +61,7 @@ export function getTemplateFunction(templateString: string): Function {
 }
 
 export function convertElementFromLabel(element: Element,  labelId: string,
-                                        data: Object, index: number, smithchart: Smithchart): HTMLElement {
+                                        data: object, index: number, smithchart: Smithchart): HTMLElement {
     let labelEle: Element = element[0];
     let templateHtml: string = labelEle.outerHTML;
     let properties: Object[] = Object.keys(data);

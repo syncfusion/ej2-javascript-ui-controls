@@ -302,7 +302,7 @@
         }
 
         &:disabled {
-          background-color: $btn-flat-bgcolor;
+          background-color: $btn-flat-disabled-bgcolor;
           border-color: $btn-flat-disabled-border-color;
           box-shadow: $btn-flat-box-shadow;
           color: $btn-flat-disabled-color;

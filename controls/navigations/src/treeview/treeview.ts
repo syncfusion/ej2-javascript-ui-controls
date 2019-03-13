@@ -56,6 +56,7 @@ const FOCUS: string = 'e-node-focus';
 const IMAGE: string = 'e-list-img';
 const BIGGER: string = 'e-bigger';
 const SMALL: string = 'e-small';
+const CHILD: string = 'e-has-child';
 
 const treeAriaAttr: TreeAriaAttr = {
     treeRole: 'tree',
@@ -513,7 +514,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private ele: number;
     private disableNode: string[] = [];
     private onLoaded: boolean;
-
+    private parentNodeCheck: string[] = [];
+    private parentCheckData :  { [key: string]: Object };
+    private expandChildren: string[] = [];
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -897,6 +900,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.treeList = [];
         this.isLoaded = false;
         this.isInitalExpand = false;
+        this.expandChildren = [];
         this.index = 0;
         this.setTouchClass();
         if (isNOU(this.selectedNodes)) {
@@ -1097,6 +1101,195 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             this.finalizeNode(this.element);
         }
+        this.parentNodeCheck = [];
+        this.updateCheckedStateFromDS();
+        if (this.autoCheck && this.showCheckBox && !this.isLoaded) {
+            this.updateParentCheckState();
+        }
+    }
+    /**
+     * Update the checkedNodes from datasource at initial rendering
+     */
+    private updateCheckedStateFromDS(id?: string): void {
+        if (this.treeData && this.showCheckBox) {
+            if (this.dataType === 1) {
+                let mapper: FieldsSettingsModel = this.fields;
+                let resultData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
+                    new Query().where(mapper.isChecked, 'equal', true, false));
+                for (let i: number = 0; i < resultData.length; i++) {
+                    let resultId: string = resultData[i][this.fields.id] ? resultData[i][this.fields.id].toString() : null;
+                    let resultPId: string = resultData[i][this.fields.parentID] ? resultData[i][this.fields.parentID].toString() : null;
+                    if (this.checkedNodes.indexOf(resultId) === -1 && !(this.isLoaded)) {
+                        this.checkedNodes.push(resultId);
+                    }
+
+                    if (resultData[i][this.fields.hasChildren]) {
+                        let id: number = <number>resultData[i][this.fields.id];
+                        let childData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).
+                            executeLocal(new Query().where(mapper.parentID, 'equal', id, false));
+                        for (let child: number = 0; child < childData.length; child++) {
+                            let childId: string = childData[child][this.fields.id] ? childData[child][this.fields.id].toString() : null;
+                            if (this.checkedNodes.indexOf(childId) === -1 && this.autoCheck) {
+                                this.checkedNodes.push(childId);
+                            }
+                        }
+                    }
+                }
+                for (let i: number = 0; i < this.checkedNodes.length; i++) {
+                    let mapper: FieldsSettingsModel = this.fields;
+                    let checkState: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).
+                        executeLocal(new Query().where(mapper.id, 'equal', parseInt(this.checkedNodes[i], 10), false));
+                    if (checkState[0] && this.autoCheck) {
+                        this.getCheckedNodeDetails(mapper, checkState);
+                        this.checkIndeterminateState(checkState[0]);
+                    }
+                    let checkedData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).
+                        executeLocal(new Query().where(mapper.parentID, 'equal', parseInt(this.checkedNodes[i], 10), false));
+                    for (let index: number = 0; index < checkedData.length; index++) {
+                        let checkedId: string = checkedData[index][this.fields.id] ? checkedData[index][this.fields.id].toString() : null;
+                        if (this.checkedNodes.indexOf(checkedId) === -1 && this.autoCheck) {
+                            this.checkedNodes.push(checkedId);
+                        }
+                    }
+                }
+            } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
+                this.fields.dataSource.dataSource.offline)) {
+                for (let index: number = 0; index < this.treeData.length; index++) {
+                    let fieldId: string = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
+                    if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
+                        this.checkedNodes.push(fieldId);
+                    }
+                    let childItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), this.treeData[index]);
+                    if (childItems) {
+                        this.updateChildCheckState(childItems, this.treeData[index]);
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * To check whether the list data has sub child and to change the parent check state accordingly
+     */
+    private getCheckedNodeDetails(mapper: FieldsSettingsModel, checkNodes: { [key: string]: Object }[]): void {
+        let id: string = checkNodes[0][this.fields.parentID] ? checkNodes[0][this.fields.parentID].toString() : null;
+        let count: number = 0;
+        let element: Element = this.element.querySelector('[data-uid="' + checkNodes[0][this.fields.id] + '"]');
+        let parentEle: Element = this.element.querySelector('[data-uid="' + checkNodes[0][this.fields.parentID] + '"]');
+        if (!element && !parentEle) {
+            let len: number = this.parentNodeCheck.length;
+            if (this.parentNodeCheck.indexOf(id) === -1) {
+                this.parentNodeCheck.push(id);
+            }
+            let childNodes: { [key: string]: Object }[] = this.getChildNodes(this.treeData, id);
+            for (let i: number = 0; i < childNodes.length; i++) {
+                let childId: string = childNodes[i][this.fields.id] ? childNodes[i][this.fields.id].toString() : null;
+                if (this.checkedNodes.indexOf(childId) !== -1) {
+                    count++;
+                }
+                if (count === childNodes.length && this.checkedNodes.indexOf(id) === -1) {
+                    this.checkedNodes.push(id);
+                }
+            }
+            let preElement: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).
+                executeLocal(new Query().where(mapper.id, 'equal', parseInt(id, 10), false));
+            this.getCheckedNodeDetails(mapper, preElement);
+        } else if (parentEle) {
+            let check: Element = select('.' + CHECK, parentEle);
+            if (!check) {
+                this.changeState(parentEle, 'indeterminate', null);
+            }
+        }
+    }
+    /**
+     * Update the checkedNodes and parent state when all the child Nodes are in checkedstate at initial rendering
+     */
+    private updateParentCheckState(): void {
+        let indeterminate: Element[] = selectAll('.' + INDETERMINATE, this.element);
+        let childCheckedElement: { [key: string]: Object }[];
+        for (let i: number = 0; i < indeterminate.length; i++) {
+            let node: Element = closest(indeterminate[i], '.' + LISTITEM);
+            let parentData: { [key: string]: Object }[] = this.getTreeData(node);
+            let id: string = parentData[0][this.fields.id].toString();
+            if (this.dataType === 1) {
+                childCheckedElement = this.getChildNodes(this.treeData, id);
+            } else {
+             childCheckedElement = getValue(this.fields.child.toString(), parentData[0]);
+            }
+            let count: number = 0;
+            if (childCheckedElement) {
+                for (let j: number = 0; j < childCheckedElement.length; j++) {
+                    let childId: string = childCheckedElement[j][this.fields.id].toString();
+                    if (this.checkedNodes.indexOf(childId) !== -1) {
+                        count++;
+                    }
+                }
+                if (count === childCheckedElement.length) {
+                    let nodeCheck: string = node.getAttribute('data-uid');
+                    if (this.checkedNodes.indexOf(nodeCheck) === -1) {
+                        this.checkedNodes.push(nodeCheck);
+                    }
+                    this.changeState(node, 'check', null);
+                } else if (count === 0 && this.checkedNodes.length === 0) {
+                    this.changeState(node, 'uncheck', null);
+                }
+            }
+        }
+    }
+    /**
+     * Change the parent to indeterminate state whenever the child is in checked state which is not rendered in DOM
+     */
+    private checkIndeterminateState(data: { [key: string]: Object }): void {
+        let element: Element;
+        if (this.dataType === 1) {
+            element = this.element.querySelector('[data-uid="' + data[this.fields.parentID] + '"]');
+        } else {
+            element = this.element.querySelector('[data-uid="' + data[this.fields.id] + '"]');
+        }
+        if (element) {
+            let ariaChecked: string = element.querySelector('.' + CHECKBOXWRAP).getAttribute('aria-checked');
+            if (ariaChecked !== 'true') {
+                this.changeState(element, 'indeterminate', null, true, true);
+            }
+        } else if (this.dataType === 2) {
+            let len: number =  this.parentNodeCheck.length;
+            if (this.parentNodeCheck.indexOf(data[this.fields.id].toString()) === -1 ) {
+                this.parentNodeCheck.push(data[this.fields.id].toString());
+            }
+        }
+    }
+    /**
+     * Update the checkedNodes for child and subchild from datasource (hierarchical datasource) at initial rendering
+     */
+    private updateChildCheckState(childItems: { [key: string]: Object }[], treeData: { [key: string]: Object }): void {
+        let count: number = 0;
+        let checkedParent: string = treeData[this.fields.id] ? treeData[this.fields.id].toString() : '';
+        for (let index: number = 0; index < childItems.length; index++) {
+            let checkedChild: string = childItems[index][this.fields.id] ? childItems[index][this.fields.id].toString() : '';
+            if (childItems[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(checkedChild) === -1) {
+                this.checkedNodes.push(checkedChild);
+            }
+            if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1 && this.autoCheck) {
+                this.checkedNodes.push(checkedChild);
+            }
+            if (this.checkedNodes.indexOf(checkedChild) !== -1 && this.autoCheck) {
+                count++;
+            }
+            let subChildItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), childItems[index]);
+            if (subChildItems) {
+                this.parentCheckData = treeData;
+                this.updateChildCheckState(subChildItems, childItems[index]);
+            }
+            if (count === childItems.length && this.autoCheck && this.checkedNodes.indexOf(checkedParent) === -1) {
+                this.checkedNodes.push(checkedParent);
+            }
+        }
+        if (count !== 0 && this.autoCheck) {
+            this.checkIndeterminateState(treeData);
+            if ((treeData !== this.parentCheckData) && (this.parentCheckData)) {
+                this.checkIndeterminateState(this.parentCheckData);
+            }
+        }
+        this.parentCheckData = null;
     }
 
     private beforeNodeCreate(e: ItemCreatedArgs): void {
@@ -1230,12 +1423,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private updateCheckedProp(): void {
         if (this.showCheckBox) {
             let nodes: string[] = [].concat([], this.checkedNodes);
-            this.checkedNodes.forEach((value: string, index: number) => {
-                let checkBox: Element = this.element.querySelector('[data-uid="' + value + '"]');
-                if (isNOU(checkBox)) {
-                    nodes = nodes.filter((e: string) => { return e !== value; });
-                }
-            });
             this.setProperties({ checkedNodes: nodes }, true);
         }
     }
@@ -1272,11 +1459,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 ulElement = select('.' + PARENTITEM, element);
             }
             let checkedNodes: HTMLElement[] = selectAll('.' + CHECK, ulElement);
+            let indeterminateNodes: HTMLElement[] = selectAll('.' + INDETERMINATE, ulElement);
             let nodes: HTMLElement[] = selectAll('.' + LISTITEM, ulElement);
             let checkBoxEle: Element = element.getElementsByClassName(CHECKBOXWRAP)[0];
             if (nodes.length === checkedNodes.length) {
                 this.changeState(checkBoxEle, 'check', null, true, true);
-            } else if (checkedNodes.length > 0) {
+            } else if (checkedNodes.length > 0 || indeterminateNodes.length > 0 ) {
                 this.changeState(checkBoxEle, 'indeterminate', null, true, true);
             } else if (checkedNodes.length === 0) {
                 this.changeState(checkBoxEle, 'uncheck', null, true, true);
@@ -1295,6 +1483,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (!isNOU(childElement)) {
                 checkBoxes = selectAll('.' + CHECKBOXWRAP, childElement);
                 let isChecked: boolean = element.getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
+                let parentCheck: boolean = element.getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(INDETERMINATE);
+                let childCheck: NodeListOf<HTMLElement> = childElement.querySelectorAll('li');
+                let expandState: string = childElement.parentElement.getAttribute('aria-expanded');
                 let checkedState: string;
                 for (let index: number = 0; index < checkBoxes.length; index++) {
                     if (!isNOU(this.currentLoadData) && !isNOU(getValue(this.fields.isChecked, this.currentLoadData[index]))) {
@@ -1304,19 +1495,70 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         }
                     } else {
                         let isNodeChecked: boolean = checkBoxes[index].getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
-                        checkedState = (!this.isLoaded && isNodeChecked) ? 'check' : (isChecked ? 'check' : 'uncheck');
+
+                        let childId: string = childCheck[index].getAttribute('data-uid');
+                        if (isChecked) {
+                            checkedState = 'check';
+                        } else if (isNodeChecked && !this.isLoaded) {
+                            checkedState = 'check';
+                        } else if (this.checkedNodes.indexOf(childId) !== -1 && this.isLoaded && (parentCheck || isChecked )) {
+                            checkedState = 'check';
+                        } else if (childCheck[index].classList.contains(CHILD) && ( !isUndefined(this.parentNodeCheck) &&  this.autoCheck
+                                                        && (isChecked || parentCheck) && this.parentNodeCheck.indexOf(childId) !== -1)) {
+                            checkedState = 'indeterminate';
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(childId), 1);
+                        } else if (this.dataType === 1 && ( !isUndefined(this.parentNodeCheck) && this.autoCheck &&
+                                                            (isChecked || parentCheck) && this.parentNodeCheck.indexOf(childId) !== -1)) {
+                            checkedState = 'indeterminate';
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(childId), 1);
+                        } else {
+                            checkedState = 'uncheck';
+                        }
                     }
                     this.changeState(checkBoxes[index], checkedState, e, true, true);
                 }
+            }
+            if (this.autoCheck && this.isLoaded) {
+                this.updateParentCheckState();
             }
         }
     }
 
     private doCheckBoxAction(nodes: string[] | Element[], doCheck: boolean): void {
+        let li : HTMLElement[] = selectAll('.' + LISTITEM, this.element);
         if (! isNOU(nodes) ) {
-            for (let i: number = 0, len: number = nodes.length; i < len; i++) {
-                let liEle: Element = this.getElement(nodes[i]);
+            for (let len: number = nodes.length; len >= 0; len--) {
+                let liEle: Element;
+                if (nodes.length === 1) {
+                 liEle = this.getElement(nodes[len - 1]);
+                } else {
+                     liEle = this.getElement(nodes[len]);
+                }
                 if (isNOU(liEle)) {
+                    let node: string;
+                    node =  nodes[len - nodes.length] ? nodes[len - nodes.length].toString() :  nodes[len] ? nodes[len].toString() : null;
+                    if (node !== '' && doCheck && node) {
+                        this.setValidCheckedNode(node);
+                        this.dynamicCheckState(node,  doCheck);
+                    } else if (this.checkedNodes.indexOf(node) !== -1 && node !== '' && !doCheck) {
+                        this.checkedNodes.splice(this.checkedNodes.indexOf(node), 1);
+                        let childItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, node);
+                        if (childItems) {
+                            for (let i : number = 0; i < childItems.length; i++) {
+                                let id: string = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : null;
+                                if (this.checkedNodes.indexOf(id) !== -1) {
+                                    this.checkedNodes.splice(this.checkedNodes.indexOf(id), 1);
+                                }
+                            }
+                            if (this.parentNodeCheck.indexOf(node) !== -1) {
+                                this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(node), 1);
+                            }
+                        }
+                        if (node) {
+                            this.dynamicCheckState(node, doCheck);
+                        }
+                        this.updateField(this.treeData, this.fields, node, 'isChecked', null);
+                   }
                     continue;
                 }
                 let checkBox : Element = select('.' + PARENTITEM + ' .' + CHECKBOXWRAP, liEle);
@@ -1326,6 +1568,168 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let checkBoxes : HTMLElement[] = selectAll('.' + CHECKBOXWRAP, this.element);
             for (let index : number = 0; index < checkBoxes.length; index++) {
                 this.changeState(checkBoxes[index], doCheck ? 'check' : 'uncheck');
+            }
+            for (let i: number = 0; i < li.length; i++) {
+                this.ensureStateChange(li[i] , doCheck);
+            }
+        }
+        if (nodes) {
+            for ( let j: number = 0; j < nodes.length; j++) {
+                let node: string =  nodes[j] ? nodes[j].toString() : '';
+                if (! doCheck) {
+                    this.updateField(this.treeData, this.fields, node, 'isChecked', null);
+                }
+            }
+        }
+        if (this.autoCheck) {
+            this.updateParentCheckState();
+        }
+    }
+    /**
+     * Changes the parent and child  check state while changing the checkedNodes via setmodel
+     */
+    private dynamicCheckState(node: string,  doCheck: boolean): void {
+        if (this.dataType === 1) {
+            let count: number = 0;
+            let resultId: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
+                new Query().where(this.fields.id, 'equal', parseInt(node, 10), false));
+            if (resultId[0]) {
+                let id: string = resultId[0][this.fields.id] ? resultId[0][this.fields.id].toString() : null;
+                let parent: string = resultId[0][this.fields.parentID] ? resultId[0][this.fields.parentID].toString() : null;
+                let parentElement: Element = this.element.querySelector('[data-uid="' + parent + '"]');
+                let indeterminate: Element = parentElement ? select('.' + INDETERMINATE, parentElement) : null;
+                let check: Element = parentElement ? select('.' + CHECK, parentElement) : null;
+                let element: Element = this.element.querySelector('[data-uid="' + id + '"]');
+                let childNodes : { [key: string]: Object }[] = this.getChildNodes(this.treeData, parent);
+                if (childNodes) {
+                    for (let i : number = 0; i < childNodes.length; i++ ) {
+                        let childId: string = childNodes[i][this.fields.id] ? childNodes[i][this.fields.id].toString() : null;
+                        if (this.checkedNodes.indexOf(childId) !== -1) {
+                            count++;
+                        }
+                    }
+                }
+                if (this.checkedNodes.indexOf(node) !== -1 && parentElement && (id === node) && this.autoCheck) {
+                    this.changeState(parentElement, 'indeterminate', null);
+                } else if (this.checkedNodes.indexOf(node) === -1 && element && (id === node) && !doCheck) {
+                    this.changeState(element, 'uncheck', null);
+                } else if (this.checkedNodes.indexOf(node) !== -1 && element && (id === node) && doCheck) {
+                    this.changeState(element, 'check', null);
+                } else if (this.checkedNodes.indexOf(node) === -1 && !element && parentElement && (id === node) && this.autoCheck
+                                                                                                                    && count !== 0) {
+                    this.changeState(parentElement, 'indeterminate', null);
+                }  else if (this.checkedNodes.indexOf(node) === -1 && !element && parentElement && (id === node) && this.autoCheck
+                                                                                                                    && count === 0) {
+                    this.changeState(parentElement, 'uncheck', null);
+                } else if (!element && !parentElement && (id === node) && this.autoCheck) {
+                    this.updateIndeterminate(node, doCheck);
+                }
+            }
+        } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
+            this.fields.dataSource.dataSource.offline)) {
+            let id: string;
+            let parentElement: Element;
+            let check: Element;
+            for (let i: number = 0; i < this.treeData.length; i++) {
+                id = this.treeData[i][this.fields.id] ? this.treeData[i][this.fields.id].toString() : '';
+                parentElement = this.element.querySelector('[data-uid="' + id + '"]');
+                check = parentElement ? select('.' + CHECK, parentElement) : null;
+                if (this.checkedNodes.indexOf(id) === -1 && parentElement && check && !doCheck) {
+                    this.changeState(parentElement, 'uncheck', null);
+                }
+                let subChild: { [key: string]: Object }[] = getValue(this.fields.child.toString(), this.treeData[i]);
+                if (subChild) {
+                    this.updateChildIndeterminate(subChild, id, node, doCheck, id);
+                }
+            }
+        }
+    }
+     /**
+      * updates the parent and child  check state while changing the checkedNodes via setmodel for listData
+      */
+    private updateIndeterminate(node: string, doCheck: boolean): void {
+        let indeterminateData: { [key: string]: Object }[] = this.getTreeData(node);
+        let count: number = 0;
+        let parent: string;
+        if (this.dataType === 1) {
+            parent = indeterminateData[0][this.fields.parentID] ? indeterminateData[0][this.fields.parentID].toString() : null;
+        }
+        let childNodes: { [key: string]: Object }[] = this.getChildNodes(this.treeData, parent);
+        if (childNodes) {
+            for (let i: number = 0; i < childNodes.length; i++) {
+                let childId: string = childNodes[i][this.fields.id] ? childNodes[i][this.fields.id].toString() : null;
+                if (this.checkedNodes.indexOf(childId) !== -1) {
+                    count++;
+                }
+            }
+        }
+        let parentElement: Element = this.element.querySelector('[data-uid="' + parent + '"]');
+        if (parentElement && doCheck) {
+            this.changeState(parentElement, 'indeterminate', null);
+        } else if (!doCheck && parentElement && this.parentNodeCheck.indexOf(parent) === -1 && count !== 0) {
+            this.changeState(parentElement, 'indeterminate', null);
+        } else if (!doCheck && parentElement && this.parentNodeCheck.indexOf(parent) === -1 && count === 0) {
+            this.changeState(parentElement, 'uncheck', null);
+        } else if (!parentElement) {
+            if (!doCheck && this.checkedNodes.indexOf(parent) === -1 && this.parentNodeCheck.indexOf(parent) !== -1) {
+                this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(parent), 1);
+            } else if (doCheck && this.checkedNodes.indexOf(parent) === -1 && this.parentNodeCheck.indexOf(parent) === -1) {
+                this.parentNodeCheck.push(parent);
+            }
+            this.updateIndeterminate(parent, doCheck);
+            if (this.checkedNodes.indexOf(parent) !== -1 && !doCheck) {
+                this.checkedNodes.splice(this.checkedNodes.indexOf(parent), 1);
+            }
+        }
+    }
+     /**
+      * updates the parent and child  check state while changing the checkedNodes via setmodel for hierarchical data
+      */
+    private updateChildIndeterminate
+        (subChild: { [key: string]: Object }[], parent: string, node: string, doCheck: boolean, child?: string): void {
+        let count: number = 0;
+        for (let j: number = 0; j < subChild.length; j++) {
+            let subId: string = subChild[j][this.fields.id] ? subChild[j][this.fields.id].toString() : '';
+            if (this.checkedNodes.indexOf(subId) !== -1) {
+                count++;
+            }
+            let parentElement: Element = this.element.querySelector('[data-uid="' + parent + '"]');
+            let indeterminate: Element = parentElement ? select('.' + INDETERMINATE, parentElement) : null;
+            let check: Element = parentElement ? select('.' + CHECK, parentElement) : null;
+            let element: Element = this.element.querySelector('[data-uid="' + subId + '"]');
+            if (this.checkedNodes.indexOf(node) !== -1 && parentElement && (subId === node) && this.autoCheck) {
+                this.changeState(parentElement, 'indeterminate', null);
+            } else if (this.checkedNodes.indexOf(node) === -1 && parentElement && !element && (subId === node) && !doCheck) {
+                if (this.autoCheck) {
+                    this.changeState(parentElement, 'uncheck', null);
+                } else {
+                    if (count !== 0) {
+                        this.changeState(parentElement, 'indeterminate', null);
+                    } else {
+                        this.changeState(parentElement, 'uncheck', null);
+                    }
+                }
+            } else if (this.checkedNodes.indexOf(node) === -1 && element && (subId === node) && !doCheck) {
+                this.changeState(element, 'uncheck', null);
+            } else if (this.checkedNodes.indexOf(node) === -1 && indeterminate && (subId === node) && this.autoCheck && count === 0
+                && !doCheck) {
+                indeterminate.classList.remove(INDETERMINATE);
+            } else if (this.checkedNodes.indexOf(node) === -1 && !element && check && (subId === node) && count === 0) {
+                this.changeState(parentElement, 'uncheck', null);
+            } else if (!element && !parentElement && (subId === node) || (this.parentNodeCheck.indexOf(parent) !== -1) && this.autoCheck) {
+                let childElement: Element = this.element.querySelector('[data-uid="' + child + '"]');
+                if (doCheck && count !== 0) {
+                    this.changeState(childElement, 'indeterminate', null);
+                } else if (doCheck && count === subChild.length && this.checkedNodes.indexOf(parent) === -1) {
+                    this.checkedNodes.push(parent);
+                }
+                if (this.parentNodeCheck.indexOf(parent) === -1) {
+                    this.parentNodeCheck.push(parent);
+                }
+            }
+            let innerChild: { [key: string]: Object }[] = getValue(this.fields.child.toString(), subChild[j]);
+            if (innerChild) {
+                this.updateChildIndeterminate(innerChild, subId, node, doCheck, child);
             }
         }
     }
@@ -1427,6 +1831,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         if (!isNOU(icon)) {
                             this.expandAction(eNode, icon, null);
                         }
+                    } else {
+                        if (eUids[i] && this.expandChildren.indexOf(eUids[i]) === -1) {
+                            this.expandChildren.push(eUids[i].toString());
+                        }
+                        continue;
                     }
                 }
                 this.afterFinalized();
@@ -1479,7 +1888,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.setProperties({ selectedNodes: [] }, true);
             for (let i: number = 0; i < sUids.length; i++) {
                 let sNode: Element = select('[data-uid="' + sUids[i] + '"]', this.element);
-                this.selectNode(sNode, null, true);
+                if (sNode && !(sNode.classList.contains('e-active'))) {
+                    this.selectNode(sNode, null, true);
+                }  else {
+                    this.selectedNodes.push(sUids[i]);
+                }
                 if (!this.allowMultiSelection) {
                     break;
                 }
@@ -1764,6 +2177,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
                 parentLi.appendChild(ListBase.createList(this.createElement, this.getSortedData(childItems), this.listBaseOption));
                 this.expandNode(parentLi, eicon, loaded);
+                this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
                 this.disableTreeNodes(childItems);
@@ -1788,6 +2202,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.listBaseOption.ariaAttributes.level = parseFloat(parentLi.getAttribute('aria-level')) + 1;
                 parentLi.appendChild(ListBase.createList(this.createElement, childItems, this.listBaseOption));
                 this.expandNode(parentLi, eicon, loaded);
+                this.setSelectionForChildNodes(childItems);
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
                 this.disableTreeNodes(childItems);
@@ -1810,6 +2225,18 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     i++;
                 }
+    }
+    /**
+     * Sets the child Item in selectedState while rendering the child node
+     */
+    private setSelectionForChildNodes(nodes: { [key: string]: Object }[]): void {
+            let i: number;
+            for (i = 0; i < nodes.length; i++) {
+                let id: string = nodes[i][this.fields.id].toString();
+                if (this.selectedNodes !== undefined && this.selectedNodes.indexOf(id) !== -1) {
+                    this.doSelectionAction();
+                }
+            }
     }
 
     private ensureCheckNode(element: Element): void {
@@ -2079,6 +2506,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.expandNode(currLi, icon);
         } else {
             this.renderChildNodes(currLi, expandChild, callback);
+            let liEles: Element[] = selectAll('.' + LISTITEM, currLi);
+            for (let i: number = 0; i < liEles.length; i++) {
+                let id: string = this.getId(liEles[i]);
+                if (this.expandChildren.indexOf(id) !== -1 && this.expandChildren !== undefined) {
+                    let icon: Element = select('.' + EXPANDABLE, select('.' + TEXTWRAP, liEles[i]));
+                    if (!isNOU(icon)) {
+                        this.expandAction(liEles[i], icon, null);
+                    }
+                    this.expandChildren.splice(this.expandChildren.indexOf(id), 1);
+                }
+            }
         }
     }
 
@@ -2238,9 +2676,133 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.ensureChildCheckState(li);
             this.ensureParentCheckState(closest(closest(li, '.' + PARENTITEM), '.' + LISTITEM));
         }
+        if (this.autoCheck) {
+            this.ensureStateChange(li);
+        }
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     }
+    /**
+     * Update checkedNodes when UI interaction happens before the child node renders in DOM
+     */
+    private ensureStateChange(li: Element, doCheck? : boolean): void {
+        let childElement: Element = select('.' + PARENTITEM, li);
+        let parentIndex: string = li.getAttribute('data-uid');
+        let mapper: FieldsSettingsModel = this.fields;
+        if (this.dataType === 1 && this.autoCheck) {
+            let resultData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
+                new Query().where(mapper.parentID, 'equal', parseInt(parentIndex, 10), false));
+            for (let i: number = 0; i < resultData.length; i++) {
+                let resultId: string = resultData[i][this.fields.id] ? resultData[i][this.fields.id].toString() : null;
+                let isCheck: string = resultData[i][this.fields.isChecked] ? resultData[i][this.fields.isChecked].toString() : null;
+                if (this.checkedNodes.indexOf(parentIndex) !== -1 && this.checkedNodes.indexOf(resultId) === -1) {
+                    this.checkedNodes.push(resultId);
+                    let childItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, resultId);
+                    this.getChildItems(childItems, doCheck);
+                    if (this.parentNodeCheck.indexOf(resultId) !== -1) {
+                        this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(resultId), 1);
+                    }
+                } else if (this.checkedNodes.indexOf(parentIndex) === -1 && childElement === null &&
+                    this.checkedNodes.indexOf(resultId) !== -1) {
+                    this.checkedNodes.splice(this.checkedNodes.indexOf(resultId), 1);
+                    if (isCheck === 'true') {
+                        this.updateField(this.treeData, this.fields, resultId, 'isChecked', null);
+                    }
+                    if (this.checkedNodes.indexOf(parentIndex) === -1 && childElement === null ||
+                        this.parentNodeCheck.indexOf(resultId) !== -1) {
+                        let childNodes: { [key: string]: Object }[] = this.getChildNodes(this.treeData, resultId);
+                        this.getChildItems(childNodes, doCheck);
+                        if (this.parentNodeCheck.indexOf(resultId) !== -1) {
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(resultId), 1);
+                        }
+                    }
+                }
+            }
+        } else if (this.dataType === 1 && !this.autoCheck) {
+            if (!doCheck) {
+                let checkedData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
+                    new Query().where(mapper.isChecked, 'equal', true, false));
 
+                for (let i: number = 0; i < checkedData.length; i++) {
+                    let id: string = checkedData[i][this.fields.id] ? checkedData[i][this.fields.id].toString() : null;
+                    if (this.checkedNodes.indexOf(id) !== -1) {
+                        this.checkedNodes.splice(this.checkedNodes.indexOf(id), 1);
+                    }
+                    this.updateField(this.treeData, this.fields, id, 'isChecked', null);
+                }
+                this.checkedNodes = [];
+            } else {
+                for (let i : number = 0; i < this.treeData.length; i++) {
+                    let checkedId: string = this.treeData[i][this.fields.id] ? this.treeData[i][this.fields.id].toString() : null;
+                    if (this.checkedNodes.indexOf(checkedId) === -1) {
+                        this.checkedNodes.push(checkedId);
+                    }
+                }
+            }
+        } else {
+            let childItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, parentIndex);
+            if (childItems) {
+                this.childStateChange(childItems, parentIndex, childElement, doCheck);
+            }
+        }
+    }
+    private getChildItems(childItems: { [key: string]: Object }[], doCheck ?: boolean ): void {
+        for (let i: number = 0; i < childItems.length; i++) {
+            let childId: string = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : null;
+            let childIsCheck: string = childItems[i][this.fields.isChecked] ? childItems[i][this.fields.isChecked].toString() :
+                null;
+            if (this.checkedNodes.indexOf(childId) !== -1 && !doCheck) {
+                this.checkedNodes.splice(this.checkedNodes.indexOf(childId), 1);
+            }
+            if (this.checkedNodes.indexOf(childId) === -1 && doCheck) {
+                this.checkedNodes.push(childId);
+            }
+            if (childIsCheck === 'true' && !doCheck) {
+                this.updateField(this.treeData, this.fields, childId, 'isChecked', null);
+            }
+            let subChildItems : { [key: string]: Object }[] = this.getChildNodes(this.treeData, childId);
+            if ( subChildItems.length > 0) {
+                this.getChildItems(subChildItems);
+            }
+        }
+    }
+     /**
+      * Update checkedNodes when UI interaction happens before the child node renders in DOM for hierarchical DS
+      */
+    private childStateChange(childItems: { [key: string]: Object }[], parent: string, childElement: Element, doCheck?: boolean): void {
+        for (let i: number = 0; i < childItems.length; i++) {
+            let checkedChild: string = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : '';
+            let isCheck: string = childItems[i][this.fields.isChecked] ? childItems[i][this.fields.isChecked].toString() : null;
+            if (this.autoCheck) {
+                if (this.checkedNodes.indexOf(parent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1) {
+                    this.checkedNodes.push(checkedChild);
+                    if (this.parentNodeCheck.indexOf(checkedChild) !== -1) {
+                        this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(checkedChild), 1);
+                    }
+                } else if (this.checkedNodes.indexOf(parent) === -1 && childElement === null && !doCheck) {
+                    this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
+                    if (isCheck === 'true') {
+                        this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);
+                    }
+                }
+            } else if (!this.autoCheck) {
+                if (!doCheck) {
+                    if (this.checkedNodes.indexOf(checkedChild) !== -1) {
+                        this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
+                    }
+                    this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);
+                    this.checkedNodes = [];
+                } else {
+                     if (this.checkedNodes.indexOf(checkedChild) === -1) {
+                        this.checkedNodes.push(checkedChild);
+                    }
+                }
+            }
+            let subChild: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkedChild);
+            if (subChild) {
+                this.childStateChange(subChild, parent, childElement, doCheck);
+            }
+        }
+    }
     //This method can be used to get all child nodes of a parent by passing the children of a parent along with 'validateCheck' set to false
     private allCheckNode(child: { [key: string]: Object }[], newCheck: string[], checked?: number,
                          childCheck?: number, validateCheck?: boolean): void {
@@ -3737,8 +4299,105 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private setCheckedNodes(nodes: string[]): void {
         nodes = JSON.parse(JSON.stringify(nodes));
         this.uncheckAll(this.checkedNodes);
+        this.setIndeterminate(nodes);
         if (nodes.length > 0) {
             this.checkAll(nodes);
+        }
+    }
+    /**
+     * Checks whether the checkedNodes entered are valid and sets the valid checkedNodes while changing via setmodel
+     */
+    private setValidCheckedNode(node: string): void {
+        if (this.dataType === 1) {
+            let mapper: FieldsSettingsModel = this.fields;
+            let resultData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.treeData).executeLocal(
+                new Query().where(mapper.id, 'equal', parseInt(node, 10), false));
+            if (resultData[0]) {
+                this.setChildCheckState(resultData, node, resultData[0]);
+                if (this.autoCheck) {
+                    let parent: string = resultData[0][this.fields.parentID] ? resultData[0][this.fields.parentID].toString() : null;
+                    let childNodes: { [key: string]: Object }[] = this.getChildNodes(this.treeData, parent);
+                    let count: number = 0;
+                    for (let len: number = 0; len < childNodes.length; len++) {
+                        let childId: string = childNodes[len][this.fields.id].toString();
+                        if (this.checkedNodes.indexOf(childId) !== -1) {
+                            count++;
+                        }
+                    }
+                    if (count === childNodes.length && this.checkedNodes.indexOf(parent) === -1 && parent) {
+                        this.checkedNodes.push(parent);
+                    }
+                }
+            }
+        } else if (this.dataType === 2) {
+            for (let a: number = 0; a < this.treeData.length; a++) {
+                let index: string = this.treeData[a][this.fields.id] ? this.treeData[a][this.fields.id].toString() : '';
+                if (index === node && this.checkedNodes.indexOf(node) === -1) {
+                    this.checkedNodes.push(node);
+                    break;
+                }
+                let childItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), this.treeData[a]);
+                if (childItems) {
+                    this.setChildCheckState(childItems, node, this.treeData[a]);
+                }
+            }
+        }
+    }
+     /**
+      * Checks whether the checkedNodes entered are valid and sets the valid checkedNodes while changing via setmodel(for hierarchical DS)
+      */
+    private setChildCheckState(childItems: { [key: string]: Object }[], node: string,  treeData ? : { [key: string]: Object }): void {
+        let checkedParent: string;
+        let count: number = 0;
+        if (this.dataType === 1) {
+            if (treeData) {
+                checkedParent = treeData[this.fields.id] ? treeData[this.fields.id].toString() : null;
+            }
+            for (let index: number = 0; index < childItems.length; index++) {
+                let checkNode: string = childItems[index][this.fields.id] ? childItems[index][this.fields.id].toString() : null;
+                if (treeData && checkedParent && this.autoCheck) {
+                    if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkNode) === -1) {
+                        this.checkedNodes.push(checkNode);
+                    }
+                }
+                if (checkNode === node && this.checkedNodes.indexOf(node) === -1) {
+                    this.checkedNodes.push(node);
+                }
+                let subChildItems: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkNode);
+                if (subChildItems) {
+                    this.setChildCheckState(subChildItems, node, treeData);
+                }
+            }
+        } else {
+            if (treeData) {
+                checkedParent = treeData[this.fields.id] ? treeData[this.fields.id].toString() : '';
+            }
+            for (let index: number = 0; index < childItems.length; index++) {
+                let checkedChild: string = childItems[index][this.fields.id] ? childItems[index][this.fields.id].toString() : '';
+                if (treeData && checkedParent && this.autoCheck) {
+                    if (this.checkedNodes.indexOf(checkedParent) !== -1 && this.checkedNodes.indexOf(checkedChild) === -1) {
+                        this.checkedNodes.push(checkedChild);
+                    }
+                }
+                if (checkedChild === node && this.checkedNodes.indexOf(node) === -1) {
+                    this.checkedNodes.push(node);
+                }
+                let subChildItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), childItems[index]);
+                if (subChildItems) {
+                    this.setChildCheckState(subChildItems, node, childItems[index]);
+                }
+                if (this.checkedNodes.indexOf(checkedChild) !== -1 && this.autoCheck) {
+                    count++;
+                }
+                if (count === childItems.length && this.checkedNodes.indexOf(checkedParent) === -1 && this.autoCheck) {
+                    this.checkedNodes.push(checkedParent);
+                }
+            }
+        }
+    }
+    private setIndeterminate(nodes: string[]): void {
+        for (let i: number = 0; i < nodes.length; i++) {
+            this.setValidCheckedNode(nodes[i]);
         }
     }
 
@@ -3909,6 +4568,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
+        if (this.showCheckBox && dropLi) {
+            this.ensureParentCheckState(dropLi);
+        }
         if (this.fields.dataSource instanceof DataManager === false) {
             this.preventExpand = false;
             this.triggerEvent();
@@ -4038,7 +4700,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 //Checks for child nodes with isChecked enabled
                 if (checked !== 2) { checked = 1; }
                 childNode = this.getChildNodes(this.treeData, this.treeData[i][id].toString());
-                (childNode !== null) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
+                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
             }
         }
         i = 0;

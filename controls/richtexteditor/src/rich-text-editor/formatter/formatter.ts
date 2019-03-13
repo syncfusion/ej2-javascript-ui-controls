@@ -39,6 +39,12 @@ export class Formatter {
             let action: string = (event as KeyboardEventArgs).action;
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {
                 args = {};
+                if (self.editorMode === 'Markdown' && action === 'insert-table') {
+                    value = <{}>{
+                        'headingText': self.localeObj.getConstant('TableHeadingText'),
+                        'colText': self.localeObj.getConstant('TableColText')
+                    };
+                }
                 let items: object = {
                     originalEvent: event, cancel: false,
                     requestType: action || ((event as KeyboardEventArgs).key + 'Key'),

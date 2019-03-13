@@ -11,12 +11,11 @@ import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-
 import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';
 import { ConnectorType } from '../../accumulation-chart/model/enum';
 import { CornerRadius } from '../../common/model/base';
-import { TextOverflow, Alignment, Regions, Units, Position } from '../../common/utils/enum';
+import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';
 import { Theme } from '../../common/model/theme';
-import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, FontModel } from '../../index';
+import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../index';
 import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel } from './base-model';
-
-
+import { StockChartFontModel } from './base-model';
 
 export class StockChartFont extends ChildProperty<StockChartFont> {
 
@@ -112,7 +111,7 @@ export class StockChartArea extends ChildProperty<StockChartArea> {
 
     /**
      * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
-     * @default transparent
+     * @default 'transparent'
      */
     @Property('transparent')
     public background: string;
@@ -342,8 +341,8 @@ export class StockChartStripLineSettings extends ChildProperty<StockChartStripLi
     /**
      * Options to customize the strip line text.
      */
-    @Complex<FontModel>(Theme.stripLineLabelFont, StockChartFont)
-    public textStyle: FontModel;
+    @Complex<StockChartFontModel>(Theme.stripLineLabelFont, StockChartFont)
+    public textStyle: StockChartFontModel;
 
 
 }
@@ -726,7 +725,7 @@ export class StockSeries extends ChildProperty<StockSeries> {
 export interface IStockChartEventArgs {
     /** name of the event */
     name: string;
-    /** rangeNavigator */
+    /** stock chart */
     stockChart: StockChart;
 }
 
@@ -749,6 +748,23 @@ export interface IRangeChangeEventArgs {
     /** Defined the zoomFactor of the stock chart */
     zoomFactor: number;
 }
+
+/** Stock event render event */
+export interface IStockEventRenderArgs {
+    /** stockChart */
+    stockChart: StockChart;
+    /** Event text  */
+    text: string;
+    /** Event shape */
+    type: FlagType;
+     /** Defines the name of the event */
+     name: string;
+     /** Defines the event cancel status */
+     cancel: boolean;
+     /** Defines the stock series */
+     series: StockSeries;
+}
+
 
 export class StockChartIndicator extends ChildProperty<StockChartIndicator> {
     /**
@@ -1069,8 +1085,8 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Options to customize the axis label.
      */
 
-    @Complex<FontModel>(Theme.axisLabelFont, StockChartFont)
-    public labelStyle: FontModel;
+    @Complex<StockChartFontModel>(Theme.axisLabelFont, StockChartFont)
+    public labelStyle: StockChartFontModel;
 
     /**
      * Specifies the title of an axis.
@@ -1084,8 +1100,8 @@ export class StockChartAxis extends ChildProperty<StockChartAxis> {
      * Options for customizing the axis title.
      */
 
-    @Complex<FontModel>(Theme.axisTitleFont, StockChartFont)
-    public titleStyle: FontModel;
+    @Complex<StockChartFontModel>(Theme.axisTitleFont, StockChartFont)
+    public titleStyle: StockChartFontModel;
 
     /**
      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
@@ -1615,14 +1631,14 @@ export class StockChartAnnotationSettings extends ChildProperty<StockChartAnnota
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     @Property('0')
     public y: string | number;
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     @Property('0')
     public x: string | Date | number;
@@ -1723,4 +1739,82 @@ export class StockChartIndexes extends ChildProperty<StockChartIndexes> {
     @Property(0)
     public series: number;
 
+}
+
+/**
+ * Configures the Stock events for stock chart.
+ */
+export class StockEventsSettings extends ChildProperty<StockEventsSettings> {
+    /**
+     * Specifies type of stock events
+     * * Circle 
+     * * Square
+     * * Flag
+     * * Text
+     * * Sign
+     * * Triangle
+     * * InvertedTriangle
+     * * ArrowUp
+     * * ArrowDown
+     * * ArrowLeft
+     * * ArrowRight
+     * @default 'Circle'
+     */
+    @Property('Circle')
+    public type: FlagType;
+
+    /**
+     * Specifies the text for the stock chart text.
+     */
+    @Property('')
+    public text: string;
+
+    /**
+     * Specifies the description for the chart which renders in tooltip for stock event.
+     */
+    @Property('')
+    public description: string;
+
+    /**
+     * Date value of stock event in which stock event shows.
+     */
+    @Property()
+    public date: Date;
+
+    /**
+     * Options to customize the border of the stock events.
+     */
+    @Complex<StockChartBorderModel>({color: 'black', width: 1}, StockChartBorder)
+    public border: StockChartBorderModel;
+
+    /**
+     * The background of the stock event that accepts value in hex and rgba as a valid CSS color string.
+     * @default 'transparent'
+     */
+    @Property('transparent')
+    public background: string;
+
+    /**
+     * Enables the stock events to be render on series. If it disabled, stock event rendered on primaryXAxis.
+     * @default true
+     */
+    @Property(true)
+    public showOnSeries: boolean;
+
+    /**
+     * Corresponding values in which stock event placed.
+     * * Close
+     * * Open
+     * * High
+     * * Close
+     * @default 'close'
+     */
+    @Property('close')
+    public placeAt: string;
+
+    /**
+     * Options to customize the styles for stock events text.
+     */
+    @Complex<StockChartFontModel>(Theme.stockEventFont, StockChartFont)
+    public textStyle: StockChartFontModel;
 }

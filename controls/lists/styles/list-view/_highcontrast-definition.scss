@@ -14,6 +14,9 @@ $listview-item-hover-bg: $hover-bg !default;
 $listview-item-height: 36px !default;
 $listview-item-line-height: 30px !default;
 $listview-item-padding: 0 12px !default;
+$listview-root-border-color: none;
+$listview-root-border-radius: 0;
+$listview-nested-icon-collapsible: 12px;
 $listview-text-hover-color: $hover-font !default;
 $listview-item-active-bg: $selection-bg !default;
 $listview-text-active-color: $selection-font !default;
@@ -99,5 +102,3 @@ $listview-template-multiline-header-font-size: 13px !default;
 $listview-template-multiline-padding: .6153em .923em !default;
 $listview-template-multiline-content-font-size: 13px !default;
 $listview-template-multiline-avatar-top: .6153em !default;
-
-

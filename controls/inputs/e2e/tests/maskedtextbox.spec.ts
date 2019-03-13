@@ -1,4 +1,3 @@
-
 import { browser, element, By, protractor, } from '@syncfusion/ej2-base/e2e/index';
 let themes: String[] = ["Fabric", "Bootstrap"];
 
@@ -21,7 +20,7 @@ describe('Maskedtextbox with place holder', () => {
         browser.sleep(1500);
         browser.compareScreen(element(By.tagName('BODY')), 'maskedit_floatlabeltype_auto');
 
-        browser.actions().click(element(By.id('mask3'))).perform();
+        browser.actions().click(element(By.id('mask6'))).perform();
         browser.sleep(1000);
         browser.compareScreen(element(By.tagName('BODY')), 'maskedit_floatlabeltype_never');
     })
@@ -64,6 +63,49 @@ describe('Maskedtextbox with place holder', () => {
         browser.sleep(1000);
         browser.compareScreen(element(By.tagName('BODY')), 'maskedit_regularexpression2');
 
+    })
+    it('Maskedtextbox with placeholder', () => {
+        if (browser.isDesktop === true) {
+            browser.driver.manage().window().setSize(800, 500);
+        }
+        browser.load('/demos/maskedtextbox/placeholder.html');
+        browser.sleep(2000);
+
+        browser.actions().click(element(By.id('mask1'))).perform();
+        browser.sleep(2000);
+        browser.compareScreen(element(By.tagName('BODY')), 'maskedit_floatlabeltype_always_value');
+
+        browser.actions().click(element(By.id('mask2'))).perform();
+        browser.sleep(2500);
+        browser.compareScreen(element(By.tagName('BODY')), 'maskedit_floatlabeltype_auto_empty');
+
+        browser.actions().click(element(By.id('mask3'))).perform();
+        browser.sleep(2500);
+        browser.compareScreen(element(By.tagName('BODY')), 'maskedit_floatlabeltype_never_value');
+    })
+    it('Maskedtextbox with clear icon values', () => {
+        if (browser.isDesktop === true) {
+            browser.driver.manage().window().setSize(800, 500);
+        }
+        browser.load('/demos/maskedtextbox/clearButton-value.html');
+        browser.sleep(2000);
+        browser.compareScreen(element(By.tagName('BODY')), 'maskedit_clearicon_focusout');
+        browser.actions().click(element(By.id('mask1'))).perform();
+        browser.sleep(2000);
+        browser.compareScreen(element(By.tagName('BODY')), 'maskedit_clearicon_focusin');
+        
+    })
+    it('Maskedtextbox without clear icon', () => {
+        if (browser.isDesktop === true) {
+            browser.driver.manage().window().setSize(800, 500);
+        }
+        browser.load('/demos/maskedtextbox/value.html');
+        browser.sleep(2000);
+        browser.compareScreen(element(By.tagName('BODY')), 'maskedit_noclearicon_focusout');
+        browser.actions().click(element(By.id('mask1'))).perform();
+        browser.sleep(2000);
+        browser.compareScreen(element(By.tagName('BODY')), 'maskedit_noclearicon_focusin');
+        
     })
     it('Maskedtextbox with width', () => {
         browser.load('/demos/maskedtextbox/width.html');

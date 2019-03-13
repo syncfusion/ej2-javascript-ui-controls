@@ -61,7 +61,6 @@ export class ExportHelper {
 
     private generateCells(columns: Column[], gObj: IGrid): Cell<Column>[] {
         let cells: Cell<Column>[] = [];
-        columns = gObj.enableColumnVirtualization && gObj.getColumns ? gObj.getColumns() : columns;
         if ((<{childGridLevel?: number}>gObj).childGridLevel) {
             let len: number = (<{childGridLevel?: number}>gObj).childGridLevel;
             for (let i: number = 0; len > i; i++) {
@@ -135,7 +134,7 @@ export class ExportHelper {
     }
 
     private processHeaderCells(rows: Row<Column>[]): Row<Column>[] {
-        let columns: Column[] = this.parent.enableColumnVirtualization ? this.parent.getColumns() : this.parent.columns as Column[];
+        let columns: Column[] = this.parent.columns as Column[];
         for (let i: number = 0; i < columns.length; i++) {
             if (!columns[i].commands) {
                 rows = this.appendGridCells(columns[i], rows, 0);

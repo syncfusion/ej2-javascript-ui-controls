@@ -17,6 +17,7 @@ import { Input } from '@syncfusion/ej2-inputs';
 import { Column } from '../../../src';
 import { TemplateEditCell } from '../../../src/grid/renderer/template-edit-cell';
 import { extend } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar);
 
@@ -114,6 +115,11 @@ describe('Dialog Template Editing module', () => {
         let actionBegin: () => void;
         let actionComplete: () => void;
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: dataSource(),
@@ -686,6 +692,15 @@ describe('Edit Template Editing module', () => {
             (<HTMLInputElement>document.querySelector('[name=CustomerID_CustomerID]')).value = 'hello';
             gridObj.endEdit();
         });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
         afterAll((done: Function) => {
             gridObj.notify('tooltip-destroy', {});

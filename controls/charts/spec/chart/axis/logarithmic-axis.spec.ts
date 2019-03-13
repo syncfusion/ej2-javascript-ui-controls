@@ -16,6 +16,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { seriesData1, datetimeData } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/common/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, Logarithmic, ColumnSeries, AreaSeries, BarSeries, DateTime);
 let data: any = seriesData1;
 let datetime: any = datetimeData;
@@ -23,6 +24,14 @@ export interface Arg {
     chart: Chart;
 }
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Chart Logarithmic axis', () => {
         let chartObj: Chart;
         let elem: HTMLElement;
@@ -39,7 +48,7 @@ describe('Chart Control', () => {
                         title: 'PrimaryXAxis',
                         valueType: 'Logarithmic'
                     },
-                    primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'None'  },
+                    primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'None' },
                     series: [{
                         dataSource: [
                             { y: 18, x: 1 }, { y: 29, x: 2 }, { y: 30, x: 3 }, { y: 41, x: 4 },
@@ -48,8 +57,8 @@ describe('Chart Control', () => {
                         ], xName: 'x', yName: 'y', animation: { enable: false }, type: 'Line',
                         name: 'ChartSeriesNameGold', fill: 'green',
                     },
-                    ],  width: '800',
-                    title: 'Chart TS Title', legendSettings: { visible: false}
+                    ], width: '800',
+                    title: 'Chart TS Title', legendSettings: { visible: false }
                 });
 
         });
@@ -298,7 +307,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
 
         });
-       it('checking with large data', (done: Function) => {
+        it('checking with large data', (done: Function) => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('containerSeriesGroup0');
                 expect(svg !== null).toBe(true);
@@ -413,7 +422,7 @@ describe('Chart Control', () => {
                 animation: { enable: false }
             }];
             chartObj.axes = [{
-                rowIndex: 1, name: 'yAxis1', valueType: 'Logarithmic', labelFormat : '{value}@',
+                rowIndex: 1, name: 'yAxis1', valueType: 'Logarithmic', labelFormat: '{value}@',
                 titleStyle: { size: '14px', fontWeight: 'Regular', color: '#282828', fontStyle: 'Normal', fontFamily: 'Segoe UI' },
                 labelStyle: { size: '12px', fontWeight: 'Regular', color: '#282828', fontStyle: 'Normal', fontFamily: 'Segoe UI' }
             }];
@@ -429,9 +438,9 @@ describe('Chart Control', () => {
         it('Checking the Labels with empty data', () => {
             chartObj.series = [];
             chartObj.primaryXAxis.zoomFactor = 0.7; chartObj.primaryXAxis.zoomPosition = 0.2;
-             chartObj.axisLabelRender = (args : IAxisLabelRenderEventArgs) => {
-                args.text =  args.text + 'cus';
-             }
+            chartObj.axisLabelRender = (args: IAxisLabelRenderEventArgs) => {
+                args.text = args.text + 'cus';
+            }
             chartObj.loaded = null;
             chartObj.refresh();
 
@@ -458,4 +467,84 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('Checking line break labels with logarithmic axis', () => {
+        let chart: Chart;
+        let elem: HTMLElement;
+        let svg: HTMLElement;
+        let text: HTMLElement;
+        let datalabel: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        beforeAll(() => {
+            elem = createElement('div', { id: 'container' });
+            document.body.appendChild(elem);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Logarithmic',
+                        labelFormat: '{value}<br>text',
+                    },
+                    primaryYAxis: {},
+                    series: [{
+                        dataSource: [{ x: 10, y: 7 }, { x: 100, y: 1 }, { x: 1000, y: 1 },
+                        { x: 10000, y: 14 }, { x: 100000, y: 1 }, { x: 1000000, y: 10 },],
+                        xName: 'x', yName: 'y', animation: { enable: false }, type: 'Line',
+                    },
+                    ],
+                    legendSettings: { visible: false }
+                }, '#container');
+
+        });
+        afterAll((): void => {
+            elem.remove();
+            chart.destroy();
+        });
+        it('default line break checking with log axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 6).toBe(true);
+                label = document.getElementById('container0_AxisLabel_1');
+                expect(label.childNodes[0].textContent == '100').toBe(true);
+                expect(label.childNodes[1].textContent == 'text').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking line break labels with inversed axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 6).toBe(true);
+                label= document.getElementById('container0_AxisLabel_1');
+                expect(label.childNodes[0].textContent == '100').toBe(true);
+                expect(label.childNodes[1].textContent == 'text').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = true;
+            chart.refresh();
+        });
+        it('Checking line break labels with opposed position true', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(label.childElementCount == 6).toBe(true);
+                label= document.getElementById('container0_AxisLabel_0');
+                expect(label.childNodes[0].textContent == 'text').toBe(true);
+                expect(label.childNodes[1].textContent == '10').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.refresh();
+        });
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

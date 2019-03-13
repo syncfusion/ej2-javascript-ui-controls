@@ -6,7 +6,7 @@ import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords } from '../utils';
-import { getPlainData, extendArray } from '../utils';
+import { editAction, updateParentRow } from './crud-actions';
 import { RowPosition } from '../enum';
 
 /**
@@ -57,7 +57,7 @@ export class Edit {
      * @hidden
      */
     public addEventListener(): void {
-        this.parent.on(events.crudAction, this.editAction, this);
+        this.parent.on(events.crudAction, this.crudAction, this);
         this.parent.on(events.beginEdit, this.beginEdit, this);
         this.parent.on(events.beginAdd, this.beginAdd, this);
         this.parent.on(events.recordDoubleClick, this.recordDoubleClick, this);
@@ -81,7 +81,7 @@ export class Edit {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.crudAction, this.editAction);
+        this.parent.off(events.crudAction, this.crudAction);
         this.parent.off(events.beginEdit, this.beginEdit);
         this.parent.off(events.beginAdd, this.beginAdd);
         this.parent.off(events.recordDoubleClick, this.recordDoubleClick);
@@ -130,6 +130,14 @@ export class Edit {
       this.keyPress = args.action;
     }
   }
+
+  private deleteUniqueID( value: string) : void {
+    let idFilter: string = 'uniqueIDFilterCollection';
+    delete this.parent[idFilter][value];
+    let id: string = 'uniqueIDCollection';
+    delete this.parent[id][value];
+  }
+
   private cellEdit(args: CellEditArgs): void {
     if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
                this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
@@ -216,12 +224,20 @@ export class Edit {
           this.enableToolbarItems('save');
           removeClass([row], ['e-editedrow', 'e-batchrow']);
           removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-          this.editAction({ value: <ITreeData>args.rowData, action: 'edit' }, args.columnName);
+          editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
+                     this.addRowIndex, this.selectedIndex, args.columnName);
           let saveArgs: CellSaveEventArgs = {
             type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
             previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
           };
           this.parent.trigger(events.actionComplete, saveArgs);
+      }
+    }
+    private crudAction(details: { value: ITreeData, action: string }, columnName?: string): void {
+      editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
+      if (details.action === 'add' && this.previousNewRowPosition != null) {
+        this.parent.setProperties({editSettings: {newRowPosition:  this.previousNewRowPosition}}, true);
+        this.previousNewRowPosition = null;
       }
     }
     private beginAdd(args?: SaveEventArgs): void {
@@ -230,7 +246,8 @@ export class Edit {
       let records: Object[] = this.parent.grid.getCurrentViewRecords();
       let rows: Element[] = this.parent.grid.getDataRows();
       if (this.parent.editSettings.mode !== 'Dialog') {
-        if (this.parent.editSettings.newRowPosition === 'Child' && !((<ITreeData>records[index]).expanded)) {
+        if (this.parent.editSettings.newRowPosition === 'Child' && !((<ITreeData>records[index]).expanded) &&
+          (<ITreeData>records[index]).hasChildRecords) {
           this.parent.expandRow(<HTMLTableRowElement>rows[index + 1], records[index]);
         }
         if (this.parent.editSettings.newRowPosition === 'Above') {
@@ -285,14 +302,19 @@ export class Edit {
           args.cancel = true; return;
         }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
-        this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
+        this.doubleClickTarget.classList.contains('e-treegridcollapse') || this.doubleClickTarget.classList.contains('e-frame'))) {
           args.cancel = true; this.doubleClickTarget = null;
           return;
         }
         if (args.requestType === 'delete') {
             let data: ITreeData[] = <ITreeData[]>args.data;
             for (let i: number = 0; i < data.length; i++) {
-                args.data = [...data, ...findChildrenRecords(data[i])];
+              this.deleteUniqueID(data[i].uniqueID);
+              let childs: ITreeData[] = findChildrenRecords(data[i]);
+              for (let c: number = 0; c < childs.length; c++) {
+                this.deleteUniqueID(childs[c].uniqueID);
+              }
+              args.data = [...data, ...childs];
             }
         }
         if (args.requestType === 'add') {
@@ -325,6 +347,7 @@ export class Edit {
           let currentData: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
           let index: number =  this.addRowIndex;
           value.uniqueID = getUid(this.parent.element.id + '_data_');
+          setValue('uniqueIDCollection.' +  value.uniqueID , value, this.parent);
           let level: number; let dataIndex: number; let idMapping: Object;
           let parentUniqueID: string; let parentItem: Object; let parentIdMapping: string;
           if (currentData.length) {
@@ -355,7 +378,7 @@ export class Edit {
                   if (this.isSelfReference) {
                       value[this.parent.parentIdMapping] = idMapping;
                       if (!isNullOrUndefined(value.parentItem)) {
-                        this.updateParentRow(key, value.parentItem, 'add', value);
+                        updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                       }
                   }
               }
@@ -369,7 +392,7 @@ export class Edit {
                 if (this.isSelfReference) {
                   value[this.parent.parentIdMapping] = parentIdMapping;
                   if (!isNullOrUndefined(value.parentItem)) {
-                    this.updateParentRow(key, value.parentItem, 'add', value);
+                    updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                   }
               }
               }
@@ -389,207 +412,6 @@ export class Edit {
       }
       return args;
     }
-    private addAction(details: {value: ITreeData, action: string}, treeData: Object[]): {value: Object, isSkip: boolean} {
-        let value: Object; let isSkip: boolean = false;
-        let currentViewRecords: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
-        value  = extend({}, details.value);
-        value = getPlainData(value);
-        switch (this.parent.editSettings.newRowPosition) {
-          case 'Top':
-            treeData.unshift(value);
-            isSkip = true;
-            break;
-          case 'Bottom':
-            treeData.push(value);
-            isSkip = true;
-            break;
-          case 'Above':
-              value = currentViewRecords[this.addRowIndex + 1];
-              break;
-          case 'Below':
-          case 'Child':
-            value = currentViewRecords[this.addRowIndex];
-            if (this.selectedIndex === -1) {
-              treeData.unshift(value);
-              isSkip = true;
-            }
-        }
-        return { value: value, isSkip: isSkip };
-    }
-    private editAction(details: {value: ITreeData, action: string}, columnName?: string): void {
-        let value: ITreeData = details.value;
-        let action: string = details.action;
-        if (action === 'save') {
-          action = 'edit';
-        }
-        let i: number; let j: number;
-        let key: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
-        let treeData: ITreeData[] = this.parent.dataSource instanceof DataManager ?
-                            this.parent.dataSource.dataSource.json : <Object[]>this.parent.dataSource;
-        let modifiedData: object[] = [];
-        let originalData: ITreeData = value;
-        let isSkip: boolean = false;
-        let currentViewRecords: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
-        if (action === 'add') {
-          let addAct: {value: Object, isSkip: boolean} = this.addAction(details, treeData);
-          value = addAct.value; isSkip = addAct.isSkip;
-        }
-        if (value instanceof Array) {
-          modifiedData = extendArray(value);
-        } else {
-          modifiedData.push(extend({}, value));
-        }
-        if (!isSkip && (action !== 'add' ||
-             (this.parent.editSettings.newRowPosition !== 'Top' && this.parent.editSettings.newRowPosition !== 'Bottom'))) {
-        for (let k: number = 0; k < modifiedData.length; k++) {
-          let keys: string[] = Object.keys(modifiedData[k]);
-          i = treeData.length;
-          while (i-- && i >= 0) {
-            if (treeData[i][key] === modifiedData[k][key]) {
-              if (action === 'delete') {
-                let currentData: Object = treeData[i];
-                treeData.splice(i, 1);
-                if (this.isSelfReference) {
-                  if (!isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
-                    let parentData: ITreeData = this.parent.flatData.filter((e: ITreeData) =>
-                      e[this.parent.idMapping] === currentData[this.parent.parentIdMapping])[0];
-                    let childRecords: Object[] = parentData ? parentData[this.parent.childMapping] : [];
-                    for (let p: number = childRecords.length - 1; p >= 0; p--) {
-                      if (childRecords[p][this.parent.idMapping] === currentData[this.parent.idMapping]) {
-                        childRecords.splice(p, 1);
-                        if (!childRecords.length) {
-                          parentData.hasChildRecords = false;
-                          this.updateParentRow(key, parentData, action);
-                        }
-                        break;
-                      }
-                    }
-                  }
-                  break;
-                }
-              } else {
-                if (action === 'edit') {
-                  for (j = 0; j < keys.length; j++) {
-                    if (treeData[i].hasOwnProperty(keys[j]) && (this.parent.editSettings.mode !== 'Cell' || keys[j] === columnName)) {
-                      treeData[i][keys[j]] = modifiedData[k][keys[j]];
-                    }
-                  }
-                } else if (action === 'add') {
-                  let index: number ;
-                  if (this.parent.editSettings.newRowPosition === 'Child') {
-                    if (this.isSelfReference) {
-                      originalData[this.parent.parentIdMapping] = treeData[i][this.parent.idMapping];
-                      treeData.splice(i + 1, 0, originalData);
-                    } else {
-                        if (!(<Object>treeData[i]).hasOwnProperty(this.parent.childMapping)) {
-                            treeData[i][this.parent.childMapping] = [];
-                        }
-                        treeData[i][this.parent.childMapping].push(originalData);
-                        this.updateParentRow(key, treeData[i], action);
-                    }
-                  } else if (this.parent.editSettings.newRowPosition === 'Below') {
-                    treeData.splice(i + 1, 0, originalData);
-                  } else if (!this.addRowIndex) {
-                      index = 0;
-                      treeData.splice(index, 0, originalData);
-                  } else if (this.parent.editSettings.newRowPosition === 'Above') {
-                    treeData.splice(i, 0, originalData);
-                  }
-                }
-                break;
-              }
-            } else if (!isNullOrUndefined(treeData[i][this.parent.childMapping])) {
-              if (this.removeChildRecords(treeData[i][this.parent.childMapping], modifiedData[k], action, key, originalData, columnName)) {
-                this.updateParentRow(key, treeData[i], action);
-              }
-            }
-          }
-        }
-        }
-        if (action === 'add' && this.previousNewRowPosition != null) {
-          this.parent.setProperties({editSettings: {newRowPosition:  this.previousNewRowPosition}}, true);
-          this.previousNewRowPosition = null;
-        }
-      }
-      private removeChildRecords(childRecords: ITreeData[], modifiedData: object, action: string, key: string, originalData?: ITreeData,
-                                 columnName?: string)
-        : boolean {
-        let isChildAll: boolean = false;
-        let j: number = childRecords.length;
-        while (j-- && j >= 0) {
-          if (childRecords[j][key] === modifiedData[key] ||
-            (this.isSelfReference && childRecords[j][this.parent.parentIdMapping] === modifiedData[this.parent.idMapping])) {
-            if (action === 'edit') {
-              let keys: string[] = Object.keys(modifiedData);
-              for (let i: number = 0; i < keys.length; i++) {
-                if (childRecords[j].hasOwnProperty(keys[i]) && (this.parent.editSettings.mode !== 'Cell' || keys[i] === columnName)) {
-                  childRecords[j][keys[i]] = modifiedData[keys[i]];
-                }
-              }
-              break;
-            } else if (action === 'add') {
-                if (this.parent.editSettings.newRowPosition === 'Child') {
-                    if (this.isSelfReference) {
-                        originalData[this.parent.parentIdMapping] = childRecords[j][this.parent.idMapping];
-                        childRecords.splice(j + 1, 0, originalData);
-                        this.updateParentRow(key, childRecords[j], action);
-                    } else {
-                        if (!(<Object>childRecords[j]).hasOwnProperty(this.parent.childMapping)) {
-                            childRecords[j][this.parent.childMapping] = [];
-                        }
-                        childRecords[j][this.parent.childMapping].push(originalData);
-                        this.updateParentRow(key, childRecords[j], action);
-                    }
-                } else if (this.parent.editSettings.newRowPosition === 'Above' ) {
-                  childRecords.splice(j, 0, originalData);
-                } else if (this.parent.editSettings.newRowPosition === 'Below' ) {
-                  childRecords.splice(j + 1, 0, originalData);
-                }
-            } else {
-              let parentItem: ITreeData = childRecords[j].parentItem;
-              childRecords.splice(j, 1);
-              if (!childRecords.length) {
-                isChildAll = true;
-              }
-            }
-          } else if (!isNullOrUndefined(childRecords[j][this.parent.childMapping])) {
-            if (this.removeChildRecords(childRecords[j][this.parent.childMapping], modifiedData, action, key, originalData, columnName)) {
-              this.updateParentRow(key, childRecords[j], action);
-            }
-          }
-        }
-        return isChildAll;
-      }
-      private updateParentRow(key: string, record: ITreeData, action: string, child?: ITreeData): void {
-        let currentRecords: ITreeData[] = this.parent.grid.getCurrentViewRecords();
-        let index: number;
-        currentRecords.map((e: ITreeData, i: number) => { if (e[key] === record[key]) { index = i; return; } });
-        record = currentRecords[index];
-        record.hasChildRecords = false;
-        if (action === 'add') {
-            record.expanded = true;
-            record.hasChildRecords = true;
-            let childRecords: ITreeData = child ? child : currentRecords[index + 1];
-            if (!(<Object>record).hasOwnProperty('childRecords')) {
-              record.childRecords = [];
-            }
-            if (record.childRecords.indexOf(childRecords) === -1) {
-              record.childRecords.unshift(childRecords);
-            }
-            if (this.isSelfReference) {
-                if (!(<Object>record).hasOwnProperty(this.parent.childMapping)) {
-                    record[this.parent.childMapping] = [];
-                }
-                if (record.childRecords.indexOf(childRecords) === -1) {
-                  record[this.parent.childMapping].unshift(childRecords);
-                }
-            }
-        }
-        this.parent.grid.setRowData(key, record);
-        let row: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getRowByIndex(index);
-        this.parent.renderModule.cellRender({data: record, cell: row.cells[this.parent.treeColumnIndex],
-            column: this.parent.grid.getColumns()[this.parent.treeColumnIndex] });
-      }
 
     /**
      * Checks the status of validation at the time of editing. If validation is passed, it returns true.

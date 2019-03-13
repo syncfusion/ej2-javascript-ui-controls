@@ -102,7 +102,11 @@ export class QuickPopups {
             animationSettings: { effect: 'Zoom' },
             buttons: [
                 { buttonModel: { cssClass: 'e-quick-alertok e-flat', isPrimary: true }, click: this.dialogButtonClick.bind(this) },
-                { buttonModel: { cssClass: 'e-quick-alertcancel e-flat', isPrimary: false }, click: this.dialogButtonClick.bind(this) }
+                { buttonModel: { cssClass: 'e-quick-alertcancel e-flat', isPrimary: false }, click: this.dialogButtonClick.bind(this) },
+                {
+                    buttonModel: { cssClass: 'e-quick-dialog-cancel e-disable e-flat', isPrimary: false },
+                    click: this.dialogButtonClick.bind(this)
+                }
             ],
             cssClass: cls.QUICK_DIALOG_CLASS,
             closeOnEscape: true,
@@ -118,11 +122,11 @@ export class QuickPopups {
         let dialogElement: HTMLElement = createElement('div', { id: this.parent.element.id + 'QuickDialog' });
         this.parent.element.appendChild(dialogElement);
         this.quickDialog.appendTo(dialogElement);
-        let okButton: Element = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.setAttribute('aria-label', this.l10n.getConstant('occurrence'));
         }
-        let cancelButton: Element = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.setAttribute('aria-label', this.l10n.getConstant('series'));
         }
@@ -141,24 +145,25 @@ export class QuickPopups {
 
     private quickDialogClass(action: string): void {
         let classList: string[] = [
-            cls.QUICK_DIALOG_EDIT_EVENT_CLASS, cls.QUICK_DIALOG_EDIT_SERIES_CLASS, cls.QUICK_DIALOG_DELETE_CLASS,
+            cls.QUICK_DIALOG_OCCURRENCE_CLASS, cls.QUICK_DIALOG_SERIES_CLASS, cls.QUICK_DIALOG_DELETE_CLASS,
             cls.QUICK_DIALOG_CANCEL_CLASS, cls.QUICK_DIALOG_ALERT_BTN_CLASS, cls.DISABLE_CLASS
         ];
-        let okButton: Element = this.quickDialog.element.querySelector('.e-quick-alertok');
-        let cancelButton: Element = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
+        let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         removeClass([okButton, cancelButton], classList);
+        addClass([this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_CANCEL_CLASS)], cls.DISABLE_CLASS);
         switch (action) {
             case 'Recurrence':
-                addClass([okButton], cls.QUICK_DIALOG_EDIT_EVENT_CLASS);
-                addClass([cancelButton], cls.QUICK_DIALOG_EDIT_SERIES_CLASS);
+                addClass([okButton], cls.QUICK_DIALOG_OCCURRENCE_CLASS);
+                addClass([cancelButton], cls.QUICK_DIALOG_SERIES_CLASS);
                 break;
             case 'Delete':
                 addClass([okButton], cls.QUICK_DIALOG_DELETE_CLASS);
                 addClass([cancelButton], cls.QUICK_DIALOG_CANCEL_CLASS);
                 break;
             case 'Alert':
-                addClass([okButton], cls.QUICK_DIALOG_ALERT_BTN_CLASS);
-                addClass([cancelButton], cls.DISABLE_CLASS);
+                addClass([okButton], [cls.QUICK_DIALOG_ALERT_OK, cls.QUICK_DIALOG_ALERT_BTN_CLASS]);
+                addClass([cancelButton], [cls.QUICK_DIALOG_ALERT_CANCEL, cls.DISABLE_CLASS]);
                 break;
         }
     }
@@ -171,11 +176,11 @@ export class QuickPopups {
     }
 
     public openRecurrenceAlert(): void {
-        let editDeleteOnly: Element = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let editDeleteOnly: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (editDeleteOnly) {
             editDeleteOnly.innerHTML = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteEvent' : 'editEvent');
         }
-        let editDeleteSeries: Element = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let editDeleteSeries: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (editDeleteSeries) {
             editDeleteSeries.innerHTML = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteSeries' : 'editSeries');
         }
@@ -187,10 +192,10 @@ export class QuickPopups {
     }
 
     public openRecurrenceValidationAlert(type: string): void {
-        let okButton: Element = this.quickDialog.element.querySelector('.e-quick-alertok');
-        removeClass([okButton], cls.QUICK_DIALOG_EDIT_EVENT_CLASS);
+        this.quickDialogClass('Alert');
+        let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         okButton.innerHTML = this.l10n.getConstant('ok');
-        let cancelButton: Element = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         cancelButton.innerHTML = this.l10n.getConstant('cancel');
         this.quickDialog.header = this.l10n.getConstant('alert');
         switch (type) {
@@ -200,6 +205,7 @@ export class QuickPopups {
                 break;
             case 'dateValidation':
                 removeClass([cancelButton], cls.DISABLE_CLASS);
+                addClass([cancelButton], cls.QUICK_DIALOG_CANCEL_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('recurrenceDateValidation');
                 break;
             case 'createError':
@@ -211,12 +217,13 @@ export class QuickPopups {
                 this.quickDialog.content = this.l10n.getConstant('sameDayAlert');
                 break;
             case 'seriesChangeAlert':
-                removeClass([cancelButton], cls.DISABLE_CLASS);
+                let dialogCancel: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_CANCEL_CLASS);
+                removeClass([cancelButton, dialogCancel], cls.DISABLE_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('seriesChangeAlert');
+                okButton.innerHTML = this.l10n.getConstant('yes');
+                cancelButton.innerHTML = this.l10n.getConstant('no');
+                dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
-        }
-        if (!cancelButton.classList.contains(cls.DISABLE_CLASS)) {
-            addClass([cancelButton], 'e-quick-alert-cancelpresent');
         }
         this.showQuickDialog('RecurrenceValidationAlert');
     }
@@ -225,11 +232,11 @@ export class QuickPopups {
         if (this.parent.activeViewOptions.readonly) {
             return;
         }
-        let okButton: Element = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.innerHTML = this.l10n.getConstant('delete');
         }
-        let cancelButton: Element = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
         }
@@ -244,11 +251,11 @@ export class QuickPopups {
     public openValidationError(type: string): void {
         this.quickDialog.header = this.l10n.getConstant('alert');
         this.quickDialog.content = this.l10n.getConstant(type);
-        let okButton: Element = this.quickDialog.element.querySelector('.e-quick-alertok');
+        let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.innerHTML = this.l10n.getConstant('ok');
         }
-        let cancelButton: Element = this.quickDialog.element.querySelector('.e-quick-alertcancel');
+        let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         if (cancelButton) {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
         }
@@ -765,15 +772,10 @@ export class QuickPopups {
     }
 
     private dialogButtonClick(event: Event): void {
-        let cancelButton: Element = this.quickDialog.element.querySelector('.e-quick-alertcancel');
-        if ((<HTMLElement>event.target).classList.contains('e-quick-alertok') &&
-            (cancelButton.classList.contains('e-quick-alert-cancelpresent'))) {
-            removeClass([cancelButton], 'e-quick-alert-cancelpresent');
-            this.parent.eventWindow.eventSave(this.l10n.getConstant('ok'));
-            return;
-        }
         this.quickDialog.hide();
-        if ((<HTMLElement>event.target).classList.contains(cls.QUICK_DIALOG_EDIT_EVENT_CLASS)) {
+        let target: HTMLElement = event.target as HTMLElement;
+        let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
+        if (target.classList.contains(cls.QUICK_DIALOG_OCCURRENCE_CLASS)) {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteOccurrence' : 'EditOccurrence';
             switch (this.parent.currentAction) {
                 case 'EditOccurrence':
@@ -783,7 +785,7 @@ export class QuickPopups {
                     this.crudAction.deleteEvent(<{ [key: string]: Object }>this.parent.activeEventData.event, this.parent.currentAction);
                     break;
             }
-        } else if ((<HTMLElement>event.target).classList.contains(cls.QUICK_DIALOG_EDIT_SERIES_CLASS)) {
+        } else if (target.classList.contains(cls.QUICK_DIALOG_SERIES_CLASS)) {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteSeries' : 'EditSeries';
             switch (this.parent.currentAction) {
                 case 'EditSeries':
@@ -795,8 +797,13 @@ export class QuickPopups {
                     this.crudAction.deleteEvent(<{ [key: string]: Object }>this.parent.activeEventData.event, this.parent.currentAction);
                     break;
             }
-        } else if ((<HTMLElement>event.target).classList.contains(cls.QUICK_DIALOG_DELETE_CLASS)) {
+        } else if (target.classList.contains(cls.QUICK_DIALOG_DELETE_CLASS)) {
             this.crudAction.deleteEvent(this.parent.activeEventData.event, this.parent.currentAction);
+        } else if (!cancelButton.classList.contains(cls.DISABLE_CLASS) && (target.classList.contains(cls.QUICK_DIALOG_ALERT_OK) ||
+            (target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL) &&
+                !cancelButton.classList.contains(cls.QUICK_DIALOG_CANCEL_CLASS)))) {
+            this.parent.uiStateValues.isIgnoreOccurrence = target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL);
+            this.parent.eventWindow.eventSave(this.l10n.getConstant('ok'));
         }
     }
 
@@ -917,7 +924,14 @@ export class QuickPopups {
     }
 
     private applyEventColor(): void {
-        let color: string = (<HTMLElement>this.parent.activeEventData.element).style.backgroundColor;
+        let colorField: string = '';
+        if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
+            colorField = this.parent.enableRtl ? 'border-right-color' : 'border-left-color';
+        } else {
+            colorField = 'background-color';
+        }
+        // tslint:disable-next-line:no-any
+        let color: string = (<HTMLElement>this.parent.activeEventData.element).style[<any>colorField];
         if (color === '') {
             return;
         }

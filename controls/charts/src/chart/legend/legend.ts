@@ -9,7 +9,8 @@ import { ChartSeriesType, ChartDrawType } from '../utils/enum';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
 import { Chart } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
-import { Rect, Size, measureText, textTrim, ChartLocation, removeElement, getElement } from '../../common/utils/helper';
+import { textTrim, ChartLocation, removeElement, getElement } from '../../common/utils/helper';
+import { Size, measureText, Rect } from '@syncfusion/ej2-svg-base';
 import { ILegendRenderEventArgs } from '../../common/model/interface';
 import { legendRender } from '../../common/model/constants';
 /**

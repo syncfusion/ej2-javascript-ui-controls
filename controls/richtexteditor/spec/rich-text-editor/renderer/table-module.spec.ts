@@ -4,6 +4,7 @@ import { renderRTE, destroy, setCursorPoint } from './../render.spec';
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { QuickToolbar, MarkdownEditor, HtmlEditor, Table, Toolbar, IRenderer, ToolbarRenderer } from "../../../src/rich-text-editor/index";
+import { dispatchEvent } from "../../../src/rich-text-editor/base/util";
 
 RichTextEditor.Inject(MarkdownEditor);
 RichTextEditor.Inject(HtmlEditor);
@@ -1692,13 +1693,52 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             afterEach(() => {
                 destroy(rteObj);
             });
-            
+
             it(' tab key navigation from second li start point', () => {
-               let selectNode:Element = editNode.querySelector('ol');
+                let selectNode: Element = editNode.querySelector('ol');
                 expect(selectNode.querySelector('ol')).toBeNull();
                 setCursorPoint(selectNode.childNodes[2] as Element, 0);
                 (rteObj as any).keyDown(keyBoardEvent);
                 expect(selectNode.querySelector('ol')).not.toBeNull();
+            });
+        });
+
+
+        describe(" EJ2-19873:  Inserting table in the list produces one extra empty list", () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            let controlId: string;
+            let editNode: HTMLElement;
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                            'UnorderedList', 'Outdent', 'Indent']
+                    },
+                    value: `<ol><li>one</li><li>two</li><li>three</li></ol><p><br></p>`
+                });
+                rteEle = rteObj.element;
+                controlId = rteEle.id;
+                editNode = (rteObj as any).inputElement;
+            });
+
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it(' insert the table at selection of end of li', (done) => {
+                let nodeSelection: NodeSelection = new NodeSelection();
+                let firstNode: HTMLElement = rteObj.element.querySelectorAll("li")[1];
+                setCursorPoint(firstNode.childNodes[0] as Element, firstNode.textContent.length - 1);
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateTable') as HTMLElement;
+                item.click();
+                let cell:Element = document.getElementById(controlId+"_table").querySelectorAll(".e-rte-tablecell")[0];
+                dispatchEvent(cell, "mousedown");
+                dispatchEvent(cell, "mouseup");
+                (cell as HTMLElement).click();
+                let applied: any = editNode.querySelectorAll('li:empty');
+                expect(applied.length === 0).toBe(true);
+                done();
             });
         });
     });

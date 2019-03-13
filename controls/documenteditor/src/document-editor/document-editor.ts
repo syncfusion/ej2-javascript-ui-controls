@@ -2,7 +2,8 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Eve
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle } from './index';
-import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs } from './index';
+// tslint:disable-next-line:max-line-length
+import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, BulletsAndNumberingDialog } from './index';
 import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
@@ -25,6 +26,7 @@ import { HyperlinkDialog, TableDialog, BookmarkDialog, StylesDialog, TableOfCont
 import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog } from './index';
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { DocumentEditorModel } from './document-editor-model';
+import { CharacterFormatProperties, ParagraphFormatProperties } from './implementation';
 
 /**
  * The Document editor component is used to draft, save or print rich text contents as page by page.
@@ -386,6 +388,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public destroyed: EmitType<Object>;
+    /**
+     * Triggers while selecting the custom context-menu option.
+     * @event
+     */
+    @Event()
+    public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
+    /**
+     * Triggers before opening the custom context-menu option.
+     * @event
+     */
+    @Event()
+    public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 
     /**
      * Gets or Sets a value indicating whether tab key can be accepted as input or not.
@@ -408,6 +422,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets or sets a value indicating whether local paste needs to be enabled or not.
      */
     public enableLocalPaste: boolean = false;
+    /**
+     * @private
+     */
+    public characterFormat: CharacterFormatProperties;
+    /**
+     * @private
+     */
+    public paragraphFormat: ParagraphFormatProperties;
     /**
      * Gets the total number of pages.
      */
@@ -613,6 +635,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
+     * Set the default character format for document editor 
+     * @param characterFormat
+     */
+    public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
+        this.characterFormat = characterFormat;
+    }
+
+    /**
+     * Set the default paragraph format for document editor
+     * @param paragraphFormat 
+     */
+    public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
+        this.paragraphFormat = paragraphFormat;
+    }
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -676,6 +713,20 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.trigger('viewChange', eventArgs);
             }
         }
+    }
+    /**
+     * @private
+     */
+    public fireCustomContextMenuSelect(item: string): void {
+        let eventArgs: CustomContentMenuEventArgs = { id: item };
+        this.trigger('customContextMenuSelect', eventArgs);
+    }
+    /**
+     * @private
+     */
+    public fireCustomContextMenuBeforeOpen(item: string[]): void {
+        let eventArgs: BeforeOpenCloseCustomContentMenuEventArgs = { ids: item };
+        this.trigger('customContextMenuBeforeOpen', eventArgs);
     }
     /**
      * Shows the Paragraph dialog
@@ -971,31 +1022,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Same as the whole table': 'Same as the whole table',
         'Borders': 'Borders',
         'None': 'None',
-        'Single': 'Single',
-        'Dot': 'Dot',
-        'DashSmallGap': 'DashSmallGap',
-        'DashLargeGap': 'DashLargeGap',
-        'DashDot': 'DashDot',
-        'DashDotDot': 'DashDotDot',
-        'Double': 'Double',
-        'Triple': 'Triple',
-        'ThinThickSmallGap': 'ThinThickSmallGap',
-        'ThickThinSmallGap': 'ThickThinSmallGap',
-        'ThinThickThinSmallGap': 'ThinThickThinSmallGap',
-        'ThinThickMediumGap': 'ThinThickMediumGap',
-        'ThickThinMediumGap': 'ThickThinMediumGap',
-        'ThinThickThinMediumGap': 'ThinThickThinMediumGap',
-        'ThinThickLargeGap': 'ThinThickLargeGap',
-        'ThickThinLargeGap': 'ThickThinLargeGap',
-        'ThinThickThinLargeGap': 'ThinThickThinLargeGap',
-        'SingleWavy': 'SingleWavy',
-        'DoubleWavy': 'DoubleWavy',
-        'DashDotStroked': 'DashDotStroked',
-        'Emboss3D': 'Emboss3D',
-        'Engrave3D': 'Engrave3D',
-        'Outset': 'Outset',
-        'Inset': 'Inset',
-        'Thick': 'Thick',
         'Style': 'Style',
         'Width': 'Width',
         'Height': 'Height',
@@ -1383,6 +1409,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         let hfs: HeaderFooters = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
+            this.viewer.setDefaultDocumentFormat();
             this.viewer.headersFooters.push(hfs);
             this.viewer.onDocumentChanged(sections);
             if (this.editorModule) {

@@ -100,6 +100,17 @@ function rippleMouseHandler(e, rippleSpan) {
         rippleSpan.dispatchEvent(event_1);
     }
 }
+/**
+ * Append hidden input to given element
+ * @private
+ */
+function setHiddenInput(proxy, wrap) {
+    if (proxy.element.getAttribute('ejs-for')) {
+        wrap.appendChild(proxy.createElement('input', {
+            attrs: { 'name': proxy.name || proxy.element.name, 'value': 'false', 'type': 'hidden' }
+        }));
+    }
+}
 
 /**
  * Common modules
@@ -282,8 +293,8 @@ var Button = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Called internally if any of the property value changed.
-     * @param  {Button} newProp
-     * @param  {Button} oldProp
+     * @param  {ButtonModel} newProp
+     * @param  {ButtonModel} oldProp
      * @returns void
      * @private
      */
@@ -306,14 +317,19 @@ var Button = /** @__PURE__ @class */ (function (_super) {
                 case 'iconCss':
                     var span = this.element.querySelector('span.e-btn-icon');
                     if (span) {
-                        span.className = 'e-btn-icon ' + newProp.iconCss;
-                        if (this.element.textContent.trim()) {
-                            if (this.iconPosition === 'Left') {
-                                span.classList.add('e-icon-left');
+                        if (newProp.iconCss) {
+                            span.className = 'e-btn-icon ' + newProp.iconCss;
+                            if (this.element.textContent.trim()) {
+                                if (this.iconPosition === 'Left') {
+                                    span.classList.add('e-icon-left');
+                                }
+                                else {
+                                    span.classList.add('e-icon-right');
+                                }
                             }
-                            else {
-                                span.classList.add('e-icon-right');
-                            }
+                        }
+                        else {
+                            detach(span);
                         }
                     }
                     else {
@@ -450,6 +466,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     function CheckBox(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.isFocused = false;
+        _this.isMouseClick = false;
         return _this;
     }
     CheckBox.prototype.changeState = function (state) {
@@ -490,7 +507,10 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         this.getWrapper().setAttribute('aria-checked', ariaState);
     };
     CheckBox.prototype.clickHandler = function (event) {
-        this.focusOutHandler();
+        if (this.isMouseClick) {
+            this.focusOutHandler();
+            this.isMouseClick = false;
+        }
         if (this.indeterminate) {
             this.changeState(this.checked ? 'check' : 'uncheck');
             this.indeterminate = false;
@@ -541,6 +561,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     };
     CheckBox.prototype.focusOutHandler = function () {
         this.getWrapper().classList.remove('e-focus');
+        this.isFocused = false;
     };
     /**
      * Gets the module name.
@@ -597,6 +618,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         }
         wrapper.appendChild(label);
         label.appendChild(this.element);
+        setHiddenInput(this, label);
         label.appendChild(frameSpan);
         if (isRippleEnabled) {
             var rippleSpan = this.createElement('span', { className: RIPPLE });
@@ -618,6 +640,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     CheckBox.prototype.labelMouseHandler = function (e) {
+        this.isMouseClick = true;
         var rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
     };
@@ -881,12 +904,17 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     };
     RadioButton.prototype.updateChange = function (state) {
         var input;
+        var instance;
         var name = this.element.getAttribute('name');
         var radioGrp = document.querySelectorAll('input.e-radio[name="' + name + '"]');
         for (var i = 0; i < radioGrp.length; i++) {
             input = radioGrp[i];
             if (input !== this.element) {
-                getInstance(input, RadioButton_1).checked = false;
+                instance = getInstance(input, RadioButton_1);
+                instance.checked = false;
+                if (this.tagName === 'EJS-RADIOBUTTON') {
+                    instance.angularValue = this.value;
+                }
             }
         }
     };
@@ -1075,6 +1103,13 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
         }
         if (!this.element.id) {
             this.element.id = getUniqueID('e-' + this.getModuleName());
+        }
+        if (this.tagName === 'EJS-RADIOBUTTON') {
+            var formControlName = this.element.getAttribute('formcontrolname');
+            if (formControlName) {
+                this.setProperties({ 'name': formControlName }, true);
+                this.element.setAttribute('name', formControlName);
+            }
         }
     };
     /**
@@ -1330,6 +1365,7 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         var offLabel = this.createElement('span', { className: 'e-switch-off' });
         var handle = this.createElement('span', { className: 'e-switch-handle' });
         wrapper.appendChild(this.element);
+        setHiddenInput(this, wrapper);
         switchInner.appendChild(onLabel);
         switchInner.appendChild(offLabel);
         wrapper.appendChild(switchInner);
@@ -2043,5 +2079,5 @@ var Chip = /** @__PURE__ @class */ (function () {
  * Button all modules
  */
 
-export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
+export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, setHiddenInput, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
 //# sourceMappingURL=ej2-buttons.es5.js.map

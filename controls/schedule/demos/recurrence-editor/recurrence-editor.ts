@@ -8,6 +8,14 @@ let element: HTMLInputElement = <HTMLInputElement>document.querySelector('#outpu
 let recObject: RecurrenceEditor = new RecurrenceEditor({
     change: (data: RecurrenceEditorChangeEventArgs) => {
         element.value = data.value;
+        let datesOutput: HTMLElement = <HTMLElement>document.querySelector('#dates');
+        datesOutput.innerHTML = '';
+        let dates: number[] = recObject.getRecurrenceDates(new Date(), data.value);
+        for (let date of dates) {
+            let node: Element = document.createElement('span');
+            node.innerHTML = new Date(date).toDateString();
+            datesOutput.appendChild(node);
+        }
     }
 });
 recObject.appendTo('#editor');

@@ -7,6 +7,7 @@ import { createElement, L10n } from '@syncfusion/ej2-base';
 import { dropDownBaseClasses, PopupEventArgs } from '../../src/drop-down-base/drop-down-base';
 import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 import { CheckBoxSelection } from '../../src/multi-select/checkbox-selection';
+import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
 MultiSelect.Inject(CheckBoxSelection);
 
@@ -91,6 +92,14 @@ let keyboardEventArgs = {
     code: 22
 };
 describe('MultiSelect', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let css: string = ".e-spinner-pane::after { content: 'Material'; display: none;} ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
     let styleNode: Node = style.appendChild(document.createTextNode(css));
@@ -421,11 +430,11 @@ describe('MultiSelect', () => {
                 setTimeout((): void => {
                     listObj.checkBoxSelectionModule.clickOnBackIcon();
                     setTimeout((): void => {
-                        expect(listObj.overAllWrapper.classList.contains('e-input-focus')).toBe(true);
+                        expect(document.activeElement).toBe(listObj.inputElement);
                         listObj.open = null;
                         done();
                     }, 200);
-                }, 200);
+                }, 100);
             };
             listObj.showPopup();
         })
@@ -451,9 +460,12 @@ describe('MultiSelect', () => {
             listObj.checkBoxSelectionModule.clearText(mouseEventArgs);
             listObj.checkBoxSelectionModule.removeEventListener();
         })
-        it('mobile backstate hide popup', () => {
+        it('mobile backstate hide popup', (done) => {
             (<any>window).onpopstate();
-            expect(listObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
+            setTimeout((): void => {
+                expect(listObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
+                done();
+            }, 500);
         })
         it('active state change on scrolling', () => {
             (<any>listObj).checkBoxSelectionModule.filterInput.value = 'a';
@@ -485,11 +497,15 @@ describe('MultiSelect', () => {
             { text: 'Kavi Tam', eimg: '4', status: 'Available', country: 'England' },
             { text: "Harish Sree", eimg: "5", status: "Available", country: 'USA' },
         ];
+        let originalTimeout: number;
         beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
             document.body.innerHTML = '';
             document.body.appendChild(element);
         });
         afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             if (element) {
                 listObj.destroy();
                 element.remove();
@@ -547,7 +563,7 @@ describe('MultiSelect', () => {
                 listObj.hidePopup();
                 listObj.destroy();
                 done();
-            }, 500);
+            }, 2000);
         });
         it('disable selectall with template', (done) => {
             let checkObj: CheckBoxSelection;
@@ -578,7 +594,7 @@ describe('MultiSelect', () => {
                 listObj.hidePopup();
                 listObj.destroy();
                 done();
-            }, 500);
+            }, 2000);
         });
     });
     // multiselect all property with checkbox.
@@ -1594,7 +1610,7 @@ describe('MultiSelect', () => {
             keyboardEventArgs.keyCode = 35;
             (<any>listObj).onKeyDown(keyboardEventArgs);
             expect((<any>listObj).list.querySelector(
-                'li.' + dropDownBaseClasses.focus).getAttribute('data-value')).toBe(elem[0].getAttribute('data-value'));
+                'li.' + dropDownBaseClasses.focus).getAttribute('data-value')).toBe(elem[elem.length - 1].getAttribute('data-value'));
             keyboardEventArgs.keyCode = 36;
             (<any>listObj).onKeyDown(keyboardEventArgs);
             expect((<any>listObj).list.querySelector(
@@ -2065,7 +2081,7 @@ describe('MultiSelect', () => {
             });
             multiObj.appendTo('#newlist');
             multiObj.showPopup();
-            let mouseEventArgs: any = { preventDefault: function () { }, target: (<any>multiObj).checkBoxSelectionModule.filterParent };
+            let mouseEventArgs: any = { preventDefault: function () { }, target: (<any>multiObj).filterParent };
             (<any>multiObj).checkBoxSelectionModule.onDocumentClick(mouseEventArgs);
             expect((<any>multiObj).isPopupOpen()).toBe(true);
             multiObj.destroy();
@@ -2293,13 +2309,13 @@ describe('MultiSelect', () => {
 
         it('change property', () => {
             dropDowns.showPopup();
-            expect(dropDowns.checkBoxSelectionModule.filterParent.querySelector('.e-selectall-parent')).toBe(null);
+            expect(dropDowns.filterParent.querySelector('.e-selectall-parent')).toBe(null);
             dropDowns.showSelectAll = false;
             dropDowns.dataBind();
             dropDowns.showSelectAll = true;
             dropDowns.dataBind();
             dropDowns.showPopup();
-            expect(dropDowns.checkBoxSelectionModule.filterParent.querySelector('.e-selectall-parent')).toBe(null);
+            expect(dropDowns.filterParent.querySelector('.e-selectall-parent')).toBe(null);
         });
     });
     describe('check search box value', () => {
@@ -2608,6 +2624,223 @@ describe('MultiSelect', () => {
             listObj.selectAll(true);
         });
     });
+	    describe('EJ2-21529 - Need to provide support for without filtering in mutliselect checkbox mode - false', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+        ];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'Name' },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                allowFiltering: false
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check filtering element', (done) => {
+            listObj.open = (args: PopupEventArgs): void => {
+                expect(args.popup.element.querySelectorAll('.e-input-filter').length).toBe(0);
+                done();
+            };
+            listObj.showPopup();
+        });
+    });
+
+    describe('EJ2-21529 - Need to provide support for without filtering in mutliselect checkbox mode - true', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+        ];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'Name' },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                allowFiltering: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check filtering element', (done) => {
+            listObj.open = (args: PopupEventArgs): void => {
+                expect(args.popup.element.querySelectorAll('.e-input-filter').length).toBe(1);
+                done();
+            };
+            listObj.showPopup();
+        });
+    });
+
+    describe('EJ2-21529 - Need to provide support for without filtering in mutliselect checkbox mode - null', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+        ];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'Name' },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check filtering element', (done) => {
+            listObj.open = (args: PopupEventArgs): void => {
+                expect(args.popup.element.querySelectorAll('.e-input-filter').length).toBe(1);
+                done();
+            };
+            listObj.showPopup();
+        });
+    });
+    describe('EJ2-21529 - Need to provide support for without filtering in mutliselect checkbox mode - Dynamic assignment to false', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+        ];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'Name' },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true
+            });
+            listObj.appendTo(element);
+            listObj.allowFiltering = false;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check filtering element', (done) => {
+            listObj.open = (args: PopupEventArgs): void => {
+                expect(args.popup.element.querySelectorAll('.e-input-filter').length).toBe(0);
+                done();
+            };
+            listObj.showPopup();
+        });
+    });
+    describe('EJ2-21529 - Need to provide support for without filtering in mutliselect checkbox mode - Dynamic assignment to true', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+        ];
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'Name' },
+                popupHeight: 50,
+                mode: 'CheckBox',
+                showSelectAll: true,
+                allowFiltering: false
+            });
+            listObj.appendTo(element);
+            listObj.allowFiltering = true;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check filtering element', (done) => {
+            listObj.open = (args: PopupEventArgs): void => {
+                expect(args.popup.element.querySelectorAll('.e-input-filter').length).toBe(1);
+                done();
+            };
+            listObj.showPopup();
+        });
+    });
     describe('EJ2-22723 - SelectAll performance improvement', () => {
         let listObj: MultiSelect;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
@@ -2644,7 +2877,15 @@ describe('MultiSelect', () => {
             listObj.selectAll(true);
         });
     });
-    
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });
 
 

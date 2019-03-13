@@ -63,6 +63,29 @@
         }
       }
     }
+
+    & .e-split-btn-wrapper .e-split-colorpicker.e-split-btn {
+      @if $skin-name == 'bootstrap4' {
+        background-color: $cpicker-handler-tooltip-color;
+        }
+        }
+
+    & .e-btn.e-icon-btn {
+      @if $skin-name == 'bootstrap4' {
+        background-color: $cpicker-handler-tooltip-color;
+        color: $gray-700;
+        }
+      }
+  }
+
+  & .e-color-picker .e-selected-value {
+    & .e-css.e-btn.e-flat {
+      @if $skin-name == 'bootstrap4' {
+        background-color: $cpicker-handler-tooltip-color;
+        border-color: $cpicker-handler-tooltip-color;
+        color: $gray-700;
+      }
+    }
   }
 
   .e-popup.e-tooltip-wrap {

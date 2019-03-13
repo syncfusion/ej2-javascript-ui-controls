@@ -7,6 +7,7 @@ import { PolarSeries, RadarSeries, DateTime, Category, Logarithmic } from '../..
 import { DateTimeCategory, RangeColumnSeries, RangeAreaSeries, ScatterSeries } from '../../../src/chart/index';
 import { createElement, EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(Legend, LineSeries, ColumnSeries, BarSeries, SplineSeries, DataLabel, AreaSeries);
 Chart.Inject(StackingColumnSeries, ScatterSeries, StackingAreaSeries, ScatterSeries);
 Chart.Inject(PolarSeries, RadarSeries, DateTime, Category, Logarithmic, DateTimeCategory, RangeColumnSeries, RangeAreaSeries);
@@ -39,6 +40,14 @@ interface Points {
 }
 
 describe('Legend Checking Polar Radar Series ', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let chart: Chart;
     let loaded: EmitType<ILoadedEventArgs>;
     let legendId: string = 'legendClick' + '_chart_legend';
@@ -255,4 +264,13 @@ describe('Legend Checking Polar Radar Series ', () => {
             done();
         }, 301);
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

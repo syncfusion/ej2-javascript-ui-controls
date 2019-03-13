@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-schedule",
-	"version": "16.4.54",
+	"version": "17.1.1",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-schedule.umd.min.js",
@@ -8,21 +8,21 @@
 	"es2015": "./dist/es6/ej2-schedule.es2015.js",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-data": "*",
-		"@syncfusion/ej2-popups": "*",
-		"@syncfusion/ej2-calendars": "*",
-		"@syncfusion/ej2-navigations": "*",
-		"@syncfusion/ej2-dropdowns": "*",
 		"@syncfusion/ej2-buttons": "*",
+		"@syncfusion/ej2-calendars": "*",
+		"@syncfusion/ej2-data": "*",
+		"@syncfusion/ej2-dropdowns": "*",
+		"@syncfusion/ej2-excel-export": "*",
 		"@syncfusion/ej2-inputs": "*",
-		"@syncfusion/ej2-lists": "*"
+		"@syncfusion/ej2-lists": "*",
+		"@syncfusion/ej2-navigations": "*",
+		"@syncfusion/ej2-popups": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",
-		"@types/requirejs": "^2.1.26",
 		"es6-promise": "^3.2.1",
 		"gulp": "^3.9.1",
 		"gulp-sass": "^3.1.0",

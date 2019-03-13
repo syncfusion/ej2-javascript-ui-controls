@@ -4,6 +4,7 @@
 import { Accordion, AccordionClickArgs, ExpandEventArgs } from "../src/accordion/index";
 import { isNullOrUndefined as isNOU } from "@syncfusion/ej2-base";
 import { isVisible, classList } from "@syncfusion/ej2-base";
+import { profile, inMB, getMemoryProfile } from './common.spec';
 
 type Str = string;
 
@@ -32,13 +33,13 @@ const CLS_NEST: Str = 'e-nested';
 
 interface AcrdnTemplateRef {
     elementRef: AcrdnElementRef;
-  }
-  
-  interface AcrdnElementRef {
+}
+
+interface AcrdnElementRef {
     nativeElement: AcrdnElementComment;
-  }
-  
-  interface AcrdnElementComment {
+}
+
+interface AcrdnElementComment {
     childNodes?: NodeList;
     firstChild?: HTMLElement;
     lastChild?: HTMLElement;
@@ -46,10 +47,18 @@ interface AcrdnTemplateRef {
     parentElement?: HTMLElement;
     propName?: HTMLElement;
     data?: string;
-  }
-
+}
 
 describe("Accordion Testing", () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     let css: string = ".e-content-hide,.e-hide { display: none }  ";
     let style: HTMLStyleElement = document.createElement("style"); style.type = "text/css";
     style.appendChild(document.createTextNode(css));
@@ -435,6 +444,33 @@ describe("Accordion Testing", () => {
             expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
             expect(acrdnItem.childElementCount).toBe(2);
         });
+        it("Accordion Control with header and content with inner Content template", () => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            let acrdnHeader: HTMLElement = document.createElement("div");
+            let acrdnContent: HTMLElement = document.createElement("div");
+            let acrdnInnerContent: HTMLElement = document.createElement("div");
+            let acrdnItemEle: HTMLElement = document.createElement("div");
+            acrdnContent.appendChild(acrdnInnerContent);
+            acrdnItemEle.appendChild(acrdnHeader);
+            acrdnItemEle.appendChild(acrdnContent);
+            ele.appendChild(acrdnItemEle);
+            accordion = new Accordion({}, ele);
+            let acrdnItem: Element = ele.children[0];
+            let acrdnItemHder: Element = acrdnItem.firstElementChild;
+            let acrdnInnerCtn: Element = acrdnItem.children[1].children[0];
+            expect(acrdnItemHder.childElementCount).toBe(1);
+            expect(acrdnInnerCtn.classList.contains(CLS_CTENT)).toBe(true);
+            expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
+            expect(acrdnItem.childElementCount).toBe(2);
+            accordion.refresh();
+            acrdnItem = ele.children[0];
+            acrdnItemHder = acrdnItem.firstElementChild;
+            acrdnInnerCtn = acrdnItem.children[1].children[0];
+            expect(acrdnItemHder.childElementCount).toBe(1);
+            expect(acrdnInnerCtn.classList.contains(CLS_CTENT)).toBe(true);
+            expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
+            expect(acrdnItem.childElementCount).toBe(2);
+        });
         it("Accordion content template with additional div element testing", () => {
             let ele: HTMLElement = document.getElementById("accordion");
             let acrdncontainer: HTMLElement = document.createElement("div");
@@ -465,33 +501,6 @@ describe("Accordion Testing", () => {
             expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
             expect(acrdnItem.childElementCount).toBe(2);
 
-        });
-        it("Accordion Control with header and content with inner Content template", () => {
-            let ele: HTMLElement = document.getElementById("accordion");
-            let acrdnHeader: HTMLElement = document.createElement("div");
-            let acrdnContent: HTMLElement = document.createElement("div");
-            let acrdnInnerContent: HTMLElement = document.createElement("div");
-            let acrdnItemEle: HTMLElement = document.createElement("div");
-            acrdnContent.appendChild(acrdnInnerContent);
-            acrdnItemEle.appendChild(acrdnHeader);
-            acrdnItemEle.appendChild(acrdnContent);
-            ele.appendChild(acrdnItemEle);
-            accordion = new Accordion({}, ele);
-            let acrdnItem: Element = ele.children[0];
-            let acrdnItemHder: Element = acrdnItem.firstElementChild;
-            let acrdnInnerCtn: Element = acrdnItem.children[1].children[0];
-            expect(acrdnItemHder.childElementCount).toBe(1);
-            expect(acrdnInnerCtn.classList.contains(CLS_CTENT)).toBe(true);
-            expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
-            expect(acrdnItem.childElementCount).toBe(2);
-            accordion.refresh();
-            acrdnItem = ele.children[0];
-            acrdnItemHder = acrdnItem.firstElementChild;
-            acrdnInnerCtn = acrdnItem.children[1].children[0];
-            expect(acrdnItemHder.childElementCount).toBe(1);
-            expect(acrdnInnerCtn.classList.contains(CLS_CTENT)).toBe(true);
-            expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
-            expect(acrdnItem.childElementCount).toBe(2);
         });
         it("Accordion Control without header and content template", () => {
             let ele: HTMLElement = document.getElementById("accordion");
@@ -2938,7 +2947,7 @@ describe("Accordion Testing", () => {
             accordion.enableItem(index, false);
             expect(ele.children[index].firstElementChild.getAttribute('aria-disabled')).toBe('true');
         });
-        it("Accordion Angular contnet conditon testing", () => {
+        it("Accordion Angular content condition testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
             let contentAngularEle: any = {
                 elementRef : {
@@ -2960,7 +2969,7 @@ describe("Accordion Testing", () => {
             accordion1.isAngular = true;
             accordion1.appendTo('#accordion');
         });
-        it("Accordion Angular contnet conditon testing", () => {
+        it("Accordion Angular content condition testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
             let contentAngularEle: any = {
                 elementRef : {
@@ -2982,7 +2991,7 @@ describe("Accordion Testing", () => {
             accordion1.isAngular = true;
             accordion1.appendTo('#accordion');
         });
-        it("Accordion Angular contnet conditon testing", () => {
+        it("Accordion Angular content condition testing", () => {
             let ele: HTMLElement = document.getElementById('accordion');
             let contentAngularEle: any = {
                 elementRef : {
@@ -3004,7 +3013,6 @@ describe("Accordion Testing", () => {
             accordion1.isAngular = true;
             accordion1.appendTo('#accordion');
         });
-
     });
 
     describe("Accordion Aria Attributes with ExpandItem Public method Testing", () => {
@@ -3349,92 +3357,102 @@ describe("Accordion Testing", () => {
             setTimeout(() => { done(); }, TIME_DELAY);
         });
     });
-});
 
-describe("Accordion item object is undefined", () => {
-    let accordion: any;
-    let undefinedCount: number = 0;
-    function click(e: AccordionClickArgs): void {
-        if(e.item === undefined){
-            undefinedCount++;
-          }
-    }
-    document.body.innerHTML = "";
-    beforeEach((done: Function) => {
-        let ele: HTMLElement = document.createElement("div");
-        ele.id = "accordion";
-        document.body.appendChild(ele);
-        accordion = new Accordion(
-            {
-                clicked: click,
-                items: [
-                    { header: "Item1", content: "Content of Item1", expanded: true },
-                    { header: "Item2", content: "Content of Item2" },
-                    { header: "Item3", content: "Content of Item3" }
-                ]
-            }, ele);
-        setTimeout(() => { done(); }, TIME_DELAY);
-    });
-    afterEach((): void => {
-        if (accordion) {
-            accordion.destroy();
+    describe("Accordion item object is undefined", () => {
+        let accordion: any;
+        let undefinedCount: number = 0;
+        function click(e: AccordionClickArgs): void {
+            if(e.item === undefined){
+                undefinedCount++;
+              }
         }
         document.body.innerHTML = "";
-    });
-    it("Accordion clicked event", (done: Function) => {
-        let ele: HTMLElement = document.getElementById('accordion');
-        (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[1]).click();
-        expect(undefinedCount === 0).toBe(true);
-        (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[2]).click();
-        expect(undefinedCount === 0).toBe(true);
-        setTimeout(() => { done(); }, TIME_DELAY);
-    });
-});
-
-describe("Nested accordion item object is undefined", () => {
-    let accordion: Accordion;
-    document.body.innerHTML = "";
-    let undefinedCount: number = 0;
-    function click(e: AccordionClickArgs): void {
-        if(e.item === undefined){
-            undefinedCount++;
-          }
-    }
-    function create(): void {
-        let nestAcc: Accordion = new Accordion({
-            expandMode: "Single",
-            clicked: click,
-            items: [{
-                header: "nestItem1", content: "nested Content"
-            }
-            ]
+        beforeEach((done: Function) => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    clicked: click,
+                    items: [
+                        { header: "Item1", content: "Content of Item1", expanded: true },
+                        { header: "Item2", content: "Content of Item2" },
+                        { header: "Item3", content: "Content of Item3" }
+                    ]
+                }, ele);
+            setTimeout(() => { done(); }, TIME_DELAY);
         });
-        nestAcc.appendTo("#nestedAccordion");
-    }
-    beforeEach((done: Function) => {
-        let ele: HTMLElement = document.createElement("div");
-        ele.id = "accordion";
-        document.body.appendChild(ele);
-        accordion = new Accordion(
-            {
-                created: create,
-                expandMode: "Single",
-                items: [
-                    { header: "Item1", content: "<div id = 'nestedAccordion'></div>", expanded: true },
-                    { header: "Item2", content: "Content of Item2" }
-                ]
-            }, ele);
-        setTimeout(() => { done(); }, TIME_DELAY);
+        afterEach((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Accordion clicked event", (done: Function) => {
+            let ele: HTMLElement = document.getElementById('accordion');
+            (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[1]).click();
+            expect(undefinedCount === 0).toBe(true);
+            (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[2]).click();
+            expect(undefinedCount === 0).toBe(true);
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
     });
-    afterEach((): void => {
-        if (accordion) {
-            accordion.destroy();
-        }
+    
+    describe("Nested accordion item object is undefined", () => {
+        let accordion: Accordion;
         document.body.innerHTML = "";
-    });
-    it("Nested accordion clicked event", () => {
-        let ele: HTMLElement = document.getElementById('nestedAccordion');
-        (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[0]).click();
-        expect(undefinedCount === 0).toBe(true);
-    });
+        let undefinedCount: number = 0;
+        function click(e: AccordionClickArgs): void {
+            if(e.item === undefined){
+                undefinedCount++;
+              }
+        }
+        function create(): void {
+            let nestAcc: Accordion = new Accordion({
+                expandMode: "Single",
+                clicked: click,
+                items: [{
+                    header: "nestItem1", content: "nested Content"
+                }
+                ]
+            });
+            nestAcc.appendTo("#nestedAccordion");
+        }
+        beforeEach((done: Function) => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "accordion";
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    created: create,
+                    expandMode: "Single",
+                    items: [
+                        { header: "Item1", content: "<div id = 'nestedAccordion'></div>", expanded: true },
+                        { header: "Item2", content: "Content of Item2" }
+                    ]
+                }, ele);
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        afterEach((): void => {
+            if (accordion) {
+                accordion.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Nested accordion clicked event", () => {
+            let ele: HTMLElement = document.getElementById('nestedAccordion');
+            (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[0]).click();
+            expect(undefinedCount === 0).toBe(true);
+        });
+    });    
+
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

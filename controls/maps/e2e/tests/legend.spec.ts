@@ -456,16 +456,16 @@ describe('Legend position ', () => {
         browser.compareScreen(element(By.id("container")), "toolbar_align2");
         done();
     });
-    it('treemap toolbar align Near', (done: Function) => {
-        browser.load('/demos/toolbar.html');
-        property = element(by.id('shapes'));
-        property.all(by.tagName('option'))
-        .then((options: any) => {
-            options[2].click();
-        });
-        browser.compareScreen(element(By.id("container")), "toolbar_align2");
-        done();
-    });
+    //it('treemap toolbar align Near', (done: Function) => {
+      //  browser.load('/demos/toolbar.html');
+       // property = element(by.id('shapes'));
+       // property.all(by.tagName('option'))
+       // .then((options: any) => {
+        //    options[2].click();
+        //});
+        //browser.compareScreen(element(By.id("container")), "toolbar_align2");
+        //done();
+    //});
     it('treemap toolbar Horzontal align Far', (done: Function) => {
         browser.load('/demos/toolbar_verticalalign.html');
         property = element(by.id('shapes'));

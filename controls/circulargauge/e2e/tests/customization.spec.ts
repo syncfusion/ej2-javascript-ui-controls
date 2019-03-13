@@ -109,22 +109,22 @@ describe('CircularGuage Custom samples test spec', () => {
         browser.compareScreen(element(By.id("cutomization-container")), "custom_gauge-2-range-color-2");
         done();
     });
-    it('Custom Guage 2 pointer color 1 sample', (done: Function) => {
-        property = element(by.id('pointerColor'));
-        property.all(by.tagName('option'))
-        .then((options: any) => {
-            options[1].click();
-        });
-        browser.compareScreen(element(By.id("cutomization-container")), "custom_gauge-2-pointer-color-1");
-        done();
-    });
-    it('Custom Guage 2 pointer color 2 sample', (done: Function) => {
-        property = element(by.id('pointerColor'));
-        property.all(by.tagName('option'))
-        .then((options: any) => {
-            options[2].click();
-        });
-        browser.compareScreen(element(By.id("cutomization-container")), "custom_gauge-2-pointer-color-2");
-        done();
-    });
+    // it('Custom Guage 2 pointer color 1 sample', (done: Function) => {
+    //     property = element(by.id('pointerColor'));
+    //     property.all(by.tagName('option'))
+    //     .then((options: any) => {
+    //         options[1].click();
+    //     });
+    //     browser.compareScreen(element(By.id("cutomization-container")), "custom_gauge-2-pointer-color-1");
+    //     done();
+    // });
+    // it('Custom Guage 2 pointer color 2 sample', (done: Function) => {
+    //     property = element(by.id('pointerColor'));
+    //     property.all(by.tagName('option'))
+    //     .then((options: any) => {
+    //         options[2].click();
+    //     });
+    //     browser.compareScreen(element(By.id("cutomization-container")), "custom_gauge-2-pointer-color-2");
+    //     done();
+    // });
 });

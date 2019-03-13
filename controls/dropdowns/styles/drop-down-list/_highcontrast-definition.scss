@@ -22,11 +22,12 @@ $ddl-filter-box-shadow: 0 !default;
 $ddl-filter-background-color: $bg-base-0 !default;
 $ddl-back-icon-margin: -2px 10px 0 -54px !default;
 $ddl-back-icon-padding: 0 !default;
-$ddl-search-icon-content: '\e97d' !default;
-$ddl-back-icon-content: '\e962' !default;
-$ddl-icon-content: '\e966' !default;
 
 @include export-module('dropdownlist-highcontrast') {
+  .e-bigger .e-ddl.e-popup .e-input-group .e-clear-icon {
+    height: 36px;
+  }
+
   .e-ddl#{&} {
     &.e-popup {
       border: 0;

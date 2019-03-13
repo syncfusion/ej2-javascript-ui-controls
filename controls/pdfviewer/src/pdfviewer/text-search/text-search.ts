@@ -1,4 +1,4 @@
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase } from '../index';
 
@@ -11,11 +11,17 @@ export class TextSearch {
      * @private
      */
     public isTextSearch: boolean = false;
+    /**
+     * @private
+     */
+    public searchBtn: HTMLElement;
+    /**
+     * @private
+     */
+    public searchInput: HTMLElement;
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private searchBox: HTMLElement;
-    private searchInput: HTMLElement;
-    private searchBtn: HTMLElement;
     private nextSearchBtn: HTMLElement;
     private prevSearchBtn: HTMLElement;
     private checkBox: CheckBox;
@@ -64,9 +70,19 @@ export class TextSearch {
         searchInputContainer.appendChild(this.searchInput);
         searchInputContainer.appendChild(this.searchBtn);
         searchElementsContainer.appendChild(searchInputContainer);
-        this.prevSearchBtn = this.createSearchBoxButtons('prev_occurrence', 'e-pv-prev-search');
+        if (this.pdfViewer.enableRtl) {
+            this.prevSearchBtn = this.createSearchBoxButtons('prev_occurrence', 'e-pv-next-search');
+        } else {
+            this.prevSearchBtn = this.createSearchBoxButtons('prev_occurrence', 'e-pv-prev-search');
+        }
+        this.prevSearchBtn.setAttribute('aria-label', 'Previous Search text');
         searchElementsContainer.appendChild(this.prevSearchBtn);
-        this.nextSearchBtn = this.createSearchBoxButtons('next_occurrence', 'e-pv-next-search');
+        if (this.pdfViewer.enableRtl) {
+            this.nextSearchBtn = this.createSearchBoxButtons('next_occurrence', 'e-pv-prev-search');
+        } else {
+            this.nextSearchBtn = this.createSearchBoxButtons('next_occurrence', 'e-pv-next-search');
+        }
+        this.nextSearchBtn.setAttribute('aria-label', 'Next Search text');
         searchElementsContainer.appendChild(this.nextSearchBtn);
         // tslint:disable-next-line:max-line-length
         let matchCaseContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_match_case_container', className: 'e-pv-match-case-container' });
@@ -80,7 +96,13 @@ export class TextSearch {
         this.checkBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'), change: this.checkBoxOnChange.bind(this) });
         this.checkBox.appendTo(matchCaseInput);
         this.showSearchBox(false);
-        this.searchBox.style.right = '88.3px';
+        if (this.pdfViewer.enableRtl) {
+            this.searchBox.classList.add('e-rtl');
+            this.searchBox.style.left = '88.3px';
+        } else {
+            this.searchBox.classList.remove('e-rtl');
+            this.searchBox.style.right = '88.3px';
+        }
         this.searchInput.addEventListener('focus', () => {
             this.searchInput.parentElement.classList.add('e-input-focus');
         });
@@ -97,17 +119,26 @@ export class TextSearch {
      * @private
      */
     public textSearchBoxOnResize(): void {
-        // tslint:disable-next-line:max-line-length
-        if (this.pdfViewerBase.viewerContainer.clientWidth + this.pdfViewerBase.viewerContainer.offsetLeft < this.searchBox.offsetLeft + this.searchBox.clientWidth) {
-            this.searchBox.style.right = '0px';
-            // tslint:disable-next-line
-            this.searchBox.style.width = parseInt(this.searchBox.style.width) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
-            // tslint:disable-next-line
-            this.searchInput.style.width = parseInt(this.searchInput.style.width) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
+        if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar) {
+            let secondaryToolbar: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer_popup');
+            if (secondaryToolbar) {
+                if (secondaryToolbar.contains(this.pdfViewerBase.getElement('_search').parentElement)) {
+                    this.searchBox.style.right = '0px';
+                }
+            }
         } else {
-            this.searchBox.style.right = '88.3px';
-            this.searchBox.style.width = '';
-            this.searchInput.style.width = '';
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewerBase.viewerContainer.clientWidth + this.pdfViewerBase.viewerContainer.offsetLeft < this.searchBox.offsetLeft + this.searchBox.clientWidth) {
+                this.searchBox.style.right = '0px';
+                // tslint:disable-next-line
+                this.searchBox.style.width = parseInt(this.searchBox.style.width) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
+                // tslint:disable-next-line
+                this.searchInput.style.width = parseInt(this.searchInput.style.width) - ((this.searchBox.offsetLeft + this.searchBox.clientWidth) - (this.pdfViewerBase.viewerContainer.clientWidth)) + 'px';
+            } else {
+                this.searchBox.style.right = '88.3px';
+                this.searchBox.style.width = '';
+                this.searchInput.style.width = '';
+            }
         }
     }
 
@@ -133,8 +164,15 @@ export class TextSearch {
         }
     }
 
-    private initiateTextSearch(): void {
-        let inputString: string = (this.searchInput as HTMLInputElement).value;
+    private initiateTextSearch(searchElement: HTMLElement): void {
+        let inputString: string = (searchElement as HTMLInputElement).value;
+        this.initiateSearch(inputString);
+    }
+
+    /**
+     * @private
+     */
+    public initiateSearch(inputString: string): void {
         if (inputString !== this.searchString) {
             this.isTextSearch = false;
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
@@ -182,10 +220,10 @@ export class TextSearch {
                 }
                 this.highlightOthers();
             } else {
-                this.initiateTextSearch();
+                this.initiateTextSearch(this.searchInput);
             }
         } else {
-            this.initiateTextSearch();
+            this.initiateTextSearch(this.searchInput);
         }
     }
 
@@ -267,7 +305,6 @@ export class TextSearch {
                     if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
-                            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
                         }
                         this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                         this.searchedPages = [];
@@ -292,7 +329,6 @@ export class TextSearch {
                         // tslint:disable-next-line:max-line-length
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
-                            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
                         }
                         // tslint:disable-next-line:max-line-length
                     } else if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
@@ -300,7 +336,6 @@ export class TextSearch {
                             // tslint:disable-next-line:max-line-length
                             if (!this.isMessagePopupOpened) {
                                 this.onMessageBoxOpen();
-                                this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
                             }
                             this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                             this.searchedPages = [];
@@ -308,7 +343,6 @@ export class TextSearch {
                         } else {
                             if (!this.isMessagePopupOpened) {
                                 this.onMessageBoxOpen();
-                                this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
                             }
                             this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
                             this.searchedPages = [];
@@ -397,7 +431,7 @@ export class TextSearch {
         let matches: { [key: string]: object }[] = this.searchCollection[pageIndex];
         let prevEnd: { [key: string]: object } = null;
         // tslint:disable-next-line
-        let scrollPoint: any = { y: -100, x: -400 };
+        let scrollPoint: any = { y: -100, x: -100 };
         let startId: number;
         let className: string;
         for (let i: number = 0; i < matches.length; i++) {
@@ -440,11 +474,13 @@ export class TextSearch {
         if (pageIndex === this.searchPageIndex && !isSinglePageSearch) {
             let element: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + startId);
             if (element) {
-                this.scrollToSearchStr(element, scrollPoint);
+                let targetScrollElement: HTMLElement = this.getScrollElement(element);
+                this.scrollToSearchStr(targetScrollElement, scrollPoint);
             } else {
                 this.pdfViewerBase.updateScrollTop(pageIndex);
                 let element: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + startId);
-                this.scrollToSearchStr(element, scrollPoint);
+                let targetScrollElement: HTMLElement = this.getScrollElement(element);
+                this.scrollToSearchStr(targetScrollElement, scrollPoint);
             }
         }
     }
@@ -660,6 +696,20 @@ export class TextSearch {
         }
     }
 
+    private getScrollElement(element: HTMLElement): HTMLElement {
+        let targetElement: HTMLElement = element;
+        if (element.childNodes.length > 0) {
+            for (let i: number = 0; i < element.childNodes.length; i++) {
+                if ((element.childNodes[i] as HTMLElement).classList) {
+                    if ((element.childNodes[i] as HTMLElement).classList.contains('e-pv-search-text-highlight')) {
+                        targetElement = element.childNodes[i] as HTMLElement;
+                    }
+                }
+            }
+        }
+        return targetElement;
+    }
+
     // tslint:disable-next-line
     private scrollToSearchStr(element: HTMLElement, scrollPoint: any): void {
         let parent: HTMLElement = element.offsetParent as HTMLElement;
@@ -673,11 +723,16 @@ export class TextSearch {
         if (scrollPoint) {
             offsetY += scrollPoint.y;
             offsetX += scrollPoint.x;
-            if (this.pdfViewerBase.getZoomFactor() > 1.5) {
+            if (Browser.isDevice) {
                 parent.scrollLeft = offsetX;
+            } else {
+                if (this.pdfViewerBase.getZoomFactor() > 1.5) {
+                    parent.scrollLeft = offsetX;
+                }
             }
         }
         parent.scrollTop = offsetY;
+        this.pdfViewerBase.updateMobileScrollerPosition();
     }
 
     /**
@@ -786,24 +841,33 @@ export class TextSearch {
         // tslint:disable-next-line:max-line-length
         let button: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_' + id, className: 'e-btn e-icon-btn e-pv-search-btn ' + className });
         let iconSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_' + id + 'Icon', className: 'e-pv-icon-search ' + className + '-icon' });
+        if (this.pdfViewer.enableRtl) {
+            if (className === 'e-pv-prev-search') {
+                iconSpan.style.paddingRight = '5px';
+            }
+        }
         (button as HTMLButtonElement).disabled = true;
         button.appendChild(iconSpan);
         return button;
     }
 
     private enablePrevButton(isEnable: boolean): void {
-        if (isEnable) {
-            this.prevSearchBtn.removeAttribute('disabled');
-        } else {
-            (this.prevSearchBtn as HTMLButtonElement).disabled = true;
+        if (!Browser.isDevice) {
+            if (isEnable) {
+                this.prevSearchBtn.removeAttribute('disabled');
+            } else {
+                (this.prevSearchBtn as HTMLButtonElement).disabled = true;
+            }
         }
     }
 
     private enableNextButton(isEnable: boolean): void {
-        if (isEnable) {
-            this.nextSearchBtn.removeAttribute('disabled');
-        } else {
-            (this.nextSearchBtn as HTMLButtonElement).disabled = true;
+        if (!Browser.isDevice) {
+            if (isEnable) {
+                this.nextSearchBtn.removeAttribute('disabled');
+            } else {
+                (this.nextSearchBtn as HTMLButtonElement).disabled = true;
+            }
         }
     }
 
@@ -822,7 +886,10 @@ export class TextSearch {
         }
     }
 
-    private resetVariables(): void {
+    /**
+     * @private
+     */
+    public resetVariables(): void {
         this.searchedPages = [];
         // tslint:disable-next-line
         this.searchMatches = new Array();
@@ -834,7 +901,7 @@ export class TextSearch {
         this.enableNextButton(true);
         this.enablePrevButton(true);
         if (event.which === 13) {
-            this.initiateTextSearch();
+            this.initiateTextSearch(this.searchInput);
             this.updateSearchInputIcon(false);
         } else {
             this.resetVariables();
@@ -842,22 +909,31 @@ export class TextSearch {
     }
 
     private searchClickHandler = (event: Event): void => {
-        if (this.searchBtn.classList.contains('e-pv-search-icon')) {
-            this.initiateTextSearch();
-        } else if (this.searchBtn.classList.contains('e-pv-search-close')) {
-            (this.searchInput as HTMLInputElement).value = '';
+        this.searchButtonClick(this.searchBtn, this.searchInput);
+    }
+
+    /**
+     * @private
+     */
+    public searchButtonClick(element: HTMLElement, inputElement: HTMLElement): void {
+        if (element.classList.contains('e-pv-search-icon')) {
+            this.initiateTextSearch(inputElement);
+        } else if (element.classList.contains('e-pv-search-close')) {
+            (inputElement as HTMLInputElement).value = '';
             this.resetTextSearch();
-            this.searchInput.focus();
+            inputElement.focus();
         }
     }
 
     private updateSearchInputIcon(isEnable: boolean): void {
-        if (isEnable) {
-            this.searchBtn.classList.remove('e-pv-search-close');
-            this.searchBtn.classList.add('e-pv-search-icon');
-        } else {
-            this.searchBtn.classList.remove('e-pv-search-icon');
-            this.searchBtn.classList.add('e-pv-search-close');
+        if (this.searchBtn) {
+            if (isEnable) {
+                this.searchBtn.classList.remove('e-pv-search-close');
+                this.searchBtn.classList.add('e-pv-search-icon');
+            } else {
+                this.searchBtn.classList.remove('e-pv-search-icon');
+                this.searchBtn.classList.add('e-pv-search-close');
+            }
         }
     }
 
@@ -872,12 +948,19 @@ export class TextSearch {
     private onMessageBoxOpen(): void {
         this.pdfViewerBase.getElement('_search_input').blur();
         this.isMessagePopupOpened = true;
+        if (!Browser.isDevice) {
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+        } else {
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No Text Found'));
+        }
     }
 
     /**
      * Searches the target text in the PDF document and highlights the occurrences in the pages
-     * @param  {string} searchText
-     * @param  {boolean} isMatchCase
+     * @param  {string} searchText - Specifies the searchText content
+     * @param  {boolean} isMatchCase - If set true , its highlights the MatchCase content
      * @returns void
      */
     public searchText(searchText: string, isMatchCase: boolean): void {

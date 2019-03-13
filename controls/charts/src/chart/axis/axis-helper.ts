@@ -1,5 +1,6 @@
 import { Double } from '../axis/double-axis';
-import { Axis, Size } from '../../chart/index';
+import { Axis } from '../../chart/index';
+import { Size } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../../common/utils/enum';
 /**
  * Common axis classes

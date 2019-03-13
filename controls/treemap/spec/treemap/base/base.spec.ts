@@ -51,6 +51,14 @@ describe('TreeMap Component Base Spec', () => {
             treemap.theme = 'Material';
             treemap.refresh();
         });
+        it('Checking with height and width in percentage in bootstrap theme', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_svg');
+                expect(element != null).toBe(true);
+            };
+            treemap.theme = 'Bootstrap4';
+            treemap.refresh();
+        });
 
         it('Checking with height and width in pixel ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
@@ -471,6 +479,107 @@ describe('TreeMap Component Base Spec', () => {
             treemap.getPersistData();
         });
     });
+    describe('TreeMap Render Direction Testing spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({}, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            remove(treemap.element);
+        });
+        it('Checking with layout rendering direction', () => {            
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = gameDataSource;
+            treemap.weightValuePath = 'TotalMedals';
+            treemap.leafItemSettings = {
+                showLabels: true,
+                labelPath: '',
+                fill: '#006699',
+                border: {
+                    color: 'black',
+                    width: 2
+                },
+                labelTemplate: ''
+            };
+            treemap.renderDirection = 'TopRightBottomLeft';
+            treemap.levels = [{ groupPath: 'GameName', headerTemplate: '<div><p>{{:GameName}}</p></div>' }];
+            treemap.refresh();
+        });
+        it('Checking with layout rendering direction', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = gameDataSource;
+            treemap.weightValuePath = 'TotalMedals';
+            treemap.leafItemSettings = {
+                showLabels: true,
+                labelPath: '',
+                fill: '#006699',
+                border: {
+                    color: 'black',
+                    width: 2
+                },
+                labelTemplate: ''
+            };
+            treemap.renderDirection = 'BottomRightTopLeft';
+            treemap.levels = [{ groupPath: 'GameName', headerTemplate: '<div><p>{{:GameName}}</p></div>' }];
+            treemap.refresh();
+        });
+        it('Checking with layout rendering direction', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = gameDataSource;
+            treemap.weightValuePath = 'TotalMedals';
+            treemap.leafItemSettings = {
+                showLabels: true,
+                labelPath: '',
+                fill: '#006699',
+                border: {
+                    color: 'black',
+                    width: 2
+                },
+                labelTemplate: ''
+            };
+            treemap.renderDirection = 'BottomLeftTopRight';
+            treemap.levels = [{ groupPath: 'GameName', headerTemplate: '<div><p>{{:GameName}}</p></div>' }];
+            treemap.refresh();
+        });
+        it('Checking with layout rendering direction', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout');
+                expect(element.childElementCount).toBeGreaterThan(1);
+            };
+            treemap.dataSource = gameDataSource;
+            treemap.weightValuePath = 'TotalMedals';
+            treemap.leafItemSettings = {
+                showLabels: true,
+                labelPath: '',
+                fill: '#006699',
+                border: {
+                    color: 'black',
+                    width: 2
+                },
+                labelTemplate: ''
+            };
+            treemap.renderDirection = 'TopLeftBottomRight';
+            treemap.levels = [{ groupPath: 'GameName', headerTemplate: '<div><p>{{:GameName}}</p></div>' }];
+            treemap.refresh();
+        });
+    });
+    
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -149,7 +149,7 @@ export class NavigationLine {
     }
 
     /**
-     * To destroy the layers.
+     * To destroy the layers. 
      * @return {void}
      * @private
      */
@@ -158,4 +158,4 @@ export class NavigationLine {
          * Destroy method performed here
          */
     }
-}
+} 

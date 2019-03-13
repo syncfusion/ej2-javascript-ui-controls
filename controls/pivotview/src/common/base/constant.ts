@@ -26,6 +26,8 @@ export const excelQueryCellInfo: string = 'excelQueryCellInfo';
 /** @hidden */
 export const pdfQueryCellInfo: string = 'pdfQueryCellInfo';
 /** @hidden */
+export const onPdfCellRender: string = 'onPdfCellRender';
+/** @hidden */
 export const dataBound: string = 'dataBound';
 /** @hidden */
 export const queryCellInfo: string = 'queryCellInfo';
@@ -53,7 +55,36 @@ export const cellDeselected: string = 'cellDeselected';
 export const rowSelected: string = 'rowSelected';
 /** @hidden */
 export const rowDeselected: string = 'rowDeselected';
-
+/** @hidden */
+export const beginDrillThrough: string = 'beginDrillThrough';
+/** @hidden */
+export const saveReport: string = 'saveReport';
+/** @hidden */
+export const fetchReport: string = 'fetchReport';
+/** @hidden */
+export const loadReport: string = 'loadReport';
+/** @hidden */
+export const renameReport: string = 'renameReport';
+/** @hidden */
+export const removeReport: string = 'removeReport';
+/** @hidden */
+export const newReport: string = 'newReport';
+/** @hidden */
+export const toolbarRender: string = 'toolbarRender';
+/** @hidden */
+export const toolbarClick: string = 'toolbarClick';
+/** @hidden */
+export const chartTooltipRender: string = 'chartTooltipRender';
+/** @hidden */
+export const chartLoaded: string = 'chartLoaded';
+/** @hidden */
+export const chartLoad: string = 'chartLoad';
+/** @hidden */
+export const chartResized: string = 'chartResized';
+/** @hidden */
+export const chartAxisLabelRender: string = 'chartAxisLabelRender';
+/** @hidden */
+export const chartSeriesCreated: string = 'chartSeriesCreated';
 
 /** 
  * Specifies pivot internal events
@@ -79,3 +110,5 @@ export const pivotButtonUpdate: string = 'pivot-button-update';
 export const initCalculatedField: string = 'init-calculatedfield';
 /** @hidden */
 export const click: string = 'click';
+/** @hidden */
+export const initToolbar: string = 'init-toolbar';

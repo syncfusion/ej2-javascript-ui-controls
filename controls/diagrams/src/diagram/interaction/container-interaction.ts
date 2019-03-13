@@ -1,5 +1,5 @@
 import { NodeModel, SwimLaneModel } from '../objects/node-model';
-import { Node } from '../objects/node';
+import { Node, SwimLane } from '../objects/node';
 import { Diagram } from '../diagram';
 import { ConnectorModel } from '../objects/connector-model';
 import { Connector } from '../objects/connector';
@@ -10,15 +10,20 @@ import { Size } from '../primitives/size';
 import { cloneObject } from './../utility/base-util';
 import { getObjectType } from './../utility/diagram-util';
 import { HistoryEntry } from '../diagram/history';
-import { GridPanel, GridRow, RowDefinition, ColumnDefinition } from '../core/containers/grid';
+import { GridPanel, GridRow } from '../core/containers/grid';
 import { Canvas } from '../core/containers/canvas';
 import { Rect } from '../primitives/rect';
 import { getAdornerLayerSvg } from '../utility/dom-util';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { StackEntryObject, IElement } from '../objects/interface/IElement';
+import { StackEntryObject } from '../objects/interface/IElement';
 import { Actions } from './actions';
 import { Container } from '../core/containers/container';
-import { NodeConstraints } from '../enum/enum';
+import { LaneModel } from '../objects/node-model';
+import { swimLaneMeasureAndArrange, checkLaneSize, checkPhaseOffset } from '../utility/swim-lane-util';
+import { updatePhaseMaxWidth, updateHeaderMaxWidth, updateConnectorsProperties } from '../utility/swim-lane-util';
+import { considerSwimLanePadding } from '../utility/swim-lane-util';
+import { DiagramAction } from '../enum/enum';
+
 /**
  * Interaction for Container
  */
@@ -26,63 +31,92 @@ import { NodeConstraints } from '../enum/enum';
 //#region canvas Container interaction
 
 /** @private */
-export function updateCanvasBounds(diagram: Diagram, obj: NodeModel | ConnectorModel, position: PointModel, isBoundsUpdate: boolean): void {
-    let container: NodeModel;
+export function updateCanvasBounds(
+    diagram: Diagram, obj: NodeModel | ConnectorModel, position: PointModel, isBoundsUpdate: boolean): boolean {
+    let container: NodeModel; let connectorList: string[] = []; let groupAction: boolean = false;
     if (checkParentAsContainer(diagram, obj, true)) {
+        diagram.protectPropertyChange(true);
         container = diagram.nameTable[(obj as Node).parentId];
         let wrapper: Canvas = container.wrapper as Canvas;
         if (container && container.container.type === 'Canvas') {
             if ((isBoundsUpdate || (wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
                 (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y)))) {
-                if (wrapper.actualSize.width < wrapper.outerBounds.width &&
-                    (!(wrapper.bounds.x > wrapper.outerBounds.x))) {
-                    if (container.rowIndex !== undefined) {
-                        let parent: NodeModel = diagram.nameTable[(container as Node).parentId];
-                        if (parent.columns.length - 1 === container.columnIndex) {
-                            let x: number = wrapper.bounds.x;
-                            let y: number = wrapper.bounds.y;
-                            (wrapper).maxWidth = wrapper.outerBounds.width;
-                            (parent.wrapper as GridPanel).updateColumnWidth(container.columnIndex, wrapper.outerBounds.width);
+                let columnIndex: number; let parentWrapper: GridPanel;
+                let y: number = wrapper.bounds.y; let x: number = wrapper.bounds.x;
+
+                let parent: NodeModel = diagram.nameTable[(container as Node).parentId] || container;
+                let shape: SwimLaneModel = parent.shape as SwimLaneModel;
+                if (shape.type === 'SwimLane') {
+                    groupAction = updateLaneBoundsAfterAddChild(container, parent, obj as NodeModel, diagram, true);
+                } else {
+                    let parent: NodeModel = diagram.nameTable[(container as Node).parentId] || container;
+                    let shape: SwimLaneModel = parent.shape as SwimLaneModel;
+                    parentWrapper = parent.wrapper as GridPanel;
+                    if (wrapper.actualSize.width < wrapper.outerBounds.width &&
+                        (!(wrapper.bounds.x > wrapper.outerBounds.x))) {
+                        if (container.rowIndex !== undefined) {
+                            columnIndex = parent.columns.length - 1;
+                            parentWrapper.updateColumnWidth(container.columnIndex, wrapper.outerBounds.width, true);
+                            if (shape.orientation === 'Horizontal' && shape.phaseSize) {
+                                updatePhaseMaxWidth(parent, diagram, wrapper, container.columnIndex);
+                            }
+                            updateHeaderMaxWidth(diagram, parent);
                             diagram.drag(parent, x - wrapper.bounds.x, y - wrapper.bounds.y);
-                            diagram.updateDiagramObject(parent);
+                        } else {
+                            diagram.scale(
+                                container, (1 + ((wrapper.outerBounds.width - wrapper.actualSize.width) / wrapper.actualSize.width)), 1,
+                                ((wrapper.outerBounds.x < wrapper.bounds.x) ? { x: 1, y: 0.5 } : { x: 0, y: 0.5 }));
                         }
-                    } else {
-                        diagram.scale(
-                            container, (1 + ((wrapper.outerBounds.width - wrapper.actualSize.width) / wrapper.actualSize.width)), 1,
-                            ((wrapper.outerBounds.x < wrapper.bounds.x) ? { x: 1, y: 0.5 } : { x: 0, y: 0.5 }));
+                    }
+                    if (wrapper.actualSize.height < wrapper.outerBounds.height &&
+                        (!(wrapper.bounds.y > wrapper.outerBounds.y))) {
+                        if (container.rowIndex !== undefined) {
+                            parentWrapper.updateRowHeight(container.rowIndex, wrapper.outerBounds.height, true);
+                            diagram.drag(parent, x - wrapper.bounds.x, y - wrapper.bounds.y);
+                        } else {
+                            diagram.scale(
+                                container, 1, (1 + ((wrapper.outerBounds.height - wrapper.actualSize.height) / wrapper.actualSize.height)),
+                                ((wrapper.outerBounds.y < wrapper.bounds.y) ? { x: 0.5, y: 1 } : { x: 0.5, y: 0 }));
+                        }
                     }
                 }
-                if (wrapper.actualSize.height < wrapper.outerBounds.height &&
-                    (!(wrapper.bounds.y > wrapper.outerBounds.y))) {
-                    if (container.rowIndex !== undefined) {
-                        let contai: NodeModel = diagram.nameTable[(container as Node).parentId];
-                        let x: number = wrapper.bounds.x;
-                        let y: number = wrapper.bounds.y;
-                        (wrapper).maxHeight = wrapper.outerBounds.height;
-                        (contai.wrapper as GridPanel).updateRowHeight(container.rowIndex, wrapper.outerBounds.height);
-                        diagram.drag(contai, x - wrapper.bounds.x, y - wrapper.bounds.y);
-                    } else {
-                        diagram.scale(
-                            container, 1, (1 + ((wrapper.outerBounds.height - wrapper.actualSize.height) / wrapper.actualSize.height)),
-                            ((wrapper.outerBounds.y < wrapper.bounds.y) ? { x: 0.5, y: 1 } : { x: 0.5, y: 0 }));
-                    }
-                }
-            } else if (container.container.type === 'Canvas') {
+            }
+            diagram.select([obj as NodeModel]);
+            updateConnectorsProperties(connectorList, diagram);
+        }
+        diagram.protectPropertyChange(false);
+    }
+    return groupAction;
+}
+
+export function removeChildInContainer(
+    diagram: Diagram, obj: NodeModel | ConnectorModel, position: PointModel, isBoundsUpdate: boolean): void {
+    let container: NodeModel; let connectorList: string[] = [];
+    if (checkParentAsContainer(diagram, obj, true)) {
+        diagram.protectPropertyChange(true);
+        container = diagram.nameTable[(obj as Node).parentId];
+        let wrapper: Canvas = container.wrapper as Canvas;
+        if (container && container.container.type === 'Canvas') {
+            if ((!isBoundsUpdate && (!(wrapper.bounds.x <= position.x && wrapper.bounds.right >= position.x &&
+                (wrapper.bounds.y <= position.y && wrapper.bounds.bottom >= position.y))))) {
                 let undoObj: NodeModel = cloneObject(obj);
                 diagram.clearSelection();
-                diagram.deleteChild(obj);
+                removeChildrenInLane(diagram, obj as Node);
                 (obj as Node).parentId = '';
                 let entry: HistoryEntry = {
                     type: 'ChildCollectionChanged', category: 'Internal',
                     undoObject: undoObj, redoObject: cloneObject(obj)
                 };
                 diagram.addHistoryEntry(entry);
+                if (diagram.commandHandler.isContainer) {
+                    diagram.commandHandler.isContainer = false;
+                    diagram.endGroupAction();
+                }
             }
-            diagram.select([obj as NodeModel]);
-
         }
     }
 }
+
 
 /** @private */
 export function findBounds(obj: NodeModel, columnIndex: number, isHeader: boolean): Rect {
@@ -117,7 +151,7 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
     let nodes: NodeModel;
     if (diagram.selectedObject.helperObject) {
         nodes = diagram.selectedObject.helperObject;
-    } else {
+    } else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
         if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
             object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
         } else {
@@ -134,7 +168,7 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
                 maxWidth: container.maxWidth, maxHeight: container.maxHeight,
                 width: container.actualSize.width,
                 height: container.actualSize.height,
-                style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: 'red' }
+                style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: '#7D7D7D', strokeWidth: 2 }
             };
             nodes = createHelper(diagram, node as Node) as NodeModel;
             diagram.selectedObject.helperObject = nodes;
@@ -163,23 +197,50 @@ export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): voi
     diagram.nodePropertyChange(obj as Node, {} as Node, {
         width: obj.width, height: obj.height,
         offsetX: obj.offsetX, offsetY: obj.offsetY,
-
         margin: {
             left: obj.margin.left,
             right: obj.margin.right, top: obj.margin.top,
             bottom: obj.margin.bottom
         }, rotateAngle: obj.rotateAngle
     } as Node);
-    parentNode.wrapper.measure(new Size());
-    parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+    if (!(parentNode as Node).isLane) {
+        parentNode.wrapper.measure(new Size());
+        parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+    }
 }
 
+function removeChildrenInLane(diagram: Diagram, node: NodeModel): void {
+    if ((node as Node).parentId !== '') {
+        let prevParentNode: Node = (diagram.nameTable[(node as Node).parentId] as Node);
+        if (prevParentNode.isLane && prevParentNode.parentId) {
+            let swimlane: NodeModel = diagram.nameTable[prevParentNode.parentId];
+            let canvasId: string = (prevParentNode.id.slice(swimlane.id.length));
+            let prevParentId: string = canvasId.substring(0, canvasId.length - 1);
+            let lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes; let lane: LaneModel;
+            for (let i: number = 0; i < lanes.length; i++) {
+                lane = lanes[i];
+                if (prevParentId === lane.id) {
+                    for (let j: number = 0; j < lane.children.length; j++) {
+                        if (lane.children[j].id === node.id) {
+                            lane.children.splice(j, 1);
+                            j--;
+                        }
+                    }
+                }
+            }
+        }
+        diagram.deleteChild(node);
+    }
+}
 
 /**
  * @private
  */
-export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: NodeModel): void {
+export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: NodeModel, isUndo?: boolean): void {
     if (!diagram.currentSymbol) {
+        diagram.protectPropertyChange(true);
+        let swimlane: NodeModel;
+        node = diagram.getObject(node.id) || node;
         let child: string | NodeModel = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
         if (parent.container.type === 'Canvas') {
             let left: number = (node.wrapper.offsetX - node.wrapper.actualSize.width / 2) -
@@ -191,20 +252,98 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
         let container: NodeModel = diagram.nameTable[parent.id];
         if (!container.children) { container.children = []; }
         if (container.children.indexOf(node.id) === -1) {
-            if ((node as Node).parentId !== '') {
-                diagram.deleteChild(node);
+            removeChildrenInLane(diagram, node);
+
+            if (diagram.getObject(node.id)) {
+                diagram.removeElements(node);
             }
             let undoObj: NodeModel = cloneObject(node);
             diagram.addChild(container, child);
-            let entry: HistoryEntry = {
-                type: 'ChildCollectionChanged', category: 'Internal',
-                undoObject: undoObj, redoObject: cloneObject(node)
-            };
-            diagram.addHistoryEntry(entry);
-            diagram.updateDiagramObject(container);
+            node = diagram.getObject(node.id);
+            if ((container as Node).isLane && (container as Node).parentId) {
+                swimlane = diagram.nameTable[(container as Node).parentId];
+                let lanes: LaneModel[] = (swimlane.shape as SwimLaneModel).lanes;
+                let canvasId: string = (container.id.slice(swimlane.id.length));
+                let currentParentId: string = canvasId.substring(0, canvasId.length - 1);
+                for (let i: number = 0; i < lanes.length; i++) {
+                    if ((container as Node).isLane && currentParentId === lanes[i].id) {
+                        lanes[i].children.push(node);
+                    }
+                }
+            }
+            diagram.updateDiagramObject(node);
+            if (!(container as Node).parentId) {
+                diagram.updateDiagramObject(container);
+            } else if (!isUndo) {
+                updateLaneBoundsAfterAddChild(container, swimlane, node, diagram);
+            }
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                let entry: HistoryEntry = {
+                    type: 'ChildCollectionChanged', category: 'Internal',
+                    undoObject: undoObj, redoObject: cloneObject(node)
+                };
+                diagram.addHistoryEntry(entry);
+            }
         }
+        diagram.protectPropertyChange(false);
     }
 }
+
+export function updateLaneBoundsAfterAddChild(
+    container: NodeModel, swimLane: NodeModel, node: NodeModel, diagram: Diagram, isBoundsUpdate?: boolean): boolean {
+    let undoObject: NodeModel = cloneObject(container);
+    let isUpdateRow: boolean; let isGroupAction: boolean = false;
+    let padding: number = (swimLane.shape as SwimLane).padding;
+    let containerBounds: Rect = container.wrapper.bounds;
+    let containerOuterBounds: Rect = container.wrapper.outerBounds;
+    let nodeBounds: Rect = node.wrapper.bounds;
+    if (swimLane && swimLane.shape.type === 'SwimLane' &&
+        (containerBounds.right < nodeBounds.right + padding ||
+            containerBounds.bottom < nodeBounds.bottom + padding)) {
+        let grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
+        let x: number = grid.bounds.x; let y: number = grid.bounds.y;
+        let size: number;
+        if (containerBounds.right < nodeBounds.right + padding &&
+            containerOuterBounds.x <= containerBounds.x) {
+            size = nodeBounds.right - containerBounds.right;
+            isUpdateRow = false;
+            grid.updateColumnWidth(container.columnIndex, containerBounds.width + size, true, padding);
+        }
+        if (containerBounds.bottom < nodeBounds.bottom + padding &&
+            containerOuterBounds.y <= containerBounds.y) {
+            size = nodeBounds.bottom - containerBounds.bottom;
+            isUpdateRow = true;
+            grid.updateRowHeight(container.rowIndex, containerBounds.height + size, true, padding);
+        }
+        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+            if (isBoundsUpdate) {
+                diagram.startGroupAction();
+                isGroupAction = true;
+            }
+            if (isUpdateRow !== undefined) {
+                let entry: HistoryEntry = {
+                    category: 'Internal',
+                    type: (isUpdateRow) ? 'RowHeightChanged' : 'ColumnWidthChanged',
+                    undoObject: undoObject, redoObject: cloneObject(container)
+                };
+                diagram.addHistoryEntry(entry);
+            }
+        }
+        swimLane.width = swimLane.wrapper.width = grid.width;
+        swimLane.height = swimLane.wrapper.height = grid.height;
+        swimLaneMeasureAndArrange(swimLane);
+        if ((swimLane.shape as SwimLaneModel).orientation === 'Horizontal') {
+            updatePhaseMaxWidth(swimLane, diagram, container.wrapper as Canvas, container.columnIndex);
+        }
+        updateHeaderMaxWidth(diagram, swimLane);
+        diagram.drag(swimLane, x - grid.bounds.x, y - grid.bounds.y);
+        checkPhaseOffset(swimLane, diagram);
+        checkLaneSize(swimLane);
+    }
+    considerSwimLanePadding(diagram, node as NodeModel, padding);
+    return isGroupAction;
+}
+
 
 //#endregion
 
@@ -212,9 +351,10 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
 
 /** @private */
 export function renderStackHighlighter(
-    element: DiagramElement, isVertical: Boolean, position: PointModel, diagram: Diagram, isUml?: boolean): void {
+    element: DiagramElement, isVertical: Boolean, position: PointModel, diagram: Diagram, isUml?: boolean, isSwimlane?: boolean): void {
     let adornerSvg: SVGElement = getAdornerLayerSvg(diagram.element.id);
-    diagram.diagramRenderer.renderStackHighlighter(element, adornerSvg, diagram.scroller.transform, isVertical, position, isUml);
+    diagram.diagramRenderer.renderStackHighlighter(
+        element, adornerSvg, diagram.scroller.transform, isVertical, position, isUml, isSwimlane);
 }
 
 /** @private */
@@ -230,7 +370,7 @@ export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagra
             sourceParent.wrapper.children.splice(value, 1);
         }
     }
-    if (target && target.parentId && (obj as Node).parentId && action === 'Drag') {
+    if (target && target.parentId && (obj as Node).parentId && action === 'Drag' && sourceParent.container.type === 'Stack') {
         let targetIndex: number = parent.wrapper.children.indexOf(target.wrapper);
         let sourceIndex: number = parent.wrapper.children.indexOf(obj.wrapper);
         let undoElement: StackEntryObject = {
@@ -255,307 +395,5 @@ export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagra
 
 //# region Swimlane rendering
 
-/** @private */
-export function initSwimLane(grid: GridPanel, diagram: Diagram, node: NodeModel): void {
-    let row: RowDefinition[] = [];
-    let columns: ColumnDefinition[] = [];
-    let orientation: boolean = (node.shape as SwimLaneModel).orientation === 'Horizontal' ? true : false;
-    if ((node.shape as SwimLaneModel).header) {
-        createRow(row, (node.shape as SwimLaneModel).header.height);
-    }
-    initGridRow(row, orientation, node);
-    initGridColumns(columns, orientation, node);
-    grid.setDefinitions(row, columns);
-    let index: number = 0;
-    if ((node.shape as SwimLaneModel).header) {
-        headerDefine(grid, diagram, node);
-        index++;
-    }
-
-    if ((node.shape as SwimLaneModel).phases.length > 0) {
-        phaseDefine(grid, diagram, node, index, orientation);
-        index++;
-    }
-    if ((node.shape as SwimLaneModel).lanes.length > 0) {
-        for (let k: number = 0; k < (node.shape as SwimLaneModel).lanes.length; k++) {
-            laneCollection(grid, diagram, node, index, k, orientation);
-            index++;
-        }
-    }
-}
-
-/** @private */
-export function addObjectToGrid(diagram: Diagram, grid: GridPanel, parent: NodeModel, object: NodeModel, isHeader?: boolean): Container {
-    let node: Node = new Node(parent, 'nodes', object);
-    node.parentId = grid.id;
-    if (isHeader) { node.isHeader = true; }
-    diagram.initObject(node);
-
-    if (node.wrapper.children.length > 0) {
-        for (let i: number = 0; i < node.wrapper.children.length; i++) {
-            let child: DiagramElement = node.wrapper.children[i];
-            if (child instanceof DiagramElement) {
-                child.isCalculateDesiredSize = false;
-            }
-        }
-    }
-    return node.wrapper;
-}
-
-// /** @private */
-// export function addGridObject(
-//     diagram: Diagram, grid: Grid, object: NodeModel, isHeader?: boolean, rowValue?: number, colValue?: number,
-//     nodeObj?: NodeModel, orientation?: boolean, lanesNo?: number): void {
-//     let node: Node = new Node(object, 'nodes', { container: { type: 'Canvas', orientation: 'Horziontal' } });
-//     diagram.initObject(node as IElement);
-//     node.parentId = grid.id;
-//     if (isHeader) {
-//         (node as Node).isHeader = true;
-//     }
-//     diagram.nodes.push(node);
-//     let canvas: Container = node.wrapper;
-//     node.rowIndex = rowValue; node.columnIndex = colValue;
-//     canvas.children = [];
-//     if (nodeObj) {
-//         if (lanesNo !== undefined) {
-//             orientation ? canvas.verticalAlignment = 'Stretch' : canvas.horizontalAlignment = 'Stretch';
-//             canvas.relativeMode = 'Object';
-//             if (orientation) {
-//                 nodeObj.width = (object.shape as SwimLaneModel).lanes[lanesNo].header.width;
-//             } else {
-//                 nodeObj.height = (object.shape as SwimLaneModel).lanes[lanesNo].header.width;
-//             }
-//         }
-//         let node: Node = new Node(object, 'nodes', nodeObj);
-//         node.parentId = grid.id;
-//         node.rowIndex = rowValue; node.columnIndex = colValue;
-//         if (isHeader) {
-//             (node as Node).isHeader = true;
-//         }
-//         diagram.initObject(node);
-//         if (lanesNo === undefined) {
-//             if (isHeader) {
-//                 node.wrapper.horizontalAlignment = 'Stretch';
-//             } else {
-//                 orientation ? node.wrapper.horizontalAlignment = 'Stretch' : node.wrapper.verticalAlignment = 'Stretch';
-//             }
-//             canvas.horizontalAlignment = node.wrapper.horizontalAlignment;
-//             canvas.verticalAlignment = node.wrapper.verticalAlignment;
-//             canvas.relativeMode = node.wrapper.relativeMode = 'Object';
-//         } else {
-//             orientation ? node.wrapper.verticalAlignment = 'Stretch' : node.wrapper.horizontalAlignment = 'Stretch';
-//             node.wrapper.relativeMode = 'Object';
-//         }
-//         if (node.wrapper.children.length > 0) {
-//             for (let i: number = 0; i < node.wrapper.children.length; i++) {
-//                 let child: DiagramElement = node.wrapper.children[i];
-//                 if (child instanceof DiagramElement) {
-//                     child.isCalculateDesiredSize = false;
-//                 }
-//             }
-//         }
-
-//         canvas.children.push(node.wrapper);
-//     }
-//     grid.addObject(canvas, rowValue, colValue, 1, (isHeader) ? grid.columnDefinitions().length : 1);
-// }
-
-/** @private */
-export function headerDefine(grid: GridPanel, diagram: Diagram, object: NodeModel): void {
-    let node: object = {
-        annotations: [{ content: (object.shape as SwimLaneModel).header.content.content }],
-        style: (object.shape as SwimLaneModel).header.style,
-        rowIndex: 0, columnIndex: 0,
-        container: { type: 'Canvas', orientation: 'Horizontal' }
-    };
-    let wrapper: Container = addObjectToGrid(diagram, grid, object, node, true);
-    grid.addObject(wrapper, 0, 0, 1, grid.columnDefinitions().length);
-}
-
-/** @private */
-export function phaseDefine(grid: GridPanel, diagram: Diagram, object: NodeModel, indexValue: number, orientation: boolean): void {
-    let rowValue: number = 0; let colValue: number = 0;
-    for (let k: number = 0; k < (object.shape as SwimLaneModel).phases.length; k++) {
-        if (orientation) {
-            colValue = k; rowValue = indexValue;
-        } else {
-            rowValue = (object.shape as SwimLaneModel).header ? k + 1 : k;
-        }
-        let phaseObject: NodeModel = {
-            annotations: [{
-                content: (object.shape as SwimLaneModel).phases[k].header.content.content,
-                rotateAngle: orientation ? 0 : 270
-            }],
-            style: (object.shape as SwimLaneModel).phases[k].style,
-            rowIndex: rowValue, columnIndex: colValue,
-            container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
-        };
-        let wrapper: Container = addObjectToGrid(diagram, grid, object, phaseObject);
-        grid.addObject(wrapper, rowValue, colValue);
-    }
-}
-
-/** @private */
-export function laneCollection(
-    grid: GridPanel, diagram: Diagram, object: NodeModel, indexValue: number, laneIndex: number, orientation: boolean): void {
-    let value: number = (object.shape as SwimLaneModel).phases.length || 1;
-    let colValue: number = 0; let rowValue: number = orientation ? indexValue : 1;
-    let phaseCount: number = (object.shape as SwimLaneModel).phases.length > 0 ? 1 : 0;
-    for (let l: number = 0; l < value; l++) {
-        colValue = orientation ? l : laneIndex + phaseCount;
-        let canvas: NodeModel = {
-            id: (object.shape as SwimLaneModel).lanes[laneIndex].id + l,
-            rowIndex: rowValue, columnIndex: colValue,
-            style: (object.shape as SwimLaneModel).lanes[laneIndex].style,
-            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
-            container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
-        };
-        let parentWrapper: Container = addObjectToGrid(diagram, grid, object, canvas);
-        parentWrapper.children[0].isCalculateDesiredSize = false;
-        if (l === 0) {
-            let laneNode: NodeModel;
-            laneNode = {
-                id: (object.shape as SwimLaneModel).lanes[laneIndex].id + '_header',
-                style: (object.shape as SwimLaneModel).lanes[laneIndex].header.style,
-                annotations: [{
-                    content: (object.shape as SwimLaneModel).lanes[laneIndex].header.content.content,
-                    rotateAngle: orientation ? 270 : 0
-                }],
-                rowIndex: rowValue, columnIndex: colValue,
-                container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
-            };
-            (orientation) ? laneNode.width = (object.shape as SwimLaneModel).lanes[laneIndex].header.width :
-                laneNode.height = (object.shape as SwimLaneModel).lanes[laneIndex].header.width;
-            let childWrapper: Container = addObjectToGrid(diagram, grid, object, laneNode);
-            parentWrapper.children.push(childWrapper);
-        }
-        grid.addObject(parentWrapper, rowValue, colValue);
-        if (!orientation) {
-            rowValue++;
-        }
-        colValue = orientation ? l : laneIndex + 1;
-    }
-}
-
-// /** @private */
-// export function laneDefine(
-//     grid: Grid, diagram: Diagram, object: NodeModel, indexValue: number, laneIndex: number, orientation: boolean): void {
-//     let value: number = orientation ? grid.columnDefinitions().length : (object.shape as SwimLaneModel).phases.length || 1;
-//     let colValue: number = 0;
-//     let rowValue: number = 0;
-//     let phaseLength: number = (object.shape as SwimLaneModel).phases.length > 0 ? 1 : 0;
-//     rowValue = orientation ? indexValue : 1;
-//     for (let l: number = 0; l < value; l++) {
-//         colValue = orientation ? l : laneIndex + phaseLength;
-//         let node: NodeModel = {
-//             style: (object.shape as SwimLaneModel).lanes[laneIndex].style, width: object.width, height: object.height
-//         };
-//         addGridObject(diagram, grid, object, false, orientation ? rowValue : rowValue, colValue);
-//         if (l === 0) {
-//             let laneNode: NodeModel;
-//             laneNode = {
-//                 id: (object.shape as SwimLaneModel).lanes[laneIndex].id,
-//                 style: (object.shape as SwimLaneModel).lanes[laneIndex].header.style,
-//                 annotations: [{
-//                     content: (object.shape as SwimLaneModel).lanes[laneIndex].header.content.content,
-//                     rotateAngle: orientation ? 270 : 0
-//                 }],
-//                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
-//             };
-//             addGridObject(diagram, grid, object, false, rowValue, orientation ? 0 : colValue, laneNode, orientation, laneIndex);
-//         }
-//         if (!orientation) {
-//             rowValue++;
-//         }
-//         colValue = orientation ? l : laneIndex + 1;
-//     }
-// }
-
-/** @private */
-export function createRow(row: RowDefinition[], height: number): void {
-    let rows: RowDefinition = new RowDefinition();
-    rows.height = height;
-    row.push(rows);
-}
-
-/** @private */
-export function createColumn(width: number): ColumnDefinition {
-    let cols: ColumnDefinition = new ColumnDefinition();
-    cols.width = width;
-    return cols;
-}
-
-/** @private */
-export function initGridRow(row: RowDefinition[], orientation: boolean, object: NodeModel): void {
-    let totalHeight: number = 0; let height: number;
-    if (row.length > 0) {
-        for (let i: number = 0; i < row.length; i++) {
-            totalHeight += row[i].height;
-        }
-    }
-    if (orientation) {
-        if ((object.shape as SwimLaneModel).phases.length > 0) {
-            totalHeight += (object.shape as SwimLaneModel).phases[0].height;
-            createRow(row, (object.shape as SwimLaneModel).phases[0].height);
-        }
-        if ((object.shape as SwimLaneModel).lanes.length > 0) {
-            for (let i: number = 0; i < (object.shape as SwimLaneModel).lanes.length; i++) {
-                height = (object.shape as SwimLaneModel).lanes[i].height; totalHeight += height;
-                if (i === (object.shape as SwimLaneModel).lanes.length - 1 && totalHeight < object.height) {
-                    height += object.height - totalHeight;
-                }
-                createRow(row, height);
-            }
-        }
-    } else {
-        if ((object.shape as SwimLaneModel).phases.length > 0) {
-            for (let i: number = 0; i < (object.shape as SwimLaneModel).phases.length; i++) {
-                height = (object.shape as SwimLaneModel).phases[i].offset; totalHeight += height;
-                if (i === (object.shape as SwimLaneModel).phases.length - 1 && totalHeight < object.height) {
-                    height += object.height - totalHeight;
-                }
-                createRow(row, height);
-            }
-        } else {
-            createRow(row, object.height);
-        }
-    }
-}
-
-/** @private */
-export function initGridColumns(columns: ColumnDefinition[], orientation: boolean, object: NodeModel): void {
-    let totalWidth: number = 0;
-    if ((object.shape as SwimLaneModel).phases.length > 0 && (object.shape as SwimLaneModel).orientation === 'Horizontal') {
-        for (let j: number = 0; j < (object.shape as SwimLaneModel).phases.length; j++) {
-            totalWidth += (object.shape as SwimLaneModel).phases[j].offset;
-            let cols: ColumnDefinition = createColumn((object.shape as SwimLaneModel).phases[j].offset);
-            if (j === (object.shape as SwimLaneModel).phases.length - 1 && totalWidth < object.width) {
-                cols.width += object.width - totalWidth;
-            }
-            columns.push(cols);
-        }
-    } else if (!orientation) {
-        let value: number = (object.shape as SwimLaneModel).phases.length > 0 ? (object.shape as SwimLaneModel).lanes.length
-            + 1 : (object.shape as SwimLaneModel).lanes.length;
-        for (let j: number = 0; j < value; j++) {
-            if (j === 0 && (object.shape as SwimLaneModel).phases.length > 0) {
-                totalWidth += (object.shape as SwimLaneModel).phases[0].height;
-                let cols: ColumnDefinition = createColumn((object.shape as SwimLaneModel).phases[0].height);
-                columns.push(cols);
-            } else {
-                totalWidth += (object.shape as SwimLaneModel).lanes[0].height;
-                let cols: ColumnDefinition = createColumn((object.shape as SwimLaneModel).lanes[0].height);
-                if (j === (object.shape as SwimLaneModel).lanes.length && totalWidth < object.width) {
-                    cols.width += object.width - totalWidth;
-                }
-                columns.push(cols);
-            }
-        }
-
-    } else {
-        let cols: ColumnDefinition = createColumn(object.width);
-        columns.push(cols);
-    }
-}
 
 //#end region

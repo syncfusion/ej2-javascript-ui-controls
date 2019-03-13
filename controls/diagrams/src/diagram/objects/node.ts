@@ -1,7 +1,7 @@
 /// <reference path='./node-base-model.d.ts'/>
 import { Property, Complex, Collection, ChildProperty, ComplexFactory } from '@syncfusion/ej2-base';
 import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';
-import { ShapeStyleModel, TextStyleModel, ShadowModel } from '../core/appearance-model';
+import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
@@ -32,6 +32,7 @@ import { ShapeModel, BasicShapeModel, FlowShapeModel, ImageModel, PathModel, Bpm
 import { TextModel, NativeModel, HtmlModel } from './node-model';
 import { LayoutModel } from '../layout/layout-base-model';
 import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';
+import { setSwimLaneDefaults } from './../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { NodeBase } from './node-base';
 import { canShadow } from './../utility/constraints-util';
@@ -49,7 +50,7 @@ import { StackPanel } from '../core/containers/stack-panel';
 import { GridPanel, RowDefinition, ColumnDefinition } from '../core/containers/grid';
 import { Orientation, ContainerTypes, ClassifierShape } from '../enum/enum';
 import { getULMClassifierShapes } from '../utility/uml-util';
-import { initSwimLane } from '../interaction/container-interaction';
+import { initSwimLane } from './../utility/swim-lane-util';
 import { AnnotationModel } from './annotation-model';
 
 
@@ -137,6 +138,14 @@ export class Path extends Shape {
      */
     @Property('')
     public data: string;
+
+    /**
+     * @private
+     * Returns the name of class Path
+     */
+    public getClassName(): string {
+        return 'Path';
+    }
 }
 
 /**
@@ -195,6 +204,14 @@ export class Native extends Shape {
      */
     @Property('Stretch')
     public scale: Stretch;
+
+    /**
+     * @private
+     * Returns the name of class Native
+     */
+    public getClassName(): string {
+        return 'Native';
+    }
 }
 
 /**
@@ -230,6 +247,14 @@ export class Html extends Shape {
      */
     @Property('')
     public content: string | HTMLElement;
+
+    /**
+     * @private
+     * Returns the name of class Html
+     */
+    public getClassName(): string {
+        return 'Html';
+    }
 }
 
 /**
@@ -291,6 +316,14 @@ export class Image extends Shape {
     @Property('None')
     public align: ImageAlignment;
 
+    /**
+     * @private
+     * Returns the name of class Image
+     */
+    public getClassName(): string {
+        return 'Image';
+    }
+
 }
 
 /**
@@ -331,6 +364,14 @@ export class Text extends Shape {
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
+
+    /**
+     * @private
+     * Returns the name of class Text
+     */
+    public getClassName(): string {
+        return 'Text';
+    }
 }
 
 
@@ -395,6 +436,14 @@ export class BasicShape extends Shape {
      */
     @Collection<PointModel>([], Point)
     public points: PointModel[];
+
+    /**
+     * @private
+     * Returns the name of class BasicShape
+     */
+    public getClassName(): string {
+        return 'BasicShape';
+    }
 }
 
 /**
@@ -457,6 +506,14 @@ export class FlowShape extends Shape {
      */
     @Property('Terminator')
     public shape: FlowShapes;
+
+    /**
+     * @private
+     * Returns the name of class FlowShape
+     */
+    public getClassName(): string {
+        return 'FlowShape';
+    }
 }
 
 /**
@@ -476,6 +533,14 @@ export class BpmnGateway extends ChildProperty<BpmnGateway> {
      */
     @Property('None')
     public type: BpmnGateways;
+
+    /**
+     * @private
+     * Returns the name of class BpmnGateway
+     */
+    public getClassName(): string {
+        return 'BpmnGateway';
+    }
 }
 
 /**
@@ -516,6 +581,14 @@ export class BpmnDataObject extends ChildProperty<BpmnDataObject> {
      */
     @Property(false)
     public collection: boolean;
+
+    /**
+     * @private
+     * Returns the name of class BpmnDataObject
+     */
+    public getClassName(): string {
+        return 'BpmnDataObject';
+    }
 }
 /**
  * Defines the behavior of the bpmn task shape
@@ -640,6 +713,14 @@ export class BpmnEvent extends ChildProperty<BpmnEvent> {
     @Property('None')
     public trigger: BpmnTriggers;
 
+    /**
+     * @private
+     * Returns the name of class BpmnEvent
+     */
+    public getClassName(): string {
+        return 'BpmnEvent';
+    }
+
 }
 
 /**
@@ -763,6 +844,14 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      */
     @Property(true)
     public visible: boolean;
+
+    /**
+     * @private
+     * Returns the name of class BpmnSubEvent
+     */
+    public getClassName(): string {
+        return 'BpmnSubEvent';
+    }
 
 }
 
@@ -1001,6 +1090,14 @@ export class BpmnActivity extends ChildProperty<BpmnActivity> {
     @Complex<BpmnSubProcessModel>({}, BpmnSubProcess)
     public subProcess: BpmnSubProcessModel;
 
+    /**
+     * @private
+     * Returns the name of class BpmnActivity
+     */
+    public getClassName(): string {
+        return 'BpmnActivity';
+    }
+
 }
 
 /**
@@ -1059,6 +1156,14 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 
     /** @private */
     public nodeId: string;
+
+    /**
+     * @private
+     * Returns the name of class BpmnAnnotation
+     */
+    public getClassName(): string {
+        return 'BpmnAnnotation';
+    }
 }
 
 /**
@@ -1149,6 +1254,14 @@ export class BpmnShape extends Shape {
     @Collection<BpmnAnnotationModel>([], BpmnAnnotation)
     public annotations: BpmnAnnotationModel[];
 
+    /**
+     * @private
+     * Returns the name of class BpmnShape
+     */
+    public getClassName(): string {
+        return 'BpmnShape';
+    }
+
 }
 
 /**
@@ -1196,6 +1309,14 @@ export class UmlActivityShape extends Shape {
      */
     @Property('Action')
     public shape: UmlActivityShapes;
+
+    /**
+     * @private
+     * Returns the name of class UmlActivityShape
+     */
+    public getClassName(): string {
+        return 'UmlActivityShape';
+    }
 }
 
 
@@ -1224,6 +1345,14 @@ export class MethodArguments extends ChildProperty<MethodArguments> {
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
+
+    /**
+     * @private
+     * Returns the name of class MethodArguments
+     */
+    public getClassName(): string {
+        return 'MethodArguments';
+    }
 }
 /**
  * Defines the behavior of the uml class attributes
@@ -1243,6 +1372,14 @@ export class UmlClassAttribute extends MethodArguments {
      */
     @Property(false)
     public isSeparator: boolean;
+
+    /**
+     * @private
+     * Returns the name of class UmlClassAttribute
+     */
+    public getClassName(): string {
+        return 'UmlClassAttribute';
+    }
 }
 
 /**
@@ -1257,6 +1394,14 @@ export class UmlClassMethod extends UmlClassAttribute {
 
     @Collection<MethodArgumentsModel>([], MethodArguments)
     public parameters: MethodArgumentsModel[];
+
+    /**
+     * @private
+     * Returns the name of class UmlClassMethod
+     */
+    public getClassName(): string {
+        return 'UmlClassMethod';
+    }
 }
 
 /**
@@ -1292,6 +1437,14 @@ export class UmlClass extends ChildProperty<UmlClass> {
      */
     @Complex<TextStyleModel>({}, TextStyle)
     public style: TextStyleModel;
+
+    /**
+     * @private
+     * Returns the name of class UmlClass
+     */
+    public getClassName(): string {
+        return 'UmlClass';
+    }
 }
 
 /**
@@ -1305,6 +1458,14 @@ export class UmlInterface extends UmlClass {
      */
     @Property(false)
     public isSeparator: boolean;
+
+    /**
+     * @private
+     * Returns the name of class UmlInterface
+     */
+    public getClassName(): string {
+        return 'UmlInterface';
+    }
 }
 
 /**
@@ -1339,6 +1500,14 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
+
+    /**
+     * @private
+     * Returns the name of class UmlEnumerationMember
+     */
+    public getClassName(): string {
+        return 'UmlEnumerationMember';
+    }
 }
 
 /**
@@ -1366,6 +1535,14 @@ export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
+
+    /**
+     * @private
+     * Returns the name of class UmlEnumeration
+     */
+    public getClassName(): string {
+        return 'UmlEnumeration';
+    }
 }
 
 /**
@@ -1419,6 +1596,14 @@ export class UmlClassifierShape extends Shape {
      */
     @Property('Class')
     public classifier: ClassifierShape;
+
+    /**
+     * @private
+     * Returns the name of class UmlClassifierShape
+     */
+    public getClassName(): string {
+        return 'UmlClassifierShape';
+    }
 }
 
 /**
@@ -1730,6 +1915,9 @@ export class Node extends NodeBase implements IElement {
         if (this.shape && this.shape.type === 'UmlActivity') {
             setUMLActivityDefaults(defaultValue, this);
         }
+        if (this.shape && this.shape.type === 'SwimLane') {
+            setSwimLaneDefaults(defaultValue, this);
+        }
     }
 
     /**
@@ -1823,11 +2011,14 @@ export class Node extends NodeBase implements IElement {
                 content = getULMClassifierShapes(content, this, diagram);
                 break;
             case 'SwimLane':
+                this.annotations = [];
+                this.ports = [];
                 (content as GridPanel).cellStyle.fill = "none";
                 (content as GridPanel).cellStyle.strokeColor = "none";
                 this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };
                 content.id = this.id;
                 this.container.orientation = (this.shape as SwimLaneModel).orientation;
+                this.constraints |= NodeConstraints.HideThumbs;
                 initSwimLane(content as GridPanel, diagram, this);
                 break;
         }
@@ -1884,7 +2075,7 @@ export class Node extends NodeBase implements IElement {
         }
         // Creates canvas element
         let canvas: Container;
-        if (!this.container) {
+        if (!this.container || this.shape instanceof SwimLane) {
             canvas = this.children ? new Container() : new Canvas();
         } else {
             switch (this.container.type) {
@@ -2144,6 +2335,14 @@ export class Node extends NodeBase implements IElement {
         iconContent.description = iconContainer.description || 'Click here to expand or collapse';
         iconContainer.children.push(iconContent);
     }
+
+    /**
+     * @private
+     * Returns the name of class Node
+     */
+    public getClassName(): string {
+        return 'Node';
+    }
 }
 
 /**
@@ -2162,28 +2361,28 @@ export class Header extends ChildProperty<Shape> {
      * Sets the content of the header
      * @default ''
      */
-    @Complex<AnnotationModel>({}, Annotation)
-    public content: Annotation;
+    @Complex<AnnotationModel>({ style: { fill: '#111111' } }, Annotation)
+    public annotation: Annotation;
 
     /**
      * Sets the style of the header
      * @default ''
      */
-    @Property('')
-    public style: TextStyleModel;
+    @Complex<ShapeStyleModel>({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
+    public style: ShapeStyleModel;
 
     /**
      * Sets the height of the header
-     * @default 25
+     * @default 50
      */
-    @Property(25)
+    @Property(50)
     public height: number;
 
     /**
      * Sets the width of the header
-     * @default 25
+     * @default 50
      */
-    @Property(25)
+    @Property(50)
     public width: number;
 
 }
@@ -2204,7 +2403,7 @@ export class Lane extends ChildProperty<Shape> {
      * Sets style of the lane
      * @default ''
      */
-    @Property('')
+    @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**
@@ -2212,28 +2411,36 @@ export class Lane extends ChildProperty<Shape> {
      * @default []
      */
     @Collection<NodeModel>([], Node)
-    public childNodes: NodeModel[];
+    public children: NodeModel[];
 
     /**
      * Defines the height of the phase
-     * @default 25
+     * @default 100
      */
-    @Property(25)
+    @Property(100)
     public height: number;
 
     /**
      * Defines the height of the phase
-     * @default 25
+     * @default 100
      */
-    @Property(25)
+    @Property(100)
     public width: number;
 
     /**
      * Defines the collection of header in the phase.
-     * @default undefined
+     * @default new Header()
      */
-    @Complex<HeaderModel>({}, Header)
+    @Complex<HeaderModel>({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } as Annotation }, Header)
     public header: HeaderModel;
+
+    /**
+     * @private
+     * Returns the name of class Lane
+     */
+    public getClassName(): string {
+        return 'Lane';
+    }
 
 }
 
@@ -2252,29 +2459,15 @@ export class Phase extends ChildProperty<Shape> {
      * Sets the style of the lane
      * @default ''
      */
-    @Property('')
+    @Complex<ShapeStyleModel>({ strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**
      * Sets the header collection of the phase
-     * @default 'undefined'
+     * @default  new Header()
      */
-    @Complex<HeaderModel>({}, Header)
+    @Complex<HeaderModel>({ annotation: { content: 'Phase' } as Annotation }, Header)
     public header: HeaderModel;
-
-    /**
-     * Sets the height of the lane
-     * @default 30
-     */
-    @Property(30)
-    public height: number;
-
-    /**
-     * Sets the width of the lane
-     * @default 30
-     */
-    @Property(30)
-    public width: number;
 
     /**
      * Sets the offset of the lane
@@ -2282,6 +2475,14 @@ export class Phase extends ChildProperty<Shape> {
      */
     @Property(100)
     public offset: number;
+
+    /**
+     * @private
+     * Returns the name of class Phase
+     */
+    public getClassName(): string {
+        return 'Phase';
+    }
 }
 
 /**
@@ -2297,14 +2498,14 @@ export class SwimLane extends Shape {
 
     /**
      * Defines the size of phase.
-     * @default '10'
+     * @default 20
      */
-    @Property('10')
+    @Property(20)
     public phaseSize: number;
 
     /**
      * Defines the collection of phases.
-     * @default undefined
+     * @default 'undefined'
      */
     @Collection<PhaseModel>([], Phase)
     public phases: PhaseModel[];
@@ -2318,24 +2519,17 @@ export class SwimLane extends Shape {
 
     /**
      * Defines the collection of lanes
-     * @default undefined
+     * @default 'undefined'
      */
     @Collection<LaneModel>([], Lane)
     public lanes: LaneModel[];
 
     /**
      * Defines the collection of header
-     * @default undefined
+     * @default 'undefined'
      */
-    @Complex<HeaderModel>({}, Header)
+    @Complex<HeaderModel>({ style: { fill: '#E7F4FF', strokeColor: '#CCCCCC' }, annotation: { content: 'Function' } as Annotation }, Header)
     public header: HeaderModel;
-
-    /**
-     * Defines the style of shape
-     * @default ''
-     */
-    @Property('')
-    public lineStyle: ShapeStyleModel | TextStyleModel;
 
     /**
      * Defines the whether the shape is a lane or not
@@ -2350,6 +2544,26 @@ export class SwimLane extends Shape {
      */
     @Property(false)
     public isPhase: boolean;
+
+    /**
+     * @private
+     * Defines space between children and lane
+     */
+    public padding: number = 20;
+
+    /**
+     * @private
+     * Defines header by user or not
+     */
+    public hasHeader: boolean = true;
+
+    /**
+     * @private
+     * Returns the name of class Phase
+     */
+    public getClassName(): string {
+        return 'SwimLane';
+    }
 }
 
 /**
@@ -2371,4 +2585,12 @@ export class ChildContainer {
      */
     @Property('Vertical')
     public orientation: Orientation;
+
+    /**
+     * @private
+     * Returns the name of class ChildContainer
+     */
+    public getClassName(): string {
+        return 'ChildContainer';
+    }
 }

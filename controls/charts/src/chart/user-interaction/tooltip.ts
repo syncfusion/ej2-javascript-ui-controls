@@ -1,6 +1,7 @@
 import { Chart } from '../chart';
 import { extend, Browser, remove } from '@syncfusion/ej2-base';
-import { Size, Rect, PointData, ChartLocation } from '../../common/utils/helper';
+import { PointData, ChartLocation } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { valueToCoefficient, removeElement, valueToPolarCoefficient, withInBounds } from '../../common/utils/helper';
 import { Axis } from '../axis/axis';
 import { Series, Points } from '../series/chart-series';

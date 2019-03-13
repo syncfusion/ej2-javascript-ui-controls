@@ -1,4 +1,5 @@
 /*! component's theme wise override definitions and variables */
+$field-list-skin: 'fabric' !default;
 $field-list-active-color: $theme-primary !default;
 $field-list-default-font-color: $theme-light-font !default;
 $field-list-default-formula-font-color: $field-list-default-font-color !default;
@@ -40,11 +41,6 @@ $field-list-toggle-hover-color: $field-list-default-border-color !default;
 $pivot-formula-background: $neutral-white !default;
 $pivot-formula-border: $neutral-quintenary !default;
 $pivot-text-area-background: $theme-light-font !default;
-$pivotgrid-filter-icon: '\ea7e' !default;
-$pivotgrid-sorting-icon: '\ea7c' !default;
-$pivotgrid-drop-down-icon: '\e966' !default;
-$pivotgrid-remove-icon: '\ea7f' !default;
-$pivotgrid-filtered-icon: '\ea7a' !default;
 $pivot-calculated-header-opacity: 1 !default;
 $pivot-dialog-font-weight: normal !default;
 $pivot-dialog-content-opacity: 1 !default;
@@ -78,8 +74,8 @@ $field-list-button-hover-color: $neutral-lighter-alt !default;
 $field-list-button-focus-color: $neutral-quintenaryalt !default;
 $field-list-button-active-color: $content-font-color !default;
 $field-list-default-header-icon-font-color: $neutral-secondary !default;
-$pivotgrid-button-icon-color: $neutral-secondary !default;
-$pivotgrid-icon-hover-color: $neutral-secondary !default;
+$field-list-button-icon-color: $neutral-secondary !default;
+$field-list-icon-hover-color: $neutral-secondary !default;
 $error-font-color: #a80000 !default;
 $field-list-excel-member-filter-height: 118px !default;
 $field-list-excel-filter-height: 215px !default;

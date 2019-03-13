@@ -41,7 +41,10 @@ describe('Insert HTML  Exec plugin', () => {
             let node: Node = document.createElement('span');
             node.textContent = 'span Node';
             editorObj.execCommand("InsertHtml", null, null, ():boolean => { return true;}, node );
-            expect(node1.childNodes[0].nodeName.toLowerCase()).toBe('span');
+            //The below line has been changed because the inserthtml code has been changed.
+            //When the whole text content in the element is selected, the selected content's element will be removed when inserting new content.
+            expect(document.getElementById('label1')).toBe(null);
+            expect(node2.previousSibling.nodeName.toLowerCase()).toBe('span');
         });
         it('Insert an Image', () => {
             let node: HTMLElement = document.getElementById('label3');
@@ -76,9 +79,10 @@ describe('Insert HTML  Exec plugin', () => {
         it('last an Image selection', () => {
             let node1: HTMLElement = document.getElementById('span3');
             editorObj.nodeSelection.setSelectionText(document, node1, node1, 0, 2);
-            let span: HTMLElement = document.createElement('span');
-            editorObj.execCommand("InsertHtml", null, null, null, span );
-            expect(document.getElementById('span3').childNodes[0].nodeName.toLowerCase()).toBe('span');
+            let spanElem: HTMLElement = createElement('span', { id: 'insertspan' });
+            editorObj.execCommand("InsertHtml", null, null, null, spanElem );
+            expect(document.getElementById('span3')).toBe(null);
+            expect(document.getElementById('span2').nextElementSibling).toBe(spanElem);
         });
         it('Insert a Span', () => {
             let node1: HTMLElement = document.getElementById('span2');

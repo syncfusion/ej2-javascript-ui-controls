@@ -265,6 +265,62 @@ export let hierarchicalData5: { [key: string]: Object }[] = [
     }
 ];
 
+export let hierarchicalData6: { [key: string]: Object }[] = [
+    {
+        nodeId: '01', nodeText: 'Music', image: 'base/spec/images/Shooting.png', attr: nodeAttr, nodeSelected1: true,
+        nodeChild: [
+            { nodeId: '01-01', nodeText: 'Gouttes.mp3' }
+        ]
+    },
+    {
+        nodeId: '02', nodeText: 'Videos', icons: 'folder', image: 'base/spec/images/Shooting.png',
+        nodeChild: [
+            { nodeId: '02-01', nodeText: 'Naturals.mp4', icons: 'file', image: 'base/spec/images/Shooting.png' },
+            { nodeId: '02-02', nodeText: 'Wild.mpeg', icons: 'file' },
+        ]
+    },
+    {
+        nodeId: '03', nodeText: 'Documents', icons: 'folder',
+        nodeChild: [
+            { nodeId: '03-01', nodeText: 'Environment Pollution.docx', icons: 'file' },
+            { nodeId: '03-02', nodeText: 'Global Water, Sanitation, & Hygiene.docx', icons: 'file' },
+            { nodeId: '03-03', nodeText: 'Global Warming.ppt', icons: 'file' },
+            { nodeId: '03-04', nodeText: 'Social Network.pdf', icons: 'file' },
+            { nodeId: '03-05', nodeText: 'Youth Empowerment.pdf', icons: 'file' },
+        ]
+    },
+    {
+        nodeId: '04', nodeText: 'Pictures', icons: 'folder', nodeExpanded1: true, nodeSelected1: true,
+        nodeChild: [
+            {
+                nodeId: '04-01', nodeText: 'Camera Roll', icons: 'folder', nodeExpanded1: true, nodeSelected1: true,
+                nodeChild: [
+                    { nodeId: '04-01-01', nodeText: 'WIN_20160726_094117.JPG', icons: 'file' },
+                    {
+                        nodeId: '04-01-02', nodeText: 'WIN_20160726_094118.JPG', icons: 'file', nodeExpanded1: true, 
+                        nodeChild: [
+                            { nodeId: '04-01-03', nodeText: 'WIN_20160726_094119.JPG', icons: 'file' }
+                        ]
+                    },
+                ]
+            },
+            { nodeId: '04-02', nodeText: 'Wind.jpg', icons: 'file' },
+            { nodeId: '04-03', nodeText: 'Stone.jpg', icons: 'file' },
+            { nodeId: '04-04', nodeText: 'Home.jpg', icons: 'file' },
+            { nodeId: '04-05', nodeText: 'Bridge.png', icons: 'file' }
+        ]
+    },
+    {
+        nodeId: '05', nodeText: 'Downloads', icons: 'folder',
+        nodeChild: [
+            { nodeId: '05-01', nodeText: 'UI-Guide.pdf', icons: 'file',  nodeSelected: true, },
+            { nodeId: '05-02', nodeText: 'Tutorials.zip', icons: 'file', nodeChecked: true },
+            { nodeId: '05-03', nodeText: 'Game.exe', icons: 'file' },
+            { nodeId: '05-04', nodeText: 'TypeScript.7z', icons: 'file' },
+        ]
+    }
+];
+
 export var localData: { [key: string]: Object }[] = [
     { id: 1, text: "Artwork", iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Artwork node', hasChildren: true, selected: 'true', navigateUrl: 'http://npmci.syncfusion.com/', },
     { id: 2, parentID: 1, text: "Abstract", hasChildren: true },
@@ -409,6 +465,36 @@ export let localData6: { [key: string]: Object }[] = [
     { nodeId: '02-01', nodePid: '02',nodeText: 'Naturals.mp4', isChecked: false },
     { nodeId: '02-02', nodePid: '02',nodeText: 'Wild.mpeg' },
 ];
+
+export let localData7: { [key: string]: Object }[] = [
+    { id: 1, name: 'Australia', hasChild: true, expanded: true },
+    { id: 2, pid: 1, name: 'New South Wales' },
+    { id: 3, pid: 1, name: 'Victoria'  },
+    { id: 4, pid: 1, name: 'South Australia' },
+    { id: 6, pid: 1, name: 'Western Australia' },
+    { id: 7, name: 'Brazil', hasChild: true },
+    { id: 8, pid: 7, name: 'Paraná'  },
+    { id: 9, pid: 7, name: 'Ceará'  },
+    { id: 10, pid: 7, name: 'Acre' },
+    { id: 11, name: 'China', hasChild: true },
+    { id: 12, pid: 11, name: 'Guangzhou' ,isChecked: true},
+    { id: 13, pid: 11, name: 'Shanghai', isChecked: true },
+    { id: 14, pid: 11, name: 'Beijing', isChecked: true },
+    { id: 15, pid: 11, name: 'Shantou',isChecked: true },
+    { id: 16, name: 'France', hasChild: true , isChecked: false},
+    { id: 17, pid: 16, name: 'Pays de la Loire' },
+    { id: 18, pid: 16, name: 'Aquitaine' },
+    { id: 19, pid: 16, name: 'Brittany' },
+    { id: 20, pid: 16, name: 'Lorraine' },
+    { id: 21, name: 'India', hasChild: true },
+    { id: 22, pid: 21, name: 'Assam' },
+    { id: 23, pid: 21, name: 'Bihar'},
+    { id: 24, pid: 21, name: 'Tamil Nadu', hasChild: true },
+    {id: 26, pid: 24, name: 'chennai', isChecked: true},
+    {id: 27, pid: 24, name: "TVL", isChecked: true},
+    { id: 25, pid: 21, name: 'Punjab' }
+];
+
 
 export let remoteData: Object[] = [
     {

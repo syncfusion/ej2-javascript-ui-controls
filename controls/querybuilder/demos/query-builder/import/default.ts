@@ -63,10 +63,7 @@ let queryBldrObj: QueryBuilder = new QueryBuilder({
     width: '850px',
     columns: columnData,
     rule: importRules,
-    conditionChanged: updateRule,
-    fieldChanged: updateRule,
-    valueChanged: updateRule,
-    operatorChanged: updateRule
+    change: updateRule,
 });
 queryBldrObj.appendTo('#querybuilder');
 

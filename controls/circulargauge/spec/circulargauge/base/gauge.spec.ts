@@ -5,7 +5,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../../../src/circular-gauge/circular-gauge';
 import { ILoadedEventArgs } from '../../../src/circular-gauge/model/interface';
-import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 describe('Circular-Gauge Control', () => {
     beforeAll(() => {
@@ -132,7 +132,6 @@ describe('Circular-Gauge Control', () => {
                 svg = document.getElementById('container_CircularGaugeBorder');
                 expect(svg.getAttribute('stroke-width') == '2').toBe(true);
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
-                expect(svg.getAttribute('fill') == 'transparent').toBe(true);
                 gauge.load = null;
                 done();
             };
@@ -262,7 +261,7 @@ describe('Circular-Gauge Control', () => {
             value = gauge.width;
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeBorder');
-                expect(svg).toBe(null);
+                expect(svg != null).toBe(true);
                 done();
             };
             gauge.background = null;
@@ -273,7 +272,7 @@ describe('Circular-Gauge Control', () => {
             value = gauge.width;
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeBorder');
-                expect(svg).toBe(null);
+                expect(svg != null).toBe(true);
                 done();
             };
             gauge.background = 'transparent';
@@ -287,9 +286,10 @@ describe('Circular-Gauge Control', () => {
                 expect(svg != null).toBe(true);
                 done();
             };
+            gauge.theme = 'MaterialDark';
             gauge.background = 'transparent';
             gauge.border.width = 2;
-            gauge.dataBind();
+            gauge.refresh();
         });
         it('Checking touch resize event', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
@@ -303,38 +303,50 @@ describe('Circular-Gauge Control', () => {
     describe('Checking theme support', () => {
         let gauge: CircularGauge;
         let element: HTMLElement;
-        let svg: HTMLElement;              
-        beforeAll((): void => {                      
+        let svg: HTMLElement;
+        beforeAll((): void => {
             element = createElement('div', { id: 'container' });
             document.body.appendChild(element);
             gauge = new CircularGauge();
             gauge.appendTo('#container');
         });
         afterAll((): void => {
-           // timeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;           
+            // timeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;           
             element.remove();
         });
 
         it('gauge theme support - highcontrast', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeTitle');
-                expect(svg != null).toBe(true);                               
+                expect(svg != null).toBe(true);
                 svg = document.getElementById('container_Axis_Major_TickLine_0_20');
-                expect(svg.getAttribute('stroke')).toEqual('#757575');                
+                expect(svg.getAttribute('stroke')).toEqual('#FFFFFF');
                 done();
             };
             gauge.titleStyle.color = '';
             gauge.theme = 'Highcontrast';
             gauge.title = 'circular gauge';
-            gauge.axes[0].majorTicks.width = 5;            
-            gauge.refresh();            
+            gauge.axes[0].majorTicks.width = 5;
+            gauge.refresh();
+        });
+        it('gauge theme support - bootstrap4', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_CircularGaugeTitle');
+                expect(svg != null).toBe(true);
+                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                expect(svg.getAttribute('stroke')).toEqual('#ADB5BD');
+                done();
+            };
+            gauge.theme = 'Bootstrap4';
+            gauge.refresh();
         });
 
         it('gauge theme support - Dark', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeTitle');
-                expect(svg != null).toBe(true);                           
+                expect(svg != null).toBe(true);
                 svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                expect(svg.getAttribute('stroke')).toEqual('#FFFFFF');
                 done();
             };
             gauge.axes[0].pointers[0].type = 'Needle';
@@ -348,11 +360,11 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].pointers[0].cap.border.color = '';
             gauge.theme = 'FabricDark';
             gauge.title = 'Circular gauge';
-            gauge.axes[0].majorTicks.width = 5;                      
+            gauge.axes[0].majorTicks.width = 5;
             gauge.refresh();
         });
     });
-    it('memory leak', () => {     
+    it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB

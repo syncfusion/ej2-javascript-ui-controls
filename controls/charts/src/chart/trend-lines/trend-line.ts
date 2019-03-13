@@ -1,6 +1,7 @@
 import { Series, Points, Trendline } from '../series/chart-series';
 import { TrendlineTypes } from '../../chart/utils/enum';
-import { findClipRect, RectOption, Rect } from '../../common/utils/helper';
+import { findClipRect, RectOption } from '../../common/utils/helper';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 
 /**

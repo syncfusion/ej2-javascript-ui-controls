@@ -537,7 +537,41 @@ export abstract class LayoutViewer {
         this.styles.clear();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
+        this.setDefaultCharacterValue(this.characterFormat);
+        this.setDefaultParagraphValue(this.paragraphFormat);
         this.defaultTabWidth = 36;
+    }
+    /**
+     * @private
+     */
+    public setDefaultDocumentFormat(): void {
+        this.owner.parser.parseCharacterFormat(this.owner.characterFormat, this.characterFormat);
+        this.owner.parser.parseParagraphFormat(this.owner.paragraphFormat, this.paragraphFormat);
+    }
+
+    private setDefaultCharacterValue(characterFormat: WCharacterFormat): void {
+        characterFormat.bold = false;
+        characterFormat.italic = false;
+        characterFormat.fontFamily = 'Calibri';
+        characterFormat.fontSize = 11;
+        characterFormat.underline = 'None';
+        characterFormat.strikethrough = 'None';
+        characterFormat.fontSizeBidi = 11;
+        characterFormat.fontFamilyBidi = 'Calibri';
+        characterFormat.baselineAlignment = 'Normal';
+        characterFormat.highlightColor = 'NoColor';
+        characterFormat.fontColor = '#000000';
+    }
+    private setDefaultParagraphValue(paragraphFormat: WParagraphFormat): void {
+        paragraphFormat.leftIndent = 0;
+        paragraphFormat.rightIndent = 0;
+        paragraphFormat.firstLineIndent = 0;
+        paragraphFormat.textAlignment = 'Left';
+        paragraphFormat.beforeSpacing = 0;
+        paragraphFormat.afterSpacing = 0;
+        paragraphFormat.lineSpacing = 1;
+        paragraphFormat.lineSpacingType = 'Multiple';
+        paragraphFormat.bidi = false;
     }
     /**
      * @private

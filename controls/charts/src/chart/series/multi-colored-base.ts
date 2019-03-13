@@ -1,4 +1,5 @@
-import { getPoint, ChartLocation, PathOption, appendClipElement, pathAnimation } from '../../common/utils/helper';
+import { getPoint, ChartLocation, appendClipElement, pathAnimation } from '../../common/utils/helper';
+import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { Axis } from '../../chart/axis/axis';
@@ -7,7 +8,8 @@ import { RectOption, sort, getElement } from '../../common/utils/helper';
 import { ChartSegment } from './chart-series';
 import { ChartSegmentModel } from './chart-series-model';
 import { DataUtil } from '@syncfusion/ej2-data';
-import { DateFormatOptions, PathAttributes } from '@syncfusion/ej2-base';
+import { DateFormatOptions } from '@syncfusion/ej2-base';
+import {PathAttributes }  from '@syncfusion/ej2-svg-base';
 /**
  * Base class for multi colored series
  */

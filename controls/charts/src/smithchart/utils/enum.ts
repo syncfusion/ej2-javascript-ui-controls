@@ -21,7 +21,9 @@ export type SmithchartTheme =
     /**  Render a smithchart with Highcontrast Dark theme. */
     'HighContrast'|
     /**  Render a smithchart with Bootstrap Dark theme. */
-    'BootstrapDark';
+    'BootstrapDark'|
+    /** Render a smithchart with Bootstrap4 theme. */
+    'Bootstrap4';
 
 /**
  * Defines render type of smithchart. They are

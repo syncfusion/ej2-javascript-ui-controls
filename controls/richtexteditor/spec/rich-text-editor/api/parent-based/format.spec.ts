@@ -751,7 +751,7 @@ describe('RTE PARENT BASED - formats - ', () => {
             it(' Test the Formats dropdown after refresh the component ', () => {
                 rteObj.format = {
                     default: 'Heading 1',
-                    types: [ { text: 'Heading 1', value: 'H1', cssClass: 'e-h1' },
+                    types: [{ text: 'Heading 1', value: 'H1', cssClass: 'e-h1' },
                     { text: 'Heading 2', value: 'H2', cssClass: 'e-h2' },
                     { text: 'Heading 3', value: 'H3', cssClass: 'e-h3' }]
                 };
@@ -1018,6 +1018,53 @@ describe('RTE PARENT BASED - formats - ', () => {
                 expect(toolbarClick).toHaveBeenCalled();
                 expect(changeSpy).toHaveBeenCalled();
             });
+        });
+    });
+    describe(' EJ2-23764 - Console error occurs when using the toolbar in RTE- ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p id="bold-format">RTE</p>',
+                toolbarSettings: {
+                    items: ['Bold', 'Formats']
+                },
+                format: {
+                    types: [
+                        { text: 'Heading 1', value: 'H1', cssClass: 'e-h1' },
+                        { text: 'Heading 2', value: 'H2', cssClass: 'e-h2' },
+                        { text: 'Heading 3', value: 'H3', cssClass: 'e-h3' },
+                        { text: 'Heading 4', value: 'H4', cssClass: 'e-h4' },
+                        { text: 'Heading 5', value: 'H5', cssClass: 'e-h5' },
+                        { text: 'Heading 6', value: 'H6', cssClass: 'e-h6' }
+    
+                    ],
+                    default: 'Heading 1'
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+    
+        it(' Test - apply bold and then apply the "H1" format without select node', (done) => {
+            let tag: HTMLElement = rteObj.element.querySelector('#bold-format');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, tag.childNodes[0], tag.childNodes[0], 0, 0);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
+            item.click();
+            item = document.getElementById(controlId + '_toolbar_Formats');
+            item.click();
+            setTimeout(() => {
+                let popup: HTMLElement = document.getElementById(controlId + '_toolbar_Formats-popup');
+                dispatchEvent((popup.querySelectorAll('.e-item')[0] as HTMLElement), 'mousedown');
+                (popup.querySelectorAll('.e-item')[0] as HTMLElement).click()
+                let tag: HTMLElement = rteObj.element.querySelector('#bold-format');
+                expect(tag.tagName).toEqual('H1');
+                done();
+            }, 200);
         });
     });
 });

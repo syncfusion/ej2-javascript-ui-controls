@@ -1,4 +1,5 @@
-import { SvgRenderer, compile as templateComplier, remove, merge, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { compile as templateComplier, remove, merge, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel } from '../model/base-model';
 import { AxisModel } from '../axes/axis-model';
 import { IVisiblePointer } from '../model/interface';

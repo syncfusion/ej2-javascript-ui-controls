@@ -1,6 +1,6 @@
-import { Browser, CanvasRenderer, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, SvgRenderer, createElement, extend, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, Touch, createElement, extend, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { CanvasRenderer, SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataUtil } from '@syncfusion/ej2-data';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
 
 /**
  * Specifies HeatMaps Themes
@@ -93,6 +93,22 @@ function getThemeColor(theme) {
                 toggledColor: '#000000',
                 emptyCellColor: '#EEEEEE',
                 legendLabel: '#ffffff',
+                palette: [{ 'color': '#BEE7EE' },
+                    { 'color': '#85c4cf' },
+                    { 'color': '#4CA1AF' }]
+            };
+            break;
+        case 'bootstrap4':
+            style = {
+                heatMapTitle: '#212529',
+                axisTitle: '#212529',
+                axisLabel: '#212529',
+                cellBorder: '#E9ECEF',
+                background: '#FFFFFF',
+                cellTextColor: '#212529',
+                toggledColor: '#ffffff',
+                emptyCellColor: '#E9ECEF',
+                legendLabel: '#212529',
                 palette: [{ 'color': '#BEE7EE' },
                     { 'color': '#85c4cf' },
                     { 'color': '#4CA1AF' }]
@@ -242,6 +258,14 @@ __decorate$2([
 __decorate$2([
     Property('Rectangle')
 ], AxisLabelBorder.prototype, "type", void 0);
+class BubbleSize extends ChildProperty {
+}
+__decorate$2([
+    Property('0%')
+], BubbleSize.prototype, "minimum", void 0);
+__decorate$2([
+    Property('100%')
+], BubbleSize.prototype, "maximum", void 0);
 /**
  * categories for multi level labels
  */
@@ -662,7 +686,7 @@ class PathOption extends CustomizeOption {
  * @private
  */
 class CurrentRect {
-    constructor(x, y, width, height, value, id, xIndex, yIndex, xValue, yValue, visible, displayText, textId) {
+    constructor(x, y, width, height, value, id, xIndex, yIndex, xValue, yValue, visible, displayText, textId, allowCollection) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -676,6 +700,8 @@ class CurrentRect {
         this.visible = visible;
         this.displayText = displayText;
         this.textId = textId;
+        /** @private */
+        this.allowCollection = allowCollection;
     }
 }
 /**
@@ -683,13 +709,19 @@ class CurrentRect {
  * @private
  */
 class SelectedCellDetails {
-    constructor(value, xLabel, yLabel, xValue, yValue, cellElement) {
+    constructor(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {
         this.value = value;
         this.xLabel = xLabel;
         this.yLabel = yLabel;
         this.xValue = xValue;
         this.yValue = yValue;
         this.cellElement = cellElement;
+        this.xPosition = xPosition;
+        this.yPosition = yPosition;
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
     }
 }
 /**
@@ -2790,6 +2822,9 @@ __decorate$4([
     Property(true)
 ], CellSettings.prototype, "enableCellHighlighting", void 0);
 __decorate$4([
+    Complex({}, BubbleSize)
+], CellSettings.prototype, "bubbleSize", void 0);
+__decorate$4([
     Complex({}, Border)
 ], CellSettings.prototype, "border", void 0);
 __decorate$4([
@@ -2815,10 +2850,11 @@ class Series {
      * @return {void}
      * @private
      */
-    //tslint:disable:max-line-length
+    // tslint:disable-next-line:max-func-body-length
     renderRectSeries() {
         this.createSeriesGroup();
         let heatMap = this.heatMap;
+        let isValueInRange = false;
         heatMap.xLength = heatMap.axisCollections[0].axisLabelSize;
         heatMap.yLength = heatMap.axisCollections[1].axisLabelSize; // Series Part
         let tempX = Math.round(heatMap.initialClipRect.x * 100) / 100;
@@ -2847,7 +2883,7 @@ class Series {
         circleRadius = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
             this.setTextAndColor(dataXIndex, dataYIndex);
-            let rectPosition = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '');
+            let rectPosition = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '', true);
             borderColor = tempBorder.color;
             if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
                 cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
@@ -2888,12 +2924,16 @@ class Series {
                 }
             }
             tempRectPosition.push(rectPosition);
+            if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
+                isValueInRange = this.isCellValueInRange(dataXIndex, dataYIndex);
+                rectPosition.visible = isValueInRange;
+            }
             if (cellSetting.showLabel && this.checkLabelYDisplay && this.checkLabelXDisplay) {
                 let themeCellTextStyle = cellSetting.textStyle;
                 let options = new TextOption(heatMap.element.id + '_HeatMapRectLabels_' + x, new TextBasic(Math.round((tempX + tempWidth / 2) * 100) / 100, Math.round((tempY + tempHeight / 2) * 100) / 100, 'middle', displayText, null, null, 'middle'), themeCellTextStyle, themeCellTextStyle.color || this.getSaturatedColor(this.color));
                 rectPosition.textId = options.id;
                 if (heatMap.rangeSelection && heatMap.paletteSettings.type === 'Fixed') {
-                    this.toggleCellTextColor(rectPosition, options, dataXIndex, dataYIndex);
+                    options.fill = isValueInRange ? options.fill : this.heatMap.themeStyle.toggledColor;
                 }
                 if (Browser.isIE && !heatMap.enableCanvasRendering) {
                     options.dy = this.heatMap.cellSettings.tileType === 'Bubble' ? '0.5ex' : '1ex';
@@ -2930,29 +2970,41 @@ class Series {
     /**
      * To toggle the cell text color based on legend selection.
      */
-    toggleCellTextColor(rectPosition, options, dataXIndex, dataYIndex) {
+    isCellValueInRange(dataXIndex, dataYIndex) {
+        let isValueInRange = false;
         for (let i = 0; i < this.heatMap.toggleValue.length; i++) {
-            let minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
-            let maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
-                this.heatMap.toggleValue[i + 1].value - 0.01;
+            let minValue;
+            let maxValue;
+            minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
+            if (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor') {
+                maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.maxColorValue :
+                    this.heatMap.toggleValue[i + 1].value - 0.01;
+            }
+            else {
+                maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
+                    this.heatMap.toggleValue[i + 1].value - 0.01;
+            }
             // tslint:disable-next-line:no-any
             let clonedDataSource = this.heatMap.clonedDataSource;
             let bubbleText = !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
                 clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '';
-            let text = this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
-                bubbleText : this.text;
-            if (text && text >= minValue && text <= maxValue) {
+            let text = parseFloat(this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor' ?
+                bubbleText.toString() : this.text.toString());
+            if (isNaN(text)) {
+                isValueInRange = true;
+            }
+            else if (!isNaN(text) && text >= minValue && text <= maxValue) {
                 if (!this.heatMap.toggleValue[i].visible) {
-                    options.fill = this.heatMap.themeStyle.toggledColor;
-                    rectPosition.visible = false;
+                    isValueInRange = false;
                     break;
                 }
                 else {
-                    options.fill = options.fill;
+                    isValueInRange = true;
                     break;
                 }
             }
         }
+        return isValueInRange;
     }
     /**
      * To customize the cell.
@@ -3178,13 +3230,25 @@ class Series {
      * @private
      */
     getRadiusBypercentage(text, min, max, radius) {
+        let minimum = parseInt(this.heatMap.cellSettings.bubbleSize.minimum, 10);
+        let maximum = parseInt(this.heatMap.cellSettings.bubbleSize.maximum, 10);
+        if (minimum < 0 || minimum > 100 || isNaN(minimum)) {
+            minimum = 0;
+        }
+        if (maximum < 0 || maximum > 100 || isNaN(maximum)) {
+            maximum = 100;
+        }
         let valueInPrecentage = ((text - min) /
             (max - min)) * 100;
         valueInPrecentage = isNaN(valueInPrecentage) ? 100 : valueInPrecentage;
-        radius = ((this.heatMap.bubbleSizeWithColor ||
-            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))
-            && this.heatMap.cellSettings.isInversedBubbleSize) ? radius - (radius * (valueInPrecentage / 100))
-            : radius * (valueInPrecentage / 100);
+        if ((this.heatMap.bubbleSizeWithColor ||
+            (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Size'))) {
+            if (this.heatMap.cellSettings.isInversedBubbleSize) {
+                valueInPrecentage = 100 - valueInPrecentage;
+            }
+            valueInPrecentage = ((valueInPrecentage * (maximum - minimum)) / 100) + minimum;
+        }
+        radius = radius * (valueInPrecentage / 100);
         return (Math.round(radius * 100) / 100) < 0 ? 0 : (Math.round(radius * 100) / 100);
     }
     /**
@@ -3583,7 +3647,7 @@ class TwoDimensional {
                 // tslint:disable-next-line:no-any 
                 let internalArray = tempCloneData[tempIndex][z];
                 for (let tempx = 0; tempx < internalArray.length; tempx++) {
-                    if (isNullOrUndefined(internalArray[tempx])) {
+                    if (isNullOrUndefined(internalArray[tempx]) || isNaN(internalArray[tempx])) {
                         internalArray[tempx] = '';
                     }
                     if (tempx === 0) {
@@ -4898,19 +4962,13 @@ class Legend {
      * update visibility collections of legend and series
      * @private
      */
-    updateLegendRangeCollections(load) {
-        if (load) {
-            let heatMap = this.heatMap;
-            heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
-            this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
-            heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
-            this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
-            this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
-        }
-        else {
-            this.legendRange = [];
-            this.legendTextRange = [];
-        }
+    updateLegendRangeCollections() {
+        let heatMap = this.heatMap;
+        heatMap.rangeSelection = !heatMap.legendOnLoad ? true : false;
+        this.visibilityCollections = !heatMap.legendOnLoad ? this.visibilityCollections : [];
+        heatMap.toggleValue = !heatMap.legendOnLoad ? heatMap.toggleValue : [];
+        this.legendRange = !heatMap.legendOnLoad ? this.legendRange : [];
+        this.legendTextRange = !heatMap.legendOnLoad ? this.legendTextRange : [];
     }
 }
 
@@ -4934,6 +4992,10 @@ let HeatMap = class HeatMap extends Component {
         /** @private */
         this.enableCanvasRendering = false;
         /** @private */
+        this.isCellTapHold = false;
+        /** @private */
+        this.selectedCellCount = 0;
+        /** @private */
         this.toggleValue = [];
         /** @private */
         this.legendOnLoad = true;
@@ -4951,6 +5013,8 @@ let HeatMap = class HeatMap extends Component {
         this.previousSelectedCellsRect = [];
         /** @private */
         this.multiCellCollection = [];
+        /** @private */
+        this.selectedMultiCellCollection = [];
         /** @private */
         this.tempMultiCellCollection = [];
         /**
@@ -5066,6 +5130,7 @@ let HeatMap = class HeatMap extends Component {
         }
     }
     renderElements() {
+        this.tooltipCollection = [];
         this.renderSecondaryElement();
         this.renderBorder();
         this.renderTitle();
@@ -5111,7 +5176,7 @@ let HeatMap = class HeatMap extends Component {
                     if (this.legendModule && ((newProp.cellSettings.tileType !==
                         oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -5124,7 +5189,7 @@ let HeatMap = class HeatMap extends Component {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.reRenderDatasource();
                     renderer = true;
@@ -5140,7 +5205,7 @@ let HeatMap = class HeatMap extends Component {
                     if (this.legendVisibilityByCellType && (((newProp.legendSettings.visible !== oldProp.legendSettings.visible) ||
                         (newProp.legendSettings.enableSmartLegend !== oldProp.legendSettings.enableSmartLegend)))) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(false);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     else {
                         this.legendOnLoad = false;
@@ -5152,7 +5217,7 @@ let HeatMap = class HeatMap extends Component {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -5161,7 +5226,7 @@ let HeatMap = class HeatMap extends Component {
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
                         this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections(true);
+                        this.legendModule.updateLegendRangeCollections();
                     }
                     this.cellColor.getColorCollection();
                     this.calculateBounds();
@@ -5264,7 +5329,7 @@ let HeatMap = class HeatMap extends Component {
         this.element.appendChild(tooltipDiv);
         let divElement = this.createElement('div', {
             id: this.element.id + '_CellSelection_Container',
-            styles: 'position:absolute; z-index: 2',
+            styles: 'position:absolute; z-index: 2 ; top:' + this.initialClipRect.y + 'px' + '; left:' + this.initialClipRect.x + 'px',
         });
         this.element.appendChild(divElement);
     }
@@ -5375,7 +5440,7 @@ let HeatMap = class HeatMap extends Component {
             (targetId.indexOf(this.element.id + '_YAxis_MultiLevel') !== -1)) {
             let tooltipText = getTooltipText(this.tooltipCollection, x, y);
             if (tooltipText) {
-                showTooltip(tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
+                showTooltip(tooltipText, x, y, this.element.offsetWidth, this.element.id + '_axis_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
             }
             else {
                 removeElement(this.element.id + '_axis_Tooltip');
@@ -5459,6 +5524,32 @@ let HeatMap = class HeatMap extends Component {
         EventHandler.add(this.element, move, this.heatMapMouseMove, this);
         EventHandler.add(this.element, cancel, this.heatMapMouseLeave, this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.heatMapResize.bind(this));
+        let heatmap = this;
+        /**
+         * Support for touch tapHold and tap for HeatMap
+         */
+        let touchObj = new Touch(this.element, {
+            tapHold: () => {
+                heatmap.isCellTapHold = true;
+                heatmap.getDataCollection();
+                heatmap.currentRect.allowCollection = false;
+                heatmap.setCellOpacity();
+                let argData = {
+                    heatmap: heatmap,
+                    cancel: false,
+                    name: 'cellSelected',
+                    data: heatmap.multiCellCollection
+                };
+                heatmap.trigger('cellSelected', argData);
+            },
+            tap: () => {
+                let isCellTap = false;
+                if (!heatmap.isCellTapHold) {
+                    isCellTap = true;
+                }
+                heatmap.tooltipOnMouseMove(null, heatmap.currentRect, isCellTap);
+            }
+        });
         this.setStyle(this.element);
     }
     /**
@@ -5497,7 +5588,13 @@ let HeatMap = class HeatMap extends Component {
      */
     heatMapResize(e) {
         this.resizing = true;
-        this.clearSelection();
+        let argData = {
+            heatmap: this,
+            cancel: false,
+            name: 'resized',
+            currentSize: new Size(0, 0),
+            previousSize: new Size(this.availableSize.width, this.availableSize.height),
+        };
         if (this.resizeTimer) {
             clearTimeout(this.resizeTimer);
         }
@@ -5507,11 +5604,92 @@ let HeatMap = class HeatMap extends Component {
                 return;
             }
             this.createSvg();
+            argData.currentSize = this.availableSize;
+            this.trigger('resized', argData);
             this.refreshBound();
             this.appendSvgObject();
+            if (this.allowSelection) {
+                this.updateCellSelection();
+            }
+            this.trigger('loaded', { heatmap: this });
             this.resizing = false;
         }, 500);
         return false;
+    }
+    /**
+     * Method to bind selection after window resize for HeatMap
+     */
+    updateCellSelection() {
+        let wSize = this.initialClipRect.width / this.axisCollections[0].axisLabelSize;
+        let hSize = this.initialClipRect.height / this.axisCollections[1].axisLabelSize;
+        let x = this.initialClipRect.x;
+        let y = this.initialClipRect.y;
+        if (!this.enableCanvasRendering) {
+            if (this.multiCellCollection.length !== 0) {
+                let containersRect = document.getElementById(this.element.id + '_Container_RectGroup');
+                let containerText = document.getElementById(this.element.id + '_Container_TextGroup');
+                for (let i = 0; i < containersRect.childNodes.length; i++) {
+                    containersRect.childNodes[i].setAttribute('opacity', '0.3');
+                    if (this.cellSettings.showLabel && containerText.childNodes[i]) {
+                        containerText.childNodes[i].setAttribute('opacity', '0.3');
+                    }
+                }
+                for (let i = 0; i < this.multiCellCollection.length; i++) {
+                    let collectionClass = this.multiCellCollection[i].cellElement;
+                    let cellIndex = collectionClass.id.replace(this.element.id + '_HeatMapRect_', '');
+                    let index = parseInt(cellIndex, 10);
+                    containersRect.childNodes[index].setAttribute('opacity', '1');
+                    if (this.cellSettings.showLabel && containerText.childNodes[i]) {
+                        let getText = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
+                        if (getText) {
+                            getText.setAttribute('opacity', '1');
+                        }
+                        this.addSvgClass(containersRect.childNodes[index]);
+                    }
+                }
+            }
+        }
+        else if (this.enableCanvasRendering) {
+            let rect = this.multiCellCollection;
+            let oldCanvas = document.getElementById(this.element.id + '_canvas');
+            let newCanvas = document.getElementById(this.element.id + '_secondary_canvas');
+            let initialRect = this.initialClipRect;
+            let rectHeight = initialRect.y + initialRect.height;
+            let rectWidth = initialRect.x + initialRect.width;
+            for (let i = 0; i < this.multiCellCollection.length; i++) {
+                this.multiCellCollection[i].width = rect[i].width = wSize;
+                this.multiCellCollection[i].height = rect[i].height = hSize;
+                this.multiCellCollection[i].x = rect[i].x = x + wSize * this.multiCellCollection[i].xPosition;
+                this.multiCellCollection[i].y = rect[i].y = y + hSize * this.multiCellCollection[i].yPosition;
+                let rectImage = oldCanvas.getContext('2d').getImageData(rect[i].x, rect[i].y, rect[i].width, rect[i].height);
+                newCanvas.getContext('2d').putImageData(rectImage, rect[i].x, rect[i].y);
+                oldCanvas.style.opacity = '0.3';
+            }
+            let topPositions = oldCanvas.getContext('2d').getImageData(0, 0, this.availableSize.width, initialRect.y);
+            newCanvas.getContext('2d').putImageData(topPositions, 0, 0);
+            let bottomPositions = oldCanvas.getContext('2d').getImageData(0, rectHeight, this.availableSize.width, this.availableSize.height - rectHeight);
+            newCanvas.getContext('2d').putImageData(bottomPositions, 0, initialRect.y + initialRect.height);
+            let rightPosition = oldCanvas.getContext('2d').
+                getImageData(rectWidth, 0, this.availableSize.width - rectWidth, this.availableSize.height);
+            newCanvas.getContext('2d').putImageData(rightPosition, rectWidth, 0);
+            let leftPosition = oldCanvas.getContext('2d').getImageData(0, 0, initialRect.x, this.availableSize.height);
+            newCanvas.getContext('2d').putImageData(leftPosition, 0, 0);
+            removeElement(this.element.id + '_selectedCells');
+        }
+    }
+    clearSVGSelection() {
+        let rect = document.getElementById(this.element.id + '_Container_RectGroup');
+        let text = document.getElementById(this.element.id + '_Container_TextGroup');
+        for (let i = 0; i < rect.childNodes.length; i++) {
+            let elementClassName = rect.childNodes[i].getAttribute('class');
+            if (elementClassName === this.element.id + '_selected') {
+                this.removeSvgClass(rect.childNodes[i], elementClassName);
+            }
+            rect.childNodes[i].setAttribute('opacity', '1');
+            if (this.cellSettings.showLabel && text.childNodes[i]) {
+                text.childNodes[i].setAttribute('opacity', '1');
+            }
+        }
     }
     /**
      * Get the maximum length of data source for both horizontal and vertical
@@ -5657,7 +5835,9 @@ let HeatMap = class HeatMap extends Component {
             isshowTooltip = this.showTooltip && this.tooltipModule ? isheatmapRect : false;
             if (isheatmapRect) {
                 currentRect = this.heatMapSeries.getCurrentRect(pageX, pageY);
-                isshowTooltip = this.cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip);
+                if (e.which !== 2 && e.which !== 3) {
+                    isshowTooltip = this.cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip);
+                }
             }
             this.tooltipOnMouseMove(e, currentRect, isshowTooltip);
             if (this.legendModule && this.legendSettings.visible && this.paletteSettings.type === 'Fixed' &&
@@ -5680,7 +5860,7 @@ let HeatMap = class HeatMap extends Component {
                 tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) ||
                     (this.legendModule && tooltipRect && getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY));
                 if (tooltipText) {
-                    showTooltip(tooltipText, this.mouseX, this.mouseY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
+                    showTooltip(tooltipText, pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
                 }
                 else {
                     removeElement(this.element.id + '_canvas_Tooltip');
@@ -5693,16 +5873,18 @@ let HeatMap = class HeatMap extends Component {
      * Triggering cell selection
      */
     cellSelectionOnMouseMove(e, currentRect, pageX, pageY, isshowTooltip) {
-        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart') && this.allowSelection) {
+        if ((this.cellSettings.tileType === 'Rect' && e.type === 'mousedown' || e.type === 'touchstart'
+            || e.type === 'pointerdown') && this.allowSelection) {
             this.previousRect = currentRect;
             this.multiSelection = true;
             this.rectSelected = true;
             this.initialCellX = pageX;
             this.initialCellY = pageY;
+            e.preventDefault();
         }
         if (this.cellSettings.tileType === 'Rect' && this.multiSelection && currentRect) {
-            this.highlightSelectedCells(this.previousRect, currentRect, pageX, pageY);
             isshowTooltip = false;
+            this.highlightSelectedCells(this.previousRect, currentRect, pageX, pageY, e);
         }
         return isshowTooltip;
     }
@@ -5710,7 +5892,7 @@ let HeatMap = class HeatMap extends Component {
      * Rendering tooltip on mouse move
      */
     tooltipOnMouseMove(e, currentRect, isshowTooltip) {
-        if (isshowTooltip) {
+        if (isshowTooltip && currentRect) {
             if (this.tempTooltipRectId !== currentRect.id) {
                 if (this.showTooltip) {
                     if ((this.cellSettings.enableCellHighlighting || (this.tooltipModule && this.showTooltip))
@@ -5726,8 +5908,10 @@ let HeatMap = class HeatMap extends Component {
                             this.tooltipModule.tooltipObject.fadeOut();
                             this.tooltipModule.isFadeout = true;
                         }, 1500);
-                        if (e.type === 'touchmove') {
-                            e.preventDefault();
+                        if (e) {
+                            if (e.type === 'touchmove') {
+                                e.preventDefault();
+                            }
                         }
                     }
                 }
@@ -5735,12 +5919,14 @@ let HeatMap = class HeatMap extends Component {
             }
         }
         else {
-            if (e.target.id.indexOf('Celltooltip') === -1) {
-                if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
-                    this.heatMapSeries.highlightSvgRect(e.target.id);
-                }
-                if (this.tooltipModule && this.showTooltip) {
-                    this.tooltipModule.showHideTooltip(false, true);
+            if (e !== null) {
+                if (e.target.id.indexOf('Celltooltip') === -1) {
+                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
+                        this.heatMapSeries.highlightSvgRect(e.target.id);
+                    }
+                    if (this.tooltipModule && this.showTooltip) {
+                        this.tooltipModule.showHideTooltip(false, true);
+                    }
                 }
             }
             this.tempTooltipRectId = '';
@@ -5749,21 +5935,12 @@ let HeatMap = class HeatMap extends Component {
     /**
      * To select the multiple cells on mouse move action
      */
-    highlightSelectedCells(previousRect, currentRect, pageX, pageY) {
+    highlightSelectedCells(previousRect, currentRect, pageX, pageY, e) {
         let pXIndex = previousRect.xIndex;
         let pYIndex = previousRect.yIndex;
         let cXIndex = currentRect.xIndex;
         let cYIndex = currentRect.yIndex;
-        let xIndex = Math.abs((currentRect.xIndex === previousRect.xIndex ? 0 : currentRect.xIndex - previousRect.xIndex)) + 1;
-        let yIndex = Math.abs((currentRect.yIndex === previousRect.yIndex ? 0 : currentRect.yIndex - previousRect.yIndex)) + 1;
-        let minX = cXIndex > pXIndex ? pXIndex : cXIndex;
-        let maxX = cXIndex > pXIndex ? cXIndex : pXIndex;
-        let minY = cYIndex > pYIndex ? pYIndex : cYIndex;
-        let maxY = cYIndex > pYIndex ? cYIndex : pYIndex;
-        let tempX = minX;
-        let tempY = minY;
-        let cellX = previousRect.x;
-        let cellY = previousRect.y;
+        this.currentRect = currentRect;
         this.selectedCellsRect = new Rect(0, 0, 0, 0);
         this.selectedCellsRect.x = previousRect.x > currentRect.x ? currentRect.x : previousRect.x;
         this.selectedCellsRect.y = previousRect.y > currentRect.y ? currentRect.y : previousRect.y;
@@ -5771,110 +5948,205 @@ let HeatMap = class HeatMap extends Component {
             (cXIndex - pXIndex)) + 1) * currentRect.width;
         this.selectedCellsRect.height = ((previousRect.y > currentRect.y ? (pYIndex - cYIndex) :
             (cYIndex - pYIndex)) + 1) * currentRect.height;
-        this.removeSelectedCellsBorder();
-        this.multiCellCollection = [];
-        for (let i = 0; i < (xIndex * yIndex); i++) {
-            this.getSelectedCellDatas(cellX, cellY);
-            if (tempX < maxX) {
-                cellX += cXIndex > pXIndex ? currentRect.width : -currentRect.width;
-                tempX++;
-            }
-            else if (tempY < maxY) {
-                cellY += cYIndex > pYIndex ? currentRect.height : -currentRect.height;
-                cellX = previousRect.x;
-                tempX = minX;
-            }
+        if (e.type === 'touchstart') {
+            this.isCellTapHold = true;
+        }
+        else {
+            this.isCellTapHold = false;
+        }
+        e.preventDefault();
+        if (e.ctrlKey === false && e.type !== 'touchstart' && e.type !== 'touchmove') {
+            this.removeSelectedCellsBorder();
         }
         let x = this.initialCellX > pageX ? pageX : this.initialCellX;
         let y = this.initialCellY > pageY ? pageY : this.initialCellY;
         let parentDiv = document.getElementById(this.element.id + '_CellSelection_Container');
-        parentDiv.style.left = (this.selectedCellsRect.x - 1) + 'px';
-        parentDiv.style.top = (this.selectedCellsRect.y - 1) + 'px';
         let svgObject = this.renderer.createSvg({
             id: this.element.id + '_CellSelection_Container_svg',
-            width: this.selectedCellsRect.width + 2,
-            height: this.selectedCellsRect.height + 2
+            width: this.initialClipRect.width,
+            height: this.initialClipRect.height,
         });
         parentDiv.appendChild(svgObject);
         let parent = document.getElementById(this.element.id + '_CellSelection_Container_svg');
-        let rect = new Rect(x - this.selectedCellsRect.x, y - this.selectedCellsRect.y, Math.abs(pageX - this.initialCellX), Math.abs(pageY - this.initialCellY));
+        let rect = new Rect(x - this.initialClipRect.x, y - this.initialClipRect.y, Math.abs(pageX - this.initialCellX), Math.abs(pageY - this.initialCellY));
         let rectItems = new RectOption(this.element.id + '_selectedCells', '#87ceeb', { color: 'transparent', width: 1 }, 1, rect, '#0000ff');
         parent.appendChild(this.renderer.drawRectangle(rectItems));
         document.getElementById(this.element.id + '_selectedCells').style.opacity = '0.5';
     }
     /**
-     * To select the multiple cells on mouse move action
+     * Method to get selected cell data collection for HeatMap
+     */
+    getDataCollection() {
+        let pXIndex = this.previousRect.xIndex;
+        let pYIndex = this.previousRect.yIndex;
+        let cXIndex = this.currentRect.xIndex;
+        let cYIndex = this.currentRect.yIndex;
+        let minX = cXIndex > pXIndex ? pXIndex : cXIndex;
+        let maxX = cXIndex > pXIndex ? cXIndex : pXIndex;
+        let minY = cYIndex > pYIndex ? pYIndex : cYIndex;
+        let maxY = cYIndex > pYIndex ? cYIndex : pYIndex;
+        let tempX = minX;
+        let tempY = minY;
+        let cellX = this.previousRect.x;
+        let cellY = this.previousRect.y;
+        this.getCellCollection(this.currentRect, this.previousRect, true, tempX, tempY, maxX, maxY, minX, cellX, cellY);
+        tempX = minX;
+        tempY = minY;
+        cellX = this.previousRect.x;
+        cellY = this.previousRect.y;
+        this.checkSelectedCells();
+        this.getCellCollection(this.currentRect, this.previousRect, false, tempX, tempY, maxX, maxY, minX, cellX, cellY);
+        this.selectedMultiCellCollection = [];
+        this.canvasSelectedCells = new Rect(0, 0, 0, 0);
+        this.selectedCellCount = 0;
+    }
+    /**
+     * To get the selected datas.
+     */
+    getCellCollection(currentRect, previousRect, singleCellData, tempX, tempY, maxX, maxY, minX, cellX, cellY) {
+        let xIndex = Math.abs((currentRect.xIndex === previousRect.xIndex ?
+            0 : currentRect.xIndex - previousRect.xIndex)) + 1;
+        let yIndex = Math.abs((currentRect.yIndex === previousRect.yIndex ?
+            0 : currentRect.yIndex - previousRect.yIndex)) + 1;
+        for (let i = 0; i < (xIndex * yIndex); i++) {
+            if (singleCellData) {
+                this.getSelectedCellData(cellX, cellY, true);
+            }
+            else {
+                this.getSelectedCellData(cellX, cellY, false);
+            }
+            if (tempX < maxX) {
+                cellX += currentRect.xIndex > previousRect.xIndex ? currentRect.width : -currentRect.width;
+                tempX++;
+            }
+            else if (tempY < maxY) {
+                cellY += currentRect.yIndex > previousRect.yIndex ? currentRect.height : -currentRect.height;
+                cellX = previousRect.x;
+                tempX = minX;
+            }
+        }
+    }
+    /**
+     * To remove the selection on mouse click without ctrl key.
      */
     removeSelectedCellsBorder() {
         if (!this.enableCanvasRendering) {
-            for (let i = 0; i < this.multiCellCollection.length; i++) {
-                let rectElement = this.multiCellCollection[i].cellElement;
-                if (rectElement) {
-                    let index = rectElement.id.slice((this.element.id + '_HeatMapRect_').length);
-                    let textElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
-                    let elementClassName = rectElement.getAttribute('class');
-                    if (this.tempMultiCellCollection.length > 0) {
-                        rectElement.setAttribute('opacity', '0.3');
-                        if (this.cellSettings.showLabel && textElement) {
-                            textElement.setAttribute('opacity', '0.3');
-                        }
-                    }
-                    this.removeSvgClass(rectElement, textElement, elementClassName);
+            let containerRect = document.getElementById(this.element.id + '_Container_RectGroup');
+            let containerText = document.getElementById(this.element.id + '_Container_TextGroup');
+            for (let i = 0; i < containerRect.childNodes.length; i++) {
+                let elementClassName = containerRect.childNodes[i].getAttribute('class');
+                containerRect.childNodes[i].setAttribute('opacity', '0.3');
+                if (this.cellSettings.showLabel && containerText.childNodes[i]) {
+                    containerText.childNodes[i].setAttribute('opacity', '0.3');
+                    this.removeSvgClass(containerRect.childNodes[i], elementClassName);
                 }
             }
         }
         else {
             let ctx = this.secondaryCanvasRenderer.ctx;
-            let rect = this.previousSelectedCellsRect[0];
-            if (this.previousSelectedCellsRect.length > 0) {
+            for (let i = 0; i < this.previousSelectedCellsRect.length; i++) {
+                let rect = this.previousSelectedCellsRect[i];
                 ctx.save();
                 ctx.clearRect(rect.x - 1, rect.y - 1, rect.width + 2, rect.height + 2);
                 ctx.restore();
-                this.previousSelectedCellsRect.shift();
+            }
+            for (let i = 0; i < this.multiCellCollection.length; i++) {
+                let rects = this.multiCellCollection[i];
+                if (this.multiCellCollection.length > 0) {
+                    ctx.save();
+                    ctx.clearRect(rects.x - 1, rects.y - 1, rects.width + 2, rects.height + 2);
+                }
             }
         }
-        if (this.element.id + '_selectedCellsBorder') {
-            removeElement(this.element.id + '_selectedCellsBorder');
+        this.multiCellCollection = [];
+    }
+    /**
+     * To highlight the selected multiple cells on mouse move action in canvas mode.
+     */
+    highlightSelectedAreaInCanvas(rect) {
+        if (rect.x) {
+            let oldCanvas = document.getElementById(this.element.id + '_canvas');
+            let newCanvas = document.getElementById(this.element.id + '_secondary_canvas');
+            let initialRect = this.initialClipRect;
+            let rectImage = oldCanvas.getContext('2d').getImageData(rect.x, rect.y, rect.width, rect.height);
+            newCanvas.getContext('2d').putImageData(rectImage, rect.x, rect.y);
+            oldCanvas.style.opacity = '0.3';
+            let topPosition = oldCanvas.getContext('2d').getImageData(0, 0, this.availableSize.width, initialRect.y);
+            newCanvas.getContext('2d').putImageData(topPosition, 0, 0);
+            let bottomPosition = oldCanvas.getContext('2d').getImageData(0, initialRect.y + initialRect.height, this.availableSize.width, this.availableSize.height - (initialRect.y + initialRect.height));
+            newCanvas.getContext('2d').putImageData(bottomPosition, 0, initialRect.y + initialRect.height);
+            let rightPosition = oldCanvas.getContext('2d').getImageData(initialRect.x + initialRect.width, 0, this.availableSize.width - (initialRect.x + initialRect.width), this.availableSize.height);
+            newCanvas.getContext('2d').putImageData(rightPosition, initialRect.x + initialRect.width, 0);
+            let leftPosition = oldCanvas.getContext('2d').getImageData(0, 0, initialRect.x, this.availableSize.height);
+            newCanvas.getContext('2d').putImageData(leftPosition, 0, 0);
         }
     }
     /**
-     * To select the multiple cells on mouse move action
+     * To get the collection of selected cells.
      */
-    highlightSelectedAreaInCanvas(rect) {
-        let oldCanvas = document.getElementById(this.element.id + '_canvas');
-        let newCanvas = document.getElementById(this.element.id + '_secondary_canvas');
-        let initialRect = this.initialClipRect;
-        let rectImage = oldCanvas.getContext('2d').getImageData(rect.x, rect.y, rect.width, rect.height);
-        newCanvas.getContext('2d').putImageData(rectImage, rect.x, rect.y);
-        oldCanvas.style.opacity = '0.3';
-        let topPosition = oldCanvas.getContext('2d').getImageData(0, 0, this.availableSize.width, initialRect.y);
-        newCanvas.getContext('2d').putImageData(topPosition, 0, 0);
-        let bottomPosition = oldCanvas.getContext('2d').getImageData(0, initialRect.y + initialRect.height, this.availableSize.width, this.availableSize.height - (initialRect.y + initialRect.height));
-        newCanvas.getContext('2d').putImageData(bottomPosition, 0, initialRect.y + initialRect.height);
-        let rightPosition = oldCanvas.getContext('2d').getImageData(initialRect.x + initialRect.width, 0, this.availableSize.width - (initialRect.x + initialRect.width), this.availableSize.height);
-        newCanvas.getContext('2d').putImageData(rightPosition, initialRect.x + initialRect.width, 0);
-        let leftPosition = oldCanvas.getContext('2d').getImageData(0, 0, initialRect.x, this.availableSize.height);
-        newCanvas.getContext('2d').putImageData(leftPosition, 0, 0);
-    }
-    /**
-     * To select the multiple cells on mouse move action
-     */
-    getSelectedCellDatas(cellX, cellY) {
+    getSelectedCellData(cellX, cellY, cellCollection) {
         let xAxis = this.axisCollections[0];
         let yAxis = this.axisCollections[1];
         let xLabels = xAxis.tooltipLabels;
         let yLabels = yAxis.tooltipLabels.slice().reverse();
         let rectPosition = this.heatMapSeries.getCurrentRect(cellX + 1, cellY + 1);
         let currentRect = document.getElementById(rectPosition.id);
-        let cellDetails = new SelectedCellDetails(null, '', '', 0, 0, null);
+        let cellDetails = new SelectedCellDetails(null, '', '', 0, 0, null, 0, 0, 0, 0, 0, 0);
         cellDetails.value = rectPosition.value;
         cellDetails.xLabel = xLabels[rectPosition.xIndex].toString();
         cellDetails.yLabel = yLabels[rectPosition.yIndex].toString();
         cellDetails.xValue = xAxis.labelValue[rectPosition.xIndex];
         cellDetails.yValue = yAxis.labelValue.slice().reverse()[rectPosition.yIndex];
         cellDetails.cellElement = this.enableCanvasRendering ? null : currentRect;
+        cellDetails.xPosition = rectPosition.xIndex;
+        cellDetails.yPosition = rectPosition.yIndex;
+        cellDetails.width = this.currentRect.width;
+        cellDetails.height = this.currentRect.height;
+        cellDetails.x = this.currentRect.x;
+        cellDetails.y = this.currentRect.y;
+        this.currentRect.allowCollection = true;
         this.addSvgClass(currentRect);
-        if (rectPosition.visible && !isNullOrUndefined(rectPosition.value)) {
+        if (cellCollection) {
+            this.selectedMultiCellCollection.push(cellDetails);
+            this.currentRect.allowCollection = false;
+        }
+        else {
+            for (let i = 0; i < this.multiCellCollection.length; i++) {
+                if (this.multiCellCollection[i].xPosition === cellDetails.xPosition &&
+                    this.multiCellCollection[i].yPosition === cellDetails.yPosition) {
+                    this.currentRect.allowCollection = false;
+                    if (this.selectedCellCount === this.selectedMultiCellCollection.length) {
+                        this.currentRect.allowCollection = false;
+                        if (!this.enableCanvasRendering) {
+                            for (let j = 0; j < this.selectedMultiCellCollection.length; j++) {
+                                let rectElement = this.selectedMultiCellCollection[j].cellElement;
+                                if (rectElement) {
+                                    let index = rectElement.id.replace(this.element.id + '_HeatMapRect_', '');
+                                    let containerText = document.getElementById(this.element.id + '_Container_TextGroup');
+                                    let elementClassName = rectElement.getAttribute('class');
+                                    rectElement.setAttribute('opacity', '0.3');
+                                    let getText = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
+                                    if (getText) {
+                                        getText.setAttribute('opacity', '0.3');
+                                    }
+                                    this.removeSvgClass(rectElement, elementClassName);
+                                }
+                            }
+                        }
+                        else {
+                            let ctx = this.secondaryCanvasRenderer.ctx;
+                            let rect = this.canvasSelectedCells;
+                            ctx.save();
+                            ctx.clearRect(rect.x - 1, rect.y - 1, rect.width + 2, rect.height + 2);
+                            ctx.restore();
+                            this.selectedCellsRect = new Rect(0, 0, 0, 0);
+                        }
+                        this.multiCellCollection.splice(i, 1);
+                    }
+                }
+            }
+        }
+        if (rectPosition.visible && !isNullOrUndefined(rectPosition.value) && this.currentRect.allowCollection === true) {
             this.multiCellCollection.push(cellDetails);
         }
     }
@@ -5892,7 +6164,7 @@ let HeatMap = class HeatMap extends Component {
      * To remove class for unselected cells
      * @private
      */
-    removeSvgClass(rectElement, textElement, className) {
+    removeSvgClass(rectElement, className) {
         if (className) {
             rectElement.setAttribute('class', className.replace(className, ''));
         }
@@ -5901,26 +6173,22 @@ let HeatMap = class HeatMap extends Component {
      * To clear the multi cell selection
      */
     clearSelection() {
-        if (!this.enableCanvasRendering) {
-            let rect = document.getElementById(this.element.id + '_Container_RectGroup');
-            let text = document.getElementById(this.element.id + '_Container_TextGroup');
-            for (let i = 0; i < rect.childNodes.length; i++) {
-                let elementClassName = rect.children[i].getAttribute('class');
-                if (elementClassName === this.element.id + '_selected') {
-                    this.removeSvgClass(rect.children[i], text.children[i], elementClassName);
-                }
-                rect.children[i].setAttribute('opacity', '1');
-                if (this.cellSettings.showLabel && text && text.children[i]) {
-                    text.children[i].setAttribute('opacity', '1');
-                }
-            }
+        if (!this.enableCanvasRendering && this.allowSelection) {
+            this.clearSVGSelection();
         }
-        else {
-            if (this.previousSelectedCellsRect.length > 0) {
-                let ctx = this.secondaryCanvasRenderer.ctx;
+        if (this.enableCanvasRendering) {
+            let ctx = this.secondaryCanvasRenderer.ctx;
+            for (let i = 0; i < this.previousSelectedCellsRect.length; i++) {
                 ctx.save();
-                ctx.clearRect(this.previousSelectedCellsRect[0].x - 1, this.previousSelectedCellsRect[0].y - 1, this.previousSelectedCellsRect[0].width + 2, this.previousSelectedCellsRect[0].height + 2);
+                ctx.clearRect(this.previousSelectedCellsRect[i].x - 1, this.previousSelectedCellsRect[i].y - 1, this.previousSelectedCellsRect[i].width + 2, this.previousSelectedCellsRect[i].height + 2);
                 ctx.restore();
+            }
+            for (let i = 0; i < this.multiCellCollection.length; i++) {
+                let rects = this.multiCellCollection[i];
+                if (this.multiCellCollection.length > 0) {
+                    ctx.save();
+                    ctx.clearRect(rects.x - 1, rects.y - 1, rects.width + 2, rects.height + 2);
+                }
             }
             let canvas = document.getElementById(this.element.id + '_canvas');
             canvas.style.opacity = '1';
@@ -5928,9 +6196,6 @@ let HeatMap = class HeatMap extends Component {
         this.tempMultiCellCollection = [];
         this.multiCellCollection = [];
         this.rectSelected = false;
-        if (this.element.id + '_selectedCellsBorder') {
-            removeElement(this.element.id + '_selectedCellsBorder');
-        }
     }
     renderMousePointer(pageX, pageY) {
         let legendRange = this.legendModule.legendRange;
@@ -5975,43 +6240,24 @@ let HeatMap = class HeatMap extends Component {
         }
         if (this.allowSelection && this.multiSelection) {
             this.multiSelection = false;
-            if (e.type === 'mouseup' || e.type === 'touchend') {
-                if (!this.enableCanvasRendering) {
-                    this.tempMultiCellCollection.push(this.multiCellCollection);
-                    let containerRect = document.getElementById(this.element.id + '_Container_RectGroup');
-                    let containerText = document.getElementById(this.element.id + '_Container_TextGroup');
-                    for (let i = 0; i < containerRect.childNodes.length; i++) {
-                        let elementClassName = containerRect.children[i].getAttribute('class');
-                        if (elementClassName !== this.element.id + '_selected') {
-                            containerRect.children[i].setAttribute('opacity', '0.3');
-                            if (this.cellSettings.showLabel && containerText.children[i]) {
-                                containerText.children[i].setAttribute('opacity', '0.3');
-                            }
-                        }
-                        else {
-                            containerRect.children[i].setAttribute('opacity', '1');
-                            if (this.cellSettings.showLabel && containerText.children[i]) {
-                                containerText.children[i].setAttribute('opacity', '1');
-                            }
-                        }
+            if (e.type === 'mouseup' || e.type === 'touchend' || e.type === 'pointerup') {
+                if (e.which !== 2 && e.which !== 3) {
+                    if (this.isCellTapHold === false) {
+                        this.getDataCollection();
+                        this.currentRect.allowCollection = false;
+                        this.setCellOpacity();
+                        let argData = {
+                            heatmap: this,
+                            cancel: false,
+                            name: 'cellSelected',
+                            data: this.multiCellCollection
+                        };
+                        this.trigger('cellSelected', argData);
+                    }
+                    else {
+                        this.isCellTapHold = false;
                     }
                 }
-                else {
-                    this.previousSelectedCellsRect.push(this.selectedCellsRect);
-                    this.highlightSelectedAreaInCanvas(this.selectedCellsRect);
-                }
-                removeElement(this.element.id + '_selectedCells');
-                let rect = new Rect(1, 1, this.selectedCellsRect.width, this.selectedCellsRect.height);
-                let rectItems = new RectOption(this.element.id + '_selectedCellsBorder', 'none', { color: 'transparent', width: 1 }, 1, rect, 'Black');
-                let parent = document.getElementById(this.element.id + '_CellSelection_Container_svg');
-                parent.appendChild(this.renderer.drawRectangle(rectItems));
-                let argData = {
-                    heatmap: this,
-                    cancel: false,
-                    name: 'cellSelected',
-                    data: this.multiCellCollection
-                };
-                this.trigger('cellSelected', argData);
             }
             else if (e.type === 'mouseleave' && (this.element.id + '_selectedCells')) {
                 removeElement(this.element.id + '_selectedCells');
@@ -6066,6 +6312,76 @@ let HeatMap = class HeatMap extends Component {
         return true;
     }
     /**
+     * Method to Check for deselection of cell.
+     */
+    checkSelectedCells() {
+        if (!this.enableCanvasRendering) {
+            for (let i = 0; i < this.multiCellCollection.length; i++) {
+                for (let j = 0; j < this.selectedMultiCellCollection.length; j++) {
+                    if (this.selectedMultiCellCollection[j].cellElement.getAttribute('id')
+                        === this.multiCellCollection[i].cellElement.getAttribute('id')) {
+                        this.selectedCellCount++;
+                    }
+                }
+            }
+        }
+        else {
+            this.canvasSelectedCells = new Rect(0, 0, 0, 0);
+            this.canvasSelectedCells.x = this.selectedCellsRect.x;
+            this.canvasSelectedCells.y = this.selectedCellsRect.y;
+            this.canvasSelectedCells.width = this.selectedCellsRect.width;
+            this.canvasSelectedCells.height = this.selectedCellsRect.height;
+            for (let i = 0; i < this.multiCellCollection.length; i++) {
+                for (let j = 0; j < this.selectedMultiCellCollection.length; j++) {
+                    if (this.selectedMultiCellCollection[j].xPosition === this.multiCellCollection[i].xPosition &&
+                        this.selectedMultiCellCollection[j].yPosition === this.multiCellCollection[i].yPosition) {
+                        this.selectedCellCount++;
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Method to remove opacity for text of selected cell for HeatMap
+     */
+    removeOpacity(containersRect, containerText) {
+        for (let i = 0; i < containersRect.childNodes.length; i++) {
+            containersRect.childNodes[i].setAttribute('opacity', '0.3');
+            if (this.cellSettings.showLabel && containerText.childNodes[i]) {
+                containerText.childNodes[i].setAttribute('opacity', '0.3');
+            }
+        }
+    }
+    /**
+     * Method to set opacity for selected cell for HeatMap
+     */
+    setCellOpacity() {
+        if (!this.enableCanvasRendering) {
+            if (this.multiCellCollection.length !== 0) {
+                this.tempMultiCellCollection.push(this.multiCellCollection);
+                let containersRect = document.getElementById(this.element.id + '_Container_RectGroup');
+                let containerText = document.getElementById(this.element.id + '_Container_TextGroup');
+                this.removeOpacity(containersRect, containerText);
+                for (let i = 0; i < this.multiCellCollection.length; i++) {
+                    let collectionClasss = this.multiCellCollection[i].cellElement;
+                    let index = parseInt(collectionClasss.id.replace(this.element.id + '_HeatMapRect_', ''), 10);
+                    containersRect.childNodes[index].setAttribute('opacity', '1');
+                    if (this.cellSettings.showLabel) {
+                        let getText = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
+                        if (getText) {
+                            getText.setAttribute('opacity', '1');
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            this.previousSelectedCellsRect.push(this.selectedCellsRect);
+            this.highlightSelectedAreaInCanvas(this.selectedCellsRect);
+        }
+        removeElement(this.element.id + '_selectedCells');
+    }
+    /**
      * To create div container for rendering two layers of canvas.
      * @return {void}
      * @private
@@ -6106,6 +6422,12 @@ __decorate([
 __decorate([
     Event()
 ], HeatMap.prototype, "tooltipRender", void 0);
+__decorate([
+    Event()
+], HeatMap.prototype, "resized", void 0);
+__decorate([
+    Event()
+], HeatMap.prototype, "loaded", void 0);
 __decorate([
     Event()
 ], HeatMap.prototype, "cellRender", void 0);
@@ -6576,5 +6898,5 @@ class Adaptor {
  * HeatMap index file
  */
 
-export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
+export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, BubbleSize, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
 //# sourceMappingURL=ej2-heatmap.es2015.js.map

@@ -12,6 +12,7 @@ import { SnapConstraints } from '../../../src/diagram/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 Diagram.Inject(ConnectorEditing);
 
@@ -35,6 +36,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentPointToPortRendering' });
             document.body.appendChild(ele);
             let nodesCollection: NodeModel[] = []; let count = 1; let offsetY = 100; let offsetX = 100
@@ -99,7 +106,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -254,6 +261,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentNodeToPointRendering' });
             document.body.appendChild(ele);
             let nodesCollection: NodeModel[] = []; let count = 1; let offsetY = 100; let offsetX = 100
@@ -317,7 +330,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -378,6 +391,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentPointToNodeRendering' });
             document.body.appendChild(ele);
             let nodesCollection: NodeModel[] = []; let count = 1; let offsetY = 100; let offsetX = 100
@@ -442,7 +461,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -504,6 +523,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentNodeToNodeRendering' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = []; let count = 1; let offsetY = 100; let offsetX = 100
@@ -617,7 +642,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -676,6 +701,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentNodeToPortRendering' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = []; let count = 1; let offsetY = 100; let offsetX = 100
@@ -797,7 +828,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -952,6 +983,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentPortToNodeRendering' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [];
@@ -1076,7 +1113,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -1231,6 +1268,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentPortToPortRendering' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = []; let count = 1; let offsetY = 100; let offsetX = 100
@@ -1340,7 +1383,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -1623,6 +1666,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthogonalSegmentPointToPointRendering' });
             document.body.appendChild(ele);
 
@@ -1645,7 +1694,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -1706,6 +1755,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let mouseEvents = new MouseEvents();
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramconnectorsegments' });
             document.body.appendChild(ele);
 
@@ -1812,7 +1867,7 @@ describe('Diagram Control', () => {
             ];
             diagram = new Diagram({
                 width: '1000px', height: '700px', nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -1855,6 +1910,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramBezierSegment' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -2062,7 +2123,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: nodes,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
@@ -2095,6 +2156,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramRemoveDragSourceAndTargetEnd' });
             document.body.appendChild(ele);
             let connectors: ConnectorModel[] = [
@@ -2135,7 +2202,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = (ConnectorConstraints.Default & ~ConnectorConstraints.DragSourceEnd & ~ConnectorConstraints.DragTargetEnd) | ConnectorConstraints.DragSegmentThumb;
@@ -2177,6 +2244,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramRemoveDragSegmentThumb' });
             document.body.appendChild(ele);
             let connectors: ConnectorModel[] = [
@@ -2217,7 +2290,7 @@ describe('Diagram Control', () => {
 
             diagram = new Diagram({
                 width: 1000, height: 1000,
-                connectors: connectors, 
+                connectors: connectors,
                 getConnectorDefaults: (obj: ConnectorModel) => {
                     let connector: ConnectorModel = {};
                     connector.constraints = ConnectorConstraints.Default;
@@ -2259,6 +2332,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthoNodeToNode' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -2295,8 +2374,8 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
-        it('Checking Orthogonal - when drag segment thumb less node width or node height', function(done) {
-            
+        it('Checking Orthogonal - when drag segment thumb less node width or node height', function (done) {
+
             let mouseEvents: MouseEvents = new MouseEvents();
             mouseEvents.clickEvent(diagramCanvas, 10 + diagram.element.offsetLeft, 10 + diagram.element.offsetTop);
             diagram.select([diagram.connectors[0]]);
@@ -2315,6 +2394,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[1] as Connector).intermediatePoints.length == 5 && (diagram.connectors[1] as Connector).intermediatePoints[0].x == 189 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 211.5 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 169 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 211.5 && (diagram.connectors[1] as Connector).intermediatePoints[2].x == 169 && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 16 && (diagram.connectors[1] as Connector).intermediatePoints[3].x == 20 && (diagram.connectors[1] as Connector).intermediatePoints[3].y == 16).toBe(true);
             done();
         });
+        
 
     });
 
@@ -2324,6 +2404,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramOrthoChangeSourcePoint' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -2372,8 +2458,8 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
-        it('Checking source point to port, port to node, node to port', function(done) {
-            
+        it('Checking source point to port, port to node, node to port', function (done) {
+
             let mouseEvents: MouseEvents = new MouseEvents();
             mouseEvents.clickEvent(diagramCanvas, 10 + diagram.element.offsetLeft, 10 + diagram.element.offsetTop);
             diagram.select([diagram.connectors[0]]);
@@ -2404,25 +2490,34 @@ describe('Diagram Control', () => {
             done();
         });
 
-        it('Checking source point to port (Opposite direction)', function(done) {
+        it('Checking source point to port (Opposite direction)', function (done) {
             let mouseEvents: MouseEvents = new MouseEvents();
             mouseEvents.clickEvent(diagramCanvas, 10 + diagram.element.offsetLeft, 10 + diagram.element.offsetTop);
             diagram.select([diagram.connectors[1]]);
             let startX = (diagram.connectors[1] as Connector).sourcePoint.x;
             let startY = (diagram.connectors[1] as Connector).sourcePoint.y;
             mouseEvents.mouseDownEvent(diagramCanvas, startX + diagram.element.offsetLeft, startY + diagram.element.offsetTop);
-            mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].offsetX + diagram.element.offsetLeft, diagram.nodes[1].offsetY - diagram.nodes[1].height / 2 );
+            mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].offsetX + diagram.element.offsetLeft, diagram.nodes[1].offsetY - diagram.nodes[1].height / 2);
             expect(diagram.connectors[1].sourceID == 'node2' && diagram.connectors[1].sourcePortID == 'port2').toBe(true);
             mouseEvents.mouseUpEvent(diagramCanvas, diagram.nodes[1].offsetX + diagram.element.offsetLeft, diagram.nodes[1].offsetY + diagram.nodes[1].height / 2);
-             diagram.select([diagram.connectors[2]]);
+            diagram.select([diagram.connectors[2]]);
             startX = (diagram.connectors[2] as Connector).sourcePoint.x;
             startY = (diagram.connectors[2] as Connector).sourcePoint.y;
             mouseEvents.mouseDownEvent(diagramCanvas, startX + diagram.element.offsetLeft, startY + diagram.element.offsetTop);
-            mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].offsetX - diagram.nodes[1].width/2 + 4, diagram.nodes[1].offsetY);
+            mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].offsetX - diagram.nodes[1].width / 2 + 4, diagram.nodes[1].offsetY);
             expect(diagram.connectors[2].sourceID == 'node2' && diagram.connectors[2].sourcePortID == 'port1').toBe(true);
             mouseEvents.mouseUpEvent(diagramCanvas, diagram.nodes[1].offsetX + diagram.element.offsetLeft, diagram.nodes[1].offsetY + diagram.nodes[1].height / 2);
             done();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
     });
 

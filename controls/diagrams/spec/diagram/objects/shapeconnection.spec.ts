@@ -4,6 +4,7 @@ import { NodeModel, TextModel, FlowShapeModel, BasicShapeModel, PathModel } from
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Segments } from '../../../src/diagram/enum/enum';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
  * Connections with shape boundaries
@@ -15,6 +16,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -76,6 +83,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -125,12 +138,19 @@ describe('Diagram Control', () => {
                 connector.targetPoint.x === 175 && connector.targetPoint.y === 350).toBe(true);
             done();
         });
+
     });
 
     describe('Connect the shapes with rotation angle', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -178,12 +198,19 @@ describe('Diagram Control', () => {
                 connector.targetPoint.x === 255.17 && connector.targetPoint.y === 277.58).toBe(true);
             done();
         });
+
     });
 
     describe('Connect the complex path data shapes ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -245,12 +272,19 @@ describe('Diagram Control', () => {
                 Math.round(connector.targetPoint.x) === 276 && Math.round(connector.targetPoint.y) === 288).toBe(true);
             done();
         });
+
     });
 
     describe('connect the path data shapes with straight connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -312,12 +346,20 @@ describe('Diagram Control', () => {
                 Math.round(connector.targetPoint.x) === 276 && Math.round(connector.targetPoint.y) === 288).toBe(true);
             done();
         });
+
     });
     describe('Connect the flow shape with orthogonal connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
+
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -372,6 +414,7 @@ describe('Diagram Control', () => {
                 connector.targetPoint.x === 250 && connector.targetPoint.y === 300).toBe(true);
             done();
         });
+
     });
 
     describe('Connect the complex flow shapes with orthogonal connector', () => {
@@ -379,6 +422,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -427,12 +476,19 @@ describe('Diagram Control', () => {
                 connector.targetPoint.x === 100 && connector.targetPoint.y === 350).toBe(true);
             done();
         });
+
     });
 
     describe('Connect the basic shapes with orthogonal connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -482,6 +538,7 @@ describe('Diagram Control', () => {
                 connector.targetPoint.x === 250 && connector.targetPoint.y === 300).toBe(true);
             done();
         });
+
     });
 
     describe('Connect the node to right direction port ', () => {
@@ -489,6 +546,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram9' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -543,6 +606,7 @@ describe('Diagram Control', () => {
                 connector.targetPoint.x === 250 && connector.targetPoint.y === 300).toBe(true);
             done();
         });
+
     });
 
     describe('Connect the node with bottom direction port', () => {
@@ -550,6 +614,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram10' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -608,6 +678,15 @@ describe('Diagram Control', () => {
                 connector.targetPoint.x === 300 && connector.targetPoint.y === 350).toBe(true);
             done();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 
     describe('Connect the node with right direction port ', () => {
@@ -615,6 +694,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram11' });
             document.body.appendChild(ele);
             let node1: NodeModel = {

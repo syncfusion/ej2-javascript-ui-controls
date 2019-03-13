@@ -1,4 +1,5 @@
-import { Rect, withInRange, PathOption, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
+import { withInRange, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
+import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';

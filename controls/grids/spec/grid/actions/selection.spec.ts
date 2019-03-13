@@ -19,6 +19,7 @@ import { Toolbar } from '../../../src/grid/actions/toolbar';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy } from '../base/specutil.spec';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze);
 
@@ -57,6 +58,11 @@ describe('Selection Shortcuts testing', () => {
     let selectionModule: Selection;
     let rows: Element[];
     beforeAll((done: Function) => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
         gridObj = createGrid(
             {
                 dataSource: data,
@@ -1075,6 +1081,13 @@ describe('Grid Selection module', () => {
             expect(rows[0].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
             expect(selectionModule.selectedRowIndexes.length).toBe(2);
+        });
+
+        it('EJ2-19254 - selectRowsByRange testing - startvalue-0, endvalue-null', () => {
+            selectionModule.clearRowSelection();
+            selectionModule.selectRowsByRange(0, null);
+            expect(rows[0].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(selectionModule.selectedRowIndexes.length).toBe(1);
         });
 
         afterAll(() => {
@@ -3606,6 +3619,16 @@ describe('enableToggle property Testing => ', () => {
         rows[1].firstChild.dispatchEvent(ctrlEvt);
         expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
     });
+
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });    
 
     afterAll(() => {
         destroy(gridObj);

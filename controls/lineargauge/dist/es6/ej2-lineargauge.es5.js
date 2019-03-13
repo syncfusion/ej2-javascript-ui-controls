@@ -1,5 +1,5 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -166,10 +166,10 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], TooltipSettings.prototype, "enable", void 0);
     __decorate$1([
-        Property('#000000')
+        Property('')
     ], TooltipSettings.prototype, "fill", void 0);
     __decorate$1([
-        Complex({ color: '#ffffff', size: '13px' }, Font)
+        Complex({ color: '', size: '13px' }, Font)
     ], TooltipSettings.prototype, "textStyle", void 0);
     __decorate$1([
         Property(null)
@@ -1665,7 +1665,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
         if (axis.line.width > 0) {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
-            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color, axis.line.width, axis.line.color, 1, axis.line.dashArray, path);
+            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color || this.gauge.themeStyle.lineColor, axis.line.width, axis.line.color || this.gauge.themeStyle.lineColor, 1, axis.line.dashArray, path);
             axisObject.appendChild(this.gauge.renderer.drawPath(options));
         }
     };
@@ -1676,6 +1676,8 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
         var options;
         var range = axis.visibleRange;
         var line = axis.lineBounds;
+        var tickColor = (tickID === 'MajorTicks') ? ticks.color || this.gauge.themeStyle.majorTickColor :
+            ticks.color || this.gauge.themeStyle.minorTickColor;
         var interval = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
         for (var i = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
@@ -1692,7 +1694,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        options = new PathOption(this.gauge.element.id + '_' + tickID + 'Line_' + 0, ticks.color, ticks.width, ticks.color, 1, null, tickPath);
+        options = new PathOption(this.gauge.element.id + '_' + tickID + 'Line_' + 0, tickColor, ticks.width, tickColor, 1, null, tickPath);
         axisObject.appendChild(this.gauge.renderer.drawPath(options));
     };
     AxisRenderer.prototype.drawAxisLabels = function (axis, axisObject) {
@@ -1714,7 +1716,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color || this.gauge.themeStyle.labelColor : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
@@ -1764,7 +1766,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
-        options = new PathOption(pointerID, pointer.color, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
+        options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options)
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
@@ -1789,13 +1791,13 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
             remove(getElement(pointerID));
         }
         if (this.gauge.container.type === 'Normal') {
-            rectOptions = new RectOption(pointerID, pointer.color, pointer.border, pointer.opacity, pointer.bounds, null, null);
+            rectOptions = new RectOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border, pointer.opacity, pointer.bounds, null, null);
             box = pointer.bounds;
             pointerElement = this.gauge.renderer.drawRectangle(rectOptions);
         }
         else {
             path = getBox(pointer.bounds, this.gauge.container.type, this.gauge.orientation, new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.gauge.container.width, axis, pointer.roundedCornerRadius);
-            options = new PathOption(pointerID, pointer.color, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
+            options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, path);
             pointerElement = this.gauge.renderer.drawPath(options);
             box = getPathToRect(pointerElement.cloneNode(true), size, this.gauge.element);
         }
@@ -1886,6 +1888,7 @@ var Annotations = /** @__PURE__ @class */ (function () {
             cancel: false, name: annotationRender, content: annotation.content,
             annotation: annotation, textStyle: annotation.font
         };
+        argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
         this.gauge.trigger(annotationRender, argsData);
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
@@ -2050,8 +2053,8 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             }
             var themes = this.gauge.theme.toLowerCase();
             if (!args.cancel) {
-                args['tooltip']['properties']['textStyle']['color'] =
-                    (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#00000' : '#FFFFFF';
+                args['tooltip']['properties']['textStyle']['color'] = this.tooltip.textStyle.color ||
+                    this.gauge.themeStyle.tooltipFontColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -2063,7 +2066,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                     palette: [],
                     inverted: !(args.gauge.orientation === 'Horizontal'),
                     enableAnimation: args.tooltip.enableAnimation,
-                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : args.tooltip.fill,
+                    fill: this.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
                     areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location_1.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location_1.x) : areaRect.width, areaRect.height),
                     textStyle: args.tooltip.textStyle,
                     border: args.tooltip.border,
@@ -2175,6 +2178,69 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
     return GaugeTooltip;
 }());
 
+/** @private */
+function getThemeStyle(theme) {
+    var style;
+    switch (theme) {
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            style = {
+                backgroundColor: '#333232',
+                titleFontColor: '#ffffff',
+                tooltipFillColor: '#FFFFFF',
+                tooltipFontColor: '#000000',
+                labelColor: '#DADADA',
+                lineColor: '#C8C8C8',
+                majorTickColor: '#C8C8C8',
+                minorTickColor: '#9A9A9A',
+                pointerColor: '#9A9A9A'
+            };
+            break;
+        case 'Highcontrast':
+        case 'HighContrast':
+            style = {
+                backgroundColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                tooltipFillColor: '#ffffff',
+                tooltipFontColor: '#000000',
+                labelColor: '#FFFFFF',
+                lineColor: '#FFFFFF',
+                majorTickColor: '#FFFFFF',
+                minorTickColor: '#FFFFFF',
+                pointerColor: '#FFFFFF'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                backgroundColor: '#F8F9FA',
+                titleFontColor: '#212529',
+                tooltipFillColor: '#000000',
+                tooltipFontColor: '#FFFFFF',
+                labelColor: '#212529',
+                lineColor: '#ADB5BD',
+                majorTickColor: '#ADB5BD',
+                minorTickColor: '#CED4DA',
+                pointerColor: '#6C757D'
+            };
+            break;
+        default:
+            style = {
+                backgroundColor: '#FFFFFF',
+                titleFontColor: '#424242',
+                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#FFFFFF',
+                labelColor: '#686868',
+                lineColor: '#a6a6a6',
+                majorTickColor: '#a6a6a6',
+                minorTickColor: '#a6a6a6',
+                pointerColor: '#a6a6a6'
+            };
+            break;
+    }
+    return style;
+}
+
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -2229,55 +2295,13 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
     LinearGauge.prototype.preRender = function () {
         this.unWireEvents();
         this.trigger(load, { gauge: this });
-        this.themeEffect();
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
         this.wireEvents();
     };
-    LinearGauge.prototype.themeEffect = function () {
-        var theme = this.theme.toLowerCase();
-        if (theme === 'highcontrast') {
-            this.titleStyle.color = this.titleStyle.color || '#FFFFFF';
-            this.setThemeColors('#FFFFFF', '#FFFFFF');
-            this.background = this.background || '#000000';
-        }
-        else if (theme.indexOf('dark') > -1) {
-            for (var _i = 0, _a = this.axes; _i < _a.length; _i++) {
-                var axis = _a[_i];
-                axis.line.color = axis.line.color || '#C8C8C8';
-                axis.labelStyle.font.color = axis.labelStyle.font.color || '#DADADA';
-                axis.majorTicks.color = axis.majorTicks.color || '#C8C8C8';
-                axis.minorTicks.color = axis.minorTicks.color || '#9A9A9A';
-                for (var _b = 0, _c = axis.pointers; _b < _c.length; _b++) {
-                    var pointer = _c[_b];
-                    pointer.color = pointer.color || '#9A9A9A';
-                }
-            }
-            this.background = this.background || '#333232';
-        }
-        else {
-            this.titleStyle.color = this.titleStyle.color || '#424242';
-            this.setThemeColors('#686868', '#a6a6a6');
-            this.background = this.background || '#FFFFFF';
-        }
-    };
-    LinearGauge.prototype.setThemeColors = function (labelcolor, others) {
-        for (var _i = 0, _a = this.axes; _i < _a.length; _i++) {
-            var axis = _a[_i];
-            axis.line.color = axis.line.color || others;
-            axis.labelStyle.font.color = axis.labelStyle.font.color || labelcolor;
-            axis.majorTicks.color = axis.majorTicks.color || others;
-            axis.minorTicks.color = axis.minorTicks.color || others;
-            for (var _b = 0, _c = axis.pointers; _b < _c.length; _b++) {
-                var pointer = _c[_b];
-                pointer.color = pointer.color || others;
-            }
-        }
-        for (var _d = 0, _e = this.annotations; _d < _e.length; _d++) {
-            var annotation = _e[_d];
-            annotation.font.color = annotation.font.color || labelcolor;
-        }
+    LinearGauge.prototype.setTheme = function () {
+        this.themeStyle = getThemeStyle(this.theme);
     };
     LinearGauge.prototype.initPrivateVariable = function () {
         if (this.element.id === '') {
@@ -2329,6 +2353,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
      * To Initialize the control rendering
      */
     LinearGauge.prototype.render = function () {
+        this.setTheme();
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
@@ -2342,6 +2367,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         this.appendSecondaryElement();
         this.renderBorder();
         this.renderTitle();
+        this.renderArea();
         this.renderContainer();
     };
     LinearGauge.prototype.appendSecondaryElement = function () {
@@ -2351,6 +2377,15 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
             secondaryElement.setAttribute('style', 'position: relative');
             this.element.appendChild(secondaryElement);
         }
+    };
+    /**
+     * Render the map area border
+     */
+    LinearGauge.prototype.renderArea = function () {
+        var size = measureText(this.title, this.titleStyle);
+        var rectSize = new Rect(this.actualRect.x, this.actualRect.y - (size.height / 2), this.actualRect.width, this.actualRect.height);
+        var rect = new RectOption(this.element.id + 'LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, rectSize);
+        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
     };
     /**
      * @private
@@ -2373,7 +2408,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
     LinearGauge.prototype.renderBorder = function () {
         var width = this.border.width;
         if (width > 0) {
-            var rect = new RectOption(this.element.id + '_LinearGaugeBorder', this.background, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);
+            var rect = new RectOption(this.element.id + '_LinearGaugeBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width), null, null);
             this.svgObject.appendChild(this.renderer.drawRectangle(rect));
         }
     };
@@ -2392,7 +2427,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
                 width: size.width,
                 height: size.height
             };
-            var element = textElement(options, this.titleStyle, this.titleStyle.color, this.svgObject);
+            var element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
             element.setAttribute('aria-label', this.description || this.title);
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
@@ -2710,7 +2745,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var process = withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer');
         if (withInRange(value, null, null, axis.visibleRange.max, axis.visibleRange.min, 'pointer')) {
             this.triggerDragEvent(this.mouseElement);
-            options = new PathOption('pointerID', pointer.color, pointer.border.width, pointer.border.color, pointer.opacity, null, null, '');
+            options = new PathOption('pointerID', pointer.color || this.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, '');
             if (this.orientation === 'Vertical') {
                 pointer.bounds.y = this.mouseY;
             }

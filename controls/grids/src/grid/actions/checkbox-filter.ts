@@ -194,7 +194,8 @@ export class CheckBoxFilter {
         this.existingPredicate = options.actualPredicate || {};
         this.options.dataSource = options.dataSource;
         this.updateDataSource();
-        this.options.type = options.type || 'string';
+        this.parent.log('column_type_missing', {column: options.column});
+        this.options.type = options.type;
         this.options.format = options.format || '';
         this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
         this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns as string[];

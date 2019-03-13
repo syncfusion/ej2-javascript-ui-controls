@@ -219,6 +219,9 @@ let diagram: Diagram = new Diagram({
 });
 
 diagram.appendTo('#diagram');
+diagram.expandStateChange = () => {
+    alert('expandEvent');
+};
 diagram.animationComplete = () => {
     //if (args.state === 'Completed') {
     //.//.done();

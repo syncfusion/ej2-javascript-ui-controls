@@ -33,8 +33,12 @@ export class SfdtReader {
     public convertJsonToDocument(json: string): BodyWidget[] {
         let sections: BodyWidget[] = [];
         let jsonObject: any = JSON.parse(json);
-        this.parseCharacterFormat(jsonObject.characterFormat, this.viewer.characterFormat);
-        this.parseParagraphFormat(jsonObject.paragraphFormat, this.viewer.paragraphFormat);
+        let characterFormat: any = isNullOrUndefined(jsonObject.characterFormat) ?
+            this.viewer.owner.characterFormat : jsonObject.characterFormat;
+        this.parseCharacterFormat(characterFormat, this.viewer.characterFormat);
+        let paragraphFormat: any = isNullOrUndefined(jsonObject.paragraphFormat) ?
+            this.viewer.owner.paragraphFormat : jsonObject.paragraphFormat;
+        this.parseParagraphFormat(paragraphFormat, this.viewer.paragraphFormat);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.viewer.defaultTabWidth = jsonObject.defaultTabWidth;
         }
@@ -630,7 +634,10 @@ export class SfdtReader {
             }
         }
     }
-    private parseCharacterFormat(sourceFormat: any, characterFormat: WCharacterFormat, writeInlineFormat?: boolean): void {
+    /**
+     * @private
+     */
+    public parseCharacterFormat(sourceFormat: any, characterFormat: WCharacterFormat, writeInlineFormat?: boolean): void {
         if (!isNullOrUndefined(sourceFormat)) {
             if (writeInlineFormat && sourceFormat.hasOwnProperty('inlineFormat')) {
                 this.parseCharacterFormat(sourceFormat.inlineFormat, characterFormat);
@@ -687,7 +694,10 @@ export class SfdtReader {
         let convertColor: string = color;
         return convertColor || '#ffffff';
     }
-    private parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
+    /**
+     * @private
+     */
+    public parseParagraphFormat(sourceFormat: any, paragraphFormat: WParagraphFormat): void {
         if (!isNullOrUndefined(sourceFormat)) {
             if (!isNullOrUndefined(sourceFormat.bidi)) {
                 paragraphFormat.bidi = sourceFormat.bidi;

@@ -57,7 +57,6 @@ interface AcrdnElementComment {
   data?: string;
 }
 
-
 export interface AccordionClickArgs extends BaseEventArgs {
   /** Defines the current Accordion Item Object. */
   item?: AccordionItemModel;
@@ -619,7 +618,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         innerEle.appendChild(ctnEle);
       }
       let hdr: HTEle = <HTEle>select('.' + CLS_HEADER, innerEle);
-      if (item.expanded && !isNOU(index) && (!this.enablePersistence) ) {
+      if (item.expanded && !isNOU(index) && (!this.enablePersistence)) {
         if (this.initExpand.indexOf(index) === -1) {
         this.initExpand.push(index); }
       }
@@ -637,7 +636,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
          } else {
             hdr.insertBefore(hdrIcnEle, hdr.childNodes[0]); }
       }
-      if (item.content && this.angularnativeCondiCheck(item, 'content') ) {
+      if (item.content && this.angularnativeCondiCheck(item, 'content')) {
         let hdrIcon: HTEle = this.toggleIconGenerate();
         if (isNOU(hdr)) {
           hdr = this.headerEleGenerate();
@@ -667,7 +666,6 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         return true;
       }
     }
-
 
     private fetchElement(ele: HTEle, value: Str, index: number, isHeader: boolean): HTEle {
       let templateFn: Function;

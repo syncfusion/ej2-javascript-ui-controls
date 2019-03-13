@@ -5,15 +5,18 @@
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax } from '@syncfusion/ej2-base';
 import { Complex, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';
-import { SvgRenderer, isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';
 import { BorderModel, TitleSettingsModel, MarginModel, LevelSettingsModel, FontModel, } from './model/base-model';
 import { LeafItemSettingsModel, TooltipSettingsModel, LegendSettingsModel, InitialDrillSettingsModel } from './model/base-model';
 import { HighlightSettingsModel, SelectionSettingsModel } from './model/base-model';
 import { Border, Margin, TitleSettings, LegendSettings, InitialDrillSettings } from './model/base';
 import { SelectionSettings, TooltipSettings, LevelSettings, LeafItemSettings, HighlightSettings, } from './model/base';
 import { TreeMapModel } from './treemap-model';
-import { LayoutMode, TreeMapTheme } from './utils/enum';
-import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs, IItemRenderingEventArgs, IResizeEventArgs } from '../treemap/model/interface';
+import { LayoutMode, TreeMapTheme, RenderingMode } from './utils/enum';
+import { ILoadEventArgs, ILoadedEventArgs, IPrintEventArgs } from '../treemap/model/interface';
+import { ILegendItemRenderingEventArgs, ILegendRenderingEventArgs } from '../treemap/model/interface';
+import { IItemRenderingEventArgs, IResizeEventArgs, IDoubleClickEventArgs, IRightClickEventArgs } from '../treemap/model/interface';
 import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';
 import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';
 import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../treemap/model/interface';
@@ -21,7 +24,7 @@ import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChil
 import { removeClassNames, removeShape } from '../treemap/utils/helper';
 import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';
 import { load, loaded, itemSelected, drillStart, drillEnd } from '../treemap/model/constants';
-import { itemClick, itemMove, click, mouseMove, resize } from '../treemap/model/constants';
+import { itemClick, itemMove, click, mouseMove, resize, doubleClick, rightClick } from '../treemap/model/constants';
 import { LayoutPanel } from './layout/render-panel';
 import { TreeMapTooltip } from './user-interaction/tooltip';
 import { ExportUtils } from '../treemap/utils/export';
@@ -141,10 +144,31 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Property([])
     public palette: string[];
     /**
+     * Specifies the rendering of layout of the treemap items.
+     * @default TopLeftBottomRight
+     */
+    @Property('TopLeftBottomRight')
+    public renderDirection: RenderingMode;
+    /**
      * To enable or disable the drillDown.
      */
     @Property(false)
     public enableDrillDown: boolean;
+    /**
+     * To render the text from right to left.
+     */
+    @Property(false)
+    public enableBreadcrumb: boolean;
+    /**
+     * To add the breadCrumb connector.
+     */
+    @Property('.')
+    public breadcrumbConnector: string;
+    /**
+     * To control the drillDown view.
+     */
+    @Property(false)
+    public drillDownView: boolean;
     /**
      * Specifies the initial drillDown.
      */
@@ -278,6 +302,18 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public click: EmitType<IItemClickEventArgs>;
     /**
+     * Triggers on double clicking the maps.
+     * @event
+     */
+    @Event()
+    public doubleClick: EmitType<IDoubleClickEventArgs>;
+    /**
+     * Triggers on right clicking the maps.
+     * @event
+     */
+    @Event()
+    public rightClick: EmitType<IMouseMoveEventArgs>;
+    /**
      * Triggers the mouse move event.
      * @event
      */
@@ -289,6 +325,18 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
+    /**
+     * Triggers the legend item rendering.
+     * @event
+     */
+    @Event()
+    public legendItemRendering: EmitType<ILegendItemRenderingEventArgs>;
+    /**
+     * Triggers the legend rendering event.
+     * @event
+     */
+    @Event()
+    public legendRendering: EmitType<ILegendRenderingEventArgs>;
 
     /**
      * svg renderer object.
@@ -335,6 +383,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public drilledLegendItems: Object;
     /** @private */
+    public currentLevel: number;
+    /** @private */
+    public defaultLevelData: Object[] = [];
+    /** @private */
     public isHierarchicalData: boolean = false;
     /** @private */
     private resizeTo: number;
@@ -344,6 +396,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     private mouseDown: boolean;
     /** @private */
     private drillMouseMove: boolean;
+    /** @private */
+    public doubleTapTimer: Object;
 
     /**s
      * Constructor for TreeMap component.
@@ -380,6 +434,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.renderBorder();
 
         this.renderTitle(this.titleSettings, 'title', null, null);
+
+        if (!isNullOrUndefined(this.levelsOfData)) {
+            this.defaultLevelData = this.levelsOfData;
+        }
 
         this.processDataManager();
 
@@ -639,7 +697,12 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 childData[j]['name'] = childData[j][path];
                 childData[j]['levelOrderName'] = (levelIndex === 0 ? childData[j]['name'] :
                     data['levelOrderName'] + '_' + childData[j]['name']) + '';
-                childData[j]['groupIndex'] = isNullOrUndefined(levelIndex) ? this.levels.length : levelIndex;
+                let childItemLevel: string = childData[j]['levelOrderName']; let childLevel: number;
+                if (childItemLevel.search('_') > 0) {
+                    childLevel = childItemLevel.split('_').length - 1;
+                }
+                childData[j]['groupIndex'] = isNullOrUndefined(levelIndex) ? childLevel === this.levels.length
+                    ? this.levels.length : childLevel : levelIndex;
                 if (levelIndex !== 0) {
                     childData[j]['parent'] = data;
                 }
@@ -774,7 +837,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private unWireEVents(): void {
         EventHandler.remove(this.element, 'click', this.clickOnTreeMap);
-        // EventHandler.remove(this.element, 'dblclick', this.doubleClick);
+        EventHandler.remove(this.element, 'dblclick', this.doubleClickOnTreeMap);
+        EventHandler.remove(this.element, 'contextmenu', this.rightClickOnTreeMap);
         EventHandler.remove(this.element, Browser.touchStartEvent, this.mouseDownOnTreeMap);
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMoveOnTreeMap);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEndOnTreeMap);
@@ -787,7 +851,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private wireEVents(): void {
         EventHandler.add(this.element, 'click', this.clickOnTreeMap, this);
-        //EventHandler.add(this.element, 'dblclick', this.doubleClick, this);
+        EventHandler.add(this.element, 'dblclick', this.doubleClickOnTreeMap, this);
+        EventHandler.add(this.element, 'contextmenu', this.rightClickOnTreeMap, this);
         EventHandler.add(this.element, Browser.touchStartEvent, this.mouseDownOnTreeMap, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMoveOnTreeMap, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEndOnTreeMap, this);
@@ -850,10 +915,34 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (targetId.indexOf('_Item_Index') > -1) {
             e.preventDefault();
             itemIndex = parseFloat(targetId.split('_')[6]);
-            eventArgs = { cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e };
+            eventArgs = {
+                cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
+                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
+            };
             this.trigger(itemClick, eventArgs);
         }
+        let end: number = new Date().getMilliseconds();
+        let doubleTapTimer1: number;
+        if (!isNullOrUndefined(this.doubleClick)) {
+            if (!isNullOrUndefined(doubleTapTimer1) && end - doubleTapTimer1 < 500) {
+                this.doubleClickOnTreeMap(e);
+            }
+            doubleTapTimer1 = end;
+        }
+
     }
+
+    public doubleClickOnTreeMap(e: PointerEvent): void {
+        let doubleClickArgs: IDoubleClickEventArgs = { cancel: false, name: doubleClick, treemap: this, mouseEvent: e };
+        this.trigger(doubleClick, doubleClickArgs);
+        //this.notify('dblclick', e);
+    }
+
+    public rightClickOnTreeMap(e: PointerEvent): void {
+        let rightClickArgs: IRightClickEventArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
+        this.trigger(rightClick, rightClickArgs);
+    }
+
 
     /* tslint:disable-next-line:max-func-body-length */
     public mouseDownOnTreeMap(e: PointerEvent): void {
@@ -883,23 +972,96 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.notify(Browser.touchMoveEvent, e);
     }
 
+    public calculateSelectedTextLevels(labelText: String, item: Object): Object {
+        //to find the levels by clicking the particular text both for drillDownView as true / false.
+        let drillLevel: number; let k: string; let text: String;
+        let levelLabels: string = item['levelOrderName'];
+        let levelText: string[] = levelLabels.split('_');
+        for (k of Object.keys(levelText)) {
+            if (levelText[k] === labelText) {
+                drillLevel = parseInt(k, 10);
+                text = labelText;
+            }
+        }
+        return { drillLevel: drillLevel, currentLevelLabel: text, levelText: levelText };
+    }
+
+    public calculatePreviousLevelChildItems(labelText: String, drillLevelValues: Object, item: Object, directLevel: boolean): boolean {
+        //By clicking any child items drilldown to the particular level.
+        //At the time store all the previous drilled level items in drilledItems
+        // This condition satisfies while drilldown View is set as false and the text contains '[+]'
+        let text: string; let p: number = 0; let levelItems: string; let text1: string;
+        let drillTextLevel: number = this.layout.renderItems[0]['levelOrderName'].split('_').length;
+        for (let h: number = 0; h < drillTextLevel; h++) {
+            text1 = h === 0 ? drillLevelValues['levelText'][h] : text1 + '_' + drillLevelValues['levelText'][h];
+        }
+        p = drillTextLevel > 1 ? drillTextLevel : p;
+        for (levelItems of Object['values'](this.layout.renderItems)) {
+            let drillLevelText: string = levelItems['levelOrderName'].split('_');
+            if (drillLevelText[0] === drillLevelValues['levelText'][0]) {
+                text = p === 0 ? isNullOrUndefined(text1) ? text1 : drillLevelValues['levelText'][p] :
+                    directLevel ? text1 : text1 + '_' + drillLevelValues['levelText'][p];
+                if (text === levelItems['levelOrderName']) {
+                    this.drilledItems.push({ name: levelItems['levelOrderName'], data: levelItems });
+                    p++;
+                    directLevel = true;
+                    if (p <= item['groupIndex']) {
+                        text = text + '_' + drillLevelValues['levelText'][p];
+                        text1 = text;
+                    }
+                }
+            }
+        }
+        return directLevel;
+    }
+
+    public compareSelectedLabelWithDrillDownItems(drillLevelValues: Object, item: Object, i: number): Object {
+        let drillLevelChild: Object; let newDrillItem: Object = new Object();
+        let b: number = drillLevelValues['drillLevel'] + 1;
+        if (b === this.drilledItems[i]['data']['groupIndex']) {
+            drillLevelChild = this.drilledItems[i]['data']['parent'];
+            drillLevelChild['isDrilled'] = true;
+            newDrillItem[drillLevelChild[this.drilledItems[i]['data']['groupName']]]
+                = [drillLevelChild];
+            // to remove all the items after matched drilled items
+            this.drilledItems.splice(i, this.drilledItems.length);
+        } else if (drillLevelValues['drillLevel'] === (this.drilledItems.length - 1)
+            || drillLevelValues['drillLevel'] === item['groupIndex']) {
+            newDrillItem[item['groupName']] = [item];
+        }
+        return newDrillItem;
+    }
+
+    /* tslint:disable-next-line:max-func-body-length */
     public mouseEndOnTreeMap(e: PointerEvent): void {
-        let targetEle: Element = <Element>e.target;
-        let startEvent: IDrillStartEventArgs; let endEvent: IDrillEndEventArgs;
-        let targetId: string = targetEle.id; let totalRect: Rect;
-        let index: number; let newDrillItem: Object = new Object();
-        let item: Object; let process: boolean = true;
-        let layoutID: string = this.element.id + '_TreeMap_' + this.layoutType + '_Layout';
-        let templateID: string = this.element.id + '_Label_Template_Group';
+        let targetEle: Element = <Element>e.target; let targetId: string = targetEle.id; let totalRect: Rect;
+        let startEvent: IDrillStartEventArgs; let endEvent: IDrillEndEventArgs; let directLevel: boolean = false;
+        let index: number; let newDrillItem: Object = new Object(); let item: Object; let process: boolean = true;
+        let layoutID: string = this.element.id + '_TreeMap_' + this.layoutType + '_Layout'; let drillLevel: number;
+        let templateID: string = this.element.id + '_Label_Template_Group'; let drillLevelValues: object;
         if (targetId.indexOf('_Item_Index') > -1 && this.enableDrillDown && !this.drillMouseMove) {
             e.preventDefault();
-            index = parseFloat(targetId.split('_')[6]);
-            item = this.layout.renderItems[index];
+            index = parseFloat(targetId.split('_')[6]); item = this.layout.renderItems[index]; let labelText: string = targetEle.innerHTML;
+            if (this.enableBreadcrumb) {
+                drillLevelValues = this.calculateSelectedTextLevels(labelText, item);
+                drillLevel = drillLevelValues['drillLevel'];
+                if (!this.drillDownView && labelText.search('[+]') !== -1) {
+                    directLevel = this.calculatePreviousLevelChildItems(labelText, drillLevelValues, item, directLevel);
+                }
+            }
             if (this.levels.length !== 0 && !item['isLeafItem'] && findChildren(item)['values'] &&
                 findChildren(item)['values'].length > 0) {
                 if (this.drilledItems.length > 0) {
+                    item = directLevel ? this.drilledItems[this.drilledItems.length - 1]['data'] : item;
                     for (let i: number = 0; i < this.drilledItems.length; i++) {
-                        if (item['levelOrderName'] === this.drilledItems[i]['name']) {
+                        if (!isNullOrUndefined(drillLevel)) {  //Compare the selected text level with drilled items
+                            let drillLength: number = this.drilledItems.length;
+                            newDrillItem = this.compareSelectedLabelWithDrillDownItems(drillLevelValues, item, i);
+                            if (drillLength !== this.drilledItems.length) {
+                                i -= 1; break;
+                            }
+                        } //when clicking the levels drill back to the previous level process takes place
+                        if (item['levelOrderName'] === this.drilledItems[i]['name'] && !directLevel && isNullOrUndefined(drillLevel)) {
                             if (item['groupIndex'] === 0 && item['parent'][item['groupName']] instanceof Array) {
                                 item['isDrilled'] = !(item['isDrilled']);
                                 if (!item['isDrilled']) {
@@ -908,16 +1070,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                                     newDrillItem[item['groupName']] = [item];
                                 }
                             } else {
-                                item['isDrilled'] = false;
-                                item['parent']['isDrilled'] = true;
-                                item = item['parent'];
+                                item['isDrilled'] = false; item['parent']['isDrilled'] = true; item = item['parent'];
                                 newDrillItem[item['groupName']] = [item];
                             }
                             this.drilledItems.splice(i, 1);
-                            i -= 1;
-                            break;
-                        } else if (i === this.drilledItems.length - 1) {
-                            item['isDrilled'] = true;
+                            i -= 1; break;
+                        } else if (i === this.drilledItems.length - 1 && isNullOrUndefined(drillLevel)) {
+                            item['isDrilled'] = true; // click the items move to next level.
                             newDrillItem[item['groupName']] = [item];
                         }
                     }
@@ -925,8 +1084,17 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     item['isDrilled'] = true;
                     newDrillItem[item['groupName']] = [item];
                 }
-                startEvent = { cancel: false, name: drillStart, treemap: this, item: newDrillItem, element: targetEle };
+                startEvent = {
+                    cancel: false, name: drillStart, treemap: this, item: newDrillItem, element: targetEle,
+                    groupIndex: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
+                        this.drilledItems[this.drilledItems.length - 1]['data']['groupIndex'] : item['groupIndex'],
+                    groupName: this.enableBreadcrumb && this.drilledItems.length !== 0 && !isNullOrUndefined(drillLevel) ?
+                        this.drilledItems[this.drilledItems.length - 1]['data']['name'] : item['name'],
+                    rightClick: e.which === 3 ? true : false, childItems: null
+                };
                 this.trigger(drillStart, startEvent);
+                this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
+                    (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
                 if (!startEvent.cancel) {
                     if (document.getElementById(layoutID)) {
                         document.getElementById(layoutID).remove();
@@ -934,11 +1102,16 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     totalRect = extend({}, this.areaRect, totalRect, true) as Rect;
                     if (this.legendSettings.visible && !isNullOrUndefined(this.treeMapLegendModule)) {
                         if (!isNullOrUndefined(newDrillItem)) {
-                            this.treeMapLegendModule.legendGroup.textContent = '';
-                            this.treeMapLegendModule.legendGroup = null;
-                            this.treeMapLegendModule.widthIncrement = 0;
-                            this.treeMapLegendModule.heightIncrement = 0;
-                            this.drilledLegendItems = { name: item['levelOrderName'], data: item };
+                            this.treeMapLegendModule.legendGroup.textContent = ''; this.treeMapLegendModule.legendGroup = null;
+                            this.treeMapLegendModule.widthIncrement = 0; this.treeMapLegendModule.heightIncrement = 0;
+                            if (this.enableBreadcrumb && !isNullOrUndefined(drillLevel)) {
+                                this.drilledLegendItems = {
+                                    name: this.drilledItems[this.drilledItems.length - 1]['data']['levelOrderName'],
+                                    data: this.drilledItems[this.drilledItems.length - 1]['data']
+                                };
+                            } else {
+                                this.drilledLegendItems = { name: item['levelOrderName'], data: item };
+                            }
                             this.treeMapLegendModule.renderLegend();
                         }
                         totalRect = !isNullOrUndefined(this.totalRect) ? this.totalRect : totalRect;
@@ -946,13 +1119,19 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     if (document.getElementById(templateID)) {
                         document.getElementById(templateID).remove();
                     }
-                    this.layout.calculateLayoutItems(newDrillItem, totalRect);
-                    this.layout.renderLayoutItems(newDrillItem);
+                    if (!isNullOrUndefined(startEvent.childItems) && !startEvent.cancel) {
+                        this.layout.onDemandProcess(startEvent.childItems);
+                    } else {
+                        this.layout.calculateLayoutItems(newDrillItem, totalRect);
+                        this.layout.renderLayoutItems(newDrillItem);
+                    }
                 }
                 endEvent = { cancel: false, name: drillEnd, treemap: this, renderItems: this.layout.renderItems };
                 this.trigger(drillEnd, endEvent);
                 if (process) {
-                    this.drilledItems.push({ name: item['levelOrderName'], data: item });
+                    if (!directLevel && isNullOrUndefined(drillLevel)) {
+                        this.drilledItems.push({ name: item['levelOrderName'], data: item });
+                    }
                 }
             }
         }

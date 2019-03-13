@@ -8,6 +8,8 @@ import { PivotView } from '../../../src/pivotview/base/pivotview';
 import { PivotFieldList } from '../../../src/pivotfieldlist/base/field-list';
 import { CalculatedField } from '../../../src/common/calculatedfield/calculated-field';
 import { GroupingBar } from '../../../src/common/grouping-bar/grouping-bar';
+import { BeginDrillThroughEventArgs } from '../../../src/common/base/interface';
+import { Grid, Sort, Filter, Group, ContextMenu } from '@syncfusion/ej2-grids';
 
 PivotFieldList.Inject(CalculatedField);
 PivotView.Inject(GroupingBar);
@@ -21,7 +23,20 @@ let pivotGridObj: PivotView = new PivotView({
     height: 530,
     gridSettings: { columnWidth: 140 },
     showGroupingBar: true,
-    editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, allowCommandColumns: false, mode: 'Normal', showConfirmDialog: false, showDeleteConfirmDialog: false }
+    editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, allowCommandColumns: false, mode: 'Normal', showConfirmDialog: false, showDeleteConfirmDialog: false },
+    beginDrillThrough: (args: BeginDrillThroughEventArgs) => {
+        if (args.gridObj) {
+            Grid.Inject(Sort, Filter, Group, ContextMenu);
+            let gridObj: Grid = args.gridObj;
+            gridObj.allowGrouping = true;
+            gridObj.allowSorting = true;
+            gridObj.allowFiltering = true;
+            gridObj.filterSettings = { type: 'CheckBox' };
+            gridObj.contextMenuItems = ['AutoFit', 'AutoFitAll', 'SortAscending', 'SortDescending',
+                'Copy', 'Edit', 'Delete', 'Save', 'Cancel', 'FirstPage', 'PrevPage',
+                'LastPage', 'NextPage'];
+        }
+    }
 });
 pivotGridObj.appendTo('#PivotView');
 document.getElementById('normal').onclick = function () {

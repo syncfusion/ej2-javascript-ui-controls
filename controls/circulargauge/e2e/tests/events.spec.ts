@@ -34,7 +34,7 @@ describe('CircularGuage Event samples test spec', () => {
         if(browser.browserName === 'internet explorer') {
             browser.executeScript('window.onload.call(this);');
         }
-        browser.compareScreen(element(By.id("static-gauge")), "LoadedEvent-Background-Color");
+        browser.compareScreen(element(By.id("static-gauge")), "LoadEvent-Background-Color");
         done();
     });
     it('Event testing spec 5', (done: Function) => {
@@ -42,7 +42,7 @@ describe('CircularGuage Event samples test spec', () => {
         if(browser.browserName === 'internet explorer') {
             browser.executeScript('window.onload.call(this);');
         }
-        browser.compareScreen(element(By.id("static-gauge")), "LoadedEvent-Public-AnnotationValue");
+        browser.compareScreen(element(By.id("static-gauge")), "LoadEvent-Public-AnnotationValue");
         done();
     });
     it('Event testing spec 6', (done: Function) => {
@@ -50,7 +50,7 @@ describe('CircularGuage Event samples test spec', () => {
         if(browser.browserName === 'internet explorer') {
             browser.executeScript('window.onload.call(this);');
         }
-        browser.compareScreen(element(By.id("static-gauge")), "LoadedEvent-Public-PointerValue");
+        browser.compareScreen(element(By.id("static-gauge")), "LoadEvent-Public-PointerValue");
         done();
     });
     it('Event testing spec 7', (done: Function) => {
@@ -61,12 +61,28 @@ describe('CircularGuage Event samples test spec', () => {
         browser.compareScreen(element(By.id("static-gauge")), "AxisLabelRenderEvent-Text");
         done();
     });
+    it('Axis Label Render Event testing spec 7', (done: Function) => {
+        browser.load("/demos/events/axistext-1.html");
+        if(browser.browserName === 'internet explorer') {
+            browser.executeScript('window.onload.call(this);');
+        }
+        browser.compareScreen(element(By.id("static-gauge")), "AxisLabelRenderEvent-Cancel");
+        done();
+    });
     it('Event testing spec 8', (done: Function) => {
         browser.load("/demos/events/annotationText.html");
         if(browser.browserName === 'internet explorer') {
             browser.executeScript('window.onload.call(this);');
         }
         browser.compareScreen(element(By.id("static-gauge")), "AnnotationRenderEvent-Text");
+        done();
+    });
+    it('Annotation Event testing Cancel true', (done: Function) => {
+        browser.load("/demos/events/annotationText-1.html");
+        if(browser.browserName === 'internet explorer') {
+            browser.executeScript('window.onload.call(this);');
+        }
+        browser.compareScreen(element(By.id("static-gauge")), "AnnotationRenderEvent-Cancel");
         done();
     });
     it('Event testing spec 9', (done: Function) => {
@@ -102,6 +118,13 @@ describe('CircularGuage Event samples test spec', () => {
         tooltipElement = element(by.id('static-gauge_Axis_0_Pointer_NeedleRect_0'));
         browser.actions().click(tooltipElement).perform();
         browser.compareScreen(element(By.id("static-gauge")), "TooltipRenderEvent-ShowAtMousePosition");
+        done();
+    });
+    it('Event testing spec 14', (done: Function) => {
+        browser.load("/demos/events/tooltipEvent-6.html");
+        tooltipElement = element(by.id('static-gauge_Axis_0_Pointer_NeedleRect_0'));
+        browser.actions().click(tooltipElement).perform();
+        browser.compareScreen(element(By.id("static-gauge")), "TooltipRenderEvent-Cancel");
         done();
     });
 });

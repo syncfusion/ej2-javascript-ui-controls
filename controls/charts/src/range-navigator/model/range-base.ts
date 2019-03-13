@@ -4,7 +4,8 @@ import { RangeNavigatorType, ThumbType } from '../utils/enum';
 import { Border, Animation, Font } from '../../common/model/base';
 import { BorderModel, AnimationModel, FontModel } from '../../common/model/base-model';
 import { ThumbSettingsModel } from './range-base-model';
-import { Axis, Rect, TooltipDisplayMode } from '../../index';
+import { Axis, TooltipDisplayMode } from '../../index';
+import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeNavigator, DataPoint } from '../index';
 import { RangeNavigatorTheme  } from '../utils/theme';
 

@@ -1,5 +1,5 @@
 import * as CONSTANT from './../base/constant';
-import { append, detach, createElement } from '@syncfusion/ej2-base';
+import { append, detach, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 
 export const markerClassName: { [key: string]: string } = {
@@ -234,9 +234,14 @@ export class DOMNode {
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     }
 
-    public saveMarker(save: NodeSelection): NodeSelection {
+    public saveMarker(save: NodeSelection, action?: string): NodeSelection {
         let start: Element = this.parent.querySelector('.' + markerClassName.startSelection);
+        let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
         let startTextNode: Element;
+        let endTextNode: Element;
+        if (start.textContent === '' && isNullOrUndefined(end) && action !== 'tab') {
+            start.innerHTML = '&#65279;&#65279;';
+        }
         if (this.hasClass(start, markerClassName.startSelection) && start.classList.length > 1) {
             let replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, start, this.encode(start.textContent));
             this.replaceWith(start, replace);
@@ -246,8 +251,6 @@ export class DOMNode {
         } else {
             startTextNode = this.unWrap(start)[0];
         }
-        let endTextNode: Element;
-        let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
         if (this.hasClass(end, markerClassName.endSelection) && end.classList.length > 1) {
             let replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, end, this.encode(end.textContent));
             this.replaceWith(end, replace);

@@ -82,7 +82,6 @@ describe('Circular-Gauge Control', () => {
                 expect(svg.getAttribute('stroke-width')).toBe('0');
                 svg = document.getElementById('container_Axis_0_Pointer_NeedleTail_0');
                 expect(svg.getAttribute('fill')).toBe('#757575');
-                expect(svg.getAttribute('stroke')).toBe('#757575');
                 expect(svg.getAttribute('stroke-width')).toBe('0');
                 svg = document.getElementById('container_Axis_0_Pointer_NeedleCap_0');
                 expect(svg.getAttribute('fill')).toBe('#b5b5b5');
@@ -702,6 +701,17 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].pointers[0].value = 20;
             gauge.refresh();
         });
+        it('Checking default pointer - Rounded Range-Bar', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_0');
+                expect(svg.childElementCount == 1).toBe(true);
+                done();
+            };
+            gauge.axes[0].direction = 'AntiClockWise';
+            gauge.axes[0].pointers[0].value = 65;
+            gauge.axes[0].pointers[0].animation.enable = true;
+            gauge.refresh();
+        });
 
         it('Checking default pointer - with default value as 0', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
@@ -1005,6 +1015,14 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.axes[0].pointers[0].type = 'RangeBar';
             gauge.refresh();
+        });
+		it('Checking animation for changing the value on setPointerValue method', (done: Function) => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_0');
+                expect(svg != null).toBe(true);
+                done();
+            }; 
+            gauge.setPointerValue(0, 0, 80);
         });
     });
 

@@ -25,18 +25,24 @@ export class ContextMenu {
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
-        this.copyContextMenu = [{ text: this.pdfViewer.localeObj.getConstant('Copy') }];
+        this.copyContextMenu = [{ text: this.pdfViewer.localeObj.getConstant('Copy'), iconCss: 'e-pv-copy-icon' },
+        { text: this.pdfViewer.localeObj.getConstant('highlight'), iconCss: 'e-pv-highlight-icon' },
+        { text: this.pdfViewer.localeObj.getConstant('underline'), iconCss: 'e-pv-underline-icon' },
+        { text: this.pdfViewer.localeObj.getConstant('strikethrough'), iconCss: 'e-pv-strikethrough-icon' }];
     }
     /**
      * @private
      */
     public createContextMenu(): void {
         this.contextMenuElement = createElement('ul', { id: this.pdfViewer.element.id + '_context_menu' });
+        if (this.pdfViewer.enableRtl) {
+            this.contextMenuElement.style.direction = 'rtl';
+        }
         this.pdfViewer.element.appendChild(this.contextMenuElement);
         this.contextMenuObj = new Context({
             target: '#' + this.pdfViewerBase.viewerContainer.id, items: this.copyContextMenu,
             beforeOpen: this.contextMenuOnBeforeOpen.bind(this), select: this.onMenuItemSelect.bind(this),
-            cssClass: 'e-pv-context-menu'
+            created: this.contextMenuOnCreated.bind(this)
         });
         this.contextMenuObj.appendTo(this.contextMenuElement);
         if (Browser.isDevice) {
@@ -46,13 +52,29 @@ export class ContextMenu {
         }
     }
 
+    private contextMenuOnCreated(args: Event): void {
+        let items: string[] = [this.pdfViewer.localeObj.getConstant('highlight'), this.pdfViewer.localeObj.getConstant('underline'),
+        this.pdfViewer.localeObj.getConstant('strikethrough')];
+        if (this.pdfViewer.annotationModule) {
+            if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
+                this.contextMenuObj.enableItems(items, false);
+            }
+        } else {
+            this.contextMenuObj.enableItems(items, false);
+        }
+    }
+
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.pdfViewer.textSelectionModule) {
             if (args.event) {
                 let isClickWithinSelectionBounds: boolean = this.isClickWithinSelectionBounds(args.event);
                 // tslint:disable-next-line:max-line-length
                 if (isClickWithinSelectionBounds) {
+                     // tslint:disable-next-line:max-line-length
                     if ((!(args.event.target as HTMLElement).classList.contains('e-pv-maintaincontent') && (args.event.target as HTMLElement).classList.contains('e-pv-text') || (args.event.target as HTMLElement).classList.contains('e-pv-text-layer'))) {
+                        args.cancel = true;
+                        // tslint:disable-next-line:max-line-length
+                    } else if ((Browser.isIE || Browser.info.name === 'edge') && (args.event.target as HTMLElement).classList.contains('e-pv-page-container')) {
                         args.cancel = true;
                     }
                 } else {
@@ -67,17 +89,17 @@ export class ContextMenu {
     // tslint:disable-next-line
     private isClickWithinSelectionBounds(event: any): boolean {
         let isWithin: boolean = false;
-        let bounds: ClientRect[] = this.pdfViewer.textSelectionModule.getCurrentSelectionBounds(this.pdfViewerBase.currentPageNumber - 1);
+        let bounds: ClientRect = this.pdfViewer.textSelectionModule.getCurrentSelectionBounds(this.pdfViewerBase.currentPageNumber - 1);
         if (bounds) {
-            for (let i: number = 0; i < bounds.length; i++) {
-                let currentBound: ClientRect = bounds[i];
-                if (this.getHorizontalValue(currentBound.left) < event.clientX && this.getHorizontalValue(currentBound.right) >
-                    event.clientX && this.getVerticalValue(currentBound.top) < event.clientY &&
-                    this.getVerticalValue(currentBound.bottom) > event.clientY) {
-                    isWithin = true;
-                    break;
-                }
+            let currentBound: ClientRect = bounds;
+            if (this.getHorizontalValue(currentBound.left) < event.clientX && this.getHorizontalValue(currentBound.right) >
+                event.clientX && this.getVerticalValue(currentBound.top) < event.clientY &&
+                this.getVerticalValue(currentBound.bottom) > event.clientY) {
+                isWithin = true;
             }
+        }
+        if ((Browser.isIE || Browser.info.name === 'edge') && bounds) {
+            isWithin = true;
         }
         return isWithin;
     }
@@ -108,14 +130,39 @@ export class ContextMenu {
 
     private onMenuItemSelect(args: MenuEventArgs): void {
         switch (args.item.text) {
-            case 'Copy':
+            case this.pdfViewer.localeObj.getConstant('Copy'):
                 if (this.pdfViewer.textSelectionModule) {
                     this.pdfViewer.textSelectionModule.copyText();
                     this.contextMenuObj.close();
                 }
                 break;
+            case this.pdfViewer.localeObj.getConstant('highlight'):
+                if (this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Highlight');
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+                }
+                break;
+            case this.pdfViewer.localeObj.getConstant('underline'):
+                if (this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Underline');
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+                }
+                break;
+            case this.pdfViewer.localeObj.getConstant('strikethrough'):
+                if (this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Strikethrough');
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+                }
+                break;
             default:
                 break;
         }
+    }
+
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.contextMenuObj.destroy();
     }
 }

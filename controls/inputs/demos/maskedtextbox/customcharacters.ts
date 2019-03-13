@@ -6,7 +6,7 @@ import { MaskedTextBox } from '../../src/maskedtextbox/maskedtextbox/maskedtextb
 
 let mask1: MaskedTextBox = new MaskedTextBox({
     mask: "99:99 PM",
-    placeholder: "10:25 PM",
+    placeholder: "Enter time",
     customCharacters: {
         P: 'P,A,p,a',
         M: 'M,m'
@@ -17,7 +17,7 @@ mask1.appendTo('#mask1');
 
 let mask2: MaskedTextBox = new MaskedTextBox({
     mask: "99 999 9999",
-    placeholder: "94 888 3232",
+    placeholder: "Enter number",
     promptChar: "~",
     floatLabelType: "Auto"
 });
@@ -25,7 +25,7 @@ mask2.appendTo('#mask2');
 
 let mask3: MaskedTextBox = new MaskedTextBox({
     mask: "9999 9999 9999 9999",
-    placeholder: "8973 8883 6633 8837",
+    placeholder: "Enter account number",
 	promptChar: "#",
     floatLabelType: "Auto"
 });

@@ -1,5 +1,6 @@
 import { BorderModel } from '../../common/model/base-model';
-import { ChartLocation, PathOption, StackValues, getPoint, withInRange, Rect, TransformToVisible } from '../../common/utils/helper';
+import { ChartLocation, StackValues, getPoint, withInRange, TransformToVisible } from '../../common/utils/helper';
+import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';

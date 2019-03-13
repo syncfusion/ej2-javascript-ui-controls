@@ -56,4 +56,6 @@ export type TooltipTheme =
 /**  Render a chart with Highcontrast Dark theme. */
 'HighContrast'|
 /**  Render a chart with Bootstrap Dark theme. */
-'BootstrapDark';
+'BootstrapDark'|
+/**  Render a chart with Bootstrap4 theme. */
+'Bootstrap4';

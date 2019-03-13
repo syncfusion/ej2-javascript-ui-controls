@@ -4,24 +4,30 @@ import { Rect } from './../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix, scaleMatrix } from './../primitives/matrix';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { Container } from './../core/containers/container';
-import { StrokeStyle, LinearGradient, RadialGradient } from './../core/appearance';
+import { StrokeStyle, LinearGradient, RadialGradient, Stop } from './../core/appearance';
 import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
-import { PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityShapes, PortConstraints } from './../enum/enum';
+import {
+    PortVisibility, ConnectorConstraints, NodeConstraints, Shapes,
+    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools
+} from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
 import { PathElement } from './../core/elements/path-element';
 import { DiagramNativeElement } from './../core/elements/native-element';
 import { TextElement } from '../core/elements/text-element';
 import { ImageElement } from '../core/elements/image-element';
-import { PathAnnotation } from './../objects/annotation';
+import { PathAnnotation, ShapeAnnotation } from './../objects/annotation';
 import {
-    PathModel, TextModel, ImageModel, FlowShapeModel, BasicShapeModel,
-    NativeModel, HtmlModel, UmlActivityShapeModel
+    PathModel, TextModel, ImageModel, FlowShapeModel, BasicShapeModel, NativeModel, HtmlModel, UmlActivityShapeModel, SwimLaneModel
 } from './../objects/node-model';
-import { Node, FlowShape, BasicShape, Native, Html, UmlActivityShape } from './../objects/node';
+import {
+    Node, FlowShape, BasicShape, Native, Html, UmlActivityShape, BpmnGateway, BpmnDataObject, BpmnEvent, BpmnSubEvent, BpmnActivity,
+    BpmnAnnotation, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration,
+    Lane, Shape, Phase, ChildContainer, SwimLane, Path, Image, Text, BpmnShape, UmlClassifierShape, Header
+} from './../objects/node';
 import { NodeModel } from './../objects/node-model';
-import { Connector, bezierPoints, BezierSegment, ActivityFlow } from './../objects/connector';
+import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment } from './../objects/connector';
 import { ConnectorModel } from './../objects/connector-model';
 import { DecoratorModel } from './../objects/connector-model';
 import { getBasicShape } from './../objects/dictionary/basic-shapes';
@@ -41,10 +47,13 @@ import { View } from '../objects/interface/interfaces';
 import { TransformFactor as Transforms, Segment } from '../interaction/scroller';
 import { SymbolPalette } from '../../symbol-palette/symbol-palette';
 import { canResize } from './constraints-util';
-import { Selector } from '../interaction/selector';
-import { contains } from '../interaction/actions';
+import { Selector, UserHandle } from '../interaction/selector';
 import { getUMLActivityShape } from '../objects/dictionary/umlactivity-shapes';
 import { Canvas } from '../core/containers/canvas';
+import { PointPort } from '../objects/port';
+import { Command } from '../diagram/keyboard-commands';
+import { pasteSwimLane } from './swim-lane-util';
+import { GridPanel } from '../core/containers/grid';
 
 
 
@@ -84,6 +93,17 @@ export function findObjectType(drawingObject: NodeModel | ConnectorModel): strin
         }
     }
     return type;
+}
+
+/**
+ * @private
+ */
+export function setSwimLaneDefaults(child: NodeModel | ConnectorModel, node: NodeModel | ConnectorModel): void {
+    if (node instanceof Node) {
+        if (!((child as NodeModel).shape as SwimLaneModel).header) {
+            ((node as NodeModel).shape as SwimLane).hasHeader = false;
+        }
+    }
 }
 
 /**
@@ -312,12 +332,18 @@ export function getLineSegment(x1: number, y1: number, x2: number, y2: number): 
     return { 'x1': Number(x1) || 0, 'y1': Number(y1) || 0, 'x2': Number(x2) || 0, 'y2': Number(y2) || 0 };
 }
 /** @private */
-export function getPoints(element: DiagramElement, corners: Corners): PointModel[] {
+export function getPoints(element: DiagramElement, corners: Corners, padding?: number): PointModel[] {
     let line: PointModel[] = [];
-    line.push(corners.topLeft);
-    line.push(corners.topRight);
-    line.push(corners.bottomRight);
-    line.push(corners.bottomLeft);
+    padding = padding || 0;
+    let left: PointModel = { x: corners.topLeft.x - padding, y: corners.topLeft.y };
+    let right: PointModel = { x: corners.topRight.x + padding, y: corners.topRight.y };
+    let top: PointModel = { x: corners.bottomRight.x, y: corners.bottomRight.y - padding };
+    let bottom: PointModel = { x: corners.bottomLeft.x, y: corners.bottomLeft.y + padding };
+
+    line.push(left);
+    line.push(right);
+    line.push(top);
+    line.push(bottom);
     return line;
 }
 
@@ -522,16 +548,259 @@ export function getBezierDirection(src: PointModel, tar: PointModel): string {
     }
 }
 
+/** @private */
+export function removeChildNodes(node: NodeModel, diagram: Diagram): void {
+    if (node instanceof Node && node.children) {
+        for (let i: number = 0; i < node.children.length; i++) {
+            if (diagram.nameTable[node.children[i]].children) {
+                removeChildNodes(node, diagram);
+            }
+            diagram.removeFromAQuad(diagram.nameTable[node.children[i]]);
+            diagram.removeObjectsFromLayer(diagram.nameTable[node.children[i]]);
+            delete diagram.nameTable[node.children[i]];
+        }
+    }
+}
+
+function getChild(child: Canvas, children: string[]): string[] {
+    if (child && child.children && child.children.length > 0) {
+        for (let j: number = 0; j < child.children.length; j++) {
+            let subChild: DiagramElement = child.children[j];
+            if (subChild instanceof Canvas) {
+                getChild(subChild, children);
+            }
+        }
+    }
+    if (children.indexOf(child.id) === -1) {
+        children.push(child.id);
+    }
+    return children;
+}
+
+function getSwimLaneChildren(nodes: NodeModel[]): string[] {
+    let children: string[] = []; let node: Node; let grid: GridPanel; let childTable: DiagramElement[];
+    let child: Canvas; let gridChild: string = 'childTable';
+    for (let i: number = 0; i < nodes.length; i++) {
+        node = nodes[i] as Node;
+        if (node.shape.type === 'SwimLane') {
+            grid = node.wrapper.children[0] as GridPanel;
+            childTable = grid[gridChild];
+            for (let key of Object.keys(childTable)) {
+                child = childTable[key];
+                children = getChild(child as Canvas, children);
+            }
+        }
+    }
+    return children;
+}
+
+function removeUnnecessaryNodes(children: string[], diagram: Diagram): void {
+    let nodes: NodeModel[] = diagram.nodes;
+    if (nodes) {
+        for (let i: number = 0; i < nodes.length; i++) {
+            if (children.indexOf(nodes[i].id) !== -1) {
+                nodes.splice(i, 1);
+                i--;
+            }
+        }
+    }
+}
 
 /** @private */
 export function serialize(model: Diagram): string {
+    let removeNodes: string[] = getSwimLaneChildren(model.nodes);
     let clonedObject: Object = cloneObject(model, model.getCustomProperty);
     (clonedObject as Diagram).selectedItems.nodes = [];
     (clonedObject as Diagram).selectedItems.connectors = [];
     (clonedObject as Diagram).selectedItems.wrapper = null;
+    if (model.serializationSettings.preventDefaults) {
+        clonedObject = preventDefaults(clonedObject, model);
+    }
+    removeUnnecessaryNodes(removeNodes, clonedObject as Diagram);
     return JSON.stringify(clonedObject);
 }
 
+function preventDefaults(clonedObject: Object, model: object, defaultObject?: object, isNodeShape?: boolean): object {
+    defaultObject = getConstructor(model, defaultObject);
+    let properties: string[] = [];
+    properties = properties.concat(Object.keys(clonedObject));
+    for (let property of properties) {
+        if (model instanceof Node) {
+            isNodeShape = (property === 'shape') ? true : false;
+        }
+        if (clonedObject[property] instanceof Array) {
+            preventArrayDefaults(clonedObject, defaultObject, model, property);
+        } else if (clonedObject[property] instanceof Object) {
+            if (property !== 'wrapper') {
+                clonedObject[property] = preventDefaults(clonedObject[property], model[property], defaultObject[property], isNodeShape);
+            }
+        } else if ((defaultObject && clonedObject[property] === defaultObject[property]) || clonedObject[property] === undefined) {
+            if (!(isNodeShape && property === 'type') && !(model instanceof SwimLane && property === 'orientation')) {
+                delete clonedObject[property];
+            }
+        }
+        if (
+            JSON.stringify(clonedObject[property]) === '[]' ||
+            JSON.stringify(clonedObject[property]) === '{}' ||
+            clonedObject[property] === undefined
+        ) {
+            delete clonedObject[property];
+        }
+    }
+    return clonedObject;
+}
+
+function preventArrayDefaults(clonedObject: object, defaultObject: object, model: object, property: string): void {
+    if (clonedObject[property].length === 0) {
+        delete clonedObject[property];
+        // tslint:disable-next-line:no-any
+    } else if (clonedObject[property].every((element: any): boolean => { return typeof element === 'number'; })) {
+        let i: number; let isSameArray: boolean = true;
+        for (i = 0; i < clonedObject[property].length; i++) {
+            if (isSameArray && clonedObject[property][i] === defaultObject[property][i]) {
+                isSameArray = true;
+            } else {
+                isSameArray = false;
+            }
+        }
+        if (isSameArray) {
+            delete clonedObject[property];
+        }
+    } else {
+        let i: number;
+        if (property === 'layers') {
+            clonedObject[property].splice(0, 1);
+            if (clonedObject[property].length === 0) {
+                delete clonedObject[property];
+            }
+        }
+        if (clonedObject[property]) {
+            for (i = clonedObject[property].length - 1; i >= 0; i--) {
+                if (property === 'nodes' || property === 'connectors') {
+                    clonedObject[property][i].wrapper = null;
+                }
+                if (property !== 'dataManager') {
+                    clonedObject[property][i] = preventDefaults(
+                        clonedObject[property][i], model[property][i],
+                        (defaultObject[property] !== undefined ? defaultObject[property][i] : undefined)
+                    );
+                    if (JSON.stringify(clonedObject[property][i]) === '[]' ||
+                        JSON.stringify(clonedObject[property][i]) === '{}' ||
+                        clonedObject[property][i] === undefined
+                    ) {
+                        clonedObject[property].splice(i, 1);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* tslint:disable */
+function getConstructor(model: object, defaultObject: object): object {
+    let obj: object = []; let constructor: object;
+    let parent: object = new Diagram();
+    let getClassName: string = 'getClassName';
+    if (model[getClassName]) {
+        switch (model[getClassName]()) {
+            case 'Diagram':
+                constructor = new Diagram(); break;
+            case 'Node':
+                constructor = new Node(parent, '', obj); break;
+            case 'Path':
+                constructor = new Path(parent as Shape, '', obj); break;
+            case 'Native':
+                constructor = new Native(parent as Shape, '', obj); break;
+            case 'Html':
+                constructor = new Html(parent as Shape, '', obj); break;
+            case 'Image':
+                constructor = new Image(parent as Shape, '', obj); break;
+            case 'Text':
+                constructor = new Text(parent as Shape, '', obj); break;
+            case 'BasicShape':
+                constructor = new BasicShape(parent as Shape, '', obj); break;
+            case 'FlowShape':
+                constructor = new FlowShape(parent as Shape, '', obj); break;
+            case 'BpmnShape':
+                constructor = new BpmnShape(parent as Shape, '', obj); break;
+            case 'UmlActivityShape':
+                constructor = new UmlActivityShape(parent as Shape, '', obj); break;
+            case 'UmlClassifierShape':
+                constructor = new UmlClassifierShape(parent as Shape, '', obj); break;
+            case 'SwimLane':
+                constructor = new SwimLane(parent as Shape, '', obj);
+                if ((model as SwimLane).header) {
+                    (constructor as SwimLane).header = new Header(parent as Shape, '', obj);
+                    (constructor as SwimLane).header.style.fill = '';
+                }
+                break;
+            case 'ShapeAnnotation':
+                constructor = new ShapeAnnotation(parent, '', obj); break;
+            case 'PointPort':
+                constructor = new PointPort(parent, '', obj); break;
+            case 'BpmnGateway':
+                constructor = new BpmnGateway(parent as BpmnGateway, '', obj); break;
+            case 'BpmnDataObject':
+                constructor = new BpmnDataObject(parent as BpmnDataObject, '', obj); break;
+            case 'BpmnEvent':
+                constructor = new BpmnEvent(parent as BpmnEvent, '', obj); break;
+            case 'BpmnSubEvent':
+                constructor = new BpmnSubEvent(parent as BpmnSubEvent, '', obj); break;
+            case 'BpmnActivity':
+                constructor = new BpmnActivity(parent as BpmnActivity, '', obj); break;
+            case 'BpmnAnnotation':
+                constructor = new BpmnAnnotation(parent, '', obj); break;
+            case 'MethodArguments':
+                constructor = new MethodArguments(parent as MethodArguments, '', obj); break;
+            case 'UmlClassAttribute':
+                constructor = new UmlClassAttribute(parent as MethodArguments, '', obj); break;
+            case 'UmlClassMethod':
+                constructor = new UmlClassMethod(parent as MethodArguments, '', obj); break;
+            case 'UmlClass':
+                constructor = new UmlClass(parent as UmlClass, '', obj); break;
+            case 'UmlInterface':
+                constructor = new UmlInterface(parent as UmlClass, '', obj); break;
+            case 'UmlEnumerationMember':
+                constructor = new UmlEnumerationMember(parent as UmlEnumerationMember, '', obj); break;
+            case 'UmlEnumeration':
+                constructor = new UmlEnumeration(parent as UmlEnumeration, '', obj); break;
+            case 'Lane':
+                constructor = new Lane(parent as Shape, '', obj); break;
+            case 'Phase':
+                constructor = new Phase(parent as Shape, '', obj); break;
+            case 'ChildContainer':
+                constructor = new ChildContainer(); break;
+            case 'Connector':
+                constructor = new Connector(parent, '', obj); break;
+            case 'StraightSegment':
+                constructor = new StraightSegment(parent, '', obj); break;
+            case 'BezierSegment':
+                constructor = new BezierSegment(parent, '', obj); break;
+            case 'OrthogonalSegment':
+                constructor = new OrthogonalSegment(parent, '', obj); break;
+            case 'PathAnnotation':
+                constructor = new PathAnnotation(parent, '', obj); break;
+            case 'Stop':
+                constructor = new Stop(parent as Stop, '', obj); break;
+            case 'Point':
+                if (!defaultObject) {
+                    constructor = new Point(parent as Point, '', obj);
+                } else {
+                    constructor = defaultObject;
+                }
+                break;
+            case 'UserHandle':
+                constructor = new UserHandle(parent as UserHandle, '', obj); break;
+            case 'Command':
+                constructor = new Command(parent as Command, '', obj); break;
+        }
+    } else {
+        constructor = defaultObject;
+    }
+    return constructor;
+}
+
+/* tslint:enable */
 /** @private */
 export function deserialize(model: string, diagram: Diagram): Object {
     diagram.clear();
@@ -555,18 +824,19 @@ export function deserialize(model: string, diagram: Diagram): Object {
     let connectorDefaults: Function | string = diagram.getConnectorDefaults;
 
     let dataObj: Diagram = JSON.parse(model);
-    diagram.contextMenuSettings = dataObj.contextMenuSettings;
-    diagram.constraints = dataObj.constraints;
-    diagram.tool = dataObj.tool;
-    diagram.bridgeDirection = dataObj.bridgeDirection;
-    diagram.pageSettings = dataObj.pageSettings;
-    diagram.drawingObject = dataObj.drawingObject;
-    diagram.tooltip = dataObj.tooltip;
-    diagram.addInfo = dataObj.addInfo;
+    dataObj = upgrade(dataObj);
+    diagram.contextMenuSettings = dataObj.contextMenuSettings || {};
+    diagram.constraints = dataObj.constraints || DiagramConstraints.Default;
+    diagram.tool = dataObj.tool || DiagramTools.Default;
+    diagram.bridgeDirection = dataObj.bridgeDirection || 'Top';
+    diagram.pageSettings = dataObj.pageSettings || {};
+    diagram.drawingObject = dataObj.drawingObject || undefined;
+    diagram.tooltip = dataObj.tooltip || {};
+    diagram.addInfo = dataObj.addInfo || undefined;
     diagram.getDescription = getDescription;
-    diagram.scrollSettings = dataObj.scrollSettings;
-    diagram.commandManager = dataObj.commandManager;
-    diagram.layers = dataObj.layers;
+    diagram.scrollSettings = dataObj.scrollSettings || {};
+    diagram.commandManager = dataObj.commandManager || {};
+    diagram.layers = dataObj.layers || [];
     diagram.rulerSettings.horizontalRuler.arrangeTick = arrangeTickHorizontal;
     diagram.rulerSettings.verticalRuler.arrangeTick = arrangeTickVertical;
     for (let cmd of diagram.commandManager.commands) {
@@ -575,22 +845,29 @@ export function deserialize(model: string, diagram: Diagram): Object {
             cmd.canExecute = commands[cmd.name].canExecute;
         }
     }
-    diagram.backgroundColor = dataObj.backgroundColor;
-    diagram.basicElements = dataObj.basicElements;
-    diagram.connectors = dataObj.connectors;
-    diagram.dataSourceSettings = dataObj.dataSourceSettings;
+    diagram.backgroundColor = dataObj.backgroundColor || 'transparent';
+    diagram.basicElements = dataObj.basicElements || [];
+    diagram.connectors = dataObj.connectors || [];
+    diagram.dataSourceSettings = dataObj.dataSourceSettings || {};
     diagram.dataSourceSettings.doBinding = map;
-    diagram.height = dataObj.height;
+    diagram.height = dataObj.height || '100%';
     diagram.setNodeTemplate = nodeTemp;
     diagram.getConnectorDefaults = connectorDefaults;
     diagram.getNodeDefaults = nodeDefaults;
     diagram.getCustomProperty = getCustomProperty;
-    diagram.mode = dataObj.mode;
-    diagram.nodes = dataObj.nodes;
-    diagram.rulerSettings = dataObj.rulerSettings;
-    diagram.snapSettings = dataObj.snapSettings;
-    diagram.width = dataObj.width;
-    diagram.layout = dataObj.layout;
+    diagram.mode = dataObj.mode || 'SVG';
+    if (dataObj.nodes.length) {
+        for (let i: number = 0; i < dataObj.nodes.length; i++) {
+            if (dataObj.nodes[i].shape && dataObj.nodes[i].shape.type === 'SwimLane') {
+                pasteSwimLane(dataObj.nodes[i] as NodeModel, undefined, undefined, undefined, undefined, true);
+            }
+        }
+    }
+    diagram.nodes = dataObj.nodes || [];
+    diagram.rulerSettings = dataObj.rulerSettings || {};
+    diagram.snapSettings = dataObj.snapSettings || {};
+    diagram.width = dataObj.width || '100%';
+    diagram.layout = dataObj.layout || {};
     diagram.layout.getLayoutInfo = getFunction(getLayoutInfo);
     diagram.layout.getBranch = getFunction(getBranch);
     diagram.diagramActions = 0;
@@ -606,9 +883,28 @@ export function deserialize(model: string, diagram: Diagram): Object {
             diagram.element.classList.add('e-diagram');
         }
     }
-    dataObj.selectedItems.nodes = [];
-    dataObj.selectedItems.connectors = [];
+    if (dataObj.selectedItems) {
+        dataObj.selectedItems.nodes = [];
+        dataObj.selectedItems.connectors = [];
+    }
     diagram.selectedItems = dataObj.selectedItems;
+    return dataObj;
+}
+
+/** @private */
+export function upgrade(dataObj: Diagram): Diagram {
+    if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1))) {
+        let nodes: NodeModel[] = dataObj.nodes;
+        for (let node of nodes) {
+            if (node && node.ports.length > 0) {
+                for (let port of node.ports) {
+                    if (port && port.constraints && port.constraints === PortConstraints.None) {
+                        port.constraints = PortConstraints.Default;
+                    }
+                }
+            }
+        }
+    }
     return dataObj;
 }
 
@@ -974,7 +1270,7 @@ export function getUMLActivityShapes(umlActivityShape: PathElement, content: Dia
 }
 
 /**   @private  */
-export  function removeGradient(svgId: string): void {
+export function removeGradient(svgId: string): void {
     removeElement(svgId + '_linear');
     removeElement(svgId + '_radial');
 }
@@ -1219,7 +1515,7 @@ export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, dro
         node = nameTable[child[i]];
         if (node) {
             if (node.children) {
-                this.arrangeChild(node, x, y, nameTable, drop, diagram);
+                arrangeChild(node, x, y, nameTable, drop, diagram);
             } else {
                 node.offsetX -= x;
                 node.offsetY -= y;

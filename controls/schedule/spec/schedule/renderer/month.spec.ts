@@ -1,22 +1,33 @@
 /**
  * Schedule Month view spec 
  */
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, EmitType, closest, Browser } from '@syncfusion/ej2-base';
 import {
-    Schedule, ScheduleModel, CellClickEventArgs,
-    NavigatingEventArgs, ActionEventArgs, Day, Week, WorkWeek, Month, Agenda
+    Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs, Day, Week, WorkWeek, Month, Agenda, EJ2Instance
 } from '../../../src/schedule/index';
+import { RecurrenceEditor } from '../../../src/recurrence-editor/recurrence-editor';
 import { triggerMouseEvent } from '../util.spec';
-import { resourceData } from '../base/datasource.spec';
+import { resourceData, testData } from '../base/datasource.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
-import { EJ2Instance } from '../../../src/schedule/base/interface';
 import { blockData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule Month view', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Initial load', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -95,6 +106,7 @@ describe('Schedule Month view', () => {
         it('horizontal scroll', () => {
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             let headerCellsArea: HTMLElement = schObj.element.querySelector('.e-date-header-wrap') as HTMLElement;
+            // tslint:disable-next-line:no-any
             (schObj.activeView as any).onContentScroll({ target: contentArea });
             expect(contentArea.scrollLeft).toEqual(0);
             expect(headerCellsArea.scrollLeft).toEqual(0);
@@ -614,7 +626,7 @@ describe('Schedule Month view', () => {
             expect(schObj.getCellDetails(tdElement)).toBeUndefined();
         });
 
-        it('scrollTo && adjustEventWrapper', () => {
+        it('scrollTo', () => {
             schObj = new Schedule({
                 currentView: 'Month', selectedDate: new Date(2017, 9, 5), height: 500, width: 500
             });
@@ -622,8 +634,6 @@ describe('Schedule Month view', () => {
             schObj.scrollTo('06:00');
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             expect(contentArea.scrollTop).toEqual(0);
-            schObj.adjustEventWrapper();
-            // No expectaion because Month view does not need event wrapper adjustment
         });
 
         it('interval count', () => {
@@ -635,11 +645,13 @@ describe('Schedule Month view', () => {
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(63);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('Oct 1');
+            // tslint:disable-next-line:no-any
             expect(schObj.element.querySelectorAll(('.e-work-cells') as any)[6].innerHTML).
                 toEqual('<div class="e-date-header e-navigate">7</div>');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('26');
+            // tslint:disable-next-line:no-any
             expect(schObj.element.querySelectorAll(('.e-work-cells') as any)[6].innerHTML).
                 toEqual('<div class="e-date-header e-navigate">2</div>');
 
@@ -1050,6 +1062,26 @@ describe('Schedule Month view', () => {
             };
             schObj.dataBind();
         });
+        it('change through set properties', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(6);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(8);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
+        it('checking block event with enableAdativeRows property', () => {
+            let blockEventElement: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-block-appointment'));
+            expect(blockEventElement.length).toEqual(4);
+            let blockIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-block-indicator'));
+            expect(blockIndicator.length).toEqual(7);
+        });
     });
 
     describe('Multi level resource rendering  in block events', () => {
@@ -1163,4 +1195,317 @@ describe('Schedule Month view', () => {
             schObj.dataBind();
         });
     });
+
+    describe('Events rendering with enableAdaptiveRows property', () => {
+        describe('default view', () => {
+            let schObj: Schedule;
+            beforeAll((done: Function) => {
+                let schOptions: ScheduleModel = {
+                    height: '500px',
+                    selectedDate: new Date(2017, 10, 6),
+                    enableAdaptiveRows: true,
+                    currentView: 'Month',
+                };
+                schObj = util.createSchedule(schOptions, testData, done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+            it('elements in DOM', () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(11);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(8);
+                expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+            });
+            it('add events', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(12);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(0);
+                    done();
+                };
+                expect(schObj.eventsData.length).toEqual(7);
+                schObj.dataBound = dataBound;
+                let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                triggerMouseEvent(workCells[15], 'click');
+                let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                (<HTMLElement>cellPopup.querySelector('.e-event-create')).click();
+            });
+            it('row height update after delete a event', (done: Function) => {
+                let dataBound: () => void = () => {
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(11);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(0);
+                    done();
+                };
+                expect(schObj.eventsData.length).toEqual(8);
+                schObj.dataBound = dataBound;
+                let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                triggerMouseEvent(eventElements[7], 'click');
+                let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup).toBeTruthy();
+                (<HTMLElement>eventPopup.querySelector('.e-delete')).click();
+                (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
+            });
+            it('change through set properties', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(6);
+                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    expect(eventWrapperList.length).toEqual(13);
+                    expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(9);
+                    done();
+                };
+                schObj.enableAdaptiveRows = false;
+                schObj.dataBound = dataBound;
+                schObj.dataBind();
+            });
+        });
+
+        describe('Mobile view', () => {
+            let uA: string = Browser.userAgent;
+            let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            let schObj: Schedule;
+            beforeAll((done: Function) => {
+                let schOptions: ScheduleModel = {
+                    height: '550px',
+                    selectedDate: new Date(2017, 10, 6),
+                    enableAdaptiveRows: true,
+                    currentView: 'Month',
+                };
+                schObj = util.createSchedule(schOptions, testData, done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+                Browser.userAgent = uA;
+            });
+
+            it('elements in DOM', () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(11);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(8);
+                expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+            });
+            it('change through set properties', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(9);
+                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    expect(eventWrapperList.length).toEqual(8);
+                    expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(2);
+                    done();
+                };
+                schObj.enableAdaptiveRows = false;
+                schObj.dataBound = dataBound;
+                schObj.dataBind();
+            });
+        });
+
+        describe('RTL view', () => {
+            let schObj: Schedule;
+            beforeAll((done: Function) => {
+                let schOptions: ScheduleModel = {
+                    height: '550px',
+                    selectedDate: new Date(2017, 10, 6),
+                    enableAdaptiveRows: true,
+                    enableRtl: true,
+                    currentView: 'Month',
+                };
+                schObj = util.createSchedule(schOptions, testData, done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+            it('elements in DOM', () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(11);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(8);
+                expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+            });
+            it('add events', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    expect(schObj.eventsData.length).toEqual(8);
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(12);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(0);
+                    done();
+                };
+                expect(schObj.eventsData.length).toEqual(7);
+                schObj.dataBound = dataBound;
+                let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                triggerMouseEvent(workCells[15], 'click');
+                let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                (<HTMLElement>cellPopup.querySelector('.e-event-create')).click();
+            });
+            it('row height update after delete a event', (done: Function) => {
+                let dataBound: () => void = () => {
+                    expect(schObj.eventsData.length).toEqual(7);
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(11);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(0);
+                    done();
+                };
+                expect(schObj.eventsData.length).toEqual(8);
+                schObj.dataBound = dataBound;
+                let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                triggerMouseEvent(eventElements[7], 'click');
+                let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup).toBeTruthy();
+                (<HTMLElement>eventPopup.querySelector('.e-delete')).click();
+                (<HTMLElement>document.body.querySelector('.e-quick-dialog-delete')).click();
+            });
+            it('change through set properties', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(9);
+                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    expect(eventWrapperList.length).toEqual(8);
+                    expect((closest(eventElementList[0], '.e-work-cells') as HTMLTableCellElement).cellIndex).toEqual(3);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(2);
+                    done();
+                };
+                schObj.enableAdaptiveRows = false;
+                schObj.dataBound = dataBound;
+                schObj.dataBind();
+            });
+        });
+        describe('resource grouping appointment rendering', () => {
+            let schObj: Schedule;
+            beforeAll((done: Function) => {
+                let schOptions: ScheduleModel = {
+                    height: '500px',
+                    selectedDate: new Date(2018, 3, 1),
+                    enableAdaptiveRows: true,
+                    currentView: 'Month',
+                    group: {
+                        resources: ['Rooms', 'Owners']
+                    },
+                    resources: [
+                        {
+                            field: 'RoomId', title: 'Room',
+                            name: 'Rooms', allowMultiple: false,
+                            dataSource: [
+                                { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                                { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
+                            ],
+                            textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                        }, {
+                            field: 'OwnerId', title: 'Owner',
+                            name: 'Owners', allowMultiple: true,
+                            dataSource: [
+                                { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                                { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                                { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                            ],
+                            textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                        }
+                    ]
+                };
+                schObj = util.createSchedule(schOptions, resourceData, done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+
+            it('Checking appointment element', () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(10);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(10);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+            });
+
+            it('Add event', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    expect(schObj.eventsData.length).toEqual(10);
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(15);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(0);
+                    done();
+                };
+                let workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                triggerMouseEvent(workCell, 'click');
+                triggerMouseEvent(workCell, 'dblclick');
+                expect(schObj.eventsData.length).toEqual(9);
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let recObj: RecurrenceEditor = (dialogElement.querySelector('.e-recurrenceeditor') as EJ2Instance).
+                    ej2_instances[0] as RecurrenceEditor;
+                recObj.value = 'FREQ=DAILY;INTERVAL=1;COUNT=5';
+                recObj.dataBind();
+                let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
+                saveButton.click();
+                schObj.dataBound = dataBound;
+            });
+
+            it('Delete event', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    expect(schObj.eventsData.length).toEqual(9);
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(14);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(0);
+                    done();
+                };
+                let appElement: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]') as HTMLElement;
+                triggerMouseEvent(appElement, 'click');
+                triggerMouseEvent(appElement, 'dblclick');
+                expect(schObj.eventsData.length).toEqual(10);
+                let quickDialog: Element = document.querySelector('.e-quick-dialog');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let deleteButton: HTMLInputElement =
+                    <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
+                deleteButton.click();
+                triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
+                schObj.dataBound = dataBound;
+            });
+            it('change through set properties', (done: Function) => {
+                let dataBound: (args: Object) => void = (args: Object) => {
+                    let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                    expect(eventElementList.length).toEqual(12);
+                    let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                    expect(eventWrapperList.length).toEqual(12);
+                    let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                    expect(moreIndicatorList.length).toEqual(2);
+                    done();
+                };
+                schObj.enableAdaptiveRows = false;
+                schObj.dataBound = dataBound;
+                schObj.dataBind();
+            });
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
+    });
 });
+

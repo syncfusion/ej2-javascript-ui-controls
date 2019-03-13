@@ -2,7 +2,7 @@ import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, clo
 import { EmitType, Event, EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
 import { addClass, isRippleEnabled, removeClass, rippleEffect, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SwitchModel } from './switch-model';
-import { rippleMouseHandler, destroy, preRender, ChangeEventArgs } from './../common/common';
+import { rippleMouseHandler, destroy, preRender, ChangeEventArgs, setHiddenInput } from './../common/common';
 
 const CHECK: string = 'e-check';
 const DISABLED: string = 'e-switch-disabled';
@@ -212,6 +212,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         let offLabel: Element = this.createElement('span', { className: 'e-switch-off' });
         let handle: Element = this.createElement('span', { className: 'e-switch-handle' });
         wrapper.appendChild(this.element);
+        setHiddenInput(this, wrapper);
         switchInner.appendChild(onLabel);
         switchInner.appendChild(offLabel);
         wrapper.appendChild(switchInner);

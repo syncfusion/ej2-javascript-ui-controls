@@ -12,7 +12,7 @@
         height: auto;
         min-height: auto;
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           height: $tab-big-height;
           min-height: $tab-big-height;
         }
@@ -35,7 +35,7 @@
         }
 
         .e-indicator + .e-toolbar-item:nth-last-child(1).e-active {
-          @if $skin-name == 'bootstrap' {
+          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
             margin: 1px 2px 0 0;
           }
         }
@@ -57,6 +57,10 @@
 
         .e-scroll-nav {
           width: 50px;
+          @if $skin-name == 'bootstrap4' {
+            border-radius: 4px;
+            width: 38px;
+          }
         }
       }
 
@@ -115,7 +119,7 @@
             margin: $tab-mob-boot-item-margin;
           }
 
-          @if $skin-name == 'bootstrap' {
+          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
             &.e-ileft:not(.e-icon) .e-tab-icon::before {
               position: relative;
               top: -.5px;
@@ -177,6 +181,10 @@
           height: $tab-big-icon-container-size;
           min-width: $tab-big-icon-container-size;
           width: $tab-big-icon-container-size;
+
+          @if $skin-name == 'bootstrap4' {
+            line-height: $tab-big-icon-container-size;
+          }
         }
 
         .e-tab-icon,
@@ -423,14 +431,14 @@
           }
 
           &:hover {
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
               line-height: 42px;
             }
 
             &::before {
               top: $tab-big-hover-nav-pop-icon-top;
 
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 line-height: 42px;
                 top: .5px;
               }
@@ -446,14 +454,14 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
               line-height: 42px;
             }
 
             &::before {
               top: $tab-big-hover-nav-pop-icon-top;
 
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 line-height: 42px;
               }
 
@@ -463,7 +471,7 @@
             }
 
             &:hover {
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 line-height: 42px;
                 top: -2px;
               }
@@ -506,7 +514,7 @@
               padding-top: $tab-big-even-boot-active-item-padding-bottom;
             }
 
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
               .e-close-icon::before {
                 top: .5px;
               }
@@ -531,7 +539,7 @@
               margin: $tab-mob-even-last-item-margin;
             }
 
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
 
               .e-tab-text {
                 padding-top: .5px;
@@ -731,7 +739,7 @@
         }
       }
 
-      @if $skin-name == 'bootstrap' {
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         &.e-rtl .e-toolbar-item.e-active {
           margin: 0 0 0 2px;
         }
@@ -906,7 +914,7 @@
 
     &.e-rtl {
 
-      @if $skin-name == 'bootstrap' {
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
 
         .e-tab-header {
 
@@ -1407,7 +1415,7 @@
         content: '';
         position: absolute;
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           display: block;
         }
       }
@@ -1427,7 +1435,7 @@
         min-height: $tab-nrml-height;
         position: relative;
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           height: $tab-nrml-height;
           min-height: $tab-nrml-height;
         }
@@ -1461,7 +1469,7 @@
           }
         }
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap'or $skin-name == 'bootstrap4' {
 
           &[style*= 'overflow: hidden'] .e-toolbar-item:not(.e-separator).e-active {
             margin-bottom: 0;
@@ -1476,6 +1484,10 @@
 
         .e-scroll-nav {
           width: 40px;
+          @if $skin-name == 'bootstrap4' {
+            border-radius: 4px;
+            width: 32px;
+          }
         }
 
         &:not(.e-tbar-pos) .e-toolbar-item:last-child {
@@ -1617,7 +1629,7 @@
             }
           }
 
-          @if $skin-name == 'bootstrap' {
+          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
             .e-tab-icon::before {
               top: -1px;
             }
@@ -1690,6 +1702,10 @@
           height: $tab-nrml-icon-container-size;
           min-width: $tab-nrml-icon-container-size;
           width: $tab-nrml-icon-container-size;
+
+          @if $skin-name == 'bootstrap4' {
+            line-height: $tab-nrml-icon-container-size;
+          }
 
           @media screen and (max-width: 480px) {
             height: $tab-mob-icon-container-size;
@@ -2068,7 +2084,7 @@
           }
 
           &:hover {
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
               line-height: 34px;
             }
 
@@ -2079,7 +2095,7 @@
                 top: -1px;
               }
 
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 line-height: 34px;
                 top: 0;
 
@@ -2119,7 +2135,7 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
               line-height: 32px;
             }
 
@@ -2130,7 +2146,7 @@
                 top: -1px;
               }
 
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 line-height: 32px;
                 top: 0;
 
@@ -2145,7 +2161,7 @@
             }
 
             &:hover {
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 line-height: 32px;
                 top: -.5px;
               }
@@ -2160,7 +2176,7 @@
           bottom: auto;
         }
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           .e-hscroll-bar {
             margin-top: -1px;
           }
@@ -2552,6 +2568,11 @@
           display: flex;
           flex: none;
         }
+
+        .e-item,
+        .e-item > :first-child {
+          width: 100%;
+        }
       }
     }
 
@@ -2648,7 +2669,7 @@
         }
       }
 
-      @if $skin-name == 'bootstrap' {
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
         &.e-rtl .e-tab-header .e-toolbar-item.e-active {
           margin: 0 0 0 2px;
         }
@@ -2928,7 +2949,7 @@
           min-height: $tab-mob-fill-height;
         }
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           &::before {
             display: none;
           }
@@ -3205,7 +3226,7 @@
 
       .e-tab-header {
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           &::before {
             display: none;
           }
@@ -3339,7 +3360,7 @@
           margin: $tab-nrml-rtl-item-margin;
         }
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child.e-active {
             margin: $tab-nrml-rtl-item-margin;
           }
@@ -3372,7 +3393,7 @@
           }
         }
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           &:nth-child(even) {
 
             .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:not(.e-separator) {

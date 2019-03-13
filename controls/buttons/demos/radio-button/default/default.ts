@@ -6,16 +6,16 @@ import { enableRipple } from '@syncfusion/ej2-base';
 import { Button } from '../../../src/button/index';
 
 enableRipple(true);
-let radiobutton: RadioButton = new RadioButton({label: 'Credit/Debit Card', name: 'payment', value: 'credit/debit', checked: true}); 
+let radiobutton: RadioButton = new RadioButton({ label: 'Credit/Debit Card', name: 'payment', value: 'credit/debit', checked: true });
 radiobutton.appendTo('#radio1');
 
-let radiobutton1: RadioButton = new RadioButton({label: 'Net Banking', name: 'payment', value: 'netbanking'}); 
+let radiobutton1: RadioButton = new RadioButton({ label: 'Net Banking', name: 'payment', value: 'netbanking' });
 radiobutton1.appendTo('#radio2');
 
-let radiobutton2: RadioButton = new RadioButton({label: 'Cash on Delivery', name: 'payment', value: 'cashondelivery'});
+let radiobutton2: RadioButton = new RadioButton({ label: 'Cash on Delivery', name: 'payment', value: 'cashondelivery' });
 radiobutton2.appendTo('#radio3');
 
-let radiobutton3: RadioButton = new RadioButton({label: 'Other Wallets', name: 'payment', value: 'others'}); 
+let radiobutton3: RadioButton = new RadioButton({ label: 'Other Wallets', name: 'payment', value: 'others' });
 radiobutton3.appendTo('#radio4');
 
 //Theme
@@ -46,55 +46,59 @@ btnObj.appendTo('#bootstrapdark');
 document.getElementById('material').onclick = (e : Event) => {
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material.css');
+    enableRipple(true);
+    refresh();
 };
-document.getElementById('fabric').onclick = (e : Event) => {
+document.getElementById('fabric').onclick = (e: Event) => {
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric.css');
+    enableRipple(false);
+    refresh();
 };
-document.getElementById('bootstrap').onclick = (e : Event) => {
+document.getElementById('bootstrap').onclick = (e: Event) => {
     document.body.classList.remove('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap.css');
+    enableRipple(false);
+    refresh();
 };
-document.getElementById('highcontrast').onclick = (e : Event) => {
+document.getElementById('highcontrast').onclick = (e: Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
+    enableRipple(false);
+    refresh();
 };
 
 document.getElementById('materialdark').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
+    enableRipple(true);
+    refresh();
 };
 
 document.getElementById('fabricdark').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
+    enableRipple(false);
+    refresh();
 };
 
 document.getElementById('bootstrapdark').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
-};
-
-document.getElementById('highcontrastlight').onclick = (e : Event) => {
-    document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast-light.css');
-};
-
-document.getElementById('materialdark').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
-};
-
-document.getElementById('fabricdark').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
-};
-
-document.getElementById('bootstrapdark').onclick = (e : Event) => {
-    document.body.classList.add('darkBG');
-    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
+    enableRipple(false);
+    refresh();
 };
 
 // document.getElementById('highcontrastlight').onclick = (e : Event) => {
 //     document.body.classList.remove('darkBG');
 //     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast-light.css');
 // };
+
+function refresh(): void {
+    setTimeout(() => {
+        let ele: NodeListOf<HTMLInputElement> = document.getElementById('radio').getElementsByTagName('input');
+        for (let i: number = 0; i < ele.length; i++) {
+            (ele[i] as any).ej2_instances[0].refresh();
+        }
+    }, 1000);
+}

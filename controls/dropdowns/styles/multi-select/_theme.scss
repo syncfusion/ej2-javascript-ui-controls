@@ -163,6 +163,9 @@
 
 .e-multi-select-wrapper .e-delim-values {
   color: $ddl-chip-font-color;
+  @if $ddl-multiselect-skin-name == 'bootstrap4' {
+    color: $gray-600;
+  }
 }
 
 .e-multi-select-wrapper .e-chips-close.e-close-hooker {

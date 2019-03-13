@@ -2,11 +2,11 @@ import { Component, Property, Complex, CollectionFactory, ChildProperty, Event }
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel, HeaderModel } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, BpmnShape, PointModel, IElement } from '../diagram/index';
 import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel } from './symbol-palette-model';
-import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs } from '../diagram/index';
+import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';
 import { SvgRenderer } from '../diagram/rendering/svg-renderer';
 import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';
 import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults } from '../diagram/utility/diagram-util';
@@ -549,7 +549,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                         width: isHorizontal ? header.width : swimLaneObj.width,
                         height: isHorizontal ? swimLaneObj.height : header.height,
                         style: headerStyle,
-                        annotations: [{ content: header.content.content }]
+                        annotations: [{ content: header.annotation.content }]
                     };
                     headerObj.offsetX = headerObj.width / 2;
                     headerObj.offsetY = headerObj.height / 2;
@@ -569,11 +569,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     laneWidth = swimLaneObj.width ? swimLaneObj.width : this.symbolWidth;
                     symbol.shape.type = 'Path';
                     if (isHorizontal) {
-                        (symbol.shape as PathModel).data =
-                            'M' + 20 + ',' + (laneHeight / 2) + ' L' + (laneWidth - 20) + ',' + (laneHeight / 2) + 'z';
+                        (symbol.shape as PathModel).data = 'M0,0 L' + laneWidth + ',' + '0';
                     } else {
-                        (symbol.shape as PathModel).data =
-                            'M' + (laneWidth / 2) + ',' + 20 + ' L' + (laneWidth / 2) + ',' + (laneHeight - 20) + 'z';
+                        (symbol.shape as PathModel).data = 'M0,0 L0,' + laneWidth;
                     }
                 }
             }
@@ -723,10 +721,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (!(symbol as Node | Connector).parentId) {
             let symbolInfo: SymbolInfo = { width: this.symbolWidth, height: this.symbolHeight };
             let getSymbolInfo: Function = getFunction(this.getSymbolInfo);
-            if (getSymbolInfo) {
-                symbolInfo = getSymbolInfo(symbol);
-            }
+            if (getSymbolInfo) { symbolInfo = getSymbolInfo(symbol); }
             symbolInfo = symbolInfo || {};
+            if (symbol.shape && (symbol.shape as SwimLaneModel).isPhase) {
+                symbolInfo.width = symbolInfo.width || this.symbolWidth;
+                symbolInfo.height = symbolInfo.height || this.symbolHeight;
+            }
             //defining custom templates
             content.relativeMode = 'Object';
             content.horizontalAlignment = content.verticalAlignment = 'Center';
@@ -741,25 +741,23 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (width !== undefined && height !== undefined) {
                 let actualWidth: number = width; let actualHeight: number = height;
                 let isLane: boolean = (symbol.shape as SwimLane).isLane ? true : false;
+                let isPhase: boolean = (symbol.shape as SwimLane).isPhase ? true : false;
                 if (this.symbolWidth !== undefined) {
-                    actualWidth = isLane ? this.laneTable[obj.id].width :
-                        this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
+                    actualWidth = this.symbolWidth - this.symbolMargin.left - this.symbolMargin.right;
                 } else {
                     width += obj.style.strokeWidth;
                 }
                 if (this.symbolHeight !== undefined) {
-                    actualHeight = isLane ? this.laneTable[obj.id].height :
-                        this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
+                    actualHeight = this.symbolHeight - this.symbolMargin.top - this.symbolMargin.bottom;
                 } else {
                     height += obj.style.strokeWidth;
                 }
                 if (symbolInfo.description && symbolInfo.description.text !== '') {
                     actualHeight -= 20; // default height of the text have been reduced from the container.
                 }
-                sw = actualWidth / (content.width || width); sh = actualHeight / (content.height || height);
+                sw = actualWidth / ((!isPhase && content.width) || width); sh = actualHeight / ((!isPhase && content.height) || height);
                 if (symbolInfo.fit) {
-                    sw = actualWidth / symbolInfo.width;
-                    sh = actualHeight / symbolInfo.height;
+                    sw = actualWidth / symbolInfo.width; sh = actualHeight / symbolInfo.height;
                 }
                 width = actualWidth; height = actualHeight;
                 sw = sh = Math.min(sw, sh);
@@ -770,9 +768,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 this.scaleSymbol(symbol, symbolContainer, sw, sh, width, height);
             } else {
                 let outerBounds: Rect;
-                if (symbol instanceof Connector) {
-                    outerBounds = getOuterBounds(symbol);
-                }
+                if (symbol instanceof Connector) { outerBounds = getOuterBounds(symbol); }
                 content.width = (symbol as Node).width || (outerBounds) ? outerBounds.width : content.actualSize.width;
                 content.height = (symbol as Node).height || (outerBounds) ? outerBounds.height : content.actualSize.height;
             }
@@ -967,7 +963,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', {
                 id: symbol.id + '_container',
                 style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-                title: symbolInfo.description ? symbolInfo.description.text : symbol.id
+                title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
             });
         parentDiv.appendChild(container);
         let canvas: HTMLCanvasElement | SVGElement;
@@ -1008,10 +1004,25 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (!preview) {
             let actualWidth: number = symbol.wrapper.actualSize.width + symbol.style.strokeWidth;
             let actualHeight: number = symbol.wrapper.actualSize.height + symbol.style.strokeWidth;
-            let style: string = 'margin-left:' +
-                Math.max(this.symbolMargin.left, ((width - actualWidth) / 2))
-                + 'px;margin-top:' + Math.max(this.symbolMargin.top, ((height - actualHeight) / 2))
-                + 'px;pointer-events:none;transform-origin:0 0;overflow:hidden;';
+            let style: string = 'pointer-events:none;transform-origin:0 0;overflow:hidden;';
+            if ((symbol.shape as SwimLaneModel).isPhase) {
+                if ((symbol.shape as SwimLaneModel).orientation === 'Horizontal') {
+                    style += 'margin-left:' +
+                        Math.max(this.symbolMargin.left, ((width - actualWidth) / 2))
+                        + 'px;margin-top:' + size.height / 2
+                        + 'px;';
+                } else {
+                    style += 'margin-left:' +
+                        size.width / 2
+                        + 'px;margin-top:' + Math.max(this.symbolMargin.top, ((height - actualHeight) / 2))
+                        + 'px;';
+                }
+            } else {
+                style += 'margin-left:' +
+                    Math.max(this.symbolMargin.left, ((width - actualWidth) / 2))
+                    + 'px;margin-top:' + Math.max(this.symbolMargin.top, ((height - actualHeight) / 2))
+                    + 'px;';
+            }
             if (canvas instanceof HTMLCanvasElement) {
                 style += 'transform:scale(.5,.5);';
             }
@@ -1201,6 +1212,19 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             container.classList.add('e-symbol-selected');
             this.selectedSymbol = this.symbolTable[id];
             evt.preventDefault();
+        }
+    }
+
+    private keyDown(evt: KeyboardEvent): void {
+        let palette: SymbolPalette = this;
+        let helperElement: string = 'helperElement';
+        let intDestroy: string = 'intDestroy';
+        if (evt && (evt.key === 'Escape')) {
+            let element: HTMLElement = palette.draggable[helperElement];
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+                palette.draggable[intDestroy]();
+            }
         }
     }
 
@@ -1486,11 +1510,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let moveEvent: string = Browser.touchMoveEvent;
         let cancelEvent: string = 'mouseleave';
         let keyEvent: string = 'keyup';
+        let keyDownEvent: string = 'keydown';
 
         EventHandler.add(this.element, startEvent, this.mouseDown, this);
         EventHandler.add(this.element, moveEvent, this.mouseMove, this);
         EventHandler.add(this.element, stopEvent, this.mouseUp, this);
         EventHandler.add(this.element, keyEvent, this.keyUp, this);
+        EventHandler.add(document, keyDownEvent, this.keyDown, this);
         // initialize the draggable component
         this.initDraggable();
     }
@@ -1504,10 +1530,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let moveEvent: string = Browser.touchMoveEvent;
         let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         let keyEvent: string = 'keyup';
+        let keyDownEvent: string = 'keydown';
         EventHandler.remove(this.element, startEvent, this.mouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
         EventHandler.remove(this.element, stopEvent, this.mouseUp);
         EventHandler.remove(this.element, keyEvent, this.keyUp);
+        EventHandler.remove(document, keyDownEvent, this.keyDown);
     }
 
     //end region - helper methods
@@ -1549,6 +1577,12 @@ export interface SymbolInfo {
      * @default null
      */
     description?: SymbolDescription;
+
+    /**
+     * Define the text to be displayed when mouse hover on the shape.
+     * @default ''
+     */
+    tooltip?: string;
 }
 
 /**

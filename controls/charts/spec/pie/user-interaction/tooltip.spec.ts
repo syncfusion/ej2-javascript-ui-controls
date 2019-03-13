@@ -18,8 +18,18 @@ import { getPosition, addTooltipStyles } from '../base/util.spec';
 import { IAccLoadedEventArgs, } from '../../../src/accumulation-chart/model/pie-interface';
 import { ITooltipRenderEventArgs, IPointEventArgs } from '../../../src/common/model/interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 AccumulationChart.Inject(PieSeries, PyramidSeries,FunnelSeries,  AccumulationLegend, AccumulationDataLabel, AccumulationTooltip);
 
+describe('Accumulation Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('Tooltip checking for the pie series', () => {
     let ele: HTMLElement;
     let loaded: EmitType<IAccLoadedEventArgs>;
@@ -290,4 +300,14 @@ describe('Tooltip checking for the pie series', () => {
         accumulation.series[0].innerRadius = '20%';
         accumulation.refresh();
     });
+});
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
 });

@@ -1,5 +1,14 @@
 import { highlightSearch, revertHighlightSearch } from '../../src/common/highlight-search';
+import  {profile , inMB, getMemoryProfile} from './common.spec';
 describe("highlightsearch", function () {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 
     it("highlight contents", function () {
         let divElement = document.createElement("div");
@@ -38,6 +47,15 @@ describe("highlightsearch", function () {
         let elements2 = document.getElementById(id).querySelectorAll("span.e-highlight");
         expect(elements1.length).toBe(0);
     });
+    it('memory leak', () => {     
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });
 
 

@@ -97,6 +97,7 @@ export class Reorder implements IAction {
         let uId: string = dropElement.getAttribute('e-mappinguid');
         let column: Column = gObj.getColumnByUid(uId);
         if (!closestElement(e.target, 'th') || (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn))) {
+            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column});
             return;
         }
         let destElem: Element = closestElement(e.target as Element, '.e-headercell');
@@ -105,6 +106,7 @@ export class Reorder implements IAction {
         if (!isNullOrUndefined(destElemUid)) {
             let destColumn: Column = gObj.getColumnByUid(destElemUid);
             if (isNullOrUndefined(destColumn) || !destColumn.allowReordering || destColumn.lockColumn) {
+                this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column, destColumn});
                 return;
             }
         }
@@ -264,6 +266,7 @@ export class Reorder implements IAction {
         let toColumn: Column = this.parent.getColumnByField(toFName);
         if ((!isNullOrUndefined(fColumn) && (!fColumn.allowReordering || fColumn.lockColumn)) ||
         (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || fColumn.lockColumn))) {
+            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column: fColumn, destColumn: toColumn});
             return;
         }
         let column: Column = this.parent.getColumnByField(toFName);

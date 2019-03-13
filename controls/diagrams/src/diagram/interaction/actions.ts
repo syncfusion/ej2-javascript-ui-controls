@@ -48,9 +48,7 @@ export function findToolToActivate(
             for (let obj of handle.userHandles) {
                 if (obj.visible) {
                     let paddedBounds: PointModel = getUserHandlePosition(handle, obj, diagram.scroller.transform);
-                    if (contains(position, paddedBounds, obj.size / 2)) {
-                        return obj.name as Actions;
-                    }
+                    if (contains(position, paddedBounds, obj.size / 2)) { return obj.name as Actions; }
                 }
             }
         }
@@ -114,9 +112,7 @@ export function findToolToActivate(
         if (obj instanceof Node || obj instanceof Connector) {
             if (wrapper && wrapper.id) {
                 let id: string = wrapper.id.split(obj.id)[1];
-                if (id && id.match('^_icon')) {
-                    return 'LayoutAnimation';
-                }
+                if (id && id.match('^_icon')) { return 'LayoutAnimation'; }
             }
             if (canMove(obj) && wrapper instanceof TextElement && wrapper.hyperlink.link) {
                 return 'Hyperlink';
@@ -127,6 +123,9 @@ export function findToolToActivate(
                     !(obj instanceof Connector)) { return 'Drag'; }
             } else if (obj && canZoomPan(diagram) && !defaultTool(diagram)) {
                 return 'Pan';
+            } else if (diagram.selectedItems.nodes.length && (diagram.selectedItems.nodes[0] as Node).isLane &&
+                diagram.selectedItems.wrapper && diagram.selectedItems.wrapper.bounds.containsPoint(position)) {
+                return 'Drag';
             } else { return 'Select'; }
         } else { return 'Select'; }
     }
@@ -140,7 +139,8 @@ function checkResizeHandles(
         && diagram.selectedItems.nodes[0].container) {
         action = checkResizeHandleForContainer(diagram, element, position, x, y);
     }
-    if (!action) {
+    if (!action && (!diagram.selectedItems.nodes[0] || (!(diagram.selectedItems.nodes[0] as Node).isPhase &&
+        !(diagram.selectedItems.nodes[0] as Node).isLane && diagram.selectedItems.nodes[0].shape.type !== 'SwimLane'))) {
         action = checkForResizeHandles(diagram, element, position, matrix, x, y);
     }
     if (action) { return action; }

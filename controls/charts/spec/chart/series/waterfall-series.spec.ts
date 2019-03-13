@@ -20,6 +20,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
 import { Zoom } from '../../../src/chart/user-interaction/zooming';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs, ILegendRenderEventArgs } from '../../../src/common/model/interface';
 // import { MouseEvents } from '../../../src/chart/base/events.spec';
 Chart.Inject(LineSeries, ColumnSeries, WaterfallSeries, Logarithmic, DataLabel, Category,
@@ -44,6 +45,14 @@ let paletteColor: string[] = ['#005378', '#006691', '#007EB5', '#0D97D4', '#00AE
     '#14B9FF', '#54CCFF', '#87DBFF', '#ADE5FF', '#C5EDFF'];
 
 describe('Waterfall Series', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let element: HTMLElement;
     /**
      * Default Waterfall Series
@@ -1031,6 +1040,15 @@ describe('Waterfall Series', () => {
             chartObj.dataBind();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });
 
 export interface series1 {

@@ -1,11 +1,12 @@
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
+import { measureText, Rect, TextOption, Size, PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../../chart';
 import { LegendSettingsModel, LocationModel } from './legend-model';
 import { Font, Border, Margin } from '../model/base';
 import { Theme } from '../model/theme';
 import { MarginModel, FontModel, BorderModel } from '../model/base-model';
-import { Size, Rect, subtractThickness, Thickness, drawSymbol, measureText, ChartLocation, PathOption } from '../utils/helper';
-import { RectOption, TextOption, textElement, stringToNumber } from '../utils/helper';
+import { subtractThickness, Thickness, drawSymbol, ChartLocation } from '../utils/helper';
+import { RectOption, textElement, stringToNumber } from '../utils/helper';
 import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';
 import { LegendPosition, LegendShape, ChartSeriesType, ChartShape } from '../../chart/utils/enum';
 import { Legend } from '../../chart/legend/legend';

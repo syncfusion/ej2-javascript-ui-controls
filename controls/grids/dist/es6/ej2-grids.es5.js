@@ -136,6 +136,12 @@ var Column = /** @__PURE__ @class */ (function () {
          * @default {}
          */
         this.edit = {};
+        /**
+         * If `allowSearching` set to false, then it disables Searching of a particular column.
+         * By default all columns allow Searching.
+         * @default true
+         */
+        this.allowSearching = true;
         this.sortDirection = 'Descending';
         /** @hidden */
         this.getEditTemplate = function () { return _this.editTemplateFn; };
@@ -613,6 +619,8 @@ var exportRowDataBound = 'export-RowDataBound';
 var rowPositionChanged = 'row-position-changed';
 /** @hidden */
 var batchForm = 'batchedit-form';
+/** @hidden */
+var beforeStartEdit = 'edit-form';
 
 /**
  * @hidden
@@ -705,6 +713,7 @@ var Print = /** @__PURE__ @class */ (function () {
             printGrid.setInjectedModules(injectedModues);
         }
         gObj.notify(printGridInit, { element: element, printgrid: printGrid });
+        this.parent.log('exporting_begin', this.getModuleName());
         printGrid.appendTo(element);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
         printGrid.trigger = gObj.trigger;
@@ -774,6 +783,7 @@ var Print = /** @__PURE__ @class */ (function () {
             element: gObj.element
         };
         gObj.trigger(printComplete, args);
+        this.parent.log('exporting_complete', this.getModuleName());
     };
     Print.prototype.printGridElement = function (gObj) {
         classList(gObj.element, ['e-print-grid-layout'], ['e-print-grid']);
@@ -867,6 +877,76 @@ function getUpdateUsingRaf(updateFunction, callBack) {
             callBack(e);
         }
     });
+}
+/**
+ * @hidden
+ */
+function updatecloneRow(grid) {
+    var nRows = [];
+    var actualRows = grid.vRows;
+    for (var i = 0; i < actualRows.length; i++) {
+        if (actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+        }
+        else if (!actualRows[i].isDataRow) {
+            nRows.push(actualRows[i]);
+            if (!actualRows[i].isExpand) {
+                i += getCollapsedRowsCount(actualRows[i], grid);
+            }
+        }
+    }
+    grid.vcRows = nRows;
+}
+/**
+ * @hidden
+ */
+var count = 0;
+function getCollapsedRowsCount(val, grid) {
+    count = 0;
+    var field = 'field';
+    var gSummary = 'gSummary';
+    var total = 'count';
+    var gLen = grid.groupSettings.columns.length;
+    var records = 'records';
+    var rLevel = gLen - (grid.groupSettings.columns.indexOf(val.data[field]) + 1);
+    var items = 'items';
+    var value = val[gSummary];
+    if (value === val.data[total]) {
+        if (grid.groupSettings.columns.length !== 1) {
+            count += val[gSummary] * (grid.groupSettings.columns.length - val.indent);
+        }
+        else {
+            count += val[gSummary];
+        }
+        return count;
+    }
+    if (rLevel === 1) {
+        count += val.data[items].length + (!isNullOrUndefined(val.data[items][records]) ? val.data[items][records].length : 0);
+    }
+    else {
+        for (var i = 0, len = val.data[items].length; i < len; i++) {
+            var gLevel = val.data[items][i];
+            count += gLevel[items].length + ((gLen !== grid.columns.length) ? gLevel[items][records].length : 0);
+            recursive(rLevel - 1, gLevel);
+        }
+        count += val.data[items].length;
+    }
+    return count;
+}
+/**
+ * @hidden
+ */
+function recursive(level, row) {
+    var items = 'items';
+    var rCount = 'count';
+    if (level > 1) {
+        for (var j = 0, length_1 = row[items].length; j < length_1; j++) {
+            var nLevel = row[items][j];
+            count += nLevel[rCount];
+            level += level <= row[items].childLevels ? row[items].childLevels - 1 : 0;
+            recursive(--level, nLevel);
+        }
+    }
 }
 /**
  * @hidden
@@ -1408,6 +1488,12 @@ function renderMovable(ele, frzCols) {
 /**
  * @hidden
  */
+function isGroupAdaptive(grid) {
+    return grid.enableVirtualization && grid.groupSettings.columns.length > 0 && grid.isVirtualAdaptive;
+}
+/**
+ * @hidden
+ */
 function getObject(field, object) {
     if (field === void 0) { field = ''; }
     if (field) {
@@ -1530,7 +1616,7 @@ function extendObjWithFn(copied, first, second, deep) {
  */
 function getPrototypesOfObj(obj) {
     var keys = [];
-    while (Object.keys(Object.getPrototypeOf(obj)).length) {
+    while (Object.getPrototypeOf(obj) && Object.keys(Object.getPrototypeOf(obj)).length) {
         keys = keys.concat(Object.keys(Object.getPrototypeOf(obj)));
         obj = Object.getPrototypeOf(obj);
     }
@@ -1779,7 +1865,8 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         this.existingPredicate = options.actualPredicate || {};
         this.options.dataSource = options.dataSource;
         this.updateDataSource();
-        this.options.type = options.type || 'string';
+        this.parent.log('column_type_missing', { column: options.column });
+        this.options.type = options.type;
         this.options.format = options.format || '';
         this.options.filteredColumns = options.filteredColumns || this.parent.filterSettings.columns;
         this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
@@ -2534,7 +2621,12 @@ var Data = /** @__PURE__ @class */ (function () {
         this.searchQuery(query);
         this.aggregateQuery(query);
         this.sortQuery(query);
-        this.pageQuery(query, skipPage);
+        if (isGroupAdaptive(this.parent)) {
+            this.virtualGroupPageQuery(query);
+        }
+        else {
+            this.pageQuery(query, skipPage);
+        }
         this.groupQuery(query);
         return query;
     };
@@ -2545,6 +2637,18 @@ var Data = /** @__PURE__ @class */ (function () {
                 types.forEach(function (type) { return query.aggregate(type.toLowerCase(), column.field); });
             });
         });
+        return query;
+    };
+    Data.prototype.virtualGroupPageQuery = function (query) {
+        var gObj = this.parent;
+        var fName = 'fn';
+        if (query.queries.length) {
+            for (var i = 0; i < query.queries.length; i++) {
+                if (query.queries[i][fName] === 'onPage') {
+                    query.queries.splice(i, 1);
+                }
+            }
+        }
         return query;
     };
     Data.prototype.pageQuery = function (query, skipPage) {
@@ -2575,6 +2679,9 @@ var Data = /** @__PURE__ @class */ (function () {
             var columns = gObj.groupSettings.columns;
             for (var i = 0, len = columns.length; i < len; i++) {
                 var column = this.getColumnByField(columns[i]);
+                if (!column) {
+                    this.parent.log('initial_action', { moduleName: 'group', columnName: columns[i] });
+                }
                 var isGrpFmt = column.enableGroupByFormat;
                 var format = column.format;
                 if (isGrpFmt) {
@@ -2597,8 +2704,15 @@ var Data = /** @__PURE__ @class */ (function () {
                 if (col) {
                     col.setSortDirection(columns[i].direction);
                 }
-                var fn = col.sortComparer && !this.isRemote() ? col.sortComparer.bind(col) :
-                    columns[i].direction;
+                else {
+                    this.parent.log('initial_action', { moduleName: 'sort', columnName: columns[i].field });
+                    return query;
+                }
+                var fn = columns[i].direction;
+                if (col.sortComparer) {
+                    this.parent.log('grid_sort_comparer');
+                    fn = !this.isRemote() ? col.sortComparer.bind(col) : columns[i].direction;
+                }
                 if (gObj.groupSettings.columns.indexOf(columns[i].field) === -1) {
                     query.sortBy(col.field, fn);
                 }
@@ -2615,7 +2729,7 @@ var Data = /** @__PURE__ @class */ (function () {
     Data.prototype.searchQuery = function (query) {
         var _this = this;
         var sSettings = this.parent.searchSettings;
-        var fields = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map(function (f) { return f.field; });
+        var fields = sSettings.fields.length ? sSettings.fields : this.getSearchColumnFieldNames();
         var predicateList = [];
         var needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
@@ -2667,6 +2781,9 @@ var Data = /** @__PURE__ @class */ (function () {
                 for (var _c = 0, _d = Object.keys(excelPredicate); _c < _d.length; _c++) {
                     var prop = _d[_c];
                     var col = getColumnByForeignKeyValue(prop, foreignColumn);
+                    if (!col) {
+                        this.parent.log('initial_action', { moduleName: 'filter', columnName: prop });
+                    }
                     if (col && !skipFoerign) {
                         predicateList = this.fGeneratePredicate(col, predicateList);
                         actualFilter.push(col);
@@ -2681,6 +2798,9 @@ var Data = /** @__PURE__ @class */ (function () {
                     var col = defaultFltrCols_1[_e];
                     var column_1 = this.getColumnByField(col.field) ||
                         getColumnByForeignKeyValue(col.field, this.parent.getForeignKeyColumns());
+                    if (!column_1) {
+                        this.parent.log('initial_action', { moduleName: 'filter', columnName: col.field });
+                    }
                     var sType = column_1.type;
                     if (getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
@@ -2903,20 +3023,17 @@ var Data = /** @__PURE__ @class */ (function () {
         if (args.requestType !== undefined && this.dataState.isDataChanged !== false) {
             state.action = args;
             if (args.requestType === 'save' || args.requestType === 'delete') {
-                var editArgs_1 = args;
-                editArgs_1.key = key;
+                var editArgs = args;
+                editArgs.key = key;
                 var promise = 'promise';
-                editArgs_1[promise] = deff.promise;
-                editArgs_1.state = state;
+                editArgs[promise] = deff.promise;
+                editArgs.state = state;
                 this.setState({ isPending: true, resolver: deff.resolve });
                 dataArgs.endEdit = deff.resolve;
                 dataArgs.cancelEdit = deff.reject;
-                this.parent.trigger(dataSourceChanged, editArgs_1);
+                this.parent.trigger(dataSourceChanged, editArgs);
                 deff.promise.then(function (e) {
                     _this.setState({ isPending: true, resolver: def.resolve, group: state.group, aggregates: state.aggregates });
-                    if (editArgs_1.requestType === 'save') {
-                        _this.parent.notify(recordAdded, editArgs_1);
-                    }
                     _this.parent.trigger(dataStateChange, state);
                 })
                     .catch(function () { return void 0; });
@@ -2931,6 +3048,21 @@ var Data = /** @__PURE__ @class */ (function () {
             def.resolve(this.parent.dataSource);
         }
         return def;
+    };
+    /**
+     * Gets the columns where searching needs to be performed from the Grid.
+     * @return {string[]}
+     */
+    Data.prototype.getSearchColumnFieldNames = function () {
+        var colFieldNames = [];
+        var columns = this.parent.getColumns();
+        for (var _i = 0, columns_2 = columns; _i < columns_2.length; _i++) {
+            var col = columns_2[_i];
+            if (col.allowSearching) {
+                colFieldNames.push(col.field);
+            }
+        }
+        return colFieldNames;
     };
     return Data;
 }());
@@ -3166,7 +3298,7 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
             if (row.isExpand && row.cells[i].cellType === CellType.DetailExpand) {
                 attrs['class'] = this_1.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
-            var td = cellRenderer.render(row.cells[i], row.data, attrs);
+            var td = cellRenderer.render(row.cells[i], row.data, attrs, row.isExpand);
             if (row.cells[i].cellType !== CellType.Filter) {
                 if (row.cells[i].cellType === CellType.Data || row.cells[i].cellType === CellType.CommandColumn) {
                     this_1.parent.trigger(queryCellInfo, extend(cellArgs, {
@@ -3310,15 +3442,16 @@ var RowModelGenerator = /** @__PURE__ @class */ (function () {
         }
         return cols;
     };
-    RowModelGenerator.prototype.generateRow = function (data, index, cssClass, indent) {
+    RowModelGenerator.prototype.generateRow = function (data, index, cssClass, indent, pid, tIndex) {
         var options = {};
         options.foreignKeyData = {};
         options.uid = getUid('grid-row');
         options.data = data;
         options.index = index;
         options.indent = indent;
+        options.tIndex = tIndex;
         options.isDataRow = true;
-        options.isExpand = false;
+        options.parentGid = pid;
         if (this.parent.isPrinting) {
             if (this.parent.hierarchyPrintMode === 'All') {
                 options.isExpand = true;
@@ -3607,28 +3740,28 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
         this.rows = [];
         this.index = this.parent.enableVirtualization ? args.startIndex : 0;
         for (var i = 0, len = data.length; i < len; i++) {
-            this.getGroupedRecords(0, data[i], data.level);
+            this.getGroupedRecords(0, data[i], data.level, i, undefined, this.rows.length);
         }
         this.index = 0;
         return this.rows;
     };
-    GroupModelGenerator.prototype.getGroupedRecords = function (index, data, raw) {
+    GroupModelGenerator.prototype.getGroupedRecords = function (index, data, raw, parentid, childId, tIndex) {
         var _a;
         var level = raw;
         if (isNullOrUndefined(data.items)) {
             if (isNullOrUndefined(data.GroupGuid) && (this.parent.columns.length !== this.parent.groupSettings.columns.length)) {
-                this.rows = this.rows.concat(this.generateDataRows(data, index));
+                this.rows = this.rows.concat(this.generateDataRows(data, index, parentid, this.rows.length));
             }
             else {
                 for (var j = 0, len = data.length; j < len; j++) {
-                    this.getGroupedRecords(index, data[j], data.level);
+                    this.getGroupedRecords(index, data[j], data.level, parentid, index, this.rows.length);
                 }
             }
         }
         else {
-            this.rows = this.rows.concat(this.generateCaptionRow(data, index));
+            this.rows = this.rows.concat(this.generateCaptionRow(data, index, parentid, childId, tIndex));
             if (data.items && data.items.length) {
-                this.getGroupedRecords(index + 1, data.items, data.items.level);
+                this.getGroupedRecords(index + 1, data.items, data.items.level, parentid, index + 1, this.rows.length);
             }
             if (this.parent.aggregates.length) {
                 (_a = this.rows).push.apply(_a, this.summaryModelGen.generateRows(data, { level: level }));
@@ -3688,14 +3821,20 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
         cells.push.apply(cells, visibles);
         return cells;
     };
-    GroupModelGenerator.prototype.generateCaptionRow = function (data, indent) {
+    GroupModelGenerator.prototype.generateCaptionRow = function (data, indent, parentID, childID, tIndex) {
         var options = {};
+        var records = 'records';
         var col = this.parent.getColumnByField(data.field);
         options.data = extend({}, data);
         if (col) {
             options.data.field = data.field;
         }
         options.isDataRow = false;
+        options.isExpand = true;
+        options.parentGid = parentID;
+        options.childGid = childID;
+        options.tIndex = tIndex;
+        options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : data.items.length;
         options.uid = getUid('grid-row');
         var row = new Row(options);
         row.indent = indent;
@@ -3710,11 +3849,11 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
             setValue('foreignKey', col.valueAccessor(col.foreignKeyValue, getForeignData(col, {}, data.key)[0], col), row.data);
         }
     };
-    GroupModelGenerator.prototype.generateDataRows = function (data, indent) {
+    GroupModelGenerator.prototype.generateDataRows = function (data, indent, childID, tIndex) {
         var rows = [];
         var indexes = this.parent.getColumnIndexesInView();
-        for (var i = 0, len = data.length; i < len; i++) {
-            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent);
+        for (var i = 0, len = data.length; i < len; i++, tIndex++) {
+            rows[i] = this.generateRow(data[i], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex);
             for (var j = 0; j < indent; j++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(indent) === -1) {
                     continue;
@@ -3898,6 +4037,13 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         var fCont = this.getPanel().querySelector('.e-frozencontent');
         var mCont = this.getPanel().querySelector('.e-movablecontent');
         var cont = this.getPanel().querySelector('.e-content');
+        if (isGroupAdaptive(gObj)) {
+            if (['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
+                .some(function (value) { return args.requestType === value; })) {
+                gObj.vcRows = [];
+                gObj.vRows = [];
+            }
+        }
         var modelData = this.generator.generateRows(dataSource, args);
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
@@ -3926,8 +4072,36 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         else {
             this.tbody = this.getTable().querySelector('tbody');
         }
-        for (var i = 0, len = modelData.length; i < len; i++) {
+        var startIndex = 0;
+        if (isGroupAdaptive(gObj) && gObj.vcRows.length) {
+            var top_1 = 'top';
+            var scrollTop = !isNullOrUndefined(args.virtualInfo.offsets) ? args.virtualInfo.offsets.top :
+                (!isNullOrUndefined(args.scrollTop) ? args.scrollTop[top_1] : 0);
+            if (scrollTop !== 0) {
+                var offsets_1 = gObj.vGroupOffsets;
+                var bSize = gObj.pageSettings.pageSize / 2;
+                var values = Object.keys(offsets_1).map(function (key) { return offsets_1[key]; });
+                for (var m = 0; m < values.length; m++) {
+                    if (scrollTop < values[m]) {
+                        if (!isNullOrUndefined(args.virtualInfo) && args.virtualInfo.direction === 'up') {
+                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m - 1, m];
+                            startIndex = m === 0 || m === 1 ? 0 : (m * bSize);
+                            break;
+                        }
+                        else {
+                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m, m + 1];
+                            startIndex = m === 0 || m === 1 ? 0 : (m) * bSize;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        for (var i = startIndex, len = modelData.length; i < len; i++) {
             this.rows.push(modelData[i]);
+            if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize)) {
+                break;
+            }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
                 if (gObj.frozenRows && i < gObj.frozenRows) {
@@ -5467,15 +5641,19 @@ var ExpandCellRenderer = /** @__PURE__ @class */ (function (_super) {
      * Function to render the expand cell
      * @param  {Cell} cell
      * @param  {Object} data
+     * @param  {{ [x: string]: string }} attr
+     * @param {boolean} isExpand
      */
-    ExpandCellRenderer.prototype.render = function (cell, data) {
+    ExpandCellRenderer.prototype.render = function (cell, data, attr, isExpand) {
         var node = this.element.cloneNode();
-        node.className = 'e-recordplusexpand';
+        node.className = isExpand ? 'e-recordplusexpand' : 'e-recordpluscollapse';
         node.setAttribute('ej-mappingname', data.field);
         node.setAttribute('ej-mappingvalue', data.key);
-        node.setAttribute('aria-expanded', 'true');
+        node.setAttribute('aria-expanded', isExpand ? 'true' : 'false');
         node.setAttribute('tabindex', '-1');
-        node.appendChild(this.parent.createElement('div', { className: 'e-icons e-gdiagonaldown e-icon-gdownarrow' }));
+        node.appendChild(this.parent.createElement('div', {
+            className: isExpand ? 'e-icons e-gdiagonaldown e-icon-gdownarrow' : 'e-icons e-gnextforward e-icon-grightarrow'
+        }));
         return node;
     };
     return ExpandCellRenderer;
@@ -5894,6 +6072,8 @@ var Render = /** @__PURE__ @class */ (function () {
     /** @hidden */
     Render.prototype.dataManagerSuccess = function (e, args) {
         var gObj = this.parent;
+        this.contentRenderer = this.renderer.getRenderer(RenderType.Content);
+        this.headerRenderer = this.renderer.getRenderer(RenderType.Header);
         gObj.trigger(beforeDataBound, e);
         if (e.cancel) {
             return;
@@ -5916,7 +6096,7 @@ var Render = /** @__PURE__ @class */ (function () {
             gObj.dataBind();
             return;
         }
-        if (!gObj.getColumns().length && len || !this.isLayoutRendered) {
+        if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj)) {
             this.updatesOnInitialRender(e);
         }
         if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
@@ -5932,6 +6112,10 @@ var Render = /** @__PURE__ @class */ (function () {
             this.headerRenderer.refreshUI();
         }
         if (len) {
+            if (isGroupAdaptive(gObj)) {
+                var content = 'content';
+                args.scrollTop = { top: this.contentRenderer[content].scrollTop };
+            }
             this.contentRenderer.refreshContentRows(args);
         }
         else {
@@ -5962,6 +6146,7 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         this.parent.currentViewData = [];
         this.renderEmptyRow();
+        this.parent.log('actionfailure', { error: e });
     };
     Render.prototype.updatesOnInitialRender = function (e) {
         this.isLayoutRendered = true;
@@ -6862,11 +7047,32 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
         }
         if ((['tab', 'shiftTab'].indexOf(e.action) > -1 && this.matrix.current || []).toString() === current.toString()) {
             if (current.toString() === [this.matrix.rows, this.matrix.columns].toString() ||
-                current.toString() === [0, 0].toString()) {
+                current.toString() === [0, 0].toString() || (this.matrix.current[0] === this.matrix.rows &&
+                this.matrix.current.toString() === current.toString())) {
                 return false;
+            }
+            else {
+                current = this.editNextRow(current[0], current[1], e.action);
             }
         }
         this.matrix.select(current[0], current[1]);
+    };
+    ContentFocus.prototype.editNextRow = function (rowIndex, cellIndex, action) {
+        var gObj = this.parent;
+        var editNextRow = gObj.editSettings.allowNextRowEdit && (gObj.isEdit || gObj.isLastCellPrimaryKey);
+        var visibleIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[0].field);
+        if (action === 'tab' && editNextRow) {
+            rowIndex++;
+            var index = (this.getTable().rows[rowIndex].querySelectorAll('.e-indentcell').length +
+                this.getTable().rows[rowIndex].querySelectorAll('.e-detailrowcollapse').length);
+            cellIndex = visibleIndex + index;
+        }
+        if (action === 'shiftTab' && editNextRow) {
+            rowIndex--;
+            cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
+        }
+        return !this.getTable().rows[rowIndex].cells[cellIndex].classList.contains('e-rowcell') ?
+            this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     };
     ContentFocus.prototype.getCurrentFromAction = function (action, navigator, isPresent, e) {
         if (navigator === void 0) { navigator = [0, 0]; }
@@ -7302,6 +7508,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     Selection.prototype.initializeSelection = function () {
+        this.parent.log('selection_key_missing');
         EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
     };
     /**
@@ -7399,9 +7606,12 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var selectedRow = gObj.getRowByIndex(index);
         var selectedMovableRow = this.getSelectedMovableRow(index);
-        var selectData = this.getCurrentBatchRecordChanges()[index];
+        var selectData;
         if (gObj.enableVirtualization && selectedRow) {
             selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
+        }
+        else {
+            selectData = this.getCurrentBatchRecordChanges()[index];
         }
         if (!this.isRowType() || !selectedRow || this.isEditing()) {
             // if (this.isEditing()) {
@@ -7598,7 +7808,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.getCollectionFromIndexes = function (startIndex, endIndex) {
         var indexes = [];
-        var _a = (startIndex < endIndex) ?
+        var _a = (startIndex <= endIndex) ?
             { i: startIndex, max: endIndex } : { i: endIndex, max: startIndex }, i = _a.i, max = _a.max;
         for (; i <= max; i++) {
             indexes.push(i);
@@ -7656,14 +7866,14 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.persistSelectedData.splice(index, 1);
         }
     };
-    Selection.prototype.updateCheckBoxes = function (row, chkState) {
+    Selection.prototype.updateCheckBoxes = function (row, chkState, rowIndex) {
         if (!isNullOrUndefined(row)) {
             var chkBox = row.querySelector('.e-checkselect');
             if (!isNullOrUndefined(chkBox)) {
                 removeAddCboxClasses(chkBox.nextElementSibling, chkState);
                 if (isNullOrUndefined(this.checkedTarget) || (!isNullOrUndefined(this.checkedTarget)
                     && !this.checkedTarget.classList.contains('e-checkselectall'))) {
-                    this.setCheckAllState(parseInt(row.getAttribute('aria-rowindex'), 10));
+                    this.setCheckAllState(rowIndex);
                 }
             }
         }
@@ -7786,7 +7996,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         };
         this.parent.trigger(type, this.parent.getFrozenColumns() ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
         this.isCancelDeSelect = rowDeselectObj[cancl];
-        this.updateCheckBoxes(row[0]);
+        this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
     };
     Selection.prototype.getRowObj = function (row) {
         if (row === void 0) { row = this.currentIndex; }
@@ -9009,8 +9219,16 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.checkSelect = function (checkBox) {
         var target = closest(this.checkedTarget, '.e-rowcell');
+        var gObj = this.parent;
         this.isMultiCtrlRequest = true;
-        var rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+        var rIndex = 0;
+        if (isGroupAdaptive(gObj)) {
+            var uid = target.parentElement.getAttribute('data-uid');
+            rIndex = gObj.getRows().map(function (m) { return m.getAttribute('data-uid'); }).indexOf(uid);
+        }
+        else {
+            rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+        }
         if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
             ++rIndex;
         }
@@ -9137,7 +9355,15 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                var rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+                var gObj = this.parent;
+                var rIndex = 0;
+                if (isGroupAdaptive(gObj)) {
+                    var uid = target.parentElement.getAttribute('data-uid');
+                    rIndex = gObj.getRows().map(function (m) { return m.getAttribute('data-uid'); }).indexOf(uid);
+                }
+                else {
+                    rIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+                }
                 if (this.parent.isPersistSelection && this.parent.element.querySelectorAll('.e-addedrow').length > 0) {
                     ++rIndex;
                 }
@@ -9187,6 +9413,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.rowCellSelectionHandler = function (rowIndex, cellIndex) {
+        var gObj = this.parent;
         if ((!this.isMultiCtrlRequest && !this.isMultiShiftRequest) || this.isSingleSel()) {
             if (!this.isDragged) {
                 this.selectRow(rowIndex, this.selectionSettings.enableToggle);
@@ -9309,6 +9536,11 @@ var Selection = /** @__PURE__ @class */ (function () {
                 break;
             case 'space':
                 this.applySpaceSelection(e.element);
+                break;
+            case 'tab':
+                if (this.parent.editSettings.allowNextRowEdit) {
+                    this.selectRow(rowIndex);
+                }
                 break;
         }
         this.preventFocus = false;
@@ -10789,6 +11021,9 @@ var EditSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property({})
     ], EditSettings.prototype, "dialog", void 0);
+    __decorate([
+        Property(false)
+    ], EditSettings.prototype, "allowNextRowEdit", void 0);
     return EditSettings;
 }(ChildProperty));
 /**
@@ -10812,6 +11047,14 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         _this.isPreventScrollEvent = false;
         _this.inViewIndexes = [];
         _this.freezeRefresh = Component.prototype.refresh;
+        /** @hidden */
+        _this.isVirtualAdaptive = false;
+        /** @hidden */
+        _this.vRows = [];
+        /** @hidden */
+        _this.vcRows = [];
+        /** @hidden */
+        _this.vGroupOffsets = {};
         /**
          * Gets the currently visible records of the Grid.
          */
@@ -10820,6 +11063,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         _this.lockcolPositionCount = 0;
         /** @hidden */
         _this.prevPageMoving = false;
+        /** @hidden */
+        _this.pageTemplateChange = false;
+        // enable/disable logger for MVC & Core
+        _this.enableLogger = true;
         _this.needsID = true;
         Grid_1.Inject(Selection);
         setValue('mergePersistData', _this.mergePersistGridData, _this);
@@ -10853,6 +11100,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             }
         });
         this.ignoreInArrays(ignoreOnColumn, this.columns);
+        this.pageSettings.template = undefined;
+        this.pageTemplateChange = true;
         return this.addOnPersist(keyEntity);
     };
     Grid.prototype.ignoreInArrays = function (ignoreOnColumn, columns) {
@@ -11001,6 +11250,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.isForeignKeyEnabled(this.columns)) {
             modules.push({ member: 'foreignKey', args: [this, this.serviceLocator] });
+        }
+        if (this.enableLogger) {
+            modules.push({ member: 'logger', args: [this] });
         }
     };
     /**
@@ -11161,6 +11413,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Grid.prototype.render = function () {
+        this.log(['module_missing', 'promise_enabled', 'locale_missing', 'check_datasource_columns']);
         this.ariaService.setOptions(this.element, { role: 'grid' });
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this, this.serviceLocator);
@@ -11168,6 +11421,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.searchModule = new Search(this);
         this.scrollModule = new Scroll(this);
         this.notify(initialLoad, {});
+        if (this.getDataModule().dataManager.dataSource.offline === true || this.getDataModule().dataManager.dataSource.url === undefined) {
+            this.isVirtualAdaptive = true;
+        }
         this.trigger(load);
         prepareColumns(this.columns, this.enableColumnVirtualization);
         this.checkLockColumns(this.columns);
@@ -11321,6 +11577,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (this.isDestroyed) {
             return;
         }
+        this.log('module_missing');
         var properties = Object.keys(newProp);
         if (properties.indexOf('columns') > -1) {
             this.updateColumnObject();
@@ -11334,6 +11591,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     requireRefresh = true;
                     break;
                 case 'pageSettings':
+                    if (this.pageTemplateChange) {
+                        this.pageTemplateChange = false;
+                        break;
+                    }
                     this.notify(inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
                     if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
                         || !isNullOrUndefined(oldProp.pageSettings) &&
@@ -11413,6 +11674,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 case 'enableVirtualization':
                 case 'currencyCode':
                 case 'locale':
+                    this.log('frozen_rows_columns');
                     freezeRefresh$$1 = true;
                     requireGridRefresh = true;
                     break;
@@ -11437,7 +11699,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             this.maintainSelection(newProp.selectedRowIndex);
         }
     };
-    /* tslint:disable-next-line:max-line-length */
+    /* tslint:disable */
     Grid.prototype.extendedPropertyChange = function (prop, newProp, requireGridRefresh) {
         switch (prop) {
             case 'enableRtl':
@@ -11525,7 +11787,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'dataSource':
                 var pending_1 = this.getDataModule().getState();
-                if (pending_1.isPending) {
+                if (Object.getPrototypeOf(newProp).deepWatch) {
+                    var pKeyField = this.getPrimaryKeyFieldNames()[0];
+                    for (var i = 0, props = Object.keys(newProp.dataSource); i < props.length; i++) {
+                        this.setRowData(this.dataSource[props[i]][pKeyField], this.dataSource[props[i]]);
+                    }
+                }
+                else if (pending_1.isPending) {
                     var gResult_1 = !isNullOrUndefined(this.dataSource) ? this.dataSource.result : [];
                     (pending_1.group || []).forEach(function (name) {
                         gResult_1 = DataUtil.group(gResult_1, name, pending_1.aggregates || []);
@@ -12798,7 +13066,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 if (!this_1.groupSettings.showGroupedColumn) {
                     var column = this_1.enableColumnVirtualization ?
                         this_1.columns.filter(function (c) { return c.field === gCols[i]; })[0] : this_1.getColumnByField(gCols[i]);
-                    column.visible = false;
+                    if (column) {
+                        column.visible = false;
+                    }
+                    else {
+                        this_1.log('initial_action', { moduleName: 'group', columnName: gCols[i] });
+                    }
                 }
             };
             var this_1 = this;
@@ -12969,7 +13242,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.mouseMoveHandler = function (e) {
         if (this.isEllipsisTooltip()) {
             var element = parentsUntil(e.target, 'e-ellipsistooltip');
-            this.toolTipObj.close();
+            if (this.prevElement !== element) {
+                this.toolTipObj.close();
+            }
             if (element) {
                 if (element.getAttribute('aria-describedby')) {
                     return;
@@ -12981,6 +13256,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     else {
                         this.toolTipObj.content = element.innerText;
                     }
+                    this.prevElement = element;
                     this.toolTipObj.open(element);
                 }
             }
@@ -13092,6 +13368,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.getCurrentViewRecords = function () {
+        if (isGroupAdaptive(this)) {
+            return isNullOrUndefined(this.currentViewData.records) ?
+                this.currentViewData : this.currentViewData.records;
+        }
         return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length) ?
             this.currentViewData.records : this.currentViewData;
     };
@@ -13138,7 +13418,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (filterClear) {
             filterClear.classList.add('e-hide');
         }
-        if ((!e.relatedTarget || !parentsUntil(e.relatedTarget, 'e-grid'))
+        var relatedTarget = e.relatedTarget;
+        var ariaOwns = relatedTarget ? relatedTarget.getAttribute('aria-owns') : null;
+        if ((!relatedTarget || (!parentsUntil(relatedTarget, 'e-grid') &&
+            (!isNullOrUndefined(ariaOwns) &&
+                (ariaOwns)) !== e.target.getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch') {
                 this.editModule.saveCell();
@@ -13352,6 +13636,20 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     //tslint:disable-next-line:no-any
     Grid.prototype.destroyTemplate = function (propertyNames, index) {
         this.clearTemplate(propertyNames, index);
+    };
+    /**
+     * @hidden
+     * @private
+     */
+    Grid.prototype.log = function (type, args) {
+        this.loggerModule ? this.loggerModule.log(type, args) : (function () { return 0; })();
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getPreviousRowData = function () {
+        var previousRowData = this.getRowsObject()[this.getRows().length - 1].data;
+        return previousRowData;
     };
     var Grid_1;
     __decorate([
@@ -13794,6 +14092,7 @@ var Sort = /** @__PURE__ @class */ (function () {
     Sort.prototype.sortColumn = function (columnName, direction, isMultiSort) {
         var gObj = this.parent;
         if (this.parent.getColumnByField(columnName).allowSorting === false || this.parent.isContextMenuOpen()) {
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: columnName });
             return;
         }
         if (!gObj.allowMultiSorting) {
@@ -15881,6 +16180,7 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
     };
     FilterMenuRenderer.prototype.renderFilterUI = function (target, col) {
         var dlgConetntEle = this.dlgObj.element.querySelector('.e-flmenu-maindiv');
+        this.parent.log('column_type_missing', { column: col });
         this.renderOperatorUI(dlgConetntEle, target, col);
         this.renderFlValueUI(dlgConetntEle, target, col);
     };
@@ -16175,11 +16475,11 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         var selectedMenu;
         var predicates = this.existingPredicate[this.options.field];
         if (predicates && predicates.length === 2) {
-            if (predicates[0].operator === 'greaterThanOrEqual' && predicates[1].operator === 'lessThanOrEqual') {
-                selectedMenu = 'Between';
+            if (predicates[0].operator === 'greaterthanorequal' && predicates[1].operator === 'lessthanorequal') {
+                selectedMenu = 'between';
             }
             else {
-                selectedMenu = 'CustomFilter';
+                selectedMenu = 'customfilter';
             }
         }
         else {
@@ -16894,10 +17194,12 @@ var Filter = /** @__PURE__ @class */ (function () {
         if (this.parent.getColumns().length && this.filterSettings.columns.length) {
             var gObj = this.parent;
             this.contentRefresh = false;
+            this.initialLoad = true;
             for (var _i = 0, _a = gObj.filterSettings.columns; _i < _a.length; _i++) {
                 var col = _a[_i];
                 this.filterByColumn(col.field, col.operator, col.value, col.predicate, col.matchCase, col.ignoreAccent, col.actualFilterValue, col.actualOperator);
             }
+            this.initialLoad = false;
             this.updateFilterMsg();
             this.contentRefresh = true;
         }
@@ -16963,6 +17265,7 @@ var Filter = /** @__PURE__ @class */ (function () {
             filterCell = gObj.getHeaderContent().querySelector('[id=\'' + this.column.field + '_filterBarcell\']');
         }
         if (!isNullOrUndefined(this.column.allowFiltering) && !this.column.allowFiltering) {
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: this.column.headerText });
             return;
         }
         if (isActionPrevent(gObj)) {
@@ -16993,6 +17296,9 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
         if (!isNullOrUndefined(this.column.format)) {
             this.applyColumnFormat(filterValue);
+            if (this.initialLoad && this.filterSettings.type === 'FilterBar') {
+                filterCell.value = this.values[this.column.field];
+            }
         }
         else {
             this.values[this.column.field] = filterValue; //this line should be above updateModel
@@ -17554,6 +17860,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     };
     Filter.prototype.updateFilter = function () {
         var cols = this.filterSettings.columns;
+        this.actualPredicate = {};
         for (var i = 0; i < cols.length; i++) {
             this.column = this.parent.getColumnByField(cols[i].field) ||
                 getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns());
@@ -17567,15 +17874,17 @@ var Filter = /** @__PURE__ @class */ (function () {
     };
     /* tslint:disable-next-line:max-line-length */
     Filter.prototype.refreshFilterIcon = function (fieldName, operator, value, type, predicate, matchCase, ignoreAccent) {
-        this.actualPredicate[fieldName] = [{
-                field: fieldName,
-                predicate: predicate,
-                matchCase: matchCase,
-                ignoreAccent: ignoreAccent,
-                operator: operator,
-                value: value,
-                type: type
-            }];
+        var obj;
+        obj = {
+            field: fieldName,
+            predicate: predicate,
+            matchCase: matchCase,
+            ignoreAccent: ignoreAccent,
+            operator: operator,
+            value: value,
+            type: type
+        };
+        this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
         this.addFilteredClass(fieldName);
     };
     Filter.prototype.addFilteredClass = function (fieldName) {
@@ -17953,6 +18262,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         var mousemove = this.parent.enableRtl ? -(pageX - this.pageX) : (pageX - this.pageX);
         var colData = this.getColData(this.column, mousemove);
         var width = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
+        this.parent.log('resize_min_max', { column: this.column, width: width });
         if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
             width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0;
             this.pageX = pageX = this.minMove;
@@ -18292,6 +18602,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var uId = dropElement.getAttribute('e-mappinguid');
         var column = gObj.getColumnByUid(uId);
         if (!closest(e.target, 'th') || (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn))) {
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: column });
             return;
         }
         var destElem = closest(e.target, '.e-headercell');
@@ -18300,6 +18611,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(destElemUid)) {
             var destColumn = gObj.getColumnByUid(destElemUid);
             if (isNullOrUndefined(destColumn) || !destColumn.allowReordering || destColumn.lockColumn) {
+                this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: column, destColumn: destColumn });
                 return;
             }
         }
@@ -18456,6 +18768,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         var toColumn = this.parent.getColumnByField(toFName);
         if ((!isNullOrUndefined(fColumn) && (!fColumn.allowReordering || fColumn.lockColumn)) ||
             (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || fColumn.lockColumn))) {
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: fColumn, destColumn: toColumn });
             return;
         }
         var column = this.parent.getColumnByField(toFName);
@@ -18787,12 +19100,15 @@ var RowDD = /** @__PURE__ @class */ (function () {
                 return;
             }
             _this.processArgs(target);
-            gObj.trigger(rowDrag, {
-                rows: _this.rows,
-                target: target, draggableType: 'rows', data: _this.rowData,
-                originalEvent: e
-            });
+            var args = {
+                rows: _this.rows, target: target, draggableType: 'rows',
+                data: _this.rowData, originalEvent: e, cancel: false
+            };
+            gObj.trigger(rowDrag, args);
             _this.stopTimer();
+            if (args.cancel) {
+                return;
+            }
             gObj.element.classList.add('e-rowdrag');
             _this.dragTarget = trElement && parentsUntil(target, 'e-grid').id === cloneElement.parentElement.id ?
                 trElement.rowIndex : parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
@@ -19259,6 +19575,7 @@ var Group = /** @__PURE__ @class */ (function () {
             if (isNullOrUndefined(column) || column.allowGrouping === false ||
                 parentsUntil(gObj.getColumnHeaderByUid(column.uid), 'e-grid').getAttribute('id') !==
                     gObj.element.getAttribute('id')) {
+                _this.parent.log('action_disabled_column', { moduleName: _this.getModuleName(), columnName: column.headerText });
                 return;
             }
             _this.groupColumn(column.field);
@@ -19463,7 +19780,10 @@ var Group = /** @__PURE__ @class */ (function () {
             var rows = [].slice.call(rowNodes).slice(rowIdx + 1, rowNodes.length);
             var isHide = void 0;
             var expandElem = void 0;
+            var dataManager = void 0;
+            var query = void 0;
             var toExpand = [];
+            var gObj = this.parent;
             var indent = trgt.parentElement.querySelectorAll('.e-indentcell').length;
             var expand = false;
             if (trgt.classList.contains('e-recordpluscollapse')) {
@@ -19471,37 +19791,45 @@ var Group = /** @__PURE__ @class */ (function () {
                 removeClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
                 expand = true;
+                if (isGroupAdaptive(gObj)) {
+                    this.updateVirtualRows(gObj, target, expand, query, dataManager);
+                }
             }
             else {
                 isHide = true;
                 removeClass([trgt], 'e-recordplusexpand');
                 addClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
+                if (isGroupAdaptive(gObj)) {
+                    this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
+                }
             }
             this.aria.setExpand(trgt, expand);
-            for (var i = 0, len = rows.length; i < len; i++) {
-                if (rows[i].querySelectorAll('td')[cellIdx] &&
-                    rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
-                    if (isHide) {
-                        rows[i].style.display = 'none';
-                    }
-                    else {
-                        if (rows[i].querySelectorAll('.e-indentcell').length === indent + 1) {
-                            rows[i].style.display = '';
-                            expandElem = rows[i].querySelector('.e-recordplusexpand');
-                            if (expandElem) {
-                                toExpand.push(expandElem);
-                            }
-                            if (rows[i].classList.contains('e-detailrow')) {
-                                if (rows[i - 1].querySelectorAll('.e-detailrowcollapse').length) {
-                                    rows[i].style.display = 'none';
+            if (!isGroupAdaptive(gObj)) {
+                for (var i = 0, len = rows.length; i < len; i++) {
+                    if (rows[i].querySelectorAll('td')[cellIdx] &&
+                        rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
+                        if (isHide) {
+                            rows[i].style.display = 'none';
+                        }
+                        else {
+                            if (rows[i].querySelectorAll('.e-indentcell').length === indent + 1) {
+                                rows[i].style.display = '';
+                                expandElem = rows[i].querySelector('.e-recordplusexpand');
+                                if (expandElem) {
+                                    toExpand.push(expandElem);
+                                }
+                                if (rows[i].classList.contains('e-detailrow')) {
+                                    if (rows[i - 1].querySelectorAll('.e-detailrowcollapse').length) {
+                                        rows[i].style.display = 'none';
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                else {
-                    break;
+                    else {
+                        break;
+                    }
                 }
             }
             for (var i = 0, len = toExpand.length; i < len; i++) {
@@ -19511,6 +19839,16 @@ var Group = /** @__PURE__ @class */ (function () {
                 this.expandCollapseRows(toExpand[i]);
             }
         }
+    };
+    Group.prototype.updateVirtualRows = function (gObj, target, isExpand, query, dataManager) {
+        var rObj = gObj.getRowObjectFromUID(target.closest('tr').getAttribute('data-uid'));
+        rObj.isExpand = isExpand;
+        updatecloneRow(gObj);
+        query = gObj.getDataModule().generateQuery(false);
+        query.queries = [];
+        var args = { requestType: 'virtualscroll', rowObject: rObj };
+        dataManager = gObj.getDataModule().getData(args, query.requiresCount());
+        dataManager.then(function (e) { return gObj.renderModule.dataManagerSuccess(e, args); });
     };
     Group.prototype.expandCollapse = function (isExpand) {
         var rowNodes = this.parent.getContentTable().querySelector('tbody').children;
@@ -19615,6 +19953,7 @@ var Group = /** @__PURE__ @class */ (function () {
         var column = gObj.getColumnByField(columnName);
         if (isNullOrUndefined(column) || column.allowGrouping === false ||
             (this.contentRefresh && this.groupSettings.columns.indexOf(columnName) > -1)) {
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: column.headerText });
             return;
         }
         if (isActionPrevent(gObj)) {
@@ -20216,6 +20555,7 @@ var DetailRow = /** @__PURE__ @class */ (function () {
      */
     DetailRow.prototype.expandAll = function () {
         this.expandCollapse(true);
+        this.parent.trigger(actionComplete, { requestType: 'expandAllComplete', type: actionComplete, moduleObj: this });
     };
     /**
      * Collapses all the detail rows of the Grid.
@@ -20223,6 +20563,7 @@ var DetailRow = /** @__PURE__ @class */ (function () {
      */
     DetailRow.prototype.collapseAll = function () {
         this.expandCollapse(false);
+        this.parent.trigger(actionComplete, { requestType: 'collapseAllComplete', type: actionComplete, moduleObj: this });
     };
     DetailRow.prototype.expandCollapse = function (isExpand) {
         var td;
@@ -21108,6 +21449,9 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
         var indexes = this.getBlockIndexes(page);
         var loadedBlocks = [];
         this.checkAndResetCache(notifyArgs.requestType);
+        if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
+            return result = this.parent.vcRows;
+        }
         if (this.parent.enableColumnVirtualization) {
             info.blockIndexes.forEach(function (value) {
                 if (_this.isBlockAvailable(value)) {
@@ -21120,6 +21464,10 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
                 var rows = _this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: _this.getStartIndex(value, data)
                 });
+                if (isGroupAdaptive(_this.parent) && !_this.parent.vcRows.length) {
+                    _this.parent.vRows = rows;
+                    _this.parent.vcRows = rows;
+                }
                 var median = ~~Math.max(rows.length, _this.model.pageSize) / 2;
                 if (!_this.isBlockAvailable(indexes[0])) {
                     _this.cache[indexes[0]] = rows.slice(0, median);
@@ -21192,8 +21540,8 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
         return indexes;
     };
     VirtualRowModelGenerator.prototype.checkAndResetCache = function (action) {
-        var clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
-            .some(function (value) { return action === value; });
+        var clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
+            'save', 'delete'].some(function (value) { return action === value; });
         if (clear) {
             this.cache = {};
             this.data = {};
@@ -21323,6 +21671,17 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
         var info = scrollArgs.sentinel;
         var viewInfo = this.currentInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset);
+        if (isGroupAdaptive(this.parent)) {
+            if ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
+                && scrollArgs.direction === 'up' && viewInfo.blockIndexes[viewInfo.blockIndexes.length - 1] !== 2) {
+                return;
+            }
+            else {
+                viewInfo.event = 'refresh-virtual-block';
+                this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
+                return;
+            }
+        }
         if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
             || (info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString()))) {
             if (Browser.isIE) {
@@ -21370,7 +21729,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             indexes = this.vgenerator.getBlockIndexes(info.page);
         }
         indexes.some(function (val, ind) {
-            var result = val === _this.getTotalBlocks();
+            var result = val === (isGroupAdaptive(_this.parent) ? _this.getGroupedTotalBlocks() : _this.getTotalBlocks());
             if (result) {
                 mIdx = ind;
             }
@@ -21414,7 +21773,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         target.appendChild(newChild);
         this.getTable().appendChild(target);
         if (this.parent.groupSettings.columns.length) {
-            if (info.direction === 'up') {
+            if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
                 var blk = this.offsets[this.getTotalBlocks()] - this.prevHeight;
                 this.preventEvent = true;
                 var sTop = this.content.scrollTop;
@@ -21444,14 +21803,14 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.setVirtualHeight = function () {
         var width = this.parent.enableColumnVirtualization ?
             this.getColumnOffset(this.parent.columns.length + this.parent.groupSettings.columns.length - 1) + 'px' : '100%';
-        this.virtualEle.setVirtualHeight(this.offsets[this.getTotalBlocks()], width);
+        this.virtualEle.setVirtualHeight(this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()], width);
         if (this.parent.enableColumnVirtualization) {
             this.header.virtualEle.setVirtualHeight(1, width);
         }
     };
     VirtualContentRenderer.prototype.getPageFromTop = function (sTop, info) {
         var _this = this;
-        var total = this.getTotalBlocks();
+        var total = (isGroupAdaptive(this.parent)) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         var page = 0;
         var extra = this.offsets[total] - this.prevHeight;
         this.offsetKeys.some(function (offset) {
@@ -21480,7 +21839,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.getOffset(block - 1) : endTranslate < (sTop + cHeight) ? this.getOffset(block + 1) : translate;
         var blockHeight = this.offsets[info.blockIndexes[info.blockIndexes.length - 1]] -
             this.tmpOffsets[info.blockIndexes[0]];
-        if (result + blockHeight > this.offsets[this.getTotalBlocks()]) {
+        if (result + blockHeight > this.offsets[isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks()]) {
             result -= (result + blockHeight) - this.offsets[this.getTotalBlocks()];
         }
         return result;
@@ -21526,6 +21885,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var totalBlocks = this.getTotalBlocks();
         return index >= totalBlocks || index === totalBlocks - 1;
     };
+    VirtualContentRenderer.prototype.getGroupedTotalBlocks = function () {
+        var rows = this.parent.vcRows;
+        return Math.floor((rows.length / this.getBlockSize()) < 1 ? 1 : rows.length / this.getBlockSize());
+    };
     VirtualContentRenderer.prototype.getTotalBlocks = function () {
         return Math.ceil(this.count / this.getBlockSize());
     };
@@ -21549,6 +21912,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         return this.vgenerator.getRows();
     };
     VirtualContentRenderer.prototype.getRowByIndex = function (index) {
+        if (isGroupAdaptive(this.parent)) {
+            return this.parent.getDataRows()[index];
+        }
         var prev = this.prevInfo.blockIndexes;
         var startIdx = (prev[0] - 1) * this.getBlockSize();
         return this.parent.getDataRows()[index - startIdx];
@@ -21560,9 +21926,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.refreshOffsets = function () {
         var _this = this;
+        var gObj = this.parent;
         var row = 0;
         var bSize = this.getBlockSize();
-        var total = this.getTotalBlocks();
+        var total = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         this.prevHeight = this.offsets[total];
         this.maxBlock = total % 2 === 0 ? total - 2 : total - 1;
         this.offsets = {};
@@ -21570,8 +21937,8 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         Array.apply(null, Array(total)).map(function () { return ++row; })
             .forEach(function (block) {
             var tmp = (_this.vgenerator.cache[block] || []).length;
-            var rem = _this.count % bSize;
-            var size = block in _this.vgenerator.cache ?
+            var rem = !isGroupAdaptive(_this.parent) ? _this.count % bSize : (gObj.vcRows.length % bSize);
+            var size = !isGroupAdaptive(_this.parent) && block in _this.vgenerator.cache ?
                 tmp * _this.parent.getRowHeight() : rem && block === total ? rem * _this.parent.getRowHeight() : _this.getBlockHeight();
             // let size: number = this.parent.groupSettings.columns.length && block in this.vgenerator.cache ?
             // tmp * getRowHeight() : this.getBlockHeight();
@@ -21579,6 +21946,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             _this.tmpOffsets[block] = _this.offsets[block - 1] | 0;
         });
         this.offsetKeys = Object.keys(this.offsets);
+        if (isGroupAdaptive(this.parent)) {
+            this.parent.vGroupOffsets = this.offsets;
+        }
         //Column offset update
         if (this.parent.enableColumnVirtualization) {
             this.vgenerator.refreshColOffsets();
@@ -21664,6 +22034,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         return 'virtualscroll';
     };
     VirtualScroll.prototype.instantiateRenderer = function () {
+        this.parent.log(['limitation', 'virtual_height'], 'virtualization');
         var renderer = this.locator.getService('rendererFactory');
         if (this.parent.enableColumnVirtualization) {
             renderer.addRenderer(RenderType.Header, new VirtualHeaderRenderer(this.parent, this.locator));
@@ -22108,6 +22479,7 @@ var EditRender = /** @__PURE__ @class */ (function () {
     };
     EditRender.prototype.update = function (args) {
         this.renderer.update(this.getEditElements(args), args);
+        this.parent.notify(beforeStartEdit, args);
         this.convertWidget(args);
     };
     EditRender.prototype.convertWidget = function (args) {
@@ -22431,8 +22803,8 @@ var NumericEditCell = /** @__PURE__ @class */ (function () {
             enabled: isEditable(args.column, args.requestType, args.element),
             floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
         }, col.edit.params));
-        this.obj.appendTo(args.element);
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
+        this.obj.appendTo(args.element);
     };
     NumericEditCell.prototype.destroy = function () {
         if (this.obj && !this.obj.isDestroyed) {
@@ -22540,7 +22912,13 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         var primaryKeys = gObj.getPrimaryKeyFieldNames();
         var primaryKeyValues = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
-        this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
+        if (isGroupAdaptive(gObj)) {
+            var rObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
+            this.previousData = rObj.data;
+        }
+        else {
+            this.previousData = gObj.getCurrentViewRecords()[this.rowIndex];
+        }
         for (var i = 0; i < primaryKeys.length; i++) {
             primaryKeyValues.push(this.previousData[primaryKeys[i]]);
         }
@@ -22700,6 +23078,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
     NormalEdit.prototype.editFailure = function (e) {
         this.parent.trigger(actionFailure, e);
         this.parent.hideSpinner();
+        this.parent.log('actionfailure', { error: e });
     };
     NormalEdit.prototype.refreshRow = function (data) {
         var frzCols = this.parent.getFrozenColumns();
@@ -23112,6 +23491,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     else {
                         refreshForeignData(rows[i], this.parent.getForeignKeyColumns(), rows[i].data);
                         delete rows[i].changes;
+                        delete rows[i].edit;
                         rows[i].isDirty = false;
                         var ftr = mTr ? mTr : tr;
                         classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
@@ -23428,7 +23808,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
         if (gObj.getFrozenColumns()) {
             mTr = this.renderMovable(tr);
-            if (gObj.frozenRows) {
+            if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
                 mTbody = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
             }
             else {
@@ -23440,8 +23820,11 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 this.parent.notify(frozenHeight, {});
             }
         }
-        if (gObj.frozenRows) {
+        if (gObj.frozenRows && gObj.editSettings.newRowPosition === 'Top') {
             tbody = gObj.getHeaderContent().querySelector('tbody');
+        }
+        else {
+            tbody = gObj.getContent().querySelector('tbody');
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(tr, tbody.firstChild) : tbody.appendChild(tr);
         addClass(tr.querySelectorAll('.e-rowcell'), ['e-updatedtd']);
@@ -23745,14 +24128,28 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         return row.changes ? row.changes : row.data;
     };
     BatchEdit.prototype.keyDownHandler = function (e) {
-        if (e.action === 'tab' && this.parent.isEdit) {
+        if ((e.action === 'tab' || e.action === 'shiftTab') && this.parent.isEdit) {
+            var gObj = this.parent;
             var rowcell = parentsUntil(e.target, 'e-rowcell');
             if (rowcell) {
                 var cell = rowcell.querySelector('.e-field');
                 if (cell) {
                     var visibleColumns = this.parent.getVisibleColumns();
-                    if (visibleColumns[visibleColumns.length - 1].field === cell.getAttribute('name')) {
-                        this.saveCell();
+                    var columnIndex = e.action === 'tab' ? visibleColumns.length - 1 : 0;
+                    if (visibleColumns[columnIndex].field === cell.getAttribute('id').slice(this.parent.element.id.length)) {
+                        if (this.cellDetails.rowIndex !== gObj.getRows().length - 1) {
+                            this.saveCell();
+                        }
+                        else {
+                            if (gObj.editSettings.newRowPosition === 'Top') {
+                                gObj.editSettings.newRowPosition = 'Bottom';
+                                this.addRecord();
+                                gObj.editSettings.newRowPosition = 'Top';
+                            }
+                            else {
+                                this.addRecord();
+                            }
+                        }
                     }
                 }
             }
@@ -23932,6 +24329,7 @@ var Edit = /** @__PURE__ @class */ (function () {
                     col.editType : 'defaultedit'](_this.parent, _this.serviceLocator), col.edit || {});
             }
         });
+        this.parent.log('primary_column_missing');
     };
     /**
      * For internal use only - Get the module name.
@@ -25279,7 +25677,6 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
     };
     ExportHelper.prototype.generateCells = function (columns, gObj) {
         var cells = [];
-        columns = gObj.enableColumnVirtualization && gObj.getColumns ? gObj.getColumns() : columns;
         if (gObj.childGridLevel) {
             var len = gObj.childGridLevel;
             for (var i = 0; len > i; i++) {
@@ -25355,7 +25752,7 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         return actualColumns;
     };
     ExportHelper.prototype.processHeaderCells = function (rows) {
-        var columns = this.parent.enableColumnVirtualization ? this.parent.getColumns() : this.parent.columns;
+        var columns = this.parent.columns;
         for (var i = 0; i < columns.length; i++) {
             if (!columns[i].commands) {
                 rows = this.appendGridCells(columns[i], rows, 0);
@@ -25631,6 +26028,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 return resolve();
             });
         }
+        this.parent.log('exporting_begin', this.getModuleName());
         this.data = new Data(gObj);
         this.isExporting = true;
         this.isBlob = args[isBlb];
@@ -25642,6 +26040,12 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         return this.processRecords(gObj, exportProperties, args[isMultiEx], args[workbk]);
     };
+    ExcelExport.prototype.exportingSuccess = function (resolve) {
+        this.isExporting = false;
+        this.parent.trigger(excelExportComplete, this.isBlob ? { promise: this.blobPromise } : {});
+        this.parent.log('exporting_complete', this.getModuleName());
+        resolve(this.book);
+    };
     /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.processRecords = function (gObj, exportProperties, isMultipleExport, workbook) {
         var _this = this;
@@ -25652,7 +26056,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 dataManager.then(function (r) {
                     _this.init(gObj);
                     _this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, r).then(function () {
-                        resolve(_this.book);
+                        _this.exportingSuccess(resolve);
                     });
                 });
             });
@@ -25665,9 +26069,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 Promise.all(allPromise_1).then(function (e) {
                     _this.init(gObj);
                     _this.processInnerRecords(gObj, exportProperties, isMultipleExport, workbook, e[0]).then(function () {
-                        _this.isExporting = false;
-                        gObj.trigger(excelExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
-                        resolve(_this.book);
+                        _this.exportingSuccess(resolve);
                     });
                 }).catch(function (e) {
                     reject(_this.book);
@@ -26459,6 +26861,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         this.processExport(parent, returnType, pdfExportProperties, isMultipleExport).then(function () {
             _this.isExporting = false;
             parent.trigger(pdfExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
+            _this.parent.log('exporting_complete', _this.getModuleName());
             resolve(_this.pdfDocument);
         });
     };
@@ -26484,6 +26887,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 return resolve();
             });
         }
+        this.parent.log('exporting_begin', this.getModuleName());
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
             && pdfExportProperties.dataSource instanceof DataManager) {
             return new Promise(function (resolve, reject) {
@@ -26508,6 +26912,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                     _this.processExport(parent, e[0], pdfExportProperties, isMultipleExport).then(function () {
                         _this.isExporting = false;
                         parent.trigger(pdfExportComplete, _this.isBlob ? { promise: _this.blobPromise } : {});
+                        _this.parent.log('exporting_complete', _this.getModuleName());
                         resolve(_this.pdfDocument);
                     });
                 });
@@ -26564,7 +26969,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         }
         var helper = new ExportHelper(gObj);
         var dataSource = this.processExportProperties(pdfExportProperties, returnType.result);
-        var columns = gObj.enableColumnVirtualization ? gObj.getColumns() : gObj.columns;
+        var columns = gObj.columns;
         var isGrouping = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -28128,11 +28533,13 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         switch (item) {
             case 'AutoFitAll':
             case 'AutoFit':
-                status = !(this.parent.ensureModuleInjected(Resize) && !this.parent.isEdit);
+                status = !(this.parent.ensureModuleInjected(Resize) && !this.parent.isEdit)
+                    || (this.targetColumn && !this.targetColumn.field && item === 'AutoFit');
                 break;
             case 'Group':
                 if (!this.parent.allowGrouping || (this.parent.ensureModuleInjected(Group) && this.targetColumn
-                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0)) {
+                    && this.parent.groupSettings.columns.indexOf(this.targetColumn.field) >= 0) ||
+                    (this.targetColumn && !this.targetColumn.field)) {
                     status = true;
                 }
                 break;
@@ -28176,7 +28583,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 break;
             case 'SortAscending':
             case 'SortDescending':
-                if ((!this.parent.allowSorting) || !this.parent.ensureModuleInjected(Sort)) {
+                if ((!this.parent.allowSorting) || !this.parent.ensureModuleInjected(Sort) ||
+                    (this.targetColumn && !this.targetColumn.field)) {
                     status = true;
                 }
                 else if (this.parent.ensureModuleInjected(Sort) && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
@@ -28336,7 +28744,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     ContextMenu$$1.prototype.getColumn = function (e) {
         var cell = closest(e.target, 'th.e-headercell');
         if (cell) {
-            var uid = cell.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+            var uid = cell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
             return this.parent.getColumnByUid(uid);
         }
         return null;
@@ -28694,6 +29102,7 @@ var Freeze = /** @__PURE__ @class */ (function () {
         this.parent.notify(dblclick, e);
     };
     Freeze.prototype.instantiateRenderer = function () {
+        this.parent.log('limitation', this.getModuleName());
         var renderer = this.locator.getService('rendererFactory');
         if (this.parent.getFrozenColumns()) {
             renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));
@@ -29296,6 +29705,7 @@ var ForeignKey = /** @__PURE__ @class */ (function (_super) {
             });
             args.promise.resolve(args.result);
         }).catch(function (e) {
+            _this.parent.log(['actionfailure', 'foreign_key_failure']);
             if (args.promise && args.promise.reject) {
                 args.promise.reject(e);
             }
@@ -29370,6 +29780,394 @@ var ForeignKey = /** @__PURE__ @class */ (function (_super) {
 }(Data));
 
 /**
+ *
+ * `Logger` class
+ */
+var BASE_DOC_URL = 'https://ej2.syncfusion.com/documentation/grid';
+var DOC_URL = 'https://ej2.syncfusion.com/documentation/';
+var WARNING = '[EJ2Grid.Warning]';
+var ERROR = '[EJ2Grid.Error]';
+var INFO = '[EJ2Grid.Info]';
+var Logger = /** @__PURE__ @class */ (function () {
+    function Logger(parent) {
+        this.parent = parent;
+        this.parent.on('initial-end', this.patchadaptor, this);
+    }
+    Logger.prototype.getModuleName = function () {
+        return 'logger';
+    };
+    Logger.prototype.log = function (types, args) {
+        var _this = this;
+        if (!(types instanceof Array)) {
+            types = [types];
+        }
+        types.forEach(function (type) {
+            var item = detailLists[type];
+            var cOp = item.check(args, _this.parent);
+            if (cOp.success) {
+                console[item.logType](item.generateMessage(args, _this.parent, cOp.options));
+            }
+        });
+    };
+    Logger.prototype.patchadaptor = function () {
+        var adaptor = this.parent.getDataModule().dataManager.adaptor;
+        var original = adaptor.beforeSend;
+        if (original) {
+            adaptor.beforeSend = function (dm, request, settings) {
+                original.call(adaptor, dm, request, settings);
+            };
+        }
+    };
+    Logger.prototype.destroy = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('initial-end', this.patchadaptor);
+    };
+    return Logger;
+}());
+var detailLists = {
+    module_missing: {
+        type: 'module_missing',
+        logType: 'warn',
+        check: function (args, parent) {
+            var injected = parent.getInjectedModules().map(function (m) { return m.prototype.getModuleName(); });
+            /* tslint:disable-next-line:no-any */
+            var modules = parent.requiredModules().map(function (m) { return m.member; })
+                .filter(function (name) { return injected.indexOf(name) === -1; });
+            return { success: modules.filter(function (m) { return m !== 'resize'; }).length > 0, options: modules };
+        },
+        generateMessage: function (args, parent, modules) {
+            modules = modules.filter(function (m) { return m !== 'resize'; })
+                .reduce(function (prev, cur) { return prev + ("* " + cur + "\n"); }, '');
+            return WARNING + ': MODULES MISSING\n' + 'The following modules are not injected:.\n' +
+                ("" + modules) +
+                ("Refer to " + BASE_DOC_URL + "/module.html for documentation on importing feature modules.");
+        }
+    },
+    promise_enabled: {
+        type: 'promise_enabled',
+        logType: 'error',
+        check: function (args, parent) {
+            return { success: typeof Promise === 'undefined' };
+        },
+        generateMessage: function (args, parent) {
+            return ERROR + ': PROMISE UNDEFINED\n' +
+                'Promise object is not present in the global environment,' +
+                'please use polyfil to support Promise object in your environment.\n' +
+                ("Refer to " + DOC_URL + "/base/browser.html?#required-polyfills for more information.");
+        }
+    },
+    primary_column_missing: {
+        type: 'primary_column_missing',
+        logType: 'warn',
+        check: function (args, parent) {
+            return { success: parent.getColumns().filter(function (column) { return column.isPrimaryKey; }).length === 0 };
+        },
+        generateMessage: function (args, parent) {
+            return WARNING + ': PRIMARY KEY MISSING\n' + 'Editing is enabled but primary key column is not specified.\n' +
+                ("Refer to " + BASE_DOC_URL + "/api-column.html?#isprimarykey for documentation on providing primary key columns.");
+        }
+    },
+    selection_key_missing: {
+        type: 'selection_key_missing',
+        logType: 'warn',
+        check: function (args, parent) {
+            return { success: parent.selectionSettings.persistSelection &&
+                    parent.getColumns().filter(function (column) { return column.isPrimaryKey; }).length === 0 };
+        },
+        generateMessage: function (args, parent) {
+            return WARNING + ': PRIMARY KEY MISSING\n' +
+                'selectionSettings.persistSelection property is enabled. It requires one primary key column to persist selection.\n' +
+                ("Refer to " + BASE_DOC_URL + "/api-column.html?#isprimarykey for documentation on providing primary key columns.");
+        }
+    },
+    actionfailure: {
+        type: 'actionfailure',
+        logType: 'error',
+        check: function (args, parent) {
+            return { success: true };
+        },
+        generateMessage: function (args, parent) {
+            var message = '';
+            var formatError = formatErrorHandler(args, parent);
+            var ajaxError = ajaxErrorHandler(args, parent);
+            if (ajaxError !== '') {
+                message = ajaxError;
+            }
+            else if (formatError !== '') {
+                message = formatError;
+            }
+            else {
+                message = args.error;
+            }
+            return WARNING + ': ' + message;
+        }
+    },
+    locale_missing: {
+        type: 'locale_missing',
+        logType: 'warn',
+        check: function (args, parent) {
+            var lObj = DataUtil.getObject("locale." + parent.locale + ".grid", L10n);
+            return { success: parent.locale !== 'en-US' && isNullOrUndefined(lObj) };
+        },
+        generateMessage: function (args, parent) {
+            return WARNING + ': LOCALE CONFIG MISSING\n' + ("Locale configuration for '" + parent.locale + "' is not provided.\n") +
+                ("Refer to " + BASE_DOC_URL + "/globalization-and-localization.html?#localization \n             for documentation on setting locale configuration.");
+        }
+    },
+    limitation: {
+        type: 'limitation',
+        logType: 'warn',
+        check: function (args, parent) {
+            var name = args;
+            var opt;
+            switch (name) {
+                case 'freeze':
+                    opt = {
+                        success: parent.allowGrouping || !isUndefined(parent.detailTemplate) || !isUndefined(parent.childGrid)
+                            || !isUndefined(parent.rowTemplate) || parent.enableVirtualization,
+                        options: { name: 'freeze' }
+                    };
+                    break;
+                case 'virtualization':
+                    opt = {
+                        success: !isUndefined(parent.detailTemplate) || !isUndefined(parent.childGrid) || parent.frozenRows !== 0
+                            || parent.frozenColumns !== 0,
+                        options: { name: 'virtualization' }
+                    };
+                    break;
+                default:
+                    opt = { success: false };
+                    break;
+            }
+            return opt;
+        },
+        generateMessage: function (args, parent, options) {
+            var name = options.name;
+            var opt;
+            switch (name) {
+                case 'freeze':
+                    opt = 'Frozen rows and columns do not support the following features:\n' +
+                        '* Virtualization\n' +
+                        '* Row Template\n' +
+                        '* Details Template\n' +
+                        '* Hierarchy Grid\n' +
+                        '* Grouping';
+                    break;
+                case 'virtualization':
+                    opt = 'Virtualization does not support the following features.\n' +
+                        '* Freeze rows and columns.\n' +
+                        '* Details Template.\n' +
+                        '* Hierarchy Grid.\n';
+                    break;
+                default:
+                    opt = '';
+                    break;
+            }
+            return WARNING + (": " + name.toUpperCase() + " LIMITATIONS\n") + opt;
+        }
+    },
+    check_datasource_columns: {
+        type: 'check_datasource_columns',
+        logType: 'warn',
+        check: function (args, parent) {
+            return { success: !(parent.columns.length ||
+                    (parent.dataSource instanceof DataManager) || parent.dataSource.length) };
+        },
+        generateMessage: function (args, parent) {
+            return WARNING + ': GRID CONFIG MISSING\n' + 'dataSource and columns are not provided in the grid. ' +
+                'At least one of either must be provided for grid configuration.\n' +
+                ("Refer to " + BASE_DOC_URL + "/columns.html for documentation on configuring the grid data and columns.");
+        }
+    },
+    virtual_height: {
+        type: 'virtual_height',
+        logType: 'error',
+        check: function (args, parent) {
+            return { success: isNullOrUndefined(parent.height) || parent.height === 'auto' };
+        },
+        generateMessage: function (args, parent) {
+            return ERROR + ': GRID HEIGHT MISSING \n' + 'height property is required to use virtualization.\n' +
+                ("Refer to " + BASE_DOC_URL + "/virtual.html for documentation on configuring the virtual grid.");
+        }
+    },
+    grid_remote_edit: {
+        type: 'grid_remote_edit',
+        logType: 'error',
+        check: function (args, parent) {
+            return { success: Array.isArray(args) || Array.isArray(args.result) };
+        },
+        generateMessage: function (args, parent) {
+            return ERROR + ': RETRUN VALUE MISSING  \n' +
+                'Remote service returns invalid data. \n' +
+                ("Refer to " + BASE_DOC_URL + "/edit.html for documentation on configuring editing with remote data.");
+        }
+    },
+    grid_sort_comparer: {
+        type: 'grid_sort_comparer',
+        logType: 'warn',
+        check: function (args, parent) {
+            return { success: parent.getDataModule().isRemote() };
+        },
+        generateMessage: function (args, parent) {
+            return WARNING + ': SORT COMPARER NOT WORKING  \n' + 'Sort comparer will not work with remote data.' +
+                ("Refer to " + BASE_DOC_URL + "/sorting/#custom-sort-comparer for documentation on using the sort comparer.");
+        }
+    },
+    resize_min_max: {
+        type: 'resize_min_max',
+        logType: 'info',
+        check: function (args, parent) {
+            return { success: (args.column.minWidth && args.column.minWidth >= args.width) ||
+                    (args.column.maxWidth && args.column.maxWidth <= args.width) };
+        },
+        generateMessage: function (args, parent) {
+            return INFO + ': RESIZING COLUMN REACHED MIN OR MAX  \n' + 'The column resizing width is at its min or max.';
+        }
+    },
+    action_disabled_column: {
+        type: 'action_disabled_column',
+        logType: 'info',
+        check: function (args, parent) {
+            var success = true;
+            var fn;
+            switch (args.moduleName) {
+                case 'reorder':
+                    if (isNullOrUndefined(args.destColumn)) {
+                        fn = "reordering action is disabled for the " + args.column.headerText + " column";
+                    }
+                    else {
+                        fn = "reordering action is disabled for the " + (args.column.allowReordering ?
+                            args.destColumn.headerText : args.column.headerText) + " column";
+                    }
+                    break;
+                case 'group':
+                    fn = "grouping action is disabled for the " + args.columnName + " column.";
+                    break;
+                case 'filter':
+                    fn = "filtering action is disabled for the " + args.columnName + " column.";
+                    break;
+                case 'sort':
+                    fn = "sorting action is disabled for the " + args.columnName + " column.";
+                    break;
+            }
+            return { success: success, options: { fn: fn } };
+        },
+        generateMessage: function (args, parent, options) {
+            return INFO + (": ACTION DISABLED \n " + options.fn);
+        }
+    },
+    exporting_begin: {
+        type: 'exporting_begin',
+        logType: 'info',
+        check: function (args, parent) {
+            return { success: true, options: { args: args } };
+        },
+        generateMessage: function (args, parent, options) {
+            return INFO + (": EXPORTNIG INPROGRESS \n Grid " + options.args + "ing is in progress");
+        }
+    },
+    exporting_complete: {
+        type: 'exporting_complete',
+        logType: 'info',
+        check: function (args, parent) {
+            return { success: true, options: { args: args } };
+        },
+        generateMessage: function (args, parent, options) {
+            return INFO + (": EXPORTNIG COMPLETED \n Grid " + options.args + "ing is complete");
+        }
+    },
+    foreign_key_failure: {
+        type: 'foreign_key_failure',
+        logType: 'error',
+        check: function (args, parent) {
+            return { success: true };
+        },
+        generateMessage: function (args, parent) {
+            return ERROR + ': FOREIGNKEY CONFIG \n  Grid foreign key column needs a valid data source/service.' +
+                ("Refer to " + BASE_DOC_URL + "/columns/#foreign-key-column for documentation on configuring foreign key columns.");
+        }
+    },
+    initial_action: {
+        type: 'initial_action',
+        logType: 'error',
+        check: function (args, parent) {
+            var success = true;
+            var fn;
+            switch (args.moduleName) {
+                case 'group':
+                    fn = "The " + args.columnName + " column is not available in the grid's column model." +
+                        'Please provide a valid field name to group the column';
+                    break;
+                case 'filter':
+                    fn = "The " + args.columnName + " column is not available in the grid's column model." +
+                        'Please provide a valid field name to filter the column.';
+                    break;
+                case 'sort':
+                    fn = "The " + args.columnName + " column is not available in the grid's column model." +
+                        'Please provide a valid field name to sort the column.';
+                    break;
+            }
+            return { success: success, options: { fn: fn } };
+        },
+        generateMessage: function (args, parent, options) {
+            return ERROR + (": INITIAL ACTION FAILURE \n " + options.fn);
+        }
+    },
+    frozen_rows_columns: {
+        type: 'frozen_rows_columns',
+        logType: 'error',
+        check: function (args, parent) {
+            return { success: parent.getColumns().length <= parent.frozenColumns || parent.frozenRows >= parent.currentViewData.length };
+        },
+        generateMessage: function (args, parent, options) {
+            return ERROR + (": OUT OF RANGE ERROR-\n " + (parent.getColumns().length <= parent.frozenColumns ? 'FROZEN COLUMNS,' : '')) +
+                ((parent.frozenRows >= parent.currentViewData.length ? 'FROZEN ROWS' : '') + " invalid");
+        }
+    },
+    column_type_missing: {
+        type: 'column_type_missing',
+        logType: 'error',
+        check: function (args, parent) {
+            return { success: isNullOrUndefined(args.column.type), options: args.column.headerText };
+        },
+        generateMessage: function (args, parent, options) {
+            return ERROR + (": COLUMN TYPE MISSING-\n  " + options + " column type was invalid or not defined.") +
+                ("Please go through below help link: " + DOC_URL + "/grid/columns/#column-type");
+        }
+    }
+};
+var formatErrorHandler = function (args, parent) {
+    var error = args.error;
+    if (error.indexOf && error.indexOf('Format options') !== 0) {
+        return '';
+    }
+    return 'INVALID FORMAT\n' +
+        'For more information, refer to the following documentation links:\n' +
+        ("Number format: " + DOC_URL + "/base/intl.html?#supported-format-string.\n") +
+        ("Date format: " + DOC_URL + "/base/intl.html?#manipulating-datetime.\n") +
+        ("Message: " + error);
+};
+var ajaxErrorHandler = function (args, parent) {
+    var error = DataUtil.getObject('error.error', args);
+    if (isNullOrUndefined(error)) {
+        return '';
+    }
+    var jsonResult = '';
+    try {
+        jsonResult = JSON.parse(error.responseText);
+    }
+    catch (_a) {
+        jsonResult = '';
+    }
+    return 'XMLHTTPREQUEST FAILED\n' +
+        ("Url: " + error.responseURL + "\n") +
+        ("Status: " + error.status + " - " + error.statusText + "\n") +
+        ("" + (jsonResult !== '' ? 'Message: ' + jsonResult : ''));
+};
+
+/**
  * Action export
  */
 
@@ -29397,5 +30195,5 @@ var ForeignKey = /** @__PURE__ @class */ (function (_super) {
  * Export Grid components
  */
 
-export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, batchForm, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, batchForm, beforeStartEdit, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, Global, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

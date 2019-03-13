@@ -10,6 +10,7 @@ import { PointPort } from './port';
 import { FlipDirection } from '../enum/enum';
 
 
+
 /**
  * Defines the common behavior of nodes, connectors and groups
  */
@@ -101,6 +102,5 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
      */
     @Property('None')
     public flip: FlipDirection;
-
 }
 

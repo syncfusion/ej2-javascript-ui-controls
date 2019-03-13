@@ -5,7 +5,8 @@ import { Property, ChildProperty, Complex, createElement } from '@syncfusion/ej2
 import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Border, Font, Animation, Index, EmptyPointSettings, Connector } from '../../common/model/base';
-import { Rect, ChartLocation, stringToNumber, PathOption, Size, appendChildElement} from '../../common/utils/helper';
+import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';
+import { ChartLocation, stringToNumber, appendChildElement} from '../../common/utils/helper';
 import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
 import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs } from '../model/pie-interface';
 import { LegendShape } from '../../chart/utils/enum';
@@ -33,7 +34,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     /**
      * if set coordinateUnit as `Pixel` X specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     @Property('0')
     public x: string | Date | number;
@@ -41,7 +42,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     /**
      * if set coordinateUnit as `Pixel` Y specifies the axis value
      * else is specifies pixel or percentage of coordinate
-     * @default 0
+     * @default '0'
      */
     @Property('0')
     public y: string | number;

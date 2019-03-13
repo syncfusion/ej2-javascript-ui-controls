@@ -42,5 +42,65 @@
     .e-dropdown-icon::before {
       content: '\e95d';
     }
+
+    .e-export::before {
+      content: '\e702';
+    }
+
+    .e-new-report::before {
+      content: '\e709';
+    }
+
+    .e-save-report::before {
+      content: '\e701';
+    }
+
+    .e-saveas-report::before {
+      content: '\e703';
+    }
+
+    .e-rename-report::before {
+      content: '\e704';
+    }
+
+    .e-remove-report::before {
+      content: '\e70c';
+    }
+
+    .e-sub-total::before {
+      content: '\e710';
+    }
+
+    .e-grand-total::before {
+      content: '\e708';
+    }
+
+    .e-toolbar-fieldlist::before {
+      content: '\e434';
+    }
+
+    .e-toolbar-grid::before {
+      content: '\e70f';
+    }
+
+    .e-toolbar-chart::before {
+      content: '\e70d';
+    }
+
+    .e-toolbar-formatting::before {
+      content: '\e711';
+    }
+  }
+
+  .e-pivotview-pdf-export::before {
+    content: '\e707';
+  }
+
+  .e-pivotview-excel-export::before {
+    content: '\e70b';
+  }
+
+  .e-pivotview-csv-export::before {
+    content: '\e712';
   }
 }

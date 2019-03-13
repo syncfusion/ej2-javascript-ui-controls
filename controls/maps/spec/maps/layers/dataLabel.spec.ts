@@ -280,12 +280,9 @@ describe('Map layer testing', () => {
                 format: 'c',
                 useGroupingSeparator: true,
                 layers: [{
-                    shapeDataPath: 'State',
                     shapePropertyPath:['name', 'admin'],
-                    dataSource: electiondata,
                     dataLabelSettings: {
                         visible: true,
-                        labelPath: 'Electors',
                         textStyle: { size: '10px' },
                     },
                     shapeSettings: {
@@ -294,19 +291,21 @@ describe('Map layer testing', () => {
                     shapeData: usMap,
                 },
                 ]
-            });
+            }, '#' + id)
         });
         afterAll(() => {
             remove(ele);
             label.destroy();
         });
-        it('testing datalabel from datasource', (done: Function) => {
+        it('testing datalabel from datasource', () => {
             label.loaded = (args: ILoadedEventArgs) => {
-                spec = getElement('label_LayerIndex_0_shapeIndex_4_LabelIndex_4');
+                spec = document.getElementById('label_LayerIndex_0_shapeIndex_4_LabelIndex_4');
                 expect(spec.innerHTML).toBe('€4.00');
-                done();
             };
-            label.appendTo('#' + id);
+            label.layers[0].dataSource = electiondata;
+            label.layers[0].shapeDataPath = 'State'
+            label.layers[0].dataLabelSettings.labelPath = 'Electors';
+            label.refresh();
         });
     });
     it('memory leak', () => {

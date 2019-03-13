@@ -1,13 +1,12 @@
 import { createElement, remove, EmitType, Browser } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import {
-    Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel
-} from '../../../src/schedule/index';
+import { Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel } from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { disableScheduleAnimation, triggerMouseEvent, createSchedule, createGroupSchedule, destroy } from '../util.spec';
 import {
     timelineData, resourceData, timelineResourceData, cloneDataSource, resourceGroupData, levelBasedData
 } from '../base/datasource.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 /**
  * Schedule timeline day view spec 
@@ -15,6 +14,17 @@ import {
 Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Schedule timeline day view', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Initial load', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
@@ -529,6 +539,44 @@ describe('Schedule timeline day view', () => {
         });
     });
 
+    describe('Checking enableAdaptiveRows property', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let options: ScheduleModel = {
+                currentView: 'TimelineDay',
+                enableAdaptiveRows: true,
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                selectedDate: new Date(2018, 4, 1),
+            };
+            schObj = createSchedule(options, timelineData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('initial load', () => {
+            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(15);
+            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(eventWrapperList.length).toEqual(1);
+            let moreIndicatorList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            expect(moreIndicatorList.length).toEqual(0);
+        });
+        it('Change property through set model', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(14);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(1);
+                done();
+            };
+            schObj.enableAdaptiveRows = false;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
+    });
+
     describe('Event rendering- RTL', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
@@ -922,6 +970,21 @@ describe('Schedule timeline day view', () => {
             expect(moreEventList.length).toEqual(2);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(9);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(8);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
     });
 
     describe('Multi level resource rendering', () => {
@@ -1254,7 +1317,7 @@ describe('Schedule timeline day view', () => {
         it('event double click', () => {
             triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement, 'dblclick');
             let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
-            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-edit-event') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
             editButton.click();
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             expect(dialogElement.querySelector('.' + cls.EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML).toEqual('Edit Event');
@@ -1270,6 +1333,20 @@ describe('Schedule timeline day view', () => {
             expect(owner.text).toEqual('Oliver');
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
+        });
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(8);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(7);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -1307,7 +1384,8 @@ describe('Schedule timeline day view', () => {
                             { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', startHour: '04:00', endHour: '07:00' },
                             { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', startHour: '10:00', endHour: '12:00' }
                         ],
-                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color', startHourField: 'startHour', endHourField: 'endHour'
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
+                        startHourField: 'startHour', endHourField: 'endHour'
                     }],
                 eventSettings: { dataSource: [] },
                 dataBound: dataBound
@@ -1399,6 +1477,20 @@ describe('Schedule timeline day view', () => {
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+        });
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(9);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(8);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -2603,7 +2695,7 @@ describe('Schedule timeline day view', () => {
             expect(eventWrapperList.length).toEqual(1);
 
             expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
-            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-indicator')[0].classList).toContain('e-left-icon')
+            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-indicator')[0].classList).toContain('e-left-icon');
 
             expect(eventElementList[11].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Spanned Event - Greater than 24');
             expect(eventElementList[11].querySelectorAll('.e-appointment-details .e-indicator')[0].classList).toContain('e-right-icon');
@@ -2703,6 +2795,21 @@ describe('Schedule timeline day view', () => {
                 done();
             };
             schObj.dataBound = dataBound;
+        });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(15);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -2808,6 +2915,21 @@ describe('Schedule timeline day view', () => {
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1, 13).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 1, 13, 30).getTime().toString());
         });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(15);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
     });
 
     describe('Year, Month, Week, Day header rows', () => {
@@ -2895,6 +3017,21 @@ describe('Schedule timeline day view', () => {
             expect(moreIndicators[0].innerHTML).toEqual('+6&nbsp;more');
             expect(moreIndicators[0].getAttribute('data-start-date')).toEqual(new Date(2018, 4, 1).getTime().toString());
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
+        });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(15);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -3451,5 +3588,17 @@ describe('Schedule timeline day view', () => {
             };
             schObj.dataBound = dataBound;
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

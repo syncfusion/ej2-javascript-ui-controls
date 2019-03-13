@@ -28,6 +28,7 @@ import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Selection } from '../../../src/chart/user-interaction/selection';
 import { tooltipData1, tooltipData2, datetimeData, categoryData1, negativeDataPoint, spline1, rotateData1 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IPointRenderEventArgs, ILegendRenderEventArgs, IDragCompleteEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
 import { getElement, removeElement } from '../../../src/chart/index';
 
@@ -63,6 +64,14 @@ export let emptyPointsData1: any[] = [
     { x: 5000, y: 50 }, { x: 6000, y: 90 },
     { x: 7000, y: 40 }];
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Chart Spline Area series', () => {
         let chartObj: Chart;
         let elem: HTMLElement;
@@ -1076,4 +1085,13 @@ describe('Chart Control', () => {
             chartObj.removeSeries(1);
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

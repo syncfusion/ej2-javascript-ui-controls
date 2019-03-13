@@ -49,6 +49,7 @@ export class EventBase {
             let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
             this.parent.dataSource.sortSettings.push(newSortObj);
         }
+        this.parent.control.lastSortInfo = this.parent.dataSource.sortSettings[this.parent.dataSource.sortSettings.length - 1];
         isDescending ? removeClass([target], cls.SORT_DESCEND_CLASS) : addClass([target], cls.SORT_DESCEND_CLASS);
     }
 
@@ -65,9 +66,15 @@ export class EventBase {
         let fieldCaption: string = target.parentElement.textContent;
         let isInclude: boolean = false;
         let filterItems: string[] = [];
-        this.parent.engineModule.fieldList[fieldName].dateMember = new DataManager(this.parent.engineModule.
-            fieldList[fieldName].dateMember as JSON[]).executeLocal(new Query().
-                sortBy('actualText', this.parent.engineModule.fieldList[fieldName].sort.toLowerCase()));
+        /* tslint:disable:typedef */
+        this.parent.engineModule.fieldList[fieldName].dateMember = this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
+            (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText > b.actualText) ? 1 :
+                ((b.actualText > a.actualText) ? -1 : 0))) :
+            this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
+                (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText < b.actualText) ? 1 :
+                    ((b.actualText < a.actualText) ? -1 : 0))) :
+                this.parent.engineModule.fieldList[fieldName].dateMember;
+        /* tslint:enable:typedef */
         let filterObj: IFilter = this.getFilterItemByName(fieldName);
         if (!isNullOrUndefined(filterObj)) {
             isInclude = filterObj.type === 'Include' ? true : false;

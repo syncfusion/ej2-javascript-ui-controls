@@ -16,7 +16,6 @@ const STATIC_PANE: string = 'e-static-pane';
 const SCROLL_PANE: string = 'e-scrollable';
 const RESIZE_BAR: string = 'e-resize-handler';
 const RESIZABLE_BAR: string = 'e-resizable-split-bar';
-const SPLIT_BAR_LINE: string = 'e-split-line';
 const SPLIT_BAR_HOVER: string = 'e-split-bar-hover';
 const SPLIT_BAR_ACTIVE: string = 'e-split-bar-active';
 const HIDE_HANDLER: string = 'e-hide-handler';
@@ -24,10 +23,21 @@ const SPLIT_TOUCH: string = 'e-splitter-touch';
 const DISABLED: string = 'e-disabled';
 const RTL: string = 'e-rtl';
 const E_ICONS: string = 'e-icons';
+const COLLAPSIBLE: string = 'e-collapsible';
+const NAVIGATE_ARROW: string = 'e-navigate-arrow';
+const ARROW_RIGHT: string = 'e-arrow-right';
+const ARROW_LEFT: string = 'e-arrow-left';
+const ARROW_UP: string = 'e-arrow-up';
+const ARROW_DOWN: string = 'e-arrow-down';
+const HIDE_ICON: string = 'e-icon-hidden';
+const EXPAND_PANE: string = 'e-expanded';
+const COLLAPSE_PANE: string = 'e-collapsed';
+const PANE_HIDDEN: string = 'e-pane-hidden';
 const RESIZABLE_PANE: string = 'e-resizable';
+const LAST_BAR: string = 'e-last-bar';
 
 /**
- * Interface to configure pane properties such as its content, size, min, max, and resizable.
+ * Interface to configure pane properties such as its content, size, min, max, resizable, collapsed and collapsible.
  */
 export class PaneProperties extends ChildProperty<PaneProperties> {
     /**
@@ -36,6 +46,20 @@ export class PaneProperties extends ChildProperty<PaneProperties> {
      */
     @Property()
     public size: string;
+
+    /**
+     * Specifies whether a pane is collapsible or not collapsible.
+     * @default false
+     */
+    @Property(false)
+    public collapsible: boolean;
+
+    /**
+     * Specifies whether a pane is collapsed or not collapsed at the initial rendering of splitter.
+     * @default false
+     */
+    @Property(false)
+    public collapsed: boolean;
 
     /**
      * Specifies the value whether a pane is resizable. By default, the Splitter is resizable in all panes.
@@ -64,7 +88,7 @@ export class PaneProperties extends ChildProperty<PaneProperties> {
      * @default ''
      */
     @Property()
-    public content: string;
+    public content: string | HTMLElement;
 }
 
 /**
@@ -77,7 +101,7 @@ export type Orientation = 'Horizontal' | 'Vertical';
  * The container can be split into multiple panes, which are oriented horizontally or vertically.
  * The separator (divider) splits the panes and resizes and expands/collapses the panes.
  * The splitter is placed inside the split pane to make a nested layout user interface.
- * 
+ *
  * ```html
  * <div id="splitter">
  *  <div> Left Pane </div>
@@ -94,7 +118,7 @@ export type Orientation = 'Horizontal' | 'Vertical';
  */
 
 @NotifyPropertyChanges
-export class Splitter extends Component<HTMLDivElement> {
+export class Splitter extends Component<HTMLElement> {
     private allPanes: HTMLElement[] = [];
     private paneOrder: number[] = [];
     private separatorOrder: number[] = [];
@@ -125,8 +149,15 @@ export class Splitter extends Component<HTMLDivElement> {
     private nextPaneIndex: number;
     // tslint:disable-next-line
     private nextPaneHeightWidth: any;
-    private validDataAttributes: string [] = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable', 'data-content'];
+    private validDataAttributes: string [] = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable', 'data-content', 'data-collapsed'];
     private validElementAttributes: string [] = ['data-orientation', 'data-width', 'data-height'];
+    private arrow: string;
+    private currentBarIndex: number;
+    private prevBar: HTMLElement;
+    private nextBar: HTMLElement;
+    private splitInstance: PaneDetails;
+    private leftArrow: string;
+    private rightArrow: string;
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
@@ -154,7 +185,7 @@ export class Splitter extends Component<HTMLDivElement> {
      * Specifies a value that indicates whether to align the split panes horizontally or vertically.
      *  * Set the orientation property as "Horizontal" to create a horizontal splitter that aligns the panes left-to-right.
      *  * Set the orientation property as "Vertical" to create a vertical splitter that aligns the panes top-to-bottom.
-     * @default Horizontal 
+     * @default Horizontal
      */
     @Property('Horizontal')
     public orientation: Orientation;
@@ -195,31 +226,59 @@ export class Splitter extends Component<HTMLDivElement> {
 
     /**
      * Triggers after creating the splitter component with its panes.
-     * @event 
+     * @event
      */
     @Event()
     public created: EmitType<CreatedEventArgs>;
 
     /**
      * Triggers when the split pane is started to resize.
-     * @event 
+     * @event
      */
     @Event()
     public resizeStart: EmitType<ResizeEventArgs>;
 
     /**
      * Triggers when a split pane is being resized.
-     * @event 
+     * @event
      */
     @Event()
     public resizing: EmitType<ResizingEventArgs>;
 
     /**
      * Triggers when the resizing of split pane is stopped.
-     * @event 
+     * @event
      */
     @Event()
     public resizeStop: EmitType<ResizingEventArgs>;
+
+    /**
+     * Triggers when before panes get collapsed.
+     * @event 
+     */
+    @Event()
+    public beforeCollapse: EmitType<BeforeExpandEventArgs>;
+
+    /**
+     * Triggers when before panes get expanded.
+     * @event 
+     */
+    @Event()
+    public beforeExpand: EmitType<BeforeExpandEventArgs>;
+
+    /**
+     * Triggers when after panes get collapsed.
+     * @event 
+     */
+    @Event()
+    public collapsed: EmitType<ExpandedEventArgs>;
+
+    /**
+     * Triggers when after panes get expanded.
+     * @event 
+     */
+    @Event()
+    public expanded: EmitType<ExpandedEventArgs>;
 
     /**
      * Initializes a new instance of the Splitter class.
@@ -227,7 +286,7 @@ export class Splitter extends Component<HTMLDivElement> {
      * @param element  - Specifies the element that is rendered as an Splitter.
      */
 
-    constructor(options?: SplitterModel, element?: string | HTMLDivElement) {
+    constructor(options?: SplitterModel, element?: string | HTMLElement) {
         super(options, element);
     }
 
@@ -283,6 +342,14 @@ export class Splitter extends Component<HTMLDivElement> {
                                     this.resizableModel(index, newVal);
                                     break;
 
+                                    case 'collapsible':
+                                    this.collapsibleModelUpdate(index);
+                                    break;
+
+                                    case 'collapsed':
+                                    newProp.paneSettings[index].collapsed ? this.isCollapsed() : this.collapsedOnchange(index);
+                                    break;
+
                                     case 'size':
                                     let newValSize: string = Object(newProp.paneSettings[index])[property];
                                     if (newValSize !== '' && !isNullOrUndefined(newValSize)) {
@@ -301,8 +368,8 @@ export class Splitter extends Component<HTMLDivElement> {
                     this.addSeparator(this.element);
                     this.getPanesDimensions();
                     this.setRTL(this.enableRtl);
-                    }
-
+                    this.isCollapsed();
+                }
                     break;
                 case 'enableRtl':
                     this.setRTL(newProp.enableRtl);
@@ -348,10 +415,18 @@ export class Splitter extends Component<HTMLDivElement> {
         this.getPanesDimensions();
         this.setPaneSettings();
         this.setRTL(this.enableRtl);
+        this.isCollapsed();
+        EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
     }
 
+    private onDocumentClick(e: Event | MouseEvent): void {
+        if (!(<HTMLElement>e.target).classList.contains(SPLIT_BAR)) {
+            this.currentSeparator.classList.remove(SPLIT_BAR_HOVER);
+            this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
+        }
+    }
 
-    private checkDataAttributes() : void {
+    private checkDataAttributes(): void {
         let api: string;
         let value: string | boolean;
         // Element values
@@ -377,11 +452,13 @@ export class Splitter extends Component<HTMLDivElement> {
                             max: null,
                             content: '',
                             resizable: true,
+                            collapsible: false,
+                            collapsed: false
                          };
                     }
                     // tslint:disable-next-line
                     let paneAPI: PanePropertiesModel = (this.paneSettings[paneIndex] as any)[api];
-                    if (api === 'resizable' && this.paneSettings[paneIndex].resizable) {
+                    if (api === 'resizable' || api === 'collapsible' || api === 'collapsed') {
                         // tslint:disable-next-line
                         (this.paneSettings[paneIndex] as any)[api] = value;
                     }
@@ -406,7 +483,9 @@ export class Splitter extends Component<HTMLDivElement> {
             min: null,
             max: null,
             content: '',
-            resizable: true
+            resizable: true,
+            collapsed: false,
+            collapsible: false
         };
         for (let i: number = 0; i < childCount; i++) {
             if (isNullOrUndefined(this.paneSettings[i])) {
@@ -416,6 +495,47 @@ export class Splitter extends Component<HTMLDivElement> {
                 }
             }
         this.setProperties({'paneSettings': paneCollection}, true);
+    }
+
+    private checkArrow(paneIndex: number, targetArrow: string): HTMLElement {
+        return(this.allBars[paneIndex].querySelector('.' + NAVIGATE_ARROW + '.' + targetArrow));
+    }
+
+    private removeDataPrefix(attribute: string): string {
+        return attribute.slice(attribute.lastIndexOf('-') + 1);
+    }
+
+    private setRTL(rtl: boolean): void {
+        rtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+    }
+
+    private setSplitterSize(element: HTMLElement, size: string, property: string): void {
+        let style: { [key: string]: Object; } = property === 'width' ? { 'width': formatUnit(size) } : { 'height': formatUnit(size) };
+        setStyleAttribute(element, style);
+    }
+
+    private getPanesDimensions(): void {
+        for (let index: number = 0; index < this.allPanes.length; index++) {
+            this.orientation === 'Horizontal' ? this.panesDimensions.push(this.allPanes[index].getBoundingClientRect().width) :
+            this.panesDimensions.push(this.allPanes[index].getBoundingClientRect().height);
+        }
+    }
+
+    private setCssClass(className: string): void {
+        if ( className) {
+            addClass([this.element], className.split(className.indexOf(',') > -1 ? ',' : ' '));
+        }
+    }
+
+    private hideResizer(target: HTMLElement): void {
+        addClass([select('.' + RESIZE_BAR, target)], HIDE_HANDLER);
+    }
+
+    private showResizer(target: HTMLElement): void {
+        if (!isNullOrUndefined(this.previousPane) && this.previousPane.classList.contains(RESIZABLE_PANE) &&
+        !isNullOrUndefined(this.nextPane) && this.nextPane.classList.contains(RESIZABLE_PANE)) {
+           removeClass([select('.' + RESIZE_BAR, target)], HIDE_HANDLER);
+        }
     }
 
     private resizableModel(index: number, newVal: boolean): void {
@@ -442,47 +562,57 @@ export class Splitter extends Component<HTMLDivElement> {
         }
     }
 
-    private updateResizablePanes(index: number): void {
-        this.getPaneDetails();
-        this.isResizable() ? this.allPanes[index].classList.add(RESIZABLE_PANE) : this.allPanes[index].classList.remove(RESIZABLE_PANE);
+    private collapsibleModelUpdate(index : number): void {
+        let arrow2: HTMLElement;
+        let arrow1: HTMLElement;
+        let paneIndex: number;
+        paneIndex = index === (this.allBars.length) ? (index - 1) : index;
+        arrow2 = (this.orientation === 'Horizontal') ? this.checkArrow(paneIndex, ARROW_LEFT) : this.checkArrow(paneIndex, ARROW_UP);
+        arrow1 = (this.orientation === 'Horizontal') ? this.checkArrow(paneIndex, ARROW_RIGHT) : this.checkArrow(paneIndex, ARROW_DOWN);
+        this.paneCollapsible(this.allPanes[index], index);
+        this.updateCollapseIcons(paneIndex, arrow1, arrow2);
     }
 
-    private removeDataPrefix(attribute: string): string {
-        return attribute.slice(attribute.lastIndexOf('-') + 1);
+    private collapseArrow(barIndex: number, arrow: string): HTMLElement {
+       return selectAll('.' + arrow , this.allBars[barIndex])[0];
     }
 
-    private setRTL(rtl: boolean): void {
-        rtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+    private updateIsCollapsed(index: number, collapseArrow: string, lastBarArrow: string ): void {
+        if (!isNullOrUndefined(index)) {
+            let targetEle: HTMLElement;
+            let lastBarIndex: boolean = (index === this.allBars.length);
+            let barIndex: number = lastBarIndex ? index - 1 : index;
+            targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, lastBarArrow) : this.collapseArrow(barIndex, collapseArrow);
+            targetEle.click();
+        }
     }
 
-    private setSplitterSize(element: HTMLElement, size: string, property: string): void {
-        let style: { [key: string]: Object; } = property === 'width' ? { 'width': formatUnit(size) } : { 'height': formatUnit(size) };
-        setStyleAttribute(element, style);
-    }
-
-    private getPanesDimensions(): void {
-        for (let index: number = 0; index < this.allPanes.length; index++) {
-            if (this.orientation === 'Horizontal') {
-                this.panesDimensions.push(this.allPanes[index].getBoundingClientRect().width);
-            } else {
-                this.panesDimensions.push(this.allPanes[index].getBoundingClientRect().height);
+    private isCollapsed(index ?: number): void {
+        if (!isNullOrUndefined(index)) {
+            this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+        } else {
+            for (let m: number = 0 ; m < this.allPanes.length; m ++) {
+                if (!isNullOrUndefined(this.paneSettings[m]) && this.paneSettings[m].collapsed) {
+                    this.updateIsCollapsed(m, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+                }
             }
         }
     }
 
-    private setCssClass(className: string): void {
-        if ( className !== '') {
-            addClass([this.element], className.split(' '));
+    private targetArrows(): {[key: string]: string } {
+        this.splitterProperty();
+        return {    collapseArrow: (this.orientation === 'Horizontal') ? ARROW_LEFT : ARROW_UP,
+            lastBarArrow: (this.orientation === 'Vertical') ? ARROW_DOWN : ARROW_RIGHT
+        };
+    }
+
+    private collapsedOnchange(index: number): void {
+        if (!isNullOrUndefined(this.paneSettings[index]) && !isNullOrUndefined(this.paneSettings[index].collapsed)
+            && !this.paneSettings[index].collapsed) {
+            this.updateIsCollapsed(index, this.targetArrows().lastBarArrow, this.targetArrows().collapseArrow);
         }
     }
 
-    private hideResizer(target: HTMLElement): void {
-        addClass([select('.' + RESIZE_BAR, target)], HIDE_HANDLER);
-    }
-
-    private showResizer(target: HTMLElement): void {
-        removeClass([select('.' + RESIZE_BAR, target)], HIDE_HANDLER);
-    }
 
     private isEnabled(enabled: boolean): void {
         enabled ? removeClass([this.element], DISABLED) : addClass([this.element], DISABLED);
@@ -513,7 +643,7 @@ export class Splitter extends Component<HTMLDivElement> {
         this.element.classList.remove(isVertical ? HORIZONTAL_PANE : VERTICAL_PANE);
         this.element.classList.add(isVertical ? VERTICAL_PANE : HORIZONTAL_PANE);
         this.element.removeAttribute('aria-orientation');
-        this.element.setAttribute('aria-orientation', orientation);
+        this.element.setAttribute('aria-orientation', orientation.toLowerCase());
         for (let index: number = 0; index < this.allPanes.length; index++) {
             this.allPanes[index].classList.remove(isVertical ? SPLIT_H_PANE : SPLIT_V_PANE);
             this.allPanes[index].classList.add(isVertical ? SPLIT_V_PANE : SPLIT_H_PANE);
@@ -525,12 +655,12 @@ export class Splitter extends Component<HTMLDivElement> {
     }
 
     private getPrevPane(currentBar: Element, order: number): HTMLElement {
-        let elementIndex: number = (this.enableRtl && this.orientation === 'Horizontal') ? ((order - 1) / 2) + 1 : (order - 1) / (2);
+        let elementIndex: number = (order - 1) / (2);
         return currentBar.parentElement.children[elementIndex] as HTMLElement;
     }
 
     private getNextPane(currentBar: Element, order: number): HTMLElement {
-        let elementIndex: number = (this.enableRtl && this.orientation === 'Horizontal') ? (order - 1) / (2) : ((order - 1) / 2) + 1;
+        let elementIndex: number = ((order - 1) / 2) + 1;
         return currentBar.parentElement.children[elementIndex] as HTMLElement;
     }
 
@@ -538,11 +668,7 @@ export class Splitter extends Component<HTMLDivElement> {
         let resizeHanlder: HTMLElement = this.createElement('div');
         addClass([resizeHanlder], [RESIZE_BAR, E_ICONS]);
         let sizeValue: string = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
-        if ( this.orientation === 'Horizontal') {
-            resizeHanlder.style.width = sizeValue;
-        } else {
-            resizeHanlder.style.height = sizeValue;
-        }
+        this.orientation === 'Horizontal' ? (resizeHanlder.style.width = sizeValue) : resizeHanlder.style.height = sizeValue;
         currentBar.appendChild(resizeHanlder);
     }
 
@@ -562,40 +688,82 @@ export class Splitter extends Component<HTMLDivElement> {
         setStyleAttribute(this.element, { 'height': height, 'width': width });
     }
 
+    private updateCollapseIcons(index: number, arrow1: HTMLElement, arrow2: HTMLElement): void {
+        if (!isNullOrUndefined(this.paneSettings[index])) {
+            if (!isNullOrUndefined(this.paneSettings[index].collapsible)) {
+                this.paneSettings[index].collapsible ? removeClass([arrow2], [HIDE_ICON]) : addClass([arrow2], [HIDE_ICON]);
+                if (!isNullOrUndefined(this.paneSettings[index + 1])) {
+                    this.paneSettings[index + 1].collapsible ? removeClass([arrow1], [HIDE_ICON]) : addClass([arrow1], [HIDE_ICON]);
+                }
+                if (!isNullOrUndefined(this.paneSettings[index + 1])) {
+                    if ((this.paneSettings[index + 1].collapsible)) {
+                        this.paneSettings[index + 1].collapsible ? removeClass([arrow1], [HIDE_ICON]) : addClass([arrow1], [HIDE_ICON]);
+                    }
+                }
+            }
+        }
+    }
+
     private createSeparator(i: number): HTMLElement {
         let separator: HTMLElement = this.createElement('div');
         this.allBars.push(separator);
+        let arrow1: HTMLElement = this.createElement('button');
+        let arrow2: HTMLElement = this.createElement('button');
+        let size: string;
+        size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
         if (this.orientation === 'Horizontal') {
+            this.leftArrow = ARROW_LEFT;
+            this.rightArrow = ARROW_RIGHT;
+            addClass([arrow2], [NAVIGATE_ARROW, ARROW_LEFT, HIDE_ICON]);
+            addClass([arrow1], [NAVIGATE_ARROW, ARROW_RIGHT, HIDE_ICON]);
             addClass([separator], [SPLIT_BAR, SPLIT_H_BAR]);
-            separator.style.width = isNullOrUndefined(this.separatorSize) ? 'auto' : this.separatorSize + 'px';
+            separator.style.width = size;
         } else {
+            addClass([arrow1], [NAVIGATE_ARROW, ARROW_DOWN, HIDE_ICON]);
+            addClass([arrow2], [NAVIGATE_ARROW, ARROW_UP, HIDE_ICON]);
             addClass([separator], [SPLIT_BAR, SPLIT_V_BAR]);
-            separator.style.height = isNullOrUndefined(this.separatorSize) ? 'auto' : this.separatorSize + 'px';
+            this.leftArrow = ARROW_UP;
+            this.rightArrow = ARROW_DOWN;
+            separator.style.height = size;
         }
         this.addMouseActions(separator);
+        separator.appendChild(arrow2);
         this.addResizeHandler(separator);
+        separator.appendChild(arrow1);
+        this.updateCollapseIcons(i, arrow1, arrow2);
         return separator;
+    }
+
+    private updateResizablePanes(index: number): void {
+        this.getPaneDetails();
+        this.isResizable() ? this.allPanes[index].classList.add(RESIZABLE_PANE) : this.allPanes[index].classList.remove(RESIZABLE_PANE);
     }
 
     private addSeparator(target: HTMLElement): void {
         let childCount: number = this.allPanes.length;
         let clonedEle: HTMLCollection = <HTMLCollection>target.children;
+        let separator: HTMLElement;
         for (let i: number = 0; i < childCount; i++) {
             if (i < childCount - 1) {
-                let separator: HTMLElement = this.createSeparator(i);
-                setStyleAttribute(<HTMLDivElement>separator, { 'order': (i * 2) + 1 });
+                separator = this.createSeparator(i);
+                setStyleAttribute(<HTMLElement>separator, { 'order': (i * 2) + 1 });
                 this.separatorOrder.push((i * 2) + 1);
                 clonedEle[i].parentNode.appendChild(separator);
                 this.currentSeparator = separator;
                 separator.setAttribute('role', 'separator');
+                this.wireClickEvents();
                 if (this.isResizable()) {
                     EventHandler.add(separator, 'mousedown', this.onMouseDown, this);
                     let eventName: string = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
                     EventHandler.add(separator, eventName, this.onMouseDown, this);
                     separator.classList.add(RESIZABLE_BAR);
+                    this.updateResizablePanes(i);
                 } else {
-                    this.hideResizer(separator);
+                    addClass([select('.' + RESIZE_BAR, separator)], HIDE_HANDLER);
                 }
+            } else {
+                this.updateResizablePanes(i);
+                addClass([separator], LAST_BAR );
             }
         }
     }
@@ -603,12 +771,13 @@ export class Splitter extends Component<HTMLDivElement> {
     private isResizable(): boolean {
         let resizable: boolean = false;
         if ((!isNullOrUndefined(this.paneSettings[this.getPreviousPaneIndex()]) &&
-            this.paneSettings[this.getPreviousPaneIndex()].resizable &&
-            !isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()]) &&
-            this.paneSettings[this.getNextPaneIndex()].resizable) ||
-            isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()])) {
+        this.paneSettings[this.getPreviousPaneIndex()].resizable &&
+        !isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()]) &&
+        this.paneSettings[this.getNextPaneIndex()].resizable) ||
+        isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()])) {
             resizable = true;
         }
+
         return resizable;
     }
 
@@ -626,15 +795,11 @@ export class Splitter extends Component<HTMLDivElement> {
     }
 
     private updateCurrentSeparator(target: HTMLElement): void {
-        this.currentSeparator = !this.isSeparator(target) ? target.parentElement : target;
+        this.currentSeparator = this.isSeparator(target) ? target.parentElement : target;
     }
 
     private isSeparator(target: HTMLElement): boolean {
-        let isSeparatorLine: boolean = true;
-        if (target.classList.contains(RESIZE_BAR) || target.classList.contains(SPLIT_BAR_LINE)) {
-            isSeparatorLine = false;
-        }
-        return isSeparatorLine;
+        return ((target.classList.contains(RESIZE_BAR) || target.classList.contains(SPLIT_BAR)) ? false : true);
     }
 
     private isMouseEvent(e: MouseEvent | TouchEvent | PointerEvent): boolean {
@@ -681,9 +846,235 @@ export class Splitter extends Component<HTMLDivElement> {
         EventHandler.remove(document, touchEndEvent, this.onMouseUp);
     }
 
+    private wireClickEvents(): void {
+        EventHandler.add(this.currentSeparator, 'touchstart click', this.clickHandler, this);
+    }
+
+    private clickHandler(e: Event): void {
+        (<HTMLElement>e.target).classList.add(SPLIT_BAR_HOVER);
+        let icon: HTMLElement = (<HTMLElement>e.target);
+        if (icon.classList.contains(ARROW_LEFT) || icon.classList.contains(ARROW_UP)) {
+            this.collapseAction(e);
+        }
+        if (icon.classList.contains(ARROW_RIGHT) || icon.classList.contains(ARROW_DOWN)) {
+            this.expandAction(e);
+        }
+    }
+
+    private expandAction(e: Event): void {
+        this.splitterDetails(e);
+        let collapseClass: string[] = [COLLAPSE_PANE, PANE_HIDDEN];
+        let eventArgs: BeforeExpandEventArgs = this.beforeAction(e);
+        this.trigger('beforeExpand', eventArgs);
+        if (eventArgs.cancel) { return; }
+        this.previousPane.style.flexGrow = '1';
+        this.nextPane.style.flexGrow = '0';
+        if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+            removeClass([this.nextPane], EXPAND_PANE);
+            removeClass([this.previousPane], collapseClass);
+            addClass([this.previousPane], EXPAND_PANE);
+            addClass([this.nextPane], collapseClass);
+        } else {
+            (this.currentBarIndex !== 0) ?
+            (this.previousPane.previousElementSibling as HTMLElement).style.flexGrow = '' : this.nextPane.style.flexGrow = '';
+            removeClass([this.previousPane], collapseClass);
+            removeClass([this.nextPane], EXPAND_PANE);
+        }
+        this.updateIconsOnExpand(e);
+        this.previousPane.setAttribute('aria-expanded', 'true');
+        this.nextPane.setAttribute('aria-expanded', 'false');
+        let expandEventArgs: ExpandedEventArgs = this.afterAction(e);
+        this.trigger('expanded', expandEventArgs);
+    }
+
+    private hideTargetBarIcon(targetBar: HTMLElement, targetArrow: string): void {
+        addClass([select('.' + targetArrow, targetBar)], HIDE_ICON);
+    }
+
+    private showTargetBarIcon(targetBar: HTMLElement, targetArrow: string): void {
+        removeClass([select('.' + targetArrow, targetBar)], HIDE_ICON);
+    }
+
+    private updateIconsOnCollapse(e: Event): void {
+        this.splitterProperty();
+        if (this.splitInstance.prevPaneCollapsed && this.splitInstance.nextPaneExpanded) {
+            addClass([<HTMLElement>e.target], HIDE_ICON);
+            this.showCurrentBarIcon();
+            this.resizableModel(this.currentBarIndex, false);
+            if (!isNullOrUndefined(this.prevBar)) {
+                this.resizableModel(this.currentBarIndex - 1, false);
+                this.hideTargetBarIcon(this.prevBar, this.arrow);
+                // first pane collapsible false
+                this.showTargetBarIcon(this.prevBar, this.leftArrow);
+            }
+        } else if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneExpanded) {
+            this.resizableModel(this.currentBarIndex, true);
+            if (!this.splitInstance.nextPaneNextEle.classList.contains('e-collapsed')) {
+            this.resizableModel(this.currentBarIndex + 1, true);
+            }
+            this.showCurrentBarIcon();
+            if (!this.paneSettings[this.currentBarIndex].collapsible) {
+                addClass([<HTMLElement>e.target], HIDE_ICON);
+            }
+            if (!isNullOrUndefined(this.nextBar)) {
+                this.showTargetBarIcon(this.nextBar, this.leftArrow);
+                if (!this.paneSettings[this.currentBarIndex].collapsible && this.paneSettings[this.currentBarIndex + 1].collapsible ) {
+                    this.hideTargetBarIcon(this.nextBar, this.arrow);
+                } else if (!this.paneSettings[this.splitInstance.nextPaneIndex + 1].collapsible &&
+                    this.paneSettings[this.currentBarIndex]) {
+                    this.hideTargetBarIcon(this.nextBar, this.arrow);
+                }
+            }
+        }
+    }
+
+    private collapseAction(e: Event): void {
+        this.splitterDetails(e);
+        let collapseClass: string[] = [COLLAPSE_PANE, PANE_HIDDEN];
+        this.previousPane.style.flexGrow = '0';
+        this.nextPane.style.flexGrow = '1';
+        let eventArgs: BeforeExpandEventArgs = this.beforeAction(e);
+        this.trigger('beforeCollapse', eventArgs);
+        if (eventArgs.cancel) { return; }
+        if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
+            removeClass([this.previousPane], EXPAND_PANE);
+            removeClass([this.nextPane], collapseClass);
+        } else {
+            removeClass([this.previousPane], EXPAND_PANE);
+            removeClass([this.nextPane], collapseClass);
+            addClass([this.nextPane], EXPAND_PANE);
+            addClass([this.previousPane], collapseClass);
+        }
+        this.updateIconsOnCollapse(e);
+        this.previousPane.setAttribute('aria-expanded', 'false');
+        this.nextPane.setAttribute('aria-expanded', 'true');
+        let collapseEventArgs: ExpandedEventArgs = this.afterAction(e);
+        this.trigger('collapsed', collapseEventArgs);
+    }
+
+    private beforeAction(e: Event): BeforeExpandEventArgs {
+        let eventArgs: BeforeExpandEventArgs = {
+            element: this.element,
+            event: e,
+            pane: [this.previousPane, this.nextPane],
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator,
+            cancel: false
+        };
+        return eventArgs;
+    }
+
+    private splitterProperty(): void {
+        this.splitInstance = {
+            currentBarIndex: this.currentBarIndex,
+            nextPaneCollapsible: this.nextPane.classList.contains(COLLAPSIBLE),
+            prevPaneCollapsible: this.previousPane.classList.contains(COLLAPSIBLE),
+            prevPaneExpanded: this.previousPane.classList.contains(EXPAND_PANE),
+            nextPaneExpanded: this.nextPane.classList.contains(EXPAND_PANE),
+            nextPaneCollapsed: this.nextPane.classList.contains(COLLAPSE_PANE),
+            prevPaneCollapsed: this.previousPane.classList.contains(COLLAPSE_PANE),
+            nextPaneIndex: this.getNextPaneIndex(),
+            prevPaneIndex: this.getPreviousPaneIndex(),
+            nextPaneNextEle: this.nextPane.nextElementSibling as HTMLElement,
+            prevPanePreEle: this.previousPane.previousElementSibling as HTMLElement,
+        };
+    }
+
+    private showCurrentBarIcon(): void {
+        removeClass([select('.' + this.arrow, this.currentSeparator)], HIDE_ICON);
+    }
+
+    private updateIconsOnExpand(e: Event): void {
+        this.splitterProperty();
+        addClass([<HTMLElement>e.target], HIDE_ICON);
+        if (!this.splitInstance.prevPaneExpanded && !this.splitInstance.nextPaneCollapsed) {
+            this.showCurrentBarIcon();
+            removeClass([<HTMLElement>e.target], HIDE_ICON);
+            this.resizableModel(this.currentBarIndex, true);
+            if (!isNullOrUndefined(this.prevBar) && !this.splitInstance.prevPanePreEle.classList.contains(COLLAPSE_PANE)) {
+                this.resizableModel(this.currentBarIndex - 1, true);
+                this.showTargetBarIcon(this.prevBar, this.rightArrow);
+                if (!this.paneSettings[this.currentBarIndex - 1].collapsible) {
+                this.hideTargetBarIcon(this.prevBar, this.arrow);
+                if (this.paneSettings[this.currentBarIndex].collapsible &&
+                    !this.paneSettings[this.currentBarIndex + 1].collapsible ) {
+                    this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
+                }
+                } else if (this.paneSettings[this.currentBarIndex].collapsible &&
+                !this.paneSettings[this.currentBarIndex + 1].collapsible) {
+                this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
+                }
+            } else {
+                if (this.paneSettings[this.currentBarIndex].collapsible && !this.paneSettings[this.currentBarIndex + 1].collapsible) {
+                    this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
+                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
+                } else {
+                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
+                }
+            }
+        } else if (this.splitInstance.prevPaneExpanded && this.splitInstance.nextPaneCollapsed) {
+            this.resizableModel(this.currentBarIndex, false);
+            this.resizableModel(this.currentBarIndex + 1, false);
+            this.showCurrentBarIcon();
+            if (!isNullOrUndefined(this.nextBar)) {
+                this.hideTargetBarIcon(this.nextBar, this.arrow);
+                // only when middle pane collapsible to true
+                this.showTargetBarIcon(this.nextBar, this.rightArrow);
+            }
+        }
+    }
+
+    private afterAction(e: Event): ExpandedEventArgs {
+        let eventArgs: ExpandedEventArgs = {
+            element: this.element,
+            event: e,
+            pane: [this.previousPane, this.nextPane],
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator
+        };
+        return eventArgs;
+    }
+
+    private currentIndex(e: Event): void {
+        this.currentBarIndex = this.getSeparatorIndex((<HTMLElement>e.target).parentElement);
+    }
+
+    private getSeparatorIndex(target?: HTMLElement): number {
+        let array: HTMLElement[] = [].slice.call(this.allBars);
+        return array.indexOf(target);
+    }
+
+    private getPrevBar(currentBar: number): HTMLElement {
+        let prevbar: HTMLElement = this.allBars[(currentBar - 1)];
+        return prevbar;
+    }
+
+    private getNextBar(currentBar: number): HTMLElement {
+        let prevbar: HTMLElement = this.allBars[(currentBar + 1)];
+        return prevbar;
+    }
+
+    private updateBars(index: number): void {
+        this.prevBar = this.getPrevBar(index);
+        this.nextBar = this.getNextBar(index);
+    }
+
+    private splitterDetails(e: Event): void {
+        if (this.orientation === 'Horizontal') {
+            this.arrow = (<HTMLElement>e.target).classList.contains(ARROW_LEFT) ? ARROW_RIGHT : ARROW_LEFT;
+        } else {
+            this.arrow = (<HTMLElement>e.target).classList.contains(ARROW_UP) ? ARROW_DOWN : ARROW_UP;
+        }
+        this.updateCurrentSeparator(e.target as HTMLElement);
+        this.currentIndex(e);
+        this.updateBars(this.currentBarIndex);
+        this.getPaneDetails();
+    }
+
     private onMouseDown(e: MouseEvent | TouchEvent | PointerEvent): void {
         e.preventDefault();
         let target: HTMLElement = e.target as HTMLElement;
+        if (target.classList.contains(NAVIGATE_ARROW)) { return; }
         this.updateCurrentSeparator(target);
         addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
         this.updateCursorPosition(e, 'previous');
@@ -806,12 +1197,12 @@ export class Splitter extends Component<HTMLDivElement> {
 
     private getPreviousPaneIndex(): number {
         let prePaneIndex: number = ((parseInt(this.currentSeparator.style.order, 10) - 1) / 2);
-        return (this.enableRtl) ? prePaneIndex + 1 : prePaneIndex;
+        return prePaneIndex;
     }
 
     private getNextPaneIndex(): number {
         let nextPaneIndex: number = (parseInt(this.currentSeparator.style.order, 10) - 1) / (2);
-        return (this.enableRtl) ? nextPaneIndex : nextPaneIndex + 1;
+        return nextPaneIndex + 1;
     }
 
     private getPaneDetails(): void {
@@ -823,8 +1214,8 @@ export class Splitter extends Component<HTMLDivElement> {
     }
 
     private getPaneHeight(pane: HTMLElement): string {
-        return (this.orientation === 'Horizontal') ? pane.offsetWidth.toString() :
-          pane.offsetHeight.toString();
+        return ((this.orientation === 'Horizontal') ? pane.offsetWidth.toString() :
+          pane.offsetHeight.toString());
     }
 
     private isValidSize(paneIndex: number): boolean {
@@ -1089,12 +1480,12 @@ export class Splitter extends Component<HTMLDivElement> {
                 size = this.paneSettings[index].size;
                 if (index < childCount) {
                     setStyleAttribute(<HTMLElement>child[index], { 'flex-basis': size, 'order': index * 2 });
-                    if (index < childCount - 1) {
+                    if (index < childCount - 1 && this.paneSettings[index].size !== '') {
                         addClass([child[index]], STATIC_PANE);
                     } else if (!this.sizeFlag) {
                         (<HTMLElement>child[index]).style.flexBasis = null;
                     }
-                    if ((index === childCount - 1) && this.sizeFlag) {
+                    if ((index === childCount - 1) && this.sizeFlag && this.paneSettings[index].size !== '') {
                         addClass([child[index]], STATIC_PANE);
                     }
                 }
@@ -1108,8 +1499,14 @@ export class Splitter extends Component<HTMLDivElement> {
         this.paneOrder.push(index * 2);
     }
 
-    private setTemplate(template: string, toElement: HTMLElement): void {
-        let templateFn: Function = compile(template);
+    private setTemplate(template: string | HTMLElement, toElement: HTMLElement): void {
+        toElement.innerHTML = '';
+        let templateFn: Function;
+        if (this.element.nodeName === 'EJS-SPLITTER' || typeof(template) !== 'object') {
+            templateFn = compile(template as string);
+        } else {
+            templateFn = compile((<HTMLElement>template).outerHTML as string);
+        }
         let fromElements: HTMLElement[] = [];
         for (let item of templateFn({})) {
             fromElements.push(item);
@@ -1117,7 +1514,11 @@ export class Splitter extends Component<HTMLDivElement> {
         append([].slice.call(fromElements), toElement);
     }
 
-    private createSplitPane(target: HTMLDivElement): void {
+    private paneCollapsible(pane: HTMLElement, index: number): void {
+        this.paneSettings[index].collapsible ? addClass([pane], COLLAPSIBLE) : removeClass([pane], COLLAPSIBLE);
+    }
+
+    private createSplitPane(target: HTMLElement): void {
         let childCount: number = target.children.length;
         for (let i: number = 0; i < this.paneSettings.length; i++) {
             if (childCount < this.paneSettings.length) {
@@ -1128,13 +1529,12 @@ export class Splitter extends Component<HTMLDivElement> {
         }
         childCount = target.children.length;
         let child: HTMLElement[] = [].slice.call(target.children);
-        this.element.setAttribute('aria-orientation', this.orientation);
-        this.element.setAttribute('role', 'splitter');
+        this.element.setAttribute('aria-orientation', this.orientation.toLowerCase());
         this.sizeFlag = false;
         if (childCount > 1) {
             for (let i: number = 0; i < childCount; i++) {
-                // to get only div element
-                if (child[i].nodeType === 1) {
+                // To accept only div and span element as pane
+                if (child[i].nodeName === 'DIV' || child[i].nodeName === 'SPAN') {
                     this.allPanes.push(<HTMLElement>child[i]);
                     if (this.orientation === 'Horizontal') {
                         addClass([child[i]], [PANE, SPLIT_H_PANE, SCROLL_PANE]);
@@ -1144,7 +1544,10 @@ export class Splitter extends Component<HTMLDivElement> {
                         this.panesDimension(i, child);
                     }
                     if (!isNullOrUndefined(this.paneSettings[i]) && !isNullOrUndefined(this.paneSettings[i].content)) {
-                        this.setTemplate(this.paneSettings[i].content, child[i] as HTMLElement);
+                        this.setTemplate(this.paneSettings[i].content as string, child[i] as HTMLElement);
+                    }
+                    if (!isNullOrUndefined(this.paneSettings[i])) {
+                        this.paneCollapsible(child[i], i);
                     }
                 }
             }
@@ -1152,45 +1555,64 @@ export class Splitter extends Component<HTMLDivElement> {
     };
 
     /**
+     * expands corresponding pane based on the index is passed.
+     * @param { number } index - Specifies the index value of the corresponding pane to be expanded at initial rendering of splitter.
+     * @returns void
+     */
+    public expand(index: number): void {
+        this.collapsedOnchange(index);
+    }
+
+    /**
+     * collapses corresponding pane based on the index is passed.
+     * @param { number } index - Specifies the index value of the corresponding pane to be collapsed at initial rendering of splitter.
+     * @returns void
+     */
+    public collapse(index: number): void {
+        this.isCollapsed(index);
+    }
+
+    /**
      * Removes the control from the DOM and also removes all its related events.
      * @returns void
      */
     public destroy(): void {
-        detach(this.element);
-        this.element = this.wrapper as HTMLDivElement;
-        this.wrapperParent.appendChild(<HTMLElement>this.wrapper);
+        if (!this.isDestroyed) {
+            super.destroy();
+            EventHandler.remove(document, 'touchstart click', this.onDocumentClick);
+            detach(this.element);
+            this.element = this.wrapper as HTMLElement;
+            this.wrapperParent.appendChild(<HTMLElement>this.wrapper);
+        }
     }
 
     private addPaneClass(pane: HTMLElement): HTMLElement {
-        if (this.orientation === 'Horizontal') {
-            addClass([pane], [PANE, SPLIT_H_PANE, SCROLL_PANE]);
-        } else {
-            addClass([pane], [PANE, SPLIT_V_PANE, SCROLL_PANE]);
-        }
+        this.orientation === 'Horizontal' ? addClass([pane], [PANE, SPLIT_H_PANE, SCROLL_PANE]) :
+        addClass([pane], [PANE, SPLIT_V_PANE, SCROLL_PANE]);
         return pane;
     }
 
-    private removePaneOrders(paneClass: string) : void {
+    private removePaneOrders(paneClass: string): void {
         let panes: NodeListOf<HTMLElement> = document.querySelectorAll('.' + paneClass) as NodeListOf<HTMLElement>;
         for (let i: number = 0; i < panes.length; i++) {
             panes[i].style.removeProperty('order');
         }
     }
 
-    private setPaneOrder() : void {
+    private setPaneOrder(): void {
         for (let i : number = 0; i < this.allPanes.length; i++) {
             this.panesDimension(i, this.allPanes);
         }
     }
 
-    private removeSeparator() : void {
+    private removeSeparator(): void {
         for (let i: number = 0; i < this.allBars.length; i ++) {
             detach(this.allBars[i]);
         }
         this.allBars = [];
     }
 
-    private updatePanes() : void {
+    private updatePanes(): void {
         this.setPaneOrder();
         this.removeSeparator();
         this.addSeparator(this.element);
@@ -1202,7 +1624,7 @@ export class Splitter extends Component<HTMLDivElement> {
      * @param { number } index - Specifies the index where the pane will be inserted.
      * @returns void
      */
-    public addPane(paneProperties: PanePropertiesModel, index: number) : void {
+    public addPane(paneProperties: PanePropertiesModel, index: number): void {
         let newPane : HTMLElement = this.createElement('div');
         newPane = this.addPaneClass(newPane);
         index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
@@ -1211,7 +1633,9 @@ export class Splitter extends Component<HTMLDivElement> {
             min: isNullOrUndefined(paneProperties.min) ? null : paneProperties.min,
             max: isNullOrUndefined(paneProperties.max) ? null : paneProperties.max,
             content: isNullOrUndefined(paneProperties.content) ? '' : paneProperties.content,
-            resizable: isNullOrUndefined(paneProperties.resizable) ? true : paneProperties.resizable
+            resizable: isNullOrUndefined(paneProperties.resizable) ? true : paneProperties.resizable,
+            collapsible: isNullOrUndefined(paneProperties.collapsible) ? false : paneProperties.collapsible,
+            collapsed: isNullOrUndefined(paneProperties.collapsed) ? false : paneProperties.collapsed
         };
         this.paneSettings.splice(index , 0, paneDetails);
         if (this.orientation === 'Horizontal') {
@@ -1223,7 +1647,7 @@ export class Splitter extends Component<HTMLDivElement> {
         }
         this.allPanes.splice(index, 0, newPane);
         this.updatePanes();
-        this.setTemplate(this.paneSettings[index].content, newPane);
+        this.setTemplate(this.paneSettings[index].content as string, newPane);
         this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     }
 
@@ -1232,7 +1656,7 @@ export class Splitter extends Component<HTMLDivElement> {
      * @param { number } index - Specifies the index value to remove the corresponding pane.
      * @returns void
      */
-    public removePane(index: number) : void {
+    public removePane(index: number): void {
         index = (index > this.allPanes.length + 1) ? this.allPanes.length : index;
         let elementClass: string = (this.orientation === 'Horizontal') ? SPLIT_H_PANE : SPLIT_V_PANE;
         if (isNullOrUndefined(this.element.querySelectorAll('.' + elementClass)[index])) {
@@ -1280,7 +1704,7 @@ export interface ResizeEventArgs {
     index?: number[];
     /** Contains the resizing pane’s separator element. */
     separator?: HTMLElement;
-    /** 
+    /**
      * Control the resize action whether the resize action happens continuously.
      * When you set this argument to true, resize process will be stopped.
      */
@@ -1300,4 +1724,84 @@ export interface ResizingEventArgs {
     index?: number[];
     /** Contains the resizing pane’s separator element. */
     separator?: HTMLElement;
+}
+
+export interface BeforeExpandEventArgs {
+    /**
+     * To access root element after control created
+     */
+    element?: HTMLElement;
+    /**
+     * default event arguments
+     */
+    event?: Event;
+    /**
+     * To get pane elements
+     */
+    pane?: HTMLElement[];
+    /**
+     * Index of pane
+     */
+    index?: number[];
+    /**
+     * Respective split-bar element
+     */
+    separator?: HTMLElement;
+    /**
+     * cancel argument
+     */
+    cancel?: boolean;
+}
+
+export interface ExpandedEventArgs {
+    /**
+     * To access root element after control created
+     */
+    element?: HTMLElement;
+    /**
+     * default event arguments
+     */
+    event?: Event;
+    /**
+     * To get pane elements
+     */
+    pane?: HTMLElement[];
+    /**
+     * Index of pane
+     */
+    index?: number[];
+    /**
+     * Respective split-bar element
+     */
+    separator?: HTMLElement;
+}
+
+/**
+ * To maintain pane details
+ * @private
+ */
+interface PaneDetails {
+    /** to check whether the prevPane is Collapsible */
+    prevPaneCollapsible?: boolean;
+    /** to check whether the prevPane is expanded */
+    prevPaneExpanded?: boolean;
+    /** to check whether the nextPane is Collapsible */
+    nextPaneCollapsible?: boolean;
+    /** to check whether the nextPane is expanded */
+    nextPaneExpanded?: boolean;
+    /** previous pane index */
+    prevPaneIndex?: number;
+    /** next pane index */
+    nextPaneIndex?: number;
+    /** currentbar index */
+    currentBarIndex?: number;
+    /** to get prevPane's previous element */
+    prevPanePreEle?: HTMLElement;
+    /** to get nextPane's next element */
+    nextPaneNextEle?: HTMLElement;
+    /** to check whether the nextPane is collapsed */
+    nextPaneCollapsed?: boolean;
+    /** to check whether the previousPane is collapsed */
+    prevPaneCollapsed?: boolean;
+
 }

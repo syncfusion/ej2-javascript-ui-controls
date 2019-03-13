@@ -8,7 +8,8 @@ import { AccumulationChart } from '../accumulation';
 import { AccumulationType } from '../model/enum';
 import { BaseLegend, LegendOptions } from '../../common/legend/legend';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
-import { Rect, Size, measureText, ChartLocation, textTrim, getElement} from '../../common/utils/helper';
+import { Rect, Size, measureText } from '@syncfusion/ej2-svg-base';
+import { ChartLocation, textTrim, getElement} from '../../common/utils/helper';
 import { IAccLegendRenderEventArgs } from '../../common/model/interface';
 import { Indexes } from '../../common/model/base';
 

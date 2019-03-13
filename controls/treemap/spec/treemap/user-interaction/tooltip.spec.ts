@@ -63,7 +63,7 @@ describe('TreeMap component Spec', () => {
             remove(treemap.element);
         });
 
-        it('Checking with default tooltip ', () => {
+        it('Checking default tooltip ', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
                 let element: Element = document.getElementById(layoutID);
@@ -153,6 +153,68 @@ describe('TreeMap component Spec', () => {
             };
             treemap.initialDrillDown.groupIndex = 0;
             treemap.initialDrillDown.groupName = 'Germany';
+            treemap.refresh();
+        });
+    });
+    describe('TreeMap tooltip spec with enable RTL ', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'drill-container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: jobData,
+                enableRtl:true,
+                weightValuePath: 'EmployeesCount',
+                leafItemSettings: {
+                    interSectAction: 'Wrap',
+                    labelFormat: '${JobGroup}<br>$${EmployeesCount}',
+                    labelPath: 'JobGroup',
+                    fill: '#6699cc',
+                    labelPosition: 'BottomRight',
+                    border: { color: 'black', width: 2 }
+                },
+                levels: [
+                    { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                    { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            remove(treemap.element);
+        });
+
+        it('Checking with default tooltip ', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let layoutID: string = args.treemap.element.id + '_TreeMap_' + args.treemap.layoutType + '_Layout';
+                let element: Element = document.getElementById(layoutID);
+                let rectEle: Element;
+                let eventObj: Object;
+                for (let i: number = 0; i < element.childElementCount; i++) {
+                    rectEle = element.childNodes[i] as Element;
+                    eventObj = {
+                        target: rectEle,
+                        type: 'mousemove',
+                        pageX: rectEle.getBoundingClientRect().left,
+                        pageY: (rectEle.getBoundingClientRect().top + 10)
+                    };
+                    treemap.treeMapTooltipModule.renderTooltip(<PointerEvent>eventObj);
+                }
+            };
+            treemap.tooltipSettings.visible = true;
             treemap.refresh();
         });
     });

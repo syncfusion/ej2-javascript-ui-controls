@@ -11,6 +11,7 @@ import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-
 import { Canvas, PathElement, HierarchicalTree, DataBinding, LayoutAnimation } from '../../../src/index';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { DiagramModel } from '../../../src/diagram/index';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree, LayoutAnimation);
 
 /**
@@ -22,6 +23,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram_expandicon' });
             document.body.appendChild(ele);
 
@@ -217,7 +224,6 @@ describe('Diagram Control', () => {
                 done();
             }, 300);
         });
-
     });
 
     describe('Expand Icon in svg mode', () => {
@@ -284,6 +290,12 @@ describe('Diagram Control', () => {
         ];
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram_expandicon' });
             document.body.appendChild(ele);
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
@@ -354,6 +366,15 @@ describe('Diagram Control', () => {
             expect((rect.getAttribute('aria-label') === 'Click here to expand or collapse'));
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 
 });

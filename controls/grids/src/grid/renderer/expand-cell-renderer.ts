@@ -11,16 +11,20 @@ export class ExpandCellRenderer extends IndentCellRenderer implements ICellRende
     /**
      * Function to render the expand cell
      * @param  {Cell} cell
-     * @param  {Object} data      
+     * @param  {Object} data 
+     * @param  {{ [x: string]: string }} attr  
+     * @param {boolean} isExpand   
      */
-    public render(cell: Cell<Column>, data: { field: string, key: string }): Element {
+    public render(cell: Cell<Column>, data: { field: string, key: string }, attr?: { [x: string]: string }, isExpand?: boolean): Element {
         let node: Element = this.element.cloneNode() as Element;
-        node.className = 'e-recordplusexpand';
+        node.className = isExpand ? 'e-recordplusexpand' : 'e-recordpluscollapse';
         node.setAttribute('ej-mappingname', data.field);
         node.setAttribute('ej-mappingvalue', data.key);
-        node.setAttribute('aria-expanded', 'true');
+        node.setAttribute('aria-expanded', isExpand ? 'true' : 'false');
         node.setAttribute('tabindex', '-1');
-        node.appendChild(this.parent.createElement('div', { className: 'e-icons e-gdiagonaldown e-icon-gdownarrow' }));
+        node.appendChild(this.parent.createElement('div', {
+            className: isExpand ? 'e-icons e-gdiagonaldown e-icon-gdownarrow' : 'e-icons e-gnextforward e-icon-grightarrow'
+        }));
         return node;
     }
 

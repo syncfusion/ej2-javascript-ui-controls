@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode } from './base/types';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print } from './index';import { IUnloadEventArgs, ILoadEventArgs, ILoadFailedEventArgs, IAjaxRequestFailureEventArgs, IPageChangeEventArgs, IPageClickEventArgs, IZoomChangeEventArgs, IHyperlinkClickEventArgs } from './index';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print } from './index';import { IUnloadEventArgs, ILoadEventArgs, ILoadFailedEventArgs, IAjaxRequestFailureEventArgs, IPageChangeEventArgs, IPageClickEventArgs, IZoomChangeEventArgs, IHyperlinkClickEventArgs } from './index';import { IAnnotationAddEventArgs, IAnnotationRemoveEventArgs, IAnnotationPropertiesChangeEventArgs } from './index';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -15,6 +15,23 @@ export interface ToolbarSettingsModel {
      * shows only the defined options in the PdfViewer.
      */
     toolbarItem?: ToolbarItem[];
+
+}
+
+/**
+ * Interface for a class AnnotationToolbarSettings
+ */
+export interface AnnotationToolbarSettingsModel {
+
+    /**
+     * Enable or disables the tooltip of the toolbar.
+     */
+    showTooltip?: boolean;
+
+    /**
+     * shows only the defined options in the PdfViewer.
+     */
+    annotationToolbarItem?: AnnotationToolbarItem[];
 
 }
 
@@ -56,6 +73,102 @@ export interface ServerActionSettingsModel {
 }
 
 /**
+ * Interface for a class StrikethroughSettings
+ */
+export interface StrikethroughSettingsModel {
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the color of the annotation.
+     */
+    color?: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    modifiedDate?: string;
+
+}
+
+/**
+ * Interface for a class UnderlineSettings
+ */
+export interface UnderlineSettingsModel {
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the color of the annotation.
+     */
+    color?: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    modifiedDate?: string;
+
+}
+
+/**
+ * Interface for a class HighlightSettings
+ */
+export interface HighlightSettingsModel {
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the color of the annotation.
+     */
+    color?: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    modifiedDate?: string;
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -72,13 +185,13 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Defines the scrollable height of the PdfViewer control.
-     * @default auto
+     * @default 'auto'
      */
     height?: string | number;
 
     /**
      * Defines the scrollable width of the PdfViewer control.
-     * @default auto
+     * @default 'auto'
      */
     width?: string | number;
 
@@ -149,6 +262,18 @@ export interface PdfViewerModel extends ComponentModel{
     enableTextSearch?: boolean;
 
     /**
+     * Enable or disable the annotation in the Pdfviewer.
+     * @default true
+     */
+    enableAnnotation?: boolean;
+
+    /**
+     * Enable or disables the text markup annotation in the PdfViewer.
+     * @default true
+     */
+    enableTextMarkupAnnotation?: boolean;
+
+    /**
      * Sets the interaction mode of the PdfViewer
      * @default TextSelection
      */
@@ -161,10 +286,31 @@ export interface PdfViewerModel extends ComponentModel{
     toolbarSettings?: ToolbarSettingsModel;
 
     /**
+     * Defines the settings of the PdfViewer annotation toolbar.
+     */
+    // tslint:disable-next-line:max-line-length
+    annotationToolbarSettings?: AnnotationToolbarSettingsModel;
+
+    /**
      * Defines the settings of the PdfViewer service.
      */
     // tslint:disable-next-line:max-line-length
     serverActionSettings?: ServerActionSettingsModel;
+
+    /**
+     * Defines the settings of highlight annotation.
+     */
+    highlightSettings?: HighlightSettingsModel;
+
+    /**
+     * Defines the settings of strikethrough annotation.
+     */
+    strikethroughSettings?: StrikethroughSettingsModel;
+
+    /**
+     * Defines the settings of underline annotation.
+     */
+    underlineSettings?: UnderlineSettingsModel;
 
     /**
      * Triggers while loading document into PdfViewer.
@@ -213,5 +359,23 @@ export interface PdfViewerModel extends ComponentModel{
      * @event
      */
     zoomChange?: EmitType<IZoomChangeEventArgs>;
+
+    /**
+     * Triggers when an annotation is added over the page of the PDF document.
+     * @event
+     */
+    annotationAdd?: EmitType<IAnnotationAddEventArgs>;
+
+    /**
+     * Triggers when an annotation is removed from the page of the PDF document.
+     * @event 
+     */
+    annotationRemove?: EmitType<IAnnotationRemoveEventArgs>;
+
+    /**
+     * Triggers when the property of the annotation is changed in the page of the PDF document.
+     * @event
+     */
+    annotationPropertiesChange?: EmitType<IAnnotationPropertiesChangeEventArgs>;
 
 }

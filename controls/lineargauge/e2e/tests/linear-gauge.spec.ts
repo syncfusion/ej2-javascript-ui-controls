@@ -115,13 +115,13 @@ describe('LinearGauge', () => {
         });
     });
 
-    it('Thermometer_Gauge', () => {
-        browser.get(browser.basePath + '/demos/linear-gauge/Container/container.html');
-        element(By.id("containerMode")).all(By.tagName("option")).then((Options: any[]) => {
-            Options[2].click();
-            browser.compareScreen(element(By.id('container')), 'Thermometer');
-        });
-    });
+   // it('Thermometer_Gauge', () => {
+       // browser.get(browser.basePath + '/demos/linear-gauge/Container/container.html');
+       // element(By.id("containerMode")).all(By.tagName("option")).then((Options: any[]) => {
+        //    Options[2].click();
+        //    browser.compareScreen(element(By.id('container')), 'Thermometer');
+      //  });
+  //  });
 
     it('Horizontal Thermometer Gauge', () => {
         browser.get(browser.basePath + '/demos/linear-gauge/Container/container.html');

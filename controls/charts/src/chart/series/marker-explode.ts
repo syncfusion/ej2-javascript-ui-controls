@@ -1,4 +1,5 @@
-import { drawSymbol, PathOption, Size, ChartLocation } from '../../common/utils/helper';
+import { drawSymbol, ChartLocation } from '../../common/utils/helper';
+import { PathOption, Size } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Border } from '../../common/model/base';
 import { MarkerSettingsModel } from '../series/chart-series-model';

@@ -73,7 +73,9 @@ export type SparklineTheme =
     /**  Render a sparkline with Highcontrast Dark theme. */
     'HighContrast'|
     /**  Render a sparkline with Bootstrap Dark theme. */
-    'BootstrapDark';
+    'BootstrapDark'|
+    /** Render a sparkline with Bootstrap4 theme. */
+    'Bootstrap4';
 
 /**
  * Defines edge data label placement for datalabel, if exceeds the sparkline area horizontally.

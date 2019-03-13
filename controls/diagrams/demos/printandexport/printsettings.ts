@@ -6,7 +6,11 @@ import { PrintAndExport } from '../../src/diagram/print-settings';
 import { BackgroundModel, PageSettingsModel } from '../../src/diagram/diagram/page-settings-model';
 import { IExportOptions } from '../../src/diagram/objects/interface/interfaces';
 import { Image, Rect } from '../../src';
-Diagram.Inject(Snapping, PrintAndExport);
+import {
+    BpmnDiagrams
+} from '../../src/diagram/index';
+Diagram.Inject(Snapping, PrintAndExport, BpmnDiagrams);
+//Diagram.Inject(BpmnDiagrams);
 
 
 /**
@@ -19,12 +23,20 @@ let connector: ConnectorModel = {
 };
 let node: NodeModel = {
     id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1', height: 50, width: 50 }]
+    ,shape: { type: 'Path', data: 'M150 0 L75 200 L225 200 Z' }
 };
 let node2: NodeModel = {
-    id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200, annotations: [{ content: 'Node2', height: 50, width: 50 }]
+    id: 'node2', width: 80, height: 130, offsetX: 600, offsetY: 100, annotations: [{ content: 'Node2', height: 50, width: 50 }]
 };
 let node3: NodeModel = {
-    id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350, annotations: [{ content: 'Node3', height: 50, width: 50 }]
+    id: 'node3', width: 100, height: 100, offsetX: 500, offsetY: 100,
+    shape: {
+        type: 'Bpmn', shape: 'Activity', activity: {
+            activity: 'Task', task: {
+                type: 'BusinessRule'
+            }
+        },
+    },
 };
 let options: IExportOptions = {};
 
@@ -36,6 +48,7 @@ options.pageOrientation = 'Landscape';
 let pageSettings: PageSettingsModel = {};
 pageSettings.multiplePage = true;
 pageSettings.background = background;
+pageSettings.showPageBreaks = true;
 pageSettings.height = 300; pageSettings.width = 300;
 pageSettings.orientation = 'Portrait';
 diagram = new Diagram({
@@ -44,22 +57,38 @@ diagram = new Diagram({
     pageSettings: pageSettings
 });
 diagram.appendTo('#diagram');
+// document.getElementById('print').onclick = () => {
+//     let options: IExportOptions = {};
+//     options.mode = 'Data';
+//     options.region = 'PageSettings';
+//     options.stretch = 'Stretch';
+//     options.multiplePage = false;
+//     pageSettings.height = 700;
+//     pageSettings.width = 500;
+//     diagram.print(options);
+// };
 document.getElementById('print').onclick = () => {
     let options: IExportOptions = {};
     options.mode = 'Data';
-    options.region = 'PageSettings';
-    options.multiplePage = true;
-    options.pageHeight = 300;
-    options.pageWidth = 300;
-    diagram.print(options);
+        //options.region = 'PageSettings';
+        options.region = 'PageSettings';
+        options.stretch = 'Meet';
+        options.multiplePage = false;
+        options.pageHeight = 500;
+        options.pageWidth = 500;
+        diagram.print(options);
 };
 document.getElementById('export').onclick = () => {
-    let options: IExportOptions = {};
-    options.mode = 'Data';
-    options.format = 'SVG';
-    options.region = 'Content';
+    var options: IExportOptions = {};
+    options.mode = 'Download';
+    options.stretch = 'Meet';
+    options.pageWidth = 500,
+        options.pageHeight = 500,
+        options.region = 'PageSettings';
+        
+       // options.region = 'Content';
     options.fileName = 'export';
-    let data: SVGElement | string;
+    var data;
     image = data = diagram.exportDiagram(options);
 };
 document.getElementById('exportTypes').onchange = () => {

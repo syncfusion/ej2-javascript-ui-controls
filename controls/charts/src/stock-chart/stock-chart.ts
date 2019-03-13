@@ -1,9 +1,10 @@
 import { Component, INotifyPropertyChanged, Property, Complex, Collection, Internationalization } from '@syncfusion/ej2-base';
-import { SvgRenderer, Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';
+import { Browser, EmitType, remove, Event, EventHandler } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { StockChartModel } from './stock-chart-model';
 import { Chart } from '../chart/index';
-import { Size, RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series } from '../index';
+import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series } from '../index';
+import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../chart/index';
 import { Periods } from '../common/model/base';
 import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs } from '../common/model/interface';
@@ -19,17 +20,18 @@ import { CartesianChart } from './renderer/cartesian-chart';
 import { RangeSelector } from './renderer/range-selector';
 import { ToolBarSelector } from './renderer/toolbar-selector';
 import { SelectionMode } from '../index';
-import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes } from './model/base';
+import { StockMargin, StockChartArea, StockChartAxis, StockChartRow, StockChartIndexes, StockEventsSettings } from './model/base';
 import { StockSeries, IStockChartEventArgs, StockChartIndicator, StockChartBorder, IRangeChangeEventArgs } from './model/base';
-import { StockChartAnnotationSettings } from './model/base';
-import { StockChartAnnotationSettingsModel} from './model/base-model';
+import { StockChartAnnotationSettings, IStockEventRenderArgs, } from './model/base';
+import { StockChartAnnotationSettingsModel } from './model/base-model';
 import { StockChartFont } from './model/base';
 import { StockSeriesModel, StockChartIndicatorModel, StockChartAxisModel, StockChartRowModel } from './model/base-model';
-import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel } from './model/base-model';
+import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel, StockEventsSettingsModel } from './model/base-model';
 import { StockChartBorderModel, StockMarginModel } from './model/base-model';
 import { ChartSeriesType, ExportType, TrendlineTypes, TechnicalIndicators } from '../index';
-import { textElement, titlePositionX, Rect, Alignment, TextOption, measureText } from '../index';
+import { textElement, titlePositionX, Alignment } from '../index';
 import { getThemeColor } from '../common/model/theme';
+import { StockEvents } from './renderer/stock-events';
 
 /**
  * Stock Chart
@@ -131,7 +133,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Options to configure the vertical axis.
      */
 
-    @Complex<StockChartAxisModel>({ name: 'primaryYAxis', opposedPosition: true, labelPosition : 'Inside' }, StockChartAxis)
+    @Complex<StockChartAxisModel>({ name: 'primaryYAxis', opposedPosition: true, labelPosition: 'Inside' }, StockChartAxis)
     public primaryYAxis: StockChartAxisModel;
 
 
@@ -158,6 +160,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public series: StockSeriesModel[];
 
     /**
+     * The configuration for stock events in the stockChart.
+     */
+
+    @Collection<StockEventsSettingsModel>([], StockEventsSettings)
+    public stockEvents: StockEventsSettingsModel[];
+
+
+    /**
      * It specifies whether the stockChart should be render in transposed manner or not.
      * @default false
      */
@@ -177,7 +187,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
 
     // tslint:disable-next-line:max-line-length
-    @Complex<StockChartFontModel>({size: '15px', fontWeight: '500', color: null,  fontStyle: 'Normal', fontFamily: 'Segoe UI'}, StockChartFont)
+    @Complex<StockChartFontModel>({ size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' }, StockChartFont)
     public titleStyle: StockChartFontModel;
     /**
      * Defines the collection of technical indicators, that are used in financial markets
@@ -188,14 +198,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * Options for customizing the tooltip of the chart.
      */
 
-    @Complex<TooltipSettingsModel>({shared : true, enableMarker : false}, TooltipSettings)
+    @Complex<TooltipSettingsModel>({ shared: true, enableMarker: false }, TooltipSettings)
     public tooltip: TooltipSettingsModel;
 
 
     /**
      * Options for customizing the crosshair of the chart.
      */
-    @Complex<CrosshairSettingsModel>({dashArray : '5'}, CrosshairSettings)
+    @Complex<CrosshairSettingsModel>({ dashArray: '5' }, CrosshairSettings)
     public crosshair: CrosshairSettingsModel;
 
     /**
@@ -318,6 +328,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public seriesRender: EmitType<ISeriesRenderEventArgs>;
 
     /**
+     * Triggers before the series is rendered.
+     * @event
+     */
+    @Event()
+    public stockEventRender: EmitType<IStockEventRenderArgs>;
+
+
+    /**
      * Specifies the point indexes to be selected while loading a chart.
      * It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
      * ```html
@@ -430,6 +448,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public rangeSelector: RangeSelector;
     /** @private */
     public toolbarSelector: ToolBarSelector;
+    /** @private */
+    public stockEvent: StockEvents;
     /** private */
     public zoomChange: boolean = false;
     /** @private */
@@ -868,6 +888,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.threshold = new Date().getTime() + 300;
         }
         this.notify(Browser.touchEndEvent, e);
+        if (this.stockEvent) {
+            this.stockEvent.removeStockEventTooltip(0);
+        }
         return false;
     }
 
@@ -933,14 +956,27 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
         }
         this.notify(Browser.touchMoveEvent, e);
-        if ((<HTMLElement>e.target).id.indexOf(this.element.id + '_stockChart_chart') === -1) {
-            let element : HTMLElement;
+        if ((<HTMLElement>e.target).id === '') { //to remove the tooltip when hover on mouse move
+            let element: HTMLElement;
             if (this.chart.tooltip.enable || this.crosshair.enable) {
-                element = document.getElementById( this.element.id + '_stockChart_chart_tooltip');
+                element = document.getElementById(this.element.id + '_stockChart_chart_tooltip');
                 if (element) {
-                   remove(element);
+                    remove(element);
                 }
             }
+            if (getElement(this.element.id + '_StockEvents_Tooltip')) {
+                this.stockEvent.removeStockEventTooltip(0);
+            }
+        }
+
+        if ((<HTMLElement>e.target).id.indexOf('StockEvents') !== -1) {
+            clearInterval(this.stockEvent.toolTipInterval);
+            this.stockEvent.renderStockEventTooltip((e.target as HTMLElement).id);
+        } else {
+            if (this.stockEvent) {
+                this.stockEvent.removeStockEventTooltip(1000);
+            }
+
         }
         this.isTouch = false;
         return false;
@@ -998,6 +1034,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         //this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.notify(cancelEvent, e);
+        if (this.stockEvent) {
+            this.stockEvent.removeStockEventTooltip(1000);
+        }
         return false;
     }
 
@@ -1008,12 +1047,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         //Perform destroy here
     }
 
-    private renderBorder() : void {
+    private renderBorder(): void {
         if (this.border.width) {
             let border: HTMLElement = this.createElement('div');
             border.id = this.element.id + '_stock_border';
             border.style.width = (this.availableSize.width) + 'px';
-            border.style.height = (this.availableSize.height)  + 'px';
+            border.style.height = (this.availableSize.height) + 'px';
             border.style.position = 'absolute';
             border.style.border = this.border.width + 'px solid ' + this.border.color;
             border.style.pointerEvents = 'none';
@@ -1054,10 +1093,20 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.availableSize.height -= (this.titleSize.height + 5);
         }
     }
-    private findTitleColor() : string {
+    private findTitleColor(): string {
         if (this.theme.indexOf('Highcontrast') > -1 || this.theme.indexOf('Dark') > -1) {
             return '#ffffff';
         }
         return '#424242';
+    }
+
+    /**
+     * @private
+     */
+    public calculateStockEvents(): void {
+        if (this.stockEvents.length) {
+            this.stockEvent = new StockEvents(this);
+            appendChildElement(this.chartObject, this.stockEvent.renderStockEvents());
+        }
     }
 }

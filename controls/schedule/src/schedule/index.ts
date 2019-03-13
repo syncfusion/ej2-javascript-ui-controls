@@ -21,3 +21,6 @@ export * from './renderer/month-agenda';
 export * from './renderer/timeline-view';
 export * from './renderer/timeline-month';
 export * from './timezone/timezone';
+export * from './exports/excel-export';
+export * from './exports/calendar-export';
+export * from './exports/calendar-import';

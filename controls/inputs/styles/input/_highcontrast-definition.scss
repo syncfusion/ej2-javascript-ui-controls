@@ -209,6 +209,7 @@ $input-bigger-small-left-child-min-height: $zero-value !default;
 $input-bigger-small-left-child-min-width: $zero-value !default;
 $input-icon-inner-width: $zero-value !default;
 $input-icon-inner-height: $zero-value !default;
+$input-readonly-bg-color: none !default;;
 
 @mixin input-sizing {
   box-sizing: border-box;

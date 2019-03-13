@@ -40,8 +40,8 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
   @Property()
   public footerTemplate: string;
   /**
-   * If `showChildSummary` is set to true, display TreeGrid child summary.
-   * @default true
+   * Defines the column name to perform aggregation.
+   * @default null
    */
   @Property()
   public field: string;

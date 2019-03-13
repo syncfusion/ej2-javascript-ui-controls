@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
+
+### Sidebar
+
+#### New Features
+
+- `MediaQuery` property will now support both string and `MediaQueryList` object types.
+
+#### Bug Fixes
+
+- Multiple event bindings issue on calling show and hide methods when `closeOnDocumentClick` property is enabled has been fixed.
+
+### TreeView
+
+#### New Features
+
+- Provided an option for auto checking parent tree nodes based on child tree nodes checked state and vice versa.
+- Now it is possible to select or unselect the collapsed child nodes by selecting its parent node through checkbox selection, with Load-On-Demand mode enabled.
+
+## 16.4.54 (2019-02-19)
 
 ### Tab
 
@@ -31,6 +50,8 @@
 - Sidebar with type `Auto` will always expand on initial rendering, irrespective of `enableDock` and `isOpen` properties.
 
 - When dynamically changing the type property of the Sidebar with invalid property value (For ex:`Pushs`), will reset the type of the Sidebar to its default type as `Auto`.
+
+## 17.1.1-beta (2019-01-29)
 
 ### Menu
 

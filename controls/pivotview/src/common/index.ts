@@ -17,3 +17,4 @@ export * from './popups/error-dialog';
 export * from './popups/filter-dialog';
 export * from './popups/context-menu';
 export * from './popups/aggregate-menu';
+export * from './popups/toolbar';

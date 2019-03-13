@@ -46,6 +46,15 @@ describe('Maps Component testing with its projection types ', () => {
             maps.refresh();
         });
 
+        it('Winkel3 projection checking with bootstrap4 theme world map', () => {
+            maps.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');
+                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+            };
+            maps.theme = 'Bootstrap4';
+            maps.refresh();
+        });
+
         it('Miller projection checking with world map', () => {
             maps.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(maps.element.id + '_LayerIndex_0_Polygon_Group');

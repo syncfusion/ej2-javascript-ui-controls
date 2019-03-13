@@ -44,6 +44,7 @@ export class Freeze implements IAction {
     }
 
     private instantiateRenderer(): void {
+        this.parent.log('limitation', this.getModuleName());
         let renderer: RendererFactory = this.locator.getService<RendererFactory>('rendererFactory');
         if (this.parent.getFrozenColumns()) {
             renderer.addRenderer(RenderType.Header, new FreezeRender(this.parent, this.locator));

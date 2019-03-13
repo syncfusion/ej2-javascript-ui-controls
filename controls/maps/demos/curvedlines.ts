@@ -4,7 +4,7 @@
 import { Maps, Marker, MapsTooltip, NavigationLine, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
 import { markerLocation } from './MapData/MapLocation';
 import { data } from './MapData/NavigationData';
-
+import { world_Map } from './MapData/worldMap';
 Maps.Inject(Marker, MapsTooltip, NavigationLine);
 //tslint:disable:max-func-body-length
     let maps: Maps = new Maps({
@@ -223,7 +223,7 @@ Maps.Inject(Marker, MapsTooltip, NavigationLine);
                         }
                     }
                 ],
-                shapeData:  new MapAjax('http://npmci.syncfusion.com/development/demos/src/maps/MapData/WorldMap.json')
+                shapeData:  world_Map,
             }
         ],
     });

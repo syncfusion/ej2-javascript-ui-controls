@@ -226,6 +226,10 @@ export class AggregateMenu {
             change(args: ChangeEventArgs): void {
                 optionWrapper2.enabled = baseFieldTypes.indexOf(args.value as string) !== -1 ? true : false;
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
+                if (optionWrapper3.enabled && (optionWrapper3.dataSource as string[]).length === 1) {
+                    optionWrapper3.dataSource = fieldItemDataSource;
+                    optionWrapper3.dataBind();
+                }
             }
         });
         optionWrapper1.appendTo(dropOptionDiv1);
@@ -246,7 +250,7 @@ export class AggregateMenu {
         });
         optionWrapper2.appendTo(dropOptionDiv2);
         let optionWrapper3: DropDownList = new DropDownList({
-            dataSource: fieldItemDataSource, enableRtl: this.parent.enableRtl,
+            dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl,
             value: baseItem,
             // popupWidth: 'auto',
             allowFiltering: true,
@@ -284,6 +288,7 @@ export class AggregateMenu {
                         let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
                             (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt];
                         dataSourceItem.type = menu.item.id as SummaryTypes;
+                        this.parent.lastAggregationInfo = dataSourceItem;
                         /* tslint:disable-next-line:no-any */
 
                     }
@@ -332,6 +337,7 @@ export class AggregateMenu {
         selectedField.baseItem = baseItemInstance.value as string;
         this.valueDialog.close();
         // this.parent.axisFieldModule.render();
+        this.parent.lastAggregationInfo = selectedField;
         this.updateDataSource(true);
     }
     private removeDialog(): void {

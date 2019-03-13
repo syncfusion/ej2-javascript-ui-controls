@@ -2,7 +2,8 @@
  * AccumulationChart series file
  */
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
-import { PathOption, degreeToLocation, getElement, linear, stringToNumber } from '../../common/utils/helper';
+import { PathOption } from '@syncfusion/ej2-svg-base';
+import { degreeToLocation, getElement, linear, stringToNumber } from '../../common/utils/helper';
 import { PieBase } from '../renderer/pie-base';
 import { AccumulationChart } from '../accumulation';
 import { AnimationModel } from '../../common/model/base-model';
@@ -40,10 +41,11 @@ export class PieSeries extends PieBase {
     private refresh(
         point: AccPoints, degree : number, start: number, chart: AccumulationChart, option: PathOption, seriesGroup: Element) : void {
        let seriesElement: Element = getElement(option.id);
+       let duration: number = chart.duration ? chart.duration : 300;
        let currentStartAngle: number;
        let curentDegree: number;
        new Animation({}).animate(createElement('div'), {
-                duration: 300,
+                duration: duration,
                 delay: 0,
                 progress: (args: AnimationOptions): void => {
                     curentDegree = linear(args.timeStamp, point.degree, (degree - point.degree), args.duration);

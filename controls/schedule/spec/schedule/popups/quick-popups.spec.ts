@@ -12,6 +12,7 @@ import { PopupOpenEventArgs, EventClickArgs } from '../../../src/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { disableScheduleAnimation, triggerMouseEvent } from '../util.spec';
 import * as util from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
@@ -23,6 +24,17 @@ describe('Quick Popups', () => {
         }
         return datasrc;
     };
+
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 
     describe('Tooltip and Dialog for vertical view', () => {
         let schObj: Schedule;
@@ -971,6 +983,7 @@ describe('Quick Popups', () => {
 
     describe('Read only test cases', () => {
         let schObj: Schedule;
+        // tslint:disable-next-line:no-any
         let keyModule: any;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
@@ -1038,6 +1051,7 @@ describe('Quick Popups', () => {
 
     describe('More Indicator Popup', () => {
         let schObj: Schedule;
+        // tslint:disable-next-line:no-any
         let keyModule: any;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
@@ -1247,6 +1261,7 @@ describe('Quick Popups', () => {
         it('CR Issue EJ2-19844 - timeline week more popup display position', () => {
             let proxy: Schedule = schObj;
             schObj.popupOpen = (args: PopupOpenEventArgs) => {
+                // tslint:disable-next-line:no-any
                 let target: Element = closest((<any>args.data).element, '.' + cls.MORE_INDICATOR_CLASS);
                 let gIndex: string = target.getAttribute('data-group-index');
                 let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
@@ -1724,7 +1739,7 @@ describe('Quick Popups', () => {
             let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
             remove(morePopup.querySelector('.e-more-event-content'));
             expect(quickDialog.classList).toContain('e-popup-open');
-            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-edit-event'), 'click');
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
             let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
             expect(eventWindow.classList).toContain('e-popup-open');
@@ -1814,8 +1829,10 @@ describe('Quick Popups', () => {
             };
             expect(schObj.eventsData.length).toEqual(43);
             let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            // tslint:disable-next-line:no-any
             let e: any = {};
             e.originalEvent = { target: appElements[0], type: 'touchstart' };
+            // tslint:disable-next-line:no-any
             (schObj.scheduleTouchModule as any).tapHoldHandler(e);
             let eventPopup: HTMLElement = document.body.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
@@ -1831,6 +1848,157 @@ describe('Quick Popups', () => {
             expect(quickDialog.classList).toContain('e-popup-close');
         });
     });
+
+    describe('Ignore Edited Occurrences Scenarios', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => done();
+            document.body.appendChild(elem);
+            schObj = new Schedule({
+                height: '500px', selectedDate: new Date(2019, 1, 5),
+                eventSettings: {
+                    dataSource: [{
+                        Id: 1,
+                        Subject: 'Recurrence',
+                        StartTime: new Date(2019, 1, 4, 10),
+                        EndTime: new Date(2019, 1, 4, 11, 30),
+                        IsAllDay: false,
+                        RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+                    }]
+                },
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+            disableScheduleAnimation(schObj);
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('Edit Single Occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(1);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            triggerMouseEvent(appElements[1], 'click');
+            triggerMouseEvent(appElements[1], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-occurrence-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Recurrence - Edited';
+            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Single Occurrence as Series and ignore edited occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            triggerMouseEvent(appElements[2], 'click');
+            triggerMouseEvent(appElements[2], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Ignored Edited Occurrences';
+            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(3);
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-cancel'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-alertcancel '), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Edit Single Occurrence as Series and include edited occurrence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(2);
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            triggerMouseEvent(appElements[2], 'click');
+            triggerMouseEvent(appElements[2], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            let eventWindow: HTMLElement = schObj.eventWindow.dialogObject.element;
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            (eventWindow.querySelector('.e-subject') as HTMLInputElement).value = 'Include Edited Occurrences';
+            triggerMouseEvent(eventWindow.querySelector('.e-event-save'), 'click');
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(true);
+            expect(quickDialog.querySelectorAll('.e-footer-content button').length).toEqual(3);
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-cancel'), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(true);
+            triggerMouseEvent(quickDialog.querySelector('.e-quick-alertok '), 'click');
+            expect(quickDialog.classList.contains('e-popup-open')).toEqual(false);
+            expect(eventWindow.classList.contains('e-popup-open')).toEqual(false);
+        });
+    });
+
+    describe('Checking Public method GetEvents scenarios', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { width: '500px', height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('GetEvents with ignore occurrences based on start and end date ', () => {
+            let startDate: Date = new Date(2017, 9, 29);
+            let endDate: Date = new Date(2017, 9, 31);
+            expect(schObj.getEvents(startDate, endDate).length).toEqual(3);
+        });
+
+        it('GetEvents with include occurrences based on start and end date ', () => {
+            let startDate: Date = new Date(2017, 9, 29);
+            let endDate: Date = new Date(2017, 9, 31);
+            expect(schObj.getEvents(startDate, endDate, true).length).toEqual(3);
+        });
+
+        it('GetEvents with ignore occurrences based on start date alone', () => {
+            let startDate: Date = new Date(2017, 9, 29);
+            expect(schObj.getEvents(startDate).length).toEqual(43);
+        });
+
+        it('GetEvents with include occurrences based on start date alone', () => {
+            let startDate: Date = new Date(2017, 9, 29);
+            expect(schObj.getEvents(startDate, null, true).length).toEqual(47);
+        });
+
+        it('GetEvents with ignore occurrences based on end date alone', () => {
+            let endDate: Date = new Date(2017, 9, 31);
+            expect(schObj.getEvents(null, endDate).length).toEqual(3);
+        });
+
+        it('GetEvents with include occurrences based on end date alone', () => {
+            let endDate: Date = new Date(2017, 9, 29);
+            expect(schObj.getEvents(null, endDate, true).length).toEqual(0);
+        });
+    });
+
     describe('CR Issue EJ2-22846 Casing of popup open event argument mismatch', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
@@ -1889,4 +2057,130 @@ describe('Quick Popups', () => {
         });
     });
 
+    describe('Multiple resource grouping without enableRtl', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let getResourceData: Function = () => {
+            let dataCol: Object[] = [];
+            resourceData.forEach((data: Object) => dataCol.push(extend({}, data)));
+            return dataCol;
+        };
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => {
+                disableScheduleAnimation(schObj);
+                done();
+            };
+            schObj = new Schedule({
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2018, 3, 1),
+                currentView: "Agenda",
+                group: {
+                    byGroupID: false,
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId',
+                    name: 'Rooms',
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
+                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
+                    ]
+                }, {
+                    field: 'OwnerId',
+                    name: 'Owners',
+                    dataSource: [
+                        { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                        { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                        { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
+                    ]
+                }],
+                eventSettings: { dataSource: getResourceData() },
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('agenda view quick popup backgroud check without enableRtl', () => {
+            let resourceEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resourceEvent.style.borderLeftColor).toEqual('rgb(255, 170, 0)');
+        });
+    });
+
+    describe('Multiple resource grouping with enableRtl', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        let getResourceData: Function = () => {
+            let dataCol: Object[] = [];
+            resourceData.forEach((data: Object) => dataCol.push(extend({}, data)));
+            return dataCol;
+        };
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => {
+                disableScheduleAnimation(schObj);
+                done();
+            };
+            schObj = new Schedule({
+                width: '100%',
+                height: '550px',
+                enableRtl: true,
+                selectedDate: new Date(2018, 3, 1),
+                currentView: "Agenda",
+                group: {
+                    byGroupID: false,
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId',
+                    name: 'Rooms',
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
+                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
+                    ]
+                }, {
+                    field: 'OwnerId',
+                    name: 'Owners',
+                    dataSource: [
+                        { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                        { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                        { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
+                    ]
+                }],
+                eventSettings: { dataSource: getResourceData() },
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('agenda view quick popup backgroud check with enableRtl', () => {
+            let resourceEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resourceEvent.style.borderRightColor).toEqual('rgb(255, 170, 0)');
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
+    });
 });

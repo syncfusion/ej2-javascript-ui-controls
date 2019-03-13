@@ -1,5 +1,9 @@
 import { Sparkline } from '../sparkline';
-import { SvgRenderer, createElement, remove } from '@syncfusion/ej2-base';
+import { IThemes } from '../model/interface';
+import { SparklineTheme } from '../model/enum';
+import { createElement, remove } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
+
 import { SparklineBorderModel, SparklineFontModel } from '../model/base-model';
 /**
  * Sparkline control helper file
@@ -19,6 +23,50 @@ export class Size {
         this.width = width;
         this.height = height;
     }
+}
+/**
+ * To find the default colors based on theme.
+ * @private
+ */
+export function getThemeColor(theme: SparklineTheme): IThemes {
+    let themeColors: IThemes;
+    switch (theme.toLowerCase()) {
+        case 'bootstrapdark':
+        case 'fabricdark':
+        case 'materialdark':
+        case 'highcontrast':
+            themeColors = {
+                axisLineColor: '#ffffff',
+                dataLabelColor: '#ffffff',
+                rangeBandColor: '#ffffff',
+                tooltipFill: '#ffffff',
+                tooltipFontColor: '#363F4C',
+                trackerLineColor: '#ffffff'
+            };
+            break;
+        case 'Bootstrap4':
+            themeColors = {
+                axisLineColor: '#6C757D',
+                dataLabelColor: '#212529',
+                rangeBandColor: '#212529',
+                tooltipFill: '#000000',
+                tooltipFontColor: '#FFFFFF',
+                trackerLineColor: '#212529'
+            };
+            break;
+        default: {
+            themeColors = {
+                axisLineColor: '#000000',
+                dataLabelColor: '#424242',
+                rangeBandColor: '#000000',
+                tooltipFill: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                trackerLineColor: '#000000'
+            };
+            break;
+        }
+    }
+    return themeColors;
 }
 /**
  * To find number from string

@@ -1,5 +1,6 @@
-import { withInRange, getPoint, PathOption, drawSymbol, Size, getElement } from '../../common/utils/helper';
-import { Rect, markerAnimate, TransformToVisible, ChartLocation, appendChildElement } from '../../common/utils/helper';
+import { withInRange, getPoint, drawSymbol, getElement } from '../../common/utils/helper';
+import { markerAnimate, TransformToVisible, ChartLocation, appendChildElement } from '../../common/utils/helper';
+import { PathOption, Rect, Size } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { MarkerSettingsModel } from '../series/chart-series-model';

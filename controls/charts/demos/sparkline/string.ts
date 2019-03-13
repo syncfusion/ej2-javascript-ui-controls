@@ -7,7 +7,7 @@ import { SparklineType } from '../../src/sparkline/model/enum';
 let sparkline: Sparkline = new Sparkline({
     height: '50px',
     width: '90%',
-    valueType: 'Numeric',
+    valueType: 'Category',
     dataSource: [
         { x: 1, xval: 'Jan', yval: 10 },
         { x: 2, xval: 'Feb', yval: 6 },

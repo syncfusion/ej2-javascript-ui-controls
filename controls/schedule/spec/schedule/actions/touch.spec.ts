@@ -2,6 +2,8 @@ import { createElement, remove, Browser, EventHandler, EmitType, extend } from '
 import { Schedule, EJ2Instance, Day, Week, WorkWeek, Month } from '../../../src/schedule/index';
 import { triggerSwipeEvent, CommonArgs } from '../util.spec';
 import { defaultData } from '../base/datasource.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
+
 Schedule.Inject(Day, Week, WorkWeek, Month);
 
 describe('Touch functioalities', () => {
@@ -31,6 +33,15 @@ describe('Touch functioalities', () => {
 
     beforeAll(() => {
         Browser.userAgent = androidUserAgent;
+
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
     });
     afterAll(() => {
         Browser.userAgent = uA;
@@ -277,11 +288,13 @@ describe('Touch functioalities', () => {
         it('taphold appointment selection', () => {
             schObj.isAdaptive = true;
             let target: Element = schObj.element.querySelector('.e-appointment');
+            // tslint:disable-next-line:no-any
             let e: any = {}; e.originalEvent = {};
             e.target = target;
             e.type = 'touchstart';
             e.originalEvent.target = target;
             e.originalEvent.type = 'touchstart';
+            // tslint:disable-next-line:no-any
             (schObj.scheduleTouchModule as any).tapHoldHandler(e);
             expect(document.body.querySelector('.e-quick-popup-wrapper')).toBeTruthy();
         });
@@ -300,11 +313,13 @@ describe('Touch functioalities', () => {
         it('Negative case for taphold appointment selection', () => {
             schObj.isAdaptive = false;
             let target: Element = schObj.element.querySelector('.e-appointment');
+            // tslint:disable-next-line:no-any
             let e: any = {}; e.originalEvent = {};
             e.target = target;
             e.type = 'touchstart';
             e.originalEvent.target = target;
             e.originalEvent.type = 'touchstart';
+            // tslint:disable-next-line:no-any
             (schObj.scheduleTouchModule as any).tapHoldHandler(e);
             expect(document.body.querySelector('.e-quick-popup-wrapper')).toBeTruthy();
         });
@@ -362,5 +377,17 @@ describe('Touch functioalities', () => {
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container').length).toEqual(0);
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(0);
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

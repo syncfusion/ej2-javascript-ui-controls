@@ -6,63 +6,63 @@ if(browser.isDesktop===true){
 describe('Treemap Event samples test spec', () => {
     let tooltipElement;
     it('tooltip Event testing text Style', (done: Function) => {
-        browser.load("/demos/tooltipEvent-1.html");
+        browser.load("/demo/tooltipEvent-1.html");
         tooltipElement = element(by.id('container_Level_Index_0_Item_Index_0_RectPath'));
-        browser.actions().click(tooltipElement).perform();
+        browser.actions().mouseMove(tooltipElement).perform();
         browser.compareScreen(element(By.id("container")), "TootlipEvent-TextStyle");
         done();
     });
     it('tooltip Event testing cancel true', (done: Function) => {
-        browser.load("/demos/tooltipEvent.html");
+        browser.load("/demo/tooltipEvent.html");
         tooltipElement = element(by.id('container_Level_Index_0_Item_Index_0_RectPath'));
-        browser.actions().click(tooltipElement).perform();
+        browser.actions().mouseMove(tooltipElement).perform();
         browser.compareScreen(element(By.id("container")), "TooltipEvent-Cancel");
         done();
     });
     it('click Event testing', (done: Function) => {
-        browser.load("/demos/clickEvent.html");
+        browser.load("/demo/clickEvent.html");
         tooltipElement = element(by.id('container'));
         browser.actions().click(tooltipElement).perform();
         browser.compareScreen(element(By.id("container")), "Click_Event-Triggered");
         done();
     });
     it('drillEnd Event testing', (done: Function) => {
-        browser.load("/demos/clickEvent.html");
+        browser.load("/demo/drillEnd-Event.html");
         tooltipElement = element(by.id('container_Level_Index_0_Item_Index_0_Text'));
         browser.actions().click(tooltipElement).perform();
         browser.compareScreen(element(By.id("container")), "DrillEnd_Event-Triggered");
         done();
     });
     it('itemClick Event testing', (done: Function) => {
-        browser.load("/demos/itemClickEvent.html");
+        browser.load("/demo/itemClickEvent.html");
         tooltipElement = element(by.id('container_Level_Index_2_Item_Index_1_RectPath'));
         browser.actions().click(tooltipElement).perform();
         browser.compareScreen(element(By.id("container")), "ItemClick_Event-Triggered");
         done();
     });
     it('itemHighlight Event testing', (done: Function) => {
-        browser.load("/demos/itemHighlight-Event.html");
+        browser.load("/demo/itemHighlight-Event.html");
         browser.actions().mouseMove(element(by.id('container_Level_Index_0_Item_Index_0_RectPath'))).perform().then(function () {
             browser.compareScreen(element(By.id('container')), 'ItemHighlight_Event-Triggered');
         });
         done();
     });
     it('itemMove Event testing', (done: Function) => {
-        browser.load("/demos/itemMoveEvent.html");
+        browser.load("/demo/itemMoveEvent.html");
         browser.actions().mouseMove(element(by.id('container_Level_Index_2_Item_Index_1_RectPath'))).perform().then(function () {
             browser.compareScreen(element(By.id('container')), 'ItemMove_Event-Triggered');
         });
         done();
     });
     it('itemSelection Event testing', (done: Function) => {
-        browser.load("/demos/itemSelection-Event.html");
+        browser.load("/demo/itemSelection-Event.html");
         tooltipElement = element(by.id('container_Level_Index_2_Item_Index_4_RectPath'));
         browser.actions().click(tooltipElement).perform();
         browser.compareScreen(element(By.id("container")), "ItemSelection_Event-Triggered");
         done();
     });
     it('mouseMove Event testing', (done: Function) => {
-        browser.load("/demos/mouseMoveEvent.html");
+        browser.load("/demo/mouseMoveEvent.html");
         browser.actions().mouseMove(element(by.id('container'))).perform().then(function () {
             browser.compareScreen(element(By.id('container')), 'MouseMove_Event-Triggered');
         });

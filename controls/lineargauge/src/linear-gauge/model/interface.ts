@@ -214,3 +214,24 @@ export interface IMoveCursor {
     style?: string;
 
 }
+
+export interface IThemeStyle {
+
+    backgroundColor: string;
+
+    titleFontColor: string;
+
+    tooltipFillColor: string;
+
+    tooltipFontColor: string;
+
+    lineColor: string;
+
+    labelColor: string;
+
+    majorTickColor: string;
+
+    minorTickColor: string;
+
+    pointerColor: string;
+}

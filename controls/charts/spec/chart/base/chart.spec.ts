@@ -14,6 +14,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { wheel } from '../../chart/user-interaction/zooming.spec';
 import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import {  Legend, Category } from '../../../src/index';
 import { categoryData } from './data.spec';
 import { Query } from '@syncfusion/ej2-data';
@@ -23,6 +24,14 @@ Chart.Inject(LineSeries, Zoom, ColumnSeries, DataLabel, Legend, Category);
 
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Chart direct properties and its behavior', () => {
         let chart: Chart;
         let ele: HTMLElement;
@@ -492,6 +501,15 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 
     describe('Customer issue: series DataBind', () => {
         let chart: Chart;

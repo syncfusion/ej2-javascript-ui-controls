@@ -705,7 +705,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         let cldrObj: string[];
         this.rotateArray(weekday, this.firstDayOfWeek);
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = <string[]>(getValue('days.stand-alone.' + format, getDefaultDateObject()));
+            cldrObj = <string[]>(getValue('days.stand-alone.' + format, getDefaultDateObject(this.getCalendarMode())));
         } else {
             cldrObj = <string[]>(getValue(
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format, cldrData));
@@ -719,7 +719,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         let monthData: { [key: string]: string }[] = [];
         let cldrObj: string[];
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = <string[]>(getValue('months.stand-alone.wide', getDefaultDateObject()));
+            cldrObj = <string[]>(getValue('months.stand-alone.wide', getDefaultDateObject(this.getCalendarMode())));
         } else {
             cldrObj = <string[]>(getValue(
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide', cldrData));
@@ -872,6 +872,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
     }
     private getUntilData(): string {
+        if (!this.untilDateObj.value) {
+            return '';
+        }
         let tempStr: string = getRecurrenceStringFromDate(this.untilDateObj.value);
         return RULEUNTIL + EQUAL + tempStr + SEMICOLON;
     }
@@ -925,7 +928,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return this.calendarMode.toLowerCase();
     }
     public getRuleSummary(rule: string = this.getRecurrenceRule()): string {
-        return generateSummary(rule, this.localeObj, this.locale, this.getCalendarMode());
+        return generateSummary(rule, this.localeObj, this.locale, this.calendarMode);
     }
     public getRecurrenceDates(startDate: Date, rule: string, excludeDate?: string, maximumCount?: number, viewDate?: Date): number[] {
         viewDate = isNullOrUndefined(viewDate) ? this.startDate : viewDate;

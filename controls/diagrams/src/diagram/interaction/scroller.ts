@@ -110,7 +110,7 @@ export class DiagramScroller {
     public updateScrollOffsets(hOffset?: number, vOffset?: number): void {
         let offsetX: number = 0;
         let offsetY: number = 0;
-        let pageBounds: Rect = this.getPageBounds();
+        let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -134,7 +134,7 @@ export class DiagramScroller {
     /** @private */
     public setScrollOffset(hOffset: number, vOffset: number): void {
         this.scrolled = false;
-        let pageBounds: Rect = this.getPageBounds();
+        let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -255,7 +255,7 @@ export class DiagramScroller {
     }
     /** @private */
     public setSize(): void {
-        let pageBounds: Rect = this.getPageBounds();
+        let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
         pageBounds.x *= this.currentZoom;
         pageBounds.y *= this.currentZoom;
         pageBounds.width *= this.currentZoom;
@@ -295,8 +295,9 @@ export class DiagramScroller {
      * To get page pageBounds
      * @private
      */
-    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions): Rect {
+    public getPageBounds(boundingRect?: boolean, region?: DiagramRegions, hasPadding?: boolean): Rect {
         let rect: Rect = new Rect();
+        let pageBounds: Rect;
         let temp: number = 0;
         if (region !== 'Content' && this.diagram.pageSettings.width !== null && this.diagram.pageSettings.height !== null) {
             let width: number = this.diagram.pageSettings.width;
@@ -322,11 +323,19 @@ export class DiagramScroller {
                     negheight = this.diagram.pageSettings.height * x;
                 }
             }
-            return new Rect((-negwidth), (-negheight), width + negwidth, height + negheight);
+            pageBounds = new Rect((-negwidth), (-negheight), width + negwidth, height + negheight);
         } else {
             let origin: number = boundingRect ? undefined : 0;
-            return this.diagram.spatialSearch.getPageBounds(origin, origin);
+            pageBounds = this.diagram.spatialSearch.getPageBounds(origin, origin);
         }
+        if (hasPadding) {
+            let scrollpadding: MarginModel = this.diagram.scrollSettings.padding;
+            pageBounds.x -= scrollpadding.left;
+            pageBounds.y -= scrollpadding.top;
+            pageBounds.width += (scrollpadding.left + scrollpadding.right);
+            pageBounds.height += (scrollpadding.top + scrollpadding.bottom);
+        }
+        return pageBounds;
     }
     /**
      * To get page break when PageBreak is set as true
@@ -408,12 +417,15 @@ export class DiagramScroller {
             let matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
             translateMatrix(matrix, this.horizontalOffset, this.verticalOffset);
-            focusPoint = focusPoint || { x: this.viewPortWidth / 2, y: this.viewPortHeight / 2 };
+            focusPoint = focusPoint || {
+                x: (this.viewPortWidth / 2 - this.horizontalOffset) / this.currentZoom,
+                y: (this.viewPortHeight / 2 - this.verticalOffset) / this.currentZoom
+            };
             focusPoint = transformPointByMatrix(matrix, focusPoint);
             if ((this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom &&
                 (this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom) {
                 this.currentZoom *= factor;
-                let pageBounds: Rect = this.getPageBounds();
+                let pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
                 pageBounds.x *= this.currentZoom;
                 pageBounds.y *= this.currentZoom;
 
@@ -469,7 +481,7 @@ export class DiagramScroller {
             || (this.diagram.nodes.length > 0 || this.diagram.connectors.length > 0)) {
             mode = mode ? mode : 'Page';
             if (region !== 'CustomBounds') {
-                bounds = this.getPageBounds(true, region);
+                bounds = this.getPageBounds(true, region, true);
             }
             let scale: PointModel = { x: 0, y: 0 };
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);

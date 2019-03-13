@@ -14,10 +14,19 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { DateTime } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/common/model/interface';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic);
 
 
 describe('Chart Control', () =>{
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     let ele: HTMLElement;
     let svg: HTMLElement;
     let text: HTMLElement;
@@ -1325,4 +1334,14 @@ describe('Chart Control', () =>{
             chartEle.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
+
 });

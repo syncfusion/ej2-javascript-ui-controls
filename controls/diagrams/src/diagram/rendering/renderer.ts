@@ -10,7 +10,7 @@ import { PointModel } from '../primitives/point-model';
 import { ConnectorModel } from '../objects/connector-model';
 import { wordBreakToString, whiteSpaceToString, textAlignToString } from '../utility/base-util';
 import { getUserHandlePosition, canShowCorner } from '../utility/diagram-util';
-import { getDiagramElement, getAdornerLayer, getGridLayer, getHTMLLayer } from '../utility/dom-util';
+import { getDiagramElement, getAdornerLayer, getGridLayer, getHTMLLayer, updatePath } from '../utility/dom-util';
 import { measurePath, getBackgroundLayerSvg, getBackgroundImageLayer, setAttributeSvg } from '../utility/dom-util';
 import { SnapSettingsModel } from '../../diagram/diagram/grid-lines-model';
 import { Gridlines } from '../../diagram/diagram/grid-lines';
@@ -32,7 +32,7 @@ import { BezierSegment, StraightSegment, OrthogonalSegment } from '../objects/co
 import { Point } from '../primitives/point';
 import { RulerSettingsModel } from '../diagram/ruler-settings-model';
 import { RulerModel, Ruler } from '../../ruler';
-import { avoidDrawSelector } from '../utility/constraints-util';
+import { canDrawThumbs, avoidDrawSelector } from '../utility/constraints-util';
 
 /**
  * Renderer module is used to render basic diagram elements
@@ -212,8 +212,8 @@ export class DiagramRenderer {
      * @private
      */
     public renderStackHighlighter(
-        element: DiagramElement, canvas: SVGElement, transform: Transforms, isVertical: Boolean, position: PointModel, isUml?: boolean
-    ): void {
+        element: DiagramElement, canvas: SVGElement, transform: Transforms, isVertical: Boolean, position: PointModel, isUml?: boolean,
+        isSwimlane?: boolean): void {
         let width: number = element.actualSize.width || 2;
         let x: number = element.offsetX - width * element.pivot.x;
         let height: number = element.actualSize.height || 2;
@@ -251,6 +251,11 @@ export class DiagramRenderer {
                     y += height;
                 }
             } else {
+                if (isSwimlane) {
+                    if (position.y >= element.offsetY) {
+                        y += height;
+                    }
+                }
                 let d: number = width * transform.scale;
                 data = 'M -10 -10 L 0 0 Z M -10 10 L 0 0 Z M 0 0 L ' + (d) + ' 0 Z M ' + (d) + ' 0 L ' +
                     (d + 10) + ' 10 Z L ' + (d + 10) + ' -10 Z';
@@ -283,22 +288,23 @@ export class DiagramRenderer {
     public renderResizeHandle(
         element: DiagramElement, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints, currentZoom: number,
         selectorConstraints?: SelectorConstraints, transform?: Transforms, canMask?: boolean, enableNode?: number,
-        nodeConstraints?: boolean)
+        nodeConstraints?: boolean, isSwimlane?: boolean)
         :
         void {
         let left: number = element.offsetX - element.actualSize.width * element.pivot.x;
         let top: number = element.offsetY - element.actualSize.height * element.pivot.y;
         let height: number = element.actualSize.height;
         let width: number = element.actualSize.width;
-        if (constraints & ThumbsConstraints.Rotate && (!avoidDrawSelector(this.rendererActions))) {
+        if (!isSwimlane &&
+            (constraints & ThumbsConstraints.Rotate && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions)))) {
             this.renderPivotLine(element, canvas, transform, selectorConstraints, canMask);
             this.renderRotateThumb(element, canvas, transform, selectorConstraints, canMask);
         }
         this.renderBorder(
-            element, canvas, transform, enableNode, nodeConstraints);
+            element, canvas, transform, enableNode, nodeConstraints, isSwimlane);
         let nodeWidth: number = element.actualSize.width * currentZoom;
         let nodeHeight: number = element.actualSize.height * currentZoom;
-        if (!nodeConstraints && (!avoidDrawSelector(this.rendererActions))) {
+        if (!nodeConstraints && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
             if (nodeWidth >= 40 && nodeHeight >= 40) {
                 //Hide corners when the size is less than 40
                 if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
@@ -565,7 +571,7 @@ export class DiagramRenderer {
     /**   @private  */
     public renderBorder(
         selector: DiagramElement, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms, enableNode?: number,
-        isBorderTickness?: boolean)
+        isBorderTickness?: boolean, isSwimlane?: boolean)
         :
         void {
         let wrapper: DiagramElement = selector;
@@ -578,7 +584,9 @@ export class DiagramRenderer {
         options.strokeWidth = 0.6;
         options.dashArray = '6,3';
         options.class = 'e-diagram-border';
+        if (isSwimlane) { options.class += ' e-diagram-lane'; }
         options.id = 'borderRect';
+        options.id = (this.rendererActions & RendererAction.DrawSelectorBorder) ? 'borderRect_symbol' : 'borderRect';
         if (!enableNode) {
             options.class += ' e-disabled';
         }
@@ -708,6 +716,10 @@ export class DiagramRenderer {
         if (!this.isSvgMode) {
             options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
             options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
+        }
+        if (element.isExport) {
+            let pathBounds: Rect = element.absoluteBounds;
+            (options as PathAttributes).data = updatePath(element, pathBounds, undefined, options);
         }
         this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
     }
@@ -947,7 +959,9 @@ export class DiagramRenderer {
         options.dashArray = ''; options.strokeWidth = 0; options.fill = element.style.fill;
         let ariaLabel: Object = element.description ? element.description : element.content ? element.content : element.id;
         this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
-        this.renderer.drawText(canvas, options as TextAttributes, parentSvg, ariaLabel, this.diagramId);
+        this.renderer.drawText(
+            canvas, options as TextAttributes, parentSvg, ariaLabel, this.diagramId,
+            (element.isExport && Math.min(element.exportScaleValue.x || element.exportScaleValue.y)));
         if (this.isSvgMode) {
             element.doWrap = false;
         }
@@ -1206,6 +1220,13 @@ export class DiagramRenderer {
             gradient: element.style.gradient, visible: element.visible, id: element.id, description: element.description,
             canApplyStyle: element.canApplyStyle
         };
+        if (element.isExport) {
+            options.width *= element.exportScaleValue.x;
+            options.height *= element.exportScaleValue.y;
+            options.x *= element.exportScaleValue.x;
+            options.y *= element.exportScaleValue.y;
+            options.strokeWidth *= element.exportScaleValue.x;
+        }
         if (element.flip) {
             options.flip = element.flip;
         }
@@ -1304,6 +1325,7 @@ export class DiagramRenderer {
             element as Container, diagramElementsLayer, htmlLayer, transform,
             this.getParentSvg(element), undefined, undefined, insertIndex);
     }
+
 
     // public empty(node: HTMLElement | string): void {
     //     if (typeof node === 'string') {

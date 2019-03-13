@@ -15,6 +15,7 @@ import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointEventArgs } from '../../../src/common/model/interface';
 import { IPointRenderEventArgs, ITooltipRenderEventArgs } from '../../../src/chart/index';
 Chart.Inject(LineSeries, ColumnSeries, DateTime, Category, BarSeries);
@@ -25,8 +26,14 @@ Chart.Inject(Tooltip);
 let data: any = tooltipData1;
 let data2: any = tooltipData2;
 
-describe('Chart Control', () => {
-
+describe('Chart Control', () => {  beforeAll(() => {
+    const isDef = (o: any) => o !== undefined && o !== null;
+    if (!isDef(window.performance)) {
+        console.log("Unsupported environment, window.performance.memory is unavailable");
+        this.skip(); //Skips test (in Chai)
+        return;
+    }
+});
     describe('Chart Tooltip', () => {
         let chartObj: Chart;
         let elem: HTMLElement = createElement('div', { id: 'container' });
@@ -503,4 +510,13 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

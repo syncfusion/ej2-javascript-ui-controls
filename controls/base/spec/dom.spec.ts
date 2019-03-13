@@ -6,8 +6,19 @@ import { EventHandler } from '../src/event-handler';
 
 let ele: HTMLElement;
 let eleAr: HTMLElement[] = [];
+let ele1: HTMLElement[] = [];
 
 ele = Dom.createElement('div', { id: 'singleEle', styles: 'height:100px;width:100px;' });
+let value: string = '<p id="create">' +
+    'old text' +
+    '</p>' +
+    '<script>' +
+    'document.getElementById("create").innerHTML = "new text"' +
+    '</script>' +
+    '<script>' +
+    'window.value = 1000' +
+    '</script>'
+ele1.push(Dom.createElement('div', { innerHTML: value }));
 
 eleAr.push(Dom.createElement('div', { id: 'arrayEle0' }));
 eleAr.push(Dom.createElement('div', { id: 'arrayEle1' }));
@@ -157,6 +168,13 @@ describe('Dom', () => {
             Dom.prepend(elList, <HTMLElement>document.querySelector('#eleArr'));
             expect(document.querySelector('#eleArr').childNodes.length).toBe(9);
         });
+        it('call eval method', () => {
+            document.body.appendChild(Dom.createElement('div', { id: 'eleScript' }));
+            Dom.append(ele1, <HTMLElement>document.querySelector('#eleScript'), true);
+            expect(document.getElementById("create").innerHTML).toEqual('new text')
+            Dom.prepend(ele1, <HTMLElement>document.querySelector('#eleScript'), true);
+            expect((window as any).value).toEqual(1000)
+        })
     });
 
     describe('siblings', () => {

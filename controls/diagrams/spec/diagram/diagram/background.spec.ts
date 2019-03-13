@@ -6,6 +6,7 @@ import { Diagram } from '../../../src/diagram/diagram'; import { BackgroundModel
 import { DiagramModel, ConnectorModel, NodeModel } from '../../../src/diagram/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 ;
 
 
@@ -17,6 +18,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagrama' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -39,6 +46,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramb' });
             document.body.appendChild(ele);
             let background: BackgroundModel = { source: 'base/spec/images/bike.jpg' };
@@ -63,6 +76,12 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramc' });
             document.body.appendChild(ele);
             let background: BackgroundModel = { color: 'red' };
@@ -129,6 +148,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramdraw' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -191,6 +216,12 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramdraw' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -227,5 +258,14 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
     });
 });

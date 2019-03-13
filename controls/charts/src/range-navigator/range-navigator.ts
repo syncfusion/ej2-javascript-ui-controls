@@ -1,8 +1,9 @@
-import { Component, Property, NotifyPropertyChanges, SvgRenderer, Complex, Collection, Browser } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, Complex, Collection, Browser } from '@syncfusion/ej2-base';
 import { EventHandler, remove, ModuleDeclaration, Internationalization } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { RangeNavigatorModel } from './range-navigator-model';
-import { createSvg, Size, Rect, measureText, removeElement } from '../common/utils/helper';
+import { createSvg, removeElement } from '../common/utils/helper';
+import { Rect, measureText, Size, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { RangeTooltip } from '../range-navigator/user-interaction/tooltip';
 import { Border, Margin, PeriodSelectorSettings } from '../common/model/base';
 import { BorderModel, MarginModel, PeriodSelectorSettingsModel } from '../common/model/base-model';

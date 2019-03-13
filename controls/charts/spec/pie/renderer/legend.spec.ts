@@ -12,6 +12,7 @@ import { piedata } from '../../chart/base/data.spec';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel);
 let pointData: Object[] = [];
 export function generateData(count: number): Object[] {
@@ -24,6 +25,16 @@ export function generateData(count: number): Object[] {
     }
     return pointData;
 }
+
+describe('Accumulation Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('Legend checking for the pie series', () => {
     let ele: HTMLElement;
     let loaded: EmitType<IAccLoadedEventArgs>;
@@ -435,4 +446,14 @@ describe('Legend checking for the pie series', () => {
             { x: 'Single Point legend long text trimming feature checking', text: 'Single point text', y: 10 }];
         accumulation.refresh();
     });
+});
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
 });

@@ -205,4 +205,10 @@ export interface ScrollSettingsModel {
      */
     autoScrollBorder?: MarginModel;
 
+    /**
+     * Defines the maximum distance to be left between the object and the edge of the page.
+     * @default { left: 0, right: 0, top: 0, bottom: 0 }
+     */
+    padding?: MarginModel;
+
 }

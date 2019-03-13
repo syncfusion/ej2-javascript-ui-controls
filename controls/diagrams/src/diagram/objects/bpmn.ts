@@ -634,7 +634,8 @@ export class BpmnDiagrams {
     }
     /** @private */
     public dropBPMNchild(target: Node, source: Node, diagram: Diagram): void {
-        if (source && source.shape.type === 'Bpmn' && (source.shape as BpmnShape).shape !== 'TextAnnotation') {
+        if (source && source.shape.type === 'Bpmn' && target.shape.type === 'Bpmn'
+            && (source.shape as BpmnShape).shape !== 'TextAnnotation') {
             let subProcess: BpmnSubProcessModel = (diagram.nameTable[target.id].shape as BpmnShape).activity.subProcess;
             if (diagram.currentSymbol && target.shape.type === 'Bpmn' && !subProcess.collapsed) {
                 source.processId = target.id;

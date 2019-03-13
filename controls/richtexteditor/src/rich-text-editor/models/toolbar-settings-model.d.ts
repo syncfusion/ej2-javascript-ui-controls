@@ -6,7 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ToolbarT
 export interface ToolbarSettingsModel {
 
     /**
-     * Specifies whether to render toolbar in RTE.
+     * Specifies whether to render toolbar in RichTextEditor.
      * @default true
      */
     enable?: boolean;
@@ -21,7 +21,7 @@ export interface ToolbarSettingsModel {
      * Specifies the Toolbar display types.
      * The possible types are:
      * - Expand: Toolbar items placed within the available space and rest of the items are placed to the extended menu section.
-     * - MultiRow: Toolbar which placed at top of RTE editing area.
+     * - MultiRow: Toolbar which placed at top of RichTextEditor editing area.
      * @default Expand
      */
     type?: ToolbarType;
@@ -163,7 +163,7 @@ export interface TableSettingsModel {
 export interface QuickToolbarSettingsModel {
 
     /**
-     * Specifies whether to enable quick toolbar in RTE.
+     * Specifies whether to enable quick toolbar in RichTextEditor.
      * @default true
      */
     enable?: boolean;
@@ -198,6 +198,49 @@ export interface QuickToolbarSettingsModel {
      * @default ['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles']
      */
     table?: (string | IToolbarItems)[];
+
+}
+
+/**
+ * Interface for a class PasteCleanupSettings
+ */
+export interface PasteCleanupSettingsModel {
+
+    /**
+     * Specifies whether to enable the prompt for paste in RichTextEditor.
+     * @default false
+     */
+    prompt?: boolean;
+
+    /**
+     * Specifies the attributes to restrict when pasting in RichTextEditor.
+     * @default null
+     */
+    deniedAttrs?: string[];
+
+    /**
+     * Specifies the allowed style properties when pasting in RichTextEditor.
+     * @default null
+     */
+    allowedStyleProps?: string[];
+
+    /**
+     * Specifies the tags to restrict when pasting in RichTextEditor.
+     * @default null
+     */
+    deniedTags?: string[];
+
+    /**
+     * Specifies whether to keep or remove the format when pasting in RichTextEditor.
+     * @default true
+     */
+    keepFormat?: boolean;
+
+    /**
+     * Specifies whether to paste as plain text or not in RichTextEditor.
+     * @default false
+     */
+    plainText?: boolean;
 
 }
 

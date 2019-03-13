@@ -520,6 +520,18 @@ export interface ConnectorModel extends NodeBaseModel{
     targetPortID?: string;
 
     /**
+     * Sets the source padding of the connector
+     * @default 0
+     */
+    sourcePadding?: number;
+
+    /**
+     * Sets the target padding of the connector
+     * @default 0
+     */
+    targetPadding?: number;
+
+    /**
      * Defines the appearance of the connection path
      * @default ''
      */

@@ -537,6 +537,17 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
     DropDownBase.prototype.updateListValues = function () {
         // Used this method in component side.
     };
+    DropDownBase.prototype.findListElement = function (list, findNode, attribute, value) {
+        var liElement = null;
+        var listArr = [].slice.call(list.querySelectorAll(findNode));
+        for (var index = 0; index < listArr.length; index++) {
+            if (listArr[index].getAttribute(attribute) === (value + '')) {
+                liElement = listArr[index];
+                break;
+            }
+        }
+        return liElement;
+    };
     DropDownBase.prototype.raiseDataBound = function (listItems, e) {
         this.hideSpinner();
         this.trigger('dataBound', { items: listItems, e: e });
@@ -1068,6 +1079,9 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DropDownBase.prototype, "ignoreAccent", void 0);
     __decorate([
+        Property()
+    ], DropDownBase.prototype, "locale", void 0);
+    __decorate([
         Event()
     ], DropDownBase.prototype, "actionBegin", void 0);
     __decorate([
@@ -1249,7 +1263,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.resetHandler = function (e) {
         e.preventDefault();
         this.clear(e);
-        this.onChangeEvent(e);
     };
     DropDownList.prototype.resetFocusElement = function () {
         this.removeHover();
@@ -1311,6 +1324,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         this.setSelection(null, null);
         this.isSelectCustom = false;
         this.updateIconState();
+        this.cloneElements();
     };
     DropDownList.prototype.setHTMLAttributes = function () {
         if (Object.keys(this.htmlAttributes).length) {
@@ -1889,7 +1903,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             }
             var proxy_1 = this;
             if (!this.isSecondClick) {
-                setTimeout(function () { proxy_1.cloneElements(); }, 100);
+                setTimeout(function () { proxy_1.cloneElements(); proxy_1.isSecondClick = true; }, 100);
             }
         }
         else {
@@ -1902,7 +1916,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             if (ulElement) {
                 ulElement = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
                 this.actionCompleteData.ulElement = ulElement;
-                this.isSecondClick = true;
             }
         }
     };
@@ -2340,17 +2353,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.isNotSearchList = false;
             return;
         }
-        if (this.value && this.dataSource instanceof DataManager) {
-            var checkField_1 = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
-            var checkVal = list.some(function (x) { return x[checkField_1] === _this.value; });
-            if (!checkVal) {
-                var query = this.getQuery(this.query).where(new Predicate(checkField_1, 'equal', this.value));
-                this.dataSource.executeQuery(query).then(function (e) {
-                    _this.addItem(e.result, list.length);
-                    _this.updateValues();
-                });
-            }
-        }
         if (this.isActive) {
             var selectedItem = this.selectedLI ? this.selectedLI.cloneNode(true) : null;
             _super.prototype.onActionComplete.call(this, ulElement, list, e);
@@ -2373,6 +2375,19 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 this.updateValues();
                 this.initRemoteRender = false;
                 this.initial = false;
+                if (this.value && this.dataSource instanceof DataManager) {
+                    var checkField_1 = isNullOrUndefined(this.fields.value) ? this.fields.text : this.fields.value;
+                    var checkVal = list.some(function (x) { return x[checkField_1] === _this.value; });
+                    if (!checkVal) {
+                        this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField_1, 'equal', this.value)))
+                            .then(function (e) {
+                            if (e.result.length > 0) {
+                                _this.addItem(e.result, list.length);
+                                _this.updateValues();
+                            }
+                        });
+                    }
+                }
             }
             if (this.getModuleName() !== 'autocomplete' && this.isFiltering() && !this.isTyped) {
                 if (!this.actionCompleteData.isUpdated || ((!this.isCustomFilter
@@ -2416,7 +2431,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.focusIndexItem = function () {
         var value = this.getItemData().value;
         this.activeIndex = this.getIndexByValue(value);
-        var element = this.list.querySelector('[data-value="' + value + '"]');
+        var element = this.findListElement(this.list, 'li', 'data-value', value);
         this.selectedLI = element;
         this.activeItem(element);
         this.removeFocus();
@@ -4569,6 +4584,7 @@ var dropdownIcon = 'e-input-group-icon e-ddl-icon';
 var iconAnimation = 'e-icon-anim';
 var TOTAL_COUNT_WRAPPER = 'e-delim-total';
 var BOX_ELEMENT = 'e-multiselect-box';
+var FILTERPARENT = 'e-filter-parent';
 /**
  * The Multiselect allows the user to pick a more than one value from list of predefined values.
  * ```html
@@ -4620,7 +4636,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.allowCustomValue = false;
             this.hideSelectedItem = false;
             this.closePopupOnSelect = false;
-            this.allowFiltering = true;
             modules.push({
                 member: 'CheckBoxSelection',
                 args: [this]
@@ -4823,7 +4838,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.targetElement = function () {
         this.targetInputElement = this.inputElement;
-        if (this.mode === 'CheckBox') {
+        if (this.mode === 'CheckBox' && this.allowFiltering) {
             this.notify('targetElement', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
         }
         return this.targetInputElement.value;
@@ -5183,36 +5198,35 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.wrapperClick = function (e) {
         this.setDynValue = false;
-        if (this.readonly || !this.enabled) {
+        if (!this.enabled) {
             return;
         }
         if (e.target === this.overAllClear) {
             e.preventDefault();
             return;
         }
-        if (!this.inputFocus && this.mode !== 'CheckBox') {
-            this.dispatchEvent(this.inputElement, 'focus');
+        if (!this.inputFocus) {
+            this.inputElement.focus();
         }
-        if (!this.inputFocus && this.mode === 'CheckBox') {
-            this.focusIn(e);
-        }
-        if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
-            if (this.isPopupOpen()) {
-                this.refreshPopup();
+        if (!this.readonly) {
+            if (e.target && e.target.classList.toString().indexOf(CHIP_CLOSE) !== -1) {
+                if (this.isPopupOpen()) {
+                    this.refreshPopup();
+                }
+                return;
             }
-            return;
-        }
-        if (!this.isPopupOpen() &&
-            (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
-            this.showPopup();
-        }
-        else {
-            this.hidePopup();
-            if (this.mode === 'CheckBox') {
-                this.showOverAllClear();
-                this.inputFocus = true;
-                if (!this.overAllWrapper.classList.contains(FOCUS)) {
-                    this.overAllWrapper.classList.add(FOCUS);
+            if (!this.isPopupOpen() &&
+                (this.openOnClick || (this.showDropDownIcon && e.target && e.target.className === dropdownIcon))) {
+                this.showPopup();
+            }
+            else {
+                this.hidePopup();
+                if (this.mode === 'CheckBox') {
+                    this.showOverAllClear();
+                    this.inputFocus = true;
+                    if (!this.overAllWrapper.classList.contains(FOCUS)) {
+                        this.overAllWrapper.classList.add(FOCUS);
+                    }
                 }
             }
         }
@@ -5282,7 +5296,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.refreshInputHight();
         floatLabelBlur(this.overAllWrapper, this.componentWrapper, this.value, this.floatLabelType, this.placeholder);
         this.refreshPlaceHolder();
-        if (this.allowFiltering && !isNullOrUndefined(this.mainList)) {
+        if ((this.allowFiltering || (this.enableSelectionOrder === true && this.mode === 'CheckBox'))
+            && !isNullOrUndefined(this.mainList)) {
             this.ulElement = this.mainList;
         }
         this.checkPlaceholderSize();
@@ -5353,7 +5368,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             + ':not(.' + HIDE_LIST + ')') : null;
     };
     MultiSelect.prototype.focusIn = function (e) {
-        if (this.enabled && !this.readonly) {
+        if (this.enabled) {
             this.showOverAllClear();
             this.inputFocus = true;
             if (!this.value) {
@@ -5378,7 +5393,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             }
             this.checkPlaceholderSize();
             if (this.focused) {
-                this.inputElement.focus();
                 var args = { isInteracted: e ? true : false, event: e };
                 this.trigger('focus', args);
                 this.focused = false;
@@ -5456,6 +5470,16 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.setAttribute('aria-activedescendant', focusedItem.id);
         }
     };
+    MultiSelect.prototype.homeNavigation = function (isHome) {
+        this.removeFocus();
+        var scrollEle = this.ulElement.querySelectorAll('li.' + dropDownBaseClasses.li
+            + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+        if (scrollEle.length > 0) {
+            var element = scrollEle[(isHome) ? 0 : (scrollEle.length - 1)];
+            element.classList.add(dropDownBaseClasses.focus);
+            this.scrollBottom(element);
+        }
+    };
     MultiSelect.prototype.onKeyDown = function (e) {
         if (this.readonly || !this.enabled && this.mode !== 'CheckBox') {
             return;
@@ -5473,7 +5497,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             var activeIndex = void 0;
             switch (e.keyCode) {
                 case 36:
-                case 35: break;
+                case 35:
+                    this.homeNavigation((e.keyCode === 36) ? true : false);
+                    break;
                 case 33:
                     e.preventDefault();
                     if (focusedItem) {
@@ -5551,7 +5577,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         e.preventDefault();
         this.moveByList(1);
         this.keyAction = true;
-        if (document.activeElement.classList.contains('e-input-filter')) {
+        if (document.activeElement.classList.contains('e-input-filter')
+            || (this.mode === 'CheckBox' && !this.allowFiltering && document.activeElement !== this.list)) {
             this.list.focus();
             EventHandler.add(this.list, 'keydown', this.onKeyDown, this);
         }
@@ -5565,7 +5592,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
         var focuseElem = this.list.querySelector('li.' + dropDownBaseClasses.focus);
         var index = Array.prototype.slice.call(list).indexOf(focuseElem);
-        if (index <= 0) {
+        if (index <= 0 && (this.mode === 'CheckBox' && this.allowFiltering)) {
             this.keyAction = false;
             this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'focus' });
         }
@@ -5715,7 +5742,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.refreshPlaceHolder();
     };
     MultiSelect.prototype.refreshListItems = function (data) {
-        if ((this.allowFiltering || this.allowCustomValue) && this.mainList && this.listData) {
+        if ((this.allowFiltering || (this.mode === 'CheckBox' && this.enableSelectionOrder === true)
+            || this.allowCustomValue) && this.mainList && this.listData) {
             var list = void 0;
             if (this.sortOrder === 'Descending' || this.sortOrder === 'Ascending') {
                 list = this.ulElement.cloneNode ? this.ulElement.cloneNode(true) : this.ulElement;
@@ -5984,7 +6012,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.removeChip = function (value) {
         if (this.chipCollectionWrapper) {
-            var element = this.chipCollectionWrapper.querySelector('span[data-value="' + value + '"]');
+            var element = this.findListElement(this.chipCollectionWrapper, 'span', 'data-value', value);
             if (element) {
                 remove(element);
             }
@@ -6196,6 +6224,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             document.body.appendChild(this.popupWrapper);
+            var checkboxFilter = this.popupWrapper.querySelector('.' + FILTERPARENT);
+            if (this.mode === 'CheckBox' && !this.allowFiltering && checkboxFilter && this.filterParent) {
+                checkboxFilter.remove();
+                this.filterParent = null;
+            }
             var overAllHeight = parseInt(this.popupHeight, 10);
             this.popupWrapper.style.visibility = 'hidden';
             if (this.headerTemplate) {
@@ -6231,8 +6264,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     enable: this.mode === 'CheckBox',
                     popupElement: this.popupWrapper
                 };
-                this.notify('searchBox', args_1);
-                overAllHeight -= this.searchBoxHeight;
+                if (this.allowFiltering) {
+                    this.notify('searchBox', args_1);
+                    overAllHeight -= this.searchBoxHeight;
+                }
                 addClass([this.popupWrapper], 'e-checkbox');
             }
             if (this.popupHeight !== 'auto') {
@@ -6262,12 +6297,14 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     }
                     _this.loadTemplate();
                     _this.setScrollPosition();
-                    _this.notify('inputFocus', { module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox', value: 'focus' });
+                    if (_this.allowFiltering) {
+                        _this.notify('inputFocus', { module: 'CheckBoxSelection', enable: _this.mode === 'CheckBox', value: 'focus' });
+                    }
                 }
             });
             this.popupObj.close();
             this.popupWrapper.style.visibility = '';
-            if (this.mode === 'CheckBox' && Browser.isDevice) {
+            if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
                 this.notify('deviceSearchBox', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
             }
         }
@@ -6384,6 +6421,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.keyDownStatus = false;
     };
     MultiSelect.prototype.preRender = function () {
+        if (this.allowFiltering === null) {
+            this.allowFiltering = (this.mode === 'CheckBox') ? true : false;
+        }
         this.initializeData();
         this.updateDataAttribute(this.htmlAttributes);
         _super.prototype.preRender.call(this);
@@ -6825,7 +6865,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     data += temp;
                     temp = this.viewWrapper.innerHTML;
                     this.viewWrapper.innerHTML = data;
-                    wrapperleng = this.viewWrapper.offsetWidth;
+                    wrapperleng = this.viewWrapper.offsetWidth +
+                        parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
@@ -6891,7 +6932,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var overAllContainer = this.componentWrapper.offsetWidth -
             parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
             parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
-        var wrapperleng = this.viewWrapper.offsetWidth;
+        var wrapperleng = this.viewWrapper.offsetWidth + parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
         if (((wrapperleng + downIconWidth) >= overAllContainer) && wrapperleng !== 0 && this.viewWrapper.firstChild &&
             this.viewWrapper.firstChild.nodeType === 3) {
             while (((wrapperleng + downIconWidth) > overAllContainer) && wrapperleng !== 0 && this.viewWrapper.firstChild &&
@@ -7090,7 +7131,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     this.refreshPlaceHolder();
                     break;
                 case 'filterBarPlaceholder':
-                    this.notify('filterBarPlaceholder', { filterBarPlaceholder: newProp.filterBarPlaceholder });
+                    if (this.allowFiltering) {
+                        this.notify('filterBarPlaceholder', { filterBarPlaceholder: newProp.filterBarPlaceholder });
+                    }
                     break;
                 case 'delimiterChar':
                     if (this.mode !== 'Box') {
@@ -7136,11 +7179,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 case 'popupHeight':
                 case 'headerTemplate':
                 case 'footerTemplate':
-                    if (this.popupObj) {
-                        this.popupObj.destroy();
-                        this.popupObj = null;
+                    this.reInitializePoup();
+                    break;
+                case 'allowFiltering':
+                    if (this.mode === 'CheckBox' && this.popupObj) {
+                        this.reInitializePoup();
                     }
-                    this.renderPopup();
                     break;
                 default:
                     var msProps = void 0;
@@ -7149,6 +7193,13 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
+    };
+    MultiSelect.prototype.reInitializePoup = function () {
+        if (this.popupObj) {
+            this.popupObj.destroy();
+            this.popupObj = null;
+        }
+        this.renderPopup();
     };
     MultiSelect.prototype.updateVal = function (newProp, oldProp, prop) {
         if (!this.list) {
@@ -7189,7 +7240,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.overAllWrapper.classList.remove(iconAnimation);
             this.popupObj.hide(new Animation(eventArgs.animation));
             attributes(this.inputElement, { 'aria-expanded': 'false' });
-            this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'clear' });
+            if (this.allowFiltering) {
+                this.notify('inputFocus', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'clear' });
+            }
             this.popupObj.hide();
             removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
             EventHandler.remove(this.list, 'keydown', this.onKeyDown);
@@ -7333,7 +7386,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             var textCol = '';
             for (var index = 0, optionsLen = optionsElement.length; index < optionsLen; index++) {
                 var opt = optionsElement[index];
-                if (opt.selected) {
+                if (!isNullOrUndefined(opt.getAttribute('selected'))) {
                     (opt.getAttribute('value')) ? valueCol.push(opt.getAttribute('value')) : textCol += (opt.text + this.delimiterChar);
                 }
             }
@@ -7380,7 +7433,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.checkAutoFocus = function () {
         if (this.element.hasAttribute('autofocus')) {
-            this.focusIn();
+            this.inputElement.focus();
         }
     };
     MultiSelect.prototype.setFloatLabelType = function () {
@@ -7411,16 +7464,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.updateReadonly(this.readonly);
         this.refreshInputHight();
         this.checkPlaceholderSize();
-    };
-    MultiSelect.prototype.findListElement = function (list, findNode, attr, value) {
-        var liElement = null;
-        list.querySelectorAll(findNode).forEach(function (item) {
-            if (item.getAttribute(attr) === (value + '')) {
-                liElement = item;
-                return;
-            }
-        });
-        return liElement;
     };
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
@@ -7492,7 +7535,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], MultiSelect.prototype, "itemTemplate", void 0);
     __decorate$4([
-        Property(false)
+        Property(null)
     ], MultiSelect.prototype, "allowFiltering", void 0);
     __decorate$4([
         Property(false)
@@ -7715,16 +7758,16 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                 this.setLocale();
                 this.checboxCreate(this.checkAllParent);
                 if (this.parent.headerTemplate) {
-                    if (!isNullOrUndefined(this.filterParent)) {
-                        append([this.checkAllParent], this.filterParent);
+                    if (!isNullOrUndefined(this.parent.filterParent)) {
+                        append([this.checkAllParent], this.parent.filterParent);
                     }
                     else {
                         append([this.checkAllParent], this.parent.popupWrapper);
                     }
                 }
                 if (!this.parent.headerTemplate) {
-                    if (!isNullOrUndefined(this.filterParent)) {
-                        this.filterParent.parentNode.insertBefore(this.checkAllParent, this.filterParent.nextSibling);
+                    if (!isNullOrUndefined(this.parent.filterParent)) {
+                        this.parent.filterParent.parentNode.insertBefore(this.checkAllParent, this.parent.filterParent.nextSibling);
                     }
                     else {
                         prepend([this.checkAllParent], this.parent.popupWrapper);
@@ -7818,8 +7861,8 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         }
     };
     CheckBoxSelection.prototype.setSearchBox = function (args) {
-        if (isNullOrUndefined(this.filterParent)) {
-            this.filterParent = this.parent.createElement('span', {
+        if (isNullOrUndefined(this.parent.filterParent)) {
+            this.parent.filterParent = this.parent.createElement('span', {
                 className: filterParent
             });
             this.filterInput = this.parent.createElement('input', {
@@ -7837,8 +7880,8 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                 buttons: backIcon ? [searchBackIcon, filterBarClearIcon] : [filterBarClearIcon],
                 properties: { placeholder: this.parent.filterBarPlaceholder }
             }, this.parent.createElement);
-            append([this.filterInputObj.container], this.filterParent);
-            prepend([this.filterParent], args.popupElement);
+            append([this.filterInputObj.container], this.parent.filterParent);
+            prepend([this.parent.filterParent], args.popupElement);
             attributes(this.filterInput, {
                 'aria-disabled': 'false',
                 'aria-owns': this.parent.element.id + '_options',
@@ -7917,11 +7960,12 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         if (!Browser.isIE) {
             target = !isNullOrUndefined(e) && e.relatedTarget;
         }
-        if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE) {
+        if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE
+            && this.filterInput) {
             this.filterInput.focus();
             return;
         }
-        if (this.parent.scrollFocusStatus) {
+        if (this.parent.scrollFocusStatus && this.filterInput) {
             e.preventDefault();
             this.filterInput.focus();
             this.parent.scrollFocusStatus = false;
@@ -7964,7 +8008,12 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         }
         if (!this.parent.overAllWrapper.contains(e.target) && this.parent.overAllWrapper.classList.contains('e-input-focus') &&
             !this.parent.isPopupOpen()) {
-            this.parent.onBlur(e);
+            if (Browser.isIE) {
+                this.parent.onBlur();
+            }
+            else {
+                this.parent.inputElement.blur();
+            }
         }
         if (this.filterInput === target) {
             this.filterInput.focus();

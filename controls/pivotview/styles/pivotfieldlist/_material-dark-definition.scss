@@ -1,4 +1,5 @@
 /*! component's theme wise override definitions and variables */
+$field-list-skin: 'material-dark' !default;
 $field-list-active-color: $accent !default;
 $field-list-default-font-color: $grey-dark-font !default;
 $field-list-default-formula-font-color: rgba($grey-dark-font, .7) !default;
@@ -41,11 +42,6 @@ $field-list-member-filter-list-bigger-height: 125px !default;
 $pivot-formula-background: $grey-dark !default;
 $pivot-formula-border: $grey-700 !default;
 $pivot-text-area-background: $grey-black !default;
-$pivotgrid-filter-icon: '\e909' !default;
-$pivotgrid-sorting-icon: '\e840' !default;
-$pivotgrid-drop-down-icon: '\e36a' !default;
-$pivotgrid-remove-icon: '\e208' !default;
-$pivotgrid-filtered-icon: '\e920' !default;
 $pivot-calculated-formula-font-family: Roboto !default;
 $pivot-calculated-formula-font-padding: 5px 10px !default;
 $pivot-calculated-header-opacity: .87 !default;
@@ -70,8 +66,8 @@ $field-list-default-bigger-padding-size: 16px !default;
 $field-list-bigger-button-font-size: 14px !default;
 $pivot-calculated-header-padding: 4px !default;
 $pivot-calculated-bigger-header-padding: 6px !default;
-$pivotgrid-button-icon-color: rgba($grey-dark, .7) !default;
-$pivotgrid-icon-hover-color: $grey-dark-font !default;
+$field-list-button-icon-color: rgba($grey-dark, .7) !default;
+$field-list-icon-hover-color: $grey-dark-font !default;
 $field-list-header-content-line-height: 1.5em !default;
 $field-list-bigger-header-content-line-height: 1.6em !default;
 $field-list-header-icon-wrapper-padding: 4px !default;

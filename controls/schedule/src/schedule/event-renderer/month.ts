@@ -1,6 +1,6 @@
 import { append, prepend, createElement, extend, EventHandler, closest, addClass } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove } from '@syncfusion/ej2-base';
-import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData } from '../base/interface';
+import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData, NotifyEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { EventBase } from './event-base';
 import * as cls from '../base/css-constant';
@@ -39,6 +39,7 @@ export class MonthEvent extends EventBase {
         for (let wrap of appointmentWrapper) {
             remove(wrap);
         }
+        this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
         if (!this.element.querySelector('.' + cls.WORK_CELLS_CLASS)) {
             return;
         }
@@ -48,10 +49,32 @@ export class MonthEvent extends EventBase {
         } else {
             this.monthHeaderHeight = 0;
         }
+        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        let scrollTop: number = conWrap.scrollTop;
+        if (this.parent.enableAdaptiveRows && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
+            conWrap.scrollTop = conWrap.scrollTop - 1;
+        }
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.renderResourceEvents();
         } else {
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays);
+        }
+        if (this.parent.enableAdaptiveRows) {
+            this.updateBlockElements();
+            let data: NotifyEventArgs = {
+                cssProperties: this.parent.getCssProperties(),
+                module: this.parent.getModuleName(),
+                isPreventScrollUpdate: true
+            };
+            if (this.parent.virtualScrollModule) {
+                if (this.parent.currentAction) {
+                    conWrap.scrollTop = scrollTop;
+                    this.parent.currentAction = null;
+                } else {
+                    this.parent.virtualScrollModule.updateVirtualScrollHeight();
+                }
+            }
+            this.parent.notify(events.scrollUiUpdate, data);
         }
     }
 
@@ -350,12 +373,18 @@ export class MonthEvent extends EventBase {
             let appWidth: number = (diffInDays * this.cellWidth) - 3;
             let cellTd: Element = this.workCells[day];
             let appTop: number = (overlapCount * (appHeight + EVENT_GAP));
-            if (this.cellHeight > this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight) {
+            let height: number =
+                this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
+            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
+                if (this.parent.enableAdaptiveRows) {
+                    let firstChild: HTMLElement = cellTd.parentElement.firstChild as HTMLElement;
+                    this.updateCellHeight(firstChild, height);
+                }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
                     let cellTd: HTMLElement = this.workCells[day + i];
@@ -378,6 +407,23 @@ export class MonthEvent extends EventBase {
                     }
                 }
             }
+        }
+    }
+
+    public updateCellHeight(cell: HTMLElement, height: number): void {
+        if ((height > cell.offsetHeight)) {
+            setStyleAttribute(cell as HTMLElement, { 'height': height + 'px' });
+        }
+    }
+
+    public updateBlockElements(): void {
+        let blockElement: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.BLOCK_APPOINTMENT_CLASS));
+        for (let element of blockElement) {
+            let target: HTMLElement = closest(element, 'tr') as HTMLElement;
+            element.style.height = ((target.offsetHeight - 1) - this.monthHeaderHeight) + 'px';
+            let firstChild: HTMLElement = target.firstChild as HTMLElement;
+            let width: number = Math.round(element.offsetWidth / firstChild.offsetWidth);
+            element.style.width = (firstChild.offsetWidth * width) + 'px';
         }
     }
 
@@ -461,5 +507,12 @@ export class MonthEvent extends EventBase {
             }
         });
         return moreIndicatorElement;
+    }
+
+    public removeHeightProperty(selector: string): void {
+        let rows: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + selector + ' tbody tr'));
+        for (let row of rows) {
+            (row.firstChild as HTMLElement).style.height = '';
+        }
     }
 }

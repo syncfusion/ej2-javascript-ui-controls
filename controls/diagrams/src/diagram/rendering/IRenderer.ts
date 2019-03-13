@@ -15,8 +15,8 @@ export interface IRenderer {
         isSelector?: boolean, parentSvg?: SVGSVGElement, ariaLabel?: Object): void;
     renderPath(canvas: HTMLCanvasElement | SVGElement, options: PathAttributes,
         collection: Object[]): void;
-    drawText(canvas: HTMLCanvasElement | SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object,
-        diagramId?: string, ): void;
+        drawText(canvas: HTMLCanvasElement | SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement, ariaLabel?: Object,
+            diagramId?: string, scaleValue?: number): void;
         drawImage(
             canvas: HTMLCanvasElement | SVGElement | ImageElement,
             obj: ImageAttributes, parentSvg?: SVGSVGElement, fromPalette?: boolean): void;

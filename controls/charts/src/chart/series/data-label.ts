@@ -1,11 +1,11 @@
-import { ChartLocation, Size, Rect, TextOption, ColorValue, RectOption, isCollide } from '../../common/utils/helper';
+import { ChartLocation, ColorValue, RectOption, isCollide } from '../../common/utils/helper';
 import { markerAnimate, appendChildElement } from '../../common/utils/helper';
-import { getLabelText, measureText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
+import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
 import { Chart } from '../chart';
+import { Size, measureText, TextOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { BorderModel, MarginModel, FontModel } from '../../common/model/base-model';
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
 import { LabelPosition, ErrorBarDirection } from '../utils/enum';
-import { SvgRenderer } from '@syncfusion/ej2-base';
 import { Series, Points } from './chart-series';
 import { ITextRenderEventArgs } from '../../common/model/interface';
 import { textRender } from '../../common/model/constants';
@@ -191,7 +191,7 @@ export class DataLabel {
                                     ),
                                     argsData.font, argsData.font.color ||
                                     ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),
-                                    series.textElement, false, redraw, true
+                                    series.textElement, false, redraw, true, false , series.chart.duration
                                 );
                             }
                         }
@@ -200,7 +200,8 @@ export class DataLabel {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw);
+            appendChildElement(getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
+                               false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     }
 
@@ -219,9 +220,9 @@ export class DataLabel {
         let childElement: HTMLElement = createTemplate(
             createElement('div', {
                 id: this.chart.element.id + '_Series_' + (series.index === undefined ? series.category : series.index) + '_DataLabel_'
-                + point.index + (labelIndex ? ('_' + labelIndex) : ''),
+                    + point.index + (labelIndex ? ('_' + labelIndex) : ''),
                 styles: 'position: absolute;background-color:' + data.color + ';' +
-                getFontStyle(dataLabel.font) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
+                    getFontStyle(dataLabel.font) + ';border:' + data.border.width + 'px solid ' + data.border.color + ';'
             }),
             point.index, data.template, this.chart, point, series);
         let elementRect: ClientRect = measureElementRect(childElement, redraw);
@@ -681,6 +682,7 @@ export class DataLabel {
         let shapeElements: NodeList = series.shapeElement.childNodes;
         let textNode: NodeList = series.textElement.childNodes;
         let delay: number = series.animation.delay + series.animation.duration;
+        let duration: number = series.chart.animated ? series.chart.duration : 200;
         let location: ChartLocation;
         let length: number = element ? 1 : textNode.length;
         let tempElement: HTMLElement;
@@ -688,18 +690,18 @@ export class DataLabel {
             tempElement = textNode[i] as HTMLElement;
             if (element) {
                 (<HTMLElement>element).style.visibility = 'hidden';
-                templateAnimate(element, delay, 200, 'ZoomIn');
+                templateAnimate(element, delay, duration, 'ZoomIn');
             } else {
                 location = new ChartLocation(
                     (+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2),
                     (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
-                markerAnimate(tempElement, delay, 200, series, null, location, true);
+                markerAnimate(tempElement, delay, duration, series, null, location, true);
                 if (shapeElements[i]) {
                     tempElement = shapeElements[i] as HTMLElement;
                     location = new ChartLocation(
                         (+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2),
                         (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
-                    markerAnimate(tempElement, delay, 200, series, null, location, true);
+                    markerAnimate(tempElement, delay, duration, series, null, location, true);
                 }
             }
         }

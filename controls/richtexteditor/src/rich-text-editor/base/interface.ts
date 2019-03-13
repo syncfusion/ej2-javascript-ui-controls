@@ -1,5 +1,5 @@
 // tslint:disable-next-line:missing-jsdoc
-import { Component, Observer, L10n } from '@syncfusion/ej2-base';
+import { Component, Observer, L10n, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Action, ToolbarType, RenderType } from './enum';
@@ -12,7 +12,7 @@ import { NodeSelection } from '../../selection/selection';
 import { EditorMode } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
-import { QuickToolbarSettingsModel, InlineModeModel } from '../models/models';
+import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
 import { ColorPicker, ColorPickerEventArgs, ColorPickerModel } from '@syncfusion/ej2-inputs';
 import { Link } from '../renderer/link-module';
@@ -29,6 +29,7 @@ import { DropDownButtons } from '../actions/dropdown-buttons';
 import { IToolbarStatus } from '../../common/interface';
 import { KeyboardEvents } from '../actions/keyboard';
 import { ViewSource } from '../renderer/view-source';
+import { PasteCleanup } from '../actions/paste-clean-up';
 /**
  * Specifies RichTextEditor interfaces.
  * @hidden
@@ -52,6 +53,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     insertImageSettings: ImageSettingsModel;
 
     tableSettings: TableSettingsModel;
+
+    pasteCleanupSettings: PasteCleanupSettingsModel;
 
     floatingToolbarOffset?: number;
 
@@ -85,11 +88,12 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     valueContainer?: HTMLTextAreaElement;
     editorMode?: EditorMode;
     formatter?: IFormatter;
-
+    inputElement?: HTMLElement;
     toolbarModule?: Toolbar;
     sourceCodeModule?: ViewSource;
     getToolbarElement?(): Element;
     fullScreenModule?: FullScreen;
+    pasteCleanupModule?: PasteCleanup;
     undoRedoModule?: UndoRedoManager;
     quickToolbarModule?: QuickToolbar;
     undoRedoSteps?: number;
@@ -130,6 +134,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     invokeChangeEvent?(): void;
     preventDefaultResize?(e?: FocusEvent | MouseEvent): void;
     autoResize?(): void;
+    executeCommand?(commandName: CommandName, value?: string | HTMLElement): void;
 }
 export interface IRenderer {
     linkQTBar?: BaseQuickToolbar;
@@ -154,7 +159,7 @@ export interface IRenderer {
 
 export interface NotifyArgs {
     module?: string;
-    args?: KeyboardEvent | MouseEvent | ClickEventArgs;
+    args?: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent;
     cancel?: boolean;
     requestType?: Action;
     enable?: boolean;
@@ -209,7 +214,7 @@ export interface IColorPickerRenderArgs {
 
 export interface IImageNotifyArgs {
     module?: string;
-    args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel;
+    args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent;
     cancel?: boolean;
     requestType?: Action;
     enable?: boolean;
@@ -249,7 +254,7 @@ export interface ITableArgs {
 
 export interface ITableNotifyArgs {
     module?: string;
-    args?: ClickEventArgs | MouseEvent;
+    args?: ClickEventArgs | MouseEvent | KeyboardEventArgs;
     selection?: NodeSelection;
     selectNode?: Node[];
     selectParent?: Node[];
@@ -616,8 +621,8 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         value: ''
     },
     'insertText': {
-        command: 'InsertHTML',
-        subCommand: 'InsertHTML',
+        command: 'InsertText',
+        subCommand: 'InsertText',
         value: ''
     },
     'insertHorizontalRule': {
@@ -636,11 +641,11 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         value: '<br/>'
     },
     'insertOrderedList': {
-        command: 'Formats',
+        command: 'Lists',
         value: 'OL'
     },
     'insertUnorderedList': {
-        command: 'Formats',
+        command: 'Lists',
         value: 'UL'
     },
     'insertParagraph': {

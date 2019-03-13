@@ -242,6 +242,7 @@ export type SliderOrientation = 'Horizontal' | 'Vertical';
 type SliderHandleNumber = 1 | 2;
 
 const bootstrapTooltipOffset: number = 6;
+const bootstrap4TooltipOffset: number = 3;
 
 const classNames: { [key: string]: string } = {
     root: 'e-slider',
@@ -366,6 +367,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private repeatInterval: number;
     private isMaterial: boolean;
     private isBootstrap: boolean;
+    private isBootstrap4: boolean;
     private zIndex: number;
     private l10n: L10n;
     private internationalization: Internationalization;
@@ -773,6 +775,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private getThemeInitialization(): void {
         this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
         this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }
 
@@ -1114,22 +1117,23 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private tooltipCollision(position: string): void {
-        if (this.isBootstrap || (this.isMaterial && !this.isMaterialTooltip)) {
+        if (this.isBootstrap || this.isBootstrap4 || (this.isMaterial && !this.isMaterialTooltip)) {
+            const tooltipOffsetValue: number = this.isBootstrap4 ? bootstrap4TooltipOffset : bootstrapTooltipOffset;
             switch (position) {
                 case 'TopCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': -(bootstrapTooltipOffset) }, false);
+                    this.tooltipObj.setProperties({ 'offsetY': -(tooltipOffsetValue) }, false);
                     break;
 
                 case 'BottomCenter':
-                    this.tooltipObj.setProperties({ 'offsetY': bootstrapTooltipOffset }, false);
+                    this.tooltipObj.setProperties({ 'offsetY': tooltipOffsetValue }, false);
                     break;
 
                 case 'LeftCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': -(bootstrapTooltipOffset) }, false);
+                    this.tooltipObj.setProperties({ 'offsetX': -(tooltipOffsetValue) }, false);
                     break;
 
                 case 'RightCenter':
-                    this.tooltipObj.setProperties({ 'offsetX': bootstrapTooltipOffset }, false);
+                    this.tooltipObj.setProperties({ 'offsetX': tooltipOffsetValue }, false);
                     break;
             }
         }
@@ -1252,7 +1256,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private renderTooltip(): void {
         this.tooltipObj = new Tooltip({
-            showTipPointer: this.isBootstrap || this.isMaterial,
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4,
             cssClass: classNames.sliderTooltip,
             height: this.isMaterial ? 30 : 'auto',
             animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
@@ -2942,6 +2946,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                         if (this.firstBtn && this.secondBtn) {
                             this.sliderContainer.removeChild(this.firstBtn);
                             this.sliderContainer.removeChild(this.secondBtn);
+                            this.sliderContainer.classList.remove(classNames.sliderButtonClass);
                             this.firstBtn = undefined;
                             this.secondBtn = undefined;
                         }

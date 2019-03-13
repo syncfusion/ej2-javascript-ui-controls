@@ -1,7 +1,6 @@
 /**
  * AutoComplete Sample
  */
-import { CheckBox, ChangeEventArgs as ChangeArgs } from '@syncfusion/ej2-buttons';
 import { InPlaceEditor } from '../../../src/inplace-editor/base/inplace-editor';
 import { AutoComplete } from './../../../src/inplace-editor/modules/auto-complete';
 
@@ -9,14 +8,7 @@ InPlaceEditor.Inject(AutoComplete);
 
 let serviceUrl: string = 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData';
 
-let sportsData: string[] = ['Badminton', 'Basketball', 'Cricket', 'Football', 'Golf', 'Gymnastics', 'Hockey', 'Tennis'];
-
-new CheckBox({ label: 'Enable RTL', checked: false, change: onRtlChange }, '#rtl');
-new CheckBox({ label: 'Enable Persistence', checked: false, change: onPersistChange }, '#persist');
-new CheckBox({ label: 'Disable Editor', checked: false, change: onDisabledChange }, '#disabled');
-new CheckBox({ label: 'ShowButtons', checked: true, change: onShowButtonsChange }, '#showButtons');
-new CheckBox({ label: 'EnableEditMode', checked: false, change: onEditorOpenChange }, '#openEditor');
-new CheckBox({ label: 'SubmitOnEnter', checked: true, change: onSubmitOnEnterChange }, '#enterSubmit');
+let sportsData: string[] = ['Badminton', 'Basketball', 'Cricket', 'Football', 'Golf', 'Gymnastics', 'Tennis'];
 
 let editObj: InPlaceEditor = new InPlaceEditor({
     type: 'AutoComplete',
@@ -68,32 +60,41 @@ document.getElementById('blurAction').addEventListener('change', (e: any) => {
     editObj.dataBind();
 });
 
-function onRtlChange(e: ChangeArgs): void {
-    editObj.enableRtl = e.checked;
+document.getElementById('rtl').addEventListener('change', (e: any) => {
+    editObj.enableRtl = e.target.checked;
     editObj.dataBind();
-}
+});
 
-function onPersistChange(e: ChangeArgs): void {
-    editObj.enablePersistence = e.checked;
+document.getElementById('persist').addEventListener('change', (e: any) => {
+    editObj.enablePersistence = e.target.checked;
     editObj.dataBind();
-}
+});
 
-function onDisabledChange(e: ChangeArgs): void {
-    editObj.disabled = e.checked;
+document.getElementById('disabled').addEventListener('change', (e: any) => {
+    editObj.disabled = e.target.checked;
     editObj.dataBind();
-}
+});
 
-function onShowButtonsChange(e: ChangeArgs): void {
-    editObj.showButtons = e.checked;
+document.getElementById('showButtons').addEventListener('change', (e: any) => {
+    editObj.showButtons = e.target.checked;
     editObj.dataBind();
-}
+});
 
-function onEditorOpenChange(e: ChangeArgs): void {
-    editObj.enableEditMode = e.checked;
+document.getElementById('openEditor').addEventListener('change', (e: any) => {
+    editObj.enableEditMode = e.target.checked;
     editObj.dataBind();
-}
+});
 
-function onSubmitOnEnterChange(e: ChangeArgs): void {
-    editObj.submitOnEnter = e.checked;
+document.getElementById('enterSubmit').addEventListener('change', (e: any) => {
+    editObj.submitOnEnter = e.target.checked;
     editObj.dataBind();
-}
+});
+
+document.getElementById('enableTitle').addEventListener('change', (e: any) => {
+    if (e.target.checked) {
+        editObj.popupSettings.title = 'Edit';
+    } else {
+        editObj.popupSettings.title = '';
+    }
+    editObj.dataBind();
+});

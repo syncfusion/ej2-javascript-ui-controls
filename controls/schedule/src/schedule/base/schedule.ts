@@ -36,14 +36,17 @@ import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';
 import { EventSettings } from '../models/event-settings';
 import { Group } from '../models/group';
 import { Resources } from '../models/resources';
+import { ICalendarExport } from '../exports/calendar-export';
+import { ICalendarImport } from '../exports/calendar-import';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
-import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs } from '../base/interface';
+import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions } from '../base/interface';
 import { ResourceBase } from '../base/resource';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
 import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
+import { ExcelExport } from '../exports/excel-export';
 
 /**
  * Represents the Schedule component that displays a list of events scheduled against specific date and timings, 
@@ -71,6 +74,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public headerModule: HeaderRenderer;
     public scrollModule: Scroll;
     public virtualScrollModule: VirtualScroll;
+    public iCalendarExportModule: ICalendarExport;
+    public iCalendarImportModule: ICalendarImport;
     public crudModule: Crud;
     public scheduleTouchModule: ScheduleTouch;
     public keyboardInteractionModule: KeyboardInteraction;
@@ -102,6 +107,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public timelineMonthModule: TimelineMonth;
     public resizeModule: Resize;
     public dragAndDropModule: DragAndDrop;
+    public excelExportModule: ExcelExport;
     public viewOptions: { [key: string]: ViewsModel[] };
     public viewCollections: ViewsModel[];
     public viewIndex: number;
@@ -320,6 +326,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public showWeekNumber: boolean;
+    /**
+     * when set to `true`, allows the height of the work-cells to adjust automatically 
+     * based on the number of appointments present in those time ranges. 
+     * @default false
+     */
+    @Property(false)
+    public enableAdaptiveRows: boolean;
     /**
      * The template option to render the customized editor window. The form elements defined within this template should be accompanied
      *  with `e-field` class, so as to fetch and process it from internally.
@@ -778,7 +791,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let culShortNames: string[] = [];
         let cldrObj: string[];
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = <string[]>(getValue('days.stand-alone.' + type, getDefaultDateObject()));
+            cldrObj = <string[]>(getValue('days.stand-alone.' + type, getDefaultDateObject(this.getCalendarMode())));
         } else {
             cldrObj = <string[]>(
                 getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type, cldrData));
@@ -790,7 +803,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
     private setCldrTimeFormat(): void {
         if (this.locale === 'en' || this.locale === 'en-US') {
-            this.timeFormat = <string>(getValue('timeFormats.short', getDefaultDateObject()));
+            this.timeFormat = <string>(getValue('timeFormats.short', getDefaultDateObject(this.getCalendarMode())));
         } else {
             this.timeFormat = <string>
                 (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.timeFormats.short', cldrData));
@@ -896,6 +909,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 args: [this]
             });
         }
+        modules.push({
+            member: 'excelExport',
+            args: [this]
+        });
+        modules.push({
+            member: 'iCalendarExport',
+            args: [this]
+        });
+        modules.push({
+            member: 'iCalendarImport',
+            args: [this]
+        });
         return modules;
     }
     /**
@@ -911,6 +936,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             left: 0,
             top: 0,
             isGroupAdaptive: false,
+            isIgnoreOccurrence: false,
             groupIndex: 0,
             action: false,
             isBlock: false
@@ -966,8 +992,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             deleteButton: 'Delete',
             recurrence: 'Recurrence',
             wrongPattern: 'The recurrence pattern is not valid.',
-            seriesChangeAlert: 'The changes made to specific instances of this series will be cancelled ' +
-                'and those events will match the series again.',
+            seriesChangeAlert: 'Do you want to cancel the changes made to specific ' +
+                'instances of this series and match it to the whole series again?',
             createError: 'The duration of the event must be shorter than how frequently it occurs. ' +
                 'Shorten the duration, or change the recurrence pattern in the recurrence event editor.',
             recurrenceDateValidation: 'Some months have fewer than the selected date. For these months, ' +
@@ -980,6 +1006,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             invalidDateError: 'The entered date value is invalid.',
             blockAlert: 'Events cannot be scheduled within the blocked time range.',
             ok: 'Ok',
+            yes: 'Yes',
+            no: 'No',
             occurrence: 'Occurrence',
             series: 'Series',
             previous: 'Previous',
@@ -1025,8 +1053,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             cell.setAttribute('aria-selected', 'true');
         }
         addClass(cells, cls.SELECTED_CELL_CLASS);
-        focusCell.setAttribute('tabindex', '0');
-        focusCell.focus();
+        if (focusCell) {
+            focusCell.setAttribute('tabindex', '0');
+            focusCell.focus();
+        }
     }
     public selectCell(element: HTMLElement & HTMLTableCellElement): void {
         this.removeSelectedClass();
@@ -1271,6 +1301,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'enableRtl':
                     state.isRefresh = true;
+                    break;
+                case 'enableAdaptiveRows':
+                    state.isLayout = true;
                     break;
                 default:
                     this.extendedPropertyChange(prop, newProp, oldProp, state);
@@ -1569,6 +1602,36 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Exports the Scheduler events to a calendar (.ics) file. By default, the calendar is exported with a file name `Calendar.ics`. 
+     * To change this file name on export, pass the custom string value as `fileName` to get the file downloaded with this provided name. 
+     * @method exportToICalendar
+     * @param {string} fileName Accepts the string value.
+     * @returns {void}
+     */
+    public exportToICalendar(fileName?: string): void {
+        if (this.iCalendarExportModule) {
+            this.iCalendarExportModule.initializeCalendarExport(fileName);
+        } else {
+            throw Error('Inject ICalendarExport module');
+        }
+    }
+
+    /**
+     * Imports the events from an .ics file downloaded from any of the calendars like Google or Outlook into the Scheduler. 
+     * This method accepts the blob object of an .ics file to be imported as a mandatory argument.
+     * @method importICalendar
+     * @param {Blob} fileContent Accepts the file object.
+     * @returns {void}
+     */
+    public importICalendar(fileContent: Blob): void {
+        if (this.iCalendarImportModule) {
+            this.iCalendarImportModule.initializeCalendarImport(fileContent);
+        } else {
+            throw Error('Inject ICalendarImport module');
+        }
+    }
+
+    /**
      * Adds the newly created event into the Schedule dataSource.
      * @method addEvent
      * @param {Object | Object[]} data Single or collection of event objects to be added into Schedule.
@@ -1576,6 +1639,30 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public addEvent(data: Object | Object[]): void {
         this.crudModule.addEvent(data);
+    }
+
+    /**
+     * Allows the Scheduler events data to be exported as an Excel file either in .xlsx or .csv file formats. 
+     * By default, the whole event collection bound to the Scheduler gets exported as an Excel file. 
+     * To export only the specific events of Scheduler, you need to pass the custom data collection as 
+     * a parameter to this `exportToExcel` method. This method accepts the export options as arguments such as fileName, 
+     * exportType, fields, customData, and includeOccurrences. The `fileName` denotes the name to be given for the exported 
+     * file and the `exportType` allows you to set the format of an Excel file to be exported either as .xlsx or .csv. 
+     * The custom or specific field collection of event dataSource to be exported can be provided through `fields` option 
+     * and the custom data collection can be exported by passing them through the `customData` option. There also exists 
+     * option to export each individual instances of the recurring events to an Excel file, by setting true or false to the 
+     * `includeOccurrences` option, denoting either to include or exclude the occurrences as separate instances on an exported Excel file.
+     * @method exportToExcel
+     * @param  {ExportOptions} excelExportOptions The export options to be set before start with 
+     * exporting the Scheduler events to an Excel file.
+     * @return {void} 
+     */
+    public exportToExcel(excelExportOptions?: ExportOptions): void {
+        if (this.excelExportModule) {
+            this.excelExportModule.initializeExcelExport(excelExportOptions || {});
+        } else {
+            throw Error('Inject ExcelExport module');
+        }
     }
 
     /**
@@ -1609,8 +1696,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @method getEvents
      * @returns {Object[]} Returns the collection of event objects from the Schedule.
      */
-    public getEvents(): Object[] {
-        return this.eventsData;
+    public getEvents(startDate?: Date, endDate?: Date, includeOccurrences?: boolean): Object[] {
+        let eventCollections: Object[] = [];
+        if (includeOccurrences) {
+            eventCollections = this.eventBase.getProcessedEvents();
+        } else {
+            eventCollections = this.eventsData;
+        }
+        eventCollections = this.eventBase.filterEventsByRange(eventCollections, startDate, endDate);
+        return eventCollections;
     }
 
     /**
@@ -1713,16 +1807,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.activeEventData.event = data as { [key: string]: Object };
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
-    }
-
-    /**
-     * This method has been added to adjust the size of the outer event wrapper class that holds the collection of events,
-     *  while trying to set manual height and width to the Schedule cells.
-     * @method adjustEventWrapper
-     * @returns {void}
-     */
-    public adjustEventWrapper(): void {
-        this.activeView.adjustEventWrapper();
     }
 
     /**

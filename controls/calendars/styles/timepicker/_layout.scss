@@ -50,7 +50,6 @@
         font-size: $timepicker-list-normal-font-size;
         overflow: hidden;
         position: relative;
-        text-align: left;
         text-overflow: ellipsis;
         vertical-align: middle;
         white-space: nowrap;
@@ -69,12 +68,6 @@
     & .e-list-parent.e-ul .e-list-item {
       line-height: $timepicker-list-normal-line-height;
       text-indent: $timepicker-list-normal-text-indent;
-    }
-  }
-
-  #{&}.e-timepicker.e-popup.e-rtl {
-    & .e-list-parent.e-ul .e-list-item {
-      text-align: right;
     }
   }
 

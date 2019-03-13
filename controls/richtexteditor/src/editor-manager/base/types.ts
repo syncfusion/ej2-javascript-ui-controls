@@ -14,4 +14,5 @@ export type EditorExecCommand =
     'Effects' |
     'Casing' |
     'InsertHtml' |
+    'InsertText' |
     'Actions';

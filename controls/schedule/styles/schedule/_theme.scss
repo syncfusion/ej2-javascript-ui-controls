@@ -70,6 +70,9 @@
         border-style: $border-type;
         border-width: 0 1px 1px 0;
         color: $schedule-secondary-content-font-color;
+        @if ($schedule-skin == 'bootstrap4') {
+          color: $schedule-primary-content-font-color;
+        }
       }
 
       .e-time-cells-wrap table td {

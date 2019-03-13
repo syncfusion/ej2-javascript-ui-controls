@@ -114,151 +114,148 @@ export class DataLabel {
             data = location;
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
                 if (this.maps.useGroupingSeparator) {
-                text = Internalize(this.maps, parseFloat(text)); 
-                if (!isNullOrUndefined(datasrcObj)) {
-                    datasrcObj[labelpath] = text;
+                    text = Internalize(this.maps, parseFloat(text));
+                    if (!isNullOrUndefined(datasrcObj)) {
+                        datasrcObj[labelpath] = text;
+                    }
                 }
             }
-            }
-        let eventargs: ILabelRenderingEventArgs = {
-            name: dataLabelRendering, maps: this.maps, cancel: false, border: dataLabel.border, datalabel: dataLabel,
-            fill: dataLabel.fill, template: dataLabel.template, text: text
-        };
-        this.maps.trigger(dataLabelRendering, eventargs);
-        let border: Object = { color: 'yellow' };
-        let position: MapLocation[] = [];
-        let width: number = location['rightMax']['x'] - location['leftMax']['x'];
-        let textSize: Size = measureText(text, style);
-        let trimmedLable: string = textTrim(width, text, style);
-        let elementSize: Size = measureText(trimmedLable, style);
-        let startY: number = location['y'] - textSize['height'] / 4;
-        let endY: number = location['y'] + textSize['height'] / 4;
-        let start: number = location['y'] - textSize['height'] / 4;
-        let end: number = location['y'] + textSize['height'] / 4;
-        position = filter(shapePoint[midIndex], startY, endY);
-        if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
+            let eventargs: ILabelRenderingEventArgs = {
+                name: dataLabelRendering, maps: this.maps, cancel: false, border: dataLabel.border, datalabel: dataLabel,
+                fill: dataLabel.fill, template: dataLabel.template, text: text
+            };
+            this.maps.trigger(dataLabelRendering, eventargs);
+            let border: Object = { color: 'yellow' };
+            let position: MapLocation[] = [];
+            let width: number = location['rightMax']['x'] - location['leftMax']['x'];
+            let textSize: Size = measureText(text, style);
+            let trimmedLable: string = textTrim(width, text, style);
+            let elementSize: Size = measureText(trimmedLable, style);
+            let startY: number = location['y'] - textSize['height'] / 4;
+            let endY: number = location['y'] + textSize['height'] / 4;
+            let start: number = location['y'] - textSize['height'] / 4;
+            let end: number = location['y'] + textSize['height'] / 4;
+            position = filter(shapePoint[midIndex], startY, endY);
+            if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                 (shapeData['type'] !== 'MultiPolygon')) {
                 let location1: object = findMidPointOfPolygon(position);
                 location['x'] = location1['x'];
                 width = location1['rightMax']['x'] - location1['leftMax']['x'];
             }
-        let xpositionEnds: number = location['x'] + textSize['width'] / 2;
-        let xpositionStart: number = location['x'] - textSize['width'] / 2;
-        trimmedLable = textTrim(width, text, style);
-        elementSize = measureText(trimmedLable, style);
-        this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
-        let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-        let translate: Object = getTranslate(this.maps, layer, animate);
-        let scale: number = translate['scale'];
-        let transPoint: Point = translate['location'] as Point;
-        let labelElement: HTMLElement;
-        if (eventargs.template !== '') {
-            templateFn = getTemplateFunction(eventargs.template);
-            let templateElement: Element = templateFn(this.maps);
-            labelElement = <HTMLElement>convertElementFromLabel(
-                templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
-            labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
-            labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + 'px';
-            labelTemplateElement.appendChild(labelElement);
-            let labelWidth: number = labelElement.offsetWidth;
-            let labelHeight: number = labelElement.offsetHeight;
-            // if (labelWidth > width || labelWidth === 0 || labelHeight > location['height']) {
-            //     labelElement.style.display = 'None';
-            // }
-        } else {
-            if (dataLabelSettings.smartLabelMode === 'Trim') {
-                options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
-            }
-            if (dataLabelSettings.smartLabelMode === 'None') {
-                options = new TextOption(labelId, (textLocation.x), textLocation.y, 'middle', text, '', '');
-            }
-            if (dataLabelSettings.smartLabelMode === 'Hide') {
-                text = (width >= textSize['width']) ? text : '';
-                options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
-            }
-            text = options['text'] as string;
-            if (dataLabelSettings.intersectionAction === 'Hide') {
-                for (let i: number = 0; i < this.intersect.length; i++) {
-                    if (!isNullOrUndefined(this.intersect[i])) {
-                        if (this.value[index]['leftWidth'] > this.intersect[i]['rightWidth']
-                            || this.value[index]['rightWidth'] < this.intersect[i]['leftWidth']
-                            || this.value[index]['heightTop'] > this.intersect[i]['heightBottom']
-                            || this.value[index]['heightBottom'] < this.intersect[i]['heightTop']) {
-                            text = text;
-                        } else {
-                            text = '';
-                            break;
-                        }
-                    }
+            let xpositionEnds: number = location['x'] + textSize['width'] / 2;
+            let xpositionStart: number = location['x'] - textSize['width'] / 2;
+            trimmedLable = textTrim(width, text, style);
+            elementSize = measureText(trimmedLable, style);
+            this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
+            let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+            let translate: Object = getTranslate(this.maps, layer, animate);
+            let scale: number = translate['scale'];
+            let transPoint: Point = translate['location'] as Point;
+            let labelElement: HTMLElement;
+            if (eventargs.template !== '') {
+                templateFn = getTemplateFunction(eventargs.template);
+                let templateElement: Element = templateFn(this.maps);
+                labelElement = <HTMLElement>convertElementFromLabel(
+                    templateElement, labelId, !isNullOrUndefined(datasrcObj) ? datasrcObj : shapeData['properties'], index, this.maps);
+                labelElement.style.left = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location['x'])) * scale) + 'px';
+                labelElement.style.top = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location['y'])) * scale) + 'px';
+                labelTemplateElement.appendChild(labelElement);
+                let labelWidth: number = labelElement.offsetWidth;
+                let labelHeight: number = labelElement.offsetHeight;
+            } else {
+                if (dataLabelSettings.smartLabelMode === 'Trim') {
+                    options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
                 }
-                this.intersect.push(this.value[index]);
-                options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', text, '', '');
-            }
-            let difference: number;
-            if (dataLabelSettings.intersectionAction === 'Trim') {
-                for (let j: number = 0; j < this.intersect.length; j++) {
-                    if (!isNullOrUndefined(this.intersect[j])) {
-                        if (this.intersect[j]['rightWidth'] < this.value[index]['leftWidth']
-                            || this.intersect[j]['leftWidth'] > this.value[index]['rightWidth']
-                            || this.intersect[j]['heightBottom'] < this.value[index]['heightTop']
-                            || this.intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
-                            trimmedLable = text;
-                            difference = 0;
-                        } else {
-                            if (this.value[index]['leftWidth'] > this.intersect[j]['leftWidth']) {
-                                width = this.intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
-                                difference = width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']);
-                                trimmedLable = textTrim(difference, text, style);
-                                break;
-                            }
-                            if (this.value[index]['leftWidth'] < this.intersect[j]['leftWidth']) {
-                                width = this.value[index]['rightWidth'] - this.intersect[j]['leftWidth'];
-                                difference = Math.abs(width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']));
-                                trimmedLable = textTrim(difference, text, style);
+                if (dataLabelSettings.smartLabelMode === 'None') {
+                    options = new TextOption(labelId, (textLocation.x), textLocation.y, 'middle', text, '', '');
+                }
+                if (dataLabelSettings.smartLabelMode === 'Hide') {
+                    text = (width >= textSize['width']) ? text : '';
+                    options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
+                }
+                text = options['text'] as string;
+                if (dataLabelSettings.intersectionAction === 'Hide') {
+                    for (let i: number = 0; i < this.intersect.length; i++) {
+                        if (!isNullOrUndefined(this.intersect[i])) {
+                            if (this.value[index]['leftWidth'] > this.intersect[i]['rightWidth']
+                                || this.value[index]['rightWidth'] < this.intersect[i]['leftWidth']
+                                || this.value[index]['heightTop'] > this.intersect[i]['heightBottom']
+                                || this.value[index]['heightBottom'] < this.intersect[i]['heightTop']) {
+                                text = text;
+                            } else {
+                                text = '';
                                 break;
                             }
                         }
                     }
+                    this.intersect.push(this.value[index]);
+                    options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', text, '', '');
                 }
-                this.intersect.push(this.value[index]);
-                options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
-            }
-            if (dataLabelSettings.intersectionAction === 'None') {
-                options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
-            }
-            if (trimmedLable.length > 1) {
-                let border: object = eventargs.border;
-                if (border['width'] > 1) {
-                    let fill: string = eventargs.fill;
-                    let opacity: number = dataLabelSettings.opacity;
-                    let rx: number = dataLabelSettings.rx;
-                    let ry: number = dataLabelSettings.ry;
-                    let x: number = location['x'] - textSize['width'] / 2;
-                    let y: number = location['y'] - textSize['height'] / 2;
-                    let rectOptions: RectOption = new RectOption(
-                        this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
-                        fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry
-                    );
-                    let rect: Element = this.maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
-                    group.appendChild(rect);
+                let difference: number;
+                if (dataLabelSettings.intersectionAction === 'Trim') {
+                    for (let j: number = 0; j < this.intersect.length; j++) {
+                        if (!isNullOrUndefined(this.intersect[j])) {
+                            if (this.intersect[j]['rightWidth'] < this.value[index]['leftWidth']
+                                || this.intersect[j]['leftWidth'] > this.value[index]['rightWidth']
+                                || this.intersect[j]['heightBottom'] < this.value[index]['heightTop']
+                                || this.intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
+                                trimmedLable = text;
+                                difference = 0;
+                            } else {
+                                if (this.value[index]['leftWidth'] > this.intersect[j]['leftWidth']) {
+                                    width = this.intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
+                                    difference = width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']);
+                                    trimmedLable = textTrim(difference, text, style);
+                                    break;
+                                }
+                                if (this.value[index]['leftWidth'] < this.intersect[j]['leftWidth']) {
+                                    width = this.value[index]['rightWidth'] - this.intersect[j]['leftWidth'];
+                                    difference = Math.abs(width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']));
+                                    trimmedLable = textTrim(difference, text, style);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    this.intersect.push(this.value[index]);
+                    options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                 }
+                if (dataLabelSettings.intersectionAction === 'None') {
+                    options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
+                }
+                if (trimmedLable.length > 1) {
+                    let border: object = eventargs.border;
+                    if (border['width'] > 1) {
+                        let fill: string = eventargs.fill;
+                        let opacity: number = dataLabelSettings.opacity;
+                        let rx: number = dataLabelSettings.rx;
+                        let ry: number = dataLabelSettings.ry;
+                        let x: number = location['x'] - textSize['width'] / 2;
+                        let y: number = location['y'] - textSize['height'] / 2;
+                        let rectOptions: RectOption = new RectOption(
+                            this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
+                            fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry
+                        );
+                        let rect: Element = this.maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
+                        group.appendChild(rect);
+                    }
+                }
+                element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
+                element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
+                    + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
+                group.appendChild(element);
             }
-            element = renderTextElement(options, style, style.color, group);
-            element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
-                + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
-            group.appendChild(element);
+            this.dataLabelCollections.push({
+                location: { x: location['x'], y: (location['y'] + elementSize.height / 4) },
+                element: isNullOrUndefined(labelElement) ? element : labelElement,
+                layerIndex: layerIndex,
+                shapeIndex: index,
+                labelIndex: index
+            });
+            if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
+                document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+            }
         }
-        this.dataLabelCollections.push({
-            location: { x: location['x'], y: (location['y'] + elementSize.height / 4) },
-            element: isNullOrUndefined(labelElement) ? element : labelElement,
-            layerIndex: layerIndex,
-            shapeIndex: index,
-            labelIndex: index
-        });
-        if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
-            document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
-        }
-    }
     }
     private getPoint(shapes: object[], points: MapLocation[]): MapLocation[] {
         shapes.map((current: object, index: number) => {

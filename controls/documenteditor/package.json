@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-documenteditor",
-	"version": "16.4.53",
+	"version": "17.1.1",
 	"description": "Feature-rich document editor control with built-in support for context menu, options pane and dialogs.",
 	"keywords": [
 		"ej2",
@@ -61,5 +61,6 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
-	}
+	},
+	"typings": "index.d.ts"
 }

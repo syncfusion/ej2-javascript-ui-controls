@@ -1,5 +1,6 @@
-import { print as printWindow, createElement, isNullOrUndefined, Browser, SvgRenderer } from '@syncfusion/ej2-base';
+import { print as printWindow, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart/chart';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { getElement } from '../utils/helper';
 import { ExportType } from '../utils/enum';
@@ -102,10 +103,12 @@ export class ExportUtils {
             )
         );
         if (type === 'SVG') {
-            this.triggerDownload(
-                fileName, type,
-                url, isDownload
-            );
+            if (Browser.info.name === 'msie') {
+                let svg: Blob = new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'application/octet-stream' });
+                window.navigator.msSaveOrOpenBlob(svg, fileName + '.' + type.toLocaleLowerCase());
+            } else {
+                this.triggerDownload(fileName, type, url, isDownload);
+            }
         } else {
             let image: HTMLImageElement = new Image();
             let ctx: CanvasRenderingContext2D = element.getContext('2d');

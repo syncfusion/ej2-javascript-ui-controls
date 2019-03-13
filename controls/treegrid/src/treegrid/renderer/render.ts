@@ -4,6 +4,7 @@ import { addClass, createElement, isNullOrUndefined, getValue } from '@syncfusio
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
 import { isRemoteData, isOffline, getExpandStatus } from '../utils';
+import { Column } from '../models';
 
 /**
  * TreeGrid render module
@@ -69,7 +70,9 @@ export class Render {
         let data: ITreeData = <ITreeData>args.data;
         let ispadfilter: boolean = isNullOrUndefined(data.filterLevel);
         let pad: number = ispadfilter ? data.level : data.filterLevel;
-        let totalIconsWidth: number = 0;
+        let totalIconsWidth: number = 0; let cellElement: HTMLElement;
+        let column: Column = this.parent.getColumnByField(args.column.field);
+        let summaryRow: boolean = data.isSummaryRow;
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
             let container: Element = createElement('div', {
                 className: 'e-treecolumn-container'
@@ -119,7 +122,7 @@ export class Render {
             // if (data.hasChildRecords) {
             //     addClass([expandIcon], data.expanded ? 'e-treegridexpand' : 'e-treegridcollapse');
             // }
-            let cellElement: HTMLElement = createElement('span', {
+            cellElement = createElement('span', {
                 className: 'e-treecell'
             });
             if (this.parent.allowTextWrap) {
@@ -132,7 +135,15 @@ export class Render {
             args.cell.innerHTML = '';
             args.cell.appendChild(container);
         }
-        let summaryRow: boolean = getObject('isSummaryRow', args.data);
+        if (!isNullOrUndefined(column) && column.showCheckbox) {
+            this.parent.notify('columnCheckbox', args);
+            if (this.parent.allowTextWrap) {
+                let checkboxElement: HTMLElement = <HTMLElement>args.cell.querySelectorAll('.e-frame')[0];
+                let width: number = parseInt(checkboxElement.style.width, 16);
+                totalIconsWidth += width;
+                cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
+            }
+        }
         if (summaryRow) {
             addClass([args.cell], 'e-summarycell');
             let summaryData: string = getObject(args.column.field, args.data);

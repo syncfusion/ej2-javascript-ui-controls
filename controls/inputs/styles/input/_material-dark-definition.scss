@@ -88,7 +88,7 @@ $input-clear-icon-color: rgba($grey-dark-font, .7) !default;
 $input-clear-icon-hover-color: rgba($grey-dark-font, .7) !default;
 $input-error-color: $error-font !default;
 $input-accent: rgba($accent, .7) !default;
-$input-placeholder: rgba($grey-dark-font, .6) !default;
+$input-placeholder: rgba($grey-dark-font, .42) !default;
 $input-active-border-color: $accent !default;
 $input-group-active-border-color: transparent !default;
 $input-disable-border-type: dashed !default;
@@ -216,6 +216,7 @@ $input-bigger-small-left-child-min-width: 30px !default;
 $input-icon-inner-width: 10px !default;
 $input-icon-inner-height: 10px !default;
 $input-clear-icon-font: '\e932' !default;
+$input-readonly-bg-color: none !default;;
 //enddefault
 //dimensions
 @mixin input-sizing {

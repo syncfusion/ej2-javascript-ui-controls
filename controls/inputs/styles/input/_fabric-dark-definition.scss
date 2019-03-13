@@ -215,6 +215,7 @@ $input-clear-icon-font: '\e953' !default;
 $input-hover-bg-color: $neutral-light !default;
 $input-group-pressed-bg: $neutral-quintenary !default;
 $input-group-pressed-color: $neutral-light-fontalt !default;
+$input-readonly-bg-color: none !default;;
 //enddefault
 //dimensions
 @mixin input-sizing {

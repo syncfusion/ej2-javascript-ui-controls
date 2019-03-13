@@ -10,7 +10,8 @@ import {
     removeClass, createStyle, querySelector, getTemplateFunction
 } from '../utils/helper';
 import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol, checkPropertyPath } from '../utils/helper';
-import { isNullOrUndefined, SvgRenderer, Browser, EventHandler, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, EventHandler, remove } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { LayerSettingsModel, HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
 /**
  * Legend module is used to render legend for the maps
@@ -320,6 +321,7 @@ export class Legend {
                 let textLocation: Point = new Point(item['textX'], item['textY']);
                 eventArgs.fill = item['fill'];
                 map.trigger(legendRendering, eventArgs);
+                textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
                 let rectOptions: RectOption = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
@@ -366,6 +368,7 @@ export class Legend {
                 let renderOptions: PathOption = new PathOption(
                     shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, ''
                 );
+                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color : this.maps.themeStyle.legendTextColor;
                 legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
@@ -734,7 +737,7 @@ export class Legend {
         }
         return null;
     }
-
+    //tslint:disable
     private renderLegendBorder(): void {
         let map: Maps = this.maps;
         let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings;
@@ -752,6 +755,7 @@ export class Legend {
             (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0)
         );
         if (legendTitle) {
+            textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTextColor;         
             textOptions = new TextOption(
                 map.element.id + '_LegendTitle',
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),

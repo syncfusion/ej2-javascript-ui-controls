@@ -150,11 +150,11 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         this.wireEvents();
     };
     CalendarBase.prototype.validateDate = function (value) {
-        this.setProperties({ min: this.checkDateValue(new Date('' + this.min)) }, true);
-        this.setProperties({ max: this.checkDateValue(new Date('' + this.max)) }, true);
+        this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(this.min))) }, true);
+        this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(this.max))) }, true);
         this.currentDate = this.currentDate ? this.currentDate : new Date(new Date().setHours(0, 0, 0, 0));
         if (!isNullOrUndefined(value) && this.min <= this.max && value >= this.min && value <= this.max) {
-            this.currentDate = new Date('' + value);
+            this.currentDate = new Date(this.checkValue(value));
         }
     };
     CalendarBase.prototype.minMaxUpdate = function (value) {
@@ -168,15 +168,15 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         this.min = isNullOrUndefined(this.min) || !(+this.min) ? this.min = new Date(1900, 0, 1) : this.min;
         this.max = isNullOrUndefined(this.max) || !(+this.max) ? this.max = new Date(2099, 11, 31) : this.max;
         if (+this.min <= +this.max && value && +value <= +this.max && +value >= +this.min) {
-            this.currentDate = new Date('' + value);
+            this.currentDate = new Date(this.checkValue(value));
         }
         else {
             if (+this.min <= +this.max && !value && +this.currentDate > +this.max) {
-                this.currentDate = new Date('' + this.max);
+                this.currentDate = new Date(this.checkValue(this.max));
             }
             else {
                 if (+this.currentDate < +this.min) {
-                    this.currentDate = new Date('' + this.min);
+                    this.currentDate = new Date(this.checkValue(this.min));
                 }
             }
         }
@@ -372,10 +372,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 this.effect = 'e-zoomin';
             }
             if (this.getViewNumber(this.start) >= this.getViewNumber(this.depth)) {
-                this.navigateTo(this.depth, new Date('' + value));
+                this.navigateTo(this.depth, new Date(this.checkValue(value)));
             }
             else {
-                this.navigateTo('Month', new Date('' + value));
+                this.navigateTo('Month', new Date(this.checkValue(value)));
             }
         }
     };
@@ -498,7 +498,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
     };
     CalendarBase.prototype.KeyboardNavigate = function (number, currentView, e, max, min) {
-        var date = new Date('' + this.currentDate);
+        var date = new Date(this.checkValue(this.currentDate));
         switch (currentView) {
             case 2:
                 this.addYears(this.currentDate, number);
@@ -591,7 +591,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     CalendarBase.prototype.renderDays = function (currentDate, e, value, multiSelection, values) {
         var tdEles = [];
         var cellsCount = 42;
-        var localDate = new Date('' + currentDate);
+        var localDate = new Date(this.checkValue(currentDate));
         var minMaxDate;
         var numCells = this.weekNumber ? 8 : 7;
         // 8 and 7 denotes the number of columns to be specified.
@@ -681,7 +681,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                     var formatOptions = { type: 'date', skeleton: 'short', calendar: type };
                     var localDateString = this.globalize.formatDate(localDate, formatOptions);
                     var tempDateString = this.globalize.formatDate(values[tempValue], formatOptions);
-                    if (localDateString === tempDateString && this.getDateVal(localDate, values[tempValue])) {
+                    if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
+                        || (this.getDateVal(localDate, value))) {
                         addClass([tdEle], SELECTED);
                     }
                     else {
@@ -727,15 +728,15 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var numCells = 4;
         var tdEles = [];
         var valueUtil = isNullOrUndefined(value);
-        var curDate = new Date('' + this.currentDate);
+        var curDate = new Date(this.checkValue(this.currentDate));
         var mon = curDate.getMonth();
         var yr = curDate.getFullYear();
         var localDate = curDate;
         var curYrs = localDate.getFullYear();
-        var minYr = new Date('' + this.min).getFullYear();
-        var minMonth = new Date('' + this.min).getMonth();
-        var maxYr = new Date('' + this.max).getFullYear();
-        var maxMonth = new Date('' + this.max).getMonth();
+        var minYr = new Date(this.checkValue(this.min)).getFullYear();
+        var minMonth = new Date(this.checkValue(this.min)).getMonth();
+        var maxYr = new Date(this.checkValue(this.max)).getFullYear();
+        var maxMonth = new Date(this.checkValue(this.max)).getMonth();
         localDate.setMonth(0);
         this.titleUpdate(this.currentDate, 'months');
         var disabled = (this.min > localDate) || (this.max < localDate);
@@ -772,7 +773,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var numCells = 4;
         var yearCell = 12;
         var tdEles = [];
-        var localDate = new Date('' + this.currentDate);
+        var localDate = new Date(this.checkValue(this.currentDate));
         localDate.setMonth(0);
         localDate.setDate(1);
         var localYr = localDate.getFullYear();
@@ -795,8 +796,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERMONTH);
             }
-            else if (year < new Date('' + this.min).getFullYear() ||
-                year > new Date('' + this.max).getFullYear()) {
+            else if (year < new Date(this.checkValue(this.min)).getFullYear() ||
+                year > new Date(this.checkValue(this.max)).getFullYear()) {
                 addClass([tdEle], DISABLED);
             }
             else if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
@@ -1076,8 +1077,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'min':
                 case 'max':
-                    prop === 'min' ? this.setProperties({ min: this.checkDateValue(new Date('' + newProp.min)) }, true) :
-                        this.setProperties({ max: this.checkDateValue(new Date('' + newProp.max)) }, true);
+                    prop === 'min' ? this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true) :
+                        this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
                     this.setProperties({ start: this.currentView() }, true);
                     detach(this.tableBodyElement);
                     this.minMaxUpdate();
@@ -1102,8 +1103,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'start':
+                case 'depth':
                 case 'weekNumber':
                 case 'firstDayOfWeek':
+                    this.checkView();
                     this.createContentHeader();
                     this.createContentBody();
                     break;
@@ -1210,19 +1213,19 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         return id;
     };
     CalendarBase.prototype.iconHandler = function () {
-        new Date('' + this.currentDate).setDate(1);
+        new Date(this.checkValue(this.currentDate)).setDate(1);
         switch (this.currentView()) {
             case 'Month':
-                this.previousIconHandler(this.compareMonth(new Date('' + this.currentDate), this.min) < 1);
-                this.nextIconHandler(this.compareMonth(new Date('' + this.currentDate), this.max) > -1);
+                this.previousIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+                this.nextIconHandler(this.compareMonth(new Date(this.checkValue(this.currentDate)), this.max) > -1);
                 break;
             case 'Year':
-                this.previousIconHandler(this.compareYear(new Date('' + this.currentDate), this.min) < 1);
-                this.nextIconHandler(this.compareYear(new Date('' + this.currentDate), this.max) > -1);
+                this.previousIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+                this.nextIconHandler(this.compareYear(new Date(this.checkValue(this.currentDate)), this.max) > -1);
                 break;
             case 'Decade':
-                this.previousIconHandler(this.compareDecade(new Date('' + this.currentDate), this.min) < 1);
-                this.nextIconHandler(this.compareDecade(new Date('' + this.currentDate), this.max) > -1);
+                this.previousIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.min) < 1);
+                this.nextIconHandler(this.compareDecade(new Date(this.checkValue(this.currentDate)), this.max) > -1);
         }
     };
     /**
@@ -1349,13 +1352,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             this.currentDate = date;
         }
         if (+date <= +this.min) {
-            this.currentDate = new Date('' + this.min);
+            this.currentDate = new Date(this.checkValue(this.min));
         }
         if (+date >= +this.max) {
-            this.currentDate = new Date('' + this.max);
-        }
-        if (this.getModuleName() === 'daterangepicker') {
-            this.currentDate = date;
+            this.currentDate = new Date(this.checkValue(this.max));
         }
         if ((this.getViewNumber(this.depth) >= this.getViewNumber(view))) {
             if ((this.getViewNumber(this.depth) <= this.getViewNumber(this.start))
@@ -1394,7 +1394,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     
     CalendarBase.prototype.getWeek = function (d) {
-        var currentDate = new Date('' + d).valueOf();
+        var currentDate = new Date(this.checkValue(d)).valueOf();
         var date = new Date(d.getFullYear(), 0, 1).valueOf();
         var a = (currentDate - date);
         return Math.ceil((((a) / dayMilliSeconds) + new Date(date).getDay() + 1) / 7);
@@ -1457,18 +1457,18 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             if (multiSelection && !this.checkPresentDate(date, values)) {
                 var copyValues = this.copyValues(values);
                 if (!isNullOrUndefined(values) && copyValues.length > 0) {
-                    copyValues.push(new Date('' + date));
+                    copyValues.push(new Date(this.checkValue(date)));
                     this.setProperties({ values: copyValues }, true);
                     this.setProperties({ value: values[values.length - 1] }, true);
                 }
                 else {
-                    this.setProperties({ values: [new Date('' + date)] }, true);
+                    this.setProperties({ values: [new Date(this.checkValue(date))] }, true);
                 }
             }
             else {
-                this.setProperties({ value: new Date('' + date) }, true);
+                this.setProperties({ value: new Date(this.checkValue(date)) }, true);
             }
-            this.currentDate = new Date('' + date);
+            this.currentDate = new Date(this.checkValue(date));
         }
         var tableBodyElement = closest(element, '.' + ROOT);
         if (isNullOrUndefined(tableBodyElement)) {
@@ -1669,7 +1669,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     CalendarBase.prototype.getMaxDays = function (d) {
         var date;
         var month;
-        var tmpDate = new Date('' + d);
+        var tmpDate = new Date(this.checkValue(d));
         date = 28;
         month = tmpDate.getMonth();
         while (tmpDate.getMonth() === month) {
@@ -1680,7 +1680,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     CalendarBase.prototype.setDateDecade = function (date, year) {
         date.setFullYear(year);
-        this.setProperties({ value: new Date('' + date) }, true);
+        this.setProperties({ value: new Date(this.checkValue(date)) }, true);
     };
     
     CalendarBase.prototype.setDateYear = function (date, value) {
@@ -1688,8 +1688,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         if (value.getMonth() !== date.getMonth()) {
             date.setDate(0);
         }
-        this.setProperties({ value: new Date('' + date) }, true);
-        this.currentDate = new Date('' + value);
+        this.setProperties({ value: new Date(this.checkValue(date)) }, true);
+        this.currentDate = new Date(this.checkValue(value));
     };
     CalendarBase.prototype.compareMonth = function (start, end) {
         var result;
@@ -1703,6 +1703,25 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             result = start.getMonth() === end.getMonth() ? 0 : start.getMonth() > end.getMonth() ? 1 : -1;
         }
         return result;
+    };
+    CalendarBase.prototype.checkValue = function (inValue) {
+        if (inValue instanceof Date) {
+            return (inValue.toUTCString());
+        }
+        else {
+            return ('' + inValue);
+        }
+    };
+    CalendarBase.prototype.checkView = function () {
+        if (this.start !== 'Decade' && this.start !== 'Year') {
+            this.start = 'Month';
+        }
+        if (this.depth !== 'Decade' && this.depth !== 'Year') {
+            this.depth = 'Month';
+        }
+        if (this.getViewNumber(this.depth) > this.getViewNumber(this.start)) {
+            this.depth = 'Month';
+        }
     };
     __decorate([
         Property(new Date(1900, 0, 1))
@@ -1795,8 +1814,8 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ values: copyValues }, true);
             for (var index = 0; index < this.values.length; index++) {
                 if (!this.checkDateValue(this.values[index])) {
-                    if (typeof (this.values[index]) === 'string' && this.checkDateValue(new Date('' + this.values[index]))) {
-                        var copyDate = new Date('' + this.values[index]);
+                    if (typeof (this.values[index]) === 'string' && this.checkDateValue(new Date(this.checkValue(this.values[index])))) {
+                        var copyDate = new Date(this.checkValue(this.values[index]));
                         this.values.splice(index, 1);
                         this.values.splice(index, 0, copyDate);
                     }
@@ -1823,11 +1842,11 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
     };
     Calendar.prototype.validateDate = function () {
         if (typeof this.value === 'string') {
-            this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true); // persist the value property.
+            this.setProperties({ value: this.checkDateValue(new Date(this.checkValue(this.value))) }, true); // persist the value property.
         }
         _super.prototype.validateDate.call(this, this.value);
         if (!isNullOrUndefined(this.value) && this.min <= this.max && this.value >= this.min && this.value <= this.max) {
-            this.currentDate = new Date('' + this.value);
+            this.currentDate = new Date(this.checkValue(this.value));
         }
         if (isNaN(+this.value)) {
             this.setProperties({ value: null }, true);
@@ -1895,6 +1914,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         this.changeHandler = function (e) {
             _this.triggerChange(e);
         };
+        this.checkView();
         _super.prototype.preRender.call(this, this.value);
     };
     
@@ -1993,10 +2013,10 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'value':
                     if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: new Date('' + newProp.value) }, true);
+                        this.setProperties({ value: new Date(this.checkValue(newProp.value)) }, true);
                     }
                     else {
-                        newProp.value = new Date('' + newProp.value);
+                        newProp.value = new Date(this.checkValue(newProp.value));
                     }
                     if (isNaN(+this.value)) {
                         this.setProperties({ value: oldProp.value }, true);
@@ -2231,7 +2251,7 @@ var Islamic = /** @__PURE__ @class */ (function () {
     Islamic.prototype.islamicRenderDays = function (currentDate, value, multiSelection, values) {
         var tdEles = [];
         var cellsCount = 42;
-        var localDate = new Date('' + currentDate);
+        var localDate = new Date(this.islamicInValue(currentDate));
         var minMaxDate;
         var numCells = this.calendarInstance.weekNumber ? 8 : 7;
         // 8 and 7 denotes the number of columns to be specified.
@@ -2356,23 +2376,24 @@ var Islamic = /** @__PURE__ @class */ (function () {
         return tdEles;
     };
     Islamic.prototype.islamicIconHandler = function () {
-        new Date('' + this.calendarInstance.currentDate).setDate(1);
+        new Date(this.islamicInValue(this.calendarInstance.currentDate)).setDate(1);
+        var date = new Date(this.islamicInValue(this.calendarInstance.currentDate));
         switch (this.calendarInstance.currentView()) {
             case 'Month':
-                var prevMonthCompare = this.islamicCompareMonth(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.min) < 1;
-                var nextMonthCompare = this.islamicCompareMonth(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.max) > -1;
+                var prevMonthCompare = this.islamicCompareMonth(date, this.calendarInstance.min) < 1;
+                var nextMonthCompare = this.islamicCompareMonth(date, this.calendarInstance.max) > -1;
                 this.calendarInstance.previousIconHandler(prevMonthCompare);
                 this.calendarInstance.nextIconHandler(nextMonthCompare);
                 break;
             case 'Year':
-                var prevYearCompare = this.hijriCompareYear(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.min) < 1;
-                var nextYearCompare = this.hijriCompareYear(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.max) > -1;
+                var prevYearCompare = this.hijriCompareYear(date, this.calendarInstance.min) < 1;
+                var nextYearCompare = this.hijriCompareYear(date, this.calendarInstance.max) > -1;
                 this.calendarInstance.previousIconHandler(prevYearCompare);
                 this.calendarInstance.nextIconHandler(nextYearCompare);
                 break;
             case 'Decade':
-                var prevDecadeCompare = this.hijriCompareDecade(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.min) < 1;
-                var nextDecadeCompare = this.hijriCompareDecade(new Date('' + this.calendarInstance.currentDate), this.calendarInstance.max) > -1;
+                var prevDecadeCompare = this.hijriCompareDecade(date, this.calendarInstance.min) < 1;
+                var nextDecadeCompare = this.hijriCompareDecade(date, this.calendarInstance.max) > -1;
                 this.calendarInstance.previousIconHandler(prevDecadeCompare);
                 this.calendarInstance.nextIconHandler(nextDecadeCompare);
         }
@@ -2422,7 +2443,7 @@ var Islamic = /** @__PURE__ @class */ (function () {
         var numCells = 4;
         var tdEles = [];
         var valueUtil = isNullOrUndefined(value);
-        var curDate = new Date('' + this.calendarInstance.currentDate);
+        var curDate = new Date(this.islamicInValue(this.calendarInstance.currentDate));
         var localDate = curDate;
         /* tslint:disable-next-line:no-any */
         var islamicDate = this.getIslamicDate(localDate);
@@ -2482,14 +2503,14 @@ var Islamic = /** @__PURE__ @class */ (function () {
         var numCells = 4;
         var yearCell = 12;
         var tdEles = [];
-        var localDate = new Date('' + this.calendarInstance.currentDate);
+        var localDate = new Date(this.islamicInValue(this.calendarInstance.currentDate));
         /* tslint:disable-next-line:no-any */
         var islamicDate = this.getIslamicDate(localDate);
         var gregorianObject = HijriParser.toGregorian(islamicDate.year, 1, 1);
         localDate = gregorianObject;
         var localYr = localDate.getFullYear();
-        var startYr = new Date('' + (localYr - localYr % 10));
-        var endYr = new Date('' + (localYr - localYr % 10 + (10 - 1)));
+        var startYr = new Date(this.islamicInValue((localYr - localYr % 10)));
+        var endYr = new Date(this.islamicInValue((localYr - localYr % 10 + (10 - 1))));
         var startFullYr = startYr.getFullYear();
         var endFullYr = endYr.getFullYear();
         /* tslint:disable-next-line:max-line-length */
@@ -2516,8 +2537,8 @@ var Islamic = /** @__PURE__ @class */ (function () {
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERMONTH$1);
             }
-            else if (year < new Date('' + (this.calendarInstance.min)).getFullYear()
-                || year > new Date('' + this.calendarInstance.max).getFullYear()) {
+            else if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
+                || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
                 addClass([tdEle], DISABLED$1);
             }
             else if (!isNullOrUndefined(value) &&
@@ -2669,6 +2690,14 @@ var Islamic = /** @__PURE__ @class */ (function () {
     Islamic.prototype.destroy = function () {
         this.calendarInstance = null;
     };
+    Islamic.prototype.islamicInValue = function (inValue) {
+        if (inValue instanceof Date) {
+            return (inValue.toUTCString());
+        }
+        else {
+            return ('' + inValue);
+        }
+    };
     return Islamic;
 }());
 
@@ -2714,6 +2743,8 @@ var DATEICON = 'e-date-icon';
 var ICONS = 'e-icons';
 var OPENDURATION = 300;
 var OFFSETVALUE = 4;
+var SELECTED$2 = 'e-selected';
+var NONEDIT = 'e-non-edit';
 /**
  * Represents the DatePicker component that allows user to select
  * or enter a date value.
@@ -2787,15 +2818,25 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             attributes(this.inputElement, { 'readonly': '' });
         }
     };
+    DatePicker.prototype.updateIconState = function () {
+        if (!this.allowEdit) {
+            if (this.inputElement.value === '') {
+                removeClass([this.inputWrapper.container], [NONEDIT]);
+            }
+            else {
+                addClass([this.inputWrapper.container], [NONEDIT]);
+            }
+        }
+    };
     DatePicker.prototype.initialize = function () {
         this.checkInvalidValue(this.value);
         this.createInput();
         this.setAllowEdit();
         this.updateInput();
         this.previousElementValue = this.inputElement.value;
+        this.previousDate = new Date(+this.value);
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputValueCopy = this.value;
-        this.previousDate = new Date(+this.value);
     };
     DatePicker.prototype.createInput = function () {
         var ariaAttrs = {
@@ -2847,7 +2888,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.value && !this.isCalendar()) {
             this.disabledDates();
         }
-        if (!+new Date('' + this.value)) {
+        if (!+new Date(this.checkValue(this.value))) {
             this.setProperties({ value: null }, true);
         }
         if (this.strictMode) {
@@ -2899,6 +2940,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         this.changedArgs = { value: this.value };
         this.errorClass();
+        this.updateIconState();
     };
     
     DatePicker.prototype.minMaxUpdates = function () {
@@ -2913,31 +2955,97 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    DatePicker.prototype.checkStringValue = function (val) {
+        var returnDate = null;
+        var formatOptions = null;
+        var formatDateTime = null;
+        if (this.getModuleName() === 'datetimepicker') {
+            var culture = new Internationalization(this.locale);
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
+                formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+            }
+            else {
+                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime', calendar: 'islamic' };
+            }
+        }
+        else {
+            if (this.calendarMode === 'Gregorian') {
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+            }
+            else {
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+            }
+        }
+        returnDate = this.checkDateValue(this.globalize.parseDate(val, formatOptions));
+        if (isNullOrUndefined(returnDate) && (this.getModuleName() === 'datetimepicker')) {
+            returnDate = this.checkDateValue(this.globalize.parseDate(val, formatDateTime));
+        }
+        return returnDate;
+    };
     DatePicker.prototype.checkInvalidValue = function (value) {
-        if (typeof value !== 'object' && !isNullOrUndefined(value) && !this.strictMode) {
+        if (!(value instanceof Date) && !isNullOrUndefined(value)) {
+            var valueDate = null;
             var valueString = value;
             if (typeof value === 'number') {
                 valueString = value.toString();
             }
             var formatOptions = null;
-            if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd' };
+            var formatDateTime = null;
+            if (this.getModuleName() === 'datetimepicker') {
+                var culture = new Internationalization(this.locale);
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
+                    formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+                }
+                else {
+                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                    formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime', calendar: 'islamic' };
+                }
             }
             else {
-                formatOptions = { format: this.format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
-            }
-            if (!this.checkDateValue(this.globalize.parseDate(valueString, formatOptions))) {
-                var extISOString = null;
-                var basicISOString = null;
-                // tslint:disable-next-line
-                extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
-                // tslint:disable-next-line
-                basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
-                if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
-                    && !isNaN(parseInt(valueString, 10)) || isNaN(+new Date('' + valueString))) {
-                    this.invalidValueString = valueString;
-                    this.setProperties({ value: null }, true);
+                if (this.calendarMode === 'Gregorian') {
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
                 }
+                else {
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
+                }
+            }
+            var invalid = false;
+            if (typeof valueString !== 'string') {
+                valueString = null;
+                invalid = true;
+            }
+            else {
+                if (typeof valueString === 'string') {
+                    valueString = valueString.trim();
+                }
+                valueDate = this.checkStringValue(valueString);
+                if (!valueDate) {
+                    var extISOString = null;
+                    var basicISOString = null;
+                    // tslint:disable-next-line
+                    extISOString = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                    // tslint:disable-next-line
+                    basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                    if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
+                        || (/^[a-zA-Z0-9- ]*$/).test(valueString) || isNaN(+new Date(this.checkValue(valueString)))) {
+                        invalid = true;
+                    }
+                    else {
+                        valueDate = new Date(valueString);
+                    }
+                }
+            }
+            if (invalid) {
+                if (!this.strictMode) {
+                    this.invalidValueString = valueString;
+                }
+                this.setProperties({ value: null }, true);
+            }
+            else {
+                this.setProperties({ value: valueDate }, true);
             }
         }
     };
@@ -2983,11 +3091,11 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.inputElement.setAttribute('value', '');
             }
             this.setProperties({ value: this.inputValueCopy }, true);
+            this.restoreValue();
             if (this.inputElement) {
                 Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
                 this.errorClass();
             }
-            this.restoreValue();
         }
     };
     DatePicker.prototype.restoreValue = function () {
@@ -3010,7 +3118,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.clear = function (event) {
         this.setProperties({ value: null }, true);
         Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        this.invalidValueString = '';
         this.updateInput();
+        this.popupUpdate();
         this.changeEvent(event);
     };
     DatePicker.prototype.dateIconHandler = function (e) {
@@ -3067,6 +3177,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         };
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
+        this.updateIconState();
     };
     DatePicker.prototype.inputBlurHandler = function (e) {
         this.strictModeUpdate();
@@ -3075,6 +3186,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
         }
         this.updateInput();
+        this.popupUpdate();
         this.changeTrigger(e);
         this.errorClass();
         if (this.isCalendar() && document.activeElement === this.inputElement) {
@@ -3127,6 +3239,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             case 'enter':
                 this.strictModeUpdate();
                 this.updateInput();
+                this.popupUpdate();
                 this.changeTrigger(e);
                 this.errorClass();
                 if (!this.isCalendar() && document.activeElement === this.inputElement) {
@@ -3140,6 +3253,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             case 'tab':
                 this.strictModeUpdate();
                 this.updateInput();
+                this.popupUpdate();
                 this.changeTrigger(e);
                 this.errorClass();
                 this.hide(e);
@@ -3155,6 +3269,22 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
         if (this.isCalendar()) {
             _super.prototype.keyActionHandle.call(this, e);
+        }
+    };
+    DatePicker.prototype.popupUpdate = function () {
+        if ((isNullOrUndefined(this.value)) && (!isNullOrUndefined(this.previousDate)) ||
+            (+this.value !== +this.previousDate)) {
+            if (this.popupObj) {
+                if (this.popupObj.element.querySelectorAll('.' + SELECTED$2).length > 0) {
+                    removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED$2), [SELECTED$2]);
+                }
+            }
+            if (!isNullOrUndefined(this.value)) {
+                if ((+this.value >= +this.min) && (+this.value <= +this.max)) {
+                    var targetdate = new Date(this.checkValue(this.value));
+                    _super.prototype.navigateTo.call(this, 'Month', targetdate);
+                }
+            }
         }
     };
     DatePicker.prototype.strictModeUpdate = function () {
@@ -3197,6 +3327,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             dateOptions = formatOptions;
         }
         var date;
+        if (typeof this.inputElement.value === 'string') {
+            this.inputElement.value = this.inputElement.value.trim();
+        }
         if ((this.getModuleName() === 'datetimepicker')) {
             if (this.checkDateValue(this.globalize.parseDate(this.inputElement.value, dateOptions))) {
                 date = this.globalize.parseDate(this.inputElement.value, dateOptions);
@@ -3337,7 +3470,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.changedArgs.isInteracted = !isNullOrUndefined(event);
                 this.trigger('change', this.changedArgs);
                 this.previousElementValue = this.inputElement.value;
-                this.previousDate = !isNaN(+new Date('' + this.value)) ? new Date('' + this.value) : null;
+                this.previousDate = !isNaN(+new Date(this.checkValue(this.value))) ? new Date(this.checkValue(this.value)) : null;
             }
         }
     };
@@ -3427,7 +3560,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             var prevent_1 = true;
             var outOfRange = void 0;
             if (!isNullOrUndefined(this.value) && !(+this.value >= +this.min && +this.value <= +this.max)) {
-                outOfRange = new Date('' + this.value);
+                outOfRange = new Date(this.checkValue(this.value));
                 this.setProperties({ 'value': null }, true);
             }
             else {
@@ -3499,7 +3632,6 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 removeClass(this.inputWrapper.buttons, ACTIVE);
             }
             this.setAriaAttributes();
-            this.previousElementValue = this.inputElement.value;
             if (Browser.isDevice && this.modal) {
                 this.modal.style.display = 'none';
                 this.modal.outerHTML = '';
@@ -3510,6 +3642,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
+        this.updateIconState();
     };
     /**
      * Sets the focus to widget for interaction.
@@ -3715,6 +3848,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.checkHtmlAttributes = function () {
         this.globalize = new Internationalization(this.locale);
         this.checkFormat();
+        this.checkView();
         var attributes$$1 = ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
         var options;
         if (this.getModuleName() === 'datetimepicker') {
@@ -3801,7 +3935,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         var valueCopy;
         var formatOptions;
         var globalize;
-        valueCopy = this.checkDateValue(this.value) ? new Date(+this.value) : new Date('' + this.value);
+        valueCopy = this.checkDateValue(this.value) ? new Date(+this.value) : new Date(this.checkValue(this.value));
         var previousValCopy = this.previousDate;
         //calls the Calendar render method to check the disabled dates through renderDayCell event and update the input value accordingly.
         this.minMaxUpdates();
@@ -3899,10 +4033,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'value':
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
-                    if (typeof newProp.value === 'string' && !this.invalidValueString) {
-                        newProp.value = this.checkDateValue(this.globalize.parseDate(newProp.value, options));
-                        this.setProperties({ value: newProp.value }, true);
-                    }
+                    newProp.value = this.value;
                     this.previousElementValue = this.inputElement.value;
                     if (isNullOrUndefined(this.value)) {
                         Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
@@ -3947,6 +4078,13 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
+                    break;
+                case 'start':
+                case 'depth':
+                    this.checkView();
+                    if (this.calendarElement) {
+                        _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
+                    }
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);
@@ -4084,6 +4222,8 @@ var RIGHTCALENDER = 'e-right-calendar';
 var LEFTCONTAINER = 'e-left-container';
 var RIGHTCONTAINER = 'e-right-container';
 var ROOT$2 = 'e-daterangepicker';
+var LIBRARY$1 = 'e-lib';
+var CONTROL$1 = 'e-control';
 var ERROR$1 = 'e-error';
 var ACTIVE$1 = 'e-active';
 var STARTENDCONTAINER = 'e-start-end';
@@ -4097,7 +4237,7 @@ var OTHERMONTH$2 = 'e-other-month';
 var STARTLABEL = 'e-start-label';
 var ENDLABEL = 'e-end-label';
 var DISABLED$2 = 'e-disabled';
-var SELECTED$2 = 'e-selected';
+var SELECTED$3 = 'e-selected';
 var CALENDAR = 'e-calendar';
 var NEXTICON$1 = 'e-next';
 var PREVICON$1 = 'e-prev';
@@ -4131,8 +4271,7 @@ var OFFSETVALUE$1 = 4;
 var PRIMARY$1 = 'e-primary';
 var FLAT$1 = 'e-flat';
 var CSS$1 = 'e-css';
-var LIBRARY$1 = 'e-lib';
-var CONTROL$1 = 'e-control';
+var ZOOMIN$1 = 'e-zoomin';
 var Presets = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Presets, _super);
     function Presets() {
@@ -4181,6 +4320,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         _this.disabledDays = [];
         _this.preventBlur = false;
         _this.preventFocus = false;
+        _this.invalidValueString = null;
         return _this;
     }
     /**
@@ -4249,6 +4389,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 attributes(this.inputElement, { 'id': this.element.id + '_input' });
             }
         }
+        this.checkInvalidRange(this.value);
+        if (!this.invalidValueString && (typeof (this.value) === 'string')) {
+            var rangeArray = this.value.split(' ' + this.separator + ' ');
+            this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
+        }
         this.initProperty();
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
@@ -4263,19 +4408,20 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     
     DateRangePicker.prototype.updateValue = function () {
+        var dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         if (this.value && this.value.length > 0) {
             if (this.value[0] instanceof Date && !isNaN(+this.value[0])) {
                 this.setProperties({ startDate: this.value[0] }, true);
                 this.startValue = this.value[0];
             }
             else if (typeof this.value[0] === 'string') {
-                if (+this.value[0] === 0 || isNaN(+(new Date('' + this.value[0])))) {
+                if (+this.value[0] === 0 || isNaN(+(new Date(this.checkValue(this.value[0]))))) {
                     this.startValue = null;
                     this.setValue();
                 }
                 else {
-                    this.setProperties({ startDate: new Date('' + this.value[0]) }, true);
-                    this.startValue = new Date('' + this.value[0]);
+                    this.setProperties({ startDate: new Date(this.checkValue(this.value[0])) }, true);
+                    this.startValue = new Date(this.checkValue(this.value[0]));
                 }
             }
             else {
@@ -4287,14 +4433,14 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 this.endValue = this.value[1];
             }
             else if (typeof this.value[1] === 'string') {
-                if (+this.value[0] === 0 || isNaN(+(new Date('' + this.value[0])))) {
+                if (+this.value[0] === 0 || isNaN(+(new Date(this.checkValue(this.value[0]))))) {
                     this.setProperties({ endDate: null }, true);
                     this.endValue = null;
                     this.setValue();
                 }
                 else {
-                    this.setProperties({ endDate: new Date('' + this.value[1]) }, true);
-                    this.endValue = new Date('' + this.value[1]);
+                    this.setProperties({ endDate: new Date(this.checkValue(this.value[1])) }, true);
+                    this.endValue = new Date(this.checkValue(this.value[1]));
                     this.setValue();
                 }
             }
@@ -4310,8 +4456,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 this.startValue = this.value.start;
             }
             else if (typeof this.value.start === 'string') {
-                this.setProperties({ startDate: new Date('' + this.value.start) }, true);
-                this.startValue = new Date('' + this.value.start);
+                this.setProperties({ startDate: new Date(this.checkValue(this.value.start)) }, true);
+                this.startValue = new Date(this.checkValue(this.value.start));
             }
             else {
                 this.startValue = null;
@@ -4322,8 +4468,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 this.endValue = this.value.end;
             }
             else if (typeof this.value.end === 'string') {
-                this.setProperties({ endDate: new Date('' + this.value.end) }, true);
-                this.endValue = new Date('' + this.value.end);
+                this.setProperties({ endDate: new Date(this.checkValue(this.value.end)) }, true);
+                this.endValue = new Date(this.checkValue(this.value.end));
                 this.setValue();
             }
             else {
@@ -4333,14 +4479,15 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (isNullOrUndefined(this.value)) {
-            this.endValue = this.checkDateValue(new Date('' + this.endDate));
-            this.startValue = this.checkDateValue(new Date('' + this.startDate));
+            this.endValue = this.checkDateValue(new Date(this.checkValue(this.endDate)));
+            this.startValue = this.checkDateValue(new Date(this.checkValue(this.startDate)));
             this.setValue();
         }
     };
     DateRangePicker.prototype.initProperty = function () {
         this.globalize = new Internationalization(this.locale);
         this.checkFormat();
+        this.checkView();
         if (isNullOrUndefined(this.firstDayOfWeek) || this.firstDayOfWeek > 6 || this.firstDayOfWeek < 0) {
             this.setProperties({ firstDayOfWeek: this.globalize.getFirstDayOfWeek() }, true);
         }
@@ -4369,11 +4516,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         this.checkHtmlAttributes();
         merge(this.keyConfigs, { shiftTab: 'shift+tab' });
-        this.setProperties({ startDate: this.checkDateValue(new Date('' + this.startValue)) }, true); // persist the value propeerty.
-        this.setProperties({ endValue: this.checkDateValue(new Date('' + this.endValue)) }, true);
+        var start = this.checkDateValue(new Date(this.checkValue(this.startValue)));
+        this.setProperties({ startDate: start }, true); // persist the value propeerty.
+        this.setProperties({ endValue: this.checkDateValue(new Date(this.checkValue(this.endValue))) }, true);
         this.setValue();
-        this.setProperties({ min: this.checkDateValue(new Date('' + this.min)) }, true);
-        this.setProperties({ max: this.checkDateValue(new Date('' + this.max)) }, true);
+        this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(this.min))) }, true);
+        this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(this.max))) }, true);
         this.l10n = new L10n('daterangepicker', this.defaultConstant, this.locale);
         this.l10n.setLocale(this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -4415,7 +4563,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 var id = range.label.replace(/\s+/g, '') + '_' + (++i);
                 if (typeof range.end === 'string') {
                     this.presetsItem.push({
-                        id: id, text: range.label, end: new Date('' + range.end), start: new Date('' + range.start)
+                        id: id, text: range.label, end: new Date(this.checkValue(range.end)), start: new Date(this.checkValue(range.start))
                     });
                 }
                 else {
@@ -4539,11 +4687,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 this.startValue = this.endValue = null;
                 this.inputElement.setAttribute('value', '');
             }
+            this.restoreValue();
             if (this.inputElement) {
                 Input.setValue(val, this.inputElement, this.floatLabelType, this.showClearButton);
                 this.errorClass();
             }
-            this.restoreValue();
         }
     };
     DateRangePicker.prototype.clear = function () {
@@ -4712,13 +4860,23 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         EventHandler.clearEvents(this.rightCalNextIcon);
     };
     DateRangePicker.prototype.updateNavIcons = function () {
-        if (this.currentView() === 'Year' || this.currentView() === 'Decade') {
-            return;
+        if (this.isPopupOpen() && this.depth === this.currentView()) {
+            var leftDate = new Date(this.checkValue(this.leftCalCurrentDate));
+            var iconState = false;
+            if (this.currentView() === 'Year') {
+                iconState = (this.compareYears(leftDate, this.rightCalCurrentDate) < 1);
+            }
+            else if (this.currentView() === 'Decade') {
+                iconState = (this.compareDecades(leftDate, this.rightCalCurrentDate) < 1);
+            }
+            else if (this.currentView() === 'Month') {
+                iconState = (this.compareMonths(leftDate, this.rightCalCurrentDate) < 1);
+            }
+            this.previousIcon = this.rightCalPrevIcon;
+            this.nextIcon = this.leftCalNextIcon;
+            this.nextIconHandler(iconState);
+            this.previousIconHandler(iconState);
         }
-        this.previousIcon = this.rightCalPrevIcon;
-        this.nextIcon = this.leftCalNextIcon;
-        this.nextIconHandler(this.compareMonths(new Date('' + this.leftCalCurrentDate), this.rightCalCurrentDate) < 1);
-        this.previousIconHandler(this.compareMonths(new Date('' + this.leftCalCurrentDate), this.rightCalCurrentDate) < 1);
     };
     DateRangePicker.prototype.calendarIconEvent = function () {
         this.clearCalendarEvents();
@@ -4758,7 +4916,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.startButton.element, 'click', this.deviceHeaderClick, this);
             EventHandler.add(this.endButton.element, 'click', this.deviceHeaderClick, this);
         }
-        this.bindCalendarCellEvents();
+        if (this.start === this.depth) {
+            this.bindCalendarCellEvents();
+        }
         this.removeFocusedDate();
     };
     DateRangePicker.prototype.calendarIconRipple = function () {
@@ -4814,7 +4974,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             if (isNullOrUndefined(this.calendarElement.querySelector('.' + STARTDATE + ':not(.e-other-month)'))) {
                 this.currentDate = new Date(+this.startValue);
                 remove(this.tableBodyElement);
-                this.renderMonths();
+                this.createContentBody();
                 this.deviceNavigation();
             }
             this.removeClassDisabled();
@@ -4827,7 +4987,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             if (isNullOrUndefined(this.calendarElement.querySelector('.' + ENDDATE + ':not(.e-other-month)'))) {
                 this.currentDate = new Date(+this.endValue);
                 remove(this.tableBodyElement);
-                this.renderMonths();
+                this.createContentBody();
                 this.deviceNavigation();
             }
             this.updateMinMaxDays(this.popupObj.element.querySelector('.' + CALENDAR));
@@ -4857,6 +5017,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(value) && value.trim() !== '') {
                 var range = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
+                    this.invalidValueString = null;
                     var dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
                     var startDate = this.globalize.parseDate(range[0].trim(), dateOptions);
                     var endDate = this.globalize.parseDate(range[1].trim(), dateOptions);
@@ -5066,7 +5227,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 break;
             case 'select':
-                if (view === 0) {
+                if (levelRestrict) {
                     var element = !isNullOrUndefined(focusedDate) ? focusedDate : startDate;
                     if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED$2)) {
                         this.selectRange(null, (element));
@@ -5093,7 +5254,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 if (!isLeftCalendar && +yearDate < +leftDateLimit) {
                     ele = this.keyCalendarUpdate(true, ele);
                 }
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
+                _super.prototype.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 0, 1));
                 this.keyNavigation(ele, e);
                 break;
             case 'altRightArrow':
@@ -5142,7 +5303,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 e.preventDefault();
                 break;
             case 'controlDown':
-                if ((!isNullOrUndefined(selectedDate) && !levelRestrict) || !isNullOrUndefined(focusedDate)) {
+                if ((!isNullOrUndefined(selectedDate) || !isNullOrUndefined(focusedDate)) && !levelRestrict) {
                     if (!isNullOrUndefined(this.value)) {
                         if (this.calendarElement.classList.contains(LEFTCALENDER)) {
                             value = this.startDate;
@@ -5161,7 +5322,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 if (isLeftCalendar && +yearDate > +rightDateLimit) {
                     ele = this.keyCalendarUpdate(false, ele);
                 }
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
+                _super.prototype.navigateTo.call(this, 'Month', new Date(this.currentDate.getFullYear(), 11, 31));
                 this.keyNavigation(ele, e);
                 break;
             case 'pageUp':
@@ -5171,7 +5332,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     ele = this.keyCalendarUpdate(true, ele);
                 }
                 this.addMonths(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
+                _super.prototype.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'pageDown':
@@ -5181,7 +5342,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     ele = this.keyCalendarUpdate(false, ele);
                 }
                 this.addMonths(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
+                _super.prototype.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'shiftPageUp':
@@ -5191,7 +5352,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     ele = this.keyCalendarUpdate(true, ele);
                 }
                 this.addYears(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
+                _super.prototype.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'shiftPageDown':
@@ -5201,7 +5362,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     ele = this.keyCalendarUpdate(false, ele);
                 }
                 this.addYears(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
+                _super.prototype.navigateTo.call(this, 'Month', this.currentDate);
                 this.keyNavigation(ele, e);
                 break;
             case 'shiftTab':
@@ -5300,16 +5461,19 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var isDate = !isNullOrUndefined(this.startValue) || !isNullOrUndefined(this.endValue);
         var focusedDate;
         focusedDate = this.popupObj.element.querySelectorAll('.' + CALENDAR + ' .' + FOCUSDATE);
-        if ((this.leftCalendar && this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
-            && this.rightCalendar && this.rightCalendar.querySelector('.e-content').classList.contains('e-month')) ||
-            this.calendarElement && this.calendarElement.querySelector('.e-content').classList.contains('e-month')) {
-            for (var _i = 0, focusedDate_1 = focusedDate; _i < focusedDate_1.length; _i++) {
-                var ele = focusedDate_1[_i];
-                if (!ele.classList.contains(TODAY$2) || (ele.classList.contains(TODAY$2) && (isDate))) {
-                    ele.classList.remove(FOCUSDATE);
-                    if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(ENDDATE)) {
-                        ele.removeAttribute('aria-label');
-                    }
+        for (var _i = 0, focusedDate_1 = focusedDate; _i < focusedDate_1.length; _i++) {
+            var ele = focusedDate_1[_i];
+            var today = new Date();
+            var eleDate = this.getIdValue(null, ele);
+            if ((this.depth === 'Month' && this.currentView() === 'Month' &&
+                (!ele.classList.contains(TODAY$2) || (ele.classList.contains(TODAY$2) && isDate)))
+                || (this.depth === 'Year' && this.currentView() === 'Year' &&
+                    ((!this.isSameMonth(today, eleDate) && !this.isSameYear(today, eleDate)) || isDate))
+                || (this.depth === 'Decade' && this.currentView() === 'Decade' &&
+                    (!this.isSameYear(today, eleDate) || isDate))) {
+                ele.classList.remove(FOCUSDATE);
+                if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(ENDDATE)) {
+                    ele.removeAttribute('aria-label');
                 }
             }
         }
@@ -5341,6 +5505,26 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    DateRangePicker.prototype.isSameStartEnd = function (startVal, endVal) {
+        var isSame = false;
+        if (this.depth === 'Month') {
+            if ((startVal).setHours(0, 0, 0, 0) === (endVal).setHours(0, 0, 0, 0)) {
+                isSame = true;
+            }
+        }
+        else if (this.depth === 'Year') {
+            if ((startVal.getFullYear() === endVal.getFullYear()) &&
+                (startVal.getMonth() === endVal.getMonth())) {
+                isSame = true;
+            }
+        }
+        else if (this.depth === 'Decade') {
+            if (startVal.getFullYear() === endVal.getFullYear()) {
+                isSame = true;
+            }
+        }
+        return isSame;
+    };
     DateRangePicker.prototype.updateRange = function (elementCollection) {
         if (!isNullOrUndefined(this.startValue)) {
             for (var _i = 0, elementCollection_1 = elementCollection; _i < elementCollection_1.length; _i++) {
@@ -5352,10 +5536,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         var eleDate = this.getIdValue(null, ele);
                         var eleDateValue = this.getIdValue(null, ele);
                         if (!isNullOrUndefined(this.endValue)) {
-                            if (this.currentView() === 'Month' &&
+                            if (this.currentView() === this.depth &&
                                 +eleDateValue.setHours(0, 0, 0, 0) >= +new Date(+this.startValue).setHours(0, 0, 0, 0)
                                 && +eleDateValue.setHours(0, 0, 0, 0) <= +new Date(+this.endValue).setHours(0, 0, 0, 0) &&
-                                +new Date(+this.startValue).setHours(0, 0, 0, 0) !== +new Date(+this.endValue).setHours(0, 0, 0, 0) &&
+                                !this.isSameStartEnd(new Date(+this.startValue), new Date(+this.endValue)) &&
                                 +new Date(+this.startValue).setHours(0, 0, 0, 0) >= +this.min
                                 && +new Date(+this.endValue).setHours(0, 0, 0, 0) <= +this.max
                                 && !(this.isDateDisabled(this.startValue) || this.isDateDisabled(this.endValue))) {
@@ -5368,24 +5552,30 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         if (!ele.classList.contains(OTHERMONTH$2)) {
                             var startDateValue = new Date(+this.startValue);
                             var eleDateValue_1 = new Date(+eleDate);
-                            if (this.currentView() === 'Month' &&
+                            if (this.currentView() === this.depth &&
                                 +eleDateValue_1.setHours(0, 0, 0, 0) === +startDateValue.setHours(0, 0, 0, 0)
                                 && +eleDateValue_1.setHours(0, 0, 0, 0) >= +startDateValue.setHours(0, 0, 0, 0) &&
                                 +this.startValue >= +this.min
                                 && !this.inputWrapper.container.classList.contains('e-error')
                                 && !(this.isDateDisabled(this.startValue) || this.isDateDisabled(this.endValue))) {
-                                addClass([ele], [STARTDATE, SELECTED$2]);
+                                addClass([ele], [STARTDATE, SELECTED$3]);
                                 this.addSelectedAttributes(ele, this.startValue, true);
                             }
                             var endDateValue = new Date(+this.endValue);
-                            if (this.currentView() === 'Month' &&
+                            if (this.currentView() === 'Year') {
+                                eleDateValue_1 = new Date(eleDateValue_1.getFullYear(), eleDateValue_1.getMonth() + 1, 0);
+                            }
+                            else if (this.currentView() === 'Decade') {
+                                eleDateValue_1 = new Date(eleDateValue_1.getFullYear(), 11, 31);
+                            }
+                            if (this.currentView() === this.depth &&
                                 !isNullOrUndefined(this.endValue) &&
                                 +eleDateValue_1.setHours(0, 0, 0, 0) === +endDateValue.setHours(0, 0, 0, 0)
                                 && +eleDateValue_1.setHours(0, 0, 0, 0) <= +endDateValue.setHours(0, 0, 0, 0) &&
                                 +this.startValue >= +this.min
                                 && !this.inputWrapper.container.classList.contains('e-error')
                                 && !(this.isDateDisabled(this.startValue) || this.isDateDisabled(this.endValue))) {
-                                addClass([ele], [ENDDATE, SELECTED$2]);
+                                addClass([ele], [ENDDATE, SELECTED$3]);
                                 this.addSelectedAttributes(ele, this.startValue, false);
                             }
                             if (+eleDate === +this.startValue && !isNullOrUndefined(this.endValue) && +eleDate === +this.endValue) {
@@ -5441,11 +5631,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var tdCell = this.popupObj && this.popupObj.element.querySelector(dateIdString);
         if (!isNullOrUndefined(tdCell)) {
             if (isStartDate) {
-                addClass([tdCell], [STARTDATE, SELECTED$2]);
+                addClass([tdCell], [STARTDATE, SELECTED$3]);
                 this.addSelectedAttributes(tdCell, this.startValue, true);
             }
             else {
-                addClass([tdCell], [ENDDATE, SELECTED$2]);
+                addClass([tdCell], [ENDDATE, SELECTED$3]);
                 this.addSelectedAttributes(tdCell, this.endValue, true);
             }
             if (sameDate) {
@@ -5463,6 +5653,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var date;
         date = isNullOrUndefined(event) ? this.getIdValue(null, element)
             : this.getIdValue(event, null);
+        var y = date.getFullYear();
+        var m = date.getMonth();
+        var firstDay = new Date(y, m, 1);
+        var lastDay = new Date(y, m + 1, 0);
+        var firstMonth = new Date(y, 0, 1);
+        var lastMonth = new Date(y, 11, 31);
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             if (!this.isMobile || this.isMobile && !this.endButton.element.classList.contains(ACTIVE$1)) {
                 this.removeSelection();
@@ -5478,7 +5674,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 date.setMinutes(this.previousStartValue.getMinutes());
                 date.setSeconds(this.previousStartValue.getSeconds());
             }
-            this.startValue = new Date('' + date);
+            this.startValue = (this.depth === 'Month') ? new Date(this.checkValue(date)) :
+                (this.depth === 'Year') ? firstDay : firstMonth;
             this.endValue = null;
             this.setValue();
             addClass([ele], STARTDATE);
@@ -5512,7 +5709,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     date.setMinutes(this.previousEndValue.getMinutes());
                     date.setSeconds(this.previousEndValue.getSeconds());
                 }
-                this.endValue = new Date('' + date);
+                this.endValue = (this.depth === 'Month') ? new Date(this.checkValue(date)) :
+                    (this.depth === 'Year') ? lastDay : lastMonth;
                 this.setValue();
                 var endEle = this.popupObj.element.querySelectorAll('.' + ENDDATE);
                 if (this.isMobile) {
@@ -5523,7 +5721,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         ele_1.removeAttribute('aria-label');
                         if (!ele_1.classList.contains(STARTDATE)) {
                             ele_1.setAttribute('aria-selected', 'false');
-                            removeClass([ele_1], [ENDDATE, SELECTED$2]);
+                            removeClass([ele_1], [ENDDATE, SELECTED$3]);
                         }
                         else {
                             this.addSelectedAttributes(ele_1, this.startValue, true);
@@ -5563,10 +5761,11 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else if (+date < +this.startValue) {
                 this.removeClassDisabled();
-                this.startValue = new Date('' + date);
+                this.startValue = (this.depth === 'Month') ? new Date(this.checkValue(date)) :
+                    (this.depth === 'Year') ? firstDay : firstMonth;
                 this.setValue();
                 this.removeSelectedAttributes();
-                removeClass(this.popupObj.element.querySelectorAll('.' + STARTDATE), [STARTDATE, SELECTED$2]);
+                removeClass(this.popupObj.element.querySelectorAll('.' + STARTDATE), [STARTDATE, SELECTED$3]);
                 addClass([ele], STARTDATE);
                 this.addSelectedAttributes(ele, this.startValue, true);
                 if (ele.classList.contains(OTHERMONTH$2)) {
@@ -5589,7 +5788,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 this.rightCalendar.children[1].firstElementChild.focus();
             }
         }
-        addClass([ele], SELECTED$2);
+        addClass([ele], SELECTED$3);
         this.updateHeader();
         this.removeFocusedDate();
     };
@@ -5597,7 +5796,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.startValue)) {
             var tdCells = this.calendarElement.querySelectorAll('.' + CALENDAR + ' td');
             var isStartDate = false;
-            if (this.currentView() === 'Month') {
+            if (this.currentView() === this.depth) {
                 for (var _i = 0, tdCells_4 = tdCells; _i < tdCells_4.length; _i++) {
                     var ele = tdCells_4[_i];
                     if (!ele.classList.contains(STARTDATE) && !ele.classList.contains(WEEKNUMBER$2)) {
@@ -5650,12 +5849,21 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.updateMinMaxDays = function (calendar) {
-        if (!isNullOrUndefined(this.startValue) && (isNullOrUndefined(this.endValue) || this.isMobile)) {
+        if ((!isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) ||
+            (this.isMobile && this.endButton.element.classList.contains(ACTIVE$1))) {
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) || (!isNullOrUndefined(this.maxDays) && this.maxDays > 0)) {
                 var minDate = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.minDays - 1)));
                 var maxDate = new Date(new Date(+this.startValue).setDate(this.startValue.getDate() + (this.maxDays - 1)));
                 minDate = (!isNullOrUndefined(this.minDays) && this.minDays > 0) ? minDate : null;
                 maxDate = (!isNullOrUndefined(this.maxDays) && this.maxDays > 0) ? maxDate : null;
+                if (this.currentView() === 'Year') {
+                    minDate = isNullOrUndefined(minDate) ? null : new Date(minDate.getFullYear(), minDate.getMonth(), 0);
+                    maxDate = isNullOrUndefined(maxDate) ? null : new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+                }
+                else if (this.currentView() === 'Decade') {
+                    minDate = isNullOrUndefined(minDate) ? null : new Date(minDate.getFullYear() - 1, 11, 1);
+                    maxDate = isNullOrUndefined(maxDate) ? null : new Date(maxDate.getFullYear(), 0, 1);
+                }
                 var tdCells = calendar.querySelectorAll('.' + CALENDAR + ' td');
                 var maxEle = void 0;
                 for (var _i = 0, tdCells_6 = tdCells; _i < tdCells_6.length; _i++) {
@@ -5819,8 +6027,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setValue();
         this.removeSelectedAttributes();
         if (this.popupObj) {
-            if (this.popupObj.element.querySelectorAll('.' + SELECTED$2).length > 0) {
-                removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED$2), [STARTDATE, ENDDATE, SELECTED$2]);
+            if (this.popupObj.element.querySelectorAll('.' + SELECTED$3).length > 0) {
+                removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED$3), [STARTDATE, ENDDATE, SELECTED$3]);
             }
             if (this.popupObj.element.querySelectorAll('.' + FOCUSDATE).length > 0) {
                 removeClass(this.popupObj.element.querySelectorAll('.' + FOCUSDATE), FOCUSDATE);
@@ -5891,13 +6099,13 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     DateRangePicker.prototype.deviceNavigation = function (ele) {
         this.deviceCalendarEvent();
         this.updateRange([this.popupObj.element.querySelector('.' + CALENDAR)]);
-        if ((!isNullOrUndefined(this.endValue) && this.endButton.element.classList.contains(ACTIVE$1))) {
+        if (this.endButton.element.classList.contains(ACTIVE$1)) {
             this.updateMinMaxDays(this.popupObj.element.querySelector('.' + CALENDAR));
         }
         if (this.endButton.element.classList.contains(ACTIVE$1)) {
             this.selectableDates();
         }
-        if (this.currentView() === 'Month') {
+        if (this.currentView() === this.depth) {
             this.bindCalendarCellEvents();
         }
         this.removeFocusedDate();
@@ -5911,8 +6119,15 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         this.updateNavIcons();
         this.calendarIconEvent();
-        if ((this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
+        if ((((this.depth === 'Month')
+            && this.leftCalendar.querySelector('.e-content').classList.contains('e-month')
             && this.rightCalendar.querySelector('.e-content').classList.contains('e-month'))
+            || ((this.depth === 'Year')
+                && this.leftCalendar.querySelector('.e-content').classList.contains('e-year')
+                && this.rightCalendar.querySelector('.e-content').classList.contains('e-year'))
+            || ((this.depth === 'Decade')
+                && this.leftCalendar.querySelector('.e-content').classList.contains('e-decade')
+                && this.rightCalendar.querySelector('.e-content').classList.contains('e-decade')))
             || this.isMobile) {
             this.bindCalendarCellEvents();
         }
@@ -5949,6 +6164,44 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             result = start.getMonth() === end.getMonth() ? 0 : start.getMonth() + 1 === end.getMonth() ? -1 : 1;
+        }
+        return result;
+    };
+    DateRangePicker.prototype.compareYears = function (start, end) {
+        var result;
+        if (start.getFullYear() === end.getFullYear()) {
+            result = -1;
+        }
+        else if (start.getFullYear() > end.getFullYear()) {
+            result = -1;
+        }
+        else {
+            if (start.getFullYear() + 1 === end.getFullYear()) {
+                result = -1;
+            }
+            else {
+                result = 1;
+            }
+        }
+        return result;
+    };
+    DateRangePicker.prototype.compareDecades = function (start, end) {
+        var result;
+        if (start.getFullYear() === end.getFullYear()) {
+            result = -1;
+        }
+        else if (start.getFullYear() > end.getFullYear()) {
+            result = -1;
+        }
+        else {
+            var strtFullYr = start.getFullYear();
+            var enFullYr = end.getFullYear();
+            if ((strtFullYr - (strtFullYr % 10) + 10) === (enFullYr - (enFullYr % 10))) {
+                result = -1;
+            }
+            else {
+                result = 1;
+            }
         }
         return result;
     };
@@ -6101,6 +6354,20 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
         return false;
     };
+    DateRangePicker.prototype.isSameYear = function (start, end) {
+        if (start.getFullYear() === end.getFullYear()) {
+            return true;
+        }
+        return false;
+    };
+    DateRangePicker.prototype.isSameDecade = function (start, end) {
+        var startYear = start.getFullYear();
+        var endYear = end.getFullYear();
+        if ((startYear - (startYear % 10)) === (endYear - (endYear % 10))) {
+            return true;
+        }
+        return false;
+    };
     DateRangePicker.prototype.startMonthCurrentDate = function () {
         if (this.isSameMonth(this.min, this.max) || +this.currentDate > +this.max || this.isSameMonth(this.currentDate, this.max)) {
             this.currentDate = new Date(+this.max);
@@ -6108,7 +6375,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             this.currentDate.setMonth(this.currentDate.getMonth() - 1);
         }
         else if (this.currentDate < this.min) {
-            this.currentDate = new Date('' + this.min);
+            this.currentDate = new Date(this.checkValue(this.min));
         }
     };
     DateRangePicker.prototype.selectNextMonth = function () {
@@ -6126,7 +6393,44 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             || ((!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) && +this.startValue > +this.endValue)) {
             this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
             this.currentDate.setDate(1);
-            this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+            var month = this.currentDate.getMonth() + 1;
+            this.currentDate.setMonth(month);
+        }
+    };
+    DateRangePicker.prototype.selectNextYear = function () {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !this.isSameYear(this.endValue, this.currentDate)
+            && !this.isDateDisabled(this.endValue) && !this.isDateDisabled(this.startValue)) {
+            this.currentDate = new Date(+this.endValue);
+        }
+        else {
+            this.currentDate.setMonth(0);
+            var yr = this.currentDate.getFullYear() + 1;
+            this.currentDate.setFullYear(yr);
+            return;
+        }
+        if ((!isNullOrUndefined(this.endValue) && +this.endValue > +this.max)
+            || ((!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) && +this.startValue > +this.endValue)
+            || (!isNullOrUndefined(this.startValue) && +this.startValue < +this.min)) {
+            this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
+            this.currentDate.setMonth(0);
+            this.currentDate.setFullYear(this.currentDate.getFullYear() + 1);
+        }
+    };
+    DateRangePicker.prototype.selectNextDecade = function () {
+        if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue) && !this.isSameDecade(this.endValue, this.currentDate)
+            && !this.isDateDisabled(this.endValue) && !this.isDateDisabled(this.startValue)) {
+            this.currentDate = new Date(+this.endValue);
+        }
+        else {
+            var decyr = this.currentDate.getFullYear() + 10;
+            this.currentDate.setFullYear(decyr);
+            return;
+        }
+        if (((!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) && +this.startValue > +this.endValue)
+            || (!isNullOrUndefined(this.endValue) && +this.endValue > +this.max)
+            || (!isNullOrUndefined(this.startValue) && +this.startValue < +this.min)) {
+            this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
+            this.currentDate.setFullYear(this.currentDate.getFullYear() + 10);
         }
     };
     DateRangePicker.prototype.selectStartMonth = function () {
@@ -6177,7 +6481,15 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             if (!this.isMobile) {
                 EventHandler.add(this.leftTitle, 'click', this.leftNavTitle, this);
             }
-            this.selectNextMonth();
+            if (this.start === 'Month') {
+                this.selectNextMonth();
+            }
+            if (this.start === 'Year') {
+                this.selectNextYear();
+            }
+            if (this.start === 'Decade') {
+                this.selectNextDecade();
+            }
             this.renderCalendar();
             this.rightCalCurrentDate = new Date(+this.currentDate);
             addClass([this.calendarElement], RIGHTCALENDER);
@@ -6260,63 +6572,106 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     DateRangePicker.prototype.currentView = function () {
         return _super.prototype.currentView.call(this);
     };
-    DateRangePicker.prototype.navigatedEvent = function (e) {
-        var element;
-        if (this.isMobile && this.currentView() === 'Month') {
-            this.bindCalendarCellEvents();
-            this.deviceNavigation();
-            this.removeFocusedDate();
+    DateRangePicker.prototype.getCalendarView = function (view) {
+        if (view === 'Year') {
+            return 'Year';
         }
-        else if (this.isMobile && (this.currentView() === 'Decade' || this.currentView() === 'Year')) {
-            this.selectableDates();
+        else if (view === 'Decade') {
+            return 'Decade';
         }
         else {
-            if (!this.isMobile && this.currentView() === 'Month') {
-                element = this.calendarElement.classList.contains('e-left-calendar') ? this.leftCalendar : this.rightCalendar;
-                if (element === this.leftCalendar && ((e && !e.currentTarget.children[0].classList.contains('e-icons'))
-                    || (!isNullOrUndefined(this.controlDown)))) {
-                    this.leftCalCurrentDate = new Date(+this.currentDate);
-                    this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(new Date(+this.currentDate).getMonth() + 1));
-                    this.currentDate = this.leftCalCurrentDate;
-                    this.updateCalendarElement(this.leftCalendar);
-                    this.updateControl(this.leftCalendar);
-                    this.updateCalendarElement(this.rightCalendar);
-                    this.navigateTo('Month', this.rightCalCurrentDate);
-                    this.updateControl(this.rightCalendar);
-                    this.updateNavIcons();
-                    this.calendarIconEvent();
-                    this.calendarIconRipple();
+            return 'Month';
+        }
+    };
+    DateRangePicker.prototype.navigatedEvent = function (e) {
+        this.trigger('navigated', this.navigatedArgs);
+        if (!isNullOrUndefined(this.popupObj)) {
+            var element = void 0;
+            var view = this.getCalendarView(this.currentView());
+            if (this.isMobile) {
+                if (view === this.depth) {
+                    this.bindCalendarCellEvents();
+                    this.deviceNavigation();
+                    this.removeFocusedDate();
+                    this.checkMinMaxDays();
                 }
-                else if (e && !e.currentTarget.children[0].classList.contains('e-icons')
-                    || (!isNullOrUndefined(this.controlDown))) {
-                    this.rightCalCurrentDate = new Date(+this.currentDate);
-                    this.leftCalCurrentDate = new Date(this.currentDate.setMonth(this.currentDate.getMonth() - 1));
-                    this.currentDate = this.rightCalCurrentDate;
-                    this.updateCalendarElement(this.rightCalendar);
-                    this.updateControl(this.rightCalendar);
-                    this.updateCalendarElement(this.leftCalendar);
-                    if (this.startValue && (this.startValue.getMonth() < this.rightCalCurrentDate.getMonth() &&
-                        this.startValue.getFullYear() <= this.rightCalCurrentDate.getFullYear())) {
-                        if (isNullOrUndefined(this.endValue)) {
-                            this.effect = '';
-                            this.navigateTo('Month', new Date(+this.startValue));
-                        }
-                        else {
-                            this.navigateTo('Month', this.leftCalCurrentDate);
-                        }
-                    }
-                    else {
-                        this.navigateTo('Month', this.leftCalCurrentDate);
-                    }
-                    this.updateControl(this.leftCalendar);
-                    this.updateNavIcons();
-                    this.calendarIconEvent();
-                    this.calendarIconRipple();
+                else {
+                    this.selectableDates();
                 }
             }
-            else if (!this.isMobile && (this.currentView() === 'Decade' || this.currentView() === 'Year')) {
-                this.updateNavIcons();
-                this.calendarIconEvent();
+            else {
+                if (!this.isMobile && view === this.depth) {
+                    element = this.calendarElement.classList.contains('e-left-calendar') ? this.leftCalendar : this.rightCalendar;
+                    if (element === this.leftCalendar && ((e && !e.currentTarget.children[0].classList.contains('e-icons'))
+                        || (!isNullOrUndefined(this.controlDown)))) {
+                        this.leftCalCurrentDate = new Date(+this.currentDate);
+                        if (view === 'Year') {
+                            var year = this.currentDate.getFullYear() + 1;
+                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(year));
+                        }
+                        else if (view === 'Decade') {
+                            var decYear = this.currentDate.getFullYear() + 10;
+                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decYear));
+                        }
+                        else {
+                            this.rightCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() + 1));
+                        }
+                        this.currentDate = this.leftCalCurrentDate;
+                        this.updateCalendarElement(this.leftCalendar);
+                        this.updateControl(this.leftCalendar);
+                        this.updateCalendarElement(this.rightCalendar);
+                        _super.prototype.navigateTo.call(this, view, this.rightCalCurrentDate);
+                        this.updateControl(this.rightCalendar);
+                        this.updateNavIcons();
+                        this.calendarIconEvent();
+                        this.calendarIconRipple();
+                        this.controlDown = null;
+                    }
+                    else if (e && !e.currentTarget.children[0].classList.contains('e-icons')
+                        || (!isNullOrUndefined(this.controlDown))) {
+                        this.rightCalCurrentDate = new Date(+this.currentDate);
+                        if (view === 'Year') {
+                            var yr = this.currentDate.getFullYear() - 1;
+                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(yr));
+                        }
+                        else if (view === 'Decade') {
+                            var decyr = this.currentDate.getFullYear() - 10;
+                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setFullYear(decyr));
+                        }
+                        else {
+                            this.leftCalCurrentDate = new Date(new Date(+this.currentDate).setMonth(this.currentDate.getMonth() - 1));
+                        }
+                        this.currentDate = this.rightCalCurrentDate;
+                        this.updateCalendarElement(this.rightCalendar);
+                        this.updateControl(this.rightCalendar);
+                        this.updateCalendarElement(this.leftCalendar);
+                        if (this.startValue && isNullOrUndefined(this.endValue)) {
+                            if (view === 'Month' && this.startValue.getMonth() < this.rightCalCurrentDate.getMonth() &&
+                                this.startValue.getFullYear() <= this.rightCalCurrentDate.getFullYear()) {
+                                _super.prototype.navigateTo.call(this, view, new Date(+this.startValue));
+                            }
+                            else if (view === 'Year' && this.startValue.getFullYear() < this.rightCalCurrentDate.getFullYear()) {
+                                _super.prototype.navigateTo.call(this, view, new Date(+this.startValue));
+                            }
+                            else {
+                                _super.prototype.navigateTo.call(this, view, this.leftCalCurrentDate);
+                            }
+                        }
+                        else {
+                            _super.prototype.navigateTo.call(this, view, this.leftCalCurrentDate);
+                        }
+                        this.updateControl(this.leftCalendar);
+                        this.updateNavIcons();
+                        this.calendarIconEvent();
+                        this.calendarIconRipple();
+                        this.controlDown = null;
+                    }
+                    this.checkMinMaxDays();
+                }
+                else {
+                    this.updateNavIcons();
+                    this.calendarIconEvent();
+                }
             }
         }
     };
@@ -7012,13 +7367,140 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.updateInput = function () {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            var formatingOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-            var startDate = this.globalize.formatDate(this.startValue, formatingOptions);
-            var endDate = this.globalize.formatDate(this.endValue, formatingOptions);
+            var formatOption = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+            var startDate = this.globalize.formatDate(this.startValue, formatOption);
+            var endDate = this.globalize.formatDate(this.endValue, formatOption);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
         }
+        if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
+            Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
+    };
+    DateRangePicker.prototype.checkInvalidRange = function (value) {
+        if (!isNullOrUndefined(value)) {
+            var invalid = false;
+            var startinvalue = void 0;
+            var endinvalue = void 0;
+            var startString = null;
+            var endString = null;
+            var valueString = null;
+            var startObject = false;
+            var endObject = false;
+            var invalidobject = false;
+            if (typeof (value) === 'string') {
+                var range = value.split(' ' + this.separator + ' ');
+                if (range.length === 2) {
+                    startString = range[0];
+                    endString = range[1];
+                }
+                else {
+                    invalid = true;
+                    valueString = value;
+                }
+            }
+            else {
+                if (value.length > 0) {
+                    startinvalue = value[0];
+                    endinvalue = value[1];
+                }
+                else {
+                    startinvalue = value.start;
+                    endinvalue = value.end;
+                }
+                if (!(startinvalue instanceof Date) && typeof (startinvalue) !== 'object') {
+                    startString = this.getstringvalue(startinvalue);
+                }
+                else if (startinvalue instanceof Date) {
+                    startObject = true;
+                }
+                else if (!isNullOrUndefined(startinvalue)) {
+                    invalidobject = true;
+                }
+                if (!(endinvalue instanceof Date) && typeof (endinvalue) !== 'object') {
+                    endString = this.getstringvalue(endinvalue);
+                }
+                else if (endinvalue instanceof Date) {
+                    endObject = true;
+                }
+                else if (!isNullOrUndefined(endinvalue)) {
+                    invalidobject = true;
+                }
+            }
+            if ((isNullOrUndefined(startString) && !startObject && !isNullOrUndefined(endString)) ||
+                (!isNullOrUndefined(startString) && !endObject && isNullOrUndefined(endString))) {
+                invalid = true;
+            }
+            if (invalidobject) {
+                startString = endString = valueString = null;
+                invalid = true;
+            }
+            if (startString) {
+                invalid = invalid || this.checkInvalidValue(startString);
+            }
+            if (endString) {
+                invalid = invalid || this.checkInvalidValue(endString);
+            }
+            if (invalid) {
+                if (startObject && !invalidobject) {
+                    startString = startinvalue.toLocaleDateString();
+                }
+                if (endObject && !invalidobject) {
+                    endString = endinvalue.toLocaleDateString();
+                }
+                if (!isNullOrUndefined(startString) && !isNullOrUndefined(endString)) {
+                    valueString = startString + ' ' + this.separator + ' ' + endString;
+                }
+                else if (!isNullOrUndefined(startString)) {
+                    valueString = startString;
+                }
+                else if (!isNullOrUndefined(endString)) {
+                    valueString = endString;
+                }
+                this.invalidValueString = valueString;
+                this.setProperties({ value: null }, true);
+                this.setProperties({ startValue: null }, true);
+                this.setProperties({ endValue: null }, true);
+                this.startDate = null;
+                this.endDate = null;
+            }
+        }
+    };
+    DateRangePicker.prototype.getstringvalue = function (value) {
+        var stringValue = null;
+        if (!isNullOrUndefined(value) && (typeof value === 'number')) {
+            stringValue = (value).toString();
+        }
+        else if (!isNullOrUndefined(value) && (typeof value === 'string')) {
+            stringValue = '' + value;
+        }
+        return stringValue;
+    };
+    DateRangePicker.prototype.checkInvalidValue = function (value) {
+        var valueString = value;
+        var invalid = false;
+        var formatOpt = null;
+        formatOpt = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        if (typeof valueString !== 'string') {
+            invalid = true;
+        }
+        else {
+            var globalize = new Internationalization(this.locale);
+            if (!this.checkDateValue(globalize.parseDate(valueString, formatOpt))) {
+                var extISOStr = null;
+                var basISOString = null;
+                // tslint:disable-next-line
+                extISOStr = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                // tslint:disable-next-line
+                basISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+                if ((!extISOStr.test(valueString) && !basISOString.test(valueString))
+                    || (/^[a-zA-Z0-9- ]*$/).test(valueString) || isNaN(+new Date(this.checkValue(valueString)))) {
+                    invalid = true;
+                }
+            }
+        }
+        return invalid;
     };
     DateRangePicker.prototype.isDateDisabled = function (date) {
         if (isNullOrUndefined(date)) {
@@ -7133,8 +7615,76 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      * @hidden
      */
-    DateRangePicker.prototype.navigateTo = function (view, value) {
-        _super.prototype.navigateTo.call(this, view, value);
+    DateRangePicker.prototype.navigateTo = function (view, date) {
+        if (this.isPopupOpen()) {
+            if (view.toLowerCase() === 'month') {
+                view = 'Month';
+            }
+            else if (view.toLowerCase() === 'year') {
+                view = 'Year';
+            }
+            else if (view.toLowerCase() === 'decade') {
+                view = 'Decade';
+            }
+            else {
+                return;
+            }
+            if (this.getViewNumber(view) < this.getViewNumber(this.depth)) {
+                view = this.depth;
+            }
+            if (this.isMobile) {
+                _super.prototype.navigateTo.call(this, view, date);
+            }
+            else {
+                if (date < this.min) {
+                    date = new Date(+this.min);
+                }
+                else if (date >= this.max) {
+                    date = new Date(+this.max);
+                }
+                if (view === 'Month' && this.isSameMonth(date, this.max)) {
+                    date = new Date(this.max.getFullYear(), this.max.getMonth() - 1, this.min.getDate());
+                }
+                else if (view === 'Year' && this.isSameYear(date, this.max)) {
+                    date = new Date((this.max.getFullYear() - 1), this.max.getMonth(), this.max.getDate());
+                }
+                else if (view === 'Decade' && this.isSameDecade(date, this.max)) {
+                    date = new Date((this.max.getFullYear() - 10), this.max.getMonth(), this.max.getDate());
+                }
+                this.leftCalCurrentDate = date;
+                this.navigate(this.leftCalendar, this.leftCalCurrentDate, view);
+                if (view === 'Month') {
+                    date = new Date(this.currentDate.setMonth(this.currentDate.getMonth() + 1));
+                }
+                else if (view === 'Year') {
+                    date = new Date(this.currentDate.setFullYear(this.currentDate.getFullYear() + 1));
+                }
+                else {
+                    date = new Date(this.currentDate.setFullYear(this.currentDate.getFullYear() + 10));
+                }
+                this.rightCalCurrentDate = date;
+                this.navigate(this.rightCalendar, this.rightCalCurrentDate, view);
+                this.leftKeyboardModule = this.rightKeyboardModule = null;
+                this.updateNavIcons();
+            }
+            if (this.currentView() === this.depth) {
+                this.bindCalendarCellEvents();
+            }
+            this.removeFocusedDate();
+            this.updateRange((this.isMobile ? [this.calendarElement] : [this.leftCalendar, this.rightCalendar]));
+        }
+    };
+    DateRangePicker.prototype.navigate = function (calendar, date, view) {
+        this.calendarElement = calendar;
+        this.table = calendar.querySelector('table');
+        this.tableBodyElement = calendar.querySelector('tbody');
+        this.headerTitleElement = calendar.querySelector('.e-title');
+        this.tableHeadElement = calendar.querySelector('thead');
+        this.contentElement = calendar.querySelector('.e-content');
+        this.previousIcon = calendar.querySelector('.e-prev');
+        this.nextIcon = calendar.querySelector('.e-next');
+        this.effect = ZOOMIN$1;
+        _super.prototype.navigateTo.call(this, view, date);
     };
     /**
      * Sets the focus to widget for interaction.
@@ -7301,6 +7851,13 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
                         this.setScrollPosition();
                     }
+                    this.checkMinMaxDays();
+                    if ((this.isMobile) && (!isNullOrUndefined(this.startDate)) && (isNullOrUndefined(this.endDate))) {
+                        this.endButton.element.classList.add(ACTIVE$1);
+                        this.startButton.element.classList.remove(ACTIVE$1);
+                        this.endButton.element.removeAttribute('disabled');
+                        this.selectableDates();
+                    }
                 }
             }
         }
@@ -7316,16 +7873,16 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 if (!isNullOrUndefined(this.previousStartValue)) {
-                    this.startValue = new Date('' + this.previousStartValue);
+                    this.startValue = new Date(this.checkValue(this.previousStartValue));
                     this.setValue();
-                    this.currentDate = new Date('' + this.startValue);
+                    this.currentDate = new Date(this.checkValue(this.startValue));
                 }
                 else {
                     this.startValue = null;
                     this.setValue();
                 }
                 if (!isNullOrUndefined(this.previousEndValue)) {
-                    this.endValue = new Date('' + this.previousEndValue);
+                    this.endValue = new Date(this.checkValue(this.previousEndValue));
                     this.setValue();
                 }
                 else {
@@ -7397,6 +7954,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.changeTrigger();
     };
     DateRangePicker.prototype.refreshChange = function () {
+        this.checkView();
         this.refreshControl();
         this.changeTrigger();
     };
@@ -7503,8 +8061,8 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'format':
-                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkFormat();
                     this.updateInput();
                     this.changeTrigger();
                     break;
@@ -7524,7 +8082,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         newProp.startDate = this.globalize.parseDate(newProp.startDate, format);
                     }
                     if (+this.initStartDate !== +newProp.startDate) {
-                        this.startValue = this.checkDateValue(new Date('' + newProp.startDate));
+                        this.startValue = this.checkDateValue(new Date(this.checkValue(newProp.startDate)));
                         this.setDate();
                         this.setValue();
                     }
@@ -7534,45 +8092,60 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         newProp.endDate = this.globalize.parseDate(newProp.endDate, format);
                     }
                     if (+this.initEndDate !== +newProp.endDate) {
-                        this.endValue = this.checkDateValue(new Date('' + newProp.endDate));
+                        this.endValue = this.checkDateValue(new Date(this.checkValue(newProp.endDate)));
                         this.setDate();
                         this.setValue();
                     }
                     break;
                 case 'value':
-                    if ((!isNullOrUndefined(newProp.value) && newProp.value.length > 0)
-                        || !isNullOrUndefined(newProp.value) && newProp.value.start) {
-                        this.valueType = newProp.value;
-                        if (newProp.value[0] === null || (newProp.value.start === null)) {
-                            if (newProp.value.length === 1 || (newProp.value.start)) {
-                                this.clearModelvalue(newProp, oldProp);
-                            }
-                            else if (newProp.value[1] === null ||
-                                (newProp.value.start === null)) {
-                                this.clearModelvalue(newProp, oldProp);
-                            }
-                        }
-                        else if ((+this.initStartDate !== +newProp.value[0]
-                            || +this.initEndDate !== +newProp.value[1]) ||
-                            (+this.initStartDate !== +(newProp.value.start
-                                || +this.initEndDate !== +newProp.value.start))) {
-                            if (newProp.value.length === 1) {
-                                this.modelValue = newProp.value;
-                            }
-                            else if (newProp.value.start) {
-                                this.modelValue = newProp.value;
-                            }
+                    this.invalidValueString = null;
+                    this.checkInvalidRange(newProp.value);
+                    if (typeof (newProp.value) === 'string') {
+                        if (!this.invalidValueString) {
+                            var rangeArray = newProp.value.split(' ' + this.separator + ' ');
+                            this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
                             this.updateValue();
                             this.setDate();
                         }
+                        else {
+                            this.clearModelvalue(newProp, oldProp);
+                        }
                     }
                     else {
-                        if (isNullOrUndefined(this.value)
-                            || newProp.value.start == null) {
+                        if ((!isNullOrUndefined(newProp.value) && newProp.value.length > 0)
+                            || !isNullOrUndefined(newProp.value) && newProp.value.start) {
                             this.valueType = newProp.value;
-                            this.startValue = null;
-                            this.endValue = null;
-                            this.clearModelvalue(newProp, oldProp);
+                            if (newProp.value[0] === null || (newProp.value.start === null)) {
+                                if (newProp.value.length === 1 || (newProp.value.start)) {
+                                    this.clearModelvalue(newProp, oldProp);
+                                }
+                                else if (newProp.value[1] === null ||
+                                    (newProp.value.start === null)) {
+                                    this.clearModelvalue(newProp, oldProp);
+                                }
+                            }
+                            else if ((+this.initStartDate !== +newProp.value[0]
+                                || +this.initEndDate !== +newProp.value[1]) ||
+                                (+this.initStartDate !== +(newProp.value.start
+                                    || +this.initEndDate !== +newProp.value.start))) {
+                                if (newProp.value.length === 1) {
+                                    this.modelValue = newProp.value;
+                                }
+                                else if (newProp.value.start) {
+                                    this.modelValue = newProp.value;
+                                }
+                                this.updateValue();
+                                this.setDate();
+                            }
+                        }
+                        else {
+                            if (isNullOrUndefined(this.value)
+                                || newProp.value.start == null) {
+                                this.valueType = newProp.value;
+                                this.startValue = null;
+                                this.endValue = null;
+                                this.clearModelvalue(newProp, oldProp);
+                            }
                         }
                     }
                     break;
@@ -7585,17 +8158,18 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.refreshChange();
                     break;
                 case 'min':
-                    this.setProperties({ min: this.checkDateValue(new Date('' + newProp.min)) }, true);
+                    this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true);
                     this.previousEleValue = this.inputElement.value;
                     this.enableInput();
                     this.refreshChange();
                     break;
                 case 'max':
-                    this.setProperties({ max: this.checkDateValue(new Date('' + newProp.max)) }, true);
+                    this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
                     this.enableInput();
                     this.refreshChange();
                     break;
                 case 'strictMode':
+                    this.invalidValueString = null;
                     this.setProperties({ strictMode: newProp.strictMode }, true);
                     this.refreshChange();
                     break;
@@ -7607,6 +8181,14 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.floatLabelType = newProp.floatLabelType;
                     Input.removeFloating(this.inputWrapper);
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                    break;
+                case 'start':
+                    this.setProperties({ start: newProp.start }, true);
+                    this.refreshChange();
+                    break;
+                case 'depth':
+                    this.setProperties({ depth: newProp.depth }, true);
+                    this.refreshChange();
                     break;
             }
         }
@@ -7761,14 +8343,14 @@ var WRAPPERCLASS = 'e-time-wrapper';
 var POPUP$2 = 'e-popup';
 var ERROR$2 = 'e-error';
 var POPUPDIMENSION = '240px';
-var LIBRARY$2 = 'e-lib';
-var CONTROL$2 = 'e-control';
 var DAY = new Date().getDate();
 var MONTH$2 = new Date().getMonth();
 var YEAR$2 = new Date().getFullYear();
 var ROOT$3 = 'e-timepicker';
+var LIBRARY$2 = 'e-lib';
+var CONTROL$2 = 'e-control';
 var CONTENT$2 = 'e-content';
-var SELECTED$3 = 'e-active';
+var SELECTED$4 = 'e-active';
 var HOVER$1 = 'e-hover';
 var NAVIGATION = 'e-navigation';
 var DISABLED$3 = 'e-disabled';
@@ -7927,9 +8509,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.checkTimeFormat();
         this.checkInvalidValue(this.value);
         // persist the value property.
-        this.setProperties({ value: this.checkDateValue(new Date('' + this.value)) }, true);
-        this.setProperties({ min: this.checkDateValue(new Date('' + this.min)) }, true);
-        this.setProperties({ max: this.checkDateValue(new Date('' + this.max)) }, true);
+        this.setProperties({ value: this.checkDateValue(new Date(this.checkInValue(this.value))) }, true);
+        this.setProperties({ min: this.checkDateValue(new Date(this.checkInValue(this.min))) }, true);
+        this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
         if (this.angularTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
@@ -8016,9 +8598,14 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         return cldrTime;
     };
     TimePicker.prototype.checkInvalidValue = function (value) {
-        if (typeof value !== 'object' && !isNullOrUndefined(value) && !this.strictMode) {
+        var isInvalid = false;
+        if (typeof value !== 'object' && !isNullOrUndefined(value)) {
             var valueString = value;
+            if (typeof valueString === 'string') {
+                valueString = valueString.trim();
+            }
             var valueExpression = null;
+            var valueExp = null;
             if (typeof value === 'number') {
                 valueString = value.toString();
             }
@@ -8037,6 +8624,10 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
+            valueExp = this.globalize.parseDate(valueString, {
+                format: this.getCldrDateTimeFormat(), type: 'datetime'
+            });
+            valueExpression = (!isNullOrUndefined(valueExp) && valueExp instanceof Date && !isNaN(+valueExp)) ? valueExp : null;
             if (isNullOrUndefined(valueExpression) && valueString.replace(/\s/g, '').length) {
                 var extISOString = null;
                 var basicISOString = null;
@@ -8046,10 +8637,18 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 basicISOString = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
                 if ((!extISOString.test(valueString) && !basicISOString.test(valueString))
                     || ((/^[a-zA-Z0-9- ]*$/).test(value)) || isNaN(+new Date('' + valueString))) {
-                    this.invalidValueString = valueString;
-                    this.setProperties({ value: null }, true);
-                    this.initValue = null;
+                    isInvalid = true;
                 }
+                else {
+                    valueExpression = new Date('' + valueString);
+                }
+            }
+            if (isInvalid) {
+                if (!this.strictMode) {
+                    this.invalidValueString = valueString;
+                }
+                this.setProperties({ value: null }, true);
+                this.initValue = null;
             }
             else {
                 this.setProperties({ value: valueExpression }, true);
@@ -8167,9 +8766,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             offsetY: OFFSETVAL,
             open: function () {
                 _this.popupWrapper.style.visibility = 'visible';
-                addClass([_this.inputWrapper.buttons[0]], SELECTED$3);
+                addClass([_this.inputWrapper.buttons[0]], SELECTED$4);
             }, close: function () {
-                removeClass([_this.inputWrapper.buttons[0]], SELECTED$3);
+                removeClass([_this.inputWrapper.buttons[0]], SELECTED$4);
                 _this.unWireListEvents();
                 _this.inputElement.setAttribute('aria-activedescendant', 'null');
                 remove(_this.popupObj.element);
@@ -8262,7 +8861,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.getActiveElement = function () {
         if (!isNullOrUndefined(this.popupWrapper)) {
-            return this.popupWrapper.querySelectorAll('.' + SELECTED$3);
+            return this.popupWrapper.querySelectorAll('.' + SELECTED$4);
         }
         else {
             return null;
@@ -8611,12 +9210,12 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimePicker.prototype.setSelection = function (li, event) {
-        if (this.isValidLI(li) && !li.classList.contains(SELECTED$3)) {
+        if (this.isValidLI(li) && !li.classList.contains(SELECTED$4)) {
             this.checkValue(li.getAttribute('data-value'));
             this.selectedElement = li;
             this.activeIndex = Array.prototype.slice.call(this.liCollections).indexOf(li);
             this.valueWithMinutes = new Date(this.timeCollections[this.activeIndex]);
-            addClass([this.selectedElement], SELECTED$3);
+            addClass([this.selectedElement], SELECTED$4);
             this.selectedElement.setAttribute('aria-selected', 'true');
             this.checkValueChange(event, true);
         }
@@ -9182,9 +9781,9 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.removeSelection = function () {
         this.removeHover(HOVER$1);
         if (!isNullOrUndefined(this.popupWrapper)) {
-            var items = this.popupWrapper.querySelectorAll('.' + SELECTED$3);
+            var items = this.popupWrapper.querySelectorAll('.' + SELECTED$4);
             if (items.length) {
-                removeClass(items, SELECTED$3);
+                removeClass(items, SELECTED$4);
                 items[0].removeAttribute('aria-selected');
             }
         }
@@ -9225,7 +9824,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.removeSelection();
         this.setActiveClass();
         if (!isNullOrUndefined(this.selectedElement)) {
-            addClass([this.selectedElement], SELECTED$3);
+            addClass([this.selectedElement], SELECTED$4);
             this.selectedElement.setAttribute('aria-selected', 'true');
         }
     };
@@ -9339,11 +9938,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     TimePicker.prototype.getProperty = function (date, val) {
         if (val === 'min') {
-            this.initMin = this.checkDateValue(new Date('' + date.min));
+            this.initMin = this.checkDateValue(new Date(this.checkInValue(date.min)));
             this.setProperties({ min: this.initMin }, true);
         }
         else {
-            this.initMax = this.checkDateValue(new Date('' + date.max));
+            this.initMax = this.checkDateValue(new Date(this.checkInValue(date.max)));
             this.setProperties({ max: this.initMax }, true);
         }
         if (this.inputElement.value === '') {
@@ -9506,8 +10105,22 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         if (!Browser.isDevice) {
             switch (args.popup.position.X) {
+                case 'left':
+                    break;
                 case 'right':
                     args.popup.offsetX = this.containerStyle.width;
+                    break;
+                case 'center':
+                    args.popup.offsetX = -(this.containerStyle.width / 2);
+                    break;
+            }
+            switch (args.popup.position.Y) {
+                case 'top':
+                    break;
+                case 'bottom':
+                    break;
+                case 'center':
+                    args.popup.offsetY = -(this.containerStyle.height / 2);
                     break;
             }
             if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
@@ -9520,7 +10133,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             if (args.popup.position.X === 'center' && args.popup.position.Y === 'center') {
                 this.popupObj.relateTo = this.anchor = document.body;
                 this.popupObj.offsetY = 0;
-                this.popupObj.offsetX = 0;
                 this.popupObj.targetType = 'container';
                 this.popupObj.collision = { X: 'fit', Y: 'fit' };
             }
@@ -9603,8 +10215,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
                     break;
                 case 'format':
-                    this.checkTimeFormat();
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkTimeFormat();
                     this.setValue(this.value);
                     break;
                 case 'value':
@@ -9645,7 +10257,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.checkValueChange(null, false);
                     break;
                 case 'scrollTo':
-                    if (this.checkDateValue(new Date('' + newProp.scrollTo))) {
+                    if (this.checkDateValue(new Date(this.checkInValue(newProp.scrollTo)))) {
                         if (this.popupWrapper) {
                             this.setScrollTo();
                         }
@@ -9656,6 +10268,14 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
             }
+        }
+    };
+    TimePicker.prototype.checkInValue = function (inValue) {
+        if (inValue instanceof Date) {
+            return (inValue.toUTCString());
+        }
+        else {
+            return ('' + inValue);
         }
     };
     __decorate$3([
@@ -10395,7 +11015,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         this.setInputValue('time');
         if (+this.previousDateTime !== +this.value) {
             this.changedArgs = {
-                value: this.value, event: e,
+                value: this.value, event: e || null,
                 isInteracted: !isNullOrUndefined(e),
                 element: this.element
             };
@@ -10405,19 +11025,43 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateTimePicker.prototype.setTimeScrollPosition = function () {
-        var popupHeight = this.getPopupHeight();
         var popupElement;
         popupElement = this.selectedElement;
         if (!isNullOrUndefined(popupElement)) {
-            var nextEle = popupElement.nextElementSibling;
-            var height = nextEle ? nextEle.offsetTop : popupElement.offsetTop;
-            var liHeight = popupElement.getBoundingClientRect().height;
-            if ((height + popupElement.offsetTop) > popupHeight) {
-                this.dateTimeWrapper.scrollTop = nextEle ? (height - (popupHeight / HALFPOSITION$1 + liHeight / HALFPOSITION$1)) : height;
-            }
-            else {
-                this.dateTimeWrapper.scrollTop = 0;
-            }
+            this.findScrollTop(popupElement);
+        }
+        else if (this.dateTimeWrapper && this.checkDateValue(this.scrollTo)) {
+            this.setScrollTo();
+        }
+    };
+    DateTimePicker.prototype.findScrollTop = function (element) {
+        var listHeight = this.getPopupHeight();
+        var nextElement = element.nextElementSibling;
+        var height = nextElement ? nextElement.offsetTop : element.offsetTop;
+        var lineHeight = element.getBoundingClientRect().height;
+        if ((height + element.offsetTop) > listHeight) {
+            this.dateTimeWrapper.scrollTop = nextElement ? (height - (listHeight / HALFPOSITION$1 + lineHeight / HALFPOSITION$1)) : height;
+        }
+        else {
+            this.dateTimeWrapper.scrollTop = 0;
+        }
+    };
+    DateTimePicker.prototype.setScrollTo = function () {
+        var element;
+        var items = this.dateTimeWrapper.querySelectorAll('.' + LISTCLASS$2);
+        if (items.length >= 0) {
+            var initialTime = this.timeCollections[0];
+            var scrollTime = this.getDateObject(this.checkDateValue(this.scrollTo)).getTime();
+            element = items[Math.round((scrollTime - initialTime) / (this.step * 60000))];
+        }
+        else {
+            this.dateTimeWrapper.scrollTop = 0;
+        }
+        if (!isNullOrUndefined(element)) {
+            this.findScrollTop(element);
+        }
+        else {
+            this.dateTimeWrapper.scrollTop = 0;
         }
     };
     DateTimePicker.prototype.setInputValue = function (type) {
@@ -10917,10 +11561,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'value':
                     var options = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
-                    if (typeof newProp.value === 'string') {
-                        this.setProperties({ value: this.checkDateValue(new Date('' + newProp.value)) }, true);
-                        newProp.value = this.checkDateValue(new Date('' + newProp.value));
-                    }
+                    this.invalidValueString = null;
+                    this.checkInvalidValue(newProp.value);
+                    newProp.value = this.value;
                     newProp.value = this.validateValue(newProp.value);
                     Input.setValue(this.getFormattedValue(newProp.value), this.inputElement, this.floatLabelType, this.showClearButton);
                     this.valueWithMinutes = newProp.value;
@@ -10952,8 +11595,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     _super.prototype.updateInput.call(this);
                     break;
                 case 'format':
-                    this.checkFormat();
                     this.setProperties({ format: newProp.format }, true);
+                    this.checkFormat();
+                    this.dateTimeFormat = this.formatString;
                     this.setValue();
                     break;
                 case 'placeholder':
@@ -10968,6 +11612,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.bindEvents();
                     break;
                 case 'strictMode':
+                    this.invalidValueString = null;
                     this.updateInput();
                     break;
                 case 'width':
@@ -10980,6 +11625,17 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.floatLabelType = newProp.floatLabelType;
                     Input.removeFloating(this.inputWrapper);
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
+                    break;
+                case 'scrollTo':
+                    if (this.checkDateValue(new Date(this.checkValue(newProp.scrollTo)))) {
+                        if (this.dateTimeWrapper) {
+                            this.setScrollTo();
+                        }
+                        this.setProperties({ scrollTo: newProp.scrollTo }, true);
+                    }
+                    else {
+                        this.setProperties({ scrollTo: null }, true);
+                    }
                     break;
                 default:
                     _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
@@ -11008,6 +11664,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(30)
     ], DateTimePicker.prototype, "step", void 0);
+    __decorate$4([
+        Property(null)
+    ], DateTimePicker.prototype, "scrollTo", void 0);
     __decorate$4([
         Property(1000)
     ], DateTimePicker.prototype, "zIndex", void 0);

@@ -94,11 +94,14 @@ export class VerticalView extends ViewBase implements IRenderer {
             header.style[<any>args.cssProperties.padding] = '';
         }
         // tslint:enable:no-any
-        if (this.parent.uiStateValues.isInitial || this.isTimelineView()) {
-            this.scrollToWorkHour();
-            this.parent.uiStateValues.isInitial = this.isTimelineView();
-        } else {
-            content.scrollTop = this.parent.uiStateValues.top;
+        if (!args.isPreventScrollUpdate) {
+            if (this.parent.uiStateValues.isInitial) {
+                this.scrollToWorkHour();
+                this.parent.uiStateValues.isInitial = false;
+            } else {
+                content.scrollTop = this.parent.uiStateValues.top;
+                content.scrollLeft = this.parent.uiStateValues.left;
+            }
         }
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
@@ -484,6 +487,7 @@ export class VerticalView extends ViewBase implements IRenderer {
     public renderContentArea(): Element {
         let wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         let tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
+        this.addAutoHeightClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);

@@ -923,6 +923,11 @@
     overflow-y: auto;
   }
 
+  .e-rte-inline-dropdown.e-rte-backgroundcolor-dropdown,
+  .e-rte-inline-dropdown.e-rte-fontcolor-dropdown {
+    line-height: 0;
+  }
+
   .e-rte-backgroundcolor-colorpicker,
   .e-rte-fontcolor-colorpicker {
     & .e-color-palette.e-container {
@@ -1209,5 +1214,9 @@
 
   .e-rte-overflow {
     overflow: hidden;
+  }
+
+  .e-rte-dialog-minheight {
+    min-height: 265px;
   }
 }

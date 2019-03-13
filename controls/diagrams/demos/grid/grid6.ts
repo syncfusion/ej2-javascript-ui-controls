@@ -56,7 +56,7 @@ document.getElementById('AddRow').onclick = function () {
     var rowDefn1 = new RowDefinition();
     rowDefn1.height = 100;
     rowDefns.push(rowDefn1);
-    grid.addRow(0, rowDefns);
+    grid.addRow(0, rowDefn1, true);
     var child10 = new DiagramElement();
     child10.id = 'child20';
     grid.addObject(child10, 0, 0);
@@ -73,7 +73,7 @@ document.getElementById('AddColumn').onclick = function () {
     var colDefn = new ColumnDefinition();
     colDefn.width = 100;
     colDefns.push(colDefn);
-    grid.addColumn(0, colDefns);
+    grid.addColumn(0, colDefn, true);
     var child10 = new DiagramElement();
     child10.id = 'newchild20';
     grid.addObject(child10, 0, 0);

@@ -9,7 +9,20 @@ export type ToolbarItem =
     'SelectionTool' |
     'SearchOption' |
     'PrintOption' |
-    'DownloadOption';
+    'DownloadOption' |
+    'UndoRedoTool' |
+    'AnnotationEditTool';
+
+/**
+ * Enum AnnotationToolbarItem for annotation toolbar settings
+ */
+export type AnnotationToolbarItem =
+    'HighlightTool' |
+    'UnderlineTool' |
+    'StrikethroughTool' |
+    'ColorEditTool' |
+    'OpacityEditTool' |
+    'AnnotationDeleteTool';
 /**
  * Enum LinkTarget for hyperlink navigation
  */
@@ -18,3 +31,8 @@ export type ToolbarItem =
  * Enum InteractionMode for interaction mode
  */
     export type InteractionMode = 'TextSelection' | 'Pan';
+
+/**
+ * Enum AnnotationType for specifying Annotations
+ */
+export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough';

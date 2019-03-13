@@ -39,6 +39,7 @@ export class Filter implements IAction {
     private currentFilterObject: PredicateModel;
     private isRemove: boolean;
     private contentRefresh: boolean = true;
+    private initialLoad: boolean;
     private values: Object = {};
     private cellText: Object = {};
     private nextFlMenuOpen: string = '';
@@ -252,12 +253,14 @@ export class Filter implements IAction {
         if (this.parent.getColumns().length && this.filterSettings.columns.length) {
             let gObj: IGrid = this.parent;
             this.contentRefresh = false;
+            this.initialLoad = true;
             for (let col of gObj.filterSettings.columns) {
                 this.filterByColumn(
                     col.field, col.operator, col.value as string, col.predicate, col.matchCase,
                     col.ignoreAccent, col.actualFilterValue, col.actualOperator
                 );
             }
+            this.initialLoad = false;
             this.updateFilterMsg();
             this.contentRefresh = true;
         }
@@ -323,6 +326,7 @@ export class Filter implements IAction {
             filterCell = gObj.getHeaderContent().querySelector('[id=\'' + this.column.field + '_filterBarcell\']') as HTMLInputElement;
         }
         if (!isNullOrUndefined(this.column.allowFiltering) && !this.column.allowFiltering) {
+            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), columnName: this.column.headerText});
             return;
         }
         if (isActionPrevent(gObj)) {
@@ -353,6 +357,9 @@ export class Filter implements IAction {
         }
         if (!isNullOrUndefined(this.column.format)) {
             this.applyColumnFormat(filterValue);
+            if (this.initialLoad && this.filterSettings.type === 'FilterBar') {
+                filterCell.value = this.values[this.column.field];
+            }
         } else {
             this.values[this.column.field] = filterValue; //this line should be above updateModel
         }
@@ -944,6 +951,7 @@ export class Filter implements IAction {
 
     private updateFilter(): void {
         let cols: PredicateModel[] = this.filterSettings.columns;
+        this.actualPredicate = {};
         for (let i: number = 0; i < cols.length; i++) {
             this.column = this.parent.getColumnByField(cols[i].field) ||
                 getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns());
@@ -958,7 +966,8 @@ export class Filter implements IAction {
 
     /* tslint:disable-next-line:max-line-length */
     private refreshFilterIcon(fieldName: string, operator: string, value: string | number | Date | boolean, type?: string, predicate?: string, matchCase?: boolean, ignoreAccent?: boolean): void {
-        this.actualPredicate[fieldName] = [{
+        let obj: Object;
+        obj = {
             field: fieldName,
             predicate: predicate,
             matchCase: matchCase,
@@ -966,7 +975,8 @@ export class Filter implements IAction {
             operator: operator,
             value: value,
             type: type
-        }];
+            };
+        this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
         this.addFilteredClass(fieldName);
     }
 

@@ -125,7 +125,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual(null);
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'Welcome';
             editorObj.dataBind();
@@ -149,7 +149,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "null" with initial render testing', () => {
@@ -173,7 +173,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual(null);
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'Welcome';
             editorObj.dataBind();
@@ -197,7 +197,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as "undefined" string with initial render testing', () => {
@@ -221,7 +221,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual(null);
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'Welcome';
             editorObj.dataBind();
@@ -245,7 +245,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Value as empty string with initial render testing', () => {
@@ -269,7 +269,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'Welcome';
             editorObj.dataBind();
@@ -293,7 +293,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
         });
         it('Defined value with initial render testing', () => {
@@ -328,7 +328,7 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
             editorObj.save();
-            expect(editorObj.value).toEqual(null);
+            expect(editorObj.value).toEqual('');
             expect(valueEle.innerHTML).toEqual('Enter some text');
             editorObj.value = 'RichTextEditor';
             editorObj.dataBind();
@@ -342,6 +342,30 @@ describe('Rte module', () => {
             editorObj.save();
             expect(editorObj.value).toEqual('RichTextEditor');
             expect(valueEle.innerHTML).toEqual('RichTextEditor');
+        });
+    });
+
+    // inplce editor text is not saved in RTE
+    describe('inplce editor RTE text Save', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                type: 'RTE',
+                name: 'TextEditor',
+                value: 'testValue',
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Value property testing', () => {
+            expect(editorObj.element.innerText === 'testValue').toEqual(true);
         });
     });
 

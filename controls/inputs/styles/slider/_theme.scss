@@ -24,6 +24,11 @@
       padding: 0;
       position: absolute;
       width: 18px;
+      @if $skin-name == 'bootstrap4' {
+        border: 0;
+        height: 16px;
+        width: 16px;
+      }
     }
 
     .e-slider-button:hover {
@@ -79,6 +84,9 @@
         @if $skin-name != 'bootstrap' {
           border-color: $slider-normal-handle-border-color;
         }
+        // @if $skin-name == 'bootstrap4' {
+        //   box-shadow: #fff 0px 0px 1px, rgba(#007bff, 0.25) 0px 0px 0px 3px;
+        // }
 
         &.e-material-tooltip {
           background-color: transparent;
@@ -135,19 +143,19 @@
 
     &.e-slider-hover {
       .e-slider-track {
-        @if $skin-name != 'highcontrast' {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'bootstrap4') {
           background-color: $slider-hover-color;
         }
       }
 
       .e-range {
-        @if $skin-name != 'highcontrast' {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'bootstrap4') {
           background-color: $slider-range-bar-hover-color;
         }
       }
 
       .e-handle {
-        @if $skin-name != 'highcontrast' {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'bootstrap4') {
           border-color: $slider-handle-hover-border-color;
         }
       }

@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, ComplexFactory } from '@syncfusion/ej2-base';import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';import { ShapeStyleModel, TextStyleModel, ShadowModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { Size } from '../primitives/size';import { PointModel } from '../primitives/point-model';import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction } from '../enum/enum';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { Canvas } from '../core/containers/canvas';import { getBasicShape } from './dictionary/basic-shapes';import { DiagramElement } from '../core/elements/diagram-element';import { PathElement } from '../core/elements/path-element';import { TextElement } from '../core/elements/text-element';import { ImageElement } from '../core/elements/image-element';import { DiagramNativeElement } from '../core/elements/native-element';import { Port, PointPort } from './port';import { PointPortModel } from './port-model';import { Annotation, ShapeAnnotation } from './annotation';import { ShapeAnnotationModel, HyperlinkModel } from './annotation-model';import { getPortShape, getIconShape } from './dictionary/common';import { getFlowShape } from './dictionary/flow-shapes';import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTriggers, BpmnGateways, NodeConstraints } from '../enum/enum';import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops } from '../enum/enum';import { BpmnBoundary, BpmnActivities, UmlScope } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { LayoutModel } from '../layout/layout-base-model';import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { NodeBase } from './node-base';import { canShadow } from './../utility/constraints-util';import { PortVisibility, Stretch } from '../enum/enum';import { IconShapeModel } from './icon-model';import { IconShape } from './icon';import { measurePath } from './../utility/dom-util';import { Rect } from '../primitives/rect';import { getPolygonPath } from './../utility/path-util';import { DiagramHtmlElement } from '../core/elements/html-element';import { StackPanel } from '../core/containers/stack-panel';import { GridPanel, RowDefinition, ColumnDefinition } from '../core/containers/grid';import { Orientation, ContainerTypes, ClassifierShape } from '../enum/enum';import { getULMClassifierShapes } from '../utility/uml-util';import { initSwimLane } from '../interaction/container-interaction';import { AnnotationModel } from './annotation-model';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory } from '@syncfusion/ej2-base';import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearance-model';import { Point } from '../primitives/point';import { Size } from '../primitives/size';import { PointModel } from '../primitives/point-model';import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction } from '../enum/enum';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { Canvas } from '../core/containers/canvas';import { getBasicShape } from './dictionary/basic-shapes';import { DiagramElement } from '../core/elements/diagram-element';import { PathElement } from '../core/elements/path-element';import { TextElement } from '../core/elements/text-element';import { ImageElement } from '../core/elements/image-element';import { DiagramNativeElement } from '../core/elements/native-element';import { Port, PointPort } from './port';import { PointPortModel } from './port-model';import { Annotation, ShapeAnnotation } from './annotation';import { ShapeAnnotationModel, HyperlinkModel } from './annotation-model';import { getPortShape, getIconShape } from './dictionary/common';import { getFlowShape } from './dictionary/flow-shapes';import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTriggers, BpmnGateways, NodeConstraints } from '../enum/enum';import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops } from '../enum/enum';import { BpmnBoundary, BpmnActivities, UmlScope } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { LayoutModel } from '../layout/layout-base-model';import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';import { setSwimLaneDefaults } from './../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { NodeBase } from './node-base';import { canShadow } from './../utility/constraints-util';import { PortVisibility, Stretch } from '../enum/enum';import { IconShapeModel } from './icon-model';import { IconShape } from './icon';import { measurePath } from './../utility/dom-util';import { Rect } from '../primitives/rect';import { getPolygonPath } from './../utility/path-util';import { DiagramHtmlElement } from '../core/elements/html-element';import { StackPanel } from '../core/containers/stack-panel';import { GridPanel, RowDefinition, ColumnDefinition } from '../core/containers/grid';import { Orientation, ContainerTypes, ClassifierShape } from '../enum/enum';import { getULMClassifierShapes } from '../utility/uml-util';import { initSwimLane } from './../utility/swim-lane-util';import { AnnotationModel } from './annotation-model';
 import {NodeBaseModel} from "./node-base-model";
 
 /**
@@ -659,6 +659,7 @@ export interface BpmnSubEventModel {
 
 /**
  * Interface for a class BpmnTransactionSubProcess
+ * @private
  */
 export interface BpmnTransactionSubProcessModel {
 
@@ -1517,23 +1518,23 @@ export interface HeaderModel {
      * Sets the content of the header
      * @default ''
      */
-    content?: Annotation;
+    annotation?: Annotation;
 
     /**
      * Sets the style of the header
      * @default ''
      */
-    style?: TextStyleModel;
+    style?: ShapeStyleModel;
 
     /**
      * Sets the height of the header
-     * @default 25
+     * @default 50
      */
     height?: number;
 
     /**
      * Sets the width of the header
-     * @default 25
+     * @default 50
      */
     width?: number;
 
@@ -1560,23 +1561,23 @@ export interface LaneModel {
      * Defines the collection of child nodes
      * @default []
      */
-    childNodes?: NodeModel[];
+    children?: NodeModel[];
 
     /**
      * Defines the height of the phase
-     * @default 25
+     * @default 100
      */
     height?: number;
 
     /**
      * Defines the height of the phase
-     * @default 25
+     * @default 100
      */
     width?: number;
 
     /**
      * Defines the collection of header in the phase.
-     * @default undefined
+     * @default new Header()
      */
     header?: HeaderModel;
 
@@ -1601,21 +1602,9 @@ export interface PhaseModel {
 
     /**
      * Sets the header collection of the phase
-     * @default 'undefined'
+     * @default  new Header()
      */
     header?: HeaderModel;
-
-    /**
-     * Sets the height of the lane
-     * @default 30
-     */
-    height?: number;
-
-    /**
-     * Sets the width of the lane
-     * @default 30
-     */
-    width?: number;
 
     /**
      * Sets the offset of the lane
@@ -1638,13 +1627,13 @@ export interface SwimLaneModel extends ShapeModel{
 
     /**
      * Defines the size of phase.
-     * @default '10'
+     * @default 20
      */
     phaseSize?: number;
 
     /**
      * Defines the collection of phases.
-     * @default undefined
+     * @default 'undefined'
      */
     phases?: PhaseModel[];
 
@@ -1656,21 +1645,15 @@ export interface SwimLaneModel extends ShapeModel{
 
     /**
      * Defines the collection of lanes
-     * @default undefined
+     * @default 'undefined'
      */
     lanes?: LaneModel[];
 
     /**
      * Defines the collection of header
-     * @default undefined
+     * @default 'undefined'
      */
     header?: HeaderModel;
-
-    /**
-     * Defines the style of shape
-     * @default ''
-     */
-    lineStyle?: ShapeStyleModel | TextStyleModel;
 
     /**
      * Defines the whether the shape is a lane or not

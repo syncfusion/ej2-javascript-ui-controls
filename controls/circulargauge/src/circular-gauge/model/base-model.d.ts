@@ -105,7 +105,7 @@ export interface TooltipSettingsModel {
 
     /**
      * The fill color of the tooltip, which accepts value in hex, rgba as a valid CSS color string.
-     * @default '#000000'
+     * @default null
      */
 
     fill?: string;

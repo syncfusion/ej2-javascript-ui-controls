@@ -2,9 +2,14 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
 
 ### TreeGrid
+
+#### New Features
+
+- Checkbox selection support has been provided that allows users to select rows using checkbox.
+- Checkbox Column support has been provided that allows users to check rows using checkbox in treegrid column.
 
 #### Bug Fixes
 
@@ -12,51 +17,20 @@
 - Edited records can be searched/filtered.
 - Inner level records will be collapsed/expanded after filtering/searching actions.
 
-## 16.4.53 (2019-02-13)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- Child records of third level or its successor displays properly based on their hierarchy relation in self reference data binding.
-- Change detection works fine for `dataSource` property.
-
-## 16.4.52 (2019-02-05)
-
-### TreeGrid
-
-#### Breaking Changes
-
-- Default value of `editSettings.mode` has been changed to `Cell`.
-
-#### Bug Fixes
-
-- Expanding and Collapsing records is working fine when `pageSizeMode` is set as `All`.
-- `expandAtLevel`, `collapseAtLevel`, `expandAll` and `collapseAll` methods are working fine when `pageSizeMode` is set as `All`.
-- Added events for the column menu feature and added `columnMenuItems` API to modify the column menu items in column menu.
-- Added `sortComparer` API to perform custom sorting in TreeGrid.
-- Property change support for `height` property has been provided.
-- Expand icon is prevented from displaying for the root/zeroth level record which has `hasChildMapping` field as false.
-- Child records of third level or its successor displays properly based on their hierarchy relation in self reference data binding.
-- `Query` maintenance support provided for `refresh` method after expanding any child rows.
-
-## 16.4.48 (2019-01-22)
+## 17.1.1-beta (2019-01-29)
 
 ### TreeGrid
 
 #### Bug Fixes
 
 - `Query` maintenance support provided for `refresh` method after expanding any child rows.
-
-## 16.4.46 (2019-01-08)
-
-### TreeGrid
-
-#### Bug Fixes
-
 - Property change support for `height` property has been provided.
 - Expand icon is prevented from displaying for the root/zeroth level record which has `hasChildMapping` field as false.
 - Child records of third level or its successor displays properly based on their hierarchy relation in self reference data binding.
+
+#### New Features
+
+- `Excel-Like Filtering` support is provided that allows users to create complex filter criteria for a column by allowing users to select possible filter values from a checkbox list. The advanced filter can be used to build complex filter criteria.
 
 ## 16.4.45 (2019-01-02)
 

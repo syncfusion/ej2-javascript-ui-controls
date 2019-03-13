@@ -1,6 +1,6 @@
-
 import { TextStyleModel } from './tooltip-model';
-import { createElement, remove, SvgRenderer, merge } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '../svg-render/index';
+import { createElement, remove, merge } from '@syncfusion/ej2-base';
 
 
 /**

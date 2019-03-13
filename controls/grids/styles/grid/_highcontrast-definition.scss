@@ -12,17 +12,13 @@ $grid-horizontal-border-size: $border-size !default;
 $grid-font-family: $font-family !default;
 
 $grid-header-font-size: 14px !default;
+$grid-bigger-header-font-size: $grid-header-font-size !default;
 $grid-grouped-headercell-span-padding: 0 !default;
 $grid-group-text-width: 57px !default;
 
 $grid-content-bg-color: $content-bg-color !default;
 $grid-popup-bg-color: $content-bg-color !default;
 $grid-border-radius: 0 !default;
-
-
-$grid-drag-selection-bg-color: $active-bg-color !default;
-$grid-drag-selection-color: $content-border-color !default;
-
 
 $group-droparea-hover-color: $active-font-color !default;
 
@@ -63,6 +59,7 @@ $grid-rowcell-both-border-width: 1px 0 0 1px !default;
 $grid-filtercell-both-border-width: 1px 0 0 1px !default;
 $grid-indentcell-border-width: 0 1px 0 0 !default;
 $grid-headercelldiv-line-height: 29px !default;
+$grid-bigger-headercelldiv-line-height: $grid-headercelldiv-line-height !default;
 $grid-rtl-headercelldiv-padding: 0 .6em 0 1.8em !default;
 $grid-td-checkbox-margin-top: 5px !default;
 $grid-groupdroparea-rtl-text-align: center !default;
@@ -188,6 +185,8 @@ $grid-summary-row-bg-color: $bg-base-10 !default;
 $grid-first-last-rowcell-padding: 10px !default;
 $grid-content-right-padding: 8px !default;
 $grid-content-font-size: 13px !default;
+$grid-header-height: 29px !default;
+$grid-bigger-header-height: $grid-header-height !default;
 $grid-summary-cell-font-size: 14px !default;
 $grid-summary-cell-line-height: 21px !default;
 $grid-cell-border-color: $border-default !default;
@@ -469,3 +468,7 @@ $grid-clone-prop-box-shadow: 0 0 10px 0 rgba($bg-base-0, .2) !default;
 $grid-drag-icon-opacity: $grid-conent-font-opacity !default;
 $grid-clone-dropitemscount-border: $border-default !default;
 $grid-clone-dragdrop-bg-color: $grid-table-background-color !default;
+$grid-group-clone-box-shadow: 0 0 !default;
+$grid-unboundcelldiv-margin: 0 3.5px !default;
+$grid-bigger-flmenu-padding: $grid-flmenu-padding !default;
+$grid-rowcell-wrap-height: 18px !default;

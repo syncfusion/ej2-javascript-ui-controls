@@ -209,6 +209,12 @@
   line-height: $ddl-delimviewheight-bigger;
 }
 
+.e-bigger .e-multi-select-wrapper .e-delim-values .e-remain {
+  @if $ddl-multiselect-skin-name == 'bootstrap4' {
+    padding-left: 12px;
+  }
+}
+
 .e-multi-select-list-wrapper .e-hide-listitem {
   display: none;
 }
@@ -230,6 +236,7 @@
   height: $ddl-chip-sel-mobile-height;
   left: $ddl-chip-mob-left;
   margin: $ddl-chip-sel-mobile-close-margin;
+  margin-left: auto;
   position: relative;
   top: $ddl-chip-close-mob-top;
   width: $ddl-chip-sel-mobile-height;

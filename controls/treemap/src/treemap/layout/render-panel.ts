@@ -4,7 +4,8 @@ import {
     getTemplateFunction, convertElement, findLabelLocation, PathOption, textFormatter, ColorValue, colorNameToHex, convertHexToColor,
     colorMap, measureElement, convertToContainer, convertToRect, getShortestEdge, getArea, orderByArea, isParentItem
 } from '../utils/helper';
-import { isNullOrUndefined, SvgRenderer, createElement, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, extend } from '@syncfusion/ej2-base';
+import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Location, findChildren, renderTextElement } from '../utils/helper';
 import { LevelSettings, Font, LeafItemSettings } from '../model/base';
 import { LabelPosition, LabelAlignment } from '../utils/enum';
@@ -32,14 +33,37 @@ export class LayoutPanel {
         let data: Object[] | Object; let totalRect: Rect;
         if (this.treemap.levelsOfData && this.treemap.levelsOfData.length > 0) {
             data = (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
-                !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) ?
+                !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) &&
+                (isNullOrUndefined(this.treemap.drilledItems) ? isNullOrUndefined(this.treemap.drilledItems)
+                    : this.treemap.drilledItems.length === 0) ?
                 this.getDrilldownData(this.treemap.levelsOfData[0], [])[0] : this.treemap.levelsOfData[0];
             totalRect = extend({}, this.treemap.areaRect, totalRect, false) as Rect;
             if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
-                totalRect = this.treemap.totalRect;
+                if (this.treemap.legendSettings.position !== 'Float') {
+                    totalRect = this.treemap.totalRect;
+                }
             }
-            this.calculateLayoutItems(data || this.treemap.levelsOfData[0], totalRect);
-            this.renderLayoutItems(data || this.treemap.levelsOfData[0]);
+            if (!isNullOrUndefined(this.treemap.currentLevel) &&
+                (isNullOrUndefined(this.treemap.drilledItems) ? !isNullOrUndefined(this.treemap.drilledItems)
+                    : this.treemap.drilledItems.length !== 0)) {
+                let count: number = this.treemap.drilledItems.length - 1;
+                let x: Object = this.treemap.drilledItems[count]['data'];
+                let y: Object = new Object();
+                y[this.treemap.drilledItems[count]['data']['groupName']] = [x];
+                if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) && !this.treemap.enableBreadcrumb) {
+                    this.treemap.currentLevel = this.treemap.drilledItems[count]['data']['groupIndex'];
+                }
+                this.calculateLayoutItems(y || this.treemap.levelsOfData[0], totalRect);
+                this.renderLayoutItems(y || this.treemap.levelsOfData[0]);
+            } else {
+                if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
+                    (isNullOrUndefined(this.treemap.drilledItems) ? isNullOrUndefined(this.treemap.drilledItems)
+                        : this.treemap.drilledItems.length === 0)) {
+                    this.treemap.currentLevel = this.treemap.initialDrillDown.groupIndex;
+                }
+                this.calculateLayoutItems(data || this.treemap.levelsOfData[0], totalRect);
+                this.renderLayoutItems(data || this.treemap.levelsOfData[0]);
+            }
         }
     }
 
@@ -331,6 +355,33 @@ export class LayoutPanel {
         return result;
     }
 
+    public onDemandProcess(childItems: Object): void {
+        let parentItem: Object = new Object(); let totalRect: Rect;
+        parentItem = childItems[0]['parent'];
+        this.treemap.currentLevel = parentItem['isDrilled'] ? parentItem['groupIndex'] : null;
+        let parentItemGroupname: object = new Object();
+        if (isNullOrUndefined(parentItem['groupName'])) {
+            parentItemGroupname = parentItem;
+        } else {
+            parentItemGroupname[parentItem['groupName']] = [parentItem];
+        }
+        totalRect = extend({}, this.treemap.areaRect, totalRect, false) as Rect;
+        if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
+            totalRect = this.treemap.totalRect;
+        }
+        let count: number = this.treemap.levels.length;
+        for (let i: number = 0; i < count; i++) {
+            let levelCount: number = childItems[0]['groupIndex'];
+            if (count === levelCount) {
+                this.treemap.levels[count] = this.treemap.levels[i];
+            } else {
+                this.treemap.levels.splice(count - 1, 1);
+            }
+        }
+        this.calculateLayoutItems(parentItemGroupname, totalRect);
+        this.renderLayoutItems(parentItemGroupname);
+    }
+
     /* tslint:disable-next-line:max-func-body-length */
     public renderLayoutItems(renderData: Object): void {
         let textCollection: string[] = []; let position: string;
@@ -358,29 +409,60 @@ export class LayoutPanel {
                 'width:' + treeMap.areaRect.width + 'px;'
         });
         let isLeafItem: boolean = false; let leaf: LeafItemSettings = treeMap.leafItemSettings as LeafItemSettings;
-        let childItems: Object[];
+        let childItems: Object[]; let connectorText: string;
         for (let i: number = 0; i < this.renderItems.length; i++) {
             item = this.renderItems[i];
             index = item['groupIndex'];
+            if (this.treemap.drillDownView && isNullOrUndefined(this.treemap.currentLevel)
+                && index > 0 || this.treemap.drillDownView
+                && index > (this.treemap.currentLevel + 1)) {
+                continue;
+            }
             rect = item['rect'];
             isLeafItem = item['isLeafItem'];
             groupId = elementID + '_Level_Index_' + index + '_Item_Index_' + i;
             itemGroup = this.renderer.createGroup({ id: groupId + '_Group' });
             gap = (isLeafItem ? leaf.gap : levels[index].groupGap) / 2;
+            let treemapItemRect: Rect = this.treemap.totalRect ? convertToContainer(this.treemap.totalRect) : this.treemap.areaRect;
             if (treeMap.layoutType === 'Squarified') {
                 rect.width = Math.abs(rect.x - rect.width) - gap;
                 rect.height = Math.abs(rect.y - rect.height) - gap;
+            }
+            if (treeMap.renderDirection === 'TopRightBottomLeft') {
+                rect.x = (treemapItemRect.x + treemapItemRect.width) - rect.width - Math.abs(treemapItemRect.x - rect.x);
+            } else if (treeMap.renderDirection === 'BottomLeftTopRight') {
+                rect.y = (treemapItemRect.y + treemapItemRect.height) - rect.height - Math.abs(treemapItemRect.y - rect.y);
+            } else if (treeMap.renderDirection === 'BottomRightTopLeft') {
+                rect.x = (treemapItemRect.x + treemapItemRect.width) - rect.width - Math.abs(treemapItemRect.x - rect.x);
+                rect.y = (treemapItemRect.y + treemapItemRect.height) - rect.height - Math.abs(treemapItemRect.y - rect.y);
             }
             colorMapping = isLeafItem ? leaf.colorMapping : levels[index].colorMapping;
             getItemColor = this.getItemColor(isLeafItem, item);
             fill = getItemColor['fill'];
             opacity = getItemColor['opacity'];
             format = isLeafItem ? leaf.labelFormat : (levels[index]).headerFormat;
+            let levelName: string;
             txtVisible = isLeafItem ? leaf.showLabels : (levels[index]).showHeader;
-            renderText = textFormatter(format, item['data'], this.treemap) || item['name'];
+            if (index === this.treemap.currentLevel) {
+                if (this.treemap.enableBreadcrumb) {
+                    let re: RegExp = /_/gi;
+                    connectorText = '_' + this.treemap.breadcrumbConnector + '_';
+                    levelName = item['levelOrderName'].replace(re, connectorText);
+                    levelName = index !== 0 ? '_' + levelName : levelName;
+                } else {
+                    levelName = item['name'];
+                }
+            } else {
+                if (this.treemap.enableBreadcrumb) {
+                    item['isDrilled'] = false;
+                }
+                levelName = item['name'];
+            }
+            renderText = textFormatter(format, item['data'], this.treemap) || levelName;
             childItems = findChildren(item)['values'];
             renderText = !isLeafItem && childItems && childItems.length > 0 && this.treemap.enableDrillDown ?
-                !item['isDrilled'] ? '[+] ' + renderText : '[-] ' + renderText : renderText;
+                !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :
+                    treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index].headerStyle) as Font;
             border = isLeafItem ? leaf.border : levels[index].border;
             position = !isLeafItem ? (levels[index].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index].headerAlignment) === 'Center' ?
@@ -401,7 +483,8 @@ export class LayoutPanel {
                 itemGroup.appendChild(path);
                 if (txtVisible) {
                     this.renderItemText(
-                        renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position as LabelPosition
+                        renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill,
+                        position as LabelPosition, connectorText
                     );
                 }
                 if (template) {
@@ -421,7 +504,7 @@ export class LayoutPanel {
 
     private renderItemText(
         text: string, parentElement: Element, textStyle: FontModel, rect: Rect, interSectAction: LabelAlignment,
-        groupId: string, fill: string, position: LabelPosition
+        groupId: string, fill: string, position: LabelPosition, connectorText: string
     ): void {
         let level: LevelSettings; let textOptions: TextOption; let headerPosition: string;
         let secondaryEle: HTMLElement = document.getElementById(this.treemap.element.id + '_Secondary_Element');
@@ -432,6 +515,17 @@ export class LayoutPanel {
         textCollection = ((text.indexOf('<br>')) !== -1) ? text.split('<br>') : null;
         customText = this.labelInterSectAction(rect, text, textStyle, interSectAction);
         textSize = measureText(textCollection && textCollection[0] || customText[0], textStyle);
+        if (this.treemap.enableRtl) {
+            let labelSize: Size = measureText(text, textStyle);
+            let drillSymbolCount: number = text.search('[+]') || text.search('[-]');
+            if (rect.width < labelSize.width && drillSymbolCount > 0) {
+                let label: string = text.substring(drillSymbolCount - 1, text.length);
+                let drillSymbol: string = '[+]';
+                let drillSymbolSize: Size = measureText(drillSymbol, textStyle);
+                customText['0'] = textTrim(rect.width - drillSymbolSize.width - padding, customText[0], textStyle) + label;
+            }
+
+        }
         textLocation = findLabelLocation(rect, position, textSize, 'Text', this.treemap);
         if (!isNullOrUndefined(textCollection)) {
             let collection: string[] = [];
@@ -470,7 +564,7 @@ export class LayoutPanel {
             tspanText.push(textName);
         }
         textOptions = new TextOption(
-            groupId + '_Text', textLocation.x, textLocation.y, 'start', tspanText
+            groupId + '_Text', textLocation.x, textLocation.y, 'start', tspanText, '', '', connectorText
         );
         renderTextElement(textOptions, textStyle, textStyle.color || this.getSaturatedColor(fill), parentElement);
     }
@@ -479,6 +573,11 @@ export class LayoutPanel {
         let treemap: TreeMap = this.treemap;
         let itemFill: string = isLeafItem ? treemap.leafItemSettings.fill : treemap.levels[item['groupIndex']].fill;
         let itemOpacity: number = isLeafItem ? treemap.leafItemSettings.opacity : treemap.levels[item['groupIndex']].opacity;
+        if (!isNullOrUndefined(this.treemap.defaultLevelData)) {
+            if (this.treemap.defaultLevelData.length > 0) {
+                treemap.levelsOfData = this.treemap.defaultLevelData;
+            }
+        }
         let parentData: Object[] = findChildren(treemap.levelsOfData[0])['values'];
         let colorMapping: ColorMappingModel[] = isLeafItem ? treemap.leafItemSettings.colorMapping :
             treemap.levels[item['groupIndex']].colorMapping;
@@ -492,8 +591,8 @@ export class LayoutPanel {
             for (let i: number = 0; i < parentData.length; i++) {
                 if ((parentData[i]['levelOrderName'] as string) === (item['levelOrderName'] as string).split('_')[0]) {
                     itemFill = treemap.palette.length > 0 ? treemap.palette[i % treemap.palette.length] :
-                    !isNullOrUndefined(treemap.colorValuePath) ?
-                    parentData[i]['data'][treemap.colorValuePath] : itemFill;
+                        !isNullOrUndefined(treemap.colorValuePath) ?
+                            parentData[i]['data'][treemap.colorValuePath] : itemFill;
                 }
             }
         }

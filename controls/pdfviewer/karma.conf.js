@@ -26,7 +26,8 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-lists/**/*.js", included: false },  
       { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },              
       { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false }
+      { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-notifications/**/*.js", included: false }
       // Add dependent package's script files here              
     ],
 
@@ -72,7 +73,7 @@ module.exports = function (config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['ChromeHeadless', 'Chrome', 'Firefox'],
+    browsers: [ 'Chrome','ChromeHeadless'],
 
 
     // Continuous Integration mode
@@ -92,7 +93,9 @@ module.exports = function (config) {
           branches: 90,
           functions: 100,
           lines: 90
+        
         }
+        
       }
     }
   })

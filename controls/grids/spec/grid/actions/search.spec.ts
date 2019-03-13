@@ -9,6 +9,8 @@ import { data } from '../base/datasource.spec';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Edit } from '../../../src/grid/actions/edit';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import { Column } from '../../../src/grid/models/column';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Search, Page, Toolbar, Edit);
 
@@ -19,6 +21,11 @@ describe('Search module=>', () => {
         let actionComplete: (args?: Object) => void;
 
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: data,
@@ -168,7 +175,8 @@ describe('Search module=>', () => {
                     columns: [
                         { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
                         { field: 'CustomerID' },
-                        { field: 'EmployeeID' }
+                        { field: 'EmployeeID' },
+                        { field: 'ShipCity',allowSearching:false }
                         ],
                     actionComplete: actionComplete,
                     pageSettings: { pageSize: 6, pageCount: 3 },
@@ -219,6 +227,44 @@ describe('Search module=>', () => {
             gridObj.actionComplete = actionComplete;            
             gridObj.searchModule.search('TOMSP');
         });
+
+        it('EJ2-16724==>allowSearching', (done: Function) => {
+            actionComplete = (args: any): void => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(0);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;            
+            gridObj.searchModule.search('Reims');
+        });
+
+        it('EJ2-16724==>allowSearching as true', (done: Function) => {
+            actionComplete = (args: any): void => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;  
+            (gridObj.columns[3] as Column).allowSearching = true;
+            gridObj.searchModule.search('Münster');
+        });
+
+        it('EJ2-16724==>allowSearching as false', (done: Function) => {
+            actionComplete = (args: any): void => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(0);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;  
+            (gridObj.columns[1] as Column).allowSearching = false;
+            gridObj.searchModule.search('VICTE');
+        });
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });    
 
         afterAll(() => {
             destroy(gridObj);

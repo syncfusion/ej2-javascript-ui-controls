@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, TableCellWidget, TableWidget, TableRowWidget } from '../../src/index';
+import { Editor, TableCellWidget,TableWidget,TableRowWidget } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection, PageLayoutViewer } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';

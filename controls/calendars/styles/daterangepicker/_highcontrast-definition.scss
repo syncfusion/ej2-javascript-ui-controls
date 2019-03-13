@@ -56,6 +56,7 @@ $range-start-end-container-height: 35px !default;
 $range-calendar-border: none !default;
 $range-calendar-selection-border: 1px solid $selection-bg !default;
 $range-calendar-hover-border: 1px solid darken($range-hover-color, 15%) !default;
+$range-calendar-hover-border-color: 1px solid darken($range-hover-color, 15%) !default;
 $range-calendar-other-month-border: 1px solid $bg-base-0 !default;
 $range-calendar-margin: 0 !default;
 $range-cursor-default-style: default !default;

@@ -14,7 +14,7 @@ export interface SpinSettingsModel {
 
     /**
      * Sets the width of a spinner.
-     * @default 16
+     * @default '16'
      */
     width?: string | number;
 

@@ -1115,31 +1115,6 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             'Same as the whole table': 'Same as the whole table',
             'Borders': 'Borders',
             'None': 'None',
-            'Single': 'Single',
-            'Dot': 'Dot',
-            'DashSmallGap': 'DashSmallGap',
-            'DashLargeGap': 'DashLargeGap',
-            'DashDot': 'DashDot',
-            'DashDotDot': 'DashDotDot',
-            'Double': 'Double',
-            'Triple': 'Triple',
-            'ThinThickSmallGap': 'ThinThickSmallGap',
-            'ThickThinSmallGap': 'ThickThinSmallGap',
-            'ThinThickThinSmallGap': 'ThinThickThinSmallGap',
-            'ThinThickMediumGap': 'ThinThickMediumGap',
-            'ThickThinMediumGap': 'ThickThinMediumGap',
-            'ThinThickThinMediumGap': 'ThinThickThinMediumGap',
-            'ThinThickLargeGap': 'ThinThickLargeGap',
-            'ThickThinLargeGap': 'ThickThinLargeGap',
-            'ThinThickThinLargeGap': 'ThinThickThinLargeGap',
-            'SingleWavy': 'SingleWavy',
-            'DoubleWavy': 'DoubleWavy',
-            'DashDotStroked': 'DashDotStroked',
-            'Emboss3D': 'Emboss3D',
-            'Engrave3D': 'Engrave3D',
-            'Outset': 'Outset',
-            'Inset': 'Inset',
-            'Thick': 'Thick',
             'Style': 'Style',
             'Width': 'Width',
             'Height': 'Height',
@@ -1620,6 +1595,20 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Set the default character format for document editor
+     * @param characterFormat
+     */
+    DocumentEditor.prototype.setDefaultCharacterFormat = function (characterFormat) {
+        this.characterFormat = characterFormat;
+    };
+    /**
+     * Set the default paragraph format for document editor
+     * @param paragraphFormat
+     */
+    DocumentEditor.prototype.setDefaultParagraphFormat = function (paragraphFormat) {
+        this.paragraphFormat = paragraphFormat;
+    };
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -1683,6 +1672,20 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                 this.trigger('viewChange', eventArgs);
             }
         }
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireCustomContextMenuSelect = function (item) {
+        var eventArgs = { id: item };
+        this.trigger('customContextMenuSelect', eventArgs);
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireCustomContextMenuBeforeOpen = function (item) {
+        var eventArgs = { ids: item };
+        this.trigger('customContextMenuBeforeOpen', eventArgs);
     };
     /**
      * Shows the Paragraph dialog
@@ -2123,6 +2126,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         var hfs = this.parser.parseHeaderFooter({ header: {}, footer: {}, evenHeader: {}, evenFooter: {}, firstPageHeader: {}, firstPageFooter: {} }, undefined);
         if (this.viewer) {
             this.clearPreservedCollectionsInViewer();
+            this.viewer.setDefaultDocumentFormat();
             this.viewer.headersFooters.push(hfs);
             this.viewer.onDocumentChanged(sections);
             if (this.editorModule) {
@@ -2434,6 +2438,12 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], DocumentEditor.prototype, "destroyed", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "customContextMenuSelect", void 0);
+    __decorate([
+        Event()
+    ], DocumentEditor.prototype, "customContextMenuBeforeOpen", void 0);
     DocumentEditor = DocumentEditor_1 = __decorate([
         NotifyPropertyChanges
     ], DocumentEditor);
@@ -11236,6 +11246,18 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
          */
         this.contextMenuInstance = undefined;
         /**
+         * @private
+         */
+        this.menuItems = [];
+        /**
+         * @private
+         */
+        this.customMenuItems = [];
+        /**
+         * @private
+         */
+        this.ids = [];
+        /**
          * Handles on context menu key pressed.
          * @param  {PointerEvent} event
          * @private
@@ -11247,9 +11269,9 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             }
         };
         this.viewer = viewer;
-        var locale = new L10n('documenteditor', this.viewer.owner.defaultLocale);
-        locale.setLocale(this.viewer.owner.locale);
-        this.initContextMenu(locale, this.viewer.owner.enableRtl);
+        this.locale = new L10n('documenteditor', this.viewer.owner.defaultLocale);
+        this.locale.setLocale(this.viewer.owner.locale);
+        this.initContextMenu(this.locale, this.viewer.owner.enableRtl);
     }
     /**
      * Gets module name.
@@ -11278,7 +11300,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         ul.style.maxHeight = 'auto';
         ul.oncontextmenu = this.disableBrowserContextmenu;
         this.contextMenu.appendChild(ul);
-        var menuItems = [
+        this.menuItems = [
             {
                 text: localValue.getConstant('Cut'),
                 iconCss: 'e-icons e-de-cut',
@@ -11446,7 +11468,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         var menuOptions = {
             target: '#' + this.viewer.owner.containerId + 'e-de-contextmenu',
             enableRtl: isRtl,
-            items: menuItems,
+            items: this.addMenuItems(this.menuItems),
             select: function (args) {
                 var item = args.element.id;
                 _this.handleContextMenuItem(item);
@@ -11454,6 +11476,25 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         };
         this.contextMenuInstance = new ContextMenu(menuOptions, '#' + this.viewer.owner.containerId + 'e-de-contextmenu-list');
         this.contextMenuInstance.beforeOpen = function () {
+            for (var index = 0; index < _this.customMenuItems.length; index++) {
+                if (typeof _this.customMenuItems[index].id !== 'undefined') {
+                    _this.ids[index] = _this.customMenuItems[index].id;
+                }
+                else {
+                    _this.ids[index] = _this.customMenuItems[index + 1].id;
+                }
+            }
+            _this.viewer.owner.fireCustomContextMenuBeforeOpen(_this.ids);
+            if (_this.enableCustomContextMenu) {
+                for (var index = 0; index < _this.menuItems.length; index++) {
+                    if (typeof _this.menuItems[index].id !== 'undefined') {
+                        document.getElementById(_this.menuItems[index].id).style.display = 'none';
+                    }
+                    else {
+                        document.getElementById(_this.menuItems[index - 1].id).nextSibling.style.display = 'none';
+                    }
+                }
+            }
             if (_this.viewer && _this.viewer.selection) {
                 classList(_this.viewer.selection.caret, [], ['e-de-cursor-animation']);
                 _this.viewer.selection.showCaret();
@@ -11568,6 +11609,40 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
                 this.viewer.owner.editor.autoFitTable('FixedColumnWidth');
                 break;
+            default:
+                // fires customContextMenuSelect while selecting the added custom menu item
+                this.viewer.owner.fireCustomContextMenuSelect(item);
+                break;
+        }
+    };
+    /**
+     * To add and customize custom context menu
+     * @param {MenuItemModel[]} items -To add custom menu item
+     * @param {boolean} isEnable? -To hide existing menu item and show custom menu item alone
+     * @param {boolean} isBottom? -To show the custom menu item in bottom of the existing item
+     */
+    ContextMenu$$1.prototype.addCustomMenu = function (items, isEnable, isBottom) {
+        var menuItems = JSON.parse(JSON.stringify(items));
+        this.destroy();
+        for (var index = 0; index < menuItems.length; index++) {
+            this.customMenuItems.push(menuItems[index]);
+            this.customMenuItems[index].id = this.viewer.owner.element.id + this.customMenuItems[index].id;
+        }
+        this.enableCustomContextMenu = isEnable;
+        this.enableCustomContextMenuBottom = isBottom;
+        this.initContextMenu(this.locale);
+    };
+    /**
+     * Context Menu Items.
+     * @param {MenuItemModel[]} menuItems -To add MenuItem to context menu
+     * @private
+     */
+    ContextMenu$$1.prototype.addMenuItems = function (menuItems) {
+        if (this.enableCustomContextMenuBottom) {
+            return menuItems.concat(this.customMenuItems);
+        }
+        else {
+            return this.customMenuItems.concat(menuItems);
         }
     };
     ContextMenu$$1.prototype.showHideElements = function (selection) {
@@ -11717,6 +11792,9 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         }
         this.contextMenu = undefined;
         this.contextMenuInstance = undefined;
+        this.menuItems = [];
+        this.customMenuItems = [];
+        this.ids = [];
     };
     return ContextMenu$$1;
 }());
@@ -17353,7 +17431,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var format = elementBox.listLevel.characterFormat;
         var breakCharacterFormat = elementBox.line.paragraph.characterFormat;
         var color = format.fontColor === '#000000' ? breakCharacterFormat.fontColor : format.fontColor;
-        this.pageContext.textBaseline = 'top';
+        this.pageContext.textBaseline = 'alphabetic';
         var bold = '';
         var italic = '';
         var fontFamily = format.fontFamily === 'Verdana' ? breakCharacterFormat.fontFamily : format.fontFamily;
@@ -17380,6 +17458,8 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
+        var baselineOffset = elementBox.baselineOffset;
+        topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         var text = elementBox.text;
         var followCharacter = text === '\t' || text === ' ';
         if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
@@ -17428,7 +17508,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
         var color = format.fontColor;
-        this.pageContext.textBaseline = 'top';
+        this.pageContext.textBaseline = 'alphabetic';
         var bold = '';
         var italic = '';
         var fontSize = 11;
@@ -17439,6 +17519,8 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
+        var baselineOffset = elementBox.baselineOffset;
+        topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
         this.pageContext.fillStyle = this.getColor(color);
         var scaledWidth = this.getScaledValue(elementBox.width);
         var text = elementBox.text;
@@ -19310,7 +19392,40 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.styles.clear();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
+        this.setDefaultCharacterValue(this.characterFormat);
+        this.setDefaultParagraphValue(this.paragraphFormat);
         this.defaultTabWidth = 36;
+    };
+    /**
+     * @private
+     */
+    LayoutViewer.prototype.setDefaultDocumentFormat = function () {
+        this.owner.parser.parseCharacterFormat(this.owner.characterFormat, this.characterFormat);
+        this.owner.parser.parseParagraphFormat(this.owner.paragraphFormat, this.paragraphFormat);
+    };
+    LayoutViewer.prototype.setDefaultCharacterValue = function (characterFormat) {
+        characterFormat.bold = false;
+        characterFormat.italic = false;
+        characterFormat.fontFamily = 'Calibri';
+        characterFormat.fontSize = 11;
+        characterFormat.underline = 'None';
+        characterFormat.strikethrough = 'None';
+        characterFormat.fontSizeBidi = 11;
+        characterFormat.fontFamilyBidi = 'Calibri';
+        characterFormat.baselineAlignment = 'Normal';
+        characterFormat.highlightColor = 'NoColor';
+        characterFormat.fontColor = '#000000';
+    };
+    LayoutViewer.prototype.setDefaultParagraphValue = function (paragraphFormat) {
+        paragraphFormat.leftIndent = 0;
+        paragraphFormat.rightIndent = 0;
+        paragraphFormat.firstLineIndent = 0;
+        paragraphFormat.textAlignment = 'Left';
+        paragraphFormat.beforeSpacing = 0;
+        paragraphFormat.afterSpacing = 0;
+        paragraphFormat.lineSpacing = 1;
+        paragraphFormat.lineSpacingType = 'Multiple';
+        paragraphFormat.bidi = false;
     };
     /**
      * @private
@@ -21060,8 +21175,12 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
     SfdtReader.prototype.convertJsonToDocument = function (json) {
         var sections = [];
         var jsonObject = JSON.parse(json);
-        this.parseCharacterFormat(jsonObject.characterFormat, this.viewer.characterFormat);
-        this.parseParagraphFormat(jsonObject.paragraphFormat, this.viewer.paragraphFormat);
+        var characterFormat = isNullOrUndefined(jsonObject.characterFormat) ?
+            this.viewer.owner.characterFormat : jsonObject.characterFormat;
+        this.parseCharacterFormat(characterFormat, this.viewer.characterFormat);
+        var paragraphFormat = isNullOrUndefined(jsonObject.paragraphFormat) ?
+            this.viewer.owner.paragraphFormat : jsonObject.paragraphFormat;
+        this.parseParagraphFormat(paragraphFormat, this.viewer.paragraphFormat);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.viewer.defaultTabWidth = jsonObject.defaultTabWidth;
         }
@@ -21675,6 +21794,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * @private
+     */
     SfdtReader.prototype.parseCharacterFormat = function (sourceFormat, characterFormat, writeInlineFormat) {
         if (!isNullOrUndefined(sourceFormat)) {
             if (writeInlineFormat && sourceFormat.hasOwnProperty('inlineFormat')) {
@@ -21732,6 +21854,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         var convertColor = color;
         return convertColor || '#ffffff';
     };
+    /**
+     * @private
+     */
     SfdtReader.prototype.parseParagraphFormat = function (sourceFormat, paragraphFormat) {
         if (!isNullOrUndefined(sourceFormat)) {
             if (!isNullOrUndefined(sourceFormat.bidi)) {
@@ -52006,15 +52131,6 @@ var WordExport = /** @__PURE__ @class */ (function () {
             throw new Error('Paragraph should not be undefined');
         }
         var sec = this.blockOwner;
-        //Need to write the Section Properties if the Paragraph is last item in the section
-        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
-            && sec.blocks.indexOf(paragraph) === sec.blocks.length - 1) {
-            writer.writeStartElement('w', 'p', this.wNamespace);
-            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-            this.serializeSectionProperties(writer, sec);
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
         // if (paragraph.ParagraphFormat.PageBreakAfter && !IsPageBreakNeedToBeSkipped(paragraph as Entity))
         //     paragraph.InsertBreak(BreakType.PageBreak);
         // if (paragraph.ParagraphFormat.ColumnBreakAfter && !IsPageBreakNeedToBeSkipped(paragraph as Entity))
@@ -52029,6 +52145,15 @@ var WordExport = /** @__PURE__ @class */ (function () {
         // EnsureWatermark(paragraph);
         this.serializeParagraphItems(writer, paragraph.inlines);
         writer.writeEndElement(); //end of paragraph tag.
+        //Need to write the Section Properties if the Paragraph is last item in the section
+        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
+            && sec.blocks.indexOf(paragraph) === sec.blocks.length - 1) {
+            writer.writeStartElement('w', 'p', this.wNamespace);
+            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
+            this.serializeSectionProperties(writer, sec);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
     };
     // Serialize the paragraph items
     WordExport.prototype.serializeParagraphItems = function (writer, paraItems) {
@@ -61785,22 +61910,22 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
         var dropDownList = createElement('select', {
             id: this.target.id + '_border_style_dropDown'
         });
-        dropDownList.innerHTML = '<option>' + localeValue.getConstant('None') + '</option><option>'
-            + localeValue.getConstant('Single') + '</option><option>' + localeValue.getConstant('Dot') + '</option><option>'
-            + localeValue.getConstant('DashSmallGap') + '</option><option>' + localeValue.getConstant('DashLargeGap') + '</option><option>'
-            + localeValue.getConstant('DashDot') + '</option><option>' + localeValue.getConstant('DashDotDot') + '</option><option>'
-            + localeValue.getConstant('Double') + '</option><option>' + localeValue.getConstant('Triple') + '</option><option>'
-            + localeValue.getConstant('ThinThickSmallGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinSmallGap') + '</option><option>' + localeValue.getConstant('ThinThickThinSmallGap')
-            + '</option><option>' + localeValue.getConstant('ThinThickMediumGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinMediumGap') + '</option><option>' + localeValue.getConstant('ThinThickThinMediumGap')
-            + '</option><option>' + localeValue.getConstant('ThinThickLargeGap') + '</option><option>'
-            + localeValue.getConstant('ThickThinLargeGap') + '</option><option>' + localeValue.getConstant('ThinThickThinLargeGap')
-            + '</option><option>' + localeValue.getConstant('SingleWavy') + '</option><option>'
-            + localeValue.getConstant('DoubleWavy') + '</option><option>' + localeValue.getConstant('DashDotStroked')
-            + '</option><option>' + localeValue.getConstant('Emboss3D') + '</option><option>' + localeValue.getConstant('Engrave3D')
-            + '</option><option>' + localeValue.getConstant('Outset') + '</option><option>'
-            + localeValue.getConstant('Inset') + '</option><option>' + localeValue.getConstant('Thick') + '</option>';
+        dropDownList.innerHTML = '<option>' + 'None' + '</option><option>'
+            + 'Single' + '</option><option>' + 'Dot' + '</option><option>'
+            + 'DashSmallGap' + '</option><option>' + 'DashLargeGap' + '</option><option>'
+            + 'DashDot' + '</option><option>' + 'DashDotDot' + '</option><option>'
+            + 'Double' + '</option><option>' + 'Triple' + '</option><option>'
+            + 'ThinThickSmallGap' + '</option><option>'
+            + 'ThickThinSmallGap' + '</option><option>' + 'ThinThickThinSmallGap'
+            + '</option><option>' + 'ThinThickMediumGap' + '</option><option>'
+            + 'ThickThinMediumGap' + '</option><option>' + 'ThinThickThinMediumGap'
+            + '</option><option>' + 'ThinThickLargeGap' + '</option><option>'
+            + 'ThickThinLargeGap' + '</option><option>' + 'ThinThickThinLargeGap'
+            + '</option><option>' + 'SingleWavy' + '</option><option>'
+            + 'DoubleWavy' + '</option><option>' + 'DashDotStroked'
+            + '</option><option>' + 'Emboss3D' + '</option><option>' + 'Engrave3D'
+            + '</option><option>' + 'Outset' + '</option><option>'
+            + 'Inset' + '</option><option>' + 'Thick' + '</option>';
         var widthText = createElement('div', {
             innerHTML: localeValue.getConstant('Width'), styles: 'width:100%;padding-top: 20px;padding-bottom: 10px;',
             className: 'e-de-table-element-subheading'
@@ -63643,7 +63768,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 },
                 {
                     tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
-                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton'
+                    text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton e-de-image-focus'
                 },
                 {
                     prefixIcon: 'e-de-ctnr-table', tooltipText: locale.getConstant('Insert a table into the document'),
@@ -63763,7 +63888,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 this.toggleEditing(args.item.id);
                 break;
         }
-        if (args.item.id !== id + FIND_ID) {
+        if (args.item.id !== id + FIND_ID && args.item.id !== id + INSERT_IMAGE_ID) {
             this.container.documentEditor.focusIn();
         }
     };
@@ -63789,6 +63914,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.container.showPropertiesPane = !this.container.showPropertiesPane;
     };
     Toolbar$$1.prototype.onDropDownButtonSelect = function (args) {
+        var _this = this;
         var parentId = this.container.element.id + TOOLBAR_ID;
         var id = args.item.id;
         if (id === parentId + PAGE_BREAK) {
@@ -63804,6 +63930,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         else if (id === parentId + INSERT_IMAGE_ONLINE_ID) {
             // Need to implement image dialog;
         }
+        setTimeout(function () { _this.documentEditor.focusIn(); }, 30);
     };
     Toolbar$$1.prototype.onFileChange = function () {
         var _this = this;
@@ -65876,18 +66003,21 @@ var TocProperties = /** @__PURE__ @class */ (function () {
         };
         this.tocHeaderDiv = function (container) {
             var closeButtonFloat;
+            var headerDivMargin;
             var closeButtonMargin;
             if (!_this.isRtl) {
                 closeButtonFloat = 'float:right;';
+                headerDivMargin = 'margin-left:5.5px;';
                 closeButtonMargin = 'margin-right:7px;';
             }
             else {
                 closeButtonFloat = 'float:left;';
+                headerDivMargin = 'margin-right:5.5px;';
                 closeButtonMargin = 'margin-left:7px;';
             }
             var headerDiv = createElement('div', {
                 id: _this.elementId + 'toc_id',
-                styles: 'display: block;'
+                styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
             });
             container.appendChild(headerDiv);
             _this.element.appendChild(container);

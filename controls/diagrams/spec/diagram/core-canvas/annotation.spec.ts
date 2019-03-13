@@ -4,6 +4,7 @@ import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { ConnectorModel, PathModel, BasicShapeModel } from '../../../src';
+import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 /**
  * Annotations - Alignments
@@ -16,6 +17,12 @@ describe('Diagram Control', () => {
         let pathData: string = 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,'
             + '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
             ele = createElement('div', { id: 'diagram53' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -149,13 +156,19 @@ describe('Diagram Control', () => {
                 (diagram.nodes[3] as Node).wrapper.children[1].offsetY === 100).toBe(true);
             done();
         });
-    });
+         });
     describe('Annotation editing', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
 
             ele = createElement('div', { id: 'diagramannotationEditing' });
             document.body.appendChild(ele);
@@ -179,6 +192,15 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as NodeModel).annotations.length > 0).toBe(true);
             done();
         });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
 
     });
 

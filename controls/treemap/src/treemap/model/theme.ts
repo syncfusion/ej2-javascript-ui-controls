@@ -38,6 +38,17 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 legendTextColor: '#FFFFFF'
             };
             break;
+        case 'Bootstrap4':
+            style = {
+                backgroundColor: '#F8F9FA',
+                titleFontColor: '#212529',
+                subTitleFontColor: '#212529',
+                tooltipFillColor: '#000000',
+                tooltipFontColor: '#FFFFFF',
+                legendTitleColor: '#212529',
+                legendTextColor: '#212529'
+            };
+            break;
         default:
             style = {
                 backgroundColor: '#FFFFFF',

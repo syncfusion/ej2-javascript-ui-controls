@@ -1,8 +1,6 @@
 import { createElement, remove, EmitType, Browser } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import {
-    Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel
-} from '../../../src/schedule/index';
+import { Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel } from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { triggerScrollEvent, triggerMouseEvent, disableScheduleAnimation } from '../util.spec';
 import {
@@ -12,12 +10,24 @@ import { createSchedule, createGroupSchedule, destroy } from '../util.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { blockData } from '../base/datasource.spec';
 import * as util from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 /**
  * Schedule Timeline Month view spec 
  */
 Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Schedule Timeline Month view', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Initial load', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
@@ -436,6 +446,44 @@ describe('Schedule Timeline Month view', () => {
             schObj.dataBind();
             let index: number = schObj.activeView.renderDates.map((date: Date) => date.getDate()).indexOf(new Date().getDate());
             expect(schObj.element.querySelectorAll('.e-header-cells').item(index).classList).toContain('e-current-day');
+        });
+    });
+
+    describe('Checking enableAdaptiveRows property', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let options: ScheduleModel = {
+                currentView: 'TimelineMonth',
+                enableAdaptiveRows: true,
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
+                selectedDate: new Date(2018, 4, 1),
+            };
+            schObj = createSchedule(options, timelineData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('initial load', () => {
+            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(29);
+            let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(eventWrapperList.length).toEqual(1);
+            let moreIndicatorList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            expect(moreIndicatorList.length).toEqual(0);
+        });
+        it('Change property through set model', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(25);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(1);
+                done();
+            };
+            schObj.enableAdaptiveRows = false;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -859,6 +907,21 @@ describe('Schedule Timeline Month view', () => {
             expect(moreIndicatorList.length).toEqual(1);
             expect(moreIndicatorList[0].innerHTML).toEqual('+4&nbsp;more');
         });
+
+        it('Change property through set model', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(29);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
     });
 
     describe('Single level resource rendering', () => {
@@ -955,6 +1018,21 @@ describe('Schedule Timeline Month view', () => {
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+        });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(20);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(8);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -1080,6 +1158,19 @@ describe('Schedule Timeline Month view', () => {
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+        });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(20);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -1329,6 +1420,21 @@ describe('Schedule Timeline Month view', () => {
             };
             schObj.dataBound = dataBound;
         });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(19);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(7);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
     });
 
     describe('Custom work days of Resources in group', () => {
@@ -1381,8 +1487,9 @@ describe('Schedule Timeline Month view', () => {
 
         it('work days count', (done: Function) => {
             expect(schObj.element.querySelectorAll('.e-work-days').length).toBe(41);
-            expect((<Element>schObj.element.querySelectorAll('.e-content-table tr')[1].childNodes[1]).classList.contains('e-work-days')).toEqual(false);
-            expect((<Element>schObj.element.querySelectorAll('.e-content-table tr')[1].childNodes[0]).classList.contains('e-work-days')).toEqual(true);
+            let contentTable: NodeListOf<Element> = schObj.element.querySelectorAll('.e-content-table tr');
+            expect((<Element>contentTable[1].childNodes[1]).classList.contains('e-work-days')).toEqual(false);
+            expect((<Element>contentTable[1].childNodes[0]).classList.contains('e-work-days')).toEqual(true);
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             let dataBound: (args: Object) => void = (args: Object) => {
                 expect(schObj.element.querySelectorAll('.e-work-days').length).toBe(37);
@@ -1484,6 +1591,21 @@ describe('Schedule Timeline Month view', () => {
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+        });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(25);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(9);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -1608,6 +1730,19 @@ describe('Schedule Timeline Month view', () => {
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
             expect(moreEventList.length).toEqual(2);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
+        });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(20);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
         });
     });
 
@@ -2786,6 +2921,20 @@ describe('Schedule Timeline Month view', () => {
             };
             schObj.dataBound = dataBound;
         });
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(29);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
     });
 
     describe('Year, Month, Week, Day, Hour header rows with template', () => {
@@ -3602,6 +3751,26 @@ describe('Schedule Timeline Month view', () => {
             };
             schObj.dataBind();
         });
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(5);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(1);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
+        it('checking block event with enableAdativeRows property', () => {
+            let blockEventElement: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-block-appointment'));
+            expect(blockEventElement.length).toEqual(3);
+            let cellHeight: number = (schObj.element.querySelector('.e-content-table tbody td') as HTMLElement).offsetHeight;
+            expect((blockEventElement[0] as HTMLElement).offsetHeight).toBe(cellHeight);
+        });
     });
 
     describe('Multi level resource rendering  in block events', () => {
@@ -3718,5 +3887,45 @@ describe('Schedule Timeline Month view', () => {
             };
             schObj.dataBind();
         });
+
+        it('Checking enableAdaptiveRows property', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(7);
+                let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+                expect(eventWrapperList.length).toEqual(3);
+                let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+                expect(moreIndicatorList.length).toEqual(0);
+                done();
+            };
+            schObj.enableAdaptiveRows = true;
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+        });
+        it('checking block event with enableAdativeRows property', () => {
+            let blockEventElement: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-block-appointment'));
+            expect(blockEventElement.length).toEqual(4);
+            let cellHeight: number =
+                (schObj.element.querySelector('.e-content-table tbody tr:nth-child(2) td') as HTMLElement).offsetHeight;
+            expect((blockEventElement[0] as HTMLElement).offsetHeight).toBe(cellHeight);
+            let resorucCellHeight: number =
+                (schObj.element.querySelector('.e-resource-column-table tbody tr:nth-child(2) td') as HTMLElement).offsetHeight;
+            expect(resorucCellHeight).toEqual(cellHeight);
+            let blockIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-block-indicator'));
+            expect(blockIndicator.length).toEqual(8);
+            expect(blockIndicator[0].offsetTop).toEqual(141);
+        });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

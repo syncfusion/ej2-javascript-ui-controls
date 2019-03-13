@@ -102,7 +102,7 @@ export class Annotations {
         return 'Annotations';
     }
     /**
-     * To destroy the annotation.
+     * To destroy the annotation. 
      * @return {void}
      * @private
      */

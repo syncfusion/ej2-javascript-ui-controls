@@ -48,15 +48,16 @@ export class RowModelGenerator implements IModelGenerator<Column> {
 
     }
 
-    protected generateRow(data: Object, index: number, cssClass?: string, indent?: number): Row<Column> {
+    protected generateRow(data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number): Row<Column> {
         let options: IRow<Column> = {};
         options.foreignKeyData = {};
         options.uid = getUid('grid-row');
         options.data = data;
         options.index = index;
         options.indent = indent;
+        options.tIndex = tIndex;
         options.isDataRow = true;
-        options.isExpand = false;
+        options.parentGid = pid;
         if (this.parent.isPrinting) {
             if (this.parent.hierarchyPrintMode === 'All') {
                 options.isExpand = true;

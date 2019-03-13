@@ -98,6 +98,17 @@ function rippleMouseHandler(e, rippleSpan) {
         rippleSpan.dispatchEvent(event);
     }
 }
+/**
+ * Append hidden input to given element
+ * @private
+ */
+function setHiddenInput(proxy, wrap) {
+    if (proxy.element.getAttribute('ejs-for')) {
+        wrap.appendChild(proxy.createElement('input', {
+            attrs: { 'name': proxy.name || proxy.element.name, 'value': 'false', 'type': 'hidden' }
+        }));
+    }
+}
 
 /**
  * Common modules
@@ -266,8 +277,8 @@ let Button = class Button extends Component {
     }
     /**
      * Called internally if any of the property value changed.
-     * @param  {Button} newProp
-     * @param  {Button} oldProp
+     * @param  {ButtonModel} newProp
+     * @param  {ButtonModel} oldProp
      * @returns void
      * @private
      */
@@ -289,14 +300,19 @@ let Button = class Button extends Component {
                 case 'iconCss':
                     let span = this.element.querySelector('span.e-btn-icon');
                     if (span) {
-                        span.className = 'e-btn-icon ' + newProp.iconCss;
-                        if (this.element.textContent.trim()) {
-                            if (this.iconPosition === 'Left') {
-                                span.classList.add('e-icon-left');
+                        if (newProp.iconCss) {
+                            span.className = 'e-btn-icon ' + newProp.iconCss;
+                            if (this.element.textContent.trim()) {
+                                if (this.iconPosition === 'Left') {
+                                    span.classList.add('e-icon-left');
+                                }
+                                else {
+                                    span.classList.add('e-icon-right');
+                                }
                             }
-                            else {
-                                span.classList.add('e-icon-right');
-                            }
+                        }
+                        else {
+                            detach(span);
                         }
                     }
                     else {
@@ -418,6 +434,7 @@ let CheckBox = class CheckBox extends Component {
     constructor(options, element) {
         super(options, element);
         this.isFocused = false;
+        this.isMouseClick = false;
     }
     changeState(state) {
         let ariaState;
@@ -457,7 +474,10 @@ let CheckBox = class CheckBox extends Component {
         this.getWrapper().setAttribute('aria-checked', ariaState);
     }
     clickHandler(event) {
-        this.focusOutHandler();
+        if (this.isMouseClick) {
+            this.focusOutHandler();
+            this.isMouseClick = false;
+        }
         if (this.indeterminate) {
             this.changeState(this.checked ? 'check' : 'uncheck');
             this.indeterminate = false;
@@ -507,6 +527,7 @@ let CheckBox = class CheckBox extends Component {
     }
     focusOutHandler() {
         this.getWrapper().classList.remove('e-focus');
+        this.isFocused = false;
     }
     /**
      * Gets the module name.
@@ -563,6 +584,7 @@ let CheckBox = class CheckBox extends Component {
         }
         wrapper.appendChild(label);
         label.appendChild(this.element);
+        setHiddenInput(this, label);
         label.appendChild(frameSpan);
         if (isRippleEnabled) {
             let rippleSpan = this.createElement('span', { className: RIPPLE });
@@ -584,6 +606,7 @@ let CheckBox = class CheckBox extends Component {
         }
     }
     labelMouseHandler(e) {
+        this.isMouseClick = true;
         let rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
     }
@@ -830,12 +853,17 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     }
     updateChange(state) {
         let input;
+        let instance;
         let name = this.element.getAttribute('name');
         let radioGrp = document.querySelectorAll('input.e-radio[name="' + name + '"]');
         for (let i = 0; i < radioGrp.length; i++) {
             input = radioGrp[i];
             if (input !== this.element) {
-                getInstance(input, RadioButton_1).checked = false;
+                instance = getInstance(input, RadioButton_1);
+                instance.checked = false;
+                if (this.tagName === 'EJS-RADIOBUTTON') {
+                    instance.angularValue = this.value;
+                }
             }
         }
     }
@@ -1022,6 +1050,13 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         }
         if (!this.element.id) {
             this.element.id = getUniqueID('e-' + this.getModuleName());
+        }
+        if (this.tagName === 'EJS-RADIOBUTTON') {
+            let formControlName = this.element.getAttribute('formcontrolname');
+            if (formControlName) {
+                this.setProperties({ 'name': formControlName }, true);
+                this.element.setAttribute('name', formControlName);
+            }
         }
     }
     /**
@@ -1260,6 +1295,7 @@ let Switch = class Switch extends Component {
         let offLabel = this.createElement('span', { className: 'e-switch-off' });
         let handle = this.createElement('span', { className: 'e-switch-handle' });
         wrapper.appendChild(this.element);
+        setHiddenInput(this, wrapper);
         switchInner.appendChild(onLabel);
         switchInner.appendChild(offLabel);
         wrapper.appendChild(switchInner);
@@ -1948,5 +1984,5 @@ class Chip {
  * Button all modules
  */
 
-export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
+export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, setHiddenInput, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
 //# sourceMappingURL=ej2-buttons.es2015.js.map

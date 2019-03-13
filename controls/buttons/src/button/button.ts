@@ -62,7 +62,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     /**
      * Defines class/multiple classes separated by a space in the Button element. The Button types, styles, and
      * size can be defined by using
-     * [`this`](https://ej2.syncfusion.com/documentation/button/how-to/create-a-block-button/).
+     * [`this`](http://ej2.syncfusion.com/documentation/button/howto.html?lang=typescript#create-a-block-button).
      * @default ""
      */
     @Property('')
@@ -244,12 +244,12 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Called internally if any of the property value changed.
-     * @param  {Button} newProp
-     * @param  {Button} oldProp
+     * @param  {ButtonModel} newProp
+     * @param  {ButtonModel} oldProp
      * @returns void
      * @private
      */
-    public onPropertyChanged(newProp: Button, oldProp: Button): void {
+    public onPropertyChanged(newProp: ButtonModel, oldProp: ButtonModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'isPrimary':
@@ -266,13 +266,17 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                 case 'iconCss':
                     let span: Element = this.element.querySelector('span.e-btn-icon');
                     if (span) {
-                        span.className = 'e-btn-icon ' + newProp.iconCss;
-                        if (this.element.textContent.trim()) {
-                            if (this.iconPosition === 'Left') {
-                                span.classList.add('e-icon-left');
-                            } else {
-                                span.classList.add('e-icon-right');
+                        if (newProp.iconCss) {
+                            span.className = 'e-btn-icon ' + newProp.iconCss;
+                            if (this.element.textContent.trim()) {
+                                if (this.iconPosition === 'Left') {
+                                    span.classList.add('e-icon-left');
+                                } else {
+                                    span.classList.add('e-icon-right');
+                                }
                             }
+                        } else {
+                            detach(span);
                         }
                     } else {
                         this.setIconCss();

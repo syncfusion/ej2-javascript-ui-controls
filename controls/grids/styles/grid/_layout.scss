@@ -160,6 +160,10 @@
       min-height: $grid-bigger-xlfl-min-height;
     }
 
+    .e-flmenu-valuediv {
+      padding: $grid-bigger-flmenu-padding;
+    }
+
     .e-excelfilter .e-contextmenu-wrapper ul li {
       height: $grid-bigger-xlfl-li-height;
       line-height: $grid-bigger-xlfl-li-height;
@@ -179,6 +183,12 @@
     .e-headercell {
       height: $grid-bigger-headercell-line-height;
       padding: 0 $grid-bigger-headercell-padding $grid-bigger-headercell-bootom-padding;
+    }
+
+    .e-headercelldiv {
+      font-size: $grid-bigger-header-font-size;
+      height: $grid-bigger-header-height;
+      line-height: $grid-bigger-headercelldiv-line-height;
     }
 
     .e-icons {
@@ -840,7 +850,7 @@
       display: block;
       font-size: $grid-header-font-size;
       font-weight: $grid-header-font-weight;
-      height: 29px;
+      height: $grid-header-height;
       line-height: $grid-headercelldiv-line-height;
       margin: $grid-headercelldiv-margin;
       overflow: hidden;
@@ -992,7 +1002,7 @@
     }
 
     .e-unboundcelldiv > button {
-      margin: 0 3.5px;
+      margin: $grid-unboundcelldiv-margin;
     }
 
     .e-unboundcelldiv {
@@ -1001,7 +1011,7 @@
 
     .e-summarycell {
       border-style: solid;
-      border-width: $border-size 0 0;
+      border-width: 1px 0 0;
       font-size: $grid-summary-cell-font-size;
       font-weight: $grid-header-font-weight;
       height: auto;
@@ -1056,11 +1066,11 @@
    }
 
     &.e-default .e-rowcell.e-lastrowcell {
-      border-bottom-width: $border-size;
+      border-bottom-width: 1px;
     }
 
     &.e-bothlines .e-rowcell.e-lastrowcell {
-      border-bottom-width: $border-size;
+      border-bottom-width: 1px;
     }
 
     &.e-bothlines .e-rowcell {
@@ -1611,6 +1621,7 @@
     .e-cloneproperties {
       border-style: solid;
       border-width: $grid-border-size;
+      box-shadow: $grid-group-clone-box-shadow;
       font-size: $grid-header-font-size;
       font-weight: $grid-drag-clone-font-weight;
       opacity: $grid-drag-clone-opacity;
@@ -2618,7 +2629,7 @@
       & .e-columnheader .e-stackedheadercelldiv,
       & .e-columnheader .e-headercelldiv {
         height: Auto;
-        line-height: 18px;
+        line-height: $grid-rowcell-wrap-height;
         overflow-wrap: break-word;
         text-overflow: clip;
         white-space: normal;

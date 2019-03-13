@@ -138,7 +138,9 @@ export type LegendPosition =
     /** Places the legend on the right. */
     'Right' |
     /** Places the legend based on given x and y. */
-    'Float';
+    'Float' |
+     /** Places the legend based on width and height. */
+     'Auto';
 /** 
  * Defines the Legend modes. They are
  * * Default - Specifies the Default mode.
@@ -203,4 +205,18 @@ export type TreeMapTheme =
     /**  Render a treemap with HighContrast Dark theme. */
     'HighContrast' |
     /**  Render a treemap with Bootstrap Dark theme. */
-    'BootstrapDark' ;
+    'BootstrapDark'|
+    /** Render a treemap with Bootstrap4 theme. */
+    'Bootstrap4';
+/**
+ * Defines the Rtl Directions
+ */
+export type RenderingMode =
+    /** Render treemap item from top right to bottom left direction */
+    'TopRightBottomLeft' |
+    /** Render treemap item from bottom left to top right direction */
+    'BottomLeftTopRight' |
+    /** Render treemap item from bottom right to top left direction */
+    'BottomRightTopLeft' |
+    /** Render treemap item from top left to bottom right direction */
+    'TopLeftBottomRight';

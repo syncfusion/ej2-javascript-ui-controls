@@ -75,7 +75,7 @@ export class ExcelExport {
                                 } else if (pivotCell.type === 'sum') {
                                     cellValue = cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total'));
                                 } else {
-                                    cellValue = cellValue === '0' ? '' : cellValue;
+                                    cellValue = cellValue;
                                 }
                                 if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                     cells.push({
@@ -131,5 +131,14 @@ export class ExcelExport {
         }
         let book: Workbook = new Workbook({ worksheets: workSheets }, type === 'Excel' ? 'xlsx' : 'csv');
         book.save(fileName + (type === 'Excel' ? '.xlsx' : '.csv'));
+    }
+
+    /**
+     * To destroy the excel export module
+     * @returns void
+     * @hidden
+     */
+    /* tslint:disable:no-empty */
+    public destroy(): void {
     }
 }

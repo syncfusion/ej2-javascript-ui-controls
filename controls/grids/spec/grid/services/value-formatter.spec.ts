@@ -11,6 +11,7 @@ import { extend } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 L10n.load({
     'de-DE': {
@@ -53,6 +54,11 @@ describe('ValueFormatter Service', () => {
         let rows: HTMLTableRowElement;
         let grid: Grid;
         beforeAll((done) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             this.grid = createGrid({
                 columns: [
                     {
@@ -179,6 +185,16 @@ describe('ValueFormatter Service', () => {
             //for coverage
             fmtr.setCulture('en-US');
         });
+
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });   
 
         afterAll(() => {
             destroy(grid);

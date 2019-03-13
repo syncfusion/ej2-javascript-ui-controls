@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
+
+### Document Editor
+
+#### New Features
+
+- Added API to customize the default character format and paragraph format of document editor.
+- Added support to customize context menu.
+- Optimized text rendering.
+
+#### Bug Fixes
+
+- Section break is now serialized properly.
+
+## 16.4.54 (2019-02-19)
 
 ### Document Editor
 

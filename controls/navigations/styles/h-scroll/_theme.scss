@@ -85,6 +85,12 @@
           border: $hscroll-hover-border;
           color: $hscroll-hover-font;
 
+          @if $skin-name == 'bootstrap4' {
+            .e-icons {
+              color: inherit;
+            }
+          }
+
           @if $skin-name == 'highcontrast' {
             border: 2px solid $hscroll-nav-hover-border-color;
 
@@ -99,6 +105,12 @@
           border: $hscroll-focus-border;
           border-color: $hscroll-hover-border-color;
           color: $hscroll-hover-font;
+
+          @if $skin-name == 'bootstrap4' {
+            .e-icons {
+              color: inherit;
+            }
+          }
 
           @if $skin-name == 'highcontrast' {
             background: $hscroll-nav-focus-bg-color;

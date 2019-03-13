@@ -47,8 +47,10 @@ $editor-tio-title-border-bottom: 0 !default;
 $editor-tip-title-color: rgba($grey-light-font, .87) !default;
 
 /*! Wrapper styles */
-$editor-tip-wrapper-padding: 16px !default;
-$editor-wrapper-title-with-padding: 10px 16px 16px 16px !default;
+$editor-big-tip-wrapper-padding: 16px !default;
+$editor-nrml-tip-wrapper-padding: 16px !default;
+$editor-big-wrapper-title-with-padding: 10px 16px 16px 16px !default;
+$editor-nrml-wrapper-title-with-padding: 10px 16px 16px 16px !default;
 
 /*! Component group styles */
 $editor-component-bottom-margin: 4px !default;
@@ -57,9 +59,22 @@ $editor-component-bottom-margin: 4px !default;
 $editor-buttons-top-margin: 4px !default;
 $editor-btn-save-icon-size: 16px !default;
 $editor-btn-cancel-icon-size: 16px !default;
-$editor-btn-save-margin: 0 4px 0 0 !default;
-$editor-btn-cancel-margin: 0 0 0 4px !default;
-$editor-rtl-btn-save-margin: 0 0 0 4px !default;
-$editor-rtl-btn-cancel-margin: 0 4px 0 0 !default;
-$editor-btn-box-shadow: '' !default;
+$editor-big-btn-save-margin: 0 4px 0 0 !default;
+$editor-nrml-btn-save-margin: 0 4px 0 0 !default;
+$editor-big-btn-cancel-margin: 0 0 0 4px !default;
+$editor-nrml-btn-cancel-margin: 0 0 0 4px !default;
+$editor-rtl-big-btn-save-margin: 0 0 0 4px !default;
+$editor-rtl-nrml-btn-save-margin: 0 0 0 4px !default;
+$editor-rtl-big-btn-cancel-margin: 0 4px 0 0 !default;
+$editor-rtl-nrml-btn-cancel-margin: 0 4px 0 0 !default;
 $editor-btn-icon-color: rgba($grey-light-font , .54) !default;
+$editor-btn-interaction-color: '' !default;
+$editor-btn-bg: '' !default;
+$editor-btn-hover-bg: '' !default;
+$editor-btn-focus-bg: '' !default;
+$editor-btn-active-bg: '' !default;
+$editor-btn-border: '' !default;
+$editor-btn-hover-border: '' !default;
+$editor-btn-focus-border: '' !default;
+$editor-btn-active-border: '' !default;
+$editor-btn-box-shadow: '' !default;

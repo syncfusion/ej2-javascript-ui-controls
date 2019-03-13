@@ -14,3 +14,4 @@ export * from './actions/execute-command-callback';
 export * from './actions/toolbar-action';
 export * from './actions/markdown-editor';
 export * from './actions/html-editor';
+export * from './actions/paste-clean-up';

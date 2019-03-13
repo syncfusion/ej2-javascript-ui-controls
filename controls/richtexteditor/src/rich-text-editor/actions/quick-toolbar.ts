@@ -106,10 +106,12 @@ export class QuickToolbar {
     }
 
     private renderInlineQuickToolbar(): void {
-        addClass([this.parent.element], [CLS_INLINE]);
-        this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
-        this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
-        EventHandler.add(this.inlineQTBar.element, 'mousedown', this.onMouseDown, this);
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            addClass([this.parent.element], [CLS_INLINE]);
+            this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
+            this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
+            EventHandler.add(this.inlineQTBar.element, 'mousedown', this.onMouseDown, this);
+        }
     }
 
     private showInlineQTBar(x: number, y: number, target: HTMLElement): void {
@@ -136,41 +138,47 @@ export class QuickToolbar {
     }
 
     private mouseUpHandler(e: NotifyArgs): void {
-        let args: MouseEvent = e.args as MouseEvent;
-        let range: Range = this.parent.getRange();
-        let target: HTMLElement = args.target as HTMLElement;
-        if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
-            this.hideInlineQTBar();
-            this.offsetX = args.pageX;
-            this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
-            if (target.nodeName === 'TEXTAREA') {
-                this.showInlineQTBar(this.offsetX, this.offsetY, target);
-            } else {
-                if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
-                    if (this.parent.inlineMode.onSelection && range.collapsed) { return; }
-                    this.target = target;
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            let args: MouseEvent = e.args as MouseEvent;
+            let range: Range = this.parent.getRange();
+            let target: HTMLElement = args.target as HTMLElement;
+            if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+                this.hideInlineQTBar();
+                this.offsetX = args.pageX;
+                this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
+                if (target.nodeName === 'TEXTAREA') {
                     this.showInlineQTBar(this.offsetX, this.offsetY, target);
+                } else {
+                    let closestAnchor: HTMLElement = closest(target, 'a') as HTMLElement;
+                    target = closestAnchor ? closestAnchor : target;
+                    if (target.tagName !== 'IMG' && target.tagName !== 'A' && (!closest(target, 'td,th') || !range.collapsed)) {
+                        if (this.parent.inlineMode.onSelection && range.collapsed) { return; }
+                        this.target = target;
+                        this.showInlineQTBar(this.offsetX, this.offsetY, target);
+                    }
                 }
             }
         }
     }
 
     private keyDownHandler(): void {
-        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     }
 
     private inlineQTBarMouseDownHandler(): void {
-        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     }
 
     private keyUpHandler(e: NotifyArgs): void {
-        if (this.parent.inlineMode.onSelection) { return; }
-        let args: KeyboardEvent = e.args as KeyboardEvent;
-        this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement);
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            if (this.parent.inlineMode.onSelection) { return; }
+            let args: KeyboardEvent = e.args as KeyboardEvent;
+            this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement);
+        }
     }
 
     public getInlineBaseToolbar(): BaseToolbar {
@@ -233,9 +241,7 @@ export class QuickToolbar {
         this.parent.on(events.initialEnd, this.initializeQuickToolbars, this);
         this.parent.on(events.mouseDown, this.renderQuickToolbars, this);
         this.parent.on(events.toolbarUpdated, this.toolbarUpdated, this);
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            this.wireInlineQTBarEvents();
-        }
+        this.wireInlineQTBarEvents();
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.on(events.scroll, this.hideQuickToolbars, this);
@@ -274,9 +280,7 @@ export class QuickToolbar {
         this.parent.off(events.initialEnd, this.initializeQuickToolbars);
         this.parent.off(events.mouseDown, this.renderQuickToolbars);
         this.parent.off(events.toolbarUpdated, this.toolbarUpdated);
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            this.unWireInlineQTBarEvents();
-        }
+        this.unWireInlineQTBarEvents();
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.off(events.scroll, this.hideQuickToolbars);
@@ -311,10 +315,10 @@ export class QuickToolbar {
             removeClass([this.parent.element], [CLS_INLINE]);
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
-            if (this.parent.inlineMode.enable && !Browser.isDevice) {
-                addClass([this.parent.element], [CLS_INLINE]);
-                this.wireInlineQTBarEvents();
-            }
+        }
+        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+            addClass([this.parent.element], [CLS_INLINE]);
+            this.wireInlineQTBarEvents();
         }
     }
 

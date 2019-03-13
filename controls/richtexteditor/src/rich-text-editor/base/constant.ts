@@ -171,3 +171,5 @@ export const tableToolbarAction: string = 'table-toolbar-action';
 export const checkUndo: string = 'checkUndoStack';
 /** @hidden */
 export const readOnlyMode: string = 'readOnlyMode';
+/** @hidden */
+export const pasteClean: string = 'pasteClean';

@@ -1,0 +1,94 @@
+/*! component's theme wise override bootstrap-definitions and variables */
+$skin-name: 'bootstrap-dark';
+
+// Generic
+
+$panel-position: absolute;
+$grid-layout-position: relative;
+$panel-box-sizing: border-box;
+$icon-zero: 0;
+$icon-border-radius: 50%;
+
+// Mouse
+
+$panel-header-height: 28px;
+$panel-header-padding: 0 12px;
+$panel-header-color: $gray-700;
+$panel-header-font-size: 14px;
+$panel-header-font-weight: 500;
+
+// Touch
+
+$panel-bigger-header-height: 30;
+$panel-bigger-header-padding: 0 12px;
+$panel-bigger-header-color: $gray-700;
+$panel-bigger-header-font-size: 14px;
+$panel-bigger-header-font-weight: 500;
+
+// Panel styles
+
+$panel-background: $content-bg;
+$panel-border: 1px $gray-300 solid;
+$panel-hover-border: 1px $gray-400 solid;
+$panel-active-border: 1px $primary solid;
+$panel-position: absolute;
+$panel-box-sizing: border-box;
+$panel-border-radius: 4px;
+$panel-box-shadow: 0 2px 5px 0 rgba($black, .15);
+$panel-full-height: 100%;
+$panel-full-width: 100%;
+
+// icons styles
+
+$panel-resize-one-dimensional-icon-height: 8px;
+$panel-resize-one-dimensional-icon-width: 8px;
+$panel-resize-one-dimensional-icon-background: $white;
+$panel-resize-one-dimensional-icon-border: 1px $primary solid;
+$panel-resize-one-dimensional-icon-shadow: 0 0 3px rgba(0, 0, 0, .25);
+
+$panel-resize-two-dimensional-icon-height: 16px;
+$panel-resize-two-dimensional-icon-width: 16px;
+$panel-resize-two-dimensional-inner-icon-height: 8px;
+$panel-resize-two-dimensional-inner-icon-width: 8px;
+$panel-resize-two-dimensional-icon-background: $primary;
+$panel-resize-two-dimensional-icon-color: $gray-700;
+$panel-resize-two-dimensional-icon-border: 2px $white solid;
+$panel-resize-two-dimensional-icon-shadow: 0 0 3px rgba(0, 0, 0, .25);
+
+// south-east-icon-styles
+
+$panel-south-east-icon-right: -6px;
+$panel-south-east-icon-bottom: -5px;
+
+// south-west-icon-style
+
+$panel-south-west-icon-left: -6px;
+$panel-south-west-icon-bottom: -5px;
+
+
+// north-east-icon-styles
+
+$panel-north-east-icon-right: -6px;
+$panel-north-east-icon-top: -5px;
+
+// north-west-icon-styles
+
+$panel-north-west-icon-left: -6px;
+$panel-north-west-icon-top: -5px;
+
+// droppable area border
+
+$panel-drop-border: 2px $primary dotted;
+$panel-drop-background: rgba($primary, .2);
+$panel-drop-border-radius: 4px;
+
+// dragging element style
+
+$panel-dragging-cursor: move;
+$panel-dragging-zindex: 1111;
+$panel-drag-prevent: none;
+// sass-lint:disable-all
+$element-width-complete: 100% !important;
+//gridlines
+$gridline-background: $gray-100;
+$gridline-border: $gray-400;

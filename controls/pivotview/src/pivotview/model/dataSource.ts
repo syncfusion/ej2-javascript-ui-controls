@@ -1,9 +1,9 @@
 import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';
-import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings } from '../../base/engine';
-import { SummaryTypes, Sorting, FilterType, Operators, Condition } from '../../base/types';
+import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings} from '../../base/engine';
+import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType } from '../../base/types';
 import { IStyle } from '../../base/engine';
-import { FieldOptionsModel, FilterModel, SortModel, FormatSettingsModel } from './dataSource-model';
+import { FieldOptionsModel, FilterModel, SortModel, FormatSettingsModel, GroupSettingsModel } from './dataSource-model';
 import { DrillOptionsModel, ValueSortSettingsModel, CalculatedFieldSettingsModel } from './dataSource-model';
 import { DataManager } from '@syncfusion/ej2-data';
 import { ConditionalFormatSettingsModel } from './dataSource-model';
@@ -210,6 +210,7 @@ export class Sort extends ChildProperty<Sort> implements ISort {
      * It allows to set the sort order. The types are,
      * * `Ascending`: It allows to display the field members in ascending order. 
      * * `Descending`: It allows to display the field members in descending order.
+     * * `None`: It allows to display the field members based on JSON order. 
      * @default Ascending
      */
     @Property('Ascending')
@@ -289,6 +290,48 @@ export class FormatSettings extends ChildProperty<FormatSettings> implements Num
     public format: string;
 }
 
+/** 
+ * Configures the group settings of fields. 
+ */
+export class GroupSettings extends ChildProperty<GroupSettings> implements IGroupSettings {
+
+    /**
+     * It allows to set the field name to apply group settings.
+     */
+    @Property()
+    public name: string;
+
+    /**
+     * It allows to set the group interval for group field.
+     */
+    @Property()
+    public groupInterval: DateGroup[];
+
+    /**
+     * It allows to set the start time of group field.
+     */
+    @Property()
+    public startingAt: Date | number;
+
+    /**
+     * It allows to set the end time of group field.
+     */
+    @Property()
+    public endingAt: Date | number;
+
+    /**
+     * It allows to set the type of field.
+     * @default Date
+     */
+    @Property('Date')
+    public type: GroupType;
+
+    /**
+     * It allows to set the interval range of group field.
+     */
+    @Property()
+    public rangeInterval: number;
+}
 /** 
  * Configures the calculatedfields settings. 
  */
@@ -487,10 +530,17 @@ export class DataSource extends ChildProperty<DataSource> implements IDataOption
     public showColumnGrandTotals: boolean;
 
     /**
+     * It allows enable/disable single measure headers in pivot table.
+     * @default false
+     */
+    @Property(false)
+    public alwaysShowValueHeader: boolean;
+
+    /**
      * It allows to set the settings of number formatting.
      * @default []
      */
-    @Property([])
+    @Collection<FormatSettingsModel[]>([], FormatSettings)
     public formatSettings: FormatSettingsModel[];
 
     /**
@@ -519,4 +569,18 @@ export class DataSource extends ChildProperty<DataSource> implements IDataOption
      */
     @Collection<ConditionalFormatSettingsModel[]>([], ConditionalFormatSettings)
     public conditionalFormatSettings: ConditionalFormatSettingsModel[];
+
+    /**
+     * It allows to set the custom values to empty value cells .
+     */
+    @Property()
+    public emptyCellsTextContent: string;
+
+    /**
+     * It allows to set the settings for grouping the date.
+     * @default []
+     */
+    @Collection<GroupSettingsModel[]>([], GroupSettings)
+    public groupSettings: GroupSettingsModel[];
+
 }

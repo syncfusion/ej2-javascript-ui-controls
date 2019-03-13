@@ -66,6 +66,21 @@ require.config({
         name: '@syncfusion/ej2-splitbuttons',
         location: 'node_modules/@syncfusion/ej2-splitbuttons/dist',
         main: 'ej2-splitbuttons.umd.min.js'
+      },
+      {
+        name: '@syncfusion/ej2-excel-export',
+        location: 'node_modules/@syncfusion/ej2-excel-export/dist',
+        main: 'ej2-excel-export.umd.min.js'
+      },
+      {
+        name: '@syncfusion/ej2-file-utils',
+        location: 'node_modules/@syncfusion/ej2-file-utils/dist',
+        main: 'ej2-file-utils.umd.min.js'
+      },
+      {
+        name: '@syncfusion/ej2-compression',
+        location: 'node_modules/@syncfusion/ej2-compression/dist',
+        main: 'ej2-compression.umd.min.js'
       }
   ],
 

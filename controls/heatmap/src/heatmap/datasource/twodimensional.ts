@@ -89,7 +89,7 @@ export class TwoDimensional {
                 // tslint:disable-next-line:no-any 
                 let internalArray: any[] = tempCloneData[tempIndex][z];
                 for (let tempx: number = 0; tempx < internalArray.length; tempx++) {
-                    if (isNullOrUndefined(internalArray[tempx])) {
+                    if (isNullOrUndefined(internalArray[tempx])  || isNaN(internalArray[tempx])) {
                         internalArray[tempx] = '';
                     }
                     if (tempx === 0) {

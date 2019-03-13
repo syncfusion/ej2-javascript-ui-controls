@@ -8,6 +8,11 @@
       .e-acrdn-header .e-acrdn-header-content {
         font-size: $acrdn-header-font-bgr-size;
 
+        @if $skin-name == 'bootstrap4' {
+          font-family: $acrdn-item-header-content-font-face;
+          line-height: $acrdn-bgr-item-header-content-line-height;
+        }
+
         @if $skin-name == 'highcontrast' {
           font-size: 14px;
         }
@@ -50,16 +55,32 @@
           min-height: $acrdn-bgr-header-minheight;
           min-width: $acrdn-bgr-icn-minwidth;
           right: $acrdn-bgr-header-paddingpix;
+
+          @if $skin-name == 'bootstrap4' {
+            font-size: $acrdn-bgr-arrow-icon-font-size;
+          }
         }
 
         .e-acrdn-header-icon {
           display: inline-block;
           padding: 0 $acrdn-bgr-header-icon-padding 0 0;
+
+          @if $skin-name == 'bootstrap4' {
+            .e-acrdn-icons.e-icons {
+              font-size: $acrdn-bgr-icon-font-size;
+            }
+          }
         }
       }
 
       .e-acrdn-panel .e-acrdn-content {
         padding: $acrdn-bgr-content-padding;
+
+        @if $skin-name == 'bootstrap4' {
+          font-family: $acrdn-item-header-content-font-face;
+          font-size: $acrdn-bgr-item-header-content-font-size;
+          line-height: $acrdn-bgr-item-header-content-line-height;
+        }
 
         @if $skin-name == 'highcontrast' {
           font-size: 13px;
@@ -231,7 +252,7 @@
           &:hover,
           &:focus {
             .e-acrdn-header-content {
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'  {
                 text-decoration: underline;
               }
             }
@@ -253,6 +274,12 @@
 
         > * {
           display: inline-block;
+        }
+
+        @if $skin-name == 'bootstrap4' {
+          .e-acrdn-header-content {
+            line-height: $acrdn-content-line-height;
+          }
         }
 
         .e-toggle-icon {
@@ -284,6 +311,12 @@
         .e-acrdn-header-icon {
           display: inline-block;
           padding: 0 $acrdn-nrml-header-icon-padding 0 0;
+
+          @if $skin-name == 'bootstrap4' {
+            .e-acrdn-icons.e-icons {
+              font-size: $acrdn-bgr-arrow-icon-font-size;
+            }
+          }
         }
       }
 

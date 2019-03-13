@@ -176,6 +176,14 @@ export class Command extends ChildProperty<Command> {
      */
     @Property('')
     public parameter: string;
+
+    /**
+     * @private
+     * Returns the name of class Command
+     */
+    public getClassName(): string {
+        return 'Command';
+    }
 }
 
 

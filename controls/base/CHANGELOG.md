@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
-## 16.4.55 (2019-02-27)
+## 17.1.32-beta (2019-03-13)
+
+### Common
+
+#### New Features
+
+- Provided support for evaluate script from Ajax request in Dom Library.
+
+#### Breaking Changes
+
+- ej2 icons has been split-up based on theme names and icons moved to separate npm package ej2-icons
+- canvas and svg render base functionalities moved to [ej2-svg-base](https://www.npmjs.com/package/@syncfusion/ej2-svg-base) npm package
+
+#### Bug Fixes
+
+- Fixed draggable clone element position on scroll
+
+## 17.1.1-beta (2019-01-29)
 
 ### Common
 

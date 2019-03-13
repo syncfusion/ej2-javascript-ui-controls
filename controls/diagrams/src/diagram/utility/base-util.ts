@@ -103,6 +103,7 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
         let properties: string[] = [];
         properties = properties.concat(Object.keys(sourceObject));
         let customProperties: string[] = [];
+        properties.push('version');
         if (key) {
             let propAdditional: Function = getFunction(additionalProp);
             if (propAdditional) {
@@ -152,13 +153,16 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
 export function getInternalProperties(propName: string): string[] {
     switch (propName) {
         case 'nodes':
-            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex'];
+        case 'children':
+            return ['inEdges', 'outEdges', 'parentId', 'processId', 'nodeId', 'umlIndex', 'isPhase', 'isLane'];
         case 'connectors':
             return ['parentId'];
         case 'annotation':
             return ['nodeId'];
         case 'annotations':
             return ['nodeId'];
+        case 'shape':
+            return ['hasHeader'];
     }
     return [];
 }

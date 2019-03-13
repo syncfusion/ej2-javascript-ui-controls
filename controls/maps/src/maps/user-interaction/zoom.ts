@@ -68,9 +68,9 @@ export class Zoom {
     /* tslint:disable:no-string-literal */
     /**
      * To perform zooming for maps
-     * @param position 
-     * @param newZoomFactor 
-     * @param type 
+     * @param position
+     * @param newZoomFactor
+     * @param type
      */
     public performZooming(position: Point, newZoomFactor: number, type: string): void {
         let map: Maps = this.maps;
@@ -598,6 +598,7 @@ export class Zoom {
             });
             this.currentToolbarEle.setAttribute('class', 'e-maps-toolbar');
             let fillColor: string = '';
+            let fill: string = 'transparent';
             let direction: string = ''; let polygonDirection: string = '';
             switch (toolbar.toLowerCase()) {
                 case 'zoom':
@@ -605,7 +606,7 @@ export class Zoom {
                     direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                     direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                        map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, 1, this.fillColor, 1, null,
+                        map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 1, this.maps.themeStyle.zoomFillColor, 1, null,
                         direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')
                     ) as SVGPathElement);
                     this.zoomElements = this.currentToolbarEle;
@@ -614,7 +615,7 @@ export class Zoom {
                 case 'zoomin':
                     direction = 'M 8, 0 L 8, 16 M 0, 8 L 16, 8';
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                        map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', this.fillColor, 3, this.fillColor, 1, null, direction)
+                        map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, this.maps.themeStyle.zoomFillColor, 1, null, direction)
                     ) as SVGPathElement);
                     this.zoomInElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
@@ -622,7 +623,7 @@ export class Zoom {
                 case 'zoomout':
                     direction = 'M 0, 8 L 16, 8';
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                        map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, 3, this.fillColor, 1, null, direction)
+                        map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, this.maps.themeStyle.zoomFillColor, 1, null, direction)
                     ) as SVGPathElement);
                     this.zoomOutElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
@@ -643,14 +644,14 @@ export class Zoom {
                     direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
                     direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                        map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, null, null, 1, null,
+                        map.element.id + '_Zooming_ToolBar_' + toolbar, fill, null, null, 1, null,
                         direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
                     ) as HTMLElement);
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
             }
             this.currentToolbarEle.appendChild(map.renderer.drawCircle(
-                new CircleOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Rect', 'transparent', { color: this.fillColor, width: 1 }, 1, 8, 8, 16, '')
+                new CircleOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Rect', fill, { color: this.maps.themeStyle.zoomFillColor, width: 1 }, 1, 8, 8, 16, '')
             ) as SVGRectElement);
             xSpacing = (orientation === 'Horizontal') ? (xSpacing + (kitWidth + padding)) : xSpacing;
             ySpacing = (orientation === 'Horizontal') ? ySpacing : (ySpacing + (kitHeight + padding));
@@ -675,7 +676,7 @@ export class Zoom {
     }
 
     /**
-     * 
+     *
      * @private
      */
     public performZoomingByToolBar(type: string): void {
@@ -957,7 +958,7 @@ export class Zoom {
     }
     /**
      * To handle the click event for maps.
-     * @param e 
+     * @param e
      */
     public click(e: PointerEvent): void {
         let map: Maps = this.maps;
@@ -1030,7 +1031,7 @@ export class Zoom {
     }
 
     /**
-     * To destroy the zoom. 
+     * To destroy the zoom.
      * @return {void}
      * @private
      */

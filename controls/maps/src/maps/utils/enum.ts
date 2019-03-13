@@ -41,7 +41,9 @@ export type MapsTheme =
     /**  Render a maps with Highcontrast Dark theme. */
     'HighContrast'|
     /**  Render a maps with Bootstrap Dark theme. */
-    'BootstrapDark';
+    'BootstrapDark'|
+    /** Render a maps with Bootstrap4 theme. */
+    'Bootstrap4';
 
 
 /** 

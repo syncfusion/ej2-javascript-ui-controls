@@ -1,7 +1,7 @@
 /**
  * AccumulationChart file
  */
-import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged, SvgRenderer } from '@syncfusion/ej2-base';
+import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';
 import { remove, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AccumulationChartModel } from './accumulation-model';
@@ -21,10 +21,11 @@ import { AccumulationSeriesModel, PieCenterModel} from './model/acc-base-model';
 import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
-import { Rect, ChartLocation, Size, subtractRect, indexFinder, appendChildElement, redrawElement } from '../common/utils/helper';
-import { measureText, RectOption, showTooltip } from '../common/utils/helper';
-import { textElement, TextOption, createSvg, calculateSize, removeElement, firstToLowerCase } from '../common/utils/helper';
+import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement } from '../common/utils/helper';
+import { RectOption, showTooltip } from '../common/utils/helper';
+import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
+import { Rect, Size, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Data } from '../common/model/data';
 import { AccumulationTooltip } from './user-interaction/tooltip';
 import { AccumulationBase } from './renderer/accumulation-base';
@@ -452,10 +453,75 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     @Property('USD')
     private currencyCode: string;
 
+    /**
+     * Animate the series bounds on data change.
+     * @private
+     */
+    public animate(duration ?: number ): void {
+        this.duration = duration ? duration : 700;
+        this.animateselected = true;
+        this.animateSeries = false;
+        let temIndex: number = 0;
+        let tempcolor: string[] = [];
+        let tempindex: number[] = [];
+        let tempindex1: number[] = [];
+        let currentSeries: AccumulationSeries = this.visibleSeries[0];
+        let datasource: object[] = [];
+        datasource = currentSeries.dataSource as Object[];
+        currentSeries.sumOfPoints = 0;
+        if (currentSeries.points.length < Object.keys(currentSeries.dataSource).length) {
+            this.refresh();
+        } else if (currentSeries.points.length > Object.keys(currentSeries.dataSource).length) {
+            let currentSeries: AccumulationSeries = this.visibleSeries[0];
+            currentSeries.points = currentSeries.points.filter((entry1: AccPoints) => {
+                entry1.visible = false;
+                tempindex.push(entry1.index);
+                tempcolor.push(entry1.color);
+                return (datasource).some((entry2: AccPoints) => {
+                    let accPoint: AccPoints = entry2 as AccPoints;
+                    if (entry1.x === accPoint.x) {
+                        entry1.visible = true;
+                        tempindex1.push(entry1.index);
+                        entry1.index = temIndex;
+                        temIndex++;
+                    }
+                    return entry1.x === accPoint.x;
+                });
+            });
+            let missing: number[] = tempindex.filter((item: number) => tempindex1.indexOf(item) < 0);
+            let interval: number = tempindex.length - missing.length;
+            for (let i: number = (tempindex.length - 1); i >= interval; i--) {
+                removeElement('container_Series_0_Point_' + tempindex[i]);
+            }
+            for (let i: number = 0; i < currentSeries.points.length; i++) {
+                currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.points[i].color = tempcolor[i];
+                currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
+            }
+            this.redraw = this.enableAnimation;
+            this.animateSeries = false;
+            this.calculateBounds();
+            this.renderElements();
+        } else {
+            for (let i: number = 0; i < currentSeries.points.length; i++) {
+                currentSeries.points[i].y = currentSeries.dataSource[i].y;
+                currentSeries.sumOfPoints += currentSeries.dataSource[i].y;
+            }
+            this.redraw = this.enableAnimation;
+            this.animateSeries = false;
+            this.removeSvg();
+            this.refreshPoints(currentSeries.points);
+            this.renderElements();
+        }
+    }
 
     // internal properties for Accumulation charts
     /** @private */
     public svgObject: Element;
+    /** @private */
+    private animateselected: boolean = false;
+    /** @public */
+    public duration: number;
     /** @private */
     public initialClipRect: Rect;
     /** @private */
@@ -708,6 +774,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         element.style.msUserSelect = 'none';
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
+        element.style.display = 'block';
     }
 
     /**
@@ -1309,21 +1376,25 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                     update.refreshBounds = true;
                     break;
                 case 'series':
-                    let len: number = this.series.length;
-                    let seriesRefresh: boolean = false;
-                    for (let i: number = 0; i < len; i++) {
-                        if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
-                            seriesRefresh = true;
+                    if (!this.animateselected) {
+                        let len: number = this.series.length;
+                        let seriesRefresh: boolean = false;
+                        for (let i: number = 0; i < len; i++) {
+                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                                seriesRefresh = true;
+                            }
+                            if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
+                                this.accBaseModule.explodePoints(newProp.series[i].explodeIndex, this);
+                                this.accBaseModule.deExplodeAll(newProp.series[i].explodeIndex, this.enableAnimation ? 300 : 0);
+                            }
                         }
-                        if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
-                            this.accBaseModule.explodePoints(newProp.series[i].explodeIndex, this);
-                            this.accBaseModule.deExplodeAll(newProp.series[i].explodeIndex, this.enableAnimation ? 300 : 0);
+                        if (seriesRefresh) {
+                            this.processData(false);
+                            update.refreshBounds = true;
                         }
                     }
-                    if (seriesRefresh) {
-                        this.processData(false);
-                        update.refreshBounds = true;
-                    }
+                    this.animateselected = false;
+                    this.redraw = false;
                     break;
                 case 'locale':
                 case 'currencyCode':

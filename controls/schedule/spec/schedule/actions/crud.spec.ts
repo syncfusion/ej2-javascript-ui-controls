@@ -3,6 +3,7 @@ import { Schedule, Day, Week, WorkWeek, Month, Agenda, ReturnType, ActionEventAr
 import { defaultData, stringData, cloneDataSource } from '../base/datasource.spec';
 import { createSchedule, destroy } from '../util.spec';
 import * as util from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 /**
  * Schedule CRUD module
@@ -11,6 +12,17 @@ import * as util from '../util.spec';
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule CRUD', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Add Actions', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
@@ -238,6 +250,26 @@ describe('Schedule CRUD', () => {
                 StartTime: new Date(2017, 9, 16, 10, 0),
                 EndTime: new Date(2017, 9, 16, 11, 0),
                 AllDay: false,
+                RecurrenceID: 10,
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            };
+            schObj.currentAction = 'EditSeries';
+            schObj.saveEvent(data, schObj.currentAction);
+        });
+
+        it('test edit series', (done: Function) => {
+            let dataBound: (args: Object) => void = (args: Object) => {
+                expect(schObj.eventsData.length).toEqual(3);
+                done();
+            };
+            schObj.dataBound = dataBound;
+            schObj.dataBind();
+            let data: { [key: string]: Object } = {
+                Id: 10,
+                Subject: 'recurrence edited',
+                StartTime: new Date(2017, 9, 16, 10, 0),
+                EndTime: new Date(2017, 9, 16, 11, 0),
+                AllDay: true,
                 RecurrenceID: 10,
                 RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
             };
@@ -543,17 +575,17 @@ describe('Schedule CRUD', () => {
     describe('Timezone Recurrence Events', () => {
         let schObj: Schedule;
         let datas: Object[] = [{
-                Id: 8,
-                Subject: 'test',
-                StartTime: "2017-10-30T10:00:00.000Z",
-                EndTime: "2017-10-30T12:00:00.000Z",
-                IsAllDay: false,
-                StartTimezone: 'Europe/Moscow',
-                EndTimezone: 'Europe/Moscow',
-                RecurrenceRule: "FREQ=DAILY;INTERVAL=1;COUNT=10;"
+            Id: 8,
+            Subject: 'test',
+            StartTime: '2017-10-30T10:00:00.000Z',
+            EndTime: '2017-10-30T12:00:00.000Z',
+            IsAllDay: false,
+            StartTimezone: 'Europe/Moscow',
+            EndTimezone: 'Europe/Moscow',
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10;'
         }];
         beforeAll((done: Function) => {
-            let schOptions : ScheduleModel = {
+            let schOptions: ScheduleModel = {
                 height: '500px', selectedDate: new Date(2017, 10, 1),
                 timezone: 'UTC'
             };
@@ -565,12 +597,12 @@ describe('Schedule CRUD', () => {
 
         it('delete occurrence', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
-                let elements:NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');                
+                let elements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
                 let event: { [key: string]: Object } = schObj.getEventDetails(elements[0]) as { [key: string]: Object };
                 expect(elements.length).toEqual(5);
                 expect(event.RecurrenceException).not.toBeNull();
                 done();
-            };            
+            };
             let recurrenceEle: NodeListOf<Element> = schObj.element.querySelectorAll('.e-recurrence-icon');
             expect(recurrenceEle.length).toEqual(6);
             let appointmentElement: HTMLElement = closest(recurrenceEle[1], '.e-appointment') as HTMLElement;
@@ -585,7 +617,7 @@ describe('Schedule CRUD', () => {
     describe('Public methods', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            schObj = createSchedule({ selectedDate: new Date(2017, 10, 1) }, defaultData, done)
+            schObj = createSchedule({ selectedDate: new Date(2017, 10, 1) }, defaultData, done);
         });
         afterAll(() => {
             destroy(schObj);
@@ -816,5 +848,17 @@ describe('Schedule CRUD', () => {
             schObj.deleteEvent(datas, 'DeleteSeries');
             schObj.dataBound = dataBound;
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

@@ -1,13 +1,12 @@
 import { createElement, remove, EmitType, Browser } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import {
-    Schedule, CellClickEventArgs, ScheduleModel, TimelineViews, EJ2Instance, TimelineMonth
-} from '../../../src/schedule/index';
+import { Schedule, CellClickEventArgs, ScheduleModel, TimelineViews, EJ2Instance, TimelineMonth } from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import {
     timelineData, resourceData, timelineResourceData, cloneDataSource, resourceGroupData, levelBasedData
 } from '../base/datasource.spec';
 import { triggerMouseEvent, disableScheduleAnimation, createSchedule, createGroupSchedule, destroy } from '../util.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 /**
  * Schedule timeline work week view spec 
@@ -15,6 +14,17 @@ import { triggerMouseEvent, disableScheduleAnimation, createSchedule, createGrou
 Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Schedule timeline work week view', () => {
+    beforeAll(() => {
+        // tslint:disable-next-line:no-any
+        const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            // tslint:disable-next-line:no-console
+            console.log('Unsupported environment, window.performance.memory is unavailable');
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
+
     describe('Initial load', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
@@ -646,7 +656,10 @@ describe('Schedule timeline work week view', () => {
         });
 
         it('width and height', () => {
-            schObj = new Schedule({ height: '600px', width: '500px', currentView: 'TimelineWorkWeek', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4) });
+            schObj = new Schedule({
+                height: '600px', width: '500px', currentView: 'TimelineWorkWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4)
+            });
             schObj.appendTo('#Schedule');
             expect(document.getElementById('Schedule').style.width).toEqual('500px');
             expect(document.getElementById('Schedule').style.height).toEqual('600px');
@@ -1369,7 +1382,8 @@ describe('Schedule timeline work week view', () => {
                             { text: 'Steven', id: 2, groupId: 2, color: '#f8a398', startHour: '04:00', endHour: '07:00' },
                             { text: 'Michael', id: 3, groupId: 1, color: '#7499e1', startHour: '10:00', endHour: '12:00' }
                         ],
-                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color', startHourField: 'startHour', endHourField: 'endHour'
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color',
+                        startHourField: 'startHour', endHourField: 'endHour'
                     }],
                 eventSettings: { dataSource: [] },
                 dataBound: dataBound
@@ -1386,8 +1400,9 @@ describe('Schedule timeline work week view', () => {
         it('work hours count', () => {
             expect(schObj.element.querySelectorAll('.e-work-hours').length).toBe(90);
             expect((<HTMLTableCellElement>schObj.element.querySelector('.e-work-hours')).cellIndex).toBe(16);
-            expect((<Element>schObj.element.querySelectorAll('.e-content-table tr')[1].childNodes[15]).classList.contains('e-work-hours')).toEqual(false);
-            expect((<Element>schObj.element.querySelectorAll('.e-content-table tr')[1].childNodes[16]).classList.contains('e-work-hours')).toEqual(true);
+            let contentTable: NodeListOf<Element> = schObj.element.querySelectorAll('.e-content-table tr');
+            expect((<Element>contentTable[1].childNodes[15]).classList.contains('e-work-hours')).toEqual(false);
+            expect((<Element>contentTable[1].childNodes[16]).classList.contains('e-work-hours')).toEqual(true);
         });
     });
 
@@ -3601,5 +3616,17 @@ describe('Schedule timeline work week view', () => {
             };
             schObj.dataBound = dataBound;
         });
+    });
+
+    it('memory leak', () => {
+        profile.sample();
+        // tslint:disable:no-any
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // tslint:enable:no-any
     });
 });

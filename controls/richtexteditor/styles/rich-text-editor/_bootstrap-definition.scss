@@ -55,14 +55,6 @@ $rte-big-tb-items-padding-left: 3px !default;
 $rte-tb-items-padding-left: 6px !default;
 $rte-big-active-tb-item-btn-padding: 0 6px !default;
 $rte-active-tb-item-btn-padding: 0 1.5px !default;
-$rte-hor-nav-focus-color: $grey-dark !default;
-$rte-hor-nav-active-color: $grey-dark !default;
-$rte-hor-nav-focus-bg: inherit !default;
-$rte-hor-nav-hover-bg: inherit !default;
-$rte-hor-nav-active-bg: inherit !default;
-$rte-hor-nav-active-border-color: inherit !default;
-$rte-hor-nav-border-left: 0 !default;
-$rte-hor-nav-active-border-left: 0 !default;
 $rte-tb-item-active-bg: rgba($grey-base, .12) !default;
 $rte-tb-active-font-color: $base-font !default;
 $rte-tb-item-active-border: $rte-border-size $rte-border-type $grey-8c !default;
@@ -124,7 +116,6 @@ $rte-font-arrow-width: 18px !default;
 $rte-font-arrow-touch-width: 20px !default;
 $rte-font-icon-line-height: 1 !default;
 $rte-colorpicker-padding: 1.5px 0 !default;
-$rte-dropdown-hover-bgcolor: $grey-e6 !default;
 $rte-dropdown-selection-color: $grey-dark !default;
 $rte-anchor-color: #2e2ef1 !default;
 $rte-ext-tbar-overlay-dropdown-color: $grey-dark !default;
@@ -147,7 +138,7 @@ $rte-dropdown-active-border: 1px solid #8c8c8c !default;
 $rte-dropdown-active-bg: #e6e6e6 !default;
 
 @include export-module('richtexteditor-bootstrap') {
-  .e-richtexteditor {
+  #{&}.e-richtexteditor {
     & .e-rte-toolbar {
       &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
         & .e-rte-dropdown-btn.e-active.e-tbar-btn {
@@ -160,7 +151,7 @@ $rte-dropdown-active-bg: #e6e6e6 !default;
     }
   }
 
-  .e-bigger .e-richtexteditor {
+  .e-bigger #{&}.e-richtexteditor {
     & .e-rte-toolbar {
       &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
         & .e-tbar-btn.e-btn.e-control.e-dropdown-btn.e-rte-dropdown-btn.e-active {

@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 17.1.32-beta (2019-03-13)
+
+### DropDownList
+
+#### Bug Fixes
+
+- Issue with change event trigger multiple times when clear value using clear button has been fixed.
+
+### MultiSelect
+
+#### New Features
+
+- Provided customized filtering support for checkbox mode also.
+
+### AutoComplete
+
+#### Bug Fixes
+
+- Filtered value is not maintained while using model value issue has been resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- List's selection is not removed when remove a selected value using clear button issue has been resolved.
+
 ## 16.4.55 (2019-02-27)
 
 ### DropDownList
@@ -123,6 +149,12 @@
 #### Bug Fixes
 
 - Value is updated in reverse while using select all option in checkbox selection issue has been resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- Change event is not trigger when focus out the control using tab key issue has been resolved.
 
 ## 16.4.44 (2018-12-24)
 

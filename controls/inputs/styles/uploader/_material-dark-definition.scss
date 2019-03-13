@@ -68,6 +68,8 @@ $file-name-font-size: 15px !default;
 $list-item-margin-left: 16px !default;
 $remove-icon-height: 18px !default;
 $remove-icon-width: 18px !default;
+$remove-bigger-icon-height: 18px !default;
+$remove-bigger-icon-width: 18px !default;
 $remove-icon-before-left: 10px !default;
 $remove-icon-before-top: 9px !default;
 $remove-icon-margin: 16px !default;
@@ -161,5 +163,6 @@ $list-bottom-border: 1px solid rgba($grey-dark-font, .12) !default;
 $pause-icon-font-content: '\e326' !default;
 $play-icon-font-content: '\e324' !default;
 $remove-icon-color: rgba($grey-dark-font, .7) !default;
-$hover-icon-color: rgba($grey-dark-font, .7) !default;
+$upload-hover-icon-color: rgba($grey-dark-font, .7) !default;
+$uploader-icons-hover-radius: 50% !default;
 //enddefault

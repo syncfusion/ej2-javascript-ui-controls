@@ -103,12 +103,15 @@ export function isVisible(element: Element | Node): Boolean {
  * @param  {Element} toElement - An element that is going to prepend.
  * @private
  */
-export function prepend(fromElements: Element[] | NodeList, toElement: Element): Element[] | NodeList {
+export function prepend(fromElements: Element[] | NodeList, toElement: Element, isEval?: Boolean): Element[] | NodeList {
     let docFrag: DocumentFragment = document.createDocumentFragment();
     for (let ele of (fromElements as Element[])) {
         docFrag.appendChild(ele);
     }
     toElement.insertBefore(docFrag, toElement.firstElementChild);
+    if (isEval) {
+        executeScript(toElement);
+    }
     return fromElements;
 }
 
@@ -118,13 +121,31 @@ export function prepend(fromElements: Element[] | NodeList, toElement: Element):
  * @param  {Element} toElement - An element that is going to prepend.
  * @private
  */
-export function append(fromElements: Element[] | NodeList, toElement: Element): Element[] | NodeList {
+export function append(fromElements: Element[] | NodeList, toElement: Element, isEval?: Boolean): Element[] | NodeList {
     let docFrag: DocumentFragment = document.createDocumentFragment();
     for (let ele of <Element[]>fromElements) {
         docFrag.appendChild(ele);
     }
     toElement.appendChild(docFrag);
+    if (isEval) {
+        executeScript(toElement);
+    }
     return fromElements;
+}
+
+/**
+ * The function is used to evaluate script from Ajax request
+ * @param ele - An element is going to evaluate the script
+ */
+
+function executeScript(ele: Element): void {
+    let eleArray: NodeList = ele.querySelectorAll('script');
+    eleArray.forEach((element: Element) => {
+        let script: HTMLScriptElement = document.createElement('script');
+        script.text = element.innerHTML;
+        document.head.appendChild(script);
+        detach(script);
+    });
 }
 
 /**

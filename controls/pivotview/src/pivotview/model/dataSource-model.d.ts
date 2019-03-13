@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition } from '../../base/types';import { IStyle } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings} from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType } from '../../base/types';import { IStyle } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Interface for a class FieldOptions
@@ -186,6 +186,7 @@ export interface SortModel {
      * It allows to set the sort order. The types are,
      * * `Ascending`: It allows to display the field members in ascending order. 
      * * `Descending`: It allows to display the field members in descending order.
+     * * `None`: It allows to display the field members based on JSON order. 
      * @default Ascending
      */
     order?: Sorting;
@@ -252,6 +253,44 @@ export interface FormatSettingsModel {
      * It allows to specify custom number format for formatting.
      */
     format?: string;
+
+}
+
+/**
+ * Interface for a class GroupSettings
+ */
+export interface GroupSettingsModel {
+
+    /**
+     * It allows to set the field name to apply group settings.
+     */
+    name?: string;
+
+    /**
+     * It allows to set the group interval for group field.
+     */
+    groupInterval?: DateGroup[];
+
+    /**
+     * It allows to set the start time of group field.
+     */
+    startingAt?: Date | number;
+
+    /**
+     * It allows to set the end time of group field.
+     */
+    endingAt?: Date | number;
+
+    /**
+     * It allows to set the type of field.
+     * @default Date
+     */
+    type?: GroupType;
+
+    /**
+     * It allows to set the interval range of group field.
+     */
+    rangeInterval?: number;
 
 }
 
@@ -428,6 +467,12 @@ export interface DataSourceModel {
     showColumnGrandTotals?: boolean;
 
     /**
+     * It allows enable/disable single measure headers in pivot table.
+     * @default false
+     */
+    alwaysShowValueHeader?: boolean;
+
+    /**
      * It allows to set the settings of number formatting.
      * @default []
      */
@@ -455,5 +500,16 @@ export interface DataSourceModel {
      * @default []
      */
     conditionalFormatSettings?: ConditionalFormatSettingsModel[];
+
+    /**
+     * It allows to set the custom values to empty value cells .
+     */
+    emptyCellsTextContent?: string;
+
+    /**
+     * It allows to set the settings for grouping the date.
+     * @default []
+     */
+    groupSettings?: GroupSettingsModel[];
 
 }

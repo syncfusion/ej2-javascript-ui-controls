@@ -28,6 +28,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     private isKeyPressed: boolean = false;
     private formElement: HTMLFormElement;
     private initialCheckedValue: boolean;
+    private angularValue: string;
 
     /**
      * Event trigger when the RadioButton state has been changed by user interaction.
@@ -119,13 +120,14 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private updateChange(state: boolean): void {
-        let input: HTMLInputElement;
+        let input: HTMLInputElement; let instance: RadioButton;
         let name: string = this.element.getAttribute('name');
         let radioGrp: NodeListOf<Element> = document.querySelectorAll('input.e-radio[name="' + name + '"]');
         for (let i: number = 0; i < radioGrp.length; i++) {
             input = radioGrp[i] as HTMLInputElement;
             if (input !== this.element) {
-                (getInstance(input, RadioButton) as RadioButton).checked = false;
+                instance = getInstance(input, RadioButton) as RadioButton; instance.checked = false;
+                if (this.tagName === 'EJS-RADIOBUTTON') { instance.angularValue = this.value; }
             }
         }
     }
@@ -322,6 +324,12 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         }
         if (!this.element.id) {
             this.element.id = getUniqueID('e-' + this.getModuleName());
+        }
+        if (this.tagName === 'EJS-RADIOBUTTON') {
+            let formControlName: string = this.element.getAttribute('formcontrolname');
+            if (formControlName) {
+                this.setProperties({ 'name': formControlName }, true); this.element.setAttribute('name', formControlName);
+            }
         }
     }
 

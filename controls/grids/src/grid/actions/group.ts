@@ -3,7 +3,8 @@ import { createElement, closest, remove, classList, addClass, removeClass } from
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
-import { parentsUntil, isActionPrevent } from '../base/util';
+import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow } from '../base/util';
+import { ReturnType } from '../base/type';
 import { Action, AggregateType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
@@ -11,7 +12,7 @@ import * as events from '../base/constant';
 import { AriaService } from '../services/aria-service';
 import { FocusStrategy } from '../services/focus-strategy';
 import { GroupModelGenerator } from '../services/group-model-generator';
-import { DataUtil } from '@syncfusion/ej2-data';
+import { DataUtil, Query } from '@syncfusion/ej2-data';
 import { AggregateColumn, AggregateRow } from '../models/aggregate';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -78,6 +79,7 @@ export class Group implements IAction {
         if (isNullOrUndefined(column) || column.allowGrouping === false ||
             parentsUntil(gObj.getColumnHeaderByUid(column.uid), 'e-grid').getAttribute('id') !==
             gObj.element.getAttribute('id')) {
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: column.headerText });
             return;
         }
         this.groupColumn(column.field);
@@ -294,40 +296,51 @@ export class Group implements IAction {
             let rows: HTMLTableRowElement[] = [].slice.call(rowNodes).slice(rowIdx + 1, rowNodes.length);
             let isHide: boolean;
             let expandElem: Element;
+            let dataManager: Promise<Object>;
+            let query: Query;
             let toExpand: Element[] = [];
+            let gObj: IGrid = this.parent;
             let indent: number = trgt.parentElement.querySelectorAll('.e-indentcell').length;
             let expand: boolean = false;
             if (trgt.classList.contains('e-recordpluscollapse')) {
                 addClass([trgt], 'e-recordplusexpand'); removeClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gdiagonaldown e-icon-gdownarrow';
                 expand = true;
+                if (isGroupAdaptive(gObj)) {
+                    this.updateVirtualRows(gObj, target, expand, query, dataManager);
+                }
             } else {
                 isHide = true;
                 removeClass([trgt], 'e-recordplusexpand'); addClass([trgt], 'e-recordpluscollapse');
                 trgt.firstElementChild.className = 'e-icons e-gnextforward e-icon-grightarrow';
+                if (isGroupAdaptive(gObj)) {
+                    this.updateVirtualRows(gObj, target, !isHide, query, dataManager);
+                }
             }
             this.aria.setExpand(trgt, expand);
-            for (let i: number = 0, len: number = rows.length; i < len; i++) {
-                if (rows[i].querySelectorAll('td')[cellIdx] &&
-                    rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
-                    if (isHide) {
-                        rows[i].style.display = 'none';
-                    } else {
-                        if (rows[i].querySelectorAll('.e-indentcell').length === indent + 1) {
-                            rows[i].style.display = '';
-                            expandElem = rows[i].querySelector('.e-recordplusexpand');
-                            if (expandElem) {
-                                toExpand.push(expandElem);
-                            }
-                            if (rows[i].classList.contains('e-detailrow')) {
-                                if (rows[i - 1].querySelectorAll('.e-detailrowcollapse').length) {
-                                    rows[i].style.display = 'none';
+            if (!isGroupAdaptive(gObj)) {
+                for (let i: number = 0, len: number = rows.length; i < len; i++) {
+                    if (rows[i].querySelectorAll('td')[cellIdx] &&
+                        rows[i].querySelectorAll('td')[cellIdx].classList.contains('e-indentcell') && rows) {
+                        if (isHide) {
+                            rows[i].style.display = 'none';
+                        } else {
+                            if (rows[i].querySelectorAll('.e-indentcell').length === indent + 1) {
+                                rows[i].style.display = '';
+                                expandElem = rows[i].querySelector('.e-recordplusexpand');
+                                if (expandElem) {
+                                    toExpand.push(expandElem);
+                                }
+                                if (rows[i].classList.contains('e-detailrow')) {
+                                    if (rows[i - 1].querySelectorAll('.e-detailrowcollapse').length) {
+                                        rows[i].style.display = 'none';
+                                    }
                                 }
                             }
                         }
+                    } else {
+                        break;
                     }
-                } else {
-                    break;
                 }
             }
             for (let i: number = 0, len: number = toExpand.length; i < len; i++) {
@@ -338,6 +351,16 @@ export class Group implements IAction {
         }
     }
 
+    private updateVirtualRows(gObj: IGrid, target: Element, isExpand: boolean, query: Query, dataManager: Promise<Object>): void {
+        let rObj: Row<Column> = gObj.getRowObjectFromUID(target.closest('tr').getAttribute('data-uid'));
+        rObj.isExpand = isExpand;
+        updatecloneRow(gObj);
+        query = gObj.getDataModule().generateQuery(false);
+        query.queries = [];
+        let args: NotifyArgs = { requestType: 'virtualscroll', rowObject: rObj };
+        dataManager = gObj.getDataModule().getData(args, query.requiresCount());
+        dataManager.then((e: ReturnType) => gObj.renderModule.dataManagerSuccess(e, args));
+    }
     private expandCollapse(isExpand: boolean): void {
         let rowNodes: HTMLCollection = this.parent.getContentTable().querySelector('tbody').children;
         let row: Element;
@@ -448,6 +471,7 @@ export class Group implements IAction {
         let column: Column = gObj.getColumnByField(columnName);
         if (isNullOrUndefined(column) || column.allowGrouping === false ||
             (this.contentRefresh && this.groupSettings.columns.indexOf(columnName) > -1)) {
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: column.headerText });
             return;
         }
         if (isActionPrevent(gObj)) {

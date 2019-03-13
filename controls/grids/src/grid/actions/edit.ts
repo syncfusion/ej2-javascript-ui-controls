@@ -82,6 +82,7 @@ export class Edit implements IAction {
                 );
             }
         });
+        this.parent.log('primary_column_missing');
     }
 
     /**

@@ -11,7 +11,7 @@ import { getElement } from '../../../src/common/utils/helper';
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccumulationSelection } from '../../../src/accumulation-chart/user-interaction/selection';
 import { AccumulationTooltip } from '../../../src/accumulation-chart/user-interaction/tooltip';
-
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { SliceOption } from '../base/util.spec';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs, IAccTooltipRenderEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
@@ -74,7 +74,15 @@ let data: object[] = [{ x: 'Renewed', y: 18.2, text: '18.20%' },
 { x: 'Downloaded', y: 76.8, text: '76.8%' },
 { x: 'Visited', y: 100, text: '100%' }];
 
-
+describe('Accumulation Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('Pyramid Series checking', () => {
     let ele: HTMLElement;
     let slice: Element;
@@ -712,4 +720,13 @@ describe('Pyramid Series checking', () => {
         chart.refresh();
     });
 });
-
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
+});

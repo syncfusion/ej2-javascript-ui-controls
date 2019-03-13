@@ -12,6 +12,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { StackingColumnSeries } from '../../../src/chart/series/stacking-column-series';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs } from '../../../src/common/model/interface';
 
 Chart.Inject(ColumnSeries, StackingColumnSeries, DataLabel, Legend);
@@ -19,6 +20,14 @@ Chart.Inject(ColumnSeries, StackingColumnSeries, DataLabel, Legend);
 
 
 describe('Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('Chart Bar series', () => {
         let chartObj: Chart;
         let elem: HTMLElement;
@@ -203,6 +212,28 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('Checking with bootstrap4 theme color', (done: Function) => {
+            loaded = (args: Object): void => {
+                let prefix: string = 'theme_Series_';
+                let suffix: string = '_Point_0';
+                expect(getElement(prefix + 0 + suffix).getAttribute('fill')).toBe(material[0]);
+                expect(getElement(prefix + 1 + suffix).getAttribute('fill')).toBe(material[1]);
+                expect(getElement(prefix + 2 + suffix).getAttribute('fill')).toBe(material[2]);
+                expect(getElement(prefix + 3 + suffix).getAttribute('fill')).toBe(material[3]);
+                expect(getElement(prefix + 4 + suffix).getAttribute('fill')).toBe(material[4]);
+                expect(getElement(prefix + 5 + suffix).getAttribute('fill')).toBe(material[5]);
+                expect(getElement(prefix + 6 + suffix).getAttribute('fill')).toBe(material[6]);
+                expect(getElement(prefix + 7 + suffix).getAttribute('fill')).toBe(material[7]);
+                expect(getElement(prefix + 8 + suffix).getAttribute('fill')).toBe(material[8]);
+                expect(getElement(prefix + 9 + suffix).getAttribute('fill')).toBe(material[9]);
+                expect(getElement(prefix + 10 + suffix).getAttribute('fill')).toBe(material[0]);
+                expect(getElement(prefix + 11 + suffix).getAttribute('fill')).toBe(material[1]);
+                done();
+            };
+            chartObj.theme = 'Bootstrap4';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
         it('Checking with fabric theme legend color', (done: Function) => {
             loaded = (args: Object): void => {
                 let prefix: string = 'theme_chart_legend_shape_';
@@ -304,4 +335,13 @@ describe('Chart Control', () => {
             chartObj.dataBind();
         });
     });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange)
+        //Check average change in memory samples to not be over 10MB
+        expect(average).toBeLessThan(10);
+        let memory: any = inMB(getMemoryProfile())
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    })
 });

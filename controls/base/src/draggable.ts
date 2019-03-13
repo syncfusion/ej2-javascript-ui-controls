@@ -538,9 +538,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             if (this.pageX !== pagex || this.skipDistanceCheck) {
                 let helperWidth: number = helperElement.offsetWidth + (parseFloat(styles.marginLeft)
                     + parseFloat(styles.marginRight));
-                if (this.dragLimit.left > dLeft) {
+                if (this.dragLimit.left + window.scrollX > dLeft) {
                     left = this.dragLimit.left;
-                } else if (this.dragLimit.right < dLeft + helperWidth) {
+                } else if (this.dragLimit.right + window.scrollX < dLeft + helperWidth) {
                     left = this.dragLimit.right - helperWidth;
                 } else {
                     left = dLeft;
@@ -549,9 +549,9 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             if (this.pageY !== pagey || this.skipDistanceCheck) {
                 let helperHeight: number = helperElement.offsetHeight + (parseFloat(styles.marginTop)
                     + parseFloat(styles.marginBottom));
-                if (this.dragLimit.top > dTop) {
+                if (this.dragLimit.top + window.scrollY > dTop) {
                     top = this.dragLimit.top;
-                } else if (this.dragLimit.bottom < dTop + helperHeight) {
+                } else if (this.dragLimit.bottom + window.scrollY < dTop + helperHeight) {
                     top = this.dragLimit.bottom - helperHeight;
                 } else {
                     top = dTop;

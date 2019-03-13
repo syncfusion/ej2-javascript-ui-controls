@@ -3,7 +3,7 @@
  */
 import { Chart, Series, getElement } from '../../index';
 import { StockChart } from '../stock-chart';
-import { Size } from '../../index';
+import { Size } from '@syncfusion/ej2-svg-base';
 import { IZoomCompleteEventArgs, Axis, VisibleRangeModel, ILoadedEventArgs } from '../../chart/index';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';

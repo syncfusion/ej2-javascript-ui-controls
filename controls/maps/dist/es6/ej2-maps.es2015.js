@@ -1,7 +1,7 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SvgRenderer, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-import { Tooltip } from '@syncfusion/ej2-svg-base';
 
 /**
  * Helper functions for maps control
@@ -1692,7 +1692,7 @@ var HighContrastTheme;
     HighContrastTheme.tooltipLabelFont = {
         size: '12px',
         fontWeight: 'Regular',
-        color: '#FFFFFF',
+        color: '#000000',
         fontStyle: 'Regular',
         fontFamily: 'Roboto'
     };
@@ -1767,6 +1767,58 @@ var DarkTheme;
         fontStyle: 'Medium',
     };
 })(DarkTheme || (DarkTheme = {}));
+function getThemeStyle(theme) {
+    let style;
+    switch (theme) {
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+        case 'HighContrast':
+        case 'Highcontrast':
+            style = {
+                backgroundColor: '#000000',
+                areaBackgroundColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                subTitleFontColor: '#FFFFFF',
+                legendTitleFontColor: '#FFFFFF',
+                legendTextColor: '#FFFFFF',
+                dataLabelFontColor: '#000000',
+                tooltipFontColor: '#ffffff',
+                tooltipFillColor: '#363F4C',
+                zoomFillColor: '#FFFFFF'
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                backgroundColor: '#FFFFFF',
+                areaBackgroundColor: '#FFFFFF',
+                titleFontColor: '#212529',
+                subTitleFontColor: '#212529',
+                legendTitleFontColor: '#212529',
+                legendTextColor: '#212529',
+                dataLabelFontColor: '#212529',
+                tooltipFontColor: '#FFFFFF',
+                tooltipFillColor: '#000000',
+                zoomFillColor: '#FFFFFF'
+            };
+            break;
+        default:
+            style = {
+                backgroundColor: '#FFFFFF',
+                areaBackgroundColor: '#FFFFFF',
+                titleFontColor: '#424242',
+                subTitleFontColor: '#424242',
+                legendTitleFontColor: '#757575',
+                legendTextColor: '#757575',
+                dataLabelFontColor: '#000000',
+                tooltipFontColor: '#ffffff',
+                tooltipFillColor: '#000000',
+                zoomFillColor: '#737373'
+            };
+            break;
+    }
+    return style;
+}
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -1823,19 +1875,19 @@ __decorate$1([
 class Font extends ChildProperty {
 }
 __decorate$1([
-    Property(null)
+    Property('12px')
 ], Font.prototype, "size", void 0);
 __decorate$1([
     Property(null)
 ], Font.prototype, "color", void 0);
 __decorate$1([
-    Property(null)
+    Property('Roboto, Noto, Sans-serif')
 ], Font.prototype, "fontFamily", void 0);
 __decorate$1([
-    Property(null)
+    Property('Medium')
 ], Font.prototype, "fontWeight", void 0);
 __decorate$1([
-    Property(null)
+    Property('Medium')
 ], Font.prototype, "fontStyle", void 0);
 __decorate$1([
     Property(1)
@@ -1863,7 +1915,7 @@ __decorate$1([
     Property('')
 ], TooltipSettings.prototype, "template", void 0);
 __decorate$1([
-    Property('#363F4C')
+    Property('')
 ], TooltipSettings.prototype, "fill", void 0);
 __decorate$1([
     Complex({ color: 'transparent', width: 1 }, Border)
@@ -2065,7 +2117,7 @@ __decorate$1([
 class SubTitleSettings extends CommonTitleSettings {
 }
 __decorate$1([
-    Complex({}, Font)
+    Complex({ size: Theme.mapsSubTitleFont.size }, Font)
 ], SubTitleSettings.prototype, "textStyle", void 0);
 __decorate$1([
     Property('Center')
@@ -2076,7 +2128,7 @@ __decorate$1([
 class TitleSettings extends CommonTitleSettings {
 }
 __decorate$1([
-    Complex({}, Font)
+    Complex({ size: Theme.mapsTitleFont.size }, Font)
 ], TitleSettings.prototype, "textStyle", void 0);
 __decorate$1([
     Property('Center')
@@ -4001,87 +4053,10 @@ let Maps = class Maps extends Component {
         this.isDevice = Browser.isDevice;
         this.initPrivateVariable();
         this.trigger(load, { maps: this });
-        this.themeEffect();
         this.unWireEVents();
         this.createSVG();
         this.wireEVents();
         this.setCulture();
-    }
-    setTextStyle(theme, font) {
-        font.color = font.color || theme.color;
-        font.size = font.size || theme.size;
-        font.fontFamily = font.fontFamily || theme.fontFamily;
-        font.fontStyle = font.fontStyle || theme.fontStyle;
-        font.fontWeight = font.fontWeight || theme.fontWeight;
-    }
-    /**
-     * To change font styles of map based on themes
-     */
-    themeEffect() {
-        this.setBackgroundValue(this.theme);
-        let theme = this.theme.toLowerCase();
-        switch (theme) {
-            case 'highcontrastlight':
-            case 'material':
-                this.setTextStyle(Theme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(Theme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(Theme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(Theme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, Theme.dataLabelFont);
-                break;
-            case 'bootstrap':
-                this.setTextStyle(BootstrapTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(BootstrapTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(BootstrapTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(BootstrapTheme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, BootstrapTheme.dataLabelFont);
-                break;
-            case 'fabric':
-                this.setTextStyle(FabricTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(FabricTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(FabricTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(FabricTheme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, FabricTheme.dataLabelFont);
-                break;
-            case 'highcontrast':
-                this.setTextStyle(HighContrastTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(HighContrastTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(HighContrastTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(HighContrastTheme.legendTitleFont, this.legendSettings.textStyle);
-                this.setLabelFont(this.layers, HighContrastTheme.dataLabelFont);
-                break;
-            case 'materialdark':
-            case 'bootstrapdark':
-            case 'fabricdark':
-                this.setTextStyle(DarkTheme.mapsTitleFont, this.titleSettings.textStyle);
-                this.setTextStyle(DarkTheme.mapsSubTitleFont, this.titleSettings.subtitleSettings.textStyle);
-                this.setTextStyle(DarkTheme.legendLabelFont, this.legendSettings.textStyle);
-                this.setTextStyle(DarkTheme.legendTitleFont, this.legendSettings.textStyle);
-                break;
-        }
-    }
-    /**
-     * Maps background and area background colors change as per theme.
-     * @param theme based on theme background colors will change.
-     */
-    setBackgroundValue(theme) {
-        let color = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
-            '#000000' : '#FFFFFF';
-        this.background = this.background ? this.background : color;
-        this.mapsArea.background = this.mapsArea.background ? this.mapsArea.background : color;
-        color = (theme.toLowerCase().indexOf('dark') > -1 || theme.toLowerCase() === 'highcontrast') ?
-            '#FFFFFF' : '#737373';
-        this.zoomSettings.color = (this.zoomSettings.color) ? this.zoomSettings.color : color;
-    }
-    /**
-     * To change datalabel font
-     * @param layers
-     * @param style
-     */
-    setLabelFont(layers, style) {
-        for (let layer of layers) {
-            this.setTextStyle(style, layer.dataLabelSettings.textStyle);
-        }
     }
     /**
      * To Initialize the control rendering.
@@ -4090,6 +4065,7 @@ let Maps = class Maps extends Component {
         this.findBaseAndSubLayers();
         this.createSecondaryElement();
         this.addTabIndex();
+        this.themeStyle = getThemeStyle(this.theme);
         this.renderBorder();
         this.renderTitle(this.titleSettings, 'title', null, null);
         this.renderArea();
@@ -4111,10 +4087,12 @@ let Maps = class Maps extends Component {
                     this.processResponseJsonData('DataManager', e, layer, 'ShapeData');
                 });
             }
-            else if (layer.shapeData instanceof MapAjax) {
-                this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
+            else if (layer.shapeData instanceof MapAjax || layer.shapeData) {
+                if (!isNullOrUndefined(layer.shapeData['dataOptions'])) {
+                    this.processAjaxRequest(layer, layer.shapeData, 'ShapeData');
+                }
             }
-            if (layer.dataSource instanceof MapAjax) {
+            if (layer.dataSource instanceof MapAjax || !isNullOrUndefined(layer.dataSource['dataOptions'])) {
                 this.processAjaxRequest(layer, layer.dataSource, 'DataSource');
             }
             if (this.serverProcess['request'] === this.serverProcess['response'] && length === layerIndex) {
@@ -4122,6 +4100,7 @@ let Maps = class Maps extends Component {
             }
         });
     }
+    // tslint:disable:no-any
     processAjaxRequest(layer, localAjax, type) {
         let ajaxModule;
         this.serverProcess['request']++;
@@ -4197,8 +4176,12 @@ let Maps = class Maps extends Component {
      * Render the map area border
      */
     renderArea() {
-        let rect = new RectOption(this.element.id + '_MapAreaBorder', this.mapsArea.background, this.mapsArea.border, 1, this.mapAreaRect);
-        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
+        let width = this.mapsArea.border.width;
+        let background = this.mapsArea.background;
+        if (width > 0 || (background || this.themeStyle.areaBackgroundColor)) {
+            let rect = new RectOption(this.element.id + '_MapAreaBorder', background || this.themeStyle.areaBackgroundColor, this.mapsArea.border, 1, this.mapAreaRect);
+            this.svgObject.appendChild(this.renderer.drawRectangle(rect));
+        }
     }
     /**
      * To add tab index for map element
@@ -4363,12 +4346,12 @@ let Maps = class Maps extends Component {
     renderBorder() {
         let width = this.border.width;
         let borderElement = this.svgObject.querySelector('#' + this.element.id + '_MapBorder');
-        if ((width > 0 || this.background) && isNullOrUndefined(borderElement)) {
-            let borderRect = new RectOption(this.element.id + '_MapBorder', this.background, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
+        if ((width > 0 || (this.background || this.themeStyle.backgroundColor)) && isNullOrUndefined(borderElement)) {
+            let borderRect = new RectOption(this.element.id + '_MapBorder', this.background || this.themeStyle.backgroundColor, this.border, 1, new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(this.renderer.drawRectangle(borderRect));
         }
         else {
-            borderElement.setAttribute('fill', this.background);
+            borderElement.setAttribute('fill', this.background || this.themeStyle.backgroundColor);
         }
     }
     /**
@@ -4389,7 +4372,7 @@ let Maps = class Maps extends Component {
             let location = findPosition(rect, title.alignment, elementSize, type);
             let options = new TextOption(this.element.id + '_Map_' + type, location.x, location.y, 'start', trimmedTitle);
             let titleBounds = new Rect(location.x, location.y, elementSize.width, elementSize.height);
-            let element = renderTextElement(options, style, style.color, groupEle);
+            let element = renderTextElement(options, style, style.color || (type === 'title' ? this.themeStyle.titleFontColor : this.themeStyle.subTitleFontColor), groupEle);
             element.setAttribute('aria-label', this.description || title.text);
             element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
@@ -5448,9 +5431,6 @@ class DataLabel {
                 labelTemplateElement.appendChild(labelElement);
                 let labelWidth = labelElement.offsetWidth;
                 let labelHeight = labelElement.offsetHeight;
-                // if (labelWidth > width || labelWidth === 0 || labelHeight > location['height']) {
-                //     labelElement.style.display = 'None';
-                // }
             }
             else {
                 if (dataLabelSettings.smartLabelMode === 'Trim') {
@@ -5529,7 +5509,7 @@ class DataLabel {
                         group.appendChild(rect);
                     }
                 }
-                element = renderTextElement(options, style, style.color, group);
+                element = renderTextElement(options, style, style.color || this.maps.themeStyle.dataLabelFontColor, group);
                 element.setAttribute('transform', 'translate( ' + ((location['x'] + transPoint.x) * scale) + ' '
                     + (((location['y'] + transPoint.y) * scale) + (elementSize.height / 4)) + ' )');
                 group.appendChild(element);
@@ -6033,6 +6013,7 @@ class Legend {
                 let textLocation = new Point(item['textX'], item['textY']);
                 eventArgs.fill = item['fill'];
                 map.trigger(legendRendering, eventArgs);
+                textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
                 let rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
@@ -6079,6 +6060,7 @@ class Legend {
                 let textLocation = collection['Text'];
                 let imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
                 let renderOptions = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
+                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color : this.maps.themeStyle.legendTextColor;
                 legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
@@ -6415,6 +6397,7 @@ class Legend {
         }
         return null;
     }
+    //tslint:disable
     renderLegendBorder() {
         let map = this.maps;
         let legend = map.legendSettings;
@@ -6427,6 +6410,7 @@ class Legend {
         this.legendBorderRect = new Rect((this.legendItemRect.x - spacing), (this.legendItemRect.y - spacing - textSize.height), (this.legendItemRect.width) + (spacing * 2), (this.legendItemRect.height) + (spacing * 2) + textSize.height +
             (legend.mode === 'Interactive' ? 0 : (this.page !== 0) ? spacing : 0));
         if (legendTitle) {
+            textStyle.color = (textStyle.color !== null) ? textStyle.color : this.maps.themeStyle.legendTextColor;
             textOptions = new TextOption(map.element.id + '_LegendTitle', (this.legendItemRect.x) + (this.legendItemRect.width / 2), this.legendItemRect.y - (textSize.height / 2) - spacing / 2, 'middle', trimTitle, '');
             renderTextElement(textOptions, textStyle, textStyle.color, this.legendGroup);
         }
@@ -7440,14 +7424,14 @@ class MapsTooltip {
                     textStyle: option.textStyle,
                     template: option.template
                 },
+                fill: option.fill,
                 maps: this.maps,
                 element: target, eventArgs: e
             };
             this.maps.trigger(tooltipRender, tootipArgs);
-            let themes = this.maps.theme.toLowerCase();
-            let tooltipColor = themes.indexOf('dark') > -1 || themes === 'highcontrast' ? '#00000' : '#FFFFFF';
             if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = tooltipColor;
+                tootipArgs.options['textStyle']['color'] = tootipArgs.options['textStyle']['color'] ||
+                    this.maps.themeStyle.tooltipFontColor;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -7459,7 +7443,7 @@ class MapsTooltip {
                     palette: [markerFill],
                     areaBounds: this.maps.mapAreaRect,
                     textStyle: tootipArgs.options['textStyle'],
-                    fill: (themes.indexOf('dark') > -1 || themes === 'highcontrast') ? '#FFFFFF' : '#00000'
+                    fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
                 });
                 this.svgTooltip.appendTo(tooltipEle);
             }
@@ -8100,25 +8084,26 @@ class Zoom {
                 transform: 'translate( ' + xSpacing + ' ' + ySpacing + ' ) '
             });
             this.currentToolbarEle.setAttribute('class', 'e-maps-toolbar');
+            let fill = 'transparent';
             let direction = '';
             switch (toolbar.toLowerCase()) {
                 case 'zoom':
                     direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
                     direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                     direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
-                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, 1, this.fillColor, 1, null, direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')));
+                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 1, this.maps.themeStyle.zoomFillColor, 1, null, direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')));
                     this.zoomElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
                 case 'zoomin':
                     direction = 'M 8, 0 L 8, 16 M 0, 8 L 16, 8';
-                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', this.fillColor, 3, this.fillColor, 1, null, direction)));
+                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Path', fill, 3, this.maps.themeStyle.zoomFillColor, 1, null, direction)));
                     this.zoomInElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
                 case 'zoomout':
                     direction = 'M 0, 8 L 16, 8';
-                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, 3, this.fillColor, 1, null, direction)));
+                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 3, this.maps.themeStyle.zoomFillColor, 1, null, direction)));
                     this.zoomOutElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
@@ -8134,11 +8119,11 @@ class Zoom {
                     direction = 'M12.364,8h-2.182l2.909,3.25L16,8h-2.182c0-3.575-2.618-6.5-5.818-6.5c-1.128,0-2.218,0.366-3.091,';
                     direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
                     direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
-                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
+                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, fill, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
             }
-            this.currentToolbarEle.appendChild(map.renderer.drawCircle(new CircleOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Rect', 'transparent', { color: this.fillColor, width: 1 }, 1, 8, 8, 16, '')));
+            this.currentToolbarEle.appendChild(map.renderer.drawCircle(new CircleOption(map.element.id + '_Zooming_ToolBar_' + toolbar + '_Rect', fill, { color: this.maps.themeStyle.zoomFillColor, width: 1 }, 1, 8, 8, 16, '')));
             xSpacing = (orientation === 'Horizontal') ? (xSpacing + (kitWidth + padding)) : xSpacing;
             ySpacing = (orientation === 'Horizontal') ? ySpacing : (ySpacing + (kitHeight + padding));
             this.toolBarGroup.appendChild(this.currentToolbarEle);

@@ -310,6 +310,14 @@ export class StraightSegment extends ConnectorSegment {
      */
     @Complex<PointModel>({ x: 0, y: 0 }, Point)
     public point: PointModel;
+
+    /**
+     * @private
+     * Returns the name of class StraightSegment
+     */
+    public getClassName(): string {
+        return 'StraightSegment';
+    }
 }
 
 /**
@@ -356,6 +364,14 @@ export class BezierSegment extends StraightSegment {
      */
     @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
     public vector2: VectorModel;
+
+    /**
+     * @private
+     * Returns the name of class BezierSegment
+     */
+    public getClassName(): string {
+        return 'BezierSegment';
+    }
 
 }
 
@@ -404,6 +420,14 @@ export class OrthogonalSegment extends ConnectorSegment {
      */
     @Property(null)
     public direction: Direction;
+
+    /**
+     * @private
+     * Returns the module of class OrthogonalSegment
+     */
+    public getClassName(): string {
+        return 'OrthogonalSegment';
+    }
 
 }
 
@@ -780,6 +804,20 @@ export class Connector extends NodeBase implements IElement {
      */
     @Property('')
     public targetPortID: string;
+
+    /**
+     * Sets the source padding of the connector
+     * @default 0
+     */
+    @Property(0)
+    public sourcePadding: number;
+
+    /**
+     * Sets the target padding of the connector
+     * @default 0
+     */
+    @Property(0)
+    public targetPadding: number;
 
     /**
      * Defines the appearance of the connection path
@@ -1533,6 +1571,14 @@ export class Connector extends NodeBase implements IElement {
         points = this.intermediatePoints = findConnectorPoints(this);
         updateConnector(this, points);
         return { x: tx, y: ty };
+    }
+
+    /**
+     * @private
+     * Returns the name of class Connector
+     */
+    public getClassName(): string {
+        return 'Connector';
     }
 }
 

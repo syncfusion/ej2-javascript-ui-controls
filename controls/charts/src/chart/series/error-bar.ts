@@ -3,8 +3,9 @@ import { Axis } from '../axis/axis';
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { Series, Points } from './chart-series';
 import { Mean, RectOption, StackValues, pathAnimation, getElement, appendChildElement, appendClipElement } from '../../common/utils/helper';
-import { getPoint, ChartLocation, PathOption, sum, templateAnimate } from '../../common/utils/helper';
+import { getPoint, ChartLocation, sum, templateAnimate } from '../../common/utils/helper';
 import { ErrorBarMode, ErrorBarDirection } from '../../chart/utils/enum';
+import { PathOption } from '@syncfusion/ej2-svg-base';
 
 /**
  * `ErrorBar` module is used to render the error bar for series.

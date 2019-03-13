@@ -12,6 +12,7 @@ import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import { Selection } from '../../../src/grid/actions/selection';
 import { filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
+import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Filter, Page, Selection, Group, Freeze);
 
@@ -60,6 +61,11 @@ describe('Excel Filter =>', () => {
     };
     describe('Excel Filter =>', () => {
         beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
             gridObj = createGrid(
                 {
                     dataSource: filterData,
@@ -112,12 +118,14 @@ describe('Excel Filter =>', () => {
             let excel: any = new (<any>gridObj.filterModule).type['Excel'](
                 gridObj, gridObj.filterSettings, gridObj.serviceLocator,
                 customOperators);
+            let column: any = gridObj.getColumnByField('OrderID');
             excel.updateModel({
                 type: 'number', field: 'OrderID', displayName: 'Order ID',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
                 query: gridObj.query,
                 handler: test.filterHandler.bind(test), localizedStrings: {},
+                column: column
             });
             excel.filterByColumn('OrderID', 'greaterthan', 10249, 'or', false, false, 'lessthan', 10280);
             gridObj.dataBind();
@@ -136,12 +144,14 @@ describe('Excel Filter =>', () => {
             let excel: any = new (<any>gridObj.filterModule).type['Excel'](
                 gridObj, gridObj.filterSettings, gridObj.serviceLocator,
                 customOperators);
+            let column: any = gridObj.getColumnByField('OrderID');
             excel.updateModel({
                 type: 'number', field: 'OrderID', displayName: 'Order ID',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
                 query: gridObj.query,
                 handler: test.filterHandler.bind(test), localizedStrings: {},
+                column: column
             });
             excel.filterByColumn('OrderID', 'greaterthan', 10249, 'and', false, false, 'notequal', 10250);
             gridObj.dataBind();
@@ -160,12 +170,14 @@ describe('Excel Filter =>', () => {
             let excel: any = new (<any>gridObj.filterModule).type['Excel'](
                 gridObj, gridObj.filterSettings, gridObj.serviceLocator,
                 customOperators);
+            let column: any = gridObj.getColumnByField('OrderID');
             excel.updateModel({
                 type: 'number', field: 'OrderID', displayName: 'Order ID',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
                 query: gridObj.query,
                 handler: test.filterHandler.bind(test), localizedStrings: {},
+                column: column
             });
             excel.filterByColumn('OrderID', 'greaterthan', 10249, 'and', false);//, undefined, 10250);
             gridObj.dataBind();
@@ -193,12 +205,14 @@ describe('Excel Filter =>', () => {
             gridObj.filterSettings.columns.pop();
             test.column = gridObj.getColumnByField('ShipCountry');
             let excel: any = new test.type['Excel'](gridObj, gridObj.filterSettings, gridObj.serviceLocator, customOperators);
+            let column: any = gridObj.getColumnByField('ShipCountry');
             excel.updateModel({
                 type: 'string', field: 'ShipCountry', displayName: 'ShipCountry',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
                 query: gridObj.query,
                 handler: test.filterHandler.bind(test), localizedStrings: {},
+                column: column
             });
             excel.filterByColumn('ShipCountry', 'notequal', value, 'and', true);
         });
@@ -213,12 +227,14 @@ describe('Excel Filter =>', () => {
             gridObj.filterSettings.columns.pop();
             test.column = gridObj.getColumnByField('ShipCountry');
             let excel: any = new test.type['Excel'](gridObj, gridObj.filterSettings, gridObj.serviceLocator, customOperators);
+            let column: any = gridObj.getColumnByField('ShipCountry');
             excel.updateModel({
                 type: 'string', field: 'ShipCountry', displayName: 'ShipCountry',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
                 query: gridObj.query,
                 handler: test.filterHandler.bind(test), localizedStrings: {},
+                column: column
             });
             excel.filterByColumn('ShipCountry', 'contains', 'fra', 'and', false);
         });
@@ -233,12 +249,14 @@ describe('Excel Filter =>', () => {
             gridObj.filterSettings.columns.pop();
             test.column = gridObj.getColumnByField('ShipCountry');
             let excel: any = new test.type['Excel'](gridObj, gridObj.filterSettings, gridObj.serviceLocator, customOperators);
+            let column: any = gridObj.getColumnByField('ShipCountry');
             excel.updateModel({
                 type: 'string', field: 'ShipCountry', displayName: 'ShipCountry',
                 dataSource: gridObj.dataSource,
                 filteredColumns: gridObj.filterSettings.columns, target: gridObj.element,
                 query: gridObj.query,
                 handler: test.filterHandler.bind(test), localizedStrings: {},
+                column: column
             });
             excel.filterByColumn('ShipCountry', 'startswith', 'fra', 'and', false);
         });
@@ -321,12 +339,14 @@ describe('Excel Filter =>', () => {
                 grid.filterSettings.columns.pop();
                 test.column = grid.getColumnByField('OrderDate');
                 let excel: any = new test.type['Excel'](grid, grid.filterSettings, grid.serviceLocator, customOperators);
+                let column: any = grid.getColumnByField('OrderDate');
                 excel.updateModel({
                     type: 'date', field: 'OrderDate', displayName: 'OrderDate',
                     dataSource: grid.dataSource,
                     filteredColumns: grid.filterSettings.columns, target: grid.element,
                     query: grid.query,
                     handler: test.filterHandler.bind(test), localizedStrings: {},
+                    column: column
                 });
                 excel.filterByColumn('OrderDate', 'equal', '7/8/1996', 'and', false);
             });
@@ -341,12 +361,14 @@ describe('Excel Filter =>', () => {
                 grid.filterSettings.columns.pop();
                 test.column = grid.getColumnByField('OrderDate');
                 let excel: any = new test.type['Excel'](grid, grid.filterSettings, grid.serviceLocator, customOperators);
+                let column: any = grid.getColumnByField('OrderDate');
                 excel.updateModel({
                     type: 'date', field: 'OrderDate', displayName: 'OrderDate',
                     dataSource: grid.dataSource,
                     filteredColumns: grid.filterSettings.columns, target: grid.element,
                     query: grid.query,
                     handler: test.filterHandler.bind(test), localizedStrings: {},
+                    column: column
                 });
                 excel.filterByColumn('OrderDate', 'notequal', '7/12/1996', 'and', false);
             });
@@ -457,6 +479,16 @@ describe('Excel Filter =>', () => {
              (<any>gridObj).element.querySelector('.e-headercell:nth-child(2)').querySelector('.e-filtermenudiv').click();
             expect((<any>gridObj).columns[1].filterTemplateFn).not.toBe(undefined);
         });
+
+        it('memory leak', () => {     
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });    
        
         afterAll(() => {
             destroy(gridObj);

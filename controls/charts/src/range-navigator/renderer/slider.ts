@@ -1,8 +1,9 @@
 import { RangeNavigator, RangeValueType } from '../index';
-import { SvgRenderer, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Rect, RectOption } from '../../common/utils/helper';
+import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { RectOption } from '../../common/utils/helper';
 import { getXLocation, getExactData, getRangeValueXByPoint, DataPoint, getNearestValue } from '../utils/helper';
-import { drawSymbol, PathOption, VisibleRangeModel, linear, VisibleLabels, Axis } from '../../chart/index';
+import { drawSymbol, VisibleRangeModel, linear, VisibleLabels, Axis } from '../../chart/index';
+import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { IChangedEventArgs, IRangeStyle } from '../model/range-navigator-interface';
 import { ThumbSettingsModel, StyleSettingsModel } from '../model/range-base-model';

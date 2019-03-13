@@ -75,7 +75,9 @@
       content: '\ec33';
     }
 
-    .e-pv-title-close-icon::before {
+    .e-pv-title-close-icon::before,
+    .e-pv-annotation-tools-close-icon::before,
+    .e-pv-annotation-popup-close::before {
       content: '\ebc0';
       font-size: $pv-title-close-font-size;
     }
@@ -107,11 +109,79 @@
       font-family: 'e-icons';
     }
 
+    .e-pv-annotation-icon::before {
+      content: '\ebd8';
+    }
+
+    .e-pv-annotation-color-icon::before {
+      content: '\ebca';
+    }
+
+    .e-pv-annotation-opacity-icon::before {
+      content: '\ebcc';
+    }
+
+    .e-pv-annotation-delete-icon::before {
+      content: '\ebcd';
+    }
+
+    .e-pv-undo-icon::before {
+      content: '\ebc5';
+    }
+
+    .e-pv-redo-icon::before {
+      content: '\ebd3';
+    }
+
+    .e-pv-more-icon::before {
+      content: '\ebc7';
+    }
+
+    .e-pv-backward-icon::before {
+      content: '\e94b';
+    }
+
     .e-pv-notification-icon {
       background-image: $pv-corrupted-notification-background-image;
       background-repeat: $pv-corrupted-notification-background-repeat;
       background-size: $pv-corrupted-notification-background-size;
       height: $pv-corrupted-notification-height;
     }
+
+    .e-pv-notification-icon-rtl {
+      background-image: $pv-corrupted-notification-background-image;
+      background-position: $pv-corrupted-notification-background-position;
+      background-repeat: $pv-corrupted-notification-background-repeat;
+      background-size: $pv-corrupted-notification-background-size;
+      height: $pv-corrupted-notification-height;
+    }
+  }
+
+  .e-pv-download-document-icon.e-menu-icon::before {
+    content: '\ec32';
+  }
+
+  .e-pv-bookmark-icon.e-menu-icon::before {
+    content: '\ec33';
+  }
+
+  .e-pv-highlight-icon::before {
+    content: '\ebc6';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-underline-icon::before {
+    content: '\ebc8';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-strikethrough-icon::before {
+    content: '\ebc9';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-copy-icon::before {
+    content: '\e70a';
+    font-family: 'e-icons';
   }
 }

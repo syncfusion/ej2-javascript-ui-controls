@@ -168,6 +168,14 @@ export class UserHandle extends ChildProperty<UserHandle> {
      */
     @Property('Center')
     public verticalAlignment: VerticalAlignment;
+
+    /**
+     * @private
+     * Returns the name of class UserHandle
+     */
+    public getClassName(): string {
+        return 'UserHandle';
+    }
 }
 
 /**

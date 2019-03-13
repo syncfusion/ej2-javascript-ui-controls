@@ -34,7 +34,7 @@ export function createButtonGroup(selector: string, options: CreateButtonGroupMo
         createElement = internalCreateElement;
     }
     let wrapper: HTMLElement = document.querySelector(selector) as HTMLElement;
-    addClass([wrapper],  ['e-btn-group']);
+    addClass([wrapper],  ['e-btn-group', 'e-css']);
     wrapper.setAttribute('role', 'group');
     let childs: HTMLCollection = wrapper.children;
     options.buttons = options.buttons || [] as ButtonModel[];

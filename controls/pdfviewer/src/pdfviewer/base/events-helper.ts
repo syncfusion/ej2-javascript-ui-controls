@@ -1,5 +1,6 @@
 
 import { BaseEventArgs } from '@syncfusion/ej2-base';
+import { AnnotationType } from './index';
 /**
  * Exports types used by PDF viewer.
  */
@@ -86,4 +87,50 @@ export interface IZoomChangeEventArgs extends BaseEventArgs {
 export interface IHyperlinkClickEventArgs extends BaseEventArgs {
     /* Defines the current clicked hyperlink  */
     hyperlink: string;
+}
+
+/**
+ * This event arguments provides the necessary information about annotation add event.
+ */
+export interface IAnnotationAddEventArgs extends BaseEventArgs {
+    /* Defines the settings of the annotation added to the PDF document. */
+    // tslint:disable-next-line
+    annotationSettings: any;
+    /* Defines the bounds of the annotation added in the page of the PDF document. */
+    // tslint:disable-next-line
+    annotationBound: any;
+    /* Defines the id of the annotation added in the page of the PDF document. */
+    annotationId: number;
+    /* Defines the page number in which the annotation is added. */
+    pageIndex: number;
+    /* Define the type of the annotation added in the page of the PDF document. */
+    annotationType: AnnotationType;
+}
+
+/**
+ * This event arguments provides the necessary information about annotation remove event.
+ */
+export interface IAnnotationRemoveEventArgs extends BaseEventArgs {
+    /* Defines the id of the annotation removed from the page of the PDF document. */
+    annotationId: number;
+    /* Defines the page number in which the annotation is removed. */
+    pageIndex: number;
+    /* Defines the type of the annotation removed from the page of the PDF document. */
+    annotationType: AnnotationType;
+}
+
+/**
+ * This event arguments provides the necessary information about annotation properties change event.
+ */
+export interface IAnnotationPropertiesChangeEventArgs extends BaseEventArgs {
+    /* Defines the id of the annotation property is changed in the page of the PDF document. */
+    annotationId: number;
+    /* Defines the page number in which the annotation property is changed. */
+    pageIndex: number;
+    /* Defines the type of the annotation property is changed in the page of the PDF document. */
+    annotationType: AnnotationType;
+    /* Specifies that the color of the annotation is changed. */
+    isColorChanged: boolean;
+    /* Specifies that the opacity of the annotation is changed. */
+    isOpacityChanged: boolean;
 }

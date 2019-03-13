@@ -18,7 +18,7 @@ export class SpinSettings extends ChildProperty<SpinSettings> {
     public template: string;
     /**
      * Sets the width of a spinner.
-     * @default 16
+     * @default '16'
      */
     @Property(16)
     public width: string | number;
@@ -477,12 +477,12 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
 
     /**
      * Called internally if any of the property value changed.
-     * @param  {ProgressButton} newProp
-     * @param  {ProgressButton} oldProp
+     * @param  {ProgressButtonModel} newProp
+     * @param  {ProgressButtonModel} oldProp
      * @returns void
      * @private
      */
-    public onPropertyChanged(newProp: ProgressButton, oldProp: ProgressButton): void {
+    public onPropertyChanged(newProp: ProgressButtonModel, oldProp: ProgressButtonModel): void {
         let ele: HTMLButtonElement = this.element;
         super.onPropertyChanged(newProp, oldProp);
         for (let prop of Object.keys(newProp)) {

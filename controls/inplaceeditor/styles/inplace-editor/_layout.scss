@@ -22,6 +22,17 @@
       }
     }
 
+    .e-editable-action-buttons {
+
+      .e-btn-save {
+        margin: $editor-big-btn-save-margin;
+      }
+
+      .e-btn-cancel {
+        margin: $editor-big-btn-cancel-margin;
+      }
+    }
+
     &.e-rtl {
 
       .e-editable-value-wrapper {
@@ -33,6 +44,17 @@
         .e-editable-overlay-icon {
           left: $editor-big-overlay-icon-left-right;
           right: auto;
+        }
+      }
+
+      .e-editable-action-buttons {
+
+        .e-btn-save {
+          margin: $editor-rtl-big-btn-save-margin;
+        }
+
+        .e-btn-cancel {
+          margin: $editor-rtl-big-btn-cancel-margin;
         }
       }
     }
@@ -167,7 +189,7 @@
     .e-editable-action-buttons {
 
       .e-btn-save {
-        margin: $editor-btn-save-margin;
+        margin: $editor-nrml-btn-save-margin;
 
         .e-btn-icon.e-icons {
           font-size: $editor-btn-save-icon-size;
@@ -175,7 +197,7 @@
       }
 
       .e-btn-cancel {
-        margin: $editor-btn-cancel-margin;
+        margin: $editor-nrml-btn-cancel-margin;
 
         .e-btn-icon.e-icons {
           font-size: $editor-btn-cancel-icon-size;
@@ -188,11 +210,11 @@
       .e-editable-action-buttons {
 
         .e-btn-save {
-          margin: $editor-rtl-btn-save-margin;
+          margin: $editor-rtl-nrml-btn-save-margin;
         }
 
         .e-btn-cancel {
-          margin: $editor-rtl-btn-cancel-margin;
+          margin: $editor-rtl-nrml-btn-cancel-margin;
         }
       }
     }
@@ -200,6 +222,20 @@
 
   .e-bigger .e-inplaceeditor-tip,
   .e-inplaceeditor-tip.e-bigger {
+
+    &.e-tooltip-wrap {
+
+      .e-tip-content {
+
+        .e-editable-wrapper {
+          padding: $editor-big-tip-wrapper-padding;
+        }
+
+        .e-editable-title+.e-editable-wrapper {
+          padding: $editor-big-wrapper-title-with-padding;
+        }
+      }
+    }
 
     .e-editable-title {
       font-size: $editor-big-tip-title-font-size;
@@ -242,7 +278,7 @@
 
         .e-editable-wrapper {
           display: flex;
-          padding: $editor-tip-wrapper-padding;
+          padding: $editor-nrml-tip-wrapper-padding;
 
           .e-editable-action-buttons {
             float: right;
@@ -254,7 +290,7 @@
         }
 
         .e-editable-title+.e-editable-wrapper {
-          padding: $editor-wrapper-title-with-padding;
+          padding: $editor-nrml-wrapper-title-with-padding;
         }
       }
     }

@@ -1,5 +1,5 @@
 import { IElement, ISelectionChangeEventArgs, IConnectionChangeEventArgs, IDragOverEventArgs } from '../objects/interface/IElement';
-import { IDropEventArgs } from '../objects/interface/IElement';
+import { IDropEventArgs, IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { Connector, getBezierPoints, isEmptyVector, BezierSegment } from '../objects/connector';
 import { Node, BpmnShape, BpmnSubEvent, BpmnAnnotation } from '../objects/node';
 import { PathElement } from '../core/elements/path-element';
@@ -49,10 +49,14 @@ import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { SegmentInfo } from '../rendering/canvas-interface';
 import { PointPort } from '../objects/port';
 import { MarginModel } from '../core/appearance-model';
-import { renderContainerHelper, findBounds } from './container-interaction';
+import { renderContainerHelper } from './container-interaction';
 import { checkChildNodeInContainer, checkParentAsContainer, addChildToContainer } from './container-interaction';
 import { renderStackHighlighter } from './container-interaction';
+import { getConnectors, updateConnectorsProperties, findLaneIndex } from './../utility/swim-lane-util';
 import { GridPanel } from '../core/containers/grid';
+import { SwimLane } from '../objects/node';
+import { swimLaneSelection, pasteSwimLane, gridSelection } from '../utility/swim-lane-util';
+
 /**
  * Defines the behavior of commands
  */
@@ -65,6 +69,8 @@ export class CommandHandler {
     public connectorsTable: Object[] = [];
     /**   @private  */
     public processTable: {} = {};
+    /** @private */
+    public isContainer: boolean = false;
 
     private state: TransactionState;
 
@@ -609,6 +615,22 @@ export class CommandHandler {
                     }
                     this.clipboardData.childTable = childTable;
                 }
+                if (node.shape.type === 'SwimLane') {
+                    let swimlane: NodeModel = this.diagram.getObject(this.diagram.selectedItems.nodes[j].id);
+                    let childTable: {} = this.clipboardData.childTable;
+                    let connectorsList: string[] = getConnectors(this.diagram, swimlane.wrapper.children[0] as GridPanel, 0, true);
+                    for (let i: number = 0; i < connectorsList.length; i++) {
+                        let connector: ConnectorModel = this.diagram.getObject(connectorsList[i]);
+                        childTable[connector.id] = clone(connector);
+                    }
+                }
+                if (node && (node as Node).isLane) {
+                    let childTable: {} = this.clipboardData.childTable;
+                    let swimlane: NodeModel = this.diagram.getObject((node as Node).parentId);
+                    let laneIndex: number = findLaneIndex(swimlane, node as Node);
+                    childTable[node.id] = cloneObject((swimlane.shape as SwimLaneModel).lanes[laneIndex]);
+                    childTable[node.id].width = swimlane.wrapper.actualSize.width;
+                }
             }
         }
         if (this.clipboardData.pasteIndex === 0) {
@@ -653,6 +675,7 @@ export class CommandHandler {
         this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.Group;
         let selectedItems: (NodeModel | ConnectorModel)[] = [];
         let obj: NodeModel = {};
+        let group: Node | Connector;
         obj.id = 'group' + randomId();
         obj = new Node(this.diagram, 'nodes', obj, true);
         obj.children = [];
@@ -663,7 +686,10 @@ export class CommandHandler {
                 obj.children.push(selectedItems[i].id);
             }
         }
-        this.diagram.add(obj as IElement);
+        group = this.diagram.add(obj as IElement);
+        if (group) {
+            this.select(group);
+        }
         let entry: HistoryEntry = { type: 'Group', undoObject: obj, redoObject: obj, category: 'Internal' };
         this.addHistoryEntry(entry);
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
@@ -701,10 +727,10 @@ export class CommandHandler {
                 }
                 let parentNode: NodeModel = this.diagram.nameTable[(node as Node).parentId];
                 for (let j: number = node.children.length - 1; j >= 0; j--) {
-                    (this.diagram.nameTable[node.children[0]]).parentId = '';
-                    this.diagram.deleteChild(this.diagram.nameTable[node.children[0]], node);
-                    if ((node as Node).parentId && node.children[0]) {
-                        this.diagram.addChild(parentNode, node.children[0]);
+                    (this.diagram.nameTable[node.children[j]]).parentId = '';
+                    this.diagram.deleteChild(this.diagram.nameTable[node.children[j]], node);
+                    if ((node as Node).parentId && node.children[j]) {
+                        this.diagram.addChild(parentNode, node.children[j]);
                     }
                 }
                 if ((node as Node).parentId) {
@@ -831,6 +857,7 @@ export class CommandHandler {
         let connectorsTable: {} = {};
         let cloneObject: Object = clone(node);
         let process: string[];
+        let temp: NodeModel = this.diagram.nameTable[(node as Node).parentId];
         if (node.shape && node.shape.type === 'Bpmn' && (node.shape as BpmnShape).activity &&
             (node.shape as BpmnShape).activity.subProcess.processes
             && (node.shape as BpmnShape).activity.subProcess.processes.length) {
@@ -838,7 +865,11 @@ export class CommandHandler {
             (cloneObject as Node).zIndex = -1;
             ((cloneObject as Node).shape as BpmnShape).activity.subProcess.processes = undefined;
         }
-        if (node.children && node.children.length && (!children || !children.length)) {
+        if (node.shape && node.shape.type === 'SwimLane') {
+            pasteSwimLane(node, this.diagram, this.clipboardData);
+        } else if (temp && temp.shape.type === 'SwimLane') {
+            pasteSwimLane(clone(temp), this.diagram, this.clipboardData, node, true);
+        } else if (node.children && node.children.length && (!children || !children.length)) {
             newNode = this.cloneGroup(node, multiSelect);
         } else if (node.shape && (node.shape as BpmnShape).shape === 'TextAnnotation' && node.id.indexOf('_textannotation_') !== -1 &&
             this.diagram.nameTable[node.id]) {
@@ -1212,6 +1243,7 @@ export class CommandHandler {
         return false;
     }
 
+
     /** @private */
     public select(obj: NodeModel | ConnectorModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
         let hasLayer: LayerModel = this.getObjectLayer(obj.id);
@@ -1224,38 +1256,21 @@ export class CommandHandler {
             let selectorModel: SelectorModel = this.diagram.selectedItems;
             let convert: Node | Connector = obj as Node | Connector;
             if (convert instanceof Node) {
-                selectorModel.nodes.push(obj as NodeModel);
+                if ((obj as Node).isHeader) {
+                    let node: Node = this.diagram.nameTable[(obj as Node).parentId];
+                    selectorModel.nodes.push(node);
+                } else {
+                    selectorModel.nodes.push((obj as Node));
+                }
             } else {
                 selectorModel.connectors.push(obj as ConnectorModel);
             }
             if (!multipleSelection) {
                 (selectorModel as Selector).init(this.diagram);
                 if (selectorModel.nodes.length === 1 && selectorModel.connectors.length === 0) {
-                    if (checkParentAsContainer(this.diagram, selectorModel.nodes[0], true)) {
-                        let parentNode: NodeModel = this.diagram.nameTable[(selectorModel.nodes[0] as Node).parentId];
-                        if (parentNode && parentNode.container.type === 'Grid') {
-                            let canvas: Canvas = new Canvas();
-                            canvas.children = [];
-                            let element: DiagramElement = new DiagramElement();
-                            if (selectorModel.nodes[0].rowIndex && selectorModel.nodes[0].rowIndex > 0) {
-                                if ((parentNode.container.orientation === 'Horizontal' && selectorModel.nodes[0].rowIndex === 1) ||
-                                    (parentNode.container.orientation === 'Vertical' &&
-                                        selectorModel.nodes[0].rowIndex > 0 && selectorModel.nodes[0].columnIndex > 0)) {
-                                    let bounds: Rect = findBounds(parentNode, selectorModel.nodes[0].columnIndex, true);
-                                    canvas.offsetX = bounds.center.x; canvas.offsetY = bounds.center.y;
-                                    element.width = bounds.width; element.height = bounds.height;
-                                } else {
-                                    canvas.offsetX = parentNode.offsetX;
-                                    canvas.offsetY = selectorModel.nodes[0].wrapper.offsetY;
-                                    element.width = parentNode.wrapper.actualSize.width;
-                                    element.height = selectorModel.nodes[0].wrapper.actualSize.height;
-                                }
-                            }
-                            canvas.children.push(element);
-                            canvas.measure(new Size());
-                            canvas.arrange(canvas.desiredSize);
-                            selectorModel.wrapper.children[0] = canvas;
-                        }
+                    let wrapper: Canvas = gridSelection(this.diagram, selectorModel);
+                    if (wrapper) {
+                        selectorModel.wrapper.children[0] = wrapper;
                     }
                     selectorModel.rotateAngle = selectorModel.nodes[0].rotateAngle;
                     selectorModel.wrapper.rotateAngle = selectorModel.nodes[0].rotateAngle;
@@ -1674,6 +1689,9 @@ export class CommandHandler {
         if (hasSelection(this.diagram)) {
             let selectormodel: SelectorModel = this.diagram.selectedItems;
             let arrayNodes: (NodeModel | ConnectorModel)[] = this.getSelectedObject();
+            if (this.diagram.currentSymbol) {
+                this.diagram.previousSelectedObject = arrayNodes;
+            }
             let arg: ISelectionChangeEventArgs = {
                 oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
                 state: 'Changing', type: 'Removal', cancel: false
@@ -1703,7 +1721,7 @@ export class CommandHandler {
         }
     }
 
-    /**
+    /** 
      * @private
      */
     public removeStackHighlighter(): void {
@@ -1720,16 +1738,63 @@ export class CommandHandler {
      */
     public renderStackHighlighter(args: MouseEventArgs, target?: IElement): void {
         let source: Node = this.diagram.selectedItems.nodes[0] as Node;
+        let symbolDrag: boolean; let node: NodeModel;
+        let selectorModel: SelectorModel;
         if (!target) {
             let objects: IElement[] = this.diagram.findObjectsUnderMouse(args.position);
             target = this.diagram.findObjectUnderMouse(objects, 'Drag', true);
+            if (target && !((target as Node).isLane || (target as Node).isPhase || (target as Node).isHeader)) {
+                for (let i: number = 0; i < objects.length; i++) {
+                    let laneNode: Node = this.diagram.nameTable[(objects[i] as NodeModel).id];
+                    if (laneNode.isLane || laneNode.isPhase || laneNode.isHeader) { target = laneNode; }
+                }
+            }
         }
-        if (source && target && source.parentId && (target as Node).parentId && (source.parentId === (target as Node).parentId)
-            && (source.id !== (target as Node).id) && (this.diagram.nameTable[(target as Node).parentId].container &&
-                this.diagram.nameTable[(target as Node).parentId].container.type === 'Stack')) {
-            let isVertical: boolean = this.diagram.nameTable[(target as Node).parentId].container.orientation === 'Vertical';
-            renderStackHighlighter(
-                target.wrapper, isVertical, args.position, this.diagram);
+        if (source && target && (target as Node).isLane && source.shape && !(source.shape as SwimLaneModel).isPhase) {
+            node = this.diagram.nameTable[(target as Node).parentId];
+            if (this.diagram.currentSymbol && node.shape.type === 'SwimLane') {
+                symbolDrag = true;
+            }
+            if ((source && !source.parentId && source.shape.type !== 'SwimLane') ||
+                (source && source.parentId && this.diagram.nameTable[source.parentId] && this.diagram.nameTable[source.parentId].isLane &&
+                    (source.parentId !== (target as Node).parentId && source.parentId !== (target as Node).id))) {
+                selectorModel = this.diagram.selectedItems;
+                let canvas: Canvas = gridSelection(this.diagram, selectorModel, (target as Node).id, true);
+                if (canvas) {
+                    selectorModel.wrapper.children[0] = canvas;
+                }
+                this.diagram.renderSelector(false, true);
+                selectorModel.wrapper.children[0] = selectorModel.nodes[0].wrapper;
+            }
+        }
+        if (source && target && (target as Node).parentId && source.shape && (source.shape as SwimLaneModel).isPhase) {
+            let node: NodeModel = this.diagram.nameTable[(target as Node).parentId];
+            if (node.shape.type === 'SwimLane') {
+                this.diagram.selectedItems.wrapper.children[0] = this.diagram.nameTable[(target as Node).parentId].wrapper;
+                this.diagram.renderSelector(false, true);
+            }
+        }
+        if ((symbolDrag && ((this.diagram.currentSymbol as Node).shape as SwimLaneModel).isLane) || (source && target &&
+            source.parentId && (target as Node).parentId && !source.isPhase && (source.parentId === (target as Node).parentId)
+            && (source.id !== (target as Node).id) && node &&
+            (node.container && (node.container.type === 'Stack' || node.container.type === 'Grid')))) {
+            let canvas: Canvas;
+            let value: boolean = node.container.orientation === 'Vertical';
+            let isVertical: boolean = node.container === 'Stack' ? value : !value;
+            if (node.container.type === 'Grid' && (target as Node).isLane &&
+                ((!this.diagram.currentSymbol &&
+                    ((node.shape as SwimLaneModel).orientation === 'Horizontal' && (target as Node).rowIndex !== source.rowIndex) ||
+                    ((node.shape as SwimLaneModel).orientation === 'Vertical' && (target as Node).columnIndex !== source.columnIndex))
+                    || (this.diagram.currentSymbol &&
+                        (this.diagram.currentSymbol.shape as SwimLaneModel).orientation === node.container.orientation))) {
+                selectorModel = this.diagram.selectedItems;
+                canvas = gridSelection(this.diagram, selectorModel, (target as Node).id, symbolDrag);
+            }
+            let wrapper: DiagramElement = node.container.type === 'Stack' ? target.wrapper : canvas;
+            if (wrapper) {
+                renderStackHighlighter(
+                    wrapper, isVertical, args.position, this.diagram, false, true);
+            }
         }
     }
 
@@ -1758,6 +1823,11 @@ export class CommandHandler {
                     }
                     this.diagram.nodePropertyChange(obj as Node, oldValues as Node, { offsetX: obj.offsetX, offsetY: obj.offsetY } as Node);
                     obj.wrapper.measureChildren = false;
+                }
+                if (obj.shape.type === 'SwimLane' && !this.diagram.currentSymbol) {
+                    let grid: GridPanel = obj.wrapper.children[0] as GridPanel;
+                    let connectors: string[] = getConnectors(this.diagram, grid, 0, true);
+                    updateConnectorsProperties(connectors, this.diagram);
                 }
             } else {
                 let connector: Connector = obj as Connector;
@@ -2996,28 +3066,39 @@ export class CommandHandler {
         let node: Node = (args.target || args.source) as Node;
         let oldValues: Node = { isExpanded: node.isExpanded } as Node;
         node.isExpanded = !node.isExpanded;
+        this.diagram.preventNodesUpdate = true;
+        this.diagram.diagramActions |= DiagramAction.PreventIconsUpdate;
         this.diagram.nodePropertyChange(node, oldValues, { isExpanded: node.isExpanded } as Node);
+        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventIconsUpdate;
+        this.diagram.preventNodesUpdate = false;
     }
 
     /** @private */
     public expandNode(node: Node, diagram?: Diagram): ILayout {
         let animation: boolean;
         let objects: ILayout;
+        let preventNodesUpdate: Boolean = this.diagram.preventNodesUpdate;
         let expand: boolean = node.isExpanded;
+        this.diagram.preventNodesUpdate = true;
+        this.diagram.preventConnectorsUpdate = true;
         this.expandCollapse(node, expand, this.diagram);
         node.isExpanded = expand;
         this.diagram.layout.fixedNode = node.id;
         if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
-        this.diagram.preventNodesUpdate = true;
-        this.diagram.preventConnectorsUpdate = true;
+
         objects = this.diagram.doLayout();
-        this.diagram.preventNodesUpdate = false;
+        this.diagram.preventNodesUpdate = preventNodesUpdate;
         this.diagram.preventConnectorsUpdate = false;
 
-        if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
-            this.layoutAnimateModule.expand(this.diagram.organizationalChartModule.isAnimation, objects, node, this.diagram);
+        if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule) {
+            this.layoutAnimateModule.expand(this.diagram.layout.enableAnimation, objects, node, this.diagram);
+        } else {
+            let arg: IExpandStateChangeEventArgs = {
+                element: clone(node), state: (node.isExpanded) ? true : false
+            };
+            this.triggerEvent(DiagramEvent.expandStateChange, arg);
         }
         return objects;
     }
@@ -3146,16 +3227,20 @@ export class CommandHandler {
     /** @private */
     public isDroppable(source: IElement, targetNodes: IElement): boolean {
         let node: Node = this.diagram.nameTable[(source as Node).id] || (source as SelectorModel).nodes[0];
-        if ((node.shape as BpmnShape).shape === 'TextAnnotation') {
+        if (node) {
+            if ((node.shape as BpmnShape).shape === 'TextAnnotation') {
+                return true;
+            }
+            if (node && node.shape.type === 'Bpmn') {
+                if ((node.processId === (targetNodes as Node).id) || (node.id === (targetNodes as Node).processId) ||
+                    (targetNodes as Node).shape.type === 'Bpmn'
+                    && ((targetNodes as Node).shape as BpmnShape).activity.subProcess.collapsed) {
+                    return false;
+                }
+            }
             return true;
         }
-        if (node && node.shape.type === 'Bpmn') {
-            if ((node.processId === (targetNodes as Node).id) || (node.id === (targetNodes as Node).processId) ||
-                ((targetNodes as Node).shape as BpmnShape).activity.subProcess.collapsed) {
-                return false;
-            }
-        }
-        return true;
+        return false;
     }
 
     /**
@@ -3444,68 +3529,44 @@ export class CommandHandler {
 
     /** @private */
     public checkSelection(selector: SelectorModel, corner: string): void {
-        let node: NodeModel;
+        let node: NodeModel; let wrapper: GridPanel; let child: Container; let index: number; let shape: SwimLaneModel;
         if (selector.nodes.length === 1 && selector.connectors.length === 0) {
             if (checkParentAsContainer(this.diagram, selector.nodes[0], true)) {
                 node = (selector.nodes[0].shape === 'SwimLane') ? selector.nodes[0] :
                     this.diagram.nameTable[(selector.nodes[0] as Node).parentId];
-                let child: NodeModel = selector.nodes[0];
-                if (node.container.type === 'Grid') {
+                let child: Node = selector.nodes[0] as Node;
+                if (node.shape.type === 'SwimLane') {
+                    let orientation: boolean = ((node.shape as SwimLaneModel).orientation === 'Horizontal') ? true : false;
+                    if ((child.isPhase && ((orientation && corner === 'ResizeSouth') || (!orientation && corner === 'ResizeEast'))) ||
+                        (child.isLane && ((orientation && corner === 'ResizeEast') || (!orientation && corner === 'ResizeSouth')))) {
+                        swimLaneSelection(this.diagram, node, corner);
+                    }
+                } else if (node.container.type === 'Grid') {
                     if (((node.container.orientation === 'Horizontal' && child.rowIndex === 1) ||
                         (node.container.orientation === 'Vertical' && child.rowIndex > 0 && child.columnIndex > 0))) {
                         if (corner === 'ResizeSouth') {
-                            if (node.shape.type === 'SwimLane') {
-                                let wrapper: GridPanel = node.wrapper.children[0] as GridPanel;
-                                let child: Container = wrapper.rows[wrapper.rows.length - 1].cells[0];
-                                this.select(this.diagram.nameTable[(child.children[0] as Container).children[0].id]);
-                            } else {
-                                for (let i: number = 0; i < this.diagram.nodes.length; i++) {
-                                    let obj: NodeModel = this.diagram.nodes[i];
-                                    if (obj.rowIndex === node.rows.length - 1 && obj.columnIndex === 0) {
-                                        this.select(obj);
-                                        break;
-                                    }
+                            for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+                                let obj: NodeModel = this.diagram.nodes[i];
+                                if (obj.rowIndex === node.rows.length - 1 && obj.columnIndex === 0) {
+                                    this.select(obj);
+                                    break;
                                 }
                             }
                         }
                     } else {
                         if (corner === 'ResizeEast') {
-                            if (node.shape.type === 'SwimLane') {
-                                let wrapper: GridPanel; let child: Container;
-                                wrapper = node.wrapper.children[0] as GridPanel;
-                                child = wrapper.rows[wrapper.rows.length - 1].cells[wrapper.rows[wrapper.rows.length - 1].cells.length - 1];
-                                this.select(this.diagram.nameTable[child.children[0].id]);
-                            } else {
-                                for (let i: number = 0; i < this.diagram.nodes.length; i++) {
-                                    let obj: NodeModel = this.diagram.nodes[i];
-                                    if (obj.rowIndex === 1 && obj.columnIndex === node.columns.length - 1) {
-                                        this.select(obj);
-                                        break;
-                                    }
+                            for (let i: number = 0; i < this.diagram.nodes.length; i++) {
+                                let obj: NodeModel = this.diagram.nodes[i];
+                                if (obj.rowIndex === 1 && obj.columnIndex === node.columns.length - 1) {
+                                    this.select(obj);
+                                    break;
                                 }
                             }
                         }
                     }
                 }
             } else {
-                if (selector.nodes[0].shape.type === 'SwimLane') {
-                    node = selector.nodes[0];
-                    let wrapper: GridPanel; let child: Container; let index: number;
-                    if ((corner === 'ResizeSouth' && (selector.nodes[0].shape as SwimLaneModel).orientation === 'Vertical')) {
-                        wrapper = node.wrapper.children[0] as GridPanel;
-                        child = wrapper.rows[wrapper.rows.length - 1].cells[0];
-                        this.select(this.diagram.nameTable[child.children[0].id]);
-                    } else if (corner === 'ResizeEast') {
-                        wrapper = node.wrapper.children[0] as GridPanel;
-                        index = ((selector.nodes[0].shape as SwimLaneModel).header) ? 1 : 0;
-                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
-                        this.select(this.diagram.nameTable[child.children[0].id]);
-                    } else if ((corner === 'ResizeSouth' && (selector.nodes[0].shape as SwimLaneModel).orientation === 'Horizontal')) {
-                        wrapper = node.wrapper.children[0] as GridPanel; index = wrapper.rows.length - 1;
-                        child = wrapper.rows[index].cells[wrapper.rows[index].cells.length - 1];
-                        this.select(this.diagram.nameTable[child.children[0].id]);
-                    }
-                }
+                swimLaneSelection(this.diagram, selector.nodes[0], corner);
             }
         }
     }

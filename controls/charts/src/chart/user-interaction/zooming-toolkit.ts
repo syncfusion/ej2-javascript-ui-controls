@@ -1,11 +1,12 @@
-import { SvgRenderer, EventHandler } from '@syncfusion/ej2-base';
+import { EventHandler } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
 import { AxisModel } from '../axis/axis-model';
 import { ZoomMode } from '../utils/enum';
-import { removeElement, measureText, RectOption, Rect, PolygonOption, PathOption, createTooltip, minMax } from '../../common/utils/helper';
-import { Size, textElement, TextOption } from '../../common/utils/helper';
+import { removeElement, RectOption, PolygonOption, createTooltip, minMax } from '../../common/utils/helper';
+import { textElement,  } from '../../common/utils/helper';
+import { PathOption, Rect, measureText, TextOption, Size, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Zoom } from './zooming';
 import { zoomComplete } from '../../common/model/constants';
 import { IZoomCompleteEventArgs } from '../../common/model/interface';

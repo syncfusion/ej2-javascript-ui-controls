@@ -126,7 +126,7 @@ export interface UploaderModel extends ComponentModel{
     /**
      * Specifies the CSS class name that can be appended with root element of the uploader.
      * One or more custom CSS classes can be added to a uploader.
-     * @default
+     * @default ''
      */
     cssClass?: string;
 

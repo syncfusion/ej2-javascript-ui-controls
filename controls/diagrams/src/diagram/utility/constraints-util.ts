@@ -124,8 +124,8 @@ export function canInConnect(node: NodeModel): number {
 
 /** @private */
 export function canPortInConnect(port: PointPortModel): number {
-    if (port) {
-        if ((port.constraints & PortConstraints.InConnect)) {
+    if (port && port.constraints) {
+        if (!(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.InConnect)) {
             return port.constraints & PortConstraints.InConnect;
 
         }
@@ -144,8 +144,8 @@ export function canOutConnect(node: NodeModel): number {
 
 /** @private */
 export function canPortOutConnect(port: PointPortModel): number {
-    if (port) {
-        if ((port.constraints & PortConstraints.OutConnect)) {
+    if (port && port.constraints) {
+        if (!(port.constraints & PortConstraints.None) && (port.constraints & PortConstraints.OutConnect)) {
             return port.constraints & PortConstraints.OutConnect;
 
         }
@@ -313,6 +313,24 @@ export function canDraw(port: PointPortModel | NodeModel, diagram: Diagram): num
 export function canDrag(port: PointPortModel | NodeModel, diagram: Diagram): number {
     return port.constraints & PortConstraints.Drag;
 
+}
+
+/** @private */
+export function canPreventClearSelection(diagramActions: DiagramAction): boolean {
+    if (diagramActions & DiagramAction.PreventClearSelection) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/** @private */
+export function canDrawThumbs(rendererActions: RendererAction): boolean {
+    if (!(rendererActions & RendererAction.DrawSelectorBorder)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /** @private */

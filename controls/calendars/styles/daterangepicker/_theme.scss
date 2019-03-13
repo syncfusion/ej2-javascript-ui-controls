@@ -21,7 +21,7 @@
         & .e-header .e-title:hover {
           color: $range-calendar-header-dark-color;
           text-decoration: none;
-        }& .e-conten .e-range-hover {
+        }& .e-content .e-range-hover {
           background-color: $range-hover-color;
           color: $range-calendar-dark-color;
         }& .e-content.e-month .e-today.e-range-hover span {
@@ -36,7 +36,7 @@
         & .e-range-hover.e-focused-date:not(.e-selected) span.e-day,
         & .e-range-hover.e-focused-date.e-today span.e-day {
           background-color: darken($range-hover-color, 15%);
-          border: $range-calendar-hover-border;
+          border: $range-calendar-hover-border-color;
           color: $range-calendar-dark-color;
         }& .e-range-hover.e-today:hover span.e-day,
         & .e-range-hover.e-focused-date.e-today span.e-day,
@@ -46,6 +46,7 @@
         }& .e-range-hover.e-selected.e-today:hover span.e-day {
           border: $range-calendar-today-start-color;
         }& .e-content .e-other-month.e-range-hover,
+        & .e-content .e-other-month.e-today.e-range-hover span,
         & .e-content .e-other-month.e-range-hover span,
         & .e-content .e-other-month.e-range-hover:hover span.e-day,
         & .e-content .e-other-month.e-selected,

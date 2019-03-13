@@ -16,15 +16,15 @@ function eventObject(eventType: string, eventName: string): Object {
 }
 
 describe('MaskedTextBox Component', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
     describe('MaskedTextBox creation', () => {
-		beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-        });
         let maskBox: MaskedTextBox;
         beforeEach((): void => {
             maskBox = undefined;
@@ -2284,5 +2284,55 @@ describe('MaskedTextBox Component', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(inMB(profile.samples[profile.samples.length - 1]) + 0.25);
+    });
+});
+describe('this.value checking', () => {
+    let maskBox: any;
+    let i: number = 0, j: number = 0, k: number = 0, containerValue = 0;
+    let selectEnd: number = 0 , selectStart: number = 0;
+    let name: any, maskedvalue: any ,value: any, container: any, event:any;
+    let isInteracted: any, isInteraction: any;
+    function clickFn(args:MaskChangeEventArgs): void {
+        i++;
+        value= this.value;
+        maskedvalue= args.maskedValue;
+        isInteracted=args.isInteracted;
+        isInteraction = args.isInteraction;
+    }
+    beforeEach((): void => {
+        maskBox = undefined;
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('this.value checking with mask', () => {
+        maskBox = new MaskedTextBox({
+            mask: '9999 9999 9999 9999',
+            placeholder: 'Enter card number',
+            value: "123",
+            change: clickFn,
+        });
+        maskBox.appendTo('#mask1');
+        maskBox.value = '098';
+        maskBox.dataBind();
+        expect(value).toEqual("098");
+        
+    });
+    it('this.value checking without mask', () => {
+        maskBox = new MaskedTextBox({
+            placeholder: 'Enter card number',
+            value: "123",
+            change: clickFn,
+        });
+        maskBox.appendTo('#mask1');
+        maskBox.value = '098';
+        maskBox.dataBind();
+        expect(value).toEqual("098");
+        
     });
 });

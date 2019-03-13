@@ -9,7 +9,7 @@
       border: 0;
       border-radius: 0;
 
-      @if $skin-name == 'bootstrap' {
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
 
         &::before {
           border-color: $tab-hdr-bdr-color;
@@ -221,6 +221,13 @@
                   color: $tab-wrap-active-color;
                 }
               }
+              @if $skin-name == 'bootstrap4' {
+
+                .e-tab-text,
+                .e-tab-icon {
+                  color: $tab-alt-active-text-color;
+                }
+              }
             }
           }
         }
@@ -230,6 +237,7 @@
       .e-hscroll:not(.e-scroll-device) .e-scroll-nav {
         background: inherit;
         border: 0;
+
 
         .e-nav-arrow {
           color: $tab-nav-icon-color;
@@ -295,7 +303,7 @@
 
         &:active {
 
-          @if $skin-name == 'bootstrap' {
+          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
             box-shadow: $tab-nav-active-box-shadow;
           }
         }
@@ -420,7 +428,7 @@
 
         &:active {
 
-          @if $skin-name == 'bootstrap' {
+          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
             box-shadow: $tab-nav-active-box-shadow;
           }
         }
@@ -444,7 +452,7 @@
 
       &:nth-child(even) {
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
 
           &[style*= 'overflow: hidden'] {
             border: 0;
@@ -468,7 +476,7 @@
             border-top: $tab-active-item-hide-border;
             border-top-color: $tab-active-item-border-color;
 
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
               border-bottom: 1px solid $tab-even-active-item-bottom-border-color;
             }
           }
@@ -588,6 +596,9 @@
             &:hover {
               background: inherit;
               border: 0;
+              @if $skin-name == 'bootstrap4' {
+                color: $gray-900;
+              }
             }
           }
 
@@ -760,7 +771,7 @@
       .e-tab-header {
         border-bottom: $tab-fill-hdr-border;
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           .e-toolbar-items.e-hscroll {
             border: 0;
           }
@@ -937,7 +948,7 @@
               border-color: $tab-fill-focused-active-wrap-focus-border-color;
             }
 
-            @if $skin-name == 'bootstrap' {
+            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
 
               .e-tab-text,
               .e-close-icon {
@@ -952,6 +963,9 @@
             .e-tab-text,
             .e-tab-icon {
               color: $tab-alt-active-hover-text-color;
+              @if $skin-name == 'bootstrap4' {
+                color: $tab-alt-active-style-hover-text-color;
+              }
             }
           }
         }
@@ -968,7 +982,7 @@
           background: $tab-alt-item-bg-color;
         }
 
-        @if $skin-name == 'bootstrap' {
+        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
           .e-toolbar-items.e-hscroll {
             border: 0;
           }
@@ -1018,6 +1032,15 @@
                 .e-tab-text,
                 .e-close-icon {
                   color: $tab-alt-wrap-hover-color;
+                }
+              }
+              @if $skin-name == 'bootstrap4' {
+                .e-tab-text {
+                  color: $tab-alt-wrap-hover-color;
+                }
+
+                .e-close-icon {
+                  color: $tab-close-icon-color;
                 }
               }
 
@@ -1077,7 +1100,7 @@
                   background: $tab-alt-active-wrap-hover-bg-color;
                 }
 
-                @if $skin-name == 'bootstrap' {
+                @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                   .e-close-icon {
                     color: $tab-alt-active-wrap-hover-close-color;
                   }
@@ -1118,12 +1141,15 @@
                 .e-tab-text,
                 .e-tab-icon {
                   color: $tab-alt-active-text-color;
+                  @if $skin-name == 'bootstrap4' {
+                    color: $tab-alt-active-hover-text-color;
+                  }
                 }
               }
 
               &:focus:hover {
 
-                @if $skin-name == 'bootstrap' {
+                @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
 
                   .e-tab-text,
                   .e-close-icon {
@@ -1186,7 +1212,7 @@
                 .e-tab-icon {
                   color: $tab-alt-active-text-color;
 
-                  @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+                  @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap4' {
                     color: $tab-alt-pop-wrap-hover-color;
                   }
                 }
@@ -1199,6 +1225,12 @@
                   .e-tab-text,
                   .e-close-icon {
                     color: $tab-alt-pop-wrap-active-color;
+                  }
+                }
+                @if $skin-name == 'bootstrap4' {
+                  .e-tab-text,
+                  .e-tab-icon {
+                    color: $primary-font;
                   }
                 }
               }
@@ -1301,7 +1333,7 @@
               background: $tab-bg-hover-nav-bg-color;
               color: $tab-bg-hover-nav-icon-color;
 
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 background: $tab-alt-nav-hover-bg-color;
               }
 
@@ -1492,7 +1524,7 @@
 
           .e-tab-wrap:focus {
 
-            @if $skin-name == 'material' or $skin-name == 'bootstrap' {
+            @if $skin-name == 'material' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
               background: $tab-alt-hover-bg-color;
             }
 
@@ -1514,7 +1546,7 @@
 
             .e-tab-wrap:focus {
 
-              @if $skin-name == 'material' or $skin-name == 'bootstrap' {
+              @if $skin-name == 'material' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 background: $tab-key-alt-active-focus-bg-color;
               }
 
@@ -1542,7 +1574,7 @@
             .e-tab-wrap:focus,
             .e-tab-wrap:hover {
 
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
                 .e-tab-text,
                 .e-close-icon {
                   color: $tab-alt-focused-active-wrap-focus-or-hover-color;
@@ -1552,7 +1584,7 @@
 
             .e-tab-wrap:focus:hover {
 
-              @if $skin-name == 'bootstrap' {
+              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
 
                 .e-tab-text,
                 .e-close-icon {

@@ -15,8 +15,19 @@ import { MouseEvents } from '../../chart/base/events.spec';
 import { IAccLoadedEventArgs } from '../../../src/accumulation-chart/model/pie-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { IAccTextRenderEventArgs } from '../../../src/index';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 AccumulationChart.Inject(PieSeries, AccumulationLegend, AccumulationDataLabel);
 
+
+describe('Accumulation Chart Control', () => {
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+    });
 describe('Data Label checking for the pie doughnut series', () => {
     let ele: HTMLElement;
     let slice: HTMLElement;
@@ -489,4 +500,14 @@ describe('Data Label checking for the pie doughnut series', () => {
         accumulation.refresh();
     });
 
+});
+it('memory leak', () => {
+    profile.sample();
+    let average: any = inMB(profile.averageChange)
+    //Check average change in memory samples to not be over 10MB
+    expect(average).toBeLessThan(10);
+    let memory: any = inMB(getMemoryProfile())
+    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+})
 });

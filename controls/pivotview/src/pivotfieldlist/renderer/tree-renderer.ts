@@ -1,11 +1,11 @@
 import { createElement, addClass, removeClass, prepend, remove } from '@syncfusion/ej2-base';
-import { MouseEventArgs, TouchEventArgs, closest, extend } from '@syncfusion/ej2-base';
+import { MouseEventArgs, TouchEventArgs, closest } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { IAction } from '../../common/base/interface';
 import { TreeView, NodeCheckEventArgs, DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
-import { IFieldOptions, IField, IFieldListOptions, IDataOptions } from '../../base/engine';
+import { IFieldOptions, IField, IDataOptions } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 
@@ -111,13 +111,15 @@ export class TreeViewRenderer implements IAction {
             }],
             closeOnEscape: true,
             target: this.parentElement.parentElement,
-            close: () => {
-                if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
-                    remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
-                }
-            }
+            close: this.dialogClose.bind(this)
         });
         this.fieldDialog.appendTo(fieldListDialog);
+    }
+
+    private dialogClose(): void {
+        if (document.getElementById(this.parent.element.id + '_FieldListTreeView')) {
+            remove(document.getElementById(this.parent.element.id + '_FieldListTreeView'));
+        }
     }
 
     private createTreeView(treeData: { [key: string]: Object }[]): HTMLElement {
@@ -137,9 +139,7 @@ export class TreeViewRenderer implements IAction {
             placeholder: this.parent.localeObj.getConstant('search'),
             enableRtl: this.parent.enableRtl,
             cssClass: cls.EDITOR_SEARCH_CLASS,
-            change: (e: MaskChangeEventArgs) => {
-                this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
-            }
+            change: this.textChange.bind(this)
         });
         this.editorSearch.appendTo(editorSearch);
         editorTreeWrapper.appendChild(treeViewContainer);
@@ -152,6 +152,10 @@ export class TreeViewRenderer implements IAction {
         });
         this.fieldTable.appendTo(treeViewContainer);
         return editorTreeWrapper;
+    }
+
+    private textChange(e: MaskChangeEventArgs): void {
+        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
     }
 
     private dragStart(args: DragAndDropEventArgs): void {
@@ -269,7 +273,7 @@ export class TreeViewRenderer implements IAction {
         if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
             (this.parent as PivotFieldList).pivotGridModule.engineModule = (this.parent as PivotFieldList).engineModule;
             (this.parent as PivotFieldList).pivotGridModule.
-        setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
+                setProperties({ dataSource: (<{ [key: string]: Object }>this.parent.dataSource).properties as IDataOptions }, true);
             (this.parent as PivotFieldList).pivotGridModule.notify(events.uiUpdate, this);
         } else {
             this.parent.triggerPopulateEvent();
@@ -322,7 +326,11 @@ export class TreeViewRenderer implements IAction {
     private getTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
         let keys: string[] = Object.keys(this.parent.pivotFieldList);
-        let fieldList: IFieldListOptions = extend({}, this.parent.pivotFieldList, null, true) as IFieldListOptions;
+        let fieldList: { [key: string]: { id?: string; caption?: string; isSelected?: boolean; } } = {};
+        for (let key of keys) {
+            let member: IField = this.parent.pivotFieldList[key];
+            fieldList[key] = { id: member.id, caption: member.caption, isSelected: member.isSelected };
+        }
         if (this.parent.isAdaptive) {
             let fields: IFieldOptions[][] = [this.parent.dataSource.filters, this.parent.dataSource.columns, this.parent.dataSource.rows,
             this.parent.dataSource.values];
